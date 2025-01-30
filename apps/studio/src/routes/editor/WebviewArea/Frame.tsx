@@ -7,6 +7,7 @@ import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
+import { ShineBorder } from '@onlook/ui/shine-border';
 import { cn } from '@onlook/ui/utils';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
@@ -312,34 +313,36 @@ const Frame = observer(
         }
 
         function renderNotRunning() {
-            // Waiting state
-            if (projectsManager.runner?.state === RunState.RUNNING) {
-                return (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
-                        <p className="text-active text-title1 text-center">
-                            {'Waiting for the App to start...'}
-                        </p>
-                    </div>
-                );
-            }
-
-            // Asking to start
             return (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
-                    <p className="text-active text-title1 text-center">
-                        {'Press '}
-                        <span className="text-teal-600 dark:text-teal-300">Play</span>
-                        {' to start designing your App'}
-                    </p>
-                    <Button
-                        className="text-4xl w-96 h-32"
-                        onClick={() => {
-                            projectsManager.runner?.start();
-                        }}
-                    >
-                        Play
-                    </Button>
-                </div>
+                <ShineBorder
+                    className="w-full absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl"
+                    color={['#A07CFE', '#FE8FB5', '#FFBE7B']}
+                >
+                    {' '}
+                    {projectsManager.runner?.state === RunState.RUNNING ? (
+                        <>
+                            <p className="text-active text-title1 text-center">
+                                {'Waiting for the App to start...'}
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-active text-title1 text-center">
+                                {'Press '}
+                                <span className="text-teal-600 dark:text-teal-300">Play</span>
+                                {' to start designing your App'}
+                            </p>
+                            <Button
+                                className="text-4xl w-96 h-32"
+                                onClick={() => {
+                                    projectsManager.runner?.start();
+                                }}
+                            >
+                                Play
+                            </Button>
+                        </>
+                    )}
+                </ShineBorder>
             );
         }
 
