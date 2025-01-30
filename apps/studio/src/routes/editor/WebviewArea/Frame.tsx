@@ -3,11 +3,11 @@ import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
-import { DefaultSettings, Links } from '@onlook/models/constants';
+import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
+import { ShineBorder } from '@onlook/ui/shine-border';
 import { cn } from '@onlook/ui/utils';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
@@ -15,6 +15,8 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
+import { Icons } from '@onlook/ui/icons';
+import { motion } from 'framer-motion';
 
 const Frame = observer(
     ({
@@ -320,6 +322,60 @@ const Frame = observer(
             return 'outline-transparent';
         }
 
+        function renderNotRunning() {
+            return (
+                <>
+                    {projectsManager.runner?.state === RunState.RUNNING ? (
+                        <ShineBorder
+                            className="w-full absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-10 rounded-xl"
+                            color={[
+                                'var(--color-teal-300)',
+                                'var(--color-blue-400)',
+                                'var(--color-purple-200)',
+                            ]}
+                            autoShine={true}
+                        >
+                            <motion.p
+                                className="text-active text-title1 text-center text-balance pb-24"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                            >
+                                {'Waiting for the App to start...'}
+                            </motion.p>
+                        </ShineBorder>
+                    ) : (
+                        <div className="w-full absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-10 rounded-xl">
+                            <p className="text-active text-title1 text-center text-balance">
+                                {'Press '}
+                                <span className="text-teal-600 dark:text-teal-300">Play</span>
+                                {' to start designing your App'}
+                            </p>
+                            <Button
+                                className={cn(
+                                    'h-14 overflow-hidden',
+                                    'text-teal-700 dark:text-teal-100 relative border-teal-700 dark:border-teal-400 hover:border-teal-500 dark:hover:border-teal-200 hover:shadow-xl shadow-2xl shadow-teal-700/50 dark:shadow-teal-400/50 hover:shadow-teal-500/50 dark:hover:shadow-teal-200/50 transition-all duration-300',
+                                    'before:absolute before:inset-0 before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.teal.200/80)_0%,theme(colors.teal.300/80)_100%)] dark:before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.teal.800/80)_0%,theme(colors.teal.500/80)_100%)]',
+                                    'after:absolute after:inset-0 after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.teal.300/50)_0%,theme(colors.teal.200/50)_100%)] dark:after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.teal.500/50)_0%,theme(colors.teal.400/50)_100%)]',
+                                    'after:opacity-0 hover:after:opacity-100',
+                                    'before:transition-all after:transition-all before:duration-300 after:duration-300',
+                                    'before:z-0 after:z-0',
+                                )}
+                                onClick={() => {
+                                    projectsManager.runner?.start();
+                                }}
+                            >
+                                <span className="relative z-10 flex items-center gap-x-1.5 px-3 py-2.5">
+                                    <Icons.Play className="w-8 h-8" />
+                                    <span className="text-title3">Play</span>
+                                </span>
+                            </Button>
+                        </div>
+                    )}
+                </>
+            );
+        }
+
         async function selectFirstElement(webview: Electron.WebviewTag) {
             const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
             if (domEl) {
@@ -381,29 +437,7 @@ const Frame = observer(
                         webviewRef={webviewRef}
                         setHovered={setHovered}
                     />
-                    {domFailed && shouldShowDomFailed && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
-                            <p className="text-active text-title1 text-center">
-                                {'Press '}
-                                <span className="text-teal-600 dark:text-teal-300">Play</span>
-                                {' to start designing your App'}
-                            </p>
-                            <p className="text-foreground-onlook text-title3 text-center max-w-80">
-                                {'In Onlook, you design your App while it is running'}
-                            </p>
-                            <Button
-                                variant={'link'}
-                                size={'lg'}
-                                className="text-title2"
-                                onClick={() => {
-                                    window.open(Links.USAGE_DOCS, '_blank');
-                                }}
-                            >
-                                Read the get started guide
-                                <Icons.ExternalLink className="ml-2 w-6 h-6" />
-                            </Button>
-                        </div>
-                    )}
+                    {domFailed && shouldShowDomFailed && renderNotRunning()}
                 </div>
             </div>
         );
