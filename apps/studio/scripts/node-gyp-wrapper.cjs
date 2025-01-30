@@ -7,18 +7,20 @@ const electronPath = require('electron');
 const args = process.argv.slice(2);
 
 const nodeGypPath = require.resolve('node-gyp/bin/node-gyp.js');
+const nodePath = process.argv[0]; // Use the Node executable that launched this script
 
 if (args[0] === 'npm') {
     // For npm commands, we'll extract the node-gyp related commands
     const npmArgs = args.slice(1);
     if (npmArgs.includes('install') && npmArgs.includes('node-pty')) {
         // Direct node-gyp rebuild for node-pty
-        const nodeGypProcess = spawn(process.execPath, [nodeGypPath, 'rebuild'], {
+        const nodeGypProcess = spawn(nodePath, [nodeGypPath, 'rebuild'], {
             stdio: 'inherit',
             env: {
                 ...process.env,
                 npm_config_build_from_source: 'true',
-                npm_config_node_gyp: nodeGypPath
+                npm_config_node_gyp: nodeGypPath,
+                npm_config_nodedir: path.dirname(nodePath)
             },
             cwd: path.join(process.cwd(), 'node_modules', 'node-pty'),
             shell: os.platform() === 'win32'
@@ -29,7 +31,7 @@ if (args[0] === 'npm') {
         });
     } else {
         // For other npm commands, use system npm
-        const npmProcess = spawn('npm', args.slice(1), {
+        const npmProcess = spawn(nodePath, [require.resolve('npm/bin/npm-cli.js'), ...args.slice(1)], {
             stdio: 'inherit',
             env: process.env,
             shell: os.platform() === 'win32'
@@ -41,7 +43,7 @@ if (args[0] === 'npm') {
     }
 } else {
     // Direct node-gyp commands
-    const nodeGypProcess = spawn(process.execPath, [nodeGypPath, ...args], {
+    const nodeGypProcess = spawn(nodePath, [nodeGypPath, ...args], {
         stdio: 'inherit',
         env: process.env,
         shell: os.platform() === 'win32'
