@@ -215,7 +215,7 @@ export const ChatInput = observer(() => {
                     rows={3}
                     style={{ resize: 'none' }}
                     value={input}
-                    onChange={(e) => !isComposing && setInput(e.target.value)}
+                    onChange={(e) => setInput(e.target.value)}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
