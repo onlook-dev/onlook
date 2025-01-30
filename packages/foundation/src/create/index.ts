@@ -1,8 +1,10 @@
 import { exec } from 'child_process';
 import degit from 'degit';
 import * as fs from 'fs';
+import * as https from 'https';
 import * as path from 'path';
 import { promisify } from 'util';
+import * as unzipper from 'unzipper';
 import { CreateStage, type CreateCallback } from '..';
 
 const NEXT_TEMPLATE_REPO = 'onlook-dev/starter';
@@ -91,7 +93,11 @@ async function cloneRepo(fullPath: string, onProgress: CreateCallback) {
         try {
             await cloneWithGit(fullPath);
         } catch (gitError) {
-            throw new Error(`Failed to clone repository: ${gitError}`);
+            onProgress(
+                CreateStage.CLONING,
+                'Git clone failed or git not installed, using direct download...',
+            );
+            await downloadStarterWithoutGit(fullPath);
         }
     }
 }
@@ -120,4 +126,40 @@ async function cloneWithGit(fullPath: string) {
     if (fs.existsSync(gitDir)) {
         fs.rmSync(gitDir, { recursive: true, force: true });
     }
+}
+
+async function downloadStarterWithoutGit(fullPath: string) {
+    const zipUrl = `https://github.com/${NEXT_TEMPLATE_REPO}/archive/refs/heads/main.zip`;
+    const tempZipPath = path.join(fullPath, 'starter.zip');
+    const extractPath = path.join(fullPath, '_temp');
+
+    // Create the directory structure
+    fs.mkdirSync(extractPath, { recursive: true });
+
+    // Download the zip
+    await new Promise<void>((resolve, reject) => {
+        https.get(zipUrl, (response) => {
+            response
+                .pipe(fs.createWriteStream(tempZipPath))
+                .on('finish', () => resolve())
+                .on('error', (err) => reject(err));
+        });
+    });
+
+    // Extract zip
+    await fs
+        .createReadStream(tempZipPath)
+        .pipe(unzipper.Extract({ path: extractPath }))
+        .promise();
+
+    // Move contents from nested folder (starter-main) to target directory
+    const nestedDir = path.join(extractPath, 'starter-main');
+    const files = fs.readdirSync(nestedDir);
+    for (const file of files) {
+        fs.renameSync(path.join(nestedDir, file), path.join(fullPath, file));
+    }
+
+    // Cleanup
+    fs.unlinkSync(tempZipPath);
+    fs.rmSync(extractPath, { recursive: true, force: true });
 }
