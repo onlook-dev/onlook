@@ -6,24 +6,18 @@ const os = require('os');
 const electronPath = require('electron');
 const args = process.argv.slice(2);
 
-const { execSync } = require('child_process');
 const nodeGypPath = require.resolve('node-gyp/bin/node-gyp.js');
+const nodePath = process.execPath;
 
-// Find Node binary path dynamically
-let nodePath;
-try {
-    nodePath = execSync('which node', { encoding: 'utf8' }).trim();
-    console.log('Using Node binary:', nodePath);
-    
-    // Verify the binary exists and is executable
-    const stats = require('fs').statSync(nodePath);
-    if (!(stats.mode & 0o111)) {
-        throw new Error('Node binary is not executable');
-    }
-} catch (error) {
-    console.error('Error finding Node binary:', error);
-    process.exit(1);
-}
+console.log('Using Node binary:', nodePath);
+console.log('Node-gyp path:', nodeGypPath);
+console.log('Current working directory:', process.cwd());
+console.log('Environment:', {
+    npm_config_node_gyp: process.env.npm_config_node_gyp,
+    npm_config_build_from_source: process.env.npm_config_build_from_source,
+    npm_config_nodedir: process.env.npm_config_nodedir,
+    PATH: process.env.PATH
+});
 
 if (args[0] === 'npm') {
     // For npm commands, we'll extract the node-gyp related commands
