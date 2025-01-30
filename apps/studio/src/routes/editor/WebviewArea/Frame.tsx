@@ -3,11 +3,10 @@ import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
-import { DefaultSettings, Links } from '@onlook/models/constants';
+import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
@@ -312,6 +311,38 @@ const Frame = observer(
             return 'outline-transparent';
         }
 
+        function renderNotRunning() {
+            // Waiting state
+            if (projectsManager.runner?.state === RunState.RUNNING) {
+                return (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
+                        <p className="text-active text-title1 text-center">
+                            {'Waiting for the App to start...'}
+                        </p>
+                    </div>
+                );
+            }
+
+            // Asking to start
+            return (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
+                    <p className="text-active text-title1 text-center">
+                        {'Press '}
+                        <span className="text-teal-600 dark:text-teal-300">Play</span>
+                        {' to start designing your App'}
+                    </p>
+                    <Button
+                        className="text-4xl w-96 h-32"
+                        onClick={() => {
+                            projectsManager.runner?.start();
+                        }}
+                    >
+                        Play
+                    </Button>
+                </div>
+            );
+        }
+
         return (
             <div
                 className="flex flex-col"
@@ -366,29 +397,7 @@ const Frame = observer(
                         webviewRef={webviewRef}
                         setHovered={setHovered}
                     />
-                    {domFailed && shouldShowDomFailed && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
-                            <p className="text-active text-title1 text-center">
-                                {'Press '}
-                                <span className="text-teal-600 dark:text-teal-300">Play</span>
-                                {' to start designing your App'}
-                            </p>
-                            <p className="text-foreground-onlook text-title3 text-center max-w-80">
-                                {'In Onlook, you design your App while it is running'}
-                            </p>
-                            <Button
-                                variant={'link'}
-                                size={'lg'}
-                                className="text-title2"
-                                onClick={() => {
-                                    window.open(Links.USAGE_DOCS, '_blank');
-                                }}
-                            >
-                                Read the get started guide
-                                <Icons.ExternalLink className="ml-2 w-6 h-6" />
-                            </Button>
-                        </div>
-                    )}
+                    {domFailed && shouldShowDomFailed && renderNotRunning()}
                 </div>
             </div>
         );
