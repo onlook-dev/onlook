@@ -9,12 +9,14 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
+import { Suggestions } from './Suggestions';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [input, setInput] = useState('');
     const [isComposing, setIsComposing] = useState(false);
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
@@ -168,6 +170,12 @@ export const ChatInput = observer(() => {
                 }
             }}
         >
+            <Suggestions
+                setInput={(suggestion) => {
+                    setInput(suggestion);
+                    textareaRef.current?.focus();
+                }}
+            />
             <div className="flex flex-col w-full p-4">
                 <div
                     className={cn(
@@ -199,6 +207,7 @@ export const ChatInput = observer(() => {
                     </AnimatePresence>
                 </div>
                 <Textarea
+                    ref={textareaRef}
                     disabled={disabled}
                     placeholder={
                         disabled
