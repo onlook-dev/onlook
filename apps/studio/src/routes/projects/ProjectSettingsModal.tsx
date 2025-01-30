@@ -3,7 +3,7 @@ import { DefaultSettings } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
-import { DialogFooter, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
@@ -22,17 +22,16 @@ const ProjectSettingsModal = observer(({ project }: { project?: Project | null }
     });
     const [isCommandsOpen, setIsCommandsOpen] = useState(false);
 
-    // Reset form values when project changes
     useEffect(() => {
-        if (projectToUpdate) {
-            setFormValues({
-                name: projectToUpdate.name || '',
-                url: projectToUpdate.url || '',
-                folderPath: projectToUpdate.folderPath || '',
-                commands: projectToUpdate.commands || DefaultSettings.COMMANDS,
+        // Cleanup function to ensure all overlays and focus traps are removed
+        return () => {
+            document.body.style.pointerEvents = '';
+            const overlays = document.querySelectorAll('[role="dialog"]');
+            overlays.forEach((overlay) => {
+                (overlay as HTMLElement).style.display = 'none';
             });
-        }
-    }, [projectToUpdate]);
+        };
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;

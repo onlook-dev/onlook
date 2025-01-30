@@ -58,16 +58,19 @@ const ProjectBreadcrumb = observer(() => {
 
     const handleOpenChange = (open: boolean) => {
         if (!open) {
+            // Force cleanup of any stuck overlays
+            document.body.style.pointerEvents = '';
+            const overlays = document.querySelectorAll('[role="dialog"]');
+            overlays.forEach((overlay) => {
+                (overlay as HTMLElement).style.display = 'none';
+            });
             editorEngine.isPlansOpen = false;
             projectsManager.isSettingsOpen = false;
         }
     };
 
     return (
-        <Dialog
-            open={editorEngine.isPlansOpen || projectsManager.isSettingsOpen}
-            onOpenChange={handleOpenChange}
-        >
+        <>
             <div className="mx-2 flex flex-row items-center text-small gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -96,14 +99,11 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuItem
                             onClick={() => {
                                 projectsManager.isSettingsOpen = true;
-                                editorEngine.isPlansOpen = false;
                             }}
                         >
                             Settings
                         </DropdownMenuItem>
-                        <DialogTrigger asChild>
-                            <DropdownMenuItem>Subscriptions</DropdownMenuItem>
-                        </DialogTrigger>
+                        <DropdownMenuItem>Subscriptions</DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => window.open('https://onlook.com', '_blank')}
                         >
@@ -114,9 +114,15 @@ const ProjectBreadcrumb = observer(() => {
             </div>
 
             {projectsManager.isSettingsOpen && (
-                <DialogContent className="sm:max-w-[425px]">
-                    <ProjectSettingsModal project={projectsManager.project} />
-                </DialogContent>
+                <Dialog open={true} onOpenChange={handleOpenChange} modal={true}>
+                    <DialogContent
+                        className="sm:max-w-[425px]"
+                        onPointerDownOutside={() => handleOpenChange(false)}
+                        onEscapeKeyDown={() => handleOpenChange(false)}
+                    >
+                        <ProjectSettingsModal project={projectsManager.project} />
+                    </DialogContent>
+                </Dialog>
             )}
 
             {editorEngine.isPlansOpen && (
@@ -124,7 +130,7 @@ const ProjectBreadcrumb = observer(() => {
                     <PricingPage />
                 </DialogContent>
             )}
-        </Dialog>
+        </>
     );
 });
 
