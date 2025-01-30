@@ -25,7 +25,7 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "clean": "git clean -xdf dist-electron node_modules",
-        "package": "electron-builder",
+        "package": "electron-builder --config electron-builder.cjs",
         "preview": "vite preview",
         "pree2e": "vite build --mode=test",
         "e2e": "playwright test",
@@ -33,7 +33,8 @@
         "coverage": "bun test --coverage",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "node-gyp": "node ./scripts/node-gyp-wrapper.js"
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^0.0.53",
