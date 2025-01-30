@@ -242,7 +242,7 @@ export const PromptingCard = () => {
                                     placeholder="Paste a reference screenshot, write a novel, get creative..."
                                     value={inputValue}
                                     onChange={(e) => {
-                                        !isComposing && setInputValue(e.target.value);
+                                        setInputValue(e.target.value);
                                         adjustTextareaHeight();
                                     }}
                                     onCompositionStart={() => setIsComposing(true)}
