@@ -34,7 +34,7 @@
         "lint": "eslint --fix .",
         "format": "prettier --write .",
         "typecheck": "tsc --noEmit",
-        "node-gyp": "node ./scripts/node-gyp-wrapper.js"
+        "node-gyp": "node ./scripts/node-gyp-wrapper.cjs"
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^0.0.53",
