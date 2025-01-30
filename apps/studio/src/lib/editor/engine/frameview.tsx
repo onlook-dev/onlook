@@ -29,30 +29,28 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const zoomLevel = useRef(1);
 
-    useImperativeHandle(
-        ref,
-        () => ({
-            ...iframeRef.current!,
+    useImperativeHandle(ref, () => {
+        const iframe = iframeRef.current!;
+
+        Object.assign(iframe, {
             supportsOpenDevTools: () => {
-                const contentWindow = iframeRef.current?.contentWindow;
+                const contentWindow = iframe.contentWindow;
                 return !!contentWindow && 'openDevTools' in contentWindow;
             },
             openDevTools: () => {
-                const contentWindow = iframeRef.current?.contentWindow;
+                const contentWindow = iframe.contentWindow;
                 if (!contentWindow || !('openDevTools' in contentWindow)) {
                     throw new Error('openDevTools() is not supported in this browser');
                 }
                 (contentWindow as any as Electron.WebContents).openDevTools();
             },
             setZoomLevel: (level: number) => {
-                if (iframeRef.current) {
-                    zoomLevel.current = level;
-                    iframeRef.current.style.transform = `scale(${level})`;
-                    iframeRef.current.style.transformOrigin = 'top left';
-                }
+                zoomLevel.current = level;
+                iframe.style.transform = `scale(${level})`;
+                iframe.style.transformOrigin = 'top left';
             },
             executeJavaScript: async (code: string): Promise<any> => {
-                const contentWindow = iframeRef.current?.contentWindow;
+                const contentWindow = iframe.contentWindow;
                 if (!contentWindow) {
                     throw new Error('No iframe content window available');
                 }
@@ -69,15 +67,15 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
                     };
 
                     const wrappedCode = `
-                    try {
-                        const result = await (async () => {
-                          ${code} 
-                        })();
-                        window.postMessage({ messageId: "${messageId}", result }, "*");
-                    } catch (error) {
-                        window.postMessage({ messageId: "${messageId}", error: error.message }, "*");
-                    }
-                `;
+                            try {
+                                const result = await (async () => {
+                                    ${code} 
+                                })();
+                                window.postMessage({ messageId: "${messageId}", result }, "*");
+                            } catch (error) {
+                                window.postMessage({ messageId: "${messageId}", error: error.message }, "*");
+                            }
+                        `;
 
                     try {
                         contentWindow.postMessage(
@@ -96,27 +94,25 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
                 });
             },
             loadURL: async (url: string) => {
-                if (iframeRef.current) {
-                    iframeRef.current.src = url;
-                }
+                iframe.src = url;
             },
             canGoForward: () => {
-                return (iframeRef.current?.contentWindow?.history?.length ?? 0) > 0;
+                return (iframe.contentWindow?.history?.length ?? 0) > 0;
             },
             canGoBack: () => {
-                return (iframeRef.current?.contentWindow?.history?.length ?? 0) > 0;
+                return (iframe.contentWindow?.history?.length ?? 0) > 0;
             },
             goForward: () => {
-                iframeRef.current?.contentWindow?.history.forward();
+                iframe.contentWindow?.history.forward();
             },
             goBack: () => {
-                iframeRef.current?.contentWindow?.history.back();
+                iframe.contentWindow?.history.back();
             },
             reload: () => {
-                iframeRef.current?.contentWindow?.location.reload();
+                iframe.contentWindow?.location.reload();
             },
             isLoading: (): boolean => {
-                const contentDocument = iframeRef.current?.contentDocument;
+                const contentDocument = iframe.contentDocument;
                 if (!contentDocument) {
                     throw new Error(
                         'Could not call isLoading(): iframe.contentDocument is null/undefined',
@@ -125,18 +121,13 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
                 return contentDocument.readyState !== 'complete';
             },
             capturePage: async (): Promise<NativeImage> => {
-                const contentWindow = iframeRef.current?.contentWindow;
+                const contentWindow = iframe.contentWindow;
                 if (!contentWindow || !('capturePage' in contentWindow)) {
                     throw new Error('capturePage() is not supported in this environment');
                 }
                 return (contentWindow as any as Electron.WebContents).capturePage();
             },
             capturePageAsCanvas: async (): Promise<HTMLCanvasElement> => {
-                const iframe = iframeRef.current;
-                if (!iframe) {
-                    throw new Error('Iframe reference not available');
-                }
-
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 if (!ctx) {
@@ -146,14 +137,14 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
                 const img = new Image();
                 const blob = await new Promise<Blob>((resolve) => {
                     const svg = `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="${iframe.offsetWidth}" height="${iframe.offsetHeight}">
-                        <foreignObject width="100%" height="100%">
-                            <html xmlns="http://www.w3.org/1999/xhtml">
-                                ${iframe.contentDocument?.documentElement.outerHTML}
-                            </html>
-                        </foreignObject>
-                    </svg>
-                `;
+                        <svg xmlns="http://www.w3.org/2000/svg" width="${iframe.offsetWidth}" height="${iframe.offsetHeight}">
+                            <foreignObject width="100%" height="100%">
+                                <html xmlns="http://www.w3.org/1999/xhtml">
+                                    ${iframe.contentDocument?.documentElement.outerHTML}
+                                </html>
+                            </foreignObject>
+                        </svg>
+                    `;
                     const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
                     resolve(blob);
                 });
@@ -171,9 +162,10 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
 
                 return canvas;
             },
-        }),
-        [],
-    );
+        });
+
+        return iframe as IFrameView;
+    }, []);
 
     return <iframe ref={iframeRef} {...props} />;
 });
