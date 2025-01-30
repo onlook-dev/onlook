@@ -1,7 +1,7 @@
 import { EditorAttributes } from '@onlook/models/constants';
 import type { ElementPosition } from '@onlook/models/element';
-import type { WebviewTag } from 'electron/renderer';
 import type { RectDimensions } from './rect';
+import type { IFrameView } from '../frameview';
 
 /**
  * Calculates the cumulative offset between an element and its ancestor,
@@ -43,7 +43,7 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
  */
 export function adaptRectToCanvas(
     rect: RectDimensions,
-    webview: WebviewTag,
+    webview: IFrameView,
     inverse = false,
 ): RectDimensions {
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
@@ -85,7 +85,7 @@ export function adaptValueToCanvas(value: number, inverse = false): number {
  */
 export function getRelativeMousePositionToWebview(
     e: React.MouseEvent<HTMLDivElement>,
-    webview: WebviewTag,
+    webview: IFrameView,
     inverse: boolean = false,
 ): ElementPosition {
     const rect = webview.getBoundingClientRect();

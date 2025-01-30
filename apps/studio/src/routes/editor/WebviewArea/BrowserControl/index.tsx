@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { WebviewState } from '@/lib/editor/engine/webview';
+import type { IFrameView } from '@/lib/editor/engine/frameview';
 import { EditorMode } from '@/lib/models';
 import { DefaultSettings, Theme } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
@@ -20,7 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';
 
 interface BrowserControlsProps {
-    webviewRef: React.RefObject<Electron.WebviewTag> | null;
+    webviewRef: React.RefObject<IFrameView> | null;
     webviewSrc: string;
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
     selected: boolean;
@@ -92,7 +93,7 @@ const BrowserControls = observer(
         }, [editingURL]);
 
         function goForward() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef?.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -102,7 +103,7 @@ const BrowserControls = observer(
         }
 
         function reload() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef?.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -111,7 +112,7 @@ const BrowserControls = observer(
         }
 
         function goBack() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef?.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -241,7 +242,7 @@ const BrowserControls = observer(
         }
 
         function handleSelect() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef?.current as IFrameView | null;
             if (!webview) {
                 return;
             }

@@ -1,9 +1,9 @@
 import { DefaultSettings, MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { jsonClone } from '@onlook/utility';
 import imageCompression from 'browser-image-compression';
-import type { WebviewTag } from 'electron/renderer';
 import { customAlphabet } from 'nanoid/non-secure';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
+import type { IFrameView } from '../editor/engine/frameview';
 
 export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';
 
@@ -36,8 +36,11 @@ export const invokeMainChannel = async <T, P>(channel: MainChannels, ...args: T[
     return window.api.invoke(channel, ...args.map(jsonClone));
 };
 
-export const sendToWebview = <T>(webview: WebviewTag, channel: WebviewChannels, ...args: T[]) => {
-    return webview.send(channel, ...args.map(jsonClone));
+export const sendToWebview = <T>(webview: IFrameView, channel: WebviewChannels, ...args: T[]) => {
+    if (!webview.contentWindow) {
+        throw new Error('Could not call sendToWebview(): .contentWindow is null/undefined');
+    }
+    return webview.contentWindow.postMessage({ channel, data: args.map(jsonClone) }, '*');
 };
 
 const generateCustomId = customAlphabet(VALID_DATA_ATTR_CHARS, 7);

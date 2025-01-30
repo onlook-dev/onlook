@@ -13,6 +13,7 @@ import type React from 'react';
 import type { EditorEngine } from '..';
 import type { RectDimensions } from '../overlay/rect';
 import { getRelativeMousePositionToWebview } from '../overlay/utils';
+import type { IFrameView } from '../frameview';
 
 export class InsertManager {
     isDrawing = false;
@@ -67,7 +68,7 @@ export class InsertManager {
         this.updateInsertRect(currentPos);
     }
 
-    end(e: React.MouseEvent<HTMLDivElement>, webview: Electron.WebviewTag | null) {
+    end(e: React.MouseEvent<HTMLDivElement>, webview: IFrameView | null) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
@@ -135,11 +136,7 @@ export class InsertManager {
         };
     }
 
-    async insertElement(
-        webview: Electron.WebviewTag,
-        newRect: RectDimensions,
-        origin: ElementPosition,
-    ) {
+    async insertElement(webview: IFrameView, newRect: RectDimensions, origin: ElementPosition) {
         const insertAction = await this.createInsertAction(webview, newRect, origin);
         if (!insertAction) {
             console.error('Failed to create insert action');
@@ -149,7 +146,7 @@ export class InsertManager {
     }
 
     async createInsertAction(
-        webview: Electron.WebviewTag,
+        webview: IFrameView,
         newRect: RectDimensions,
         origin: ElementPosition,
     ): Promise<InsertElementAction | undefined> {
@@ -210,7 +207,7 @@ export class InsertManager {
     }
 
     async insertDroppedElement(
-        webview: Electron.WebviewTag,
+        webview: IFrameView,
         dropPosition: { x: number; y: number },
         properties: DropElementProperties,
     ) {

@@ -8,9 +8,10 @@ import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
 import RightClickMenu from '../RightClickMenu';
+import type { IFrameView } from '@/lib/editor/engine/frameview';
 
 interface GestureScreenProps {
-    webviewRef: React.RefObject<Electron.WebviewTag>;
+    webviewRef: React.RefObject<IFrameView>;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
     isResizing: boolean;
 }
@@ -18,8 +19,8 @@ interface GestureScreenProps {
 const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
-    const getWebview = useCallback((): Electron.WebviewTag => {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+    const getWebview = useCallback((): IFrameView => {
+        const webview = webviewRef.current as IFrameView | null;
         if (!webview) {
             throw Error('No webview found');
         }

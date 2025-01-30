@@ -1,10 +1,10 @@
 import { invokeMainChannel } from '@/lib/utils';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
-import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { LayersManager } from './layers';
+import type { IFrameView } from '../frameview';
 
 export class AstManager {
     private layersManager: LayersManager = new LayersManager();
@@ -204,12 +204,12 @@ export class AstManager {
         this.layersManager.clear();
     }
 
-    async refreshAstDoc(webview: WebviewTag) {
+    async refreshAstDoc(webview: IFrameView) {
         const root = await this.getBodyFromWebview(webview);
         this.mappings.updateDocument(webview.id, root.ownerDocument);
     }
 
-    async getBodyFromWebview(webview: WebviewTag) {
+    async getBodyFromWebview(webview: IFrameView) {
         const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, 'text/html');

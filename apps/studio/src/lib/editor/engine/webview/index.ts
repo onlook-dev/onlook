@@ -3,6 +3,7 @@ import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { isOnlookInDoc } from '/common/helpers';
+import type { IFrameView } from '../frameview';
 
 export enum WebviewState {
     NOT_RUNNING,
@@ -12,7 +13,7 @@ export enum WebviewState {
 }
 
 interface WebviewData {
-    webview: Electron.WebviewTag;
+    webview: IFrameView;
     selected: boolean;
     state: WebviewState;
 }
@@ -50,15 +51,15 @@ export class WebviewManager {
         return Array.from(this.webviewIdToData.values()).map((w) => w.webview);
     }
 
-    getWebview(id: string): Electron.WebviewTag | undefined {
+    getWebview(id: string): IFrameView | undefined {
         return this.webviewIdToData.get(id)?.webview;
     }
 
-    register(webview: Electron.WebviewTag) {
+    register(webview: IFrameView) {
         this.webviewIdToData.set(webview.id, { webview, ...DEFAULT_DATA });
     }
 
-    deregister(webview: Electron.WebviewTag) {
+    deregister(webview: IFrameView) {
         this.disposeWebview(webview.id);
     }
 
@@ -70,7 +71,7 @@ export class WebviewManager {
         return this.webviewIdToData.get(id)?.selected ?? false;
     }
 
-    select(webview: Electron.WebviewTag) {
+    select(webview: IFrameView) {
         const data = this.webviewIdToData.get(webview.id);
         if (data) {
             data.selected = true;
@@ -79,7 +80,7 @@ export class WebviewManager {
         }
     }
 
-    deselect(webview: Electron.WebviewTag) {
+    deselect(webview: IFrameView) {
         const data = this.webviewIdToData.get(webview.id);
         if (data) {
             data.selected = false;
@@ -103,7 +104,7 @@ export class WebviewManager {
         return this.webviewIdToData.get(id)?.state ?? WebviewState.NOT_RUNNING;
     }
 
-    setState(webview: Electron.WebviewTag, state: WebviewState) {
+    setState(webview: IFrameView, state: WebviewState) {
         const data = this.webviewIdToData.get(webview.id);
         if (data) {
             data.state = state;

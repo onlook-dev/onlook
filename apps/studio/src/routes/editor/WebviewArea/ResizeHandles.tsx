@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import type { IFrameView } from '@/lib/editor/engine/frameview';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
 import { DefaultSettings } from '@onlook/models/constants';
@@ -9,7 +10,7 @@ import { observer } from 'mobx-react-lite';
 import { type MouseEvent, useRef } from 'react';
 
 interface ResizeHandleProps {
-    webviewRef: React.RefObject<Electron.WebviewTag>;
+    webviewRef: React.RefObject<IFrameView>;
     webviewSize: { width: number; height: number };
     setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
     selectedPreset: SizePreset | null;

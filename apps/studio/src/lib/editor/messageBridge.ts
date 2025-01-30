@@ -1,4 +1,5 @@
 import type { EditorEngine } from './engine';
+import type { IFrameView } from './engine/frameview';
 import { WebviewEventHandler } from './eventHandler';
 
 interface WebviewContext {
@@ -17,7 +18,7 @@ export class WebviewMessageBridge {
         };
     }
 
-    register(webview: Electron.WebviewTag, id: string) {
+    register(webview: IFrameView, id: string) {
         const handlerRemovers: (() => void)[] = [];
         Object.entries(this.eventHandlers).forEach(([event, handler]) => {
             webview.addEventListener(event, handler as any);
@@ -28,7 +29,7 @@ export class WebviewMessageBridge {
         this.webviews.set(id, { handlerRemovers });
     }
 
-    deregister(webview: Electron.WebviewTag) {
+    deregister(webview: IFrameView) {
         const context = this.webviews.get(webview.id);
         if (!context) {
             return;

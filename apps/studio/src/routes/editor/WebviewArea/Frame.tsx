@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
+import type { IFrameView } from '@/lib/editor/engine/frameview';
 
 const Frame = observer(
     ({
@@ -28,7 +29,7 @@ const Frame = observer(
         const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
-        const webviewRef = useRef<Electron.WebviewTag | null>(null);
+        const webviewRef = useRef<IFrameView | null>(null);
         let domState = editorEngine.webviews.getState(settings.id);
         const [selected, setSelected] = useState<boolean>(
             editorEngine.webviews.isSelected(settings.id),
@@ -124,10 +125,10 @@ const Frame = observer(
         useEffect(() => {
             if (projectsManager.runner?.state === RunState.STOPPING) {
                 const refresh = () => {
-                    const webview = webviewRef.current as Electron.WebviewTag | null;
+                    const webview = webviewRef.current as IFrameView | null;
                     if (webview) {
                         try {
-                            webview.reload();
+                            webview.src = settings.url;
                         } catch (error) {
                             console.error('Failed to reload webview', error);
                         }
@@ -173,7 +174,7 @@ const Frame = observer(
         }, [domFailed]);
 
         useEffect(() => {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
 
             setWebviewSize(settings.dimension);
             setWebviewPosition(settings.position);
@@ -187,7 +188,7 @@ const Frame = observer(
         }, [settings.id]);
 
         function setupFrame() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -203,7 +204,7 @@ const Frame = observer(
         }
 
         function deregisterWebview() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -212,7 +213,7 @@ const Frame = observer(
             webview.removeEventListener('did-navigate', handleUrlChange);
         }
 
-        function setBrowserEventListeners(webview: Electron.WebviewTag) {
+        function setBrowserEventListeners(webview: IFrameView) {
             webview.addEventListener('did-navigate', handleUrlChange);
             webview.addEventListener('did-navigate-in-page', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
@@ -221,14 +222,14 @@ const Frame = observer(
             webview.addEventListener('blur', handleWebviewBlur);
         }
 
-        async function getDarkMode(webview: Electron.WebviewTag) {
+        async function getDarkMode(webview: IFrameView) {
             const darkmode = (await webview.executeJavaScript(`window.api?.getTheme()`)) || 'light';
             setDarkmode(darkmode === 'dark');
         }
 
         function handleDomFailed() {
             setDomFailed(true);
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -237,7 +238,7 @@ const Frame = observer(
             setTimeout(() => {
                 if (webview) {
                     try {
-                        webview.reload();
+                        webview.src = settings.url;
                     } catch (error) {
                         console.error('Failed to reload webview', error);
                     }
@@ -247,7 +248,7 @@ const Frame = observer(
 
         function handleWebviewFocus() {
             editorEngine.webviews.deselectAll();
-            editorEngine.webviews.select(webviewRef.current as Electron.WebviewTag);
+            editorEngine.webviews.select(webviewRef.current as IFrameView);
         }
 
         function handleWebviewBlur() {}
@@ -331,7 +332,7 @@ const Frame = observer(
                         aspectRatioLocked={aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED}
                         webviewId={settings.id}
                     />
-                    <webview
+                    <iframe
                         id={settings.id}
                         ref={webviewRef}
                         className={cn(
@@ -340,15 +341,15 @@ const Frame = observer(
                             selected ? getSelectedOutlineColor() : 'outline-transparent',
                         )}
                         src={settings.url}
-                        preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
-                        allowpopups={'true' as any}
+                        // preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
+                        // allowpopups={'true' as any}
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
                             minWidth: DefaultSettings.MIN_DIMENSIONS.width,
                             minHeight: DefaultSettings.MIN_DIMENSIONS.height,
                         }}
-                    ></webview>
+                    ></iframe>
                     <GestureScreen
                         isResizing={isResizing}
                         webviewRef={webviewRef}

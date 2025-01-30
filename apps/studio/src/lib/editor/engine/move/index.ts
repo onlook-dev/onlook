@@ -2,6 +2,7 @@ import type { MoveElementAction } from '@onlook/models/actions';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type React from 'react';
 import type { EditorEngine } from '..';
+import type { IFrameView } from '../frameview';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
@@ -15,7 +16,7 @@ export class MoveManager {
         return !!this.dragOrigin;
     }
 
-    async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
+    async start(el: DomElement, position: ElementPosition, webview: IFrameView) {
         if (!this.editorEngine.elements.selected.some((selected) => selected.domId === el.domId)) {
             console.warn('Element not selected, cannot start drag');
             return;

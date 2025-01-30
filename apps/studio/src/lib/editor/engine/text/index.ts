@@ -1,8 +1,8 @@
 import type { DomElement, ElementPosition } from '@onlook/models/element';
-import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
 import { adaptRectToCanvas } from '../overlay/utils';
+import type { IFrameView } from '../frameview';
 
 export class TextEditingManager {
     targetDomEl: DomElement | null = null;
@@ -15,7 +15,7 @@ export class TextEditingManager {
         return this.targetDomEl !== null;
     }
 
-    async start(el: DomElement, webview: WebviewTag) {
+    async start(el: DomElement, webview: IFrameView) {
         const res: { originalContent: string } | null = await webview.executeJavaScript(
             `window.api?.startEditingText('${el.domId}')`,
         );
@@ -94,7 +94,7 @@ export class TextEditingManager {
         this.shouldNotStartEditing = false;
     }
 
-    handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
+    handleEditedText(domEl: DomElement, newContent: string, webview: IFrameView) {
         this.editorEngine.history.push({
             type: 'edit-text',
             targets: [
@@ -135,7 +135,7 @@ export class TextEditingManager {
         this.start(domEl, webview);
     }
 
-    async editElementAtLoc(pos: ElementPosition, webview: WebviewTag) {
+    async editElementAtLoc(pos: ElementPosition, webview: IFrameView) {
         const el: DomElement = await webview.executeJavaScript(
             `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, true)`,
         );

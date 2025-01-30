@@ -3,6 +3,7 @@ import type { DomElement, LayerNode } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import type { EditorEngine } from './engine';
+import type { IFrameView } from './engine/frameview';
 
 export class WebviewEventHandler {
     private eventCallbacks: Record<string, (e: any) => void>;
@@ -28,7 +29,7 @@ export class WebviewEventHandler {
 
     handleDomProcessed() {
         return async (e: Electron.IpcMessageEvent) => {
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for dom ready event');
                 return;
@@ -45,14 +46,14 @@ export class WebviewEventHandler {
 
     handleWindowResized() {
         return (e: Electron.IpcMessageEvent) => {
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             this.editorEngine.elements.refreshSelectedElements(webview);
         };
     }
 
     handleWindowMutated() {
         const handler = async (e: Electron.IpcMessageEvent) => {
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for window mutated event');
                 return;
@@ -82,7 +83,7 @@ export class WebviewEventHandler {
                 layerMap: Map<string, LayerNode>;
                 editText: boolean;
             };
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
 
             if (!webview) {
                 console.error('No webview found for insert element event');
@@ -107,7 +108,7 @@ export class WebviewEventHandler {
                 parentDomEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             this.refreshAndClickMutatedElement(parentDomEl, layerMap, webview);
         };
     }
@@ -122,7 +123,7 @@ export class WebviewEventHandler {
                 domEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             this.refreshAndClickMutatedElement(domEl, layerMap, webview);
         };
     }
@@ -137,7 +138,7 @@ export class WebviewEventHandler {
                 domEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             this.refreshAndClickMutatedElement(domEl, layerMap, webview);
         };
     }
@@ -152,7 +153,7 @@ export class WebviewEventHandler {
                 domEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             this.refreshAndClickMutatedElement(domEl, layerMap, webview);
         };
     }
@@ -167,7 +168,7 @@ export class WebviewEventHandler {
                 parentEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             this.refreshAndClickMutatedElement(parentEl, layerMap, webview);
         };
     }
@@ -175,7 +176,7 @@ export class WebviewEventHandler {
     async refreshAndClickMutatedElement(
         domEl: DomElement,
         newMap: Map<string, LayerNode>,
-        webview: Electron.WebviewTag,
+        webview: IFrameView,
     ) {
         this.editorEngine.mode = EditorMode.DESIGN;
         await this.editorEngine.ast.refreshAstDoc(webview);
@@ -191,7 +192,7 @@ export class WebviewEventHandler {
             }
 
             const { domEl } = e.args[0] as { domEl: DomElement };
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             this.editorEngine.elements.click([domEl], webview);
         };
 
@@ -202,7 +203,7 @@ export class WebviewEventHandler {
 
     handleGetWebviewId() {
         return async (e: Electron.IpcMessageEvent) => {
-            const webview = e.target as Electron.WebviewTag;
+            const webview = e.target as IFrameView;
             await webview.executeJavaScript(`window.api.setWebviewId('${webview.id}')`);
             await webview.executeJavaScript(`window.api.processDom()`);
         };
