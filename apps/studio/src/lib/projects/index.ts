@@ -1,7 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { AppState, ProjectsCache } from '@onlook/models/settings';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, observable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { invokeMainChannel, sendAnalytics } from '../utils';
 import { CreateManager } from './create';
@@ -17,6 +17,7 @@ export enum ProjectTabs {
 
 export class ProjectsManager {
     projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
+    @observable private _isSettingsOpen: boolean = false;
     private createManager: CreateManager;
 
     private activeProject: Project | null = null;
@@ -152,5 +153,13 @@ export class ProjectsManager {
     set projects(newProjects: Project[]) {
         this.projectList = newProjects;
         this.saveProjects();
+    }
+
+    get isSettingsOpen(): boolean {
+        return this._isSettingsOpen;
+    }
+
+    set isSettingsOpen(value: boolean) {
+        this._isSettingsOpen = value;
     }
 }

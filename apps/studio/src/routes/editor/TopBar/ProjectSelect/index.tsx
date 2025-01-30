@@ -14,14 +14,13 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import PricingPage from '../Profile/PricingPage';
+import ReactDOM from 'react-dom';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     async function handleReturn() {
         try {
@@ -57,10 +56,17 @@ const ProjectBreadcrumb = observer(() => {
         projectsManager.updateProject(project);
     }
 
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            editorEngine.isPlansOpen = false;
+            projectsManager.isSettingsOpen = false;
+        }
+    };
+
     return (
         <Dialog
-            open={editorEngine.isPlansOpen}
-            onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
+            open={editorEngine.isPlansOpen || projectsManager.isSettingsOpen}
+            onOpenChange={handleOpenChange}
         >
             <div className="mx-2 flex flex-row items-center text-small gap-2">
                 <DropdownMenu>
@@ -73,7 +79,7 @@ const ProjectBreadcrumb = observer(() => {
                             <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
                                 {projectsManager.project?.name}
                             </span>
-                            <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
+                            <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-48">
@@ -87,7 +93,12 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuItem onClick={handleOpenProjectFolder}>
                             Open folder
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                projectsManager.isSettingsOpen = true;
+                                editorEngine.isPlansOpen = false;
+                            }}
+                        >
                             Settings
                         </DropdownMenuItem>
                         <DialogTrigger asChild>
@@ -101,14 +112,18 @@ const ProjectBreadcrumb = observer(() => {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <ProjectSettingsModal
-                project={projectsManager.project}
-                open={isSettingsOpen}
-                onOpenChange={setIsSettingsOpen}
-            ></ProjectSettingsModal>
-            <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
-                <PricingPage />
-            </DialogContent>
+
+            {projectsManager.isSettingsOpen && (
+                <DialogContent className="sm:max-w-[425px]">
+                    <ProjectSettingsModal project={projectsManager.project} />
+                </DialogContent>
+            )}
+
+            {editorEngine.isPlansOpen && (
+                <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
+                    <PricingPage />
+                </DialogContent>
+            )}
         </Dialog>
     );
 });

@@ -13,6 +13,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -23,10 +24,11 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import ProjectSettingsModal from '../../ProjectSettingsModal';
 
-export default function ProjectSettingsButton({ project }: { project: Project }) {
+const ProjectSettingsButton = observer(({ project }: { project: Project }) => {
     const projectsManager = useProjectsManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [deleteProjectFolder, setDeleteProjectFolder] = useState(false);
@@ -56,7 +58,10 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     };
 
     return (
-        <>
+        <Dialog
+            open={projectsManager.isSettingsOpen}
+            onOpenChange={(open) => (projectsManager.isSettingsOpen = open)}
+        >
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button size="default" variant="ghost" className="gap-2 w-full lg:w-auto">
@@ -85,13 +90,15 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         <Icons.Pencil className="w-4 h-4" />
                         Rename Project
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <ProjectSettingsModal project={project}>
-                            <div className="flex row center items-center">
-                                <Icons.Gear className="mr-2" /> Edit Settings
-                            </div>
-                        </ProjectSettingsModal>
-                    </DropdownMenuItem>
+                    <DialogTrigger asChild>
+                        <DropdownMenuItem
+                            onSelect={() => (projectsManager.isSettingsOpen = true)}
+                            className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
+                        >
+                            <Icons.Gear className="w-4 h-4" />
+                            Edit Settings
+                        </DropdownMenuItem>
+                    </DialogTrigger>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
                         className="gap-2 text-red-400 hover:!bg-red-200/80 hover:!text-red-700 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
@@ -174,6 +181,12 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+
+            <DialogContent className="sm:max-w-[425px]">
+                <ProjectSettingsModal project={project} />
+            </DialogContent>
+        </Dialog>
     );
-}
+});
+
+export default ProjectSettingsButton;
