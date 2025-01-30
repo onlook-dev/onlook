@@ -8,6 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import AssistantMessage from './AssistantMessage';
+import StreamingMessage from './StreamingMessage';
 import UserMessage from './UserMessage';
 
 const ChatMessages = observer(() => {
@@ -102,14 +103,7 @@ const ChatMessages = observer(() => {
             {editorEngine.chat.conversation.current.messages.map((message) =>
                 renderMessage(message),
             )}
-            {editorEngine.chat.streamingMessage &&
-                renderMessage(editorEngine.chat.streamingMessage)}
-            {editorEngine.chat.isWaiting && (
-                <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
-                    <Icons.Shadow className="animate-spin" />
-                    <p>Thinking ...</p>
-                </div>
-            )}
+            <StreamingMessage />
             {renderErrorMessage()}
             <div ref={messagesEndRef} />
         </div>
