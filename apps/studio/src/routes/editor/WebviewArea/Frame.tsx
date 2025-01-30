@@ -322,7 +322,6 @@ const Frame = observer(
 
         async function selectFirstElement(webview: Electron.WebviewTag) {
             const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
-            console.log('domEl', domEl);
             if (domEl) {
                 editorEngine.elements.click([domEl], webview);
             }
