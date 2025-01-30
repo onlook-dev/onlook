@@ -1,4 +1,5 @@
 import { cn } from '../utils';
+import { useEffect, useState } from 'react';
 
 type TColorProp = string | string[];
 
@@ -9,6 +10,7 @@ interface ShineBorderProps {
     color?: TColorProp;
     className?: string;
     children: React.ReactNode;
+    autoShine?: boolean;
 }
 
 /**
@@ -28,7 +30,21 @@ export function ShineBorder({
     color = '#000000',
     className,
     children,
+    autoShine = false,
 }: ShineBorderProps) {
+    const [isShining, setIsShining] = useState(false);
+
+    useEffect(() => {
+        if (autoShine) {
+            // Small delay before starting the shine effect
+            const timer = setTimeout(() => {
+                setIsShining(true);
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+        setIsShining(false);
+    }, [autoShine]);
+
     return (
         <div
             style={
@@ -51,7 +67,10 @@ export function ShineBorder({
                         '--background-radial-gradient': `radial-gradient(transparent,transparent, ${color instanceof Array ? color.join(',') : color},transparent,transparent)`,
                     } as React.CSSProperties
                 }
-                className={`before:bg-shine-size before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-[--border-radius] before:p-[--border-width] before:will-change-[background-position] before:content-[""] before:![-webkit-mask-composite:xor] before:![mask-composite:exclude] before:[background-image:--background-radial-gradient] before:[background-size:300%_300%] before:[mask:--mask-linear-gradient] motion-safe:before:animate-shine`}
+                className={cn(
+                    `before:bg-shine-size before:absolute before:inset-0 before:aspect-square before:size-full before:rounded-[--border-radius] before:p-[--border-width] before:will-change-[background-position] before:content-[""] before:![-webkit-mask-composite:xor] before:![mask-composite:exclude] before:[background-image:--background-radial-gradient] before:[background-size:300%_300%] before:[mask:--mask-linear-gradient] before:opacity-0 before:transition-opacity before:duration-1000 motion-safe:before:animate-shine`,
+                    isShining && 'before:opacity-100',
+                )}
             ></div>
             {children}
         </div>
