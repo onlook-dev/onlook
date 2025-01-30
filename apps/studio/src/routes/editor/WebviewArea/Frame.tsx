@@ -16,6 +16,7 @@ import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
 import type { IFrameView } from '@/lib/editor/engine/frameview';
+import { FrameView } from '@/lib/editor/engine/frameview';
 
 const Frame = observer(
     ({
@@ -332,7 +333,7 @@ const Frame = observer(
                         aspectRatioLocked={aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED}
                         webviewId={settings.id}
                     />
-                    <iframe
+                    <FrameView
                         id={settings.id}
                         ref={webviewRef}
                         className={cn(
@@ -341,15 +342,15 @@ const Frame = observer(
                             selected ? getSelectedOutlineColor() : 'outline-transparent',
                         )}
                         src={settings.url}
-                        // preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
-                        // allowpopups={'true' as any}
+                        preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
+                        allowpopups={true}
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
                             minWidth: DefaultSettings.MIN_DIMENSIONS.width,
                             minHeight: DefaultSettings.MIN_DIMENSIONS.height,
                         }}
-                    ></iframe>
+                    />
                     <GestureScreen
                         isResizing={isResizing}
                         webviewRef={webviewRef}
