@@ -318,7 +318,6 @@ const Frame = observer(
                     className="w-full absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl"
                     color={['#A07CFE', '#FE8FB5', '#FFBE7B']}
                 >
-                    {' '}
                     {projectsManager.runner?.state === RunState.RUNNING ? (
                         <>
                             <p className="text-active text-title1 text-center">
