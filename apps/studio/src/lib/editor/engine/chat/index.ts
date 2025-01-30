@@ -13,6 +13,7 @@ import { ConversationManager } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
+import { SuggestionManager } from './suggestions';
 const USE_MOCK = false;
 
 export class ChatManager {
@@ -21,6 +22,7 @@ export class ChatManager {
     code: ChatCodeManager;
     context: ChatContext;
     stream: StreamResolver;
+    suggestions: SuggestionManager;
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
@@ -36,6 +38,7 @@ export class ChatManager {
         this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
+        this.suggestions = new SuggestionManager(this.editorEngine);
         this.listen();
     }
 
