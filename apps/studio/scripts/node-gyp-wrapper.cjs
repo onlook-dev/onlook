@@ -8,7 +8,8 @@ const args = process.argv.slice(2);
 
 if (args[0] === 'npm') {
     const electronNodePath = path.join(
-        path.dirname(electronPath),
+        path.dirname(require.resolve('electron')),
+        'dist',
         os.platform() === 'win32' ? 'node.exe' : 'node'
     );
     const nodeProcess = spawn(electronNodePath, args.slice(1), {
