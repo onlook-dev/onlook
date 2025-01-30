@@ -44,7 +44,7 @@ const ProjectSettingsModal = observer(
 
         // Use controlled props if provided, otherwise use internal state
         const isOpen = controlledOpen ?? uncontrolledOpen;
-        const triggerRef = useRef<HTMLButtonElement>(null);
+        const triggerRef = useRef<HTMLDivElement>(null);
         const onOpenChange = (open: boolean) => {
             if (!open) {
                 // Reset collapsible state when dialog closes
