@@ -6,18 +6,45 @@ const os = require('os');
 const electronPath = require('electron');
 const args = process.argv.slice(2);
 
+const { spawn } = require('child_process');
+const path = require('path');
 const nodeGypPath = require.resolve('node-gyp/bin/node-gyp.js');
 const nodePath = process.execPath;
+const nodeDir = path.dirname(path.dirname(nodePath));
+
+// Set up environment for node-gyp
+const env = {
+    ...process.env,
+    npm_config_node_gyp: nodeGypPath,
+    npm_config_build_from_source: 'true',
+    npm_config_nodedir: nodeDir,
+    NODEJS_ORG_MIRROR: 'https://nodejs.org/download/release'
+};
 
 console.log('Using Node binary:', nodePath);
 console.log('Node-gyp path:', nodeGypPath);
+console.log('Node directory:', nodeDir);
 console.log('Current working directory:', process.cwd());
-console.log('Environment:', {
-    npm_config_node_gyp: process.env.npm_config_node_gyp,
-    npm_config_build_from_source: process.env.npm_config_build_from_source,
-    npm_config_nodedir: process.env.npm_config_nodedir,
-    PATH: process.env.PATH
-});
+
+const args = process.argv.slice(2);
+if (args[0] === 'npm') {
+    // For npm commands, use node-gyp directly for rebuilding
+    const nodeGypProcess = spawn(nodePath, [nodeGypPath, 'rebuild'], {
+        stdio: 'inherit',
+        env,
+        cwd: path.join(process.cwd(), 'node_modules', 'node-pty')
+    });
+
+    nodeGypProcess.on('exit', (code) => process.exit(code ?? 0));
+} else {
+    // For direct node-gyp commands
+    const nodeGypProcess = spawn(nodePath, [nodeGypPath, ...args], {
+        stdio: 'inherit',
+        env
+    });
+
+    nodeGypProcess.on('exit', (code) => process.exit(code ?? 0));
+}
 
 if (args[0] === 'npm') {
     // For npm commands, we'll extract the node-gyp related commands
