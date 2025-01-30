@@ -7,7 +7,7 @@ const electronPath = require('electron');
 const args = process.argv.slice(2);
 
 const nodeGypPath = require.resolve('node-gyp/bin/node-gyp.js');
-const nodePath = process.argv[0]; // Use the Node executable that launched this script
+const nodePath = '/home/ubuntu/.nvm/versions/node/v22.11.0/bin/node'; // Use absolute path to Node binary
 
 if (args[0] === 'npm') {
     // For npm commands, we'll extract the node-gyp related commands
