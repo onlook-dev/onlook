@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class SuggestionManager {
-    _suggestions: string[] = ['Add a button', 'Add a text input', 'Add a checkbox'];
+    _suggestions: string[] = ['Add a header', 'Add a text input', 'Add a footer'];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
