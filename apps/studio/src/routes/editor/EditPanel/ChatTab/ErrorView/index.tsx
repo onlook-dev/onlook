@@ -16,7 +16,11 @@ export const ErrorView = observer(() => {
         <Collapsible
             open={isOpen}
             onOpenChange={setIsOpen}
-            className={cn('flex flex-col mx-2', errorCount === 0 && 'hidden')}
+            className={cn(
+                'flex flex-col mx-2',
+                errorCount === 0 && 'hidden',
+                !editorEngine.errors.shouldShowErrors && 'hidden',
+            )}
         >
             <div
                 className={cn(
@@ -39,7 +43,7 @@ export const ErrorView = observer(() => {
                                 )}
                             />
                             <div className="text-start min-w-0 flex-1">
-                                <div className="text-smallPlus text-amber-200 truncate text-small pointer-events-none select-none">
+                                <div className="text-amber-200 truncate text-small pointer-events-none select-none">
                                     {errorCount === 1 ? 'Error' : `${errorCount} Errors`}
                                 </div>
                                 <div className="text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">

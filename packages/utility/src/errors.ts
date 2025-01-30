@@ -30,6 +30,20 @@ export function parseReactError(errorString: string, sourceId: string): ParsedEr
         };
     }
 
+    // Check for Next.js/SWC build error pattern with line indicators
+    const swcDetailedMatch = errorString.match(/Error:\s*\n\s*×\s+(.*?)\n\s*╭─\[(.*?)\]/s);
+    if (swcDetailedMatch) {
+        const [_, errorMessage, location] = swcDetailedMatch;
+        const [filePath, line] = location?.split(':') || [];
+        return {
+            type: 'NEXT_BUILD_ERROR',
+            message: errorMessage?.trim() || 'Unknown build error',
+            filePath,
+            line: line ? parseInt(line, 10) : undefined,
+            fullMessage: errorString,
+        };
+    }
+
     // Check for Next.js/SWC build error pattern
     const swcMatch = errorString.match(/Error:\s+x\s+(.*?)\s+,-\[(.*?)\]\s+/);
     if (swcMatch) {
