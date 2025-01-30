@@ -61,6 +61,27 @@ Error: x Unexpected token \`div\`. Expected jsx identifier
                 fullMessage: error,
             });
         });
+
+        it('should parse SWC build error with modern format', () => {
+            const error = `Error:
+    × Unexpected token \`div\`. Expected jsx identifier
+    ╭─[/Users/test/project/app/page.tsx:27:1]
+    │
+    │ return (
+    │     <div
+    │      ^^^
+    │     className="min-h-screen"
+    ╰─`;
+
+            const result = parseReactError(error, 'app/page.tsx');
+            expect(result).toEqual({
+                type: 'NEXT_BUILD_ERROR',
+                message: 'Unexpected token `div`. Expected jsx identifier',
+                filePath: '/Users/test/project/app/page.tsx',
+                line: 27,
+                fullMessage: error,
+            });
+        });
     });
 
     describe('React errors', () => {
@@ -137,42 +158,39 @@ Type error: Type '{ onClick: () => void; invalid: boolean; }' is not assignable 
     describe('React runtime errors with sourceId', () => {
         it('should parse React error with sourceId from error boundary', () => {
             const error = 'Uncaught ReferenceError: useState is not defined';
-            const sourceId = 'not-found-boundary.js:37';
+            const sourceId = 'not-found-boundary.js';
 
             const result = parseReactError(error, sourceId);
             expect(result).toEqual({
                 type: 'REACT_ERROR',
                 message: 'useState is not defined',
                 filePath: 'not-found-boundary.js',
-                line: 37,
                 fullMessage: error,
             });
         });
 
         it('should parse React error with sourceId from page', () => {
             const error = 'Uncaught ReferenceError: useState is not defined';
-            const sourceId = 'page.tsx:4';
+            const sourceId = 'page.tsx';
 
             const result = parseReactError(error, sourceId);
             expect(result).toEqual({
                 type: 'REACT_ERROR',
                 message: 'useState is not defined',
                 filePath: 'page.tsx',
-                line: 4,
                 fullMessage: error,
             });
         });
 
         it('should parse React error with sourceId from redirect boundary', () => {
             const error = 'Uncaught ReferenceError: useState is not defined';
-            const sourceId = 'redirect-boundary.js:57';
+            const sourceId = 'redirect-boundary.js';
 
             const result = parseReactError(error, sourceId);
             expect(result).toEqual({
                 type: 'REACT_ERROR',
                 message: 'useState is not defined',
                 filePath: 'redirect-boundary.js',
-                line: 57,
                 fullMessage: error,
             });
         });

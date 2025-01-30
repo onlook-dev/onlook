@@ -87,8 +87,7 @@ export class ChatManager {
             return false;
         }
 
-        const prompt = `For the code present, we get this error: ${error.message}.
-How can I resolve this? If you propose a fix, please make it concise.`;
+        const prompt = `For the code present, we get this error: ${error.message}. How can I resolve this? If you propose a fix, please make it concise.`;
 
         const context = await this.editorEngine.errors.getMessageContextFromError(error);
         if (!context) {
@@ -102,7 +101,9 @@ How can I resolve this? If you propose a fix, please make it concise.`;
             console.error('Failed to add user message');
             return false;
         }
-        sendAnalytics('send fix error chat message');
+        sendAnalytics('send fix error chat message', {
+            error: error.fullMessage,
+        });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
     }

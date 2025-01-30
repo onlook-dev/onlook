@@ -82,6 +82,7 @@ const Frame = observer(
             webview.setZoomLevel(0);
 
             const body = await editorEngine.ast.getBodyFromWebview(webview);
+
             setDomFailed(body.children.length === 0);
 
             const state = editorEngine.webviews.computeState(body);

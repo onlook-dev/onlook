@@ -9,7 +9,7 @@ describe('Parse and Apply Code Block Diffs', () => {
 
     test('should parse diff correctly', async () => {
         const diffText = await Bun.file(path.resolve(__dirname, './data/single/diff.txt')).text();
-        const res = coder.parseDiff(diffText);
+        const res = CodeBlockProcessor.parseDiff(diffText);
 
         if (!res) {
             throw new Error('Invalid diff format');
@@ -36,7 +36,7 @@ describe('Parse and Apply Code Block Diffs', () => {
         const replaceContent = 'new content';
 
         const diff = coder.createDiff(searchContent, replaceContent);
-        const parsed = coder.parseDiff(diff);
+        const parsed = CodeBlockProcessor.parseDiff(diff);
 
         expect(parsed).toHaveLength(1);
         expect(parsed[0].search).toBe(searchContent);
