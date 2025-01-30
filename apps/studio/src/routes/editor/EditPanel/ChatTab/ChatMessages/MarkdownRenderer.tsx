@@ -9,11 +9,13 @@ const MarkdownRenderer = ({
     content,
     className = '',
     applied,
+    isStream = false,
 }: {
     messageId: string;
     content: string;
     className?: string;
     applied: boolean;
+    isStream?: boolean;
 }) => {
     const transformedContent = content.replace(
         /^(.*?)\n```(\w+)\n/gm,
@@ -53,6 +55,7 @@ const MarkdownRenderer = ({
                                     content={codeContent}
                                     messageId={messageId}
                                     applied={applied}
+                                    isStream={isStream}
                                 />
                             );
                         }
