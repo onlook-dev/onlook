@@ -91,7 +91,7 @@ const Frame = observer(
             if (state === WebviewState.DOM_ONLOOK_ENABLED) {
                 setTimeout(() => {
                     selectFirstElement(webview);
-                }, 500);
+                }, 1000);
             }
 
             setTimeout(() => {
@@ -322,8 +322,9 @@ const Frame = observer(
 
         async function selectFirstElement(webview: Electron.WebviewTag) {
             const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
+            console.log('domEl', domEl);
             if (domEl) {
-                editorEngine.elements.click(domEl, webview);
+                editorEngine.elements.click([domEl], webview);
             }
         }
 
