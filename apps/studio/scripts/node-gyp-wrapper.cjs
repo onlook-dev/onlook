@@ -7,12 +7,8 @@ const electronPath = require('electron');
 const args = process.argv.slice(2);
 
 if (args[0] === 'npm') {
-    const electronNodePath = path.join(
-        path.dirname(require.resolve('electron')),
-        'dist',
-        os.platform() === 'win32' ? 'node.exe' : 'node'
-    );
-    const nodeProcess = spawn(electronNodePath, args.slice(1), {
+    const electronCli = require.resolve('electron/cli.js');
+    const nodeProcess = spawn(process.execPath, [electronCli, '--inspect', ...args.slice(1)], {
         stdio: 'inherit',
         env: process.env,
         shell: os.platform() === 'win32'
