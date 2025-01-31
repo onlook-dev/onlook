@@ -80,7 +80,9 @@ export class ChatManager {
             console.error('Failed to add user message');
             return;
         }
-        sendAnalytics('send chat message');
+        sendAnalytics('send chat message', {
+            content,
+        });
         await this.sendChatToAi(StreamRequestType.CHAT);
     }
 
