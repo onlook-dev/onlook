@@ -11,6 +11,12 @@ import AssistantMessage from './AssistantMessage';
 import StreamMessage from './StreamMessage';
 import UserMessage from './UserMessage';
 
+const MOCK_RATE_LIMITED = {
+    reason: 'daily',
+    daily_requests_limit: 100,
+    monthly_requests_limit: 1000,
+};
+
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
 
@@ -63,7 +69,7 @@ const ChatMessages = observer(() => {
 
     // Render in reverse order to make the latest message appear at the bottom
     return editorEngine.chat.conversation.current ? (
-        <div className="flex flex-col-reverse gap-2 select-text overflow-auto">
+        <div className="flex flex-col-reverse gap-2 select-text overflow-auto pb-5">
             <StreamMessage />
             {renderErrorMessage()}
             {[...editorEngine.chat.conversation.current.messages]
