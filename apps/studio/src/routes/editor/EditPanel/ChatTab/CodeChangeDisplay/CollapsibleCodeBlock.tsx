@@ -119,13 +119,7 @@ export function CollapsibleCodeBlock({
                             style={{ overflow: 'hidden' }}
                         >
                             <div className="border-t">
-                                {isStream ? (
-                                    <code className="p-4 text-xs w-full overflow-x-auto block">
-                                        {content}
-                                    </code>
-                                ) : (
-                                    <CodeBlock code={replaceContent} variant="minimal" />
-                                )}
+                                <CodeBlock code={replaceContent} variant="minimal" />
                                 <div className="flex justify-end gap-1.5 p-1 border-t">
                                     <Button
                                         size="sm"
