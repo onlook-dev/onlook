@@ -320,10 +320,7 @@ export const ChatInput = observer(() => {
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>
-                    <Tooltip
-                        open={imageTooltipOpen && !isHandlingFile}
-                        onOpenChange={(open) => !isHandlingFile && setImageTooltipOpen(open)}
-                    >
+                    <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant={'ghost'}
