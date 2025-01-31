@@ -55,7 +55,7 @@ export function CollapsibleCodeBlock({
                     <CollapsibleTrigger asChild>
                         <div className="flex-1 flex items-center gap-2 cursor-pointer pl-3 py-2">
                             {isStream ? (
-                                <Icons.Shadow className="h-4 w-4 [animation:spin_1s_linear_infinite]" />
+                                <Icons.Shadow className="h-4 w-4 animate-spin" />
                             ) : (
                                 <Icons.ChevronDown
                                     className={cn(
