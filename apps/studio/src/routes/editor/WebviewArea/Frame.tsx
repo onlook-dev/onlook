@@ -343,7 +343,7 @@ const Frame = observer(
                         )}
                         src={settings.url}
                         preload="onlook://webview-preload.js"
-                        sandbox="allow-popups allow-scripts allow-same-origin"
+                        sandbox="allow-popups allow-scripts allow-same-origin allow-forms"
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
