@@ -22,7 +22,6 @@ export type IFrameView = HTMLIFrameElement &
 
 interface IFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     preload?: string;
-    allowpopups?: boolean;
 }
 
 export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) => {

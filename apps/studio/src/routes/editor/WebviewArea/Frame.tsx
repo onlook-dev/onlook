@@ -343,7 +343,7 @@ const Frame = observer(
                         )}
                         src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
-                        allowpopups={true}
+                        sandbox="allow-popups allow-scripts allow-same-origin"
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
