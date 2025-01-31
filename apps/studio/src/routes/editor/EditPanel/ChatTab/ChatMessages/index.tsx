@@ -8,6 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 import AssistantMessage from './AssistantMessage';
+import StreamMessage from './StreamMessage';
 import UserMessage from './UserMessage';
 
 const ChatMessages = observer(() => {
@@ -63,15 +64,7 @@ const ChatMessages = observer(() => {
     // Render in reverse order to make the latest message appear at the bottom
     return editorEngine.chat.conversation.current ? (
         <div className="flex flex-col-reverse gap-2 select-text overflow-auto">
-            {editorEngine.chat.isWaiting && (
-                <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
-                    <Icons.Shadow className="animate-spin" />
-                    <p>Thinking ...</p>
-                </div>
-            )}
-            {editorEngine.chat.streamingMessage && (
-                <AssistantMessage message={editorEngine.chat.streamingMessage} />
-            )}
+            <StreamMessage />
             {renderErrorMessage()}
             {[...editorEngine.chat.conversation.current.messages]
                 .reverse()
