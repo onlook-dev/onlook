@@ -27,6 +27,7 @@ export const ChatInput = observer(() => {
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isHandlingFile, setIsHandlingFile] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [hideSuggestions, setHideSuggestions] = useState(false);
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         if (isComposing) {
@@ -173,6 +174,7 @@ export const ChatInput = observer(() => {
             }}
         >
             <Suggestions
+                hideSuggestions={hideSuggestions}
                 disabled={disabled}
                 inputValue={inputValue}
                 setInput={(suggestion) => {
@@ -315,6 +317,47 @@ export const ChatInput = observer(() => {
                         <TooltipPortal>
                             <TooltipContent side="top" sideOffset={5}>
                                 {disabled ? 'Select an element to start' : 'Upload Image Reference'}
+                            </TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
+                    <Tooltip
+                        open={imageTooltipOpen && !isHandlingFile}
+                        onOpenChange={(open) => !isHandlingFile && setImageTooltipOpen(open)}
+                    >
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                className={cn(
+                                    'w-9 h-9 text-foreground-tertiary group hover:bg-transparent',
+                                )}
+                                onClick={() => setHideSuggestions(!hideSuggestions)}
+                                disabled={disabled}
+                            >
+                                {!hideSuggestions ? (
+                                    <Icons.Circle
+                                        className={cn(
+                                            'w-5 h-5',
+                                            disabled
+                                                ? 'text-foreground-tertiary'
+                                                : 'group-hover:text-foreground',
+                                        )}
+                                    />
+                                ) : (
+                                    <Icons.CircleBackslash
+                                        className={cn(
+                                            'w-5 h-5',
+                                            disabled
+                                                ? 'text-foreground-tertiary'
+                                                : 'group-hover:text-foreground',
+                                        )}
+                                    />
+                                )}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                            <TooltipContent side="top" sideOffset={5}>
+                                {disabled ? 'Select an element to start' : 'Toggle Suggestions'}
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>

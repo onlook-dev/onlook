@@ -26,6 +26,7 @@ import {
     ChevronRightIcon,
     ChevronUpIcon,
     CircleBackslashIcon,
+    CircleIcon,
     ClipboardCopyIcon,
     ClipboardIcon,
     CodeIcon,
@@ -91,6 +92,7 @@ import {
     ShadowIcon,
     Share2Icon,
     SizeIcon,
+    SketchLogoIcon,
     SpaceBetweenHorizontallyIcon,
     SpaceBetweenVerticallyIcon,
     SquareIcon,
@@ -1149,6 +1151,7 @@ export const Icons = {
     CrossCircled: CrossCircledIcon,
     Cube: CubeIcon,
     CursorArrow: CursorArrowIcon,
+    Circle: CircleIcon,
 
     Desktop: DesktopIcon,
     DiscordLogo: DiscordLogoIcon,
@@ -1213,6 +1216,7 @@ export const Icons = {
     SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
+    SketchLogo: SketchLogoIcon,
 
     Text: TextIcon,
     TextAlignCenter: TextAlignCenterIcon,

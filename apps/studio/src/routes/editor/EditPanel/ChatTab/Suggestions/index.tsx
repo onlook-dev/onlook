@@ -5,19 +5,23 @@ import { AnimatePresence, motion } from 'motion/react';
 
 export const Suggestions = observer(
     ({
-        setInput,
+        hideSuggestions,
         disabled,
         inputValue,
+        setInput,
     }: {
-        setInput: (input: string) => void;
+        hideSuggestions: boolean;
         disabled: boolean;
         inputValue: string;
+        setInput: (input: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
+        const shouldShowSuggestions =
+            !hideSuggestions && !disabled && inputValue.trim().length === 0;
 
         return (
             <AnimatePresence>
-                {!disabled && inputValue.trim().length === 0 && (
+                {shouldShowSuggestions && (
                     <motion.div
                         className="flex flex-col gap-2 p-2"
                         initial={{ opacity: 0, height: 0 }}
