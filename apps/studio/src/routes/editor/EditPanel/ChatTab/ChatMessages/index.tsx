@@ -6,7 +6,7 @@ import { ChatMessageType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import AssistantMessage from './AssistantMessage';
 import StreamingMessage from './StreamingMessage';
 import UserMessage from './UserMessage';
@@ -29,7 +29,7 @@ const ChatMessages = observer(() => {
         editorEngine.chat.conversation.current?.messages,
     ]);
 
-    const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    const handleWheel = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
         if (!event.isTrusted) {
             return;
         }
@@ -42,9 +42,9 @@ const ChatMessages = observer(() => {
         const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
         const isAtBottom = distanceFromBottom < 10;
         editorEngine.chat.shouldAutoScroll = isAtBottom;
-    };
+    }, []);
 
-    function renderMessage(message: AssistantChatMessageImpl | UserChatMessageImpl) {
+    const renderMessage = useCallback((message: AssistantChatMessageImpl | UserChatMessageImpl) => {
         let messageNode;
         switch (message.type) {
             case ChatMessageType.ASSISTANT:
@@ -55,7 +55,7 @@ const ChatMessages = observer(() => {
                 break;
         }
         return <div key={message.id}>{messageNode}</div>;
-    }
+    }, []);
 
     function renderErrorMessage() {
         const rateLimited = editorEngine.chat.stream.rateLimited;
