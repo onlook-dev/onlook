@@ -39,6 +39,7 @@ export enum MainChannels {
     SEND_WINDOW_COMMAND = 'send-window-command',
     CHECK_REQUIREMENTS = 'check-requirements',
     DELETE_FOLDER = 'delete-folder',
+    IS_CHILD_TEXT_EDITABLE = 'is-child-text-editable',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
@@ -62,11 +63,12 @@ export enum MainChannels {
     GET_TEMPLATE_NODE_CLASS = 'get-template-node-classes',
 
     // Auth
+    SIGN_IN = 'sign-in',
+    SIGN_OUT = 'sign-out',
     USER_SIGNED_IN = 'user-signed-in',
     USER_SIGNED_OUT = 'user-signed-out',
     GET_USER_METADATA = 'get-user-metadata',
-    DOES_USER_HAVE_AUTH_TOKENS = 'does-user-have-auth-tokens',
-    SIGN_OUT = 'sign-out',
+    IS_USER_SIGNED_IN = 'is-user-signed-in',
 
     // Storage
     GET_USER_SETTINGS = 'get-user-settings',

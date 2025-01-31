@@ -9,6 +9,7 @@ import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Icons } from '@onlook/ui/icons';
+import ResizablePanel from '@onlook/ui/resizable';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -67,30 +68,34 @@ const LayersPanel = observer(() => {
         );
     }
     return (
-        <div
-            className={cn(
-                'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
-                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-10 h-10 rounded-r-xl cursor-pointer',
-            )}
-        >
-            {!isOpen && (
-                <div
-                    className="border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
-                    onClick={() => setIsOpen(true)}
-                >
-                    <Icons.PinRight className="z-51" />
-                </div>
-            )}
+        <ResizablePanel side="left" defaultWidth={300} minWidth={240} maxWidth={500}>
             <div
                 className={cn(
-                    'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
-                    isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
+                    'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
+                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    isOpen
+                        ? 'w-full h-[calc(100vh-5rem)]'
+                        : 'w-10 h-10 rounded-r-xl cursor-pointer',
                 )}
             >
-                {renderTabs()}
+                {!isOpen && (
+                    <div
+                        className="border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
+                        onClick={() => setIsOpen(true)}
+                    >
+                        <Icons.PinRight className="z-51" />
+                    </div>
+                )}
+                <div
+                    className={cn(
+                        'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
+                        isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
+                    )}
+                >
+                    {renderTabs()}
+                </div>
             </div>
-        </div>
+        </ResizablePanel>
     );
 });
 

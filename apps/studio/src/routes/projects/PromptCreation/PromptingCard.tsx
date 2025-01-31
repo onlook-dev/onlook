@@ -24,6 +24,7 @@ export const PromptingCard = () => {
     const [isHandlingFile, setIsHandlingFile] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
+    const [isComposing, setIsComposing] = useState(false);
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -244,8 +245,13 @@ export const PromptingCard = () => {
                                         setInputValue(e.target.value);
                                         adjustTextareaHeight();
                                     }}
+                                    onCompositionStart={() => setIsComposing(true)}
+                                    onCompositionEnd={(e) => {
+                                        setIsComposing(false);
+                                        setInputValue(e.currentTarget.value);
+                                    }}
                                     onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
                                             e.preventDefault();
                                             handleSubmit();
                                         }

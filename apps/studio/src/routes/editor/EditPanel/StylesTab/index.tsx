@@ -167,10 +167,11 @@ const StyleSections = memo(() => {
 });
 StyleSections.displayName = 'StyleSections';
 
-const ManualTab = observer(() => {
+const StylesTab = observer(() => {
     const editorEngine = useEditorEngine();
     return (
-        editorEngine.elements.selected.length > 0 && (
+        editorEngine.elements.selected.length > 0 &&
+        editorEngine.style.selectedStyle && (
             <Accordion
                 className="px-3"
                 type="multiple"
@@ -183,4 +184,4 @@ const ManualTab = observer(() => {
     );
 });
 
-export default ManualTab;
+export default StylesTab;

@@ -112,7 +112,7 @@ export class AstManager {
         node: LayerNode,
         templateNode: TemplateNode,
     ) {
-        if (node.tagName === 'body') {
+        if (node.tagName.toLocaleLowerCase() === 'body') {
             return;
         }
         if (!node.parent) {

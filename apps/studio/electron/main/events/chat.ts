@@ -1,4 +1,4 @@
-import type { ChatConversation } from '@onlook/models/chat';
+import type { ChatConversation, StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
@@ -9,8 +9,11 @@ export function listenForChatMessages() {
     ipcMain.handle(
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { messages } = args as { messages: CoreMessage[] };
-            return Chat.stream(messages);
+            const { messages, requestType } = args as {
+                messages: CoreMessage[];
+                requestType: StreamRequestType;
+            };
+            return Chat.stream(messages, requestType);
         },
     );
 

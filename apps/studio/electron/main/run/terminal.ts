@@ -1,12 +1,11 @@
 import { MainChannels } from '@onlook/models/constants';
-import { type ChildProcess, spawn } from 'child_process';
+import * as pty from 'node-pty';
 import os from 'os';
-import treeKill from 'tree-kill';
 import { mainWindow } from '..';
 
 class TerminalManager {
     private static instance: TerminalManager;
-    private processes: Map<string, ChildProcess>;
+    private processes: Map<string, pty.IPty>;
     private outputHistory: Map<string, string>;
 
     private constructor() {
@@ -24,25 +23,17 @@ class TerminalManager {
     create(id: string, options?: { cwd?: string }): boolean {
         try {
             const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
-            const shellArgs =
-                os.platform() === 'win32' ? ['-NoLogo', '-ExecutionPolicy', 'Bypass'] : [];
-
-            const childProcess = spawn(shell, shellArgs, {
+            const ptyProcess = pty.spawn(shell, [], {
+                name: 'xterm-color',
                 cwd: options?.cwd ?? process.env.HOME,
                 env: process.env,
-                shell: true,
-                detached: false,
             });
 
-            childProcess.stdout?.on('data', (data: Buffer) => {
-                this.addTerminalMessage(id, data, false);
+            ptyProcess.onData((data: string) => {
+                this.addTerminalMessage(id, data);
             });
 
-            childProcess.stderr?.on('data', (data: Buffer) => {
-                this.addTerminalMessage(id, data, true);
-            });
-
-            this.processes.set(id, childProcess);
+            this.processes.set(id, ptyProcess);
             return true;
         } catch (error) {
             console.error('Failed to create terminal.', error);
@@ -50,25 +41,22 @@ class TerminalManager {
         }
     }
 
-    addTerminalMessage(id: string, data: Buffer, isError: boolean) {
+    addTerminalMessage(id: string, data: string) {
         const currentHistory = this.getHistory(id) || '';
-        const dataString = data.toString();
-        this.outputHistory.set(id, currentHistory + dataString);
-        this.emitMessage(id, dataString, isError);
+        this.outputHistory.set(id, currentHistory + data);
+        this.emitMessage(id, data);
     }
 
-    emitMessage(id: string, data: string, isError: boolean) {
+    emitMessage(id: string, data: string) {
         mainWindow?.webContents.send(MainChannels.TERMINAL_ON_DATA, {
             id,
             data,
-            isError,
         });
     }
 
     write(id: string, data: string): boolean {
         try {
-            this.processes.get(id)?.stdin?.write(data);
-            this.emitMessage(id, `$ ${data}`, false);
+            this.processes.get(id)?.write(data);
             return true;
         } catch (error) {
             console.error('Failed to write to terminal.', error);
@@ -78,7 +66,7 @@ class TerminalManager {
 
     resize(id: string, cols: number, rows: number): boolean {
         try {
-            // this.processes.get(id)?.stdin?.setWindowSize(cols, rows);
+            this.processes.get(id)?.resize(cols, rows);
             return true;
         } catch (error) {
             console.error('Failed to resize terminal.', error);
@@ -88,9 +76,9 @@ class TerminalManager {
 
     kill(id: string): boolean {
         try {
-            const childProcess = this.processes.get(id);
-            if (childProcess) {
-                treeKill(childProcess.pid!);
+            const process = this.processes.get(id);
+            if (process) {
+                process.kill();
                 this.processes.delete(id);
                 this.outputHistory.delete(id);
             }
@@ -102,11 +90,7 @@ class TerminalManager {
     }
 
     killAll(): boolean {
-        this.processes.forEach((childProcess) => {
-            if (childProcess.pid) {
-                treeKill(childProcess.pid);
-            }
-        });
+        this.processes.forEach((process) => process.kill());
         this.processes.clear();
         return true;
     }

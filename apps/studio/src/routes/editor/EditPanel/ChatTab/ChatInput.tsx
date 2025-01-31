@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -6,17 +7,16 @@ import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import imageCompression from 'browser-image-compression';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
-import { compressImage } from '@/lib/utils';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
+    const [isComposing, setIsComposing] = useState(false);
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !input || input.trim().length === 0;
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
@@ -25,12 +25,15 @@ export const ChatInput = observer(() => {
     const [isDragging, setIsDragging] = useState(false);
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        if (isComposing) {
+            return;
+        }
         e.currentTarget.style.height = 'auto';
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (!isComposing && e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
@@ -216,6 +219,11 @@ export const ChatInput = observer(() => {
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={(e) => {
+                        setIsComposing(false);
+                        setInput(e.currentTarget.value);
+                    }}
                     onDragEnter={(e) => {
                         e.preventDefault();
                         e.stopPropagation();

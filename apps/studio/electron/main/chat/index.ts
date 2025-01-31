@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamRequest, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
 import { type CoreMessage } from 'ai';
 import { mainWindow } from '..';
@@ -10,7 +10,6 @@ class LlmManager {
     private static instance: LlmManager;
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
-    private userId: string | null = null;
     private promptProvider: PromptProvider;
 
     private constructor() {
@@ -23,7 +22,6 @@ class LlmManager {
         const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
 
         if (enable) {
-            this.userId = settings.id || null;
             this.useAnalytics = true;
         } else {
             this.useAnalytics = false;
@@ -43,9 +41,13 @@ class LlmManager {
 
     public async stream(
         messages: CoreMessage[],
-        systemPrompt: string | null = null,
-        abortController: AbortController | null = null,
+        requestType: StreamRequestType,
+        options?: {
+            systemPrompt?: string;
+            abortController?: AbortController;
+        },
     ): Promise<StreamResponse> {
+        const { systemPrompt, abortController } = options || {};
         this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
@@ -63,8 +65,8 @@ class LlmManager {
                             ? systemPrompt
                             : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
-                        userId: this.userId,
-                    }),
+                        requestType,
+                    } satisfies StreamRequest),
                     signal: this.abortController.signal,
                 },
             );

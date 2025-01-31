@@ -119,24 +119,18 @@ export const cleanup = async () => {
 
 const cleanUpAndExit = async () => {
     await cleanup();
-    process.exit(0);
+    app.quit();
 };
 
 const listenForExitEvents = () => {
-    process.on('before-quit', (e) => {
-        e.preventDefault();
-        cleanUpAndExit();
-    });
     process.on('exit', cleanUpAndExit);
     process.on('SIGTERM', cleanUpAndExit);
     process.on('SIGINT', cleanUpAndExit);
-
-    process.on('uncaughtException', (error) => {
+    process.on('uncaughtException', async (error) => {
         console.error('Uncaught Exception:', error);
         sendAnalytics('uncaught exception', { error });
-        if (error instanceof TypeError || error instanceof ReferenceError) {
-            cleanup();
-        }
+        await cleanup();
+        process.exit(1);
     });
 };
 
@@ -151,10 +145,27 @@ const setupAppEventListeners = () => {
         sendAnalytics('start app');
     });
 
-    app.on('window-all-closed', () => {
-        mainWindow = null;
-        if (process.platform !== 'darwin') {
+    let isQuitting = false;
+    app.on('before-quit', async (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            isQuitting = true;
+            await cleanup();
             app.quit();
+        }
+    });
+
+    app.on('will-quit', () => {
+        isQuitting = true;
+    });
+
+    app.on('window-all-closed', async () => {
+        if (!isQuitting) {
+            await cleanup();
+            mainWindow = null;
+            if (process.platform !== 'darwin') {
+                app.quit();
+            }
         }
     });
 
@@ -186,15 +197,16 @@ const setupAppEventListeners = () => {
 };
 
 // Main function
-const main = () => {
-    setupEnvironment();
-    configurePlatformSpecifics();
-
+const main = async () => {
     if (!app.requestSingleInstanceLock()) {
+        await cleanup();
         app.quit();
         process.exit(0);
+        return;
     }
 
+    setupEnvironment();
+    configurePlatformSpecifics();
     setupProtocol();
     setupAppEventListeners();
     listenForIpcMessages();

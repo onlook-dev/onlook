@@ -104,9 +104,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         const terminalDataListener = (message: TerminalMessage) => {
-            if (message.isError) {
-                term.write('\x1b[91m' + message.data + '\x1b[0m');
-            } else {
+            if (message.id === projectsManager.project?.id) {
                 term.write(message.data);
             }
         };

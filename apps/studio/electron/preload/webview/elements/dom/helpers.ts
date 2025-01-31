@@ -1,10 +1,10 @@
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
 import { getOrAssignDomId } from '../../ids';
-import { getImmediateTextContent } from '../helpers';
+import { getDomElement, getImmediateTextContent } from '../helpers';
 import { elementFromDomId } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
 import { EditorAttributes } from '@onlook/models/constants';
-import type { CoreElementType, DynamicType } from '@onlook/models/element';
+import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
 
 export function getActionElementByDomId(domId: string): ActionElement | null {
     const el = elementFromDomId(domId);
@@ -113,4 +113,13 @@ export function setElementType(domId: string, dynamicType: string, coreElementTy
             el.setAttribute(EditorAttributes.DATA_ONLOOK_CORE_ELEMENT_TYPE, coreElementType);
         }
     }
+}
+
+export function getFirstOnlookElement(): DomElement | null {
+    const body = document.body;
+    const firstElement = body.querySelector(`[${EditorAttributes.DATA_ONLOOK_ID}]`);
+    if (firstElement) {
+        return getDomElement(firstElement as HTMLElement, true);
+    }
+    return null;
 }

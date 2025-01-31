@@ -150,7 +150,7 @@ export function getCoreElementInfo(path: NodePath<t.JSXElement>): CoreElementTyp
 
     const isBodyTag =
         t.isJSXIdentifier(path.node.openingElement.name) &&
-        path.node.openingElement.name.name === 'body';
+        path.node.openingElement.name.name.toLocaleLowerCase() === 'body';
 
     const coreElementType = isComponentRoot ? 'component-root' : isBodyTag ? 'body-tag' : undefined;
 
