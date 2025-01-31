@@ -342,7 +342,7 @@ const Frame = observer(
                             selected ? getSelectedOutlineColor() : 'outline-transparent',
                         )}
                         src={settings.url}
-                        preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
+                        preload="onlook://webview-preload.js"
                         sandbox="allow-popups allow-scripts allow-same-origin"
                         style={{
                             width: clampedDimensions.width,

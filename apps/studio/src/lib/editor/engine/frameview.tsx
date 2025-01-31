@@ -39,6 +39,7 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
     const handleIframeLoad = useCallback(() => {
         const iframe = iframeRef.current;
         if (!iframe || !preload) {
+            console.error('No iframe or preload');
             return;
         }
 
@@ -46,6 +47,7 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
             try {
                 const doc = iframe.contentDocument;
                 if (!doc) {
+                    console.error('No document found');
                     return;
                 }
 
@@ -53,7 +55,7 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
                 script.src = preload;
                 doc.head.appendChild(script);
             } catch (error) {
-                console.error('Failed to inject preload script:', error);
+                console.error('Preload injection failed:', error);
             }
         };
 

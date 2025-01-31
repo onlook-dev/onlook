@@ -1,5 +1,5 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
-import { BrowserWindow, app, shell } from 'electron';
+import { BrowserWindow, app, shell, protocol } from 'electron';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -11,6 +11,7 @@ import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
 import { updater } from './update';
+import fs from 'node:fs';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
 fixPath();
@@ -142,6 +143,10 @@ const listenForExitEvents = () => {
 
 const setupAppEventListeners = () => {
     app.whenReady().then(() => {
+        protocol.handle('onlook', (request) => {
+            const filePath = path.join(__dirname, '../preload/webview.js');
+            return new Response(fs.readFileSync(filePath));
+        });
         listenForExitEvents();
         initMainWindow();
     });
@@ -189,6 +194,20 @@ const setupAppEventListeners = () => {
 const main = () => {
     setupEnvironment();
     configurePlatformSpecifics();
+
+    // Register onlook protocol handler for browser-compatible preload script urls
+    protocol.registerSchemesAsPrivileged([
+        {
+            scheme: 'onlook',
+            privileges: {
+                standard: true,
+                secure: true,
+                allowServiceWorkers: true,
+                supportFetchAPI: true,
+                stream: true,
+            },
+        },
+    ]);
 
     if (!app.requestSingleInstanceLock()) {
         app.quit();
