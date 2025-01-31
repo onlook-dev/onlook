@@ -61,7 +61,7 @@ export class ChatManager {
             this.streamingMessage = null;
             return;
         }
-        this.streamingMessage = new AssistantChatMessageImpl(content);
+        this.streamingMessage = new AssistantChatMessageImpl(content, true);
     }
 
     async sendNewMessage(content: string): Promise<void> {
