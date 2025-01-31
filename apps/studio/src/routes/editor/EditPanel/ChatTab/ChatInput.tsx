@@ -19,10 +19,10 @@ export const ChatInput = observer(() => {
     const projectsManager = useProjectsManager();
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const [input, setInput] = useState('');
+    const [inputValue, setInputValue] = useState('');
     const [isComposing, setIsComposing] = useState(false);
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
-    const inputEmpty = !input || input.trim().length === 0;
+    const inputEmpty = !inputValue || inputValue.trim().length === 0;
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isHandlingFile, setIsHandlingFile] = useState(false);
@@ -52,8 +52,8 @@ export const ChatInput = observer(() => {
             console.warn('Already waiting for response');
             return;
         }
-        editorEngine.chat.sendNewMessage(input);
-        setInput('');
+        editorEngine.chat.sendNewMessage(inputValue);
+        setInputValue('');
     }
 
     const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
@@ -173,8 +173,10 @@ export const ChatInput = observer(() => {
             }}
         >
             <Suggestions
+                disabled={disabled}
+                inputValue={inputValue}
                 setInput={(suggestion) => {
-                    setInput(suggestion);
+                    setInputValue(suggestion);
                     textareaRef.current?.focus();
                 }}
             />
@@ -228,15 +230,15 @@ export const ChatInput = observer(() => {
                     )}
                     rows={3}
                     style={{ resize: 'none' }}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
                     onCompositionStart={() => setIsComposing(true)}
                     onCompositionEnd={(e) => {
                         setIsComposing(false);
-                        setInput(e.currentTarget.value);
+                        setInputValue(e.currentTarget.value);
                     }}
                     onDragEnter={(e) => {
                         e.preventDefault();
