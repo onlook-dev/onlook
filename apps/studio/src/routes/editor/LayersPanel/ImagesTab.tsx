@@ -31,10 +31,10 @@ const ImagesTab = observer(() => {
                     </div>
                 </div>
             ) : (
-                <div className="w-full flex flex-wrap gap-4">
+                <div className="w-full flex flex-wrap gap-2">
                     {imageFiles.map((imageName) => (
-                        <div key={imageName} className="relative group flex-shrink-0 w-[130px]">
-                            <div className="w-full h-[100px] flex flex-col justify-center rounded-lg overflow-hidden items-center">
+                        <div key={imageName} className="relative group flex-shrink-0 w-[120px]">
+                            <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center">
                                 <img
                                     className="w-full h-full object-cover"
                                     src={imageName}
