@@ -7,6 +7,7 @@ import { UsagePlanType } from '@onlook/models/usage';
 import { useToast } from '@onlook/ui/use-toast';
 import { motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PricingCard } from './PricingCard';
 
 interface UsagePlan {
@@ -45,6 +46,7 @@ const PRO_PLAN: UsagePlan = {
 };
 
 export const PricingPage = () => {
+    const { t } = useTranslation();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
     const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
@@ -143,8 +145,8 @@ export const PricingPage = () => {
             if (res?.success) {
                 toast({
                     variant: 'default',
-                    title: 'Checking out',
-                    description: 'You will now be redirected to Stripe to complete the payment.',
+                    title: t('pricing.toasts.checkingOut.title'),
+                    description: t('pricing.toasts.checkingOut.description'),
                 });
             } else {
                 throw new Error('No checkout URL received');
@@ -153,8 +155,8 @@ export const PricingPage = () => {
         } catch (error) {
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: 'Could not initiate checkout process. Please try again.',
+                title: t('pricing.toasts.error.title'),
+                description: t('pricing.toasts.error.description'),
             });
             console.error('Payment error:', error);
             setIsCheckingOut(null);
@@ -173,9 +175,8 @@ export const PricingPage = () => {
             if (res?.success) {
                 toast({
                     variant: 'default',
-                    title: 'Redirecting to Stripe',
-                    description:
-                        'You will now be redirected to Stripe to manage your subscription.',
+                    title: t('pricing.toasts.redirectingToStripe.title'),
+                    description: t('pricing.toasts.redirectingToStripe.description'),
                 });
             }
             if (res?.error) {
@@ -210,20 +211,20 @@ export const PricingPage = () => {
                             >
                                 <h1 className="text-title2 text-foreground-primary">
                                     {currentPlan === PRO_PLAN
-                                        ? 'Thanks for being a Pro member!'
-                                        : 'Choose your plan'}
+                                        ? t('pricing.titles.proMember')
+                                        : t('pricing.titles.choosePlan')}
                                 </h1>
                             </motion.div>
                             <div className="flex gap-4">
                                 <PricingCard
                                     plan={BASIC_PLAN.name}
                                     price={BASIC_PLAN.price}
-                                    description="Prototype and experiment in code with ease."
+                                    description={t('pricing.plans.basic.description')}
                                     features={BASIC_PLAN.features}
                                     buttonText={
                                         currentPlan.type === BASIC_PLAN.type
-                                            ? 'Current Plan'
-                                            : 'Manage Subscription'
+                                            ? t('pricing.buttons.currentPlan')
+                                            : t('pricing.buttons.manageSubscription')
                                     }
                                     buttonProps={{
                                         onClick: () => {
@@ -239,12 +240,12 @@ export const PricingPage = () => {
                                 <PricingCard
                                     plan={PRO_PLAN.name}
                                     price={PRO_PLAN.price}
-                                    description="Creativity – unconstrained. Build stunning sites with AI."
+                                    description={t('pricing.plans.pro.description')}
                                     features={PRO_PLAN.features}
                                     buttonText={
                                         currentPlan.type === PRO_PLAN.type
-                                            ? 'Current Plan'
-                                            : 'Get Pro'
+                                            ? t('pricing.buttons.currentPlan')
+                                            : t('pricing.buttons.getPro')
                                     }
                                     buttonProps={{
                                         onClick: startProCheckout,
@@ -263,7 +264,7 @@ export const PricingPage = () => {
                                 transition={{ delay: 0.3 }}
                             >
                                 <p className="text-foreground-secondary/60 text-small text-balance">
-                                    {"Unused chat messages don't rollover to the next month"}
+                                    {t('pricing.footer.unusedMessages')}
                                 </p>
                             </motion.div>
                         </motion.div>
