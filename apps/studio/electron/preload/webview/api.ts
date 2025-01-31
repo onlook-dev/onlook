@@ -1,4 +1,3 @@
-import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import {
     getChildrenCount,
@@ -22,42 +21,67 @@ import { editText, startEditingText, stopEditingText } from './elements/text';
 import { setWebviewId } from './state';
 import { getTheme, setTheme } from './theme';
 
+const onlookApi = {
+    // Misc
+    processDom,
+    getComputedStyleByDomId,
+    updateElementInstance,
+    setWebviewId,
+
+    // Elements
+    getElementAtLoc,
+    getDomElementByDomId,
+    setElementType,
+    getElementType,
+    getParentElement,
+    getChildrenCount,
+
+    // Actions
+    getActionLocation,
+    getActionElementByDomId,
+    getInsertLocation,
+    getRemoveActionFromDomId,
+
+    // Theme
+    getTheme,
+    setTheme,
+
+    // Drag
+    startDrag,
+    drag,
+    endDrag,
+    getElementIndex,
+    endAllDrag,
+
+    // Edit text
+    startEditingText,
+    editText,
+    stopEditingText,
+};
+
+export type TOnlookWindow = typeof window & {
+    _onlookWebviewId: string;
+    onlook: {
+        api: typeof onlookApi;
+        bridge: {
+            send: (channel: string, data?: any, transfer?: Transferable[]) => void;
+            receive: (handler: (event: MessageEvent, data?: any) => void) => void;
+        };
+    };
+};
+
 export function setApi() {
-    contextBridge.exposeInMainWorld('api', {
-        // Misc
-        processDom,
-        getComputedStyleByDomId,
-        updateElementInstance,
-        setWebviewId,
-
-        // Elements
-        getElementAtLoc,
-        getDomElementByDomId,
-        setElementType,
-        getElementType,
-        getParentElement,
-        getChildrenCount,
-
-        // Actions
-        getActionLocation,
-        getActionElementByDomId,
-        getInsertLocation,
-        getRemoveActionFromDomId,
-
-        // Theme
-        getTheme,
-        setTheme,
-
-        // Drag
-        startDrag,
-        drag,
-        endDrag,
-        getElementIndex,
-        endAllDrag,
-
-        // Edit text
-        startEditingText,
-        editText,
-        stopEditingText,
-    });
+    (window as TOnlookWindow).onlook = {
+        api: onlookApi,
+        bridge: {
+            send: (channel: string, data?: any, transfer?: Transferable[]) => {
+                window.parent.postMessage({ type: channel, data }, '*', transfer);
+            },
+            receive: (handler: (event: MessageEvent, data?: any) => void) => {
+                window.addEventListener('message', (event) => {
+                    handler(event, event.data);
+                });
+            },
+        },
+    };
 }

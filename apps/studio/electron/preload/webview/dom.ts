@@ -1,11 +1,11 @@
 import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
-import { ipcRenderer } from 'electron';
 import { debounce } from './bundles/helpers';
 import { getOrAssignDomId } from './ids';
 import { getWebviewId } from './state';
 import { isValidHtmlElement } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
+import type { TOnlookWindow } from './api';
 
 const processDebounced = debounce((root: HTMLElement) => {
     const webviewId = getWebviewId();
@@ -30,7 +30,7 @@ const processDebounced = debounce((root: HTMLElement) => {
         return false;
     }
 
-    ipcRenderer.sendToHost(WebviewChannels.DOM_PROCESSED, {
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.DOM_PROCESSED, {
         layerMap: Object.fromEntries(layerMap),
         rootNode,
     });

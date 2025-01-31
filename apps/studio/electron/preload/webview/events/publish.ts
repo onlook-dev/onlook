@@ -1,11 +1,11 @@
 import type { ActionLocation } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
-import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElementByDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
 import { elementFromDomId } from '/common/helpers';
+import type { TOnlookWindow } from '../api';
 
 export function publishStyleUpdate(domId: string) {
     const domEl = getDomElementByDomId(domId, true);
@@ -13,7 +13,7 @@ export function publishStyleUpdate(domId: string) {
         console.error('No domEl found for style update event');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, { domEl });
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.STYLE_UPDATED, { domEl });
 }
 
 export function publishInsertElement(
@@ -27,7 +27,11 @@ export function publishInsertElement(
         console.error('No domEl or layerMap found for insert element event');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerMap, editText });
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.ELEMENT_INSERTED, {
+        domEl,
+        layerMap,
+        editText,
+    });
 }
 
 export function publishRemoveElement(location: ActionLocation) {
@@ -39,7 +43,10 @@ export function publishRemoveElement(location: ActionLocation) {
         console.error('No parentDomEl or layerMap found for remove element event');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerMap });
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.ELEMENT_REMOVED, {
+        parentDomEl,
+        layerMap,
+    });
 }
 
 export function publishMoveElement(domEl: DomElement) {
@@ -50,7 +57,10 @@ export function publishMoveElement(domEl: DomElement) {
         console.error('No domEl or layerMap found for move element event');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, layerMap });
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.ELEMENT_MOVED, {
+        domEl,
+        layerMap,
+    });
 }
 
 export function publishGroupElement(domEl: DomElement) {
@@ -61,7 +71,10 @@ export function publishGroupElement(domEl: DomElement) {
         console.error('No domEl or layerMap found for group element event');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_GROUPED, { domEl, layerMap });
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.ELEMENT_GROUPED, {
+        domEl,
+        layerMap,
+    });
 }
 
 export function publishUngroupElement(parentEl: DomElement) {
@@ -72,7 +85,10 @@ export function publishUngroupElement(parentEl: DomElement) {
         console.error('No parentEl or layerMap found for ungroup element event');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_UNGROUPED, { parentEl, layerMap });
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.ELEMENT_UNGROUPED, {
+        parentEl,
+        layerMap,
+    });
 }
 
 export function publishEditText(domEl: DomElement) {
@@ -83,5 +99,8 @@ export function publishEditText(domEl: DomElement) {
         console.error('No domEl or layerMap found for edit text event');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_TEXT_EDITED, { domEl, layerMap });
+    (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.ELEMENT_TEXT_EDITED, {
+        domEl,
+        layerMap,
+    });
 }

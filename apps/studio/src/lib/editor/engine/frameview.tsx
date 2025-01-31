@@ -1,5 +1,13 @@
-import React, { forwardRef, useImperativeHandle, useRef, type IframeHTMLAttributes } from 'react';
+import {
+    forwardRef,
+    useImperativeHandle,
+    useRef,
+    type IframeHTMLAttributes,
+    useCallback,
+} from 'react';
 import type { NativeImage } from 'electron';
+import { WebviewChannels } from '@onlook/models/constants';
+import type { TOnlookWindow } from '/electron/preload/webview/api';
 
 export type IFrameView = HTMLIFrameElement &
     Pick<
@@ -24,9 +32,37 @@ interface IFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     preload?: string;
 }
 
-export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) => {
+export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...props }, ref) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const zoomLevel = useRef(1);
+
+    const handleIframeLoad = useCallback(() => {
+        const iframe = iframeRef.current;
+        if (!iframe || !preload) {
+            return;
+        }
+
+        const injectPreloadScript = () => {
+            try {
+                const doc = iframe.contentDocument;
+                if (!doc) {
+                    return;
+                }
+
+                const script = doc.createElement('script');
+                script.src = preload;
+                doc.head.appendChild(script);
+            } catch (error) {
+                console.error('Failed to inject preload script:', error);
+            }
+        };
+
+        if (iframe.contentDocument?.readyState === 'complete') {
+            injectPreloadScript();
+        } else {
+            iframe.addEventListener('load', injectPreloadScript, { once: true });
+        }
+    }, [preload]);
 
     useImperativeHandle(ref, () => {
         const iframe = iframeRef.current!;
@@ -59,37 +95,41 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
                     const messageId = `execute_${Date.now()}_${Math.random()}`;
 
                     channel.port1.onmessage = (event) => {
-                        if (event.data.messageId === messageId) {
-                            channel.port1.close();
+                        channel.port1.close();
+                        if (event.data.error) {
+                            reject(new Error(event.data.error));
+                        } else {
                             resolve(event.data.result);
                         }
                     };
 
                     const wrappedCode = `
+                        (async () => {
                             try {
-                                const result = await (async () => {
-                                    ${code} 
-                                })();
-                                window.postMessage({ messageId: "${messageId}", result }, "*");
+                                const result = await (${code});
+                                window.postMessage({
+                                    type: 'execute-response',
+                                    messageId: '${messageId}',
+                                    result
+                                }, '*', [event.ports[0]]);
                             } catch (error) {
-                                window.postMessage({ messageId: "${messageId}", error: error.message }, "*");
+                                window.postMessage({
+                                    type: 'execute-error',
+                                    messageId: '${messageId}',
+                                    error: error.message
+                                }, '*', [event.ports[0]]);
                             }
-                        `;
+                        })();
+                    `;
 
-                    try {
-                        contentWindow.postMessage(
-                            {
-                                type: 'executeJavaScript',
-                                code: wrappedCode,
-                                messageId,
-                            },
-                            '*',
-                            [channel.port2],
-                        );
-                    } catch (error) {
-                        console.error('Error executing JavaScript:', error);
-                        reject(error);
-                    }
+                    (window as TOnlookWindow).onlook.bridge.send(
+                        WebviewChannels.EXECUTE_CODE,
+                        {
+                            code: wrappedCode,
+                            messageId,
+                        },
+                        [channel.port2],
+                    );
                 });
             },
             loadURL: async (url: string) => {
@@ -166,7 +206,7 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>((props, ref) =>
         return iframe as IFrameView;
     }, []);
 
-    return <iframe ref={iframeRef} {...props} />;
+    return <iframe ref={iframeRef} {...props} onLoad={handleIframeLoad} />;
 });
 
 FrameView.displayName = 'FrameView';

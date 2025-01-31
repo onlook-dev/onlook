@@ -7,7 +7,6 @@ import type {
     ImageContentData,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
-import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
 import { groupElements, ungroupElements } from '../elements/dom/group';
 import { insertImage, removeImage } from '../elements/dom/image';
@@ -25,6 +24,7 @@ import {
     publishStyleUpdate,
     publishUngroupElement,
 } from './publish';
+import type { TOnlookWindow } from '../api';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -34,12 +34,12 @@ export function listenForEvents() {
 
 function listenForWindowEvents() {
     window.addEventListener('resize', () => {
-        ipcRenderer.sendToHost(WebviewChannels.WINDOW_RESIZED);
+        (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.WINDOW_RESIZED);
     });
 }
 
 function listenForEditEvents() {
-    ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { domId, change } = data as {
             domId: string;
             change: Change<Record<string, string>>;
@@ -48,7 +48,7 @@ function listenForEditEvents() {
         publishStyleUpdate(domId);
     });
 
-    ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { element, location, editText } = data as {
             element: ActionElement;
             location: ActionLocation;
@@ -60,13 +60,13 @@ function listenForEditEvents() {
         }
     });
 
-    ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { location } = data as { location: ActionLocation };
         removeElement(location);
         publishRemoveElement(location);
     });
 
-    ipcRenderer.on(WebviewChannels.MOVE_ELEMENT, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { domId, newIndex } = data as {
             domId: string;
             newIndex: number;
@@ -77,7 +77,7 @@ function listenForEditEvents() {
         }
     });
 
-    ipcRenderer.on(WebviewChannels.EDIT_ELEMENT_TEXT, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { domId, content } = data as {
             domId: string;
             content: string;
@@ -88,7 +88,7 @@ function listenForEditEvents() {
         }
     });
 
-    ipcRenderer.on(WebviewChannels.GROUP_ELEMENTS, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { parent, container, children } = data as {
             parent: ActionTarget;
             container: GroupContainer;
@@ -100,7 +100,7 @@ function listenForEditEvents() {
         }
     });
 
-    ipcRenderer.on(WebviewChannels.UNGROUP_ELEMENTS, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { parent, container, children } = data as {
             parent: ActionTarget;
             container: GroupContainer;
@@ -112,7 +112,7 @@ function listenForEditEvents() {
         }
     });
 
-    ipcRenderer.on(WebviewChannels.INSERT_IMAGE, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { domId, image } = data as {
             domId: string;
             image: ImageContentData;
@@ -121,7 +121,7 @@ function listenForEditEvents() {
         publishStyleUpdate(domId);
     });
 
-    ipcRenderer.on(WebviewChannels.REMOVE_IMAGE, (_, data) => {
+    (window as TOnlookWindow).onlook.bridge.receive((_, data) => {
         const { domId } = data as {
             domId: string;
         };
@@ -129,7 +129,7 @@ function listenForEditEvents() {
         publishStyleUpdate(domId);
     });
 
-    ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
+    (window as TOnlookWindow).onlook.bridge.receive(() => {
         processDom();
     });
 }
