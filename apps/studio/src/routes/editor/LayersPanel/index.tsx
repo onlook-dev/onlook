@@ -7,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
+import ImagesTab from './ImagesTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Icons } from '@onlook/ui/icons';
 import ResizablePanel from '@onlook/ui/resizable';
@@ -18,6 +19,7 @@ const LayersPanel = observer(() => {
     enum TabValue {
         LAYERS = 'layers',
         COMPONENTS = 'components',
+        IMAGES = 'images',
     }
     const selectedTab: string = TabValue.LAYERS;
     const [isOpen, setIsOpen] = useState(true);
@@ -43,6 +45,15 @@ const LayersPanel = observer(() => {
                                 {capitalizeFirstLetter(TabValue.COMPONENTS)}
                             </div>
                         </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={TabValue.IMAGES}
+                        >
+                            <div className="flex items-center gap-1">
+                                <Icons.Image />
+                                {capitalizeFirstLetter(TabValue.IMAGES)}
+                            </div>
+                        </TabsTrigger>
                     </div>
                     <button
                         className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
@@ -62,6 +73,9 @@ const LayersPanel = observer(() => {
                         ) : (
                             <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
                         )}
+                    </TabsContent>
+                    <TabsContent value={TabValue.IMAGES}>
+                        <ImagesTab />
                     </TabsContent>
                 </div>
             </Tabs>
