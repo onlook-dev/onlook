@@ -124,12 +124,13 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
                         })();
                     `;
 
-                    (window as TOnlookWindow).onlook.bridge.send(
-                        WebviewChannels.EXECUTE_CODE,
+                    contentWindow.postMessage(
                         {
+                            type: WebviewChannels.EXECUTE_CODE,
                             code: wrappedCode,
                             messageId,
                         },
+                        '*',
                         [channel.port2],
                     );
                 });
