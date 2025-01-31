@@ -10,10 +10,12 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     content: string;
     applied: boolean = false;
     snapshots: Record<string, CodeDiff> = {};
+    isStream: boolean;
 
-    constructor(content: string) {
+    constructor(content: string, isStream: boolean = false) {
         this.id = nanoid();
         this.content = content;
+        this.isStream = isStream;
     }
 
     toCoreMessage(): CoreAssistantMessage {
