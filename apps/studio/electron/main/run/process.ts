@@ -3,21 +3,26 @@ import { spawn } from 'child_process';
 export const runCommand = (
     cwd: string,
     command: string,
+    env?: Record<string, string>,
 ): Promise<{ stdout: string; stderr: string }> => {
     return new Promise((resolve, reject) => {
-        const process = spawn(command, { cwd, shell: true });
+        const childProcess = spawn(command, {
+            cwd,
+            shell: true,
+            env: env ? { ...process.env, ...env } : process.env,
+        });
         let stdout = '';
         let stderr = '';
 
-        process.stdout.on('data', (data) => {
+        childProcess.stdout.on('data', (data: Buffer) => {
             stdout += data.toString();
         });
 
-        process.stderr.on('data', (data) => {
+        childProcess.stderr.on('data', (data: Buffer) => {
             stderr += data.toString();
         });
 
-        process.on('close', (code) => {
+        childProcess.on('close', (code: number) => {
             if (code === 0) {
                 resolve({ stdout, stderr });
             } else {

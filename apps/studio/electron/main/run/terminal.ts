@@ -20,13 +20,13 @@ class TerminalManager {
         return TerminalManager.instance;
     }
 
-    create(id: string, options?: { cwd?: string }): boolean {
+    create(id: string, options?: { cwd?: string; env?: Record<string, string> }): boolean {
         try {
             const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
             const ptyProcess = pty.spawn(shell, [], {
                 name: 'xterm-color',
                 cwd: options?.cwd ?? process.env.HOME,
-                env: process.env,
+                env: options?.env ? { ...process.env, ...options.env } : process.env,
             });
 
             ptyProcess.onData((data: string) => {
@@ -95,9 +95,15 @@ class TerminalManager {
         return true;
     }
 
-    executeCommand(id: string, command: string): boolean {
+    executeCommand(id: string, command: string, env?: Record<string, string>): boolean {
         try {
             const newline = os.platform() === 'win32' ? '\r\n' : '\n';
+            if (env) {
+                const envString = Object.entries(env)
+                    .map(([key, value]) => `${key}=${value}`)
+                    .join(' ');
+                command = `${envString} ${command}`;
+            }
             return this.write(id, command + newline);
         } catch (error) {
             console.error('Failed to execute command.', error);

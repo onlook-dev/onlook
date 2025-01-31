@@ -103,11 +103,41 @@ class RunManager {
     }
 
     startTerminal(id: string, folderPath: string, command: string) {
-        terminal.create(id, { cwd: folderPath });
+        let env: Record<string, string> | undefined;
+
+        // Extract port from localhost URL if present
+        const localhostMatch = command.match(/localhost:(\d+)/);
+        if (localhostMatch) {
+            const [, port] = localhostMatch;
+            env = { PORT: port };
+        }
+
+        // Extract port from command if specified as env var (PORT=3001)
+        const portEnvMatch = command.match(/^PORT=(\d+)\s+(.+)$/);
+        if (portEnvMatch) {
+            const [, port, actualCommand] = portEnvMatch;
+            env = { PORT: port };
+            terminal.create(id, { cwd: folderPath, env });
+            terminal.executeCommand(id, actualCommand);
+            sendAnalytics('terminal started', { command: actualCommand });
+            return;
+        }
+
+        // Extract port from command if specified as CLI arg (-- -p 3001)
+        const portArgMatch = command.match(/^(.+?)\s+--\s+-p\s+(\d+)$/);
+        if (portArgMatch) {
+            const [, actualCommand, port] = portArgMatch;
+            env = { PORT: port };
+            terminal.create(id, { cwd: folderPath, env });
+            terminal.executeCommand(id, actualCommand);
+            sendAnalytics('terminal started', { command: actualCommand });
+            return;
+        }
+
+        // Create terminal with or without port env var
+        terminal.create(id, { cwd: folderPath, env });
         terminal.executeCommand(id, command);
-        sendAnalytics('terminal started', {
-            command,
-        });
+        sendAnalytics('terminal started', { command });
     }
 
     stopTerminal(id: string) {
