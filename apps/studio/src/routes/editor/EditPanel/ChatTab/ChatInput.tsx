@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
@@ -16,6 +16,8 @@ import { Suggestions } from './Suggestions';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
+    const projectsManager = useProjectsManager();
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [input, setInput] = useState('');
     const [isComposing, setIsComposing] = useState(false);
@@ -211,7 +213,10 @@ export const ChatInput = observer(() => {
                     disabled={disabled}
                     placeholder={
                         disabled
-                            ? 'Select an element to start'
+                            ? projectsManager.runner?.isRunning ||
+                              projectsManager.runner?.isStarting
+                                ? 'Select an element to start'
+                                : 'Start the project to chat'
                             : 'Ask follow up questions or provide more context...'
                     }
                     className={cn(
