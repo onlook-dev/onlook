@@ -100,6 +100,9 @@ export const PricingPage = () => {
                     saveCachedCurrentPlan(PRO_PLAN);
                     setIsCheckingOut(null);
                     return true;
+                } else if (res?.success && res.data.name === 'basic') {
+                    setCurrentPlan(BASIC_PLAN);
+                    saveCachedCurrentPlan(BASIC_PLAN);
                 }
                 return false;
             } catch (error) {
