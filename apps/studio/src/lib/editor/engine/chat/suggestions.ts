@@ -9,7 +9,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 export class SuggestionManager {
     projectId: string | null = null;
     private _suggestions: ChatSuggestion[] = [];
-    _shouldHide = false;
+    private _shouldHide = false;
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
