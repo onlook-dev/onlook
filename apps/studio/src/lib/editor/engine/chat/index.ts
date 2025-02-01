@@ -126,7 +126,7 @@ export class ChatManager {
 
         this.stream.clear();
         this.isWaiting = false;
-        this.handleChatResponse(res);
+        this.handleChatResponse(res, requestType);
         sendAnalytics('receive chat response');
     }
 
@@ -171,7 +171,11 @@ export class ChatManager {
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(res: StreamResponse | null, applyCode: boolean = false) {
+    async handleChatResponse(
+        res: StreamResponse | null,
+        requestType: StreamRequestType,
+        applyCode: boolean = false,
+    ) {
         if (!res) {
             console.error('No response found');
             return;
@@ -201,7 +205,11 @@ export class ChatManager {
             this.code.applyCode(assistantMessage.id);
         }
 
-        if (this.conversation.current?.messages && this.conversation.current.messages.length > 0) {
+        if (
+            requestType === StreamRequestType.CHAT &&
+            this.conversation.current?.messages &&
+            this.conversation.current.messages.length > 0
+        ) {
             this.suggestions.shouldHide = true;
             this.suggestions.generateNextSuggestions(this.conversation.current.messages);
         }
