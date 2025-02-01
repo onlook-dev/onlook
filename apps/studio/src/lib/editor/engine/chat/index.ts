@@ -119,7 +119,7 @@ export class ChatManager {
             return;
         }
         this.shouldAutoScroll = true;
-        this.stream.errorMessage = null;
+        this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
