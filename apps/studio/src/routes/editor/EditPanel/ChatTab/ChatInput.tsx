@@ -338,7 +338,7 @@ export const ChatInput = observer(() => {
                                 disabled={disabled}
                             >
                                 {!hideSuggestions ? (
-                                    <Icons.Circle
+                                    <Icons.Lightbulb
                                         className={cn(
                                             'w-5 h-5',
                                             disabled
@@ -347,7 +347,7 @@ export const ChatInput = observer(() => {
                                         )}
                                     />
                                 ) : (
-                                    <Icons.CircleBackslash
+                                    <Icons.LightbulbSlash
                                         className={cn(
                                             'w-5 h-5',
                                             disabled

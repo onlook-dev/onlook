@@ -5,7 +5,6 @@ import type { ImageMessageContext, ProjectSuggestions } from '@onlook/models/cha
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
-import { nanoid } from 'nanoid';
 
 export class SuggestionManager {
     projectId: string | null = null;
@@ -77,7 +76,7 @@ export class SuggestionManager {
 
         invokeMainChannel(MainChannels.SAVE_SUGGESTIONS, {
             suggestions: {
-                id: nanoid(),
+                id: this.projectId,
                 projectId: this.projectId,
                 suggestions: this._suggestions,
             } satisfies ProjectSuggestions,
