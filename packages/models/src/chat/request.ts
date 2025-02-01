@@ -9,6 +9,13 @@ export enum StreamRequestType {
 
 export type StreamRequest = {
     messages: CoreMessage[];
+    systemPrompt: string;
+    requestType: StreamRequestType;
+    useAnalytics: boolean;
+};
+
+export type StreamRequestV2 = {
+    messages: CoreMessage[];
     requestType: StreamRequestType;
     useAnalytics: boolean;
 };

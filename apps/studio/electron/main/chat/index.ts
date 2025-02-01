@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { StreamRequestType, type StreamRequest, type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
 import { type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
@@ -63,7 +63,7 @@ class LlmManager {
                 messages = [systemMessage, ...messages];
             }
             const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
+                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
                 {
                     method: 'POST',
                     headers: {
@@ -74,7 +74,7 @@ class LlmManager {
                         messages,
                         useAnalytics: this.useAnalytics,
                         requestType,
-                    } satisfies StreamRequest),
+                    } satisfies StreamRequestV2),
                     signal: this.abortController.signal,
                 },
             );
@@ -149,7 +149,7 @@ class LlmManager {
     public async generateSuggestions(messages: CoreMessage[]): Promise<string[]> {
         const authTokens = await getRefreshedAuthTokens();
         const response: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
             {
                 method: 'POST',
                 headers: {
@@ -160,7 +160,7 @@ class LlmManager {
                     messages,
                     useAnalytics: this.useAnalytics,
                     requestType: StreamRequestType.SUGGESTIONS,
-                } satisfies StreamRequest),
+                } satisfies StreamRequestV2),
             },
         );
 
