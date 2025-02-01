@@ -8,16 +8,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 
 export class SuggestionManager {
     projectId: string | null = null;
-    private _suggestions: ChatSuggestion[] = [
-        {
-            title: 'Improve the design',
-            prompt: 'Make the design more modern and clean.',
-        },
-        {
-            title: 'Improve the design',
-            prompt: 'Make the design more modern and clean.',
-        },
-    ];
+    private _suggestions: ChatSuggestion[] = [];
     _shouldHide = false;
 
     constructor(private projectsManager: ProjectsManager) {
