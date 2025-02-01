@@ -42,7 +42,7 @@ export class SuggestionManager {
         sendAnalytics('generate suggestions');
 
         const systemPrompt =
-            'You are a React and Tailwind CSS export. You will be given a generated website and the prompt the user used to describe it. Please generate 3 more prompts that they can use to further improve the page.';
+            'You are a React and Tailwind CSS export. You will be given a generated website and the prompt the user used to describe it. Please generate 3 more prompts that they can use to further improve the page. Try to reply in the same language as the original prompt.';
         const messages = this.getMessages(prompt, response, images);
         const newSuggestions: ChatSuggestion[] | null = await invokeMainChannel(
             MainChannels.GENERATE_SUGGESTIONS,
