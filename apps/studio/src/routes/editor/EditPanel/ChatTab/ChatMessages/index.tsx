@@ -63,7 +63,7 @@ const ChatMessages = observer(() => {
 
     // Render in reverse order to make the latest message appear at the bottom
     return editorEngine.chat.conversation.current ? (
-        <div className="flex flex-col-reverse gap-2 select-text overflow-auto pb-5">
+        <div className="flex flex-col-reverse gap-2 select-text overflow-auto">
             <StreamMessage />
             {renderErrorMessage()}
             {[...editorEngine.chat.conversation.current.messages]

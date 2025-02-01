@@ -7,16 +7,16 @@ import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { ShineBorder } from '@onlook/ui/shine-border';
 import { cn } from '@onlook/ui/utils';
+import { motion } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { Icons } from '@onlook/ui/icons';
-import { motion } from 'framer-motion';
 
 const Frame = observer(
     ({
@@ -229,7 +229,6 @@ const Frame = observer(
             webview.addEventListener('dom-ready', handleDomReady);
             webview.addEventListener('did-fail-load', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
-            webview.addEventListener('blur', handleWebviewBlur);
             webview.addEventListener('console-message', handleConsoleMessage);
         }
 
@@ -261,8 +260,6 @@ const Frame = observer(
             editorEngine.webviews.deselectAll();
             editorEngine.webviews.select(webviewRef.current as Electron.WebviewTag);
         }
-
-        function handleWebviewBlur() {}
 
         function handleConsoleMessage(event: Electron.ConsoleMessageEvent) {
             if (event.sourceId === 'chrome-error://chromewebdata/') {
