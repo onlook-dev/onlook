@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
-import { handleAuthCallback, setupAutoRefresh, stopAutoRefresh } from './auth';
+import { handleAuthCallback, setupAuthAutoRefresh, stopAuthAutoRefresh } from './auth';
 import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
@@ -88,7 +88,7 @@ const initMainWindow = () => {
         return { action: 'deny' };
     });
 
-    setupAutoRefresh();
+    setupAuthAutoRefresh();
 };
 
 let isCleaningUp = false;
@@ -101,7 +101,7 @@ export const cleanup = async () => {
 
     try {
         // Stop supabase auto-refresh
-        await stopAutoRefresh();
+        await stopAuthAutoRefresh();
 
         // Stop all processes
         await run.stopAll();

@@ -9,7 +9,7 @@ import { PersistentStorage } from '../storage';
 
 let isAutoRefreshEnabled = false;
 
-export async function startAutoRefresh() {
+export async function startAuthAutoRefresh() {
     if (!supabase || isAutoRefreshEnabled) {
         return;
     }
@@ -23,7 +23,7 @@ export async function startAutoRefresh() {
     }
 }
 
-export async function stopAutoRefresh() {
+export async function stopAuthAutoRefresh() {
     if (!supabase || !isAutoRefreshEnabled) {
         return;
     }
@@ -37,21 +37,21 @@ export async function stopAutoRefresh() {
     }
 }
 
-export function setupAutoRefresh() {
+export function setupAuthAutoRefresh() {
     if (!mainWindow) {
         return;
     }
 
     mainWindow.on('focus', () => {
-        startAutoRefresh();
+        startAuthAutoRefresh();
     });
 
     mainWindow.on('blur', () => {
-        stopAutoRefresh();
+        stopAuthAutoRefresh();
     });
 
     if (mainWindow.isFocused()) {
-        startAutoRefresh();
+        startAuthAutoRefresh();
     }
 }
 
