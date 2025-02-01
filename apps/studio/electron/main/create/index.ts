@@ -95,7 +95,7 @@ export class ProjectCreator {
         };
     }
 
-    private async runCreate() {
+    private async runCreate(): Promise<string> {
         if (!this.abortController) {
             throw new Error('No active creation process');
         }

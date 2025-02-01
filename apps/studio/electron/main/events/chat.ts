@@ -41,4 +41,12 @@ export function listenForChatMessages() {
         const { id } = args as { id: string };
         return PersistentStorage.CONVERSATIONS.deleteItem(id);
     });
+
+    ipcMain.handle(MainChannels.GENERATE_SUGGESTIONS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { messages, systemPrompt } = args as {
+            messages: CoreMessage[];
+            systemPrompt: string;
+        };
+        return Chat.generateSuggestions(messages, systemPrompt);
+    });
 }

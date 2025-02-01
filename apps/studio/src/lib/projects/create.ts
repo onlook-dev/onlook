@@ -72,9 +72,11 @@ export class CreateManager {
             this.projectsManager.project = newProject;
 
             // Generate suggestions
-            if (result.response.content) {
-                this.projectsManager.editorEngine?.chat.suggestions.generateSuggestions(
+            if (result.response?.content) {
+                this.projectsManager.editorEngine?.chat.suggestions.generateCreatedSuggestions(
+                    prompt,
                     result.response.content,
+                    images,
                 );
             }
 

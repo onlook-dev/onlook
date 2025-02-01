@@ -137,6 +137,31 @@ class LlmManager {
         }
         return 'An unknown error occurred';
     }
+
+    public async generateSuggestions(
+        messages: CoreMessage[],
+        systemPrompt: string,
+    ): Promise<string[]> {
+        const authTokens = await getRefreshedAuthTokens();
+        const response: Response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authTokens.accessToken}`,
+                },
+                body: JSON.stringify({
+                    messages,
+                    systemPrompt,
+                    useAnalytics: this.useAnalytics,
+                    requestType: StreamRequestType.SUGGESTIONS,
+                } satisfies StreamRequest),
+            },
+        );
+
+        return (await response.json()) as string[];
+    }
 }
 
 export default LlmManager.getInstance();
