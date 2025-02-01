@@ -21,13 +21,14 @@ export const ChatInput = observer(() => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
     const [isComposing, setIsComposing] = useState(false);
-    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
-    const inputEmpty = !inputValue || inputValue.trim().length === 0;
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isHandlingFile, setIsHandlingFile] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [hideSuggestions, setHideSuggestions] = useState(false);
+
+    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
+    const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         if (isComposing) {
@@ -180,6 +181,11 @@ export const ChatInput = observer(() => {
                 setInput={(suggestion) => {
                     setInputValue(suggestion);
                     textareaRef.current?.focus();
+                    setTimeout(() => {
+                        if (textareaRef.current) {
+                            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+                        }
+                    }, 100);
                 }}
             />
             <div className="flex flex-col w-full p-4">
