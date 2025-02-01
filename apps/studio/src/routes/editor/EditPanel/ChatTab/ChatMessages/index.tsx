@@ -36,7 +36,7 @@ const ChatMessages = observer(() => {
                     : rateLimited.monthly_requests_limit;
 
             return (
-                <div className="flex w-full flex-col items-center justify-center gap-2 text-small px-4 mb-5">
+                <div className="flex w-full flex-col items-center justify-center gap-2 text-small px-4">
                     <p className="text-foreground-secondary text-mini my-1 text-blue-300 select-none">
                         You reached your {rateLimited.reason} {requestLimit} message limit.
                     </p>
@@ -63,7 +63,7 @@ const ChatMessages = observer(() => {
 
     // Render in reverse order to make the latest message appear at the bottom
     return editorEngine.chat.conversation.current ? (
-        <div className="flex flex-col-reverse gap-2 select-text overflow-auto">
+        <div className="flex flex-col-reverse gap-2 select-text overflow-auto pb-5">
             <StreamMessage />
             {renderErrorMessage()}
             {[...editorEngine.chat.conversation.current.messages]

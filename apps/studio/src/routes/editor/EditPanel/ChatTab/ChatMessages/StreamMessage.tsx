@@ -9,7 +9,7 @@ export const StreamingMessage = observer(() => {
     return (
         <>
             {editorEngine.chat.isWaiting && (
-                <div className="flex w-full h-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
+                <div className="flex w-full h-full flex-row items-center gap-2 px-4 text-small content-start text-foreground-secondary">
                     <Icons.Shadow className="animate-spin" />
                     <p>Thinking ...</p>
                 </div>
