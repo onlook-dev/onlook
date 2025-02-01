@@ -1,4 +1,5 @@
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import type { ChatSuggestion } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage, ImagePart, TextPart } from 'ai';
@@ -6,7 +7,20 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class SuggestionManager {
-    _suggestions: string[] = ['Add a header', 'Add a text input', 'Add a footer'];
+    _suggestions: ChatSuggestion[] = [
+        {
+            title: 'Add a header',
+            prompt: 'Add a professional header with a logo, navigation menu, and a search bar. Use a clean, modern design with subtle shadows and proper spacing.',
+        },
+        {
+            title: 'Add a text input',
+            prompt: 'Create a styled text input field with a descriptive label, placeholder text, and validation feedback. Include an icon and make it responsive.',
+        },
+        {
+            title: 'Add a footer',
+            prompt: 'Design a comprehensive footer with multiple columns including company information, social media links, newsletter signup, and copyright notice. Use a contrasting background color.',
+        },
+    ];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -16,7 +30,7 @@ export class SuggestionManager {
         return this._suggestions;
     }
 
-    addSuggestion(suggestion: string) {
+    addSuggestion(suggestion: ChatSuggestion) {
         this._suggestions.push(suggestion);
     }
 
@@ -30,7 +44,7 @@ export class SuggestionManager {
         const systemPrompt =
             'You are a React and Tailwind CSS export. You will be given a generated website and the prompt the user used to describe it. Please generate 3 more prompts that they can use to further improve the page.';
         const messages = this.getMessages(prompt, response, images);
-        const newSuggestions: string[] | null = await invokeMainChannel(
+        const newSuggestions: ChatSuggestion[] | null = await invokeMainChannel(
             MainChannels.GENERATE_SUGGESTIONS,
             {
                 messages,

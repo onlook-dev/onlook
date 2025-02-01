@@ -33,12 +33,12 @@ export const Suggestions = observer(
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                key={suggestion}
+                                key={suggestion.title}
                                 className="text-xs flex border border-blue-500/20 items-center gap-2 p-2 text-left text-blue-300 bg-blue-500/10 rounded-lg transition-colors relative hover:bg-blue-500/20"
-                                onClick={() => setInput(suggestion)}
+                                onClick={() => setInput(suggestion.prompt)}
                             >
                                 <Icons.Sparkles className="w-4 h-4" />
-                                {suggestion}
+                                {suggestion.title}
                             </motion.button>
                         ))}
                     </motion.div>
