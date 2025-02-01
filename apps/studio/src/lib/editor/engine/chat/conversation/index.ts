@@ -13,7 +13,7 @@ import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
-const USE_MOCK = false;
+export const USE_MOCK = false;
 
 export class ConversationManager {
     projectId: string | null = null;

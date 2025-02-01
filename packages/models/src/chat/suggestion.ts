@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+export interface ProjectSuggestions {
+    id: string;
+    projectId: string;
+    suggestions: ChatSuggestion[];
+}
+
 export interface ChatSuggestion {
     title: string;
     prompt: string;

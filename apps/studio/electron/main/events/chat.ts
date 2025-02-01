@@ -1,4 +1,4 @@
-import type { ChatConversation, StreamRequestType } from '@onlook/models/chat';
+import type { ChatConversation, ProjectSuggestions, StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
@@ -47,5 +47,21 @@ export function listenForChatMessages() {
             messages: CoreMessage[];
         };
         return Chat.generateSuggestions(messages);
+    });
+
+    ipcMain.handle(
+        MainChannels.GET_SUGGESTIONS_BY_PROJECT,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { projectId } = args as { projectId: string };
+            const suggestions = PersistentStorage.SUGGESTIONS.getCollection(
+                projectId,
+            ) as ProjectSuggestions[];
+            return suggestions.flatMap((suggestion) => suggestion.suggestions);
+        },
+    );
+
+    ipcMain.handle(MainChannels.SAVE_SUGGESTIONS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { suggestions } = args as { suggestions: ProjectSuggestions };
+        return PersistentStorage.SUGGESTIONS.writeItem(suggestions);
     });
 }

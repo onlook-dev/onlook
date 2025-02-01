@@ -1,21 +1,41 @@
+import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import type { ChatSuggestion } from '@onlook/models';
-import type { ImageMessageContext } from '@onlook/models/chat';
+import type { ChatSuggestion, Project } from '@onlook/models';
+import type { ImageMessageContext, ProjectSuggestions } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
-import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
+import { makeAutoObservable, reaction } from 'mobx';
+import { nanoid } from 'nanoid';
 
 export class SuggestionManager {
-    suggestions: ChatSuggestion[] = [];
+    projectId: string | null = null;
+    private _suggestions: ChatSuggestion[] = [
+        {
+            title: 'Improve the design',
+            prompt: 'Make the design more modern and clean.',
+        },
+        {
+            title: 'Improve the design',
+            prompt: 'Make the design more modern and clean.',
+        },
+    ];
     _shouldHide = false;
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
+        reaction(
+            () => this.projectsManager.project,
+            (current) => this.getCurrentProjectSuggestions(current),
+        );
     }
 
-    addSuggestion(suggestion: ChatSuggestion) {
-        this.suggestions.push(suggestion);
+    get suggestions() {
+        return this._suggestions || [];
+    }
+
+    set suggestions(suggestions: ChatSuggestion[]) {
+        this._suggestions = suggestions;
+        this.saveSuggestionsToStorage();
     }
 
     get shouldHide() {
@@ -24,6 +44,44 @@ export class SuggestionManager {
 
     set shouldHide(value: boolean) {
         this._shouldHide = value;
+    }
+
+    async getCurrentProjectSuggestions(project: Project | null) {
+        if (!project) {
+            return;
+        }
+        if (this.projectId === project.id) {
+            return;
+        }
+        this.projectId = project.id;
+        this._suggestions = await this.getSuggestions(project.id);
+    }
+
+    async getSuggestions(projectId: string): Promise<ChatSuggestion[]> {
+        const res: ChatSuggestion[] | null = await invokeMainChannel(
+            MainChannels.GET_SUGGESTIONS_BY_PROJECT,
+            { projectId },
+        );
+        if (!res) {
+            console.error('No suggestions found');
+            return [];
+        }
+        return res;
+    }
+
+    saveSuggestionsToStorage() {
+        if (!this.projectId) {
+            console.error('No project id found');
+            return;
+        }
+
+        invokeMainChannel(MainChannels.SAVE_SUGGESTIONS, {
+            suggestions: {
+                id: nanoid(),
+                projectId: this.projectId,
+                suggestions: this._suggestions,
+            } satisfies ProjectSuggestions,
+        });
     }
 
     async generateCreatedSuggestions(

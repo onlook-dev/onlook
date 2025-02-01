@@ -38,7 +38,7 @@ export class ChatManager {
         this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
-        this.suggestions = new SuggestionManager(this.editorEngine);
+        this.suggestions = new SuggestionManager(this.projectsManager);
         this.listen();
     }
 
