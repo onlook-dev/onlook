@@ -200,6 +200,8 @@ export class ChatManager {
         if (applyCode) {
             this.code.applyCode(assistantMessage.id);
         }
+
+        this.suggestions.generateNextSuggestions(this.conversation.current.messages);
     }
 
     dispose() {

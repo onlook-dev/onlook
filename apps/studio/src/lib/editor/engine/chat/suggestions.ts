@@ -2,7 +2,7 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { ChatSuggestion } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage, ImagePart, TextPart } from 'ai';
+import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
@@ -41,14 +41,48 @@ export class SuggestionManager {
     ) {
         sendAnalytics('generate suggestions');
 
-        const systemPrompt =
-            'You are a React and Tailwind CSS export. You will be given a generated website and the prompt the user used to describe it. Please generate 3 more prompts that they can use to further improve the page. Try to reply in the same language as the original prompt.';
+        const systemMessage: CoreSystemMessage = {
+            role: 'system',
+            content:
+                'You are a React and Tailwind CSS expert. You will be given a generated website and the prompt the user used to describe it. Please generate 3 more prompts that they can use to further improve the page. Try to reply in the same language as the original prompt.',
+            experimental_providerMetadata: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+            },
+        };
+
         const messages = this.getMessages(prompt, response, images);
         const newSuggestions: ChatSuggestion[] | null = await invokeMainChannel(
             MainChannels.GENERATE_SUGGESTIONS,
             {
-                messages,
-                systemPrompt,
+                messages: [systemMessage, ...messages],
+            },
+        );
+
+        if (newSuggestions) {
+            this._suggestions = newSuggestions;
+            sendAnalytics('generated suggestions', {
+                suggestions: this._suggestions,
+            });
+        } else {
+            console.error('Failed to generate suggestions');
+            sendAnalytics('generate suggestions failed');
+        }
+    }
+
+    async generateNextSuggestions(messages: CoreMessage[]) {
+        const systemMessage: CoreSystemMessage = {
+            role: 'system',
+            content:
+                'Please generate 3 more prompts that the user can use to further improve the page. Try to reply in the same language as the original prompt.',
+            experimental_providerMetadata: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+            },
+        };
+
+        const newSuggestions: ChatSuggestion[] | null = await invokeMainChannel(
+            MainChannels.GENERATE_SUGGESTIONS,
+            {
+                messages: [...messages, systemMessage],
             },
         );
         if (newSuggestions) {
@@ -60,8 +94,6 @@ export class SuggestionManager {
             console.error('Failed to generate suggestions');
             sendAnalytics('generate suggestions failed');
         }
-
-        console.log('suggestions', this._suggestions);
     }
 
     private getMessages(

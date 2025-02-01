@@ -43,10 +43,9 @@ export function listenForChatMessages() {
     });
 
     ipcMain.handle(MainChannels.GENERATE_SUGGESTIONS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const { messages, systemPrompt } = args as {
+        const { messages } = args as {
             messages: CoreMessage[];
-            systemPrompt: string;
         };
-        return Chat.generateSuggestions(messages, systemPrompt);
+        return Chat.generateSuggestions(messages);
     });
 }

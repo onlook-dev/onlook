@@ -43,11 +43,10 @@ class LlmManager {
         messages: CoreMessage[],
         requestType: StreamRequestType,
         options?: {
-            systemPrompt?: string;
             abortController?: AbortController;
         },
     ): Promise<StreamResponse> {
-        const { systemPrompt, abortController } = options || {};
+        const { abortController } = options || {};
         this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
@@ -61,9 +60,6 @@ class LlmManager {
                     },
                     body: JSON.stringify({
                         messages,
-                        systemPrompt: systemPrompt
-                            ? systemPrompt
-                            : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
                         requestType,
                     } satisfies StreamRequest),
@@ -138,10 +134,7 @@ class LlmManager {
         return 'An unknown error occurred';
     }
 
-    public async generateSuggestions(
-        messages: CoreMessage[],
-        systemPrompt: string,
-    ): Promise<string[]> {
+    public async generateSuggestions(messages: CoreMessage[]): Promise<string[]> {
         const authTokens = await getRefreshedAuthTokens();
         const response: Response = await fetch(
             `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
@@ -153,7 +146,6 @@ class LlmManager {
                 },
                 body: JSON.stringify({
                     messages,
-                    systemPrompt,
                     useAnalytics: this.useAnalytics,
                     requestType: StreamRequestType.SUGGESTIONS,
                 } satisfies StreamRequest),

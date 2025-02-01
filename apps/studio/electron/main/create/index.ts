@@ -6,7 +6,7 @@ import {
     type StreamResponse,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage } from 'ai';
+import type { CoreMessage, CoreSystemMessage } from 'ai';
 import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
@@ -80,8 +80,15 @@ export class ProjectCreator {
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
 
-        const response = await Chat.stream(messages, StreamRequestType.CREATE, {
-            systemPrompt: PAGE_SYSTEM_PROMPT,
+        const systemMessage: CoreSystemMessage = {
+            role: 'system',
+            content: PAGE_SYSTEM_PROMPT,
+            experimental_providerMetadata: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+            },
+        };
+
+        const response = await Chat.stream([systemMessage, ...messages], StreamRequestType.CREATE, {
             abortController: this.abortController,
         });
 
