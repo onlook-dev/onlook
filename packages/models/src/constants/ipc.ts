@@ -99,6 +99,7 @@ export enum MainChannels {
     GET_CONVERSATIONS_BY_PROJECT = 'get-conversations-by-project',
     SAVE_CONVERSATION = 'save-conversation',
     DELETE_CONVERSATION = 'delete-conversation',
+    GENERATE_SUGGESTIONS = 'generate-suggestions',
 
     // Run
     RUN_START = 'run-start',

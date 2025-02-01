@@ -32,7 +32,10 @@ export class ProjectCreator {
     ): Promise<{
         success: boolean;
         error?: string;
-        projectPath?: string;
+        response?: {
+            projectPath: string;
+            content: string;
+        };
         cancelled?: boolean;
     }> {
         this.cancel();
@@ -47,9 +50,8 @@ export class ProjectCreator {
             if (this.abortController.signal.aborted) {
                 return { success: false, cancelled: true };
             }
-
             await this.applyGeneratedPage(projectPath, generatedPage);
-            return { success: true, projectPath };
+            return { success: true, response: { projectPath, content: generatedPage.content } };
         } catch (error) {
             if ((error as Error).name === 'AbortError') {
                 return { success: false, cancelled: true };
