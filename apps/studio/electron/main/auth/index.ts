@@ -7,6 +7,54 @@ import { mainWindow } from '..';
 import analytics, { sendAnalytics } from '../analytics';
 import { PersistentStorage } from '../storage';
 
+let isAutoRefreshEnabled = false;
+
+export async function startAutoRefresh() {
+    if (!supabase || isAutoRefreshEnabled) {
+        return;
+    }
+
+    try {
+        await supabase.auth.startAutoRefresh();
+        isAutoRefreshEnabled = true;
+        console.log('Started auto-refresh for auth session');
+    } catch (error) {
+        console.error('Failed to start auto-refresh:', error);
+    }
+}
+
+export async function stopAutoRefresh() {
+    if (!supabase || !isAutoRefreshEnabled) {
+        return;
+    }
+
+    try {
+        await supabase.auth.stopAutoRefresh();
+        isAutoRefreshEnabled = false;
+        console.log('Stopped auto-refresh for auth session');
+    } catch (error) {
+        console.error('Failed to stop auto-refresh:', error);
+    }
+}
+
+export function setupAutoRefresh() {
+    if (!mainWindow) {
+        return;
+    }
+
+    mainWindow.on('focus', () => {
+        startAutoRefresh();
+    });
+
+    mainWindow.on('blur', () => {
+        stopAutoRefresh();
+    });
+
+    if (mainWindow.isFocused()) {
+        startAutoRefresh();
+    }
+}
+
 export async function signIn(provider: 'github' | 'google') {
     if (!supabase) {
         throw new Error('No backend connected');
@@ -111,7 +159,6 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         throw new Error('No auth tokens found');
     }
 
-    // Get a refreshed session
     const {
         data: { session },
         error,
@@ -132,7 +179,6 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         providerToken: session.provider_token ?? '',
         tokenType: session.token_type ?? '',
     };
-    // Save the refreshed auth tokens to the persistent storage
     PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
 }
