@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { observer } from 'mobx-react-lite';
-import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
-import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 
 const ImagesTab = observer(() => {
     const [imageFiles, setImageFiles] = useState<string[]>([]);

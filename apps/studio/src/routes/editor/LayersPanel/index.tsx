@@ -1,16 +1,16 @@
 import { useEditorEngine } from '@/components/Context';
+import { EditorMode } from '@/lib/models';
+import { Icons } from '@onlook/ui/icons';
+import ResizablePanel from '@onlook/ui/resizable';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
-import { EditorMode } from '@/lib/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
-import LayersTab from './LayersTab';
 import ImagesTab from './ImagesTab';
+import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
-import { Icons } from '@onlook/ui/icons';
-import ResizablePanel from '@onlook/ui/resizable';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -46,7 +46,7 @@ const LayersPanel = observer(() => {
                             </div>
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.IMAGES}
                         >
                             <div className="flex items-center gap-1">
