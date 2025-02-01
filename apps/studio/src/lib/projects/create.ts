@@ -67,9 +67,11 @@ export class CreateManager {
 
         if (result.success && result.response?.projectPath) {
             this.state = CreateState.PROMPT;
-            this.projectsManager.projectsTab = ProjectTabs.PROJECTS;
             const newProject = this.createProject(result.response.projectPath);
             this.projectsManager.project = newProject;
+            setTimeout(() => {
+                this.projectsManager.projectsTab = ProjectTabs.PROJECTS;
+            }, 100);
 
             // Generate suggestions
             if (result.response?.content) {
