@@ -73,7 +73,7 @@ export class SuggestionManager {
         const systemMessage: CoreSystemMessage = {
             role: 'system',
             content:
-                'Please generate 3 more prompts that the user can use to further improve the page. Try to reply in the same language as the original prompt.',
+                'Given the conversation above, please give 3 more prompts the users can use to improve their website. Please make sure the prompts are realistic, detailed, and implementable within their current project. The suggestions are aimed to make the site better for the original intent. Try to answer in the same language as the user.',
             experimental_providerMetadata: {
                 anthropic: { cacheControl: { type: 'ephemeral' } },
             },

@@ -90,6 +90,7 @@ export class ProjectCreator {
 
         const response = await Chat.stream([systemMessage, ...messages], StreamRequestType.CREATE, {
             abortController: this.abortController,
+            skipSystemPrompt: true,
         });
 
         if (response.status !== 'full') {

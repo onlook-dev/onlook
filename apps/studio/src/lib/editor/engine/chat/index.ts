@@ -201,7 +201,9 @@ export class ChatManager {
             this.code.applyCode(assistantMessage.id);
         }
 
-        this.suggestions.generateNextSuggestions(this.conversation.current.messages);
+        if (this.conversation.current?.messages && this.conversation.current.messages.length > 0) {
+            this.suggestions.generateNextSuggestions(this.conversation.current.messages);
+        }
     }
 
     dispose() {

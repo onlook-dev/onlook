@@ -1,7 +1,7 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { StreamRequestType, type StreamRequest, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import { type CoreMessage } from 'ai';
+import { type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
@@ -44,12 +44,24 @@ class LlmManager {
         requestType: StreamRequestType,
         options?: {
             abortController?: AbortController;
+            skipSystemPrompt?: boolean;
         },
     ): Promise<StreamResponse> {
-        const { abortController } = options || {};
+        const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
+
+            if (!skipSystemPrompt) {
+                const systemMessage = {
+                    role: 'system',
+                    content: this.promptProvider.getSystemPrompt(process.platform),
+                    experimental_providerMetadata: {
+                        anthropic: { cacheControl: { type: 'ephemeral' } },
+                    },
+                } as CoreSystemMessage;
+                messages = [systemMessage, ...messages];
+            }
             const response = await fetch(
                 `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
                 {
