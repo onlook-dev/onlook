@@ -69,8 +69,14 @@ const Frame = observer(
             [editorEngine.canvas],
         );
 
-        const handleUrlChange = useCallback((e: any) => {
-            setWebviewSrc(e.url);
+        const handleUrlChange = useCallback((e: Event) => {
+            const iframe = e.target as HTMLIFrameElement;
+            const url = iframe.src;
+            if (!url) {
+                console.warn('Frame.handleUrlChange: url is undefined/null, returning');
+                return;
+            }
+            setWebviewSrc(url);
         }, []);
 
         const handleDomReady = useCallback(async () => {
@@ -200,7 +206,7 @@ const Frame = observer(
             return () => {
                 editorEngine.webviews.deregister(webview);
                 messageBridge.deregister(webview);
-                webview.removeEventListener('did-navigate', handleUrlChange);
+                webview.removeEventListener('load', handleUrlChange);
             };
         }
 
@@ -211,14 +217,16 @@ const Frame = observer(
             }
             editorEngine.webviews.deregister(webview);
             messageBridge.deregister(webview);
-            webview.removeEventListener('did-navigate', handleUrlChange);
+            webview.removeEventListener('load', handleUrlChange);
         }
 
         function setBrowserEventListeners(webview: IFrameView) {
-            webview.addEventListener('did-navigate', handleUrlChange);
-            webview.addEventListener('did-navigate-in-page', handleUrlChange);
-            webview.addEventListener('dom-ready', handleDomReady);
-            webview.addEventListener('did-fail-load', handleDomFailed);
+            webview.addEventListener('load', (e) => {
+                handleUrlChange(e);
+                handleDomReady();
+            });
+            webview.addEventListener('hashchange', handleUrlChange);
+            webview.addEventListener('error', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
         }
