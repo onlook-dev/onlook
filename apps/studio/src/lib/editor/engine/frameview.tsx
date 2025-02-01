@@ -4,6 +4,7 @@ import {
     useRef,
     type IframeHTMLAttributes,
     useCallback,
+    useEffect,
 } from 'react';
 import type { NativeImage } from 'electron';
 import { WebviewChannels } from '@onlook/models/constants';
@@ -45,15 +46,12 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
 
         const injectPreloadScript = () => {
             try {
-                const doc = iframe.contentDocument;
-                if (!doc) {
-                    console.error('No document found');
-                    return;
-                }
-
-                const script = doc.createElement('script');
+                console.log('Injecting preload script', preload);
+                const script = window.document.createElement('script');
                 script.src = preload;
-                doc.head.appendChild(script);
+                script.onerror = (e) => console.error('Preload script error:', e);
+                script.onload = () => console.log('Preload script loaded');
+                window.document.head.appendChild(script);
             } catch (error) {
                 console.error('Preload injection failed:', error);
             }
@@ -65,6 +63,10 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
             iframe.addEventListener('load', injectPreloadScript, { once: true });
         }
     }, [preload]);
+
+    useEffect(() => {
+        handleIframeLoad();
+    }, [handleIframeLoad]);
 
     useImperativeHandle(ref, () => {
         const iframe = iframeRef.current!;
@@ -209,7 +211,7 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
         return iframe as IFrameView;
     }, []);
 
-    return <iframe ref={iframeRef} {...props} onLoad={handleIframeLoad} />;
+    return <iframe ref={iframeRef} {...props} />;
 });
 
 FrameView.displayName = 'FrameView';
