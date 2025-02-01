@@ -7,31 +7,23 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class SuggestionManager {
-    _suggestions: ChatSuggestion[] = [
-        {
-            title: 'Add a header',
-            prompt: 'Add a professional header with a logo, navigation menu, and a search bar. Use a clean, modern design with subtle shadows and proper spacing.',
-        },
-        {
-            title: 'Add a text input',
-            prompt: 'Create a styled text input field with a descriptive label, placeholder text, and validation feedback. Include an icon and make it responsive.',
-        },
-        {
-            title: 'Add a footer',
-            prompt: 'Design a comprehensive footer with multiple columns including company information, social media links, newsletter signup, and copyright notice. Use a contrasting background color.',
-        },
-    ];
+    suggestions: ChatSuggestion[] = [];
+    _shouldHide = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    get suggestions() {
-        return this._suggestions;
+    addSuggestion(suggestion: ChatSuggestion) {
+        this.suggestions.push(suggestion);
     }
 
-    addSuggestion(suggestion: ChatSuggestion) {
-        this._suggestions.push(suggestion);
+    get shouldHide() {
+        return this._shouldHide;
+    }
+
+    set shouldHide(value: boolean) {
+        this._shouldHide = value;
     }
 
     async generateCreatedSuggestions(
@@ -59,9 +51,9 @@ export class SuggestionManager {
         );
 
         if (newSuggestions) {
-            this._suggestions = newSuggestions;
+            this.suggestions = newSuggestions;
             sendAnalytics('generated suggestions', {
-                suggestions: this._suggestions,
+                suggestions: this.suggestions,
             });
         } else {
             console.error('Failed to generate suggestions');
@@ -86,9 +78,9 @@ export class SuggestionManager {
             },
         );
         if (newSuggestions) {
-            this._suggestions = newSuggestions;
+            this.suggestions = newSuggestions;
             sendAnalytics('generated suggestions', {
-                suggestions: this._suggestions,
+                suggestions: this.suggestions,
             });
         } else {
             console.error('Failed to generate suggestions');

@@ -57,6 +57,7 @@ export class ChatCodeManager {
             this.chat.conversation.saveConversationToStorage();
         }
 
+        this.chat.suggestions.shouldHide = false;
         sendAnalytics('apply code change');
     }
 

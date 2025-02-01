@@ -16,12 +16,15 @@ export const Suggestions = observer(
         setInput: (input: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const shouldShowSuggestions =
-            !hideSuggestions && !disabled && inputValue.trim().length === 0;
+        const shouldHideSuggestions =
+            editorEngine.chat.suggestions.shouldHide ||
+            hideSuggestions ||
+            disabled ||
+            inputValue.trim().length > 0;
 
         return (
             <AnimatePresence>
-                {shouldShowSuggestions && (
+                {!shouldHideSuggestions && (
                     <motion.div
                         className="flex flex-col gap-2 p-2"
                         initial={{ opacity: 0, height: 0 }}

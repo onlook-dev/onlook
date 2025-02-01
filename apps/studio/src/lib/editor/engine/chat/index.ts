@@ -202,6 +202,7 @@ export class ChatManager {
         }
 
         if (this.conversation.current?.messages && this.conversation.current.messages.length > 0) {
+            this.suggestions.shouldHide = true;
             this.suggestions.generateNextSuggestions(this.conversation.current.messages);
         }
     }
