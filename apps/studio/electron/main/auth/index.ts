@@ -179,6 +179,8 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         providerToken: session.provider_token ?? '',
         tokenType: session.token_type ?? '',
     };
+
+    // Save the refreshed auth tokens to the persistent storage
     PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
 }
