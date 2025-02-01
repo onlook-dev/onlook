@@ -45,7 +45,7 @@ const MarkdownRenderer = ({
                         const codeContent = String(children).replace(/\n$/, '');
 
                         if (language === 'bash') {
-                            return <BashCodeDisplay content={codeContent} />;
+                            return <BashCodeDisplay content={codeContent} isStream={isStream} />;
                         }
 
                         if (match && filePath) {

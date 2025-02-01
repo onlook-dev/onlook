@@ -17,7 +17,7 @@ export const ErrorView = observer(() => {
             open={isOpen}
             onOpenChange={setIsOpen}
             className={cn(
-                'flex flex-col mx-2',
+                'flex flex-col m-2',
                 errorCount === 0 && 'hidden',
                 !editorEngine.errors.shouldShowErrors && 'hidden',
             )}

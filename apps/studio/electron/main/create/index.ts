@@ -6,7 +6,7 @@ import {
     type StreamResponse,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage } from 'ai';
+import type { CoreMessage, CoreSystemMessage } from 'ai';
 import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
@@ -32,7 +32,10 @@ export class ProjectCreator {
     ): Promise<{
         success: boolean;
         error?: string;
-        projectPath?: string;
+        response?: {
+            projectPath: string;
+            content: string;
+        };
         cancelled?: boolean;
     }> {
         this.cancel();
@@ -47,9 +50,8 @@ export class ProjectCreator {
             if (this.abortController.signal.aborted) {
                 return { success: false, cancelled: true };
             }
-
             await this.applyGeneratedPage(projectPath, generatedPage);
-            return { success: true, projectPath };
+            return { success: true, response: { projectPath, content: generatedPage.content } };
         } catch (error) {
             if ((error as Error).name === 'AbortError') {
                 return { success: false, cancelled: true };
@@ -78,9 +80,17 @@ export class ProjectCreator {
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
 
-        const response = await Chat.stream(messages, StreamRequestType.CREATE, {
-            systemPrompt: PAGE_SYSTEM_PROMPT,
+        const systemMessage: CoreSystemMessage = {
+            role: 'system',
+            content: PAGE_SYSTEM_PROMPT,
+            experimental_providerMetadata: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+            },
+        };
+
+        const response = await Chat.stream([systemMessage, ...messages], StreamRequestType.CREATE, {
             abortController: this.abortController,
+            skipSystemPrompt: true,
         });
 
         if (response.status !== 'full') {
@@ -93,7 +103,7 @@ export class ProjectCreator {
         };
     }
 
-    private async runCreate() {
+    private async runCreate(): Promise<string> {
         if (!this.abortController) {
             throw new Error('No active creation process');
         }

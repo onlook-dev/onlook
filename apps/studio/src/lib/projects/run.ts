@@ -23,6 +23,22 @@ export class RunManager {
         this.listenForStateChanges();
     }
 
+    get isRunning() {
+        return this.state === RunState.RUNNING;
+    }
+
+    get isStopped() {
+        return this.state === RunState.STOPPED;
+    }
+
+    get isStarting() {
+        return this.state === RunState.SETTING_UP || this.isLoading;
+    }
+
+    get isError() {
+        return this.state === RunState.ERROR;
+    }
+
     async start() {
         this.state = RunState.SETTING_UP;
         this.startLoadingTimer();

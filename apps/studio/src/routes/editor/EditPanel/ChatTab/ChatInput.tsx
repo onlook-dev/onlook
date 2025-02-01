@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
@@ -9,20 +9,26 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
+import { Suggestions } from './Suggestions';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
-    const [input, setInput] = useState('');
+    const projectsManager = useProjectsManager();
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [inputValue, setInputValue] = useState('');
     const [isComposing, setIsComposing] = useState(false);
-    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
-    const inputEmpty = !input || input.trim().length === 0;
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isHandlingFile, setIsHandlingFile] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [hideSuggestions, setHideSuggestions] = useState(false);
+
+    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
+    const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         if (isComposing) {
@@ -48,8 +54,8 @@ export const ChatInput = observer(() => {
             console.warn('Already waiting for response');
             return;
         }
-        editorEngine.chat.sendNewMessage(input);
-        setInput('');
+        editorEngine.chat.sendNewMessage(inputValue);
+        setInputValue('');
     }
 
     const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
@@ -168,6 +174,20 @@ export const ChatInput = observer(() => {
                 }
             }}
         >
+            <Suggestions
+                hideSuggestions={hideSuggestions}
+                disabled={disabled}
+                inputValue={inputValue}
+                setInput={(suggestion) => {
+                    setInputValue(suggestion);
+                    textareaRef.current?.focus();
+                    setTimeout(() => {
+                        if (textareaRef.current) {
+                            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+                        }
+                    }, 100);
+                }}
+            />
             <div className="flex flex-col w-full p-4">
                 <div
                     className={cn(
@@ -199,10 +219,14 @@ export const ChatInput = observer(() => {
                     </AnimatePresence>
                 </div>
                 <Textarea
+                    ref={textareaRef}
                     disabled={disabled}
                     placeholder={
                         disabled
-                            ? 'Select an element to start'
+                            ? projectsManager.runner?.isRunning ||
+                              projectsManager.runner?.isStarting
+                                ? 'Select an element to start'
+                                : 'Start the project to chat'
                             : 'Ask follow up questions or provide more context...'
                     }
                     className={cn(
@@ -214,15 +238,15 @@ export const ChatInput = observer(() => {
                     )}
                     rows={3}
                     style={{ resize: 'none' }}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
                     onCompositionStart={() => setIsComposing(true)}
                     onCompositionEnd={(e) => {
                         setIsComposing(false);
-                        setInput(e.currentTarget.value);
+                        setInputValue(e.currentTarget.value);
                     }}
                     onDragEnter={(e) => {
                         e.preventDefault();
@@ -299,6 +323,44 @@ export const ChatInput = observer(() => {
                         <TooltipPortal>
                             <TooltipContent side="top" sideOffset={5}>
                                 {disabled ? 'Select an element to start' : 'Upload Image Reference'}
+                            </TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                className={cn(
+                                    'w-9 h-9 text-foreground-tertiary group hover:bg-transparent',
+                                )}
+                                onClick={() => setHideSuggestions(!hideSuggestions)}
+                                disabled={disabled}
+                            >
+                                {!hideSuggestions ? (
+                                    <Icons.Lightbulb
+                                        className={cn(
+                                            'w-5 h-5',
+                                            disabled
+                                                ? 'text-foreground-tertiary'
+                                                : 'group-hover:text-foreground',
+                                        )}
+                                    />
+                                ) : (
+                                    <Icons.LightbulbSlash
+                                        className={cn(
+                                            'w-5 h-5',
+                                            disabled
+                                                ? 'text-foreground-tertiary'
+                                                : 'group-hover:text-foreground',
+                                        )}
+                                    />
+                                )}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                            <TooltipContent side="top" sideOffset={5}>
+                                {disabled ? 'Select an element to start' : 'Toggle Suggestions'}
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>

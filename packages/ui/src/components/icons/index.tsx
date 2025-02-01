@@ -26,6 +26,7 @@ import {
     ChevronRightIcon,
     ChevronUpIcon,
     CircleBackslashIcon,
+    CircleIcon,
     ClipboardCopyIcon,
     ClipboardIcon,
     CodeIcon,
@@ -91,6 +92,7 @@ import {
     ShadowIcon,
     Share2Icon,
     SizeIcon,
+    SketchLogoIcon,
     SpaceBetweenHorizontallyIcon,
     SpaceBetweenVerticallyIcon,
     SquareIcon,
@@ -1104,6 +1106,58 @@ export const Icons = {
             />
         </svg>
     ),
+    Lightbulb: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M5.46661 11.0938V10.6878C5.46661 10.4515 5.33135 10.2385 5.13002 10.1149C4.99455 10.0316 4.8638 9.9415 4.73826 9.84494C3.66103 9.0165 2.9668 7.71456 2.9668 6.25056C2.9668 3.74771 4.99575 1.71875 7.49858 1.71875C10.0015 1.71875 12.0304 3.74771 12.0304 6.25056C12.0304 7.71456 11.3361 9.0165 10.259 9.84494C10.1334 9.9415 10.0026 10.0316 9.8672 10.1149C9.66583 10.2385 9.53058 10.4515 9.53058 10.6878V11.0938M5.46661 11.0938V11.8743C5.46661 12.9965 6.37639 13.9062 7.49858 13.9062C8.62083 13.9062 9.53058 12.9965 9.53058 11.8743V11.0938M5.46661 11.0938H9.53058"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="square"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    LightbulbSlash: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M5.46661 11.0938V10.6878C5.46661 10.4515 5.33135 10.2385 5.13002 10.1149C4.99455 10.0316 4.8638 9.9415 4.73826 9.84494C3.66103 9.0165 2.9668 7.71456 2.9668 6.25056C2.9668 5.43145 3.18411 4.66309 3.56423 4M5.46661 11.0938V11.8743C5.46661 12.9965 6.37639 13.9062 7.49858 13.9062C8.62083 13.9062 9.53058 12.9965 9.53058 11.8743V11.0938M5.46661 11.0938H7.49859H9.53058M9.53058 11.0938V10.6878C9.54789 10.432 9.85184 10.1149 9.85184 10.1149"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="square"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M1.71875 1.71875L12.5 12.5"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M11.3816 8.58925C11.7938 7.9065 12.0309 7.10621 12.0309 6.25056C12.0309 3.74771 10.002 1.71875 7.4991 1.71875C6.63093 1.71875 5.58622 1.90585 5.22461 2.2983"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
     ArrowRight: ArrowRightIcon,
@@ -1149,6 +1203,7 @@ export const Icons = {
     CrossCircled: CrossCircledIcon,
     Cube: CubeIcon,
     CursorArrow: CursorArrowIcon,
+    Circle: CircleIcon,
 
     Desktop: DesktopIcon,
     DiscordLogo: DiscordLogoIcon,
@@ -1213,6 +1268,7 @@ export const Icons = {
     SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
+    SketchLogo: SketchLogoIcon,
 
     Text: TextIcon,
     TextAlignCenter: TextAlignCenterIcon,
