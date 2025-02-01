@@ -42,18 +42,23 @@ export function setupAuthAutoRefresh() {
         return;
     }
 
-    // Clean up existing listeners
-    mainWindow.removeListener('focus', startAuthAutoRefresh);
-    mainWindow.removeListener('blur', stopAuthAutoRefresh);
-
-    // Add new listeners
+    cleanupAuthAutoRefresh();
     mainWindow.on('focus', startAuthAutoRefresh);
     mainWindow.on('blur', stopAuthAutoRefresh);
 
-    // Initial state setup
     if (mainWindow.isFocused()) {
         startAuthAutoRefresh();
     }
+}
+
+export function cleanupAuthAutoRefresh() {
+    if (!mainWindow) {
+        return;
+    }
+
+    mainWindow.removeListener('focus', startAuthAutoRefresh);
+    mainWindow.removeListener('blur', stopAuthAutoRefresh);
+    stopAuthAutoRefresh();
 }
 
 export async function signIn(provider: 'github' | 'google') {
