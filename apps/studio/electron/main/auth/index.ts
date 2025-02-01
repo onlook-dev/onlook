@@ -42,18 +42,15 @@ export function setupAuthAutoRefresh() {
         return;
     }
 
-    // Remove any existing listeners first
-    mainWindow.removeAllListeners('focus');
-    mainWindow.removeAllListeners('blur');
+    // Clean up existing listeners
+    mainWindow.removeListener('focus', startAuthAutoRefresh);
+    mainWindow.removeListener('blur', stopAuthAutoRefresh);
 
-    mainWindow.on('focus', () => {
-        startAuthAutoRefresh();
-    });
+    // Add new listeners
+    mainWindow.on('focus', startAuthAutoRefresh);
+    mainWindow.on('blur', stopAuthAutoRefresh);
 
-    mainWindow.on('blur', () => {
-        stopAuthAutoRefresh();
-    });
-
+    // Initial state setup
     if (mainWindow.isFocused()) {
         startAuthAutoRefresh();
     }
