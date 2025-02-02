@@ -99,6 +99,7 @@ export class CreateManager {
         const projectName = 'New Project';
         const projectUrl = 'http://localhost:3000';
         const projectCommands = {
+            install: 'npm install',
             run: 'npm run dev',
             build: 'npm run build',
         };
