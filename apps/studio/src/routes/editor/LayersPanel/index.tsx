@@ -10,6 +10,7 @@ import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
 import ImagesTab from './ImagesTab';
 import LayersTab from './LayersTab';
+import PagesTab from './PageTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
@@ -17,6 +18,7 @@ const COMPONENT_DISCOVERY_ENABLED = false;
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     enum TabValue {
+        PAGES = 'pages',
         LAYERS = 'layers',
         COMPONENTS = 'components',
         IMAGES = 'images',
@@ -47,6 +49,12 @@ const LayersPanel = observer(() => {
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            value={TabValue.PAGES}
+                        >
+                            {capitalizeFirstLetter(TabValue.PAGES)}
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.IMAGES}
                         >
                             <div className="flex items-center gap-1">
@@ -64,6 +72,9 @@ const LayersPanel = observer(() => {
                 </TabsList>
                 <Separator className="mt-0" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
+                    <TabsContent value={TabValue.PAGES}>
+                        <PagesTab />
+                    </TabsContent>
                     <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />
                     </TabsContent>

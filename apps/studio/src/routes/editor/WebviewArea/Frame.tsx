@@ -69,9 +69,14 @@ const Frame = observer(
             [editorEngine.canvas],
         );
 
-        const handleUrlChange = useCallback((e: any) => {
-            setWebviewSrc(e.url);
-        }, []);
+        const handleUrlChange = useCallback(
+            (e: any) => {
+                setWebviewSrc(e.url);
+
+                editorEngine.pages.handleWebviewUrlChange(settings.id);
+            },
+            [editorEngine.pages, settings.id],
+        );
 
         const handleDomReady = useCallback(async () => {
             const webview = webviewRef.current;

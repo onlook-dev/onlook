@@ -76,6 +76,7 @@ export class WebviewManager {
         if (data) {
             data.selected = true;
             this.webviewIdToData.set(webview.id, data);
+            this.editorEngine.pages.handleWebviewUrlChange(webview.id);
             this.notify();
         }
     }

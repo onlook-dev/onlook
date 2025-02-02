@@ -131,4 +131,7 @@ export enum MainChannels {
     CREATE_STRIPE_CHECKOUT = 'create-stripe-checkout',
     CHECK_SUBSCRIPTION = 'check-subscription',
     MANAGE_SUBSCRIPTION = 'manage-subscription',
+
+    // Pages
+    SCAN_PAGES = 'scan-pages',
 }
