@@ -128,8 +128,15 @@ class RunManager {
             this.watcher = null;
         }
 
-        this.watcher = watch(filePaths, {
+        const rootDir = filePaths[0].split('/').slice(0, -1).join('/');
+
+        this.watcher = watch(rootDir, {
             persistent: true,
+            ignored: [
+                /(^|[\/\\])\../,
+                ...IGNORED_DIRECTORIES.map(dir => `**/${dir}/**`),
+                path => !ALLOWED_EXTENSIONS.some(ext => path.endsWith(ext))
+            ]
         });
 
         this.watcher
@@ -145,13 +152,8 @@ class RunManager {
     }
 
     addFileToWatcher(filePath: string) {
-        for (const allowedExtension of ALLOWED_EXTENSIONS) {
-            if (filePath.endsWith(allowedExtension)) {
-                this.watcher?.add(filePath);
-                this.processFileForMapping(filePath);
-                break;
-            }
-        }
+        // No need to explicitly add files since we're watching the directory
+        this.processFileForMapping(filePath);
     }
 
     async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
