@@ -1,10 +1,10 @@
+import { useEditorEngine } from '@/components/Context';
+import type { PageNode } from '@onlook/models/pages';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
-import type { NodeApi } from 'react-arborist';
-import type { PageNode } from '@onlook/models/pages';
-import { useEditorEngine } from '@/components/Context';
 import { useEffect, useState } from 'react';
+import type { NodeApi } from 'react-arborist';
 
 const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.CSSProperties }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
@@ -45,7 +45,7 @@ const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.C
         <div
             style={style}
             className={cn('flex items-center h-6 cursor-pointer hover:bg-background-hover', {
-                'bg-red-500 text-white': !hasChildren && isActive,
+                'bg-red-500 text-white hover:bg-red-500': !hasChildren && isActive,
             })}
             onClick={handleClick}
         >
