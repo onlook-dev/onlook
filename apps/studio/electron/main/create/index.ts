@@ -1,7 +1,12 @@
+import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
 import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
-import type { ImageMessageContext, StreamResponse } from '@onlook/models/chat';
+import {
+    StreamRequestType,
+    type ImageMessageContext,
+    type StreamResponse,
+} from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage } from 'ai';
+import type { CoreMessage, CoreSystemMessage } from 'ai';
 import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
@@ -27,7 +32,10 @@ export class ProjectCreator {
     ): Promise<{
         success: boolean;
         error?: string;
-        projectPath?: string;
+        response?: {
+            projectPath: string;
+            content: string;
+        };
         cancelled?: boolean;
     }> {
         this.cancel();
@@ -42,9 +50,8 @@ export class ProjectCreator {
             if (this.abortController.signal.aborted) {
                 return { success: false, cancelled: true };
             }
-
             await this.applyGeneratedPage(projectPath, generatedPage);
-            return { success: true, projectPath };
+            return { success: true, response: { projectPath, content: generatedPage.content } };
         } catch (error) {
             if ((error as Error).name === 'AbortError') {
                 return { success: false, cancelled: true };
@@ -69,17 +76,22 @@ export class ProjectCreator {
         }
 
         const defaultPagePath = 'app/page.tsx';
-        const systemPrompt = `You are an expert React developer specializing in React and Tailwind CSS. You are given a prompt and you need to create a React page that matches the prompt. Try to use a distinct style and infer it from the prompt. Err on the side of being quirky and unique.
-IMPORTANT: 
-- Output only the code without any explanation or markdown formatting. 
-- The content will be injected into the page and ran so make sure it is valid React code.
-- Don't use any dependencies or libraries besides tailwind.
-- Make sure to add import statements for any dependencies you use.`;
 
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
 
-        const response = await Chat.stream(messages, systemPrompt, this.abortController);
+        const systemMessage: CoreSystemMessage = {
+            role: 'system',
+            content: PAGE_SYSTEM_PROMPT,
+            experimental_providerMetadata: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+            },
+        };
+
+        const response = await Chat.stream([systemMessage, ...messages], StreamRequestType.CREATE, {
+            abortController: this.abortController,
+            skipSystemPrompt: true,
+        });
 
         if (response.status !== 'full') {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
@@ -91,7 +103,7 @@ IMPORTANT:
         };
     }
 
-    private async runCreate() {
+    private async runCreate(): Promise<string> {
         if (!this.abortController) {
             throw new Error('No active creation process');
         }
@@ -137,17 +149,9 @@ IMPORTANT:
     };
 
     private getMessages(prompt: string, images: ImageMessageContext[]): CoreMessage[] {
-        const defaultPageContent = `'use client';
-        
-export default function Page() {
-    return (
-      <div></div>
-    );
-}`;
-
         const promptContent = `${images.length > 0 ? 'Refer to the images above. ' : ''}Create a landing page that matches this description: ${prompt}
 Use this as the starting template:
-${defaultPageContent}`;
+${DEFAULT_PAGE_CONTENT}`;
 
         // For text-only messages
         if (images.length === 0) {

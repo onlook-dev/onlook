@@ -44,6 +44,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
             if (!el) {
                 return;
             }
+
             switch (action) {
                 case MouseAction.MOVE:
                     editorEngine.elements.mouseover(el, webview);
@@ -54,6 +55,10 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                     }
                     break;
                 case MouseAction.MOUSE_DOWN:
+                    if (el.tagName.toLocaleLowerCase() === 'body') {
+                        editorEngine.webviews.select(webview);
+                        return;
+                    }
                     // Ignore right-clicks
                     if (e.button == 2) {
                         break;

@@ -55,18 +55,33 @@ export class CreateManager {
         this.error = null;
         const result: {
             success: boolean;
-            projectPath?: string;
+            response?: {
+                projectPath?: string;
+                content?: string;
+            };
             error?: string;
         } = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
             prompt: prompt,
             images: images,
         });
 
-        if (result.success && result.projectPath) {
+        if (result.success && result.response?.projectPath) {
             this.state = CreateState.PROMPT;
-            this.projectsManager.projectsTab = ProjectTabs.PROJECTS;
-            const newProject = this.createProject(result.projectPath);
+            const newProject = this.createProject(result.response.projectPath);
             this.projectsManager.project = newProject;
+            setTimeout(() => {
+                this.projectsManager.projectsTab = ProjectTabs.PROJECTS;
+            }, 100);
+
+            // Generate suggestions
+            if (result.response?.content) {
+                this.projectsManager.editorEngine?.chat.suggestions.generateCreatedSuggestions(
+                    prompt,
+                    result.response.content,
+                    images,
+                );
+            }
+
             setTimeout(() => {
                 this.projectsManager.runner?.start();
             }, 1000);

@@ -1,4 +1,4 @@
-import type { ChatConversation } from '@onlook/models/chat';
+import type { ChatConversation, ProjectSuggestions, StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
@@ -9,8 +9,11 @@ export function listenForChatMessages() {
     ipcMain.handle(
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { messages } = args as { messages: CoreMessage[] };
-            return Chat.stream(messages);
+            const { messages, requestType } = args as {
+                messages: CoreMessage[];
+                requestType: StreamRequestType;
+            };
+            return Chat.stream(messages, requestType);
         },
     );
 
@@ -37,5 +40,28 @@ export function listenForChatMessages() {
     ipcMain.handle(MainChannels.DELETE_CONVERSATION, (e: Electron.IpcMainInvokeEvent, args) => {
         const { id } = args as { id: string };
         return PersistentStorage.CONVERSATIONS.deleteItem(id);
+    });
+
+    ipcMain.handle(MainChannels.GENERATE_SUGGESTIONS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { messages } = args as {
+            messages: CoreMessage[];
+        };
+        return Chat.generateSuggestions(messages);
+    });
+
+    ipcMain.handle(
+        MainChannels.GET_SUGGESTIONS_BY_PROJECT,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { projectId } = args as { projectId: string };
+            const suggestions = PersistentStorage.SUGGESTIONS.getCollection(
+                projectId,
+            ) as ProjectSuggestions[];
+            return suggestions.flatMap((suggestion) => suggestion.suggestions);
+        },
+    );
+
+    ipcMain.handle(MainChannels.SAVE_SUGGESTIONS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { suggestions } = args as { suggestions: ProjectSuggestions };
+        return PersistentStorage.SUGGESTIONS.writeItem(suggestions);
     });
 }

@@ -1,4 +1,4 @@
-import type { ChatConversation } from '@onlook/models/chat';
+import type { ChatConversation, ProjectSuggestions } from '@onlook/models/chat';
 import type {
     AppState,
     AuthTokens,
@@ -16,6 +16,7 @@ export enum StorageType {
     AUTH_TOKENS = 'auth-tokens-v1',
     PROJECTS = 'projects',
     CONVERSATIONS = 'conversations-v1',
+    SUGGESTIONS = 'suggestions',
 }
 
 export class PersistentStorage {
@@ -34,5 +35,10 @@ export class PersistentStorage {
         StorageType.CONVERSATIONS,
         false,
         (conversation) => conversation.projectId,
+    );
+    static readonly SUGGESTIONS = new DirectoryPersistentStorage<ProjectSuggestions>(
+        StorageType.SUGGESTIONS,
+        false,
+        (suggestion) => suggestion.projectId,
     );
 }

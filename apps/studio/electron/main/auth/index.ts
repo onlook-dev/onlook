@@ -2,9 +2,88 @@ import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { AuthTokens, UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
 import type { AuthResponse, User } from '@supabase/supabase-js';
+import { shell } from 'electron';
 import { mainWindow } from '..';
-import analytics from '../analytics';
+import analytics, { sendAnalytics } from '../analytics';
 import { PersistentStorage } from '../storage';
+
+let isAutoRefreshEnabled = false;
+
+export async function startAuthAutoRefresh() {
+    if (!supabase || isAutoRefreshEnabled) {
+        return;
+    }
+
+    try {
+        await supabase.auth.startAutoRefresh();
+        isAutoRefreshEnabled = true;
+        console.log('Started auto-refresh for auth session');
+    } catch (error) {
+        console.error('Failed to start auto-refresh:', error);
+    }
+}
+
+export async function stopAuthAutoRefresh() {
+    if (!supabase || !isAutoRefreshEnabled) {
+        return;
+    }
+
+    try {
+        await supabase.auth.stopAutoRefresh();
+        isAutoRefreshEnabled = false;
+        console.log('Stopped auto-refresh for auth session');
+    } catch (error) {
+        console.error('Failed to stop auto-refresh:', error);
+    }
+}
+
+export function setupAuthAutoRefresh() {
+    if (!mainWindow) {
+        return;
+    }
+
+    cleanupAuthAutoRefresh();
+    mainWindow.on('focus', startAuthAutoRefresh);
+    mainWindow.on('blur', stopAuthAutoRefresh);
+
+    if (mainWindow.isFocused()) {
+        startAuthAutoRefresh();
+    }
+}
+
+export function cleanupAuthAutoRefresh() {
+    if (!mainWindow) {
+        return;
+    }
+
+    mainWindow.removeListener('focus', startAuthAutoRefresh);
+    mainWindow.removeListener('blur', stopAuthAutoRefresh);
+    stopAuthAutoRefresh();
+}
+
+export async function signIn(provider: 'github' | 'google') {
+    if (!supabase) {
+        throw new Error('No backend connected');
+    }
+
+    supabase.auth.signOut();
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+            skipBrowserRedirect: true,
+            redirectTo: APP_SCHEMA + '://auth',
+        },
+    });
+
+    if (error) {
+        console.error('Authentication error:', error);
+        return;
+    }
+
+    shell.openExternal(data.url);
+    sendAnalytics('sign in', { provider });
+}
 
 export async function handleAuthCallback(url: string) {
     if (!url.startsWith(APP_SCHEMA + '://auth')) {
@@ -86,7 +165,6 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         throw new Error('No auth tokens found');
     }
 
-    // Get a refreshed session
     const {
         data: { session },
         error,
@@ -107,7 +185,18 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         providerToken: session.provider_token ?? '',
         tokenType: session.token_type ?? '',
     };
+
     // Save the refreshed auth tokens to the persistent storage
     PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
+}
+
+export async function signOut() {
+    sendAnalytics('sign out');
+    analytics.signOut();
+
+    await supabase?.auth.signOut();
+    PersistentStorage.USER_METADATA.clear();
+    PersistentStorage.AUTH_TOKENS.clear();
+    mainWindow?.webContents.send(MainChannels.USER_SIGNED_OUT);
 }

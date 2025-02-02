@@ -106,7 +106,7 @@ const BrowserControls = observer(
             if (!webview) {
                 return;
             }
-
+            editorEngine.errors.clearErrors(webview.id);
             webview.reload();
         }
 

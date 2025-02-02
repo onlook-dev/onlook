@@ -191,6 +191,10 @@ const TreeNode = observer(
                     editorEngine.elements.mouseover(el, webview);
                     break;
                 case MouseAction.MOUSE_DOWN:
+                    if (el.tagName.toLocaleLowerCase() === 'body') {
+                        editorEngine.webviews.select(webview);
+                        return;
+                    }
                     if (e.shiftKey) {
                         editorEngine.elements.shiftClick(el, webview);
                         break;
@@ -207,6 +211,23 @@ const TreeNode = observer(
             ]);
             editorEngine.action.updateStyle(action);
             node.data.isVisible = !node.data.isVisible;
+        }
+
+        function getNodeName() {
+            if (node.data.tagName.toLocaleLowerCase() === 'body') {
+                return 'window';
+            }
+            return (
+                (node.data.component
+                    ? node.data.component
+                    : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
+                            node.data.tagName.toLowerCase(),
+                        )
+                      ? ''
+                      : node.data.tagName.toLowerCase()) +
+                ' ' +
+                node.data.textContent
+            );
         }
 
         return (
@@ -303,14 +324,7 @@ const TreeNode = observer(
                                     selected && 'mr-5',
                                 )}
                             >
-                                {node.data.component
-                                    ? node.data.component
-                                    : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                                            node.data.tagName.toLowerCase(),
-                                        )
-                                      ? ''
-                                      : node.data.tagName.toLowerCase()}
-                                {' ' + node.data.textContent}
+                                {getNodeName()}
                             </span>
                             {selected && (
                                 <VisibilityButton

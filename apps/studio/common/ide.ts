@@ -58,7 +58,11 @@ export class IDE {
         return codeCommand;
     }
 
-    getCodeFileCommand(filePath: string) {
-        return `${this.command}://file/${filePath}`;
+    getCodeFileCommand(filePath: string, line?: number) {
+        let command = `${this.command}://file/${filePath}`;
+        if (line) {
+            command += `:${line}`;
+        }
+        return command;
     }
 }

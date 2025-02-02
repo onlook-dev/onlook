@@ -4,17 +4,18 @@ import { invokeMainChannel } from '@/lib/utils';
 import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import ProjectNameInput from './ProjectNameInput';
+import PricingPage from '../Profile/PricingPage';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -57,42 +58,45 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <>
+        <Dialog
+            open={editorEngine.isPlansOpen}
+            onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
+        >
             <div className="mx-2 flex flex-row items-center text-small gap-2">
-                <Tooltip>
-                    <TooltipTrigger asChild>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                         <Button
                             variant={'ghost'}
-                            className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
-                            onClick={handleReturn}
+                            className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                         >
-                            <Icons.OnlookLogo className="w-6 h-6 mr-2 hidden md:block" />
-                            {'Onlook'}
+                            <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
+                            <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
+                                {projectsManager.project?.name}
+                            </span>
+                            <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
                         </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
-                        Return to project selection
-                    </TooltipContent>
-                </Tooltip>
-                <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
-                <ProjectNameInput />
-                <DropdownMenu>
-                    <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-hover hover:bg-transparent">
-                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                    <DropdownMenuContent align="start" className="w-48">
+                        <DropdownMenuItem onClick={handleReturn}>
                             <div className="flex row center items-center group">
-                                <Icons.Directory className="mr-2 group-hover:hidden" />
-                                <Icons.DirectoryOpen className="mr-2 hidden group-hover:block" />
-                                {'Open Project Folder'}
+                                <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
+                                {'Go to all Projects'}
                             </div>
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                            Open folder
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                            <div className="flex row center items-center group">
-                                <Icons.Gear className="mr-2 transition-transform duration-300 group-hover:rotate-[30deg]" />
-                                Project Settings
-                            </div>
+                            Settings
+                        </DropdownMenuItem>
+                        <DialogTrigger asChild>
+                            <DropdownMenuItem>Subscriptions</DropdownMenuItem>
+                        </DialogTrigger>
+                        <DropdownMenuItem
+                            onClick={() => window.open('https://onlook.com', '_blank')}
+                        >
+                            About Onlook
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -102,7 +106,10 @@ const ProjectBreadcrumb = observer(() => {
                 open={isSettingsOpen}
                 onOpenChange={setIsSettingsOpen}
             ></ProjectSettingsModal>
-        </>
+            <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
+                <PricingPage />
+            </DialogContent>
+        </Dialog>
     );
 });
 

@@ -24,7 +24,7 @@ export function listenForStorageMessages() {
         return PersistentStorage.APP_STATE.read();
     });
 
-    ipcMain.handle(MainChannels.DOES_USER_HAVE_AUTH_TOKENS, (e: Electron.IpcMainInvokeEvent) => {
+    ipcMain.handle(MainChannels.IS_USER_SIGNED_IN, (e: Electron.IpcMainInvokeEvent) => {
         return getRefreshedAuthTokens();
     });
 

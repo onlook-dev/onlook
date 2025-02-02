@@ -8,7 +8,7 @@ export function setWebviewId(webviewId: string) {
 export function getWebviewId(): string {
     const webviewId = (window as any)._onlookWebviewId;
     if (!webviewId) {
-        console.error('Webview id not found');
+        console.warn('Webview id not found');
         ipcRenderer.sendToHost(WebviewChannels.GET_WEBVIEW_ID);
         return '';
     }

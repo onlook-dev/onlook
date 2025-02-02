@@ -1,7 +1,9 @@
+// WARNING: BE CAREFUL WHEN CHANGING THESE ROUTES, THEY ARE USED IN PRODUCTION
 export const FUNCTIONS_ROUTE = '/functions/v1';
 export const BASE_API_ROUTE = '/api';
 export enum ApiRoutes {
     AI = '/ai',
+    AI_V2 = '/ai-v2',
     ANALYTICS = '/analytics',
     HOSTING = '/hosting',
     CUSTOM_DOMAINS = '/custom-domains',

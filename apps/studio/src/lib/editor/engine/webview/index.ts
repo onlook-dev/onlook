@@ -64,6 +64,7 @@ export class WebviewManager {
 
     deregisterAll() {
         this.webviewIdToData.clear();
+        this.editorEngine?.errors.clear();
     }
 
     isSelected(id: string) {
@@ -123,6 +124,7 @@ export class WebviewManager {
         const doc = body.ownerDocument;
         const hasElements = body.children.length > 0;
         if (!hasElements) {
+            this.editorEngine.errors.shouldShowErrors = true;
             return WebviewState.RUNNING_NO_DOM;
         }
 
@@ -130,6 +132,7 @@ export class WebviewManager {
         if (hasOnlook) {
             return WebviewState.DOM_ONLOOK_ENABLED;
         }
+        this.editorEngine.errors.shouldShowErrors = true;
         return WebviewState.DOM_NO_ONLOOK;
     }
 
@@ -183,5 +186,6 @@ export class WebviewManager {
 
         // Clean up AST mappings
         this.editorEngine?.ast?.mappings?.remove(id);
+        this.editorEngine?.errors.clearErrors(id);
     }
 }

@@ -32,7 +32,7 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
     useHotkeys(Hotkey.ESCAPE.command, () => {
         editorEngine.mode = EditorMode.DESIGN;
-        !editorEngine.text.isEditing && editorEngine.clear();
+        !editorEngine.text.isEditing && editorEngine.clearUI();
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
     useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));

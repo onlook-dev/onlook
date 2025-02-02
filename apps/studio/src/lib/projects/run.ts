@@ -7,7 +7,6 @@ import { invokeMainChannel } from '../utils';
 export type TerminalMessage = {
     id: string;
     data: string;
-    isError: boolean;
 };
 
 export class RunManager {
@@ -22,6 +21,22 @@ export class RunManager {
         this.project = project;
         this.restoreState();
         this.listenForStateChanges();
+    }
+
+    get isRunning() {
+        return this.state === RunState.RUNNING;
+    }
+
+    get isStopped() {
+        return this.state === RunState.STOPPED;
+    }
+
+    get isStarting() {
+        return this.state === RunState.SETTING_UP || this.isLoading;
+    }
+
+    get isError() {
+        return this.state === RunState.ERROR;
     }
 
     async start() {

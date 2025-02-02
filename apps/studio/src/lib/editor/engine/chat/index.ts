@@ -1,7 +1,8 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
+import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
@@ -12,6 +13,7 @@ import { ConversationManager } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
+import { SuggestionManager } from './suggestions';
 const USE_MOCK = false;
 
 export class ChatManager {
@@ -20,6 +22,7 @@ export class ChatManager {
     code: ChatCodeManager;
     context: ChatContext;
     stream: StreamResolver;
+    suggestions: SuggestionManager;
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
@@ -35,6 +38,7 @@ export class ChatManager {
         this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
+        this.suggestions = new SuggestionManager(this.projectsManager);
         this.listen();
     }
 
@@ -60,7 +64,7 @@ export class ChatManager {
             this.streamingMessage = null;
             return;
         }
-        this.streamingMessage = new AssistantChatMessageImpl(content);
+        this.streamingMessage = new AssistantChatMessageImpl(content, true);
     }
 
     async sendNewMessage(content: string): Promise<void> {
@@ -76,32 +80,65 @@ export class ChatManager {
             console.error('Failed to add user message');
             return;
         }
-        sendAnalytics('send chat message');
-        await this.sendChatToAi();
+        sendAnalytics('send chat message', {
+            content,
+        });
+        await this.sendChatToAi(StreamRequestType.CHAT);
     }
 
-    async sendChatToAi(): Promise<void> {
+    async sendFixErrorToAi(error: ParsedError): Promise<boolean> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return false;
+        }
+
+        const prompt = `For the code present, we get this error: ${error.message}. How can I resolve this? If you propose a fix, please make it concise.`;
+
+        const context = await this.editorEngine.errors.getMessageContextFromError(error);
+        if (!context) {
+            console.error('No context found');
+            return false;
+        }
+        // Add error message to conversation
+        const userMessage = this.conversation.addUserMessage(prompt, context);
+        this.conversation.current.updateName(error.message);
+        if (!userMessage) {
+            console.error('Failed to add user message');
+            return false;
+        }
+        sendAnalytics('send fix error chat message', {
+            error: error.fullMessage,
+        });
+        await this.sendChatToAi(StreamRequestType.ERROR_FIX);
+        return true;
+    }
+
+    async sendChatToAi(requestType: StreamRequestType): Promise<void> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
         this.shouldAutoScroll = true;
-        this.stream.errorMessage = null;
+        this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-        const res: StreamResponse | null = await this.sendStreamRequest(messages);
+        const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
 
         this.stream.clear();
         this.isWaiting = false;
-        this.handleChatResponse(res);
+        this.handleChatResponse(res, requestType);
         sendAnalytics('receive chat response');
     }
 
-    sendStreamRequest(messages: CoreMessage[]): Promise<StreamResponse | null> {
+    sendStreamRequest(
+        messages: CoreMessage[],
+        requestType: StreamRequestType,
+    ): Promise<StreamResponse | null> {
         const requestId = nanoid();
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
             requestId,
+            requestType,
         });
     }
 
@@ -130,11 +167,15 @@ export class ChatManager {
 
         message.content = content;
         this.conversation.current.removeAllMessagesAfter(message);
-        this.sendChatToAi();
+        this.sendChatToAi(StreamRequestType.CHAT);
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(res: StreamResponse | null, applyCode: boolean = false) {
+    async handleChatResponse(
+        res: StreamResponse | null,
+        requestType: StreamRequestType,
+        applyCode: boolean = false,
+    ) {
         if (!res) {
             console.error('No response found');
             return;
@@ -162,6 +203,15 @@ export class ChatManager {
 
         if (applyCode) {
             this.code.applyCode(assistantMessage.id);
+        }
+
+        if (
+            requestType === StreamRequestType.CHAT &&
+            this.conversation.current?.messages &&
+            this.conversation.current.messages.length > 0
+        ) {
+            this.suggestions.shouldHide = true;
+            this.suggestions.generateNextSuggestions(this.conversation.current.messages);
         }
     }
 

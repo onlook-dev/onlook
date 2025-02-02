@@ -1,7 +1,7 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import { type CoreMessage } from 'ai';
+import { type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
@@ -10,7 +10,6 @@ class LlmManager {
     private static instance: LlmManager;
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
-    private userId: string | null = null;
     private promptProvider: PromptProvider;
 
     private constructor() {
@@ -23,7 +22,6 @@ class LlmManager {
         const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
 
         if (enable) {
-            this.userId = settings.id || null;
             this.useAnalytics = true;
         } else {
             this.useAnalytics = false;
@@ -43,14 +41,29 @@ class LlmManager {
 
     public async stream(
         messages: CoreMessage[],
-        systemPrompt: string | null = null,
-        abortController: AbortController | null = null,
+        requestType: StreamRequestType,
+        options?: {
+            abortController?: AbortController;
+            skipSystemPrompt?: boolean;
+        },
     ): Promise<StreamResponse> {
+        const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
+
+            if (!skipSystemPrompt) {
+                const systemMessage = {
+                    role: 'system',
+                    content: this.promptProvider.getSystemPrompt(process.platform),
+                    experimental_providerMetadata: {
+                        anthropic: { cacheControl: { type: 'ephemeral' } },
+                    },
+                } as CoreSystemMessage;
+                messages = [systemMessage, ...messages];
+            }
             const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
+                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
                 {
                     method: 'POST',
                     headers: {
@@ -59,12 +72,9 @@ class LlmManager {
                     },
                     body: JSON.stringify({
                         messages,
-                        systemPrompt: systemPrompt
-                            ? systemPrompt
-                            : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
-                        userId: this.userId,
-                    }),
+                        requestType,
+                    } satisfies StreamRequestV2),
                     signal: this.abortController.signal,
                 },
             );
@@ -134,6 +144,27 @@ class LlmManager {
             return String(error.message);
         }
         return 'An unknown error occurred';
+    }
+
+    public async generateSuggestions(messages: CoreMessage[]): Promise<string[]> {
+        const authTokens = await getRefreshedAuthTokens();
+        const response: Response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authTokens.accessToken}`,
+                },
+                body: JSON.stringify({
+                    messages,
+                    useAnalytics: this.useAnalytics,
+                    requestType: StreamRequestType.SUGGESTIONS,
+                } satisfies StreamRequestV2),
+            },
+        );
+
+        return (await response.json()) as string[];
     }
 }
 
