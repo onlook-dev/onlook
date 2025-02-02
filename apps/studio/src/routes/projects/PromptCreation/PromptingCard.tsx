@@ -25,7 +25,7 @@ export const PromptingCard = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
-    const imageRef = useRef<HTMLTextAreaElement>(null);
+    const imageRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
