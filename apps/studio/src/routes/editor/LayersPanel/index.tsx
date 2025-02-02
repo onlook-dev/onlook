@@ -10,8 +10,8 @@ import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
 import ImagesTab from './ImagesTab';
 import LayersTab from './LayersTab';
-import { capitalizeFirstLetter } from '/common/helpers';
 import PagesTab from './PageTab';
+import { capitalizeFirstLetter } from '/common/helpers';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -33,13 +33,6 @@ const LayersPanel = observer(() => {
                     <div className="flex flex-row items-center gap-2">
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.PAGES}
-                        >
-                            {capitalizeFirstLetter(TabValue.PAGES)}
-                        </TabsTrigger>
-
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.LAYERS}
                         >
                             <Icons.Layers className="mr-1.5 mb-0.5" />
@@ -53,6 +46,12 @@ const LayersPanel = observer(() => {
                                 <Icons.Component />
                                 {capitalizeFirstLetter(TabValue.COMPONENTS)}
                             </div>
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            value={TabValue.PAGES}
+                        >
+                            {capitalizeFirstLetter(TabValue.PAGES)}
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
