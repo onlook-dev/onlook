@@ -1,6 +1,7 @@
 import { type CodeBlock } from '@onlook/models/chat/message';
 import { FENCE } from '../prompt/format';
 import { flexibleSearchAndReplace } from './search_replace';
+import { validateAst } from './ast';
 
 export class CodeBlockProcessor {
     /**
@@ -58,21 +59,31 @@ export class CodeBlockProcessor {
      * Applies a search/replace diff to the original text with advanced formatting handling
      * Uses multiple strategies and preprocessing options to handle complex replacements
      */
-    async applyDiff(originalText: string, diffText: string): Promise<string> {
+    async applyDiff(originalText: string, diffText: string, fileName?: string): Promise<string> {
         const searchReplaces = CodeBlockProcessor.parseDiff(diffText);
         let text = originalText;
+        let lastValidText = originalText;
 
         for (const { search, replace } of searchReplaces) {
             const result = await flexibleSearchAndReplace(search, replace, text);
             if (!result.success) {
-                // Fallback to simple replacement if flexible strategies fail
-                text = text.replace(search, replace);
+                throw new Error(`Search/replace failed: ${result.error}`);
+            }
+
+            if (result.text && fileName) {
+                const astResult = await validateAst(result.text, fileName);
+                if (!astResult.isValid) {
+                    throw new Error(`AST validation failed: ${astResult.error}`);
+                }
+                text = result.text;
+                lastValidText = text;
             } else if (result.text) {
                 text = result.text;
+                lastValidText = text;
             }
         }
 
-        return text;
+        return lastValidText;
     }
 
     /**

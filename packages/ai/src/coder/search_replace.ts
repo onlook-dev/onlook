@@ -78,6 +78,7 @@ export interface SearchReplaceResult {
     success: boolean;
     text?: string;
     error?: string;
+    astError?: string;
 }
 
 /**

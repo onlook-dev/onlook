@@ -19,44 +19,66 @@ export class ChatCodeManager {
 
     async applyCode(messageId: string) {
         const message = this.chat.conversation.current?.getMessageById(messageId);
-        if (!message) {
-            console.error('No message found with id', messageId);
+        if (!message || message.type !== 'assistant') {
+            console.error('Invalid message');
             return;
         }
-        if (message.type !== 'assistant') {
-            console.error('Can only apply code to assistant messages');
-            return;
-        }
+
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
+        const errors: Array<{ file: string; error: string }> = [];
 
         for (const [file, codeBlocks] of fileToCodeBlocks) {
-            // If file doesn't exist, we'll assume it's a new file and create it
-            const originalContent = (await this.editorEngine.code.getFileContent(file, true)) || '';
-            if (originalContent == null) {
-                console.error('Failed to get file content', file);
-                continue;
-            }
-            let content = originalContent;
-            for (const block of codeBlocks) {
-                content = await this.processor.applyDiff(content, block.content);
-            }
+            try {
+                const originalContent = await this.editorEngine.code.getFileContent(file, true);
+                if (originalContent == null) {
+                    errors.push({ file, error: 'Failed to get file content' });
+                    continue;
+                }
 
-            const success = await this.writeFileContent(file, content, originalContent);
-            if (!success) {
-                console.error('Failed to write file content');
-                continue;
-            }
+                let content = originalContent;
+                for (const block of codeBlocks) {
+                    try {
+                        content = await this.processor.applyDiff(content, block.content, file);
+                    } catch (error) {
+                        errors.push({
+                            file,
+                            error: error instanceof Error ? error.message : 'Unknown error',
+                        });
+                        continue;
+                    }
+                }
 
-            message.applied = true;
-            message.snapshots[file] = {
-                path: file,
-                original: originalContent,
-                generated: content,
-            };
-            this.chat.conversation.current?.updateMessage(message);
-            this.chat.conversation.saveConversationToStorage();
+                const success = await this.writeFileContent(file, content, originalContent);
+                if (!success) {
+                    errors.push({ file, error: 'Failed to write file content' });
+                    continue;
+                }
+
+                message.applied = true;
+                message.snapshots[file] = {
+                    path: file,
+                    original: originalContent,
+                    generated: content,
+                };
+            } catch (error) {
+                errors.push({
+                    file,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                });
+            }
         }
 
+        if (errors.length > 0) {
+            await this.chat.sendNewMessage({
+                type: 'system',
+                content: `Code application failed:\n${errors
+                    .map((e) => `File: ${e.file}\nError: ${e.error}`)
+                    .join('\n\n')}`,
+            });
+        }
+
+        this.chat.conversation.current?.updateMessage(message);
+        this.chat.conversation.saveConversationToStorage();
         this.chat.suggestions.shouldHide = false;
         sendAnalytics('apply code change');
     }
