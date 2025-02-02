@@ -3,7 +3,6 @@ import type { PageNode } from '@onlook/models/pages';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { EditorEngine } from '..';
-import { WebviewState } from '../webview';
 import type { ProjectsManager } from '@/lib/projects';
 
 export class PagesManager {
@@ -24,9 +23,8 @@ export class PagesManager {
         return this.pages;
     }
 
-    private get activeWebviewId(): string | undefined {
-        const webview = this.editorEngine.webviews.selected[0];
-        return webview?.id;
+    private getActiveWebview(): Electron.WebviewTag | undefined {
+        return this.editorEngine.webviews.selected[0] || this.editorEngine.webviews.getAll()[0];
     }
 
     public subscribe(callback: () => void): () => void {
@@ -41,7 +39,7 @@ export class PagesManager {
     }
 
     public isNodeActive(node: PageNode): boolean {
-        const webview = this.editorEngine.webviews.selected[0];
+        const webview = this.getActiveWebview();
         if (!webview) {
             return false;
         }
@@ -51,38 +49,43 @@ export class PagesManager {
             return false;
         }
 
-        // For root path special case
-        if (node.path === '/' && activePath === '/') {
+        // Skip folder nodes
+        if (node.children && node.children?.length > 0) {
+            return false;
+        }
+
+        const normalizedNodePath = node.path.replace(/\\/g, '/');
+        const normalizedActivePath = activePath.replace(/\\/g, '/');
+
+        const nodeSegments = normalizedNodePath.split('/').filter(Boolean);
+        const activeSegments = normalizedActivePath.split('/').filter(Boolean);
+
+        // Handle root path
+        if (nodeSegments.length === 0 && activeSegments.length === 0) {
             return true;
         }
-
-        // Handle dynamic route matching
-        const isDynamic = node.path.includes('[') && node.path.includes(']');
-        if (isDynamic) {
-            const routePattern = node.path
-                .split('/')
-                .map((segment) => {
-                    if (segment.startsWith('[') && segment.endsWith(']')) {
-                        return '[^/]+'; // Match any character except '/'
-                    }
-                    return segment;
-                })
-                .join('\\/');
-
-            const regex = new RegExp(`^${routePattern}$`);
-            return regex.test(activePath);
+        if (nodeSegments.length !== activeSegments.length) {
+            return false;
         }
 
-        // Static route comparison
-        const normalizedNodePath = node.path.replace(/\/$/, '');
-        const normalizedActivePath = activePath.replace(/\/$/, '');
-        return normalizedNodePath === normalizedActivePath;
+        return nodeSegments.every((nodeSegment, index) => {
+            const activeSegment = activeSegments[index];
+            const isDynamic = nodeSegment.startsWith('[') && nodeSegment.endsWith(']');
+
+            // For dynamic segments, check if active segment exists
+            if (isDynamic) {
+                return activeSegment.length > 0;
+            }
+
+            // For static segments, do exact match after cleaning escapes
+            return nodeSegment.replace(/\\/g, '') === activeSegment.replace(/\\/g, '');
+        });
     }
 
     public setActivePath(webviewId: string, path: string) {
         this.activeRoutes.set(webviewId, path);
 
-        if (webviewId === this.activeWebviewId) {
+        if (webviewId === this.getActiveWebview()?.id) {
             this.currentPath = path;
         }
 
@@ -135,8 +138,7 @@ export class PagesManager {
     }
 
     async navigateTo(path: string) {
-        const webview =
-            this.editorEngine.webviews.selected[0] || this.editorEngine.webviews.getAll()[0];
+        const webview = this.getActiveWebview();
 
         if (!webview) {
             console.warn('No webview available');
@@ -162,9 +164,29 @@ export class PagesManager {
         }
     }
 
-    setCurrentPath(path: string) {
+    public setCurrentPath(path: string) {
         this.currentPath = path;
         this.notifySubscribers();
+    }
+
+    public handleWebviewUrlChange(webviewId: string) {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        try {
+            const url = webview.getURL();
+            if (!url) {
+                return;
+            }
+
+            const urlObj = new URL(url);
+            const path = urlObj.pathname;
+            this.setActivePath(webviewId, path);
+        } catch (error) {
+            console.error('Failed to parse URL:', error);
+        }
     }
 
     dispose() {

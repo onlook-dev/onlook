@@ -100,6 +100,7 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
     const nodes: PageNode[] = [];
     const entries = await fs.readdir(dir, { withFileTypes: true });
 
+    // Handle page files
     const pageFile = entries.find(
         (entry) =>
             entry.isFile() &&
@@ -113,24 +114,24 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
 
         let cleanPath;
         if (isDynamicRoute) {
-            const paramName = currentDir.slice(1, -1);
+            const paramName = currentDir;
             cleanPath = parentPath ? path.dirname(parentPath) + '/' + paramName : '/' + paramName;
         } else {
             cleanPath = parentPath ? `/${parentPath}` : '/';
         }
 
+        // Normalize path and ensure leading slash & no trailing slash
+        cleanPath = '/' + cleanPath.replace(/^\/|\/$/g, '');
+
         nodes.push({
-            name: isDynamicRoute
-                ? '/' + currentDir
-                : parentPath
-                  ? `/${path.basename(parentPath)}`
-                  : 'home',
+            name: isDynamicRoute ? currentDir : parentPath ? path.basename(parentPath) : 'home',
             path: cleanPath,
             children: [],
             isActive: false,
         });
     }
 
+    // Handle directories
     for (const entry of entries) {
         if (IGNORED_DIRECTORIES.includes(entry.name)) {
             continue;
@@ -142,10 +143,11 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
         if (entry.isDirectory()) {
             const children = await scanAppDirectory(fullPath, relativePath);
             if (children.length > 0) {
-                const dirPath = '/' + relativePath.replace(/\\/g, '/');
+                const dirPath = relativePath.replace(/\\/g, '/');
+                const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
                 nodes.push({
                     name: entry.name,
-                    path: `${dirPath}/`,
+                    path: cleanPath,
                     children,
                     isActive: false,
                 });
@@ -170,29 +172,31 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
             const fileName = entry.name.split('.')[0];
             const isDynamicRoute = fileName.startsWith('[') && fileName.endsWith(']');
 
+            let cleanPath;
             if (fileName === 'index') {
-                nodes.push({
-                    name: parentPath ? `/${path.basename(parentPath)}` : 'home',
-                    path: parentPath ? `/${parentPath}` : '/',
-                    children: [],
-                    isActive: false,
-                });
+                cleanPath = parentPath ? `/${parentPath}` : '/';
             } else {
-                let cleanPath;
                 if (isDynamicRoute) {
                     const paramName = fileName.slice(1, -1);
                     cleanPath = path.join(parentPath, paramName);
                 } else {
                     cleanPath = path.join(parentPath, fileName);
                 }
-
-                nodes.push({
-                    name: '/' + fileName,
-                    path: `/${cleanPath.replace(/\\/g, '/')}`,
-                    children: [],
-                    isActive: false,
-                });
+                // Normalize path
+                cleanPath = '/' + cleanPath.replace(/\\/g, '/').replace(/^\/|\/$/g, '');
             }
+
+            nodes.push({
+                name:
+                    fileName === 'index'
+                        ? parentPath
+                            ? `/${path.basename(parentPath)}`
+                            : 'home'
+                        : '/' + fileName,
+                path: cleanPath,
+                children: [],
+                isActive: false,
+            });
         }
     }
 
@@ -203,15 +207,19 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
         }
 
         const fullPath = path.join(dir, entry.name);
-        const relativePath = path.join(parentPath, entry.name);
+        const isDynamicDir = entry.name.startsWith('[') && entry.name.endsWith(']');
+
+        const dirNameForPath = isDynamicDir ? entry.name.slice(1, -1) : entry.name;
+        const relativePath = path.join(parentPath, dirNameForPath);
 
         if (entry.isDirectory()) {
             const children = await scanPagesDirectory(fullPath, relativePath);
             if (children.length > 0) {
-                const dirPath = '/' + relativePath.replace(/\\/g, '/');
+                const dirPath = relativePath.replace(/\\/g, '/');
+                const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
                 nodes.push({
-                    name: '/' + entry.name,
-                    path: `${dirPath}/`,
+                    name: entry.name,
+                    path: cleanPath,
                     children,
                     isActive: false,
                 });

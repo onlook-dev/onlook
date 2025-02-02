@@ -45,7 +45,7 @@ const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.C
         <div
             style={style}
             className={cn('flex items-center h-6 cursor-pointer hover:bg-background-hover', {
-                'bg-[#FA003C] text-white': !hasChildren && isActive,
+                'bg-red-500 text-white': !hasChildren && isActive,
             })}
             onClick={handleClick}
         >
@@ -63,9 +63,8 @@ const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.C
             ) : (
                 <Icons.File className="w-4 h-4 mr-2" />
             )}
-            <span>
-                {node.data.name} - {isActive.toString()}
-            </span>
+
+            <span>{node.data.name}</span>
         </div>
     );
 };
