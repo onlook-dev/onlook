@@ -45,8 +45,8 @@ import {
     CursorArrowIcon,
     DesktopIcon,
     DiscordLogoIcon,
-    DotsVerticalIcon,
     DotsHorizontalIcon,
+    DotsVerticalIcon,
     DownloadIcon,
     DragHandleDots2Icon,
     DropdownMenuIcon,
@@ -64,6 +64,7 @@ import {
     GroupIcon,
     HandIcon,
     ImageIcon,
+    InfoCircledIcon,
     InputIcon,
     LaptopIcon,
     Link2Icon,
@@ -1233,6 +1234,7 @@ export const Icons = {
 
     Image: ImageIcon,
     Input: InputIcon,
+    InfoCircled: InfoCircledIcon,
 
     Laptop: LaptopIcon,
     Link: Link2Icon,
