@@ -9,6 +9,7 @@ import { Progress } from '@onlook/ui/progress';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useState } from 'react';
 import type { StepComponent } from '../withStepProps';
+import { toast } from '@onlook/ui/use-toast';
 
 enum StepState {
     INSTALLING = 'installing',
@@ -36,6 +37,11 @@ const LoadSetupProject: StepComponent = ({ props, variant }) => {
                 } else if (stage === 'complete') {
                     setProgress(100);
                     setState(StepState.INSTALLED);
+                    toast({
+                        title: 'Warning: OIDs will be added during import',
+                        description: 'These OIDs will be removed when you stop the run.',
+                        variant: 'warning',
+                    });
                 } else if (stage === 'error') {
                     setState(StepState.ERROR);
                     sendAnalytics('create project error', { message, method: CreateMethod.NEW });
