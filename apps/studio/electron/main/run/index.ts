@@ -136,6 +136,9 @@ class RunManager {
             .on('change', (filePath) => {
                 this.processFileForMapping(filePath);
             })
+            .on('add', (filePath) => {
+                this.processFileForMapping(filePath);
+            })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error}`);
             });
