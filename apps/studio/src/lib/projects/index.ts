@@ -61,6 +61,7 @@ export class ProjectsManager {
         url: string,
         folderPath: string,
         commands: {
+            install: string;
             run: string;
             build: string;
         },
