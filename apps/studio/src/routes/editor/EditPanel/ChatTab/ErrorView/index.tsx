@@ -24,21 +24,25 @@ export const ErrorView = observer(() => {
         >
             <div
                 className={cn(
-                    'border rounded-lg bg-amber-950 relative border-amber-500/20',
-                    !isOpen && 'hover:bg-amber-900',
+                    'border rounded-lg relative',
+                    'dark:bg-amber-950 dark:border-amber-500/20',
+                    'bg-amber-50 border-amber-200',
+                    !isOpen && 'hover:bg-amber-100 dark:hover:bg-amber-900',
                 )}
             >
                 <div
                     className={cn(
-                        'flex items-center justify-between text-amber-200 transition-colors',
-                        !isOpen && 'hover:text-amber-400',
+                        'flex items-center justify-between transition-colors',
+                        'dark:text-amber-200 text-amber-900',
+                        !isOpen && 'hover:text-amber-700 dark:hover:text-amber-400',
                     )}
                 >
                     <CollapsibleTrigger asChild disabled={errorCount === 1}>
                         <div className="flex-1 flex items-center gap-2 cursor-pointer pl-3 py-2 min-w-0">
                             <Icons.ChevronDown
                                 className={cn(
-                                    'h-4 w-4 shrink-0 transition-transform duration-200 text-amber-400',
+                                    'h-4 w-4 shrink-0 transition-transform duration-200',
+                                    'dark:text-amber-400 text-amber-600',
                                     isOpen && 'rotate-180',
                                 )}
                             />
@@ -71,7 +75,10 @@ export const ErrorView = observer(() => {
                             variant="ghost"
                             size="sm"
                             disabled={editorEngine.chat.isWaiting}
-                            className="h-7 px-2 text-amber-400 hover:text-amber-100 hover:bg-amber-700 font-sans select-none"
+                            className="h-7 px-2 font-sans select-none
+                                dark:text-amber-400 text-amber-700
+                                dark:hover:text-amber-100 hover:text-amber-900
+                                dark:hover:bg-amber-700 hover:bg-amber-100"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 editorEngine.errors.sendFixError();
