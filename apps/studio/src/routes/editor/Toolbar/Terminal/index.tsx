@@ -105,8 +105,9 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         const terminalDataListener = (message: TerminalMessage) => {
             if (message.id === projectsManager.project?.id) {
-                if (message.data && message.data == RunState.TERMINATE_BATCH) {
+                if (message.data && message.data === RunState.TERMINATE_BATCH) {
                     runner.stop();
+                    return;
                 }
                 term.write(message.data);
             }
