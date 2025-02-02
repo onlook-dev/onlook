@@ -10,6 +10,7 @@ export class PagesManager {
     private pages: PageNode[] = [];
     private activeRoutes: Map<string, string> = new Map();
     private currentPath: string = '';
+    private subscribers: Set<() => void> = new Set();
 
     constructor(
         private editorEngine: EditorEngine,
@@ -23,9 +24,79 @@ export class PagesManager {
         return this.pages;
     }
 
-    // TODO: finish implementation for page active states
+    private get activeWebviewId(): string | undefined {
+        const webview = this.editorEngine.webviews.selected[0];
+        return webview?.id;
+    }
+
+    public subscribe(callback: () => void): () => void {
+        this.subscribers.add(callback);
+        return () => {
+            this.subscribers.delete(callback);
+        };
+    }
+
+    private notifySubscribers(): void {
+        this.subscribers.forEach((callback) => callback());
+    }
+
+    public isNodeActive(node: PageNode): boolean {
+        const webview = this.editorEngine.webviews.selected[0];
+        if (!webview) {
+            return false;
+        }
+
+        const activePath = this.activeRoutes.get(webview.id);
+        if (!activePath) {
+            return false;
+        }
+
+        // For root path special case
+        if (node.path === '/' && activePath === '/') {
+            return true;
+        }
+
+        // Handle dynamic route matching
+        const isDynamic = node.path.includes('[') && node.path.includes(']');
+        if (isDynamic) {
+            const routePattern = node.path
+                .split('/')
+                .map((segment) => {
+                    if (segment.startsWith('[') && segment.endsWith(']')) {
+                        return '[^/]+'; // Match any character except '/'
+                    }
+                    return segment;
+                })
+                .join('\\/');
+
+            const regex = new RegExp(`^${routePattern}$`);
+            return regex.test(activePath);
+        }
+
+        // Static route comparison
+        const normalizedNodePath = node.path.replace(/\/$/, '');
+        const normalizedActivePath = activePath.replace(/\/$/, '');
+        return normalizedNodePath === normalizedActivePath;
+    }
+
     public setActivePath(webviewId: string, path: string) {
         this.activeRoutes.set(webviewId, path);
+
+        if (webviewId === this.activeWebviewId) {
+            this.currentPath = path;
+        }
+
+        this.notifySubscribers();
+    }
+
+    private updateActiveStates(nodes: PageNode[], activePath: string) {
+        nodes.forEach((node) => {
+            node.isActive = this.isNodeActive(node);
+
+            if (node.children?.length) {
+                this.updateActiveStates(node.children, activePath);
+            }
+        });
     }
 
     public isActivePath(webviewId: string, path: string): boolean {
@@ -72,11 +143,6 @@ export class PagesManager {
             return;
         }
 
-        if (this.editorEngine.webviews.getState(webview.id) === WebviewState.NOT_RUNNING) {
-            console.warn('Project is not running');
-            return;
-        }
-
         path = path.startsWith('/') ? path : `/${path}`;
 
         try {
@@ -89,7 +155,6 @@ export class PagesManager {
             }
 
             await webview.loadURL(`${baseUrl}${path}`);
-            this.setCurrentPath(path);
             this.setActivePath(webview.id, path);
             await webview.executeJavaScript('window.api?.processDom()');
         } catch (error) {
@@ -97,23 +162,15 @@ export class PagesManager {
         }
     }
 
-    public setCurrentPath(path: string) {
+    setCurrentPath(path: string) {
         this.currentPath = path;
-        this.updateActiveStates(this.pages, path);
-    }
-
-    private updateActiveStates(nodes: PageNode[], activePath: string) {
-        nodes.forEach((node) => {
-            node.isActive = node.path === activePath;
-            if (node.children?.length) {
-                this.updateActiveStates(node.children, activePath);
-            }
-        });
+        this.notifySubscribers();
     }
 
     dispose() {
         this.pages = [];
         this.currentPath = '';
+        this.subscribers.clear();
         this.editorEngine = null as any;
     }
 }

@@ -4,26 +4,48 @@ import { motion } from 'motion/react';
 import type { NodeApi } from 'react-arborist';
 import type { PageNode } from '@onlook/models/pages';
 import { useEditorEngine } from '@/components/Context';
+import { useEffect, useState } from 'react';
 
 const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.CSSProperties }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
-    const webview = editorEngine.webviews.selected[0];
-    const isActive = webview ? editorEngine.pages.isActivePath(webview.id, node.data.path) : false;
+    const [isActive, setIsActive] = useState(false);
 
-    const handleClick = (e: React.MouseEvent) => {
+    const handleClick = async (e: React.MouseEvent) => {
         if (hasChildren) {
             node.toggle();
-        } else {
-            node.select();
+            return;
         }
+        setIsActive(true);
+
+        const webviewId = editorEngine.webviews.selected[0]?.id;
+        if (webviewId) {
+            editorEngine.pages.setActivePath(webviewId, node.data.path);
+        }
+
+        editorEngine.pages.setCurrentPath(node.data.path);
+        node.select();
+
+        await editorEngine.pages.navigateTo(node.data.path);
     };
+
+    useEffect(() => {
+        const updateActive = () => {
+            const active = editorEngine.pages.isNodeActive(node.data);
+            if (active !== isActive) {
+                setIsActive(active);
+            }
+        };
+
+        updateActive();
+        return editorEngine.pages.subscribe(updateActive);
+    }, [editorEngine.pages, node.data, isActive]);
 
     return (
         <div
             style={style}
             className={cn('flex items-center h-6 cursor-pointer hover:bg-background-hover', {
-                'bg-[#FA003C] text-white': isActive,
+                'bg-[#FA003C] text-white': !hasChildren && isActive,
             })}
             onClick={handleClick}
         >
@@ -41,7 +63,9 @@ const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.C
             ) : (
                 <Icons.File className="w-4 h-4 mr-2" />
             )}
-            <span>{node.data.name}</span>
+            <span>
+                {node.data.name} - {isActive.toString()}
+            </span>
         </div>
     );
 };
