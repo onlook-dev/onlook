@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { rmSync } from 'node:fs';
+import { cpSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 import electron from 'vite-plugin-electron/simple';
@@ -14,6 +14,14 @@ export default defineConfig(({ command }) => {
     const isServe = command === 'serve';
     const isBuild = command === 'build';
     const sourcemap = isServe || !!process.env.VSCODE_DEBUG;
+
+    try {
+        cpSync('resources', 'dist-electron/main/resources', { recursive: true });
+        console.log('✓ Resources folder copied to dist-electron');
+    } catch (err) {
+        console.error('Failed to copy resources folder:', err);
+    }
+
     return {
         resolve: {
             alias: {

@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { cleanupAuthAutoRefresh, handleAuthCallback, setupAuthAutoRefresh } from './auth';
+import bun from './bun';
 import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
@@ -17,7 +18,7 @@ fixPath();
 
 export let mainWindow: BrowserWindow | null = null;
 const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Constants
 const MAIN_DIST = path.join(__dirname, '../../dist-electron');
@@ -89,6 +90,7 @@ const initMainWindow = () => {
     });
 
     setupAuthAutoRefresh();
+    bun.runBunCommand('-v');
 };
 
 let isCleaningUp = false;
