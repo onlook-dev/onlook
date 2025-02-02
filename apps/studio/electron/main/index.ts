@@ -165,12 +165,9 @@ const setupAppEventListeners = () => {
     });
 
     app.on('window-all-closed', async () => {
-        if (!isQuitting) {
-            await cleanup();
+        if (process.platform !== 'darwin') {
             mainWindow = null;
-            if (process.platform !== 'darwin') {
-                app.quit();
-            }
+            app.quit();
         }
     });
 
