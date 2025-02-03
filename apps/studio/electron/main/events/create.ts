@@ -1,20 +1,11 @@
-import {
-    type CreateCallback,
-    type CreateStage,
-    type SetupCallback,
-    type SetupStage,
-    type VerifyCallback,
-    type VerifyStage,
-    createProject,
-    installProjectDependencies,
-    setupProject,
-    verifyProject,
-} from '@onlook/foundation';
+import { CreateStage, SetupStage, type CreateCallback, type SetupCallback } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
+import { runBunCommand } from '../bun';
 import projectCreator from '../create';
+import { createProject } from '../create/install';
 
 export function listenForCreateMessages() {
     ipcMain.handle(MainChannels.CREATE_NEW_PROJECT, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -29,17 +20,6 @@ export function listenForCreateMessages() {
         return createProject(name, path, progressCallback);
     });
 
-    ipcMain.handle(MainChannels.VERIFY_PROJECT, (e: Electron.IpcMainInvokeEvent, args: string) => {
-        const progressCallback: VerifyCallback = (stage: VerifyStage, message: string) => {
-            mainWindow?.webContents.send(MainChannels.VERIFY_PROJECT_CALLBACK, {
-                stage,
-                message,
-            });
-        };
-        const path = args as string;
-        return verifyProject(path, progressCallback);
-    });
-
     ipcMain.handle(
         MainChannels.INSTALL_PROJECT_DEPENDENCIES,
         (e: Electron.IpcMainInvokeEvent, args) => {
@@ -50,20 +30,28 @@ export function listenForCreateMessages() {
                 });
             };
             const { folderPath, installCommand } = args;
-            return installProjectDependencies(folderPath, installCommand, progressCallback);
+            return runBunCommand(installCommand, [], {
+                cwd: folderPath,
+                callbacks: {
+                    onStdout: (data) => progressCallback(SetupStage.CONFIGURING, data),
+                    onStderr: (data) => progressCallback(SetupStage.CONFIGURING, data),
+                    onClose: (code, signal) => {
+                        if (code !== 0) {
+                            progressCallback(
+                                SetupStage.ERROR,
+                                `Failed to install dependencies. Code: ${code}, Signal: ${signal}`,
+                            );
+                        } else {
+                            progressCallback(
+                                SetupStage.COMPLETE,
+                                'Project dependencies installed.',
+                            );
+                        }
+                    },
+                },
+            });
         },
     );
-
-    ipcMain.handle(MainChannels.SETUP_PROJECT, (e: Electron.IpcMainInvokeEvent, args: string) => {
-        const progressCallback: SetupCallback = (stage: SetupStage, message: string) => {
-            mainWindow?.webContents.send(MainChannels.SETUP_PROJECT_CALLBACK, {
-                stage,
-                message,
-            });
-        };
-        const path = args as string;
-        return setupProject(path, progressCallback);
-    });
 
     ipcMain.handle(
         MainChannels.CREATE_NEW_PROJECT_PROMPT,

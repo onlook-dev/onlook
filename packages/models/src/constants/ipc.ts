@@ -37,7 +37,6 @@ export enum MainChannels {
     SAVE_IMAGE = 'save-image',
     GET_IMAGE = 'get-image',
     SEND_WINDOW_COMMAND = 'send-window-command',
-    CHECK_REQUIREMENTS = 'check-requirements',
     DELETE_FOLDER = 'delete-folder',
     IS_CHILD_TEXT_EDITABLE = 'is-child-text-editable',
 
@@ -82,8 +81,6 @@ export enum MainChannels {
     // Create
     CREATE_NEW_PROJECT = 'create-new-project',
     CREATE_NEW_PROJECT_CALLBACK = 'create-new-project-callback',
-    VERIFY_PROJECT = 'verify-project',
-    VERIFY_PROJECT_CALLBACK = 'verify-project-callback',
     SETUP_PROJECT = 'setup-project',
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
     INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',

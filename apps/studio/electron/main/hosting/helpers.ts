@@ -10,8 +10,8 @@ import {
     statSync,
 } from 'fs';
 import { isBinary } from 'istextorbinary';
-import { exec } from 'node:child_process';
 import { join } from 'node:path';
+import { runBunCommand } from '../bun';
 
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
 
@@ -132,24 +132,20 @@ export function runBuildScript(
     error?: string;
 }> {
     return new Promise((resolve, reject) => {
-        exec(
-            buildScript,
-            { cwd: folderPath, env: { ...process.env, NODE_ENV: 'production' } },
-            (error: Error | null, stdout: string, stderr: string) => {
-                if (error) {
-                    console.error(`Build script error: ${error}`);
-                    resolve({ success: false, error: error.message });
-                    return;
-                }
-
-                if (stderr) {
-                    console.warn(`Build script stderr: ${stderr}`);
-                }
-
-                console.log(`Build script output: ${stdout}`);
-                resolve({ success: true });
+        runBunCommand(buildScript, [], {
+            cwd: folderPath,
+            env: { ...process.env, NODE_ENV: 'production' },
+            callbacks: {
+                onClose: (code, signal) => {
+                    console.log(`Build script closed with code ${code} and signal ${signal}`);
+                    if (code === 0) {
+                        resolve({ success: true });
+                    } else {
+                        resolve({ success: false, error: 'Build script failed' });
+                    }
+                },
             },
-        );
+        });
     });
 }
 

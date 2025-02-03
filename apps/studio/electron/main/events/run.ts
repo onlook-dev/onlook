@@ -1,7 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
+import { runBunCommand } from '../bun';
 import run from '../run';
-import { runCommand } from '../run/process';
 import terminal from '../run/terminal';
 
 export async function listenForRunMessages() {
@@ -59,6 +59,6 @@ export async function listenForRunMessages() {
 
     ipcMain.handle(MainChannels.RUN_COMMAND, async (_, args) => {
         const { cwd, command } = args as { cwd: string; command: string };
-        return await runCommand(cwd, command);
+        return await runBunCommand(command, [], { cwd });
     });
 }
