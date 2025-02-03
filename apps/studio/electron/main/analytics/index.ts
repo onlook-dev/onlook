@@ -1,6 +1,6 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { UserMetadata } from '@onlook/models/settings';
-import type { UsagePlanType } from '@onlook/models/usage';
+import { UsagePlanType } from '@onlook/models/usage';
 import { app, ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { checkSubscription } from '../payment';
