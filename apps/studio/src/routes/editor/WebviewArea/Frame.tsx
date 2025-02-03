@@ -271,12 +271,6 @@ const Frame = observer(
                 // This is a chrome error from renderer, we don't want to show it
                 return;
             }
-            if (
-                event.message.includes('ERR_CONNECTION_REFUSED') &&
-                event.message.includes('localhost')
-            ) {
-                return;
-            }
             if (event.level === 3) {
                 editorEngine.errors.addError(settings.id, event);
             }

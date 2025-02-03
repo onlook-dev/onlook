@@ -70,6 +70,21 @@ const createWindow = () => {
             webviewTag: true,
         },
     });
+
+    // Filter out localhost connection refused errors in the main process
+    mainWindow.webContents.on(
+        'did-fail-load',
+        (event, errorCode, errorDescription, validatedURL) => {
+            if (
+                errorDescription.includes('ERR_CONNECTION_REFUSED') &&
+                validatedURL.includes('localhost')
+            ) {
+                event.preventDefault();
+                return;
+            }
+        },
+    );
+
     return mainWindow;
 };
 
