@@ -2,7 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import * as pty from 'node-pty';
 import os from 'os';
 import { mainWindow } from '..';
-import { getBunCommand } from '../bun/helper';
+import { getBunCommand } from '../bun';
 
 class TerminalManager {
     private static instance: TerminalManager;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { parseCommandAndArgs } from '../electron/main/bun/helper';
+import { parseCommandAndArgs } from '../electron/main/bun/parse';
 
 describe('parseCommandAndArgs', () => {
     it('should handle simple commands without quotes', () => {

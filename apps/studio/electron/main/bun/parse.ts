@@ -1,5 +1,3 @@
-import { getBunExecutablePath } from './index';
-
 export const parseCommandAndArgs = (
     command: string,
     args: string[] = [],
@@ -17,10 +15,4 @@ export const parseCommandAndArgs = (
     const allArgs = [...cmdArgs, ...args];
 
     return { finalCommand, allArgs };
-};
-
-export const getBunCommand = (command: string, args: string[] = []) => {
-    const bunExecutable = getBunExecutablePath();
-    const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunExecutable);
-    return `${finalCommand} ${allArgs.join(' ')}`;
 };

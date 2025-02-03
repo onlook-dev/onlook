@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
 import { __dirname } from '../index';
-import { parseCommandAndArgs } from './helper';
+import { parseCommandAndArgs } from './parse';
 
 export const getBunExecutablePath = () => {
     const platform = process.platform;
@@ -69,4 +69,10 @@ export const runBunCommand = (
             reject(err);
         });
     });
+};
+
+export const getBunCommand = (command: string, args: string[] = []) => {
+    const bunExecutable = getBunExecutablePath();
+    const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunExecutable);
+    return `${finalCommand} ${allArgs.join(' ')}`;
 };
