@@ -79,7 +79,6 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
     }
 
     function goBack() {
-        invokeMainChannel(MainChannels.VERIFY_PROJECT, projectData.folderPath);
         prevStep();
     }
 
