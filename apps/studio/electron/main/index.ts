@@ -7,7 +7,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { cleanupAuthAutoRefresh, handleAuthCallback, setupAuthAutoRefresh } from './auth';
-import bun from './bun';
 import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
@@ -90,7 +89,6 @@ const initMainWindow = () => {
     });
 
     setupAuthAutoRefresh();
-    bun.runBunCommand('-v');
 };
 
 let isCleaningUp = false;
