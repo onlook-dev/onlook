@@ -37,7 +37,7 @@ describe('RunManager', () => {
         const filePaths = [join(testDir, 'test.tsx')];
         writeFileSync(filePaths[0], 'export default () => <div>Test</div>');
 
-        await runManager.listen(filePaths);
+        await runManager.listen(filePaths, testDir);
 
         expect(mockWatch).toHaveBeenCalledWith(
             testDir,
@@ -62,7 +62,7 @@ describe('RunManager', () => {
         };
         mockWatch.mockImplementation(() => mockWatcher);
 
-        await runManager.listen(filePaths);
+        await runManager.listen(filePaths, testDir);
 
         const addHandler = mockWatcher.on.mock.calls.find(call => call[0] === 'add')?.[1];
         expect(addHandler).toBeDefined();
@@ -84,7 +84,7 @@ describe('RunManager', () => {
         };
         mockWatch.mockImplementation(() => mockWatcher);
 
-        await runManager.listen(filePaths);
+        await runManager.listen(filePaths, testDir);
 
         const ignoredDir = join(testDir, 'node_modules');
         mkdirSync(ignoredDir);
@@ -107,7 +107,7 @@ describe('RunManager', () => {
         };
         mockWatch.mockImplementation(() => mockWatcher);
 
-        await runManager.listen(filePaths);
+        await runManager.listen(filePaths, testDir);
 
         const addHandler = mockWatcher.on.mock.calls.find(call => call[0] === 'add')?.[1];
         expect(addHandler).toBeDefined();

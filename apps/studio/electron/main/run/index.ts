@@ -6,7 +6,7 @@ import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { ALLOWED_EXTENSIONS, getValidFiles } from './helpers';
+import { ALLOWED_EXTENSIONS, IGNORED_DIRECTORIES, getValidFiles } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
@@ -47,7 +47,7 @@ class RunManager {
             this.setState(RunState.SETTING_UP, 'Setting up...');
             this.mapping.clear();
             const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(filePaths);
+            await this.listen(filePaths, folderPath);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -122,15 +122,13 @@ class RunManager {
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(filePaths: string[]) {
+    async listen(filePaths: string[], projectDir: string) {
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        const rootDir = filePaths[0].split('/').slice(0, -1).join('/');
-
-        this.watcher = watch(rootDir, {
+        this.watcher = watch(projectDir, {
             persistent: true,
             ignored: [
                 /(^|[\/\\])\../,
