@@ -4,5 +4,4 @@ export enum RunState {
     RUNNING = 'running',
     STOPPING = 'stopping',
     ERROR = 'error',
-    TERMINATE_BATCH = 'Terminate batch job (Y/N)? ',
 }
