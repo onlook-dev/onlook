@@ -1,5 +1,5 @@
+import { SetupStage, type SetupCallback } from '@onlook/models';
 import { runBunCommand } from '../bun';
-import { SetupStage, type SetupCallback } from './helpers';
 
 export const installProjectDependencies = async (
     targetPath: string,

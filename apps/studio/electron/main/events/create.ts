@@ -1,16 +1,10 @@
-import { setupProject } from '@onlook/foundation';
+import { CreateStage, SetupStage, type CreateCallback, type SetupCallback } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
 import { runBunCommand } from '../bun';
 import projectCreator from '../create';
-import {
-    CreateStage,
-    SetupStage,
-    type CreateCallback,
-    type SetupCallback,
-} from '../create/helpers';
 import { createProject } from '../create/install';
 
 export function listenForCreateMessages() {

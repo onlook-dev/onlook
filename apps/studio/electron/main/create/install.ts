@@ -1,8 +1,8 @@
+import { CreateStage, type CreateCallback } from '@onlook/models';
 import degit from 'degit';
 import * as fs from 'fs';
 import * as path from 'path';
 import { runBunCommand } from '../bun';
-import { CreateStage, type CreateCallback } from './helpers';
 
 const NEXT_TEMPLATE_REPO = 'onlook-dev/starter';
 
