@@ -1,5 +1,5 @@
 import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
-import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
+import { CreateStage, type CreateCallback } from '@onlook/models';
 import {
     StreamRequestType,
     type ImageMessageContext,
@@ -12,6 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import { mainWindow } from '..';
 import Chat from '../chat';
+import { createProject } from './install';
 
 export class ProjectCreator {
     private static instance: ProjectCreator;

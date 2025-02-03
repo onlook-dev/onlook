@@ -1,3 +1,6 @@
 # Vite timestamp
 vite.config.ts.timestamp-*.mjs
 .vscode
+
+# Bun binary
+resources/bun

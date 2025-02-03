@@ -53,6 +53,7 @@
         "ai": "^3.4.29",
         "browser-image-compression": "^2.0.2",
         "chokidar": "^4.0.1",
+        "degit": "^2.8.4",
         "electron-log": "^5.2.0",
         "electron-updater": "^6.3.4",
         "embla-carousel-react": "^8.3.0",

@@ -33,6 +33,7 @@
         "increment_tag": "./scripts/increment_tag.sh",
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh",
+        "download_bun": "./scripts/download_bun.sh",
         "prepare": "husky"
     },
     "repository": {

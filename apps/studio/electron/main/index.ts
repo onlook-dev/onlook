@@ -17,7 +17,7 @@ fixPath();
 
 export let mainWindow: BrowserWindow | null = null;
 const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Constants
 const MAIN_DIST = path.join(__dirname, '../../dist-electron');
