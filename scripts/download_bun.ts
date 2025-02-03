@@ -68,4 +68,8 @@ async function downloadBun() {
     console.log(`Bun has been downloaded and installed to: ${RESOURCES_DIR}`);
 }
 
-downloadBun().catch(console.error);
+try {
+    await downloadBun();
+} catch (error) {
+    console.error(error);
+}
