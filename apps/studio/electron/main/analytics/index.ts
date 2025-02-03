@@ -100,18 +100,16 @@ class Analytics {
                 PersistentStorage.USER_SETTINGS.update({ id: user.id });
             }
 
-            const { success, data } = await checkSubscription();
-
             this.mixpanel.people.set(this.id, {
                 $name: user.name,
                 $email: user.email,
                 $avatar: user.avatarUrl,
                 platform: process.platform,
                 version: app.getVersion(),
-                plan_type: success ? data.plan.name : UsagePlanType.BASIC,
-                plan_daily_limit: success ? data.plan.daily_requests_limit : 0,
-                plan_monthly_limit: success ? data.plan.monthly_requests_limit : 0,
-                plan_is_active: success,
+                plan_type: user.planType ?? UsagePlanType.BASIC,
+                plan_daily_limit: user.planDailyLimit ?? 0,
+                plan_monthly_limit: user.planMonthlyLimit ?? 0,
+                plan_is_active: user.planIsActive ?? false,
             });
         }
     }

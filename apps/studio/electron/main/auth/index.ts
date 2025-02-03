@@ -1,10 +1,12 @@
 import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { AuthTokens, UserMetadata } from '@onlook/models/settings';
+import { UsagePlanType } from '@onlook/models/usage';
 import supabase from '@onlook/supabase/clients';
 import type { AuthResponse, User } from '@supabase/supabase-js';
 import { shell } from 'electron';
 import { mainWindow } from '..';
 import analytics, { sendAnalytics } from '../analytics';
+import { checkSubscription } from '../payment';
 import { PersistentStorage } from '../storage';
 
 let isAutoRefreshEnabled = false;
@@ -112,6 +114,7 @@ export async function handleAuthCallback(url: string) {
 
     const userMetadata = getUserMetadata(user);
     PersistentStorage.USER_METADATA.replace(userMetadata);
+    await updateUserPlan();
 
     analytics.identify(userMetadata);
     emitAuthEvent();
@@ -189,6 +192,25 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
     // Save the refreshed auth tokens to the persistent storage
     PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
+}
+
+export async function updateUserPlan() {
+    const { success, data } = await checkSubscription();
+    const metadata = PersistentStorage.USER_METADATA.read();
+    if (!metadata) {
+        return;
+    }
+
+    const updatedMetadata: UserMetadata = {
+        ...metadata,
+        planType: success ? data.plan.name : UsagePlanType.BASIC,
+        planDailyLimit: success ? data.plan.daily_requests_limit : 0,
+        planMonthlyLimit: success ? data.plan.monthly_requests_limit : 0,
+        planIsActive: success,
+    };
+
+    PersistentStorage.USER_METADATA.replace(updatedMetadata);
+    analytics.identify(updatedMetadata);
 }
 
 export async function signOut() {

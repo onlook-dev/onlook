@@ -1,5 +1,6 @@
 import { IdeType } from '../ide';
 import { type Project } from '../projects';
+import { UsagePlanType } from '../usage';
 
 export interface UserSettings {
     id?: string;
@@ -18,6 +19,10 @@ export interface UserMetadata {
     name?: string;
     email?: string;
     avatarUrl?: string;
+    planType?: UsagePlanType;
+    planDailyLimit?: number;
+    planMonthlyLimit?: number;
+    planIsActive?: boolean;
 }
 
 export interface AuthTokens {
