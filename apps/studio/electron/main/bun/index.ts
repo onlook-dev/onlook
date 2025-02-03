@@ -27,35 +27,10 @@ class BunManager {
         }
     }
 
-    // Execute a Bun script
-    runBunScript(scriptPath: string, args: string[] = []) {
-        const bunBinary = this.getBunBinaryPath();
-
-        return new Promise((resolve, reject) => {
-            const process = spawn(bunBinary, [scriptPath, ...args], {
-                stdio: 'inherit',
-            });
-
-            process.on('close', (code: number) => {
-                if (code === 0) {
-                    resolve(void 0);
-                } else {
-                    reject(new Error(`Script exited with code ${code}`));
-                }
-            });
-
-            process.on('error', (err: Error) => {
-                reject(err);
-            });
-        });
-    }
-
     runBunCommand(command: string, args: string[] = []) {
-        console.log('runBunCommand', command, args);
         const bunBinary = this.getBunBinaryPath();
-        console.log('bunBinary', bunBinary);
         return new Promise((resolve, reject) => {
-            const process = spawn(bunBinary, [command, ...args], { stdio: 'inherit' });
+            const process = spawn(bunBinary, [command, ...args], { stdio: 'pipe' });
 
             process.stdout?.on('data', (data: Buffer) => {
                 console.log(data.toString());

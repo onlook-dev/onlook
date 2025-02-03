@@ -48,7 +48,7 @@ export const installProjectDependencies = async (
         const child = spawn(installCommand, {
             cwd: targetPath,
             shell: true,
-            stdio: ['inherit', 'pipe', 'pipe'],
+            stdio: 'pipe',
         });
         child.stdout.on('data', (data) => {
             const output = data.toString().trim();
