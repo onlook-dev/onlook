@@ -25,7 +25,7 @@ async function downloadBun() {
     const BUN_VERSION = '1.2.2';
     const RESOURCES_DIR = resolve(process.cwd(), 'apps', 'studio', 'resources', 'bun');
     const FILENAME = PLATFORM === 'win64'
-        ? `bun-${PLATFORM}.zip`
+        ? `bun-windows-${ARCH}.zip`
         : `bun-${PLATFORM}-${ARCH}.zip`;
 
     const DOWNLOAD_URL = `https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/${FILENAME}`;
@@ -68,8 +68,4 @@ async function downloadBun() {
     console.log(`Bun has been downloaded and installed to: ${RESOURCES_DIR}`);
 }
 
-try {
-    await downloadBun();
-} catch (error) {
-    console.error(error);
-}
+await downloadBun();
