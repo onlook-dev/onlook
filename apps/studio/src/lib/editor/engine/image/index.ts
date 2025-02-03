@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/lib/utils';
+import { sendAnalytics, compressImage } from '@/lib/utils';
 import type { ActionTarget, InsertImageAction } from '@onlook/models/actions';
 import { getExtension } from 'mime-lite';
 import { nanoid } from 'nanoid/non-secure';
@@ -10,6 +10,21 @@ export class ImageManager {
     async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
         const targets = this.getTargets();
         if (!targets || targets.length === 0) {
+            return;
+        }
+
+        try {
+            const response = await fetch(base64Image);
+            const blob = await response.blob();
+            const file = new File([blob], 'image', { type: mimeType });
+            const compressedBase64 = await compressImage(file);
+            if (!compressedBase64) {
+                console.error('Failed to compress image');
+                return;
+            }
+            base64Image = compressedBase64;
+        } catch (error) {
+            console.error('Error compressing image:', error);
             return;
         }
 
