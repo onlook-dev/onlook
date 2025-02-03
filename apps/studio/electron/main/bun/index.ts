@@ -18,7 +18,7 @@ export const getBunExecutablePath = () => {
 
 export interface RunBunCommandOptions {
     cwd: string;
-    env?: Record<string, string>;
+    env?: NodeJS.ProcessEnv;
     callbacks?: {
         onStdout?: (data: string) => void;
         onStderr?: (data: string) => void;
@@ -30,7 +30,7 @@ export interface RunBunCommandOptions {
 export const runBunCommand = (
     command: string,
     args: string[] = [],
-    options: RunBunCommandOptions = { cwd: process.cwd() },
+    options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
     const bunBinary = getBunExecutablePath();
     const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunBinary);
@@ -40,6 +40,7 @@ export const runBunCommand = (
             stdio: 'pipe',
             shell: true,
             cwd: options.cwd,
+            env: options.env,
         });
         let stdout = '';
         let stderr = '';
