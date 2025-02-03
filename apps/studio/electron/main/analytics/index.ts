@@ -1,7 +1,9 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { UserMetadata } from '@onlook/models/settings';
+import type { UsagePlanType } from '@onlook/models/usage';
 import { app, ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
+import { checkSubscription } from '../payment';
 import { nanoid } from 'nanoid/non-secure';
 import { PersistentStorage } from '../storage';
 
@@ -91,12 +93,14 @@ class Analytics {
         });
     }
 
-    public identify(user: UserMetadata) {
+    public async identify(user: UserMetadata) {
         if (this.mixpanel && this.id) {
             if (user.id !== this.id) {
                 this.mixpanel.alias(user.id, this.id);
                 PersistentStorage.USER_SETTINGS.update({ id: user.id });
             }
+
+            const { success, data } = await checkSubscription();
 
             this.mixpanel.people.set(this.id, {
                 $name: user.name,
@@ -104,6 +108,10 @@ class Analytics {
                 $avatar: user.avatarUrl,
                 platform: process.platform,
                 version: app.getVersion(),
+                plan_type: success ? data.plan.name : UsagePlanType.BASIC,
+                plan_daily_limit: success ? data.plan.daily_requests_limit : 0,
+                plan_monthly_limit: success ? data.plan.monthly_requests_limit : 0,
+                plan_is_active: success,
             });
         }
     }
