@@ -26,8 +26,11 @@ export async function createProject(
         await runBunCommand('npm install -y --no-audit --no-fund', [], {
             cwd: fullPath,
             callbacks: {
-                onStdout: (data) => onProgress(CreateStage.INSTALLING, data),
-                onStderr: (data) => onProgress(CreateStage.INSTALLING, data),
+                onStdout: (data) =>
+                    onProgress(
+                        CreateStage.INSTALLING,
+                        'Installing dependencies. This may take a few minutes...',
+                    ),
             },
         });
 
