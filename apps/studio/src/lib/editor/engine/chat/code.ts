@@ -57,6 +57,11 @@ export class ChatCodeManager {
             this.chat.conversation.saveConversationToStorage();
         }
 
+        const selectedWebviews = this.editorEngine.webviews.selected;
+        for (const webview of selectedWebviews) {
+            await this.editorEngine.ast.refreshAstDoc(webview);
+        }
+
         this.chat.suggestions.shouldHide = false;
         sendAnalytics('apply code change');
     }
