@@ -133,15 +133,17 @@ class RunManager {
             ignored: [
                 /(^|[\/\\])\../,
                 ...IGNORED_DIRECTORIES.map(dir => `**/${dir}/**`),
-                path => !ALLOWED_EXTENSIONS.some(ext => path.endsWith(ext))
+                `**/*.!(${ALLOWED_EXTENSIONS.map(ext => ext.slice(1)).join('|')})`
             ]
         });
 
         this.watcher
             .on('change', (filePath) => {
+                console.log('File changed:', filePath);
                 this.processFileForMapping(filePath);
             })
             .on('add', (filePath) => {
+                console.log('File added:', filePath);
                 this.processFileForMapping(filePath);
             })
             .on('error', (error) => {
