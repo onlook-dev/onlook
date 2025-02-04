@@ -4,47 +4,34 @@ import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { UsagePlanType } from '@onlook/models/usage';
+import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons/index';
 import { useToast } from '@onlook/ui/use-toast';
 import { motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PricingCard } from './PricingCard';
 
 interface UsagePlan {
     type: UsagePlanType;
-    name: string;
-    price: string;
-    features: string[];
 }
 
 const BASIC_PLAN: UsagePlan = {
     type: UsagePlanType.BASIC,
-    name: 'Onlook Basic',
-    price: '$0/month',
-    features: [
-        'Visual code editor access',
-        'Unlimited projects',
-        '10 AI chat messages a day',
-        '50 AI messages a month',
-        'Limited to 1 screenshot per chat',
-    ],
 };
 
 const PRO_PLAN: UsagePlan = {
     type: UsagePlanType.PRO,
-    name: 'Onlook Pro',
-    price: '$20/month',
-    features: [
-        'Visual code editor access',
-        'Unlimited projects',
-        'Unlimited AI chat messages a day',
-        'Unlimited monthly chats',
-        'Multiple screenshots per chat',
-        '1 free custom domain hosted with Onlook',
-        'Priority support',
-    ],
 };
 
 export const PricingPage = () => {
+    const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
     const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
@@ -146,8 +133,8 @@ export const PricingPage = () => {
             if (res?.success) {
                 toast({
                     variant: 'default',
-                    title: 'Checking out',
-                    description: 'You will now be redirected to Stripe to complete the payment.',
+                    title: t('pricing.toasts.checkingOut.title'),
+                    description: t('pricing.toasts.checkingOut.description'),
                 });
             } else {
                 throw new Error('No checkout URL received');
@@ -156,8 +143,8 @@ export const PricingPage = () => {
         } catch (error) {
             toast({
                 variant: 'destructive',
-                title: 'Error',
-                description: 'Could not initiate checkout process. Please try again.',
+                title: t('pricing.toasts.error.title'),
+                description: t('pricing.toasts.error.description'),
             });
             console.error('Payment error:', error);
             setIsCheckingOut(null);
@@ -176,9 +163,8 @@ export const PricingPage = () => {
             if (res?.success) {
                 toast({
                     variant: 'default',
-                    title: 'Redirecting to Stripe',
-                    description:
-                        'You will now be redirected to Stripe to manage your subscription.',
+                    title: t('pricing.toasts.redirectingToStripe.title'),
+                    description: t('pricing.toasts.redirectingToStripe.description'),
                 });
             }
             if (res?.error) {
@@ -211,22 +197,52 @@ export const PricingPage = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.05 }}
                             >
-                                <h1 className="text-title2 text-foreground-primary">
-                                    {currentPlan === PRO_PLAN
-                                        ? 'Thanks for being a Pro member!'
-                                        : 'Choose your plan'}
-                                </h1>
+                                <div className="flex flex-row gap-2 w-[46rem] justify-between">
+                                    <h1 className="text-title2 text-foreground-primary">
+                                        {currentPlan === PRO_PLAN
+                                            ? t('pricing.titles.proMember')
+                                            : t('pricing.titles.choosePlan')}
+                                    </h1>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="gap-2 text-foreground-secondary text-md"
+                                            >
+                                                {i18n.language === 'en' ? 'English' : '日本語'}
+                                                <Icons.ChevronDown className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem
+                                                onClick={() => i18n.changeLanguage('en')}
+                                            >
+                                                English
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => i18n.changeLanguage('ja')}
+                                            >
+                                                日本語
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </motion.div>
                             <div className="flex gap-4">
                                 <PricingCard
-                                    plan={BASIC_PLAN.name}
-                                    price={BASIC_PLAN.price}
-                                    description="Prototype and experiment in code with ease."
-                                    features={BASIC_PLAN.features}
+                                    plan={t('pricing.plans.basic.name')}
+                                    price={t('pricing.plans.basic.price')}
+                                    description={t('pricing.plans.basic.description')}
+                                    features={
+                                        t('pricing.plans.basic.features', {
+                                            returnObjects: true,
+                                        }) as string[]
+                                    }
                                     buttonText={
                                         currentPlan.type === BASIC_PLAN.type
-                                            ? 'Current Plan'
-                                            : 'Manage Subscription'
+                                            ? t('pricing.buttons.currentPlan')
+                                            : t('pricing.buttons.manageSubscription')
                                     }
                                     buttonProps={{
                                         onClick: () => {
@@ -240,14 +256,18 @@ export const PricingPage = () => {
                                     isLoading={isCheckingOut === 'basic'}
                                 />
                                 <PricingCard
-                                    plan={PRO_PLAN.name}
-                                    price={PRO_PLAN.price}
-                                    description="Creativity – unconstrained. Build stunning sites with AI."
-                                    features={PRO_PLAN.features}
+                                    plan={t('pricing.plans.pro.name')}
+                                    price={t('pricing.plans.pro.price')}
+                                    description={t('pricing.plans.pro.description')}
+                                    features={
+                                        t('pricing.plans.pro.features', {
+                                            returnObjects: true,
+                                        }) as string[]
+                                    }
                                     buttonText={
                                         currentPlan.type === PRO_PLAN.type
-                                            ? 'Current Plan'
-                                            : 'Get Pro'
+                                            ? t('pricing.buttons.currentPlan')
+                                            : t('pricing.buttons.getPro')
                                     }
                                     buttonProps={{
                                         onClick: startProCheckout,
@@ -266,7 +286,7 @@ export const PricingPage = () => {
                                 transition={{ delay: 0.3 }}
                             >
                                 <p className="text-foreground-secondary/60 text-small text-balance">
-                                    {"Unused chat messages don't rollover to the next month"}
+                                    {t('pricing.footer.unusedMessages')}
                                 </p>
                             </motion.div>
                         </motion.div>
