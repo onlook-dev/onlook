@@ -60,6 +60,9 @@ jobs:
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
+            - name: Download Bun binary
+              run: bun run download_bun
+
             - name: Set environment variables
               shell: bash
               run: |
