@@ -20,7 +20,8 @@ export const Suggestions = observer(
             editorEngine.chat.suggestions.shouldHide ||
             hideSuggestions ||
             disabled ||
-            inputValue.trim().length > 0;
+            inputValue.trim().length > 0 ||
+            editorEngine.errors.validErrors.length > 0;
 
         return (
             <AnimatePresence>
