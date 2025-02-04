@@ -1,10 +1,8 @@
 import { CreateStage, type CreateCallback } from '@onlook/models';
-import degit from 'degit';
+import download from 'download';
 import * as fs from 'fs';
 import * as path from 'path';
 import { runBunCommand } from '../bun';
-
-const NEXT_TEMPLATE_REPO = 'onlook-dev/starter';
 
 export async function createProject(
     projectName: string,
@@ -22,7 +20,7 @@ export async function createProject(
         }
 
         onProgress(CreateStage.CLONING, `Cloning template...`);
-        await cloneWithDegit(fullPath);
+        await downloadTemplate(fullPath);
 
         // Install dependencies
         await runBunCommand('npm install -y --no-audit --no-fund', [], {
@@ -40,12 +38,18 @@ export async function createProject(
     }
 }
 
-async function cloneWithDegit(fullPath: string) {
-    const emitter = degit(NEXT_TEMPLATE_REPO, {
-        cache: false,
-        force: true,
-        verbose: true,
-    });
-
-    await emitter.clone(fullPath);
+async function downloadTemplate(fullPath: string) {
+    try {
+        const zipUrl = `https://github.com/onlook-dev/starter/archive/refs/heads/main.zip`;
+        await download(zipUrl, fullPath, {
+            extract: true,
+            strip: 1,
+            retry: 3,
+        });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            throw new Error(`Failed to download and extract template: ${error.message}`);
+        }
+        throw new Error('Failed to download and extract template: Unknown error');
+    }
 }
