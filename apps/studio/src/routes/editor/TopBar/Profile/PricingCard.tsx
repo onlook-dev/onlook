@@ -43,7 +43,7 @@ export const PricingCard = ({
                 <div className="space-y-4 mb-6">
                     {features.map((feature, i) => (
                         <div
-                            key={i}
+                            key={feature}
                             className="flex items-center gap-3 text-sm text-foreground-secondary/80"
                         >
                             <Icons.Check className="w-5 h-5 text-foreground-secondary/80" />

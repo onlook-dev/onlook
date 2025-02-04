@@ -127,7 +127,7 @@ const resources = {
                     },
                 },
                 footer: {
-                    unusedMessages: '未使用のチャットメッセージは翌月に繰り越されません。',
+                    unusedMessages: '※ 未使用のチャットメッセージは翌月に繰り越されません',
                 },
             },
         },

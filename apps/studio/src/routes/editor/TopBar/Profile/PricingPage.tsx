@@ -4,6 +4,14 @@ import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { UsagePlanType } from '@onlook/models/usage';
+import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons/index';
 import { useToast } from '@onlook/ui/use-toast';
 import { motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -40,11 +48,6 @@ export const PricingPage = () => {
 
     const saveCachedCurrentPlan = (plan: UsagePlan) => {
         localStorage.setItem('currentPlan', plan.type);
-    };
-
-    const toggleLanguage = () => {
-        const newLang = i18n.language === 'en' ? 'ja' : 'en';
-        i18n.changeLanguage(newLang);
     };
 
     useEffect(() => {
@@ -191,17 +194,37 @@ export const PricingPage = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.05 }}
                             >
-                                <button
-                                    onClick={toggleLanguage}
-                                    className="mb-2 text-sm text-foreground-secondary hover:text-foreground-primary transition-colors"
-                                >
-                                    {i18n.language === 'en' ? '中文' : 'English'}
-                                </button>
-                                <h1 className="text-title2 text-foreground-primary">
-                                    {currentPlan === PRO_PLAN
-                                        ? t('pricing.titles.proMember')
-                                        : t('pricing.titles.choosePlan')}
-                                </h1>
+                                <div className="flex flex-row gap-2 w-[46rem] justify-between">
+                                    <h1 className="text-title2 text-foreground-primary">
+                                        {currentPlan === PRO_PLAN
+                                            ? t('pricing.titles.proMember')
+                                            : t('pricing.titles.choosePlan')}
+                                    </h1>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="gap-2 text-foreground-secondary text-md"
+                                            >
+                                                {i18n.language === 'en' ? 'English' : '日本語'}
+                                                <Icons.ChevronDown className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem
+                                                onClick={() => i18n.changeLanguage('en')}
+                                            >
+                                                English
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => i18n.changeLanguage('ja')}
+                                            >
+                                                日本語
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </motion.div>
                             <div className="flex gap-4">
                                 <PricingCard
