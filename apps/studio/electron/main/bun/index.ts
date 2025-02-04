@@ -1,19 +1,20 @@
 import { spawn } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
+import { quote } from 'shell-quote';
 import { __dirname } from '../index';
 import { parseCommandAndArgs } from './parse';
 
-export const getBunExecutablePath = () => {
+export const getBunExecutablePath = (): string => {
     const platform = process.platform;
     const isProduction = app.isPackaged;
     const binName = platform === 'win32' ? 'bun.exe' : 'bun';
 
-    if (isProduction) {
-        return path.join(process.resourcesPath, 'bun', binName);
-    } else {
-        return path.join(__dirname, 'resources', 'bun', binName);
-    }
+    const execPath = isProduction
+        ? path.join(process.resourcesPath, 'bun', binName)
+        : path.join(__dirname, 'resources', 'bun', binName);
+
+    return quote([execPath]);
 };
 
 export interface RunBunCommandOptions {
