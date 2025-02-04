@@ -142,7 +142,12 @@ class RunManager {
                 this.processFileForMapping(filePath);
             })
             .on('add', (filePath) => {
-                this.processFileForMapping(filePath);
+                for (const allowedExtension of ALLOWED_EXTENSIONS) {
+                    if (filePath.endsWith(allowedExtension)) {
+                        this.processFileForMapping(filePath);
+                        break;
+                    }
+                }
             })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error}`);
