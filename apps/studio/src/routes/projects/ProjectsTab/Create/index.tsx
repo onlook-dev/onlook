@@ -129,6 +129,11 @@ const CreateProject = ({
         );
 
         projectsManager.project = newProject;
+
+        setTimeout(() => {
+            projectsManager.runner?.start();
+        }, 1000);
+
         sendAnalytics('create project', {
             url: newProject.url,
             method: createMethod,
