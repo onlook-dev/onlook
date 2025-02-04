@@ -10,11 +10,11 @@ export const getBunExecutablePath = (): string => {
     const isProduction = app.isPackaged;
     const binName = platform === 'win32' ? 'bun.exe' : 'bun';
 
-    const execPath = isProduction
+    const bunPath = isProduction
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
 
-    return quote([execPath]);
+    return quote([bunPath]);
 };
 
 export interface RunBunCommandOptions {
@@ -35,28 +35,28 @@ export const runBunCommand = (
 ): Promise<{ stdout: string; stderr: string }> => {
     const bunBinary = getBunExecutablePath();
     const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunBinary);
+    const quotedCommand = quote([finalCommand]);
 
     return new Promise((resolve, reject) => {
-        const process = spawn(finalCommand, allArgs, {
+        const spawnProcess = spawn(quotedCommand, allArgs, {
             stdio: 'pipe',
-            shell: true,
             cwd: options.cwd,
             env: options.env,
         });
         let stdout = '';
         let stderr = '';
 
-        process.stdout.on('data', (data) => {
+        spawnProcess.stdout.on('data', (data) => {
             stdout += data.toString();
             options.callbacks?.onStdout?.(stdout);
         });
 
-        process.stderr.on('data', (data) => {
+        spawnProcess.stderr.on('data', (data) => {
             stderr += data.toString();
             options.callbacks?.onStderr?.(stderr);
         });
 
-        process.on('close', (code, signal) => {
+        spawnProcess.on('close', (code, signal) => {
             options.callbacks?.onClose?.(code, signal);
             if (code === 0) {
                 resolve({ stdout, stderr });
@@ -65,7 +65,7 @@ export const runBunCommand = (
             }
         });
 
-        process.on('error', (err: Error) => {
+        spawnProcess.on('error', (err: Error) => {
             options.callbacks?.onError?.(err);
             reject(err);
         });
