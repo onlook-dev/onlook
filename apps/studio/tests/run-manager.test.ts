@@ -74,6 +74,22 @@ describe('RunManager', () => {
         expect(runManager.getTemplateNode('new')).toBeDefined();
     });
 
+    test('handles atomic writes correctly', async () => {
+        const filePath = join(testDir, 'atomic.tsx');
+        const content = 'export default () => <div>Test</div>';
+        
+        await runManager.listen([filePath], testDir);
+        
+        // Write file atomically
+        await writeFile(filePath, content);
+        
+        // Wait for file processing
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Verify file was processed
+        expect(runManager.getTemplateNode('atomic')).toBeDefined();
+    });
+
     test('ignores files in excluded directories', async () => {
         const filePaths = [join(testDir, 'test.tsx')];
         writeFileSync(filePaths[0], 'export default () => <div>Test</div>');

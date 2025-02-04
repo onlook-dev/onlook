@@ -43,9 +43,8 @@ export async function writeFile(
             fileContent = Buffer.from(base64Data, 'base64').toString('base64');
         }
 
-        const tempPath = `${fullPath}.tmp`;
-        writeFileAtomic.sync(tempPath, fileContent, encoding);
-        await fs.rename(tempPath, fullPath);
+        // Write directly to file since chokidar handles atomic writes
+        await fs.writeFile(fullPath, fileContent, { encoding });
 
         if (isNewFile) {
             console.log('New file created:', fullPath);

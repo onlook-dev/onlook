@@ -71,6 +71,10 @@ class RunManager {
             this.stopTerminal(id);
 
             this.setState(RunState.STOPPING, 'Cleaning up...');
+            if (this.watcher) {
+                await this.watcher.close();
+                this.watcher = null;
+            }
             await this.cleanProjectDir(folderPath);
 
             this.setState(RunState.STOPPED, 'Stopped.');
@@ -116,9 +120,9 @@ class RunManager {
     }
 
     async cleanProjectDir(folderPath: string): Promise<void> {
+        // Clear mapping first to prevent any new file operations
         this.mapping.clear();
-        await this.watcher?.close();
-        this.watcher = null;
+        // Remove IDs from files
         await removeIdsFromDirectory(folderPath);
     }
 
@@ -130,6 +134,11 @@ class RunManager {
 
         this.watcher = watch(projectDir, {
             persistent: true,
+            atomic: true,
+            awaitWriteFinish: {
+                stabilityThreshold: 300,
+                pollInterval: 100
+            },
             ignored: [
                 /(^|[\/\\])\../,
                 ...IGNORED_DIRECTORIES.map(dir => `**/${dir}/**`),
