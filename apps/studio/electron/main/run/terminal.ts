@@ -22,13 +22,29 @@ class TerminalManager {
     }
 
     create(id: string, options?: { cwd?: string }): boolean {
+        if (this.processes.has(id)) {
+            return false;
+        }
+
         try {
             const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
-            const ptyProcess = pty.spawn(shell, [], {
-                name: 'xterm-color',
-                cwd: options?.cwd ?? process.env.HOME,
-                env: process.env,
-            });
+            let ptyProcess;
+            try {
+                ptyProcess = pty.spawn(shell, [], {
+                    name: 'xterm-color',
+                    cols: 80,
+                    rows: 30,
+                    cwd: options?.cwd ?? process.env.HOME,
+                    env: process.env,
+                });
+            } catch (error: any) {
+                if (process.platform === 'win32' && error.code === 3221225501) {
+                    throw new Error(
+                        'CPU compatibility error: Your processor does not support the required AVX instructions. Please check system requirements.',
+                    );
+                }
+                throw error;
+            }
 
             ptyProcess.onData((data: string) => {
                 this.addTerminalMessage(id, data);

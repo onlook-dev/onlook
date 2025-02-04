@@ -1,6 +1,8 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
-import { BrowserWindow, app, shell } from 'electron';
+import { BrowserWindow, app, shell, dialog } from 'electron';
 import fixPath from 'fix-path';
+import log from 'electron-log';
+import { checkCPUCompatibility } from '../../src/lib/system/cpu-check';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -140,6 +142,18 @@ const listenForExitEvents = () => {
 };
 
 const setupAppEventListeners = () => {
+    // Check CPU compatibility before startup
+    const cpuCheck = checkCPUCompatibility();
+    if (!cpuCheck.compatible) {
+        log.error('CPU compatibility check failed:', cpuCheck.reason);
+        dialog.showErrorBox(
+            'CPU Compatibility Error',
+            cpuCheck.reason || 'Your CPU is not compatible with this application.',
+        );
+        app.quit();
+        return;
+    }
+
     app.whenReady().then(() => {
         listenForExitEvents();
         initMainWindow();

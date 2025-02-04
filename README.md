@@ -87,6 +87,13 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
  1. Visit [onlook.com](https://onlook.com/) to download the app.
  2. Run locally following [this guide](https://github.com/onlook-dev/onlook/wiki/Building-from-source)
 
+## System Requirements
+
+### Windows
+- Windows 10 version 1809 or later
+- CPU with AVX instruction support
+- 4GB RAM minimum (8GB recommended)
+
 ### Usage
 
 Onlook will run on any React project, bring your own React project or create one using Onlook
