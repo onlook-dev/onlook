@@ -112,7 +112,7 @@
         "@types/write-file-atomic": "^4.0.3",
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "^10.4.20",
-        "css-tree": "^2.3.1",
+        "css-tree": "^3.1.0",
         "electron": "33.2.1",
         "electron-builder": "^25.1.8",
         "eslint": "9.x",
