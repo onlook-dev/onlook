@@ -26,10 +26,12 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os:
-                    - macos-latest
-                    - windows-latest
-                    # - ubuntu-latest
+                 include:
+                    - os: macos-latest
+                      arch: x64
+                    - os: macos-latest
+                      arch: arm64
+                    - os: windows-latest
 
         steps:
             - name: Checkout code
