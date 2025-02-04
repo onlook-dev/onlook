@@ -10,9 +10,11 @@ export const getBunExecutablePath = (): string => {
     const isProduction = app.isPackaged;
     const binName = platform === 'win32' ? 'bun.exe' : 'bun';
 
-    return isProduction
+    const bunPath = isProduction
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
+
+    return quote([bunPath]);
 };
 
 export interface RunBunCommandOptions {
