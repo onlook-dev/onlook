@@ -12,41 +12,18 @@ import { PricingCard } from './PricingCard';
 
 interface UsagePlan {
     type: UsagePlanType;
-    name: string;
-    price: string;
-    features: string[];
 }
 
 const BASIC_PLAN: UsagePlan = {
     type: UsagePlanType.BASIC,
-    name: 'Onlook Basic',
-    price: '$0/month',
-    features: [
-        'Visual code editor access',
-        'Unlimited projects',
-        '10 AI chat messages a day',
-        '50 AI messages a month',
-        'Limited to 1 screenshot per chat',
-    ],
 };
 
 const PRO_PLAN: UsagePlan = {
     type: UsagePlanType.PRO,
-    name: 'Onlook Pro',
-    price: '$20/month',
-    features: [
-        'Visual code editor access',
-        'Unlimited projects',
-        'Unlimited AI chat messages a day',
-        'Unlimited monthly chats',
-        'Multiple screenshots per chat',
-        '1 free custom domain hosted with Onlook',
-        'Priority support',
-    ],
 };
 
 export const PricingPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
     const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
@@ -63,6 +40,11 @@ export const PricingPage = () => {
 
     const saveCachedCurrentPlan = (plan: UsagePlan) => {
         localStorage.setItem('currentPlan', plan.type);
+    };
+
+    const toggleLanguage = () => {
+        const newLang = i18n.language === 'en' ? 'ja' : 'en';
+        i18n.changeLanguage(newLang);
     };
 
     useEffect(() => {
@@ -209,6 +191,12 @@ export const PricingPage = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.05 }}
                             >
+                                <button
+                                    onClick={toggleLanguage}
+                                    className="mb-2 text-sm text-foreground-secondary hover:text-foreground-primary transition-colors"
+                                >
+                                    {i18n.language === 'en' ? '中文' : 'English'}
+                                </button>
                                 <h1 className="text-title2 text-foreground-primary">
                                     {currentPlan === PRO_PLAN
                                         ? t('pricing.titles.proMember')
@@ -217,10 +205,14 @@ export const PricingPage = () => {
                             </motion.div>
                             <div className="flex gap-4">
                                 <PricingCard
-                                    plan={BASIC_PLAN.name}
-                                    price={BASIC_PLAN.price}
+                                    plan={t('pricing.plans.basic.name')}
+                                    price={t('pricing.plans.basic.price')}
                                     description={t('pricing.plans.basic.description')}
-                                    features={BASIC_PLAN.features}
+                                    features={
+                                        t('pricing.plans.basic.features', {
+                                            returnObjects: true,
+                                        }) as string[]
+                                    }
                                     buttonText={
                                         currentPlan.type === BASIC_PLAN.type
                                             ? t('pricing.buttons.currentPlan')
@@ -238,10 +230,14 @@ export const PricingPage = () => {
                                     isLoading={isCheckingOut === 'basic'}
                                 />
                                 <PricingCard
-                                    plan={PRO_PLAN.name}
-                                    price={PRO_PLAN.price}
+                                    plan={t('pricing.plans.pro.name')}
+                                    price={t('pricing.plans.pro.price')}
                                     description={t('pricing.plans.pro.description')}
-                                    features={PRO_PLAN.features}
+                                    features={
+                                        t('pricing.plans.pro.features', {
+                                            returnObjects: true,
+                                        }) as string[]
+                                    }
                                     buttonText={
                                         currentPlan.type === PRO_PLAN.type
                                             ? t('pricing.buttons.currentPlan')
