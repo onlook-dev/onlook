@@ -86,7 +86,7 @@ jobs:
                   release: ${{ startsWith(github.ref, 'refs/tags/v') }}
                   mac_certs: ${{ secrets.MAC_CERTS }}
                   mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
-                  args: ${{ startsWith(matrix.os, 'macos') && '--x64 --arm64' || '' }}
+                  args: ${{ startsWith(matrix.os, 'macos') && format('--{0}', matrix.arch) || '' }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
