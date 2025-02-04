@@ -2,6 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import * as pty from 'node-pty';
 import os from 'os';
 import { mainWindow } from '..';
+import { getBunCommand } from '../bun';
 
 class TerminalManager {
     private static instance: TerminalManager;
@@ -97,8 +98,9 @@ class TerminalManager {
 
     executeCommand(id: string, command: string): boolean {
         try {
+            const bunCommand = getBunCommand(command);
             const newline = os.platform() === 'win32' ? '\r\n' : '\n';
-            return this.write(id, command + newline);
+            return this.write(id, bunCommand + newline);
         } catch (error) {
             console.error('Failed to execute command.', error);
             return false;

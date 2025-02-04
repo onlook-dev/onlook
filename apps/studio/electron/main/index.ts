@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
-import { handleAuthCallback } from './auth';
+import { cleanupAuthAutoRefresh, handleAuthCallback, setupAuthAutoRefresh } from './auth';
 import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
@@ -17,7 +17,7 @@ fixPath();
 
 export let mainWindow: BrowserWindow | null = null;
 const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Constants
 const MAIN_DIST = path.join(__dirname, '../../dist-electron');
@@ -87,6 +87,8 @@ const initMainWindow = () => {
         }
         return { action: 'deny' };
     });
+
+    setupAuthAutoRefresh();
 };
 
 let isCleaningUp = false;
@@ -98,6 +100,9 @@ export const cleanup = async () => {
     isCleaningUp = true;
 
     try {
+        // Stop supabase auto-refresh
+        await cleanupAuthAutoRefresh();
+
         // Stop all processes
         await run.stopAll();
         await terminal.killAll();
@@ -160,12 +165,9 @@ const setupAppEventListeners = () => {
     });
 
     app.on('window-all-closed', async () => {
-        if (!isQuitting) {
-            await cleanup();
+        if (process.platform !== 'darwin') {
             mainWindow = null;
-            if (process.platform !== 'darwin') {
-                app.quit();
-            }
+            app.quit();
         }
     });
 

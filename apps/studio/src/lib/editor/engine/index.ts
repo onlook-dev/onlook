@@ -22,6 +22,7 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
+import { PagesManager } from './pages';
 
 export class EditorEngine {
     private plansOpen: boolean = false;
@@ -32,6 +33,7 @@ export class EditorEngine {
     private webviewManager: WebviewManager;
     private overlayManager: OverlayManager;
     private codeManager: CodeManager;
+    private pagesManager: PagesManager;
     private errorManager: ErrorManager;
 
     private astManager: AstManager = new AstManager(this);
@@ -54,6 +56,7 @@ export class EditorEngine {
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
         this.codeManager = new CodeManager(this, this.projectsManager);
+        this.pagesManager = new PagesManager(this, this.projectsManager);
         this.errorManager = new ErrorManager(this, this.projectsManager);
     }
 
@@ -134,6 +137,10 @@ export class EditorEngine {
         if (open) {
             sendAnalytics('open pro checkout');
         }
+    }
+
+    get pages() {
+        return this.pagesManager;
     }
 
     dispose() {

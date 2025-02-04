@@ -27,7 +27,7 @@ export const installPackages = async (packages: string[]): Promise<void> => {
     console.log('Package manager found:', packageManager);
     console.log('\n$', `${command} ${packages.join(' ')}`);
 
-    execSync(`${command} ${packages.join(' ')}`, { stdio: 'inherit' });
+    execSync(`${command} ${packages.join(' ')}`, { stdio: 'pipe' });
 };
 
 export const getPackageManager = async (): Promise<PACKAGE_MANAGER> => {

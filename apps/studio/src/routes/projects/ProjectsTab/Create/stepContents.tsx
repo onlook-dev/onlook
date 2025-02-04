@@ -3,6 +3,7 @@ import type { StepProps } from './index';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetupProject } from './Load/Setup';
 import { LoadSetUrl } from './Load/SetUrl';
+import { LoadWarning } from './Load/Warning';
 import { NewNameProject } from './New/Name';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
@@ -21,6 +22,7 @@ export const newProjectSteps: StepContent[] = [
 ];
 
 export const loadProjectSteps: StepContent[] = [
+    withStepProps(LoadWarning),
     withStepProps(LoadSelectFolder),
     withStepProps(LoadSetUrl),
     withStepProps(LoadSetupProject),

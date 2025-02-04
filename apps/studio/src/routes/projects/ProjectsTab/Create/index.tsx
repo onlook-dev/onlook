@@ -111,7 +111,8 @@ const CreateProject = ({
             !projectData.url ||
             !projectData.folderPath ||
             !projectData.commands?.run ||
-            !projectData.commands?.build
+            !projectData.commands?.build ||
+            !projectData.commands?.install
         ) {
             throw new Error('Project data is missing.');
         }
@@ -123,10 +124,16 @@ const CreateProject = ({
             {
                 run: projectData.commands.run,
                 build: projectData.commands.build,
+                install: projectData.commands.install,
             },
         );
 
         projectsManager.project = newProject;
+
+        setTimeout(() => {
+            projectsManager.runner?.start();
+        }, 1000);
+
         sendAnalytics('create project', {
             url: newProject.url,
             method: createMethod,
