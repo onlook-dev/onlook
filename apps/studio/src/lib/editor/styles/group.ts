@@ -154,7 +154,7 @@ export const StyleGroup = [
         new SingleStyleImpl('backgroundColor', '', 'Background', StyleType.Color),
         [
             new SingleStyleImpl('backgroundImage', '', 'Image', StyleType.Image),
-            new SingleStyleImpl('backgroundSize', 'cover', 'Size', StyleType.Select, {
+            new SingleStyleImpl('backgroundSize', '', 'Size', StyleType.Select, {
                 options: ['cover', 'contain', 'auto'],
             }),
             new SingleStyleImpl('backgroundPosition', '', 'Position', StyleType.Select, {
