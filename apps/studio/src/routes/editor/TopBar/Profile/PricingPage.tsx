@@ -48,6 +48,13 @@ export const PricingPage = () => {
 
     const saveCachedCurrentPlan = (plan: UsagePlan) => {
         localStorage.setItem('currentPlan', plan.type);
+        updateUserMetadata(plan.type);
+    };
+
+    const updateUserMetadata = async (plan: UsagePlanType) => {
+        invokeMainChannel(MainChannels.UPDATE_USER_METADATA, {
+            plan,
+        });
     };
 
     useEffect(() => {

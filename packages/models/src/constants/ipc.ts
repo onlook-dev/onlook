@@ -67,6 +67,7 @@ export enum MainChannels {
     USER_SIGNED_IN = 'user-signed-in',
     USER_SIGNED_OUT = 'user-signed-out',
     GET_USER_METADATA = 'get-user-metadata',
+    UPDATE_USER_METADATA = 'update-user-metadata',
     IS_USER_SIGNED_IN = 'is-user-signed-in',
 
     // Storage
