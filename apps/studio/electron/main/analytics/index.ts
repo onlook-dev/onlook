@@ -104,6 +104,16 @@ class Analytics {
                 $avatar: user.avatarUrl,
                 platform: process.platform,
                 version: app.getVersion(),
+                architecture: process.arch,
+                plan: user.plan,
+            });
+        }
+    }
+
+    public updateUserMetadata(user: Partial<UserMetadata>) {
+        if (this.mixpanel && this.id) {
+            this.mixpanel.people.set(this.id, {
+                ...user,
             });
         }
     }

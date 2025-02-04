@@ -18,6 +18,7 @@ export interface UserMetadata {
     name?: string;
     email?: string;
     avatarUrl?: string;
+    plan?: string;
 }
 
 export interface AuthTokens {
