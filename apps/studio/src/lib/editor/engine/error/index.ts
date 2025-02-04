@@ -7,6 +7,7 @@ import type { EditorEngine } from '..';
 
 export class ErrorManager {
     private webviewIdToError: Record<string, ParsedError[]> = {};
+    shouldShowErrors: boolean = false;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -53,8 +54,10 @@ export class ErrorManager {
     }
 
     addError(webviewId: string, event: Electron.ConsoleMessageEvent) {
+        if (event.sourceId?.includes('localhost')) {
+            return;
+        }
         const error = parseReactError(event.message, event.sourceId);
-        console.log(error);
         const existingErrors = this.webviewIdToError[webviewId] || [];
         if (!existingErrors.some((e) => compareErrors(e, error))) {
             this.webviewIdToError[webviewId] = [
@@ -125,7 +128,7 @@ export class ErrorManager {
         };
     }
 
-    removeWebview(webviewId: string) {
+    clearErrors(webviewId: string) {
         delete this.webviewIdToError[webviewId];
     }
 

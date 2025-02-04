@@ -13,6 +13,7 @@ import { ConversationManager } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
+import { SuggestionManager } from './suggestions';
 const USE_MOCK = false;
 
 export class ChatManager {
@@ -21,6 +22,7 @@ export class ChatManager {
     code: ChatCodeManager;
     context: ChatContext;
     stream: StreamResolver;
+    suggestions: SuggestionManager;
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
@@ -36,6 +38,7 @@ export class ChatManager {
         this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
+        this.suggestions = new SuggestionManager(this.projectsManager);
         this.listen();
     }
 
@@ -61,7 +64,7 @@ export class ChatManager {
             this.streamingMessage = null;
             return;
         }
-        this.streamingMessage = new AssistantChatMessageImpl(content);
+        this.streamingMessage = new AssistantChatMessageImpl(content, true);
     }
 
     async sendNewMessage(content: string): Promise<void> {
@@ -77,7 +80,9 @@ export class ChatManager {
             console.error('Failed to add user message');
             return;
         }
-        sendAnalytics('send chat message');
+        sendAnalytics('send chat message', {
+            content,
+        });
         await this.sendChatToAi(StreamRequestType.CHAT);
     }
 
@@ -87,8 +92,7 @@ export class ChatManager {
             return false;
         }
 
-        const prompt = `For the code present, we get this error: ${error.message}.
-How can I resolve this? If you propose a fix, please make it concise.`;
+        const prompt = `For the code present, we get this error: ${error.message}. How can I resolve this? If you propose a fix, please make it concise.`;
 
         const context = await this.editorEngine.errors.getMessageContextFromError(error);
         if (!context) {
@@ -102,7 +106,9 @@ How can I resolve this? If you propose a fix, please make it concise.`;
             console.error('Failed to add user message');
             return false;
         }
-        sendAnalytics('send fix error chat message');
+        sendAnalytics('send fix error chat message', {
+            error: error.fullMessage,
+        });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
     }
@@ -113,14 +119,14 @@ How can I resolve this? If you propose a fix, please make it concise.`;
             return;
         }
         this.shouldAutoScroll = true;
-        this.stream.errorMessage = null;
+        this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
 
         this.stream.clear();
         this.isWaiting = false;
-        this.handleChatResponse(res);
+        this.handleChatResponse(res, requestType);
         sendAnalytics('receive chat response');
     }
 
@@ -165,7 +171,11 @@ How can I resolve this? If you propose a fix, please make it concise.`;
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(res: StreamResponse | null, applyCode: boolean = false) {
+    async handleChatResponse(
+        res: StreamResponse | null,
+        requestType: StreamRequestType,
+        applyCode: boolean = false,
+    ) {
         if (!res) {
             console.error('No response found');
             return;
@@ -193,6 +203,15 @@ How can I resolve this? If you propose a fix, please make it concise.`;
 
         if (applyCode) {
             this.code.applyCode(assistantMessage.id);
+        }
+
+        if (
+            requestType === StreamRequestType.CHAT &&
+            this.conversation.current?.messages &&
+            this.conversation.current.messages.length > 0
+        ) {
+            this.suggestions.shouldHide = true;
+            this.suggestions.generateNextSuggestions(this.conversation.current.messages);
         }
     }
 

@@ -14,7 +14,7 @@ interface CollapsibleCodeBlockProps {
     searchContent: string;
     replaceContent: string;
     applied: boolean;
-    isWaiting?: boolean;
+    isStream?: boolean;
     onApply: () => void;
     onRevert: () => void;
 }
@@ -25,7 +25,7 @@ export function CollapsibleCodeBlock({
     searchContent,
     replaceContent,
     applied,
-    isWaiting,
+    isStream,
     onApply,
     onRevert,
 }: CollapsibleCodeBlockProps) {
@@ -54,7 +54,7 @@ export function CollapsibleCodeBlock({
                 >
                     <CollapsibleTrigger asChild>
                         <div className="flex-1 flex items-center gap-2 cursor-pointer pl-3 py-2">
-                            {isWaiting ? (
+                            {isStream ? (
                                 <Icons.Shadow className="h-4 w-4 animate-spin" />
                             ) : (
                                 <Icons.ChevronDown
@@ -67,7 +67,7 @@ export function CollapsibleCodeBlock({
                             <span
                                 className={cn(
                                     'text-small pointer-events-none select-none',
-                                    isWaiting && 'text-shimmer',
+                                    isStream && 'text-shimmer',
                                 )}
                             >
                                 {getTruncatedFileName(path)}
@@ -98,7 +98,7 @@ export function CollapsibleCodeBlock({
                                     e.stopPropagation();
                                     onApply();
                                 }}
-                                disabled={isWaiting}
+                                disabled={isStream}
                             >
                                 <Icons.Sparkles className="h-4 w-4 mr-2" />
                                 Apply
@@ -119,7 +119,7 @@ export function CollapsibleCodeBlock({
                             style={{ overflow: 'hidden' }}
                         >
                             <div className="border-t">
-                                {isWaiting ? (
+                                {isStream ? (
                                     <code className="p-4 text-xs w-full overflow-x-auto block">
                                         {content}
                                     </code>

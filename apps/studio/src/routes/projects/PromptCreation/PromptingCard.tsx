@@ -25,6 +25,7 @@ export const PromptingCard = () => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
+    const imageRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -93,6 +94,9 @@ export const PromptingCard = () => {
     };
 
     const handleRemoveImage = (imageContext: ImageMessageContext) => {
+        if (imageRef && imageRef.current) {
+            imageRef.current.value = '';
+        }
         setSelectedImages(selectedImages.filter((f) => f !== imageContext));
     };
 
@@ -242,7 +246,7 @@ export const PromptingCard = () => {
                                     placeholder="Paste a reference screenshot, write a novel, get creative..."
                                     value={inputValue}
                                     onChange={(e) => {
-                                        !isComposing && setInputValue(e.target.value);
+                                        setInputValue(e.target.value);
                                         adjustTextareaHeight();
                                     }}
                                     onCompositionStart={() => setIsComposing(true)}
@@ -303,6 +307,7 @@ export const PromptingCard = () => {
                                                 <input
                                                     id="image-input"
                                                     type="file"
+                                                    ref={imageRef}
                                                     accept="image/*"
                                                     multiple
                                                     className="hidden"

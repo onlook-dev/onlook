@@ -1,10 +1,10 @@
+import { invokeMainChannel } from '@/lib/utils';
 import { getNameFromPath } from '@/routes/projects/helpers';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import type { StepComponent } from '../withStepProps';
-import { invokeMainChannel } from '@/lib/utils';
 
 const LoadSelectFolder: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
@@ -21,11 +21,6 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
             folderPath: path,
             name: getNameFromPath(path),
         });
-    }
-
-    function verifyFolder() {
-        invokeMainChannel(MainChannels.VERIFY_PROJECT, projectData.folderPath);
-        nextStep();
     }
 
     function handleClickPath() {
@@ -86,7 +81,7 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
             <Button
                 disabled={!projectData.folderPath}
                 type="button"
-                onClick={verifyFolder}
+                onClick={nextStep}
                 variant="outline"
             >
                 Next

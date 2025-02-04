@@ -1,19 +1,26 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
-import { useProjectsManager } from '@/components/Context';
+import { useAuthManager, useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
 import { CreateState } from '@/lib/projects/create';
 import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { CreateErrorCard } from './CreateError';
 import { CreateLoadingCard } from './CreateLoading';
 import { PromptingCard } from './PromptingCard';
-import { CreateErrorCard } from './CreateError';
 
-export const PromptCreation = observer(() => {
+export const PromptCreation = observer(({ initialScreen = false }: { initialScreen?: boolean }) => {
+    const authManager = useAuthManager();
     const projectsManager = useProjectsManager();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
@@ -78,17 +85,54 @@ export const PromptCreation = observer(() => {
                 <div className="absolute inset-0 bg-background/50" />
                 <div className="relative z-10">
                     <div className="h-fit w-fit flex group fixed top-10 right-10">
-                        <Button
-                            variant="secondary"
-                            className={cn(
-                                'w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active backdrop-blur-md bg-background/30',
-                                projectsManager.create.state !== CreateState.PROMPT && 'hidden',
-                            )}
-                            onClick={returnToProjects}
-                        >
-                            <Icons.CrossL className="w-4 h-4 cursor-pointer" />
-                            <p className="text-microPlus">Close</p>
-                        </Button>
+                        {initialScreen ? (
+                            <div className="flex flex-row gap-2">
+                                <Button
+                                    variant="outline"
+                                    className={cn('bg-transparent')}
+                                    onClick={() =>
+                                        (projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT)
+                                    }
+                                >
+                                    <p className="text-microPlus">Import</p>
+                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={cn('bg-transparent')}
+                                        >
+                                            <Icons.Gear className="w-4 h-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                window.open('https://onlook.com/', '_blank')
+                                            }
+                                        >
+                                            About Onlook
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => authManager.signOut()}>
+                                            Sign out
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="secondary"
+                                className={cn(
+                                    'w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active backdrop-blur-md bg-background/30',
+                                    projectsManager.create.state !== CreateState.PROMPT && 'hidden',
+                                )}
+                                onClick={returnToProjects}
+                            >
+                                <Icons.CrossL className="w-4 h-4 cursor-pointer" />
+                                <p className="text-microPlus">Close</p>
+                            </Button>
+                        )}
                     </div>
                     <div className="flex items-center justify-center p-4">{renderCard()}</div>
                 </div>

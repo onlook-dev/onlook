@@ -40,6 +40,13 @@ jobs:
               with:
                   node-version: 20
 
+            - name: Install node-gyp dependencies
+              shell: bash
+              run: |
+                  if [ "$RUNNER_OS" == "macOS" ]; then
+                      brew install python-setuptools
+                  fi
+
             - name: Set Mac API key
               if: startsWith(matrix.os, 'macos')
               run: |
@@ -52,6 +59,9 @@ jobs:
             
             - name: Install dependencies
               run: bun install --frozen-lockfile
+
+            - name: Download Bun binary
+              run: bun run download_bun
 
             - name: Set environment variables
               shell: bash

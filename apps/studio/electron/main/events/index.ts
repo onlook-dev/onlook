@@ -2,7 +2,6 @@ import { MainChannels } from '@onlook/models/constants';
 import { WindowCommand } from '@onlook/models/projects';
 import { BrowserWindow, ipcMain, shell } from 'electron';
 import { mainWindow } from '..';
-import { checkSystemRequirements } from '../requirements';
 import { imageStorage } from '../storage/images';
 import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
@@ -14,6 +13,7 @@ import { listenForHostingMessages } from './hosting';
 import { listenForPaymentMessages } from './payments';
 import { listenForRunMessages } from './run';
 import { listenForStorageMessages } from './storage';
+import { listenForPageMessages } from './page';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -26,6 +26,7 @@ export function listenForIpcMessages() {
     listenForRunMessages();
     listenForHostingMessages();
     listenForPaymentMessages();
+    listenForPageMessages();
 }
 
 export function removeIpcListeners() {
@@ -37,10 +38,6 @@ export function removeIpcListeners() {
 function listenForGeneralMessages() {
     ipcMain.handle(MainChannels.RELOAD_APP, (e: Electron.IpcMainInvokeEvent, args: string) => {
         return mainWindow?.reload();
-    });
-
-    ipcMain.handle(MainChannels.CHECK_REQUIREMENTS, () => {
-        return checkSystemRequirements();
     });
 
     ipcMain.handle(
