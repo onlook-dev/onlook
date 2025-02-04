@@ -29,6 +29,9 @@ export default defineConfig(({ command }) => {
                 common: path.join(__dirname, 'common'),
             },
         },
+        optimizeDeps: {
+            exclude: ['node_modules/.vite/deps'],
+        },
         plugins: [
             react(),
             electron({
