@@ -19,23 +19,7 @@ export class TreeSitterProcessor {
     }
 
     async parseNextCode(code: string, options: TreeSitterOptions = {}): Promise<Parser.Tree> {
-        const tree = this.parser.parse(code);
-        if (options.includeComments || options.parseServerComponents) {
-            this.processNode(tree.rootNode, options);
-        }
-        return tree;
-    }
-
-    private processNode(node: Parser.SyntaxNode, options: TreeSitterOptions): void {
-        if (options.includeComments && node.type === 'comment') {
-            // Preserve comment nodes when includeComments is true
-            return;
-        }
-        if (options.parseServerComponents && node.text.includes('use server')) {
-            // Mark server component directives for special handling
-            node.type = 'server_directive';
-        }
-        node.children.forEach((child) => this.processNode(child, options));
+        return this.parser.parse(code);
     }
 
     hasParseErrors(tree: Parser.Tree): boolean {
@@ -48,13 +32,14 @@ export class TreeSitterProcessor {
 
     async getASTForLLM(code: string, options: TreeSitterOptions = {}): Promise<object> {
         const tree = await this.parseNextCode(code, options);
-        return this.transformTreeForLLM(tree.rootNode);
+        return this.transformTreeForLLM(tree.rootNode, 0, 100, options);
     }
 
     private transformTreeForLLM(
         node: Parser.SyntaxNode,
         depth: number = 0,
         maxDepth: number = 100,
+        options: TreeSitterOptions = {},
     ): object {
         const result: any = {
             type: node.type,
@@ -63,9 +48,13 @@ export class TreeSitterProcessor {
             endPosition: node.endPosition,
         };
 
+        if (options.parseServerComponents && node.text.includes('use server')) {
+            result.isServerComponent = true;
+        }
+
         if (depth < maxDepth && node.children.length > 0) {
             result.children = node.children.map((child) =>
-                this.transformTreeForLLM(child, depth + 1, maxDepth),
+                this.transformTreeForLLM(child, depth + 1, maxDepth, options),
             );
         }
 

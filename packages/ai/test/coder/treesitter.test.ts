@@ -65,12 +65,12 @@ describe('TreeSitterProcessor', () => {
         const result = await processor.getASTForLLM(code, { parseServerComponents: true });
         expect(result).toHaveProperty('type', 'program');
 
-        const findServerDirective = (node: any): boolean => {
-            if (node.type === 'server_directive') return true;
-            return node.children?.some((child: any) => findServerDirective(child)) || false;
+        const findServerComponent = (node: any): boolean => {
+            if (node.isServerComponent) return true;
+            return node.children?.some((child: any) => findServerComponent(child)) || false;
         };
 
-        expect(findServerDirective(result)).toBe(true);
+        expect(findServerComponent(result)).toBe(true);
 
         const ast = result as any;
         expect(
