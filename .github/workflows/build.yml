@@ -63,6 +63,8 @@ jobs:
               run: bun install --frozen-lockfile
 
             - name: Download Bun binary
+              env:
+                  CI_ARCH: ${{ matrix.arch }}
               run: bun run download_bun
 
             - name: Set environment variables

@@ -15,6 +15,16 @@ async function downloadBun() {
     })();
 
     const ARCH = (() => {
+        // Check for CI environment variable first
+        const ciArch = process.env.CI_ARCH;
+        if (ciArch) {
+            switch (ciArch) {
+                case 'x64': return 'x64';
+                case 'arm64': return 'aarch64';
+                default: throw new Error('Unsupported CI architecture');
+            }
+        }
+        // Fall back to runtime detection
         switch (arch()) {
             case 'x64': return 'x64';
             case 'arm64': return 'aarch64';
