@@ -124,7 +124,7 @@ export function copyDir(src: string, dest: string) {
     }
 }
 
-export function runBuildScript(
+export async function runBuildScript(
     folderPath: string,
     buildScript: string,
 ): Promise<{
@@ -132,20 +132,31 @@ export function runBuildScript(
     error?: string;
 }> {
     return new Promise((resolve, reject) => {
-        runBunCommand(buildScript, [], {
-            cwd: folderPath,
-            env: { ...process.env, NODE_ENV: 'production' },
-            callbacks: {
-                onClose: (code, signal) => {
-                    console.log(`Build script closed with code ${code} and signal ${signal}`);
-                    if (code === 0) {
-                        resolve({ success: true });
-                    } else {
-                        resolve({ success: false, error: 'Build script failed' });
-                    }
-                },
-            },
-        });
+        (async () => {
+            try {
+                await runBunCommand(buildScript, [], {
+                    cwd: folderPath,
+                    env: { ...process.env, NODE_ENV: 'production' },
+                    callbacks: {
+                        onClose: (code, signal) => {
+                            console.log(
+                                `Build script closed with code ${code} and signal ${signal}`,
+                            );
+                            if (code === 0) {
+                                resolve({ success: true });
+                            } else {
+                                resolve({ success: false, error: 'Build script failed' });
+                            }
+                        },
+                    },
+                });
+            } catch (error) {
+                resolve({
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error occurred',
+                });
+            }
+        })();
     });
 }
 

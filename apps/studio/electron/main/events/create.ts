@@ -22,7 +22,7 @@ export function listenForCreateMessages() {
 
     ipcMain.handle(
         MainChannels.INSTALL_PROJECT_DEPENDENCIES,
-        (e: Electron.IpcMainInvokeEvent, args) => {
+        async (e: Electron.IpcMainInvokeEvent, args) => {
             const progressCallback: SetupCallback = (stage: SetupStage, message: string) => {
                 mainWindow?.webContents.send(MainChannels.SETUP_PROJECT_CALLBACK, {
                     stage,
@@ -30,7 +30,7 @@ export function listenForCreateMessages() {
                 });
             };
             const { folderPath, installCommand } = args;
-            return runBunCommand(installCommand, [], {
+            return await runBunCommand(installCommand, [], {
                 cwd: folderPath,
                 callbacks: {
                     onStdout: (data) => progressCallback(SetupStage.CONFIGURING, data),
