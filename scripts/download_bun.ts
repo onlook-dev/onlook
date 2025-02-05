@@ -57,7 +57,11 @@ async function downloadBun() {
 
     // Download file using Bun's fetch
     const response = await fetch(DOWNLOAD_URL);
-    await Bun.write(zipPath, response);
+    if (!response.ok) {
+        throw new Error(`Failed to download Bun: ${response.status} ${response.statusText}`);
+    }
+    const buffer = await response.arrayBuffer();
+    await Bun.write(zipPath, buffer);
 
     // Extract using extract-zip, stripping the directory structure
     await extract(zipPath, {
