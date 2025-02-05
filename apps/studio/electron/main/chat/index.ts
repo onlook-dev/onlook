@@ -2,6 +2,7 @@ import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
 import { type CoreMessage, type CoreSystemMessage } from 'ai';
+import WebSocket from 'ws';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
@@ -11,6 +12,7 @@ class LlmManager {
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
     private promptProvider: PromptProvider;
+    private ws: WebSocket | null = null;
 
     private constructor() {
         this.restoreSettings();
@@ -49,6 +51,7 @@ class LlmManager {
     ): Promise<StreamResponse> {
         const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
+
         try {
             const authTokens = await getRefreshedAuthTokens();
 
@@ -62,58 +65,64 @@ class LlmManager {
                 } as CoreSystemMessage;
                 messages = [systemMessage, ...messages];
             }
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authTokens.accessToken}`,
-                    },
-                    body: JSON.stringify({
+
+            // Connect to WebSocket
+            const wsApi = import.meta.env.VITE_SUPABASE_API_URL?.replace('https://', 'wss://').replace('http://', 'ws://');
+            if (!wsApi) {
+                throw new Error('WebSocket API URL not found');
+            }
+            console.log('WebSocket API URL', wsApi);
+            const wsUrl = `${wsApi}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_WS}`;
+            console.log('WebSocket URL', wsUrl);
+            this.ws = new WebSocket(wsUrl);
+
+            return new Promise((resolve, reject) => {
+                let fullContent = '';
+
+                this.ws!.onopen = () => {
+                    // Send the request once connected
+                    this.ws!.send(JSON.stringify({
                         messages,
                         useAnalytics: this.useAnalytics,
                         requestType,
-                    } satisfies StreamRequestV2),
-                    signal: this.abortController.signal,
-                },
-            );
+                        authToken: authTokens.accessToken,
+                    }));
+                };
 
-            if (response.status !== 200) {
-                if (response.status === 403) {
-                    return {
-                        status: 'rate-limited',
-                        content: 'You have reached your daily limit.',
-                        rateLimitResult: await response.json(),
-                    };
-                }
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
-            }
+                this.ws!.onmessage = (event) => {
+                    console.log('WebSocket message received', event.data);
+                    const chunk = event.data;
+                    fullContent += chunk;
+                    this.emitPartialMessage(fullContent);
+                };
 
-            const reader = response.body?.getReader();
-            if (!reader) {
-                throw new Error('No response from server');
-            }
+                this.ws!.onclose = () => {
+                    console.log('WebSocket connection closed');
+                    resolve({ status: 'full', content: fullContent });
+                };
 
-            let fullContent = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    break;
-                }
+                this.ws!.onerror = (error) => {
+                    reject(error);
+                };
 
-                const chunk = new TextDecoder().decode(value);
-                fullContent += chunk;
-                this.emitPartialMessage(fullContent);
-            }
-            return { status: 'full', content: fullContent };
+                // Handle abort
+                this.abortController?.signal.addEventListener('abort', () => {
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.close();
+                    }
+                });
+            });
+
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
+            if (this.ws) {
+                this.ws.close();
+                this.ws = null;
+            }
         }
     }
 
@@ -165,6 +174,27 @@ class LlmManager {
         );
 
         return (await response.json()) as string[];
+    }
+
+    public async connectToWebSocket(): Promise<void> {
+        const wsUrl = `${import.meta.env.VITE_SUPABASE_API_URL?.replace('https://', 'wss://')}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_WS}`;
+        if (!wsUrl) {
+            throw new Error('WebSocket URL not found');
+        }
+
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            console.log('WebSocket connection opened');
+        };
+
+        ws.onmessage = (event) => {
+            console.log('WebSocket message received', event.data);
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
     }
 }
 

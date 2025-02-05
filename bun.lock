@@ -10,7 +10,7 @@
     },
     "apps/studio": {
       "name": "@onlook/studio",
-      "version": "0.1.36",
+      "version": "0.1.39",
       "dependencies": {
         "@ai-sdk/anthropic": "^0.0.53",
         "@ai-sdk/openai": "^1.1.9",
@@ -67,6 +67,7 @@
         "type-fest": "^4.26.1",
         "use-resize-observer": "^9.1.0",
         "write-file-atomic": "^6.0.0",
+        "ws": "^8.18.0",
         "zod": "^3.23.8",
       },
       "devDependencies": {
