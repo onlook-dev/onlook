@@ -3,19 +3,23 @@ import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 import { EditorMode } from '@/lib/models';
 import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
 import { InsertRect } from './InsertRect';
 import { TextEditor } from './TextEditor';
+import { Chat } from './Chat';
 
 // Memoize child components
 const MemoizedInsertRect = memo(InsertRect);
 const MemoizedClickRect = memo(ClickRect);
 const MemoizedTextEditor = memo(TextEditor);
+const MemoizedChat = memo(Chat);
 
 const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
+
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     // Memoize overlay state values
     const overlayState = editorEngine.overlay.state;
@@ -54,6 +58,14 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
         [overlayState.clickRects, isSingleSelection],
     );
 
+    const selectedRect = overlayState.clickRects[0];
+
+    useEffect(() => {
+        if (isSingleSelection) {
+            setIsChatOpen(true);
+        }
+    }, [isSingleSelection]);
+
     return (
         <>
             {children}
@@ -78,6 +90,9 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         onStop={overlayState.textEditor.onStop}
                         isComponent={overlayState.textEditor.isComponent}
                     />
+                )}
+                {isSingleSelection && selectedRect && (
+                    <MemoizedChat rect={selectedRect} isOpen={isChatOpen} />
                 )}
             </div>
         </>
