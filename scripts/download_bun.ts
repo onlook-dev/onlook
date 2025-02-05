@@ -15,6 +15,16 @@ async function downloadBun() {
     })();
 
     const ARCH = (() => {
+        // Check for CI environment variable first
+        const ciArch = process.env.CI_ARCH;
+        if (ciArch) {
+            switch (ciArch) {
+                case 'x64': return 'x64';
+                case 'arm64': return 'aarch64';
+                default: throw new Error('Unsupported CI architecture');
+            }
+        }
+        // Fall back to runtime detection
         switch (arch()) {
             case 'x64': return 'x64';
             case 'arm64': return 'aarch64';
@@ -41,13 +51,17 @@ async function downloadBun() {
     await mkdir(RESOURCES_DIR, { recursive: true });
 
     // Download and extract Bun
-    console.log(`Downloading Bun from ${DOWNLOAD_URL}...`);
+    console.log(`Downloading Bun from ${DOWNLOAD_URL}`);
 
     const zipPath = join(RESOURCES_DIR, 'bun.zip');
 
     // Download file using Bun's fetch
     const response = await fetch(DOWNLOAD_URL);
-    await Bun.write(zipPath, response);
+    if (!response.ok) {
+        throw new Error(`Failed to download Bun: ${response.status} ${response.statusText}`);
+    }
+    const buffer = await response.arrayBuffer();
+    await Bun.write(zipPath, buffer);
 
     // Extract using extract-zip, stripping the directory structure
     await extract(zipPath, {

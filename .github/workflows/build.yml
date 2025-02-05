@@ -63,6 +63,8 @@ jobs:
               run: bun install --frozen-lockfile
 
             - name: Download Bun binary
+              env:
+                  CI_ARCH: ${{ matrix.arch }}
               run: bun run download_bun
 
             - name: Set environment variables
@@ -79,6 +81,7 @@ jobs:
             
             - name: Build and Release 
               uses: samuelmeuli/action-electron-builder@v1
+              if: ${{ !startsWith(matrix.os, 'macos') || (startsWith(matrix.os, 'macos') && runner.arch == matrix.arch) }}
               with:
                   skip_build: true
                   package_root: apps/studio
