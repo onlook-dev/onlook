@@ -33,7 +33,8 @@ describe('TreeSitterProcessor', () => {
                 syntax error here
             }
         `;
-        await expect(processor.parseNextCode(invalidCode)).rejects.toThrow();
+        const result = await processor.parseNextCode(invalidCode);
+        expect(processor.hasParseErrors(result)).toBe(true);
     });
 
     test('should handle Next.js server components', async () => {

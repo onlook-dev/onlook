@@ -1,5 +1,5 @@
 import Parser from 'tree-sitter';
-import { TypescriptLanguage } from 'tree-sitter-typescript';
+const TypeScript = require('tree-sitter-typescript');
 
 type ErrorWithMessage = {
     message: string;
@@ -15,16 +15,19 @@ export class TreeSitterProcessor {
 
     constructor() {
         this.parser = new Parser();
-        this.parser.setLanguage(TypescriptLanguage.tsx);
+        this.parser.setLanguage(TypeScript.tsx);
     }
 
     async parseNextCode(code: string, options: TreeSitterOptions = {}): Promise<Parser.Tree> {
-        try {
-            return this.parser.parse(code);
-        } catch (error) {
-            const err = error as ErrorWithMessage;
-            throw new Error(`Failed to parse Next.js code: ${err.message}`);
-        }
+        return this.parser.parse(code);
+    }
+
+    hasParseErrors(tree: Parser.Tree): boolean {
+        const checkNode = (node: Parser.SyntaxNode): boolean => {
+            if (node.type === 'ERROR') return true;
+            return node.children.some(checkNode);
+        };
+        return checkNode(tree.rootNode);
     }
 
     async getASTForLLM(code: string, options: TreeSitterOptions = {}): Promise<object> {
