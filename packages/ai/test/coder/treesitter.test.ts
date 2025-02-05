@@ -81,4 +81,47 @@ describe('TreeSitterProcessor', () => {
             ),
         ).toBe(true);
     });
+
+    test('should extract and serialize function signatures', async () => {
+        const code = `
+            'use client';
+            export default function Button({ onClick }: { onClick: () => void }) {
+                return <button onClick={onClick}>Click me</button>;
+            }
+            
+            'use server';
+            async function submitForm(data: FormData) {
+                return await processForm(data);
+            }
+        `;
+
+        const signatures = await processor.getFunctionSignatures(code, {
+            parseServerComponents: true,
+        });
+        expect(signatures).toHaveLength(2);
+
+        const [button, submit] = signatures;
+        expect(button).toEqual({
+            name: 'Button',
+            type: 'client',
+            params: [{ name: 'onClick', type: '() => void' }],
+            modifiers: ['export', 'default'],
+            returnType: 'JSX.Element',
+        });
+
+        expect(submit).toEqual({
+            name: 'submitForm',
+            type: 'server',
+            async: true,
+            params: [{ name: 'data', type: 'FormData' }],
+            modifiers: [],
+            returnType: 'Promise<void>',
+        });
+
+        const serialized = signatures.map((s) => processor.serializeFunction(s));
+        expect(serialized[0]).toBe(
+            '[client] [export, default] Button(onClick: () => void) -> JSX.Element',
+        );
+        expect(serialized[1]).toBe('[server] async submitForm(data: FormData) -> Promise<void>');
+    });
 });

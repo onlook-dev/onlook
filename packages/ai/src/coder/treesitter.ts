@@ -10,6 +10,16 @@ export interface TreeSitterOptions {
     parseServerComponents?: boolean;
 }
 
+export interface SerializedFunction {
+    name: string;
+    type: 'server' | 'client' | 'default';
+    async?: boolean;
+    params: Array<{ name: string; type?: string }>;
+    returnType?: string;
+    modifiers: string[];
+    documentation?: string;
+}
+
 export class TreeSitterProcessor {
     private parser: Parser;
 
@@ -33,6 +43,82 @@ export class TreeSitterProcessor {
     async getASTForLLM(code: string, options: TreeSitterOptions = {}): Promise<object> {
         const tree = await this.parseNextCode(code, options);
         return this.transformTreeForLLM(tree.rootNode, 0, 100, options);
+    }
+
+    async getFunctionSignatures(
+        code: string,
+        options: TreeSitterOptions = {},
+    ): Promise<SerializedFunction[]> {
+        const tree = await this.parseNextCode(code, options);
+        const functions: SerializedFunction[] = [];
+
+        const processNode = (node: Parser.SyntaxNode) => {
+            if (node.type === 'function_declaration' || node.type === 'arrow_function') {
+                const func: SerializedFunction = {
+                    name: '',
+                    type: 'default',
+                    params: [],
+                    modifiers: [],
+                };
+
+                const nameNode = node.childForFieldName('name');
+                if (nameNode) func.name = nameNode.text;
+
+                const paramList = node.childForFieldName('parameters');
+                if (paramList) {
+                    paramList.children.forEach((param) => {
+                        const paramName = param.childForFieldName('name')?.text;
+                        const paramType = param.childForFieldName('type')?.text;
+                        if (paramName) {
+                            func.params.push({ name: paramName, type: paramType });
+                        }
+                    });
+                }
+
+                if (options.parseServerComponents && this.hasServerDirective(node)) {
+                    func.type = 'server';
+                } else if (this.hasClientDirective(node)) {
+                    func.type = 'client';
+                }
+
+                functions.push(func);
+            }
+
+            node.children.forEach(processNode);
+        };
+
+        processNode(tree.rootNode);
+        return functions;
+    }
+
+    private hasServerDirective(node: Parser.SyntaxNode): boolean {
+        let current: Parser.SyntaxNode | null = node;
+        while (current) {
+            if (current.text.includes('use server')) return true;
+            current = current.parent;
+        }
+        return false;
+    }
+
+    private hasClientDirective(node: Parser.SyntaxNode): boolean {
+        let current: Parser.SyntaxNode | null = node;
+        while (current) {
+            if (current.text.includes('use client')) return true;
+            current = current.parent;
+        }
+        return false;
+    }
+
+    serializeFunction(func: SerializedFunction): string {
+        const modifiers = func.modifiers.length > 0 ? `[${func.modifiers.join(', ')}] ` : '';
+        const asyncMod = func.async ? 'async ' : '';
+        const params = func.params
+            .map((p) => (p.type ? `${p.name}: ${p.type}` : p.name))
+            .join(', ');
+        const returnType = func.returnType ? ` -> ${func.returnType}` : '';
+        const componentType = func.type !== 'default' ? `[${func.type}] ` : '';
+
+        return `${componentType}${modifiers}${asyncMod}${func.name}(${params})${returnType}`;
     }
 
     private transformTreeForLLM(
