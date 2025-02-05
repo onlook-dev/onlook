@@ -32,6 +32,8 @@
     },
     "dependencies": {
         "diff-match-patch": "^1.0.5",
-        "simple-git": "^3.27.0"
+        "simple-git": "^3.27.0",
+        "tree-sitter": "^0.22.4",
+        "tree-sitter-typescript": "^0.23.2"
     }
 }
