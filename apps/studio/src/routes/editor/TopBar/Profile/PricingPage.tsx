@@ -271,8 +271,6 @@ export const PricingPage = () => {
                                     features={
                                         t('pricing.plans.pro.features', {
                                             returnObjects: true,
-                                            dailyMessages: 5,
-                                            monthlyMessages: 50,
                                         }) as string[]
                                     }
                                     buttonText={
