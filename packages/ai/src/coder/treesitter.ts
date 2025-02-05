@@ -19,7 +19,23 @@ export class TreeSitterProcessor {
     }
 
     async parseNextCode(code: string, options: TreeSitterOptions = {}): Promise<Parser.Tree> {
-        return this.parser.parse(code);
+        const tree = this.parser.parse(code);
+        if (options.includeComments || options.parseServerComponents) {
+            this.processNode(tree.rootNode, options);
+        }
+        return tree;
+    }
+
+    private processNode(node: Parser.SyntaxNode, options: TreeSitterOptions): void {
+        if (options.includeComments && node.type === 'comment') {
+            // Preserve comment nodes when includeComments is true
+            return;
+        }
+        if (options.parseServerComponents && node.text.includes('use server')) {
+            // Mark server component directives for special handling
+            node.type = 'server_directive';
+        }
+        node.children.forEach((child) => this.processNode(child, options));
     }
 
     hasParseErrors(tree: Parser.Tree): boolean {
@@ -35,13 +51,24 @@ export class TreeSitterProcessor {
         return this.transformTreeForLLM(tree.rootNode);
     }
 
-    private transformTreeForLLM(node: Parser.SyntaxNode): object {
-        return {
+    private transformTreeForLLM(
+        node: Parser.SyntaxNode,
+        depth: number = 0,
+        maxDepth: number = 100,
+    ): object {
+        const result: any = {
             type: node.type,
             text: node.text,
             startPosition: node.startPosition,
             endPosition: node.endPosition,
-            children: node.children.map((child) => this.transformTreeForLLM(child)),
         };
+
+        if (depth < maxDepth && node.children.length > 0) {
+            result.children = node.children.map((child) =>
+                this.transformTreeForLLM(child, depth + 1, maxDepth),
+            );
+        }
+
+        return result;
     }
 }

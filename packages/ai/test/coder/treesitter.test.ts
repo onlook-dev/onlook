@@ -13,6 +13,17 @@ describe('TreeSitterProcessor', () => {
         const result = await processor.parseNextCode(code);
         expect(result).toBeDefined();
         expect(result.rootNode.type).toBe('program');
+
+        const ast = await processor.getASTForLLM(code);
+        expect(ast).toHaveProperty('children');
+        const children = (ast as any).children;
+        expect(
+            children.some(
+                (node: any) =>
+                    node.type === 'export_statement' &&
+                    node.text.includes('export default function'),
+            ),
+        ).toBe(true);
     });
 
     test('should transform AST for LLM consumption', async () => {
@@ -53,7 +64,21 @@ describe('TreeSitterProcessor', () => {
         `;
         const result = await processor.getASTForLLM(code, { parseServerComponents: true });
         expect(result).toHaveProperty('type', 'program');
-        const astString = JSON.stringify(result);
-        expect(astString).toContain('use server');
+
+        const findServerDirective = (node: any): boolean => {
+            if (node.type === 'server_directive') return true;
+            return node.children?.some((child: any) => findServerDirective(child)) || false;
+        };
+
+        expect(findServerDirective(result)).toBe(true);
+
+        const ast = result as any;
+        expect(
+            ast.children.some(
+                (node: any) =>
+                    node.type === 'export_statement' &&
+                    node.text.includes('export default function Form'),
+            ),
+        ).toBe(true);
     });
 });
