@@ -51,7 +51,7 @@ async function downloadBun() {
     await mkdir(RESOURCES_DIR, { recursive: true });
 
     // Download and extract Bun
-    console.log(`Downloading Bun from ${DOWNLOAD_URL}...`);
+    console.log(`Downloading Bun from ${DOWNLOAD_URL}`);
 
     const zipPath = join(RESOURCES_DIR, 'bun.zip');
 
