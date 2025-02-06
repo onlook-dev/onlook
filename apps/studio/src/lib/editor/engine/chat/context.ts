@@ -10,6 +10,7 @@ import type { EditorEngine } from '..';
 
 export class ChatContext {
     context: ChatMessageContext[] = [];
+    screenshotEnabled: boolean = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -30,7 +31,17 @@ export class ChatContext {
         const imageContext = this.context.filter(
             (context) => context.type === MessageContextType.IMAGE,
         );
-        return [...fileContext, ...highlightedContext, ...imageContext];
+
+        const context = [...fileContext, ...highlightedContext, ...imageContext];
+
+        if (this.screenshotEnabled) {
+            const screenshot = await this.captureScreenshot();
+            if (screenshot) {
+                context.push(screenshot);
+            }
+        }
+
+        return context;
     }
 
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
@@ -87,6 +98,32 @@ export class ChatContext {
 
     clear() {
         this.context = [];
+    }
+
+    private async captureScreenshot(): Promise<ImageMessageContext | null> {
+        const timestamp = Date.now();
+        const screenshotName = `chat-screenshot-${timestamp}`;
+
+        try {
+            const image = await this.editorEngine.takeScreenshot(screenshotName);
+            if (!image) {
+                return null;
+            }
+
+            return {
+                type: MessageContextType.IMAGE,
+                content: image,
+                mimeType: 'image/png',
+                displayName: 'Current View',
+            };
+        } catch (error) {
+            console.error('Failed to capture screenshot:', error);
+            return null;
+        }
+    }
+
+    toggleScreenshotEnabled() {
+        this.screenshotEnabled = !this.screenshotEnabled;
     }
 
     dispose() {
