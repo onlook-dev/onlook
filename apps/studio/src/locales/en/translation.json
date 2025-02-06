@@ -8,8 +8,8 @@
                 "features": [
                     "Visual code editor access",
                     "Unlimited projects",
-                    "10 AI chat messages a day",
-                    "50 AI messages a month",
+                    "{{dailyMessages}} AI chat messages a day",
+                    "{{monthlyMessages}} AI messages a month",
                     "Limited to 1 screenshot per chat"
                 ]
             },
