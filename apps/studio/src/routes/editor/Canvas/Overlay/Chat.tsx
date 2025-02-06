@@ -1,27 +1,40 @@
-import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
-import { ContextMenu } from '@onlook/ui/context-menu';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { useState, useRef, useEffect } from 'react';
-import { Input } from '@onlook/ui/input';
 import { Button } from '@onlook/ui/button';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import { StyleMode } from '@/lib/editor/engine/style';
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@onlook/ui/icons/index';
+import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 
-interface ChatProps {
-    rect: RectDimensions;
-    isOpen: boolean;
-}
+const SPACING = {
+    base: 8,
+    padding: 16,
+    gap: 8,
+};
 
-const SINGLE_LINE_HEIGHT = 32;
-const MIN_INPUT_WIDTH = 280;
-const CHAT_BUTTON_OFFSET = 52;
-const INPUT_OFFSET_SINGLE = 108;
-const INPUT_OFFSET_MULTI = 210;
-const MIN_WORDS_TO_SUBMIT = 3;
-const MULTI_LINE_ROWS = 3;
+const DIMENSIONS = {
+    singleLineHeight: 32,
+    minInputWidth: 280,
+    buttonHeight: 36, // Standard button height
+    multiLineRows: 3,
+    minWordsToSubmit: 3,
+};
+
+const getOffsets = (isMultiline: boolean) => {
+    const chatButtonHeight = DIMENSIONS.buttonHeight + SPACING.padding;
+    const inputHeight = isMultiline
+        ? DIMENSIONS.singleLineHeight * DIMENSIONS.multiLineRows +
+          SPACING.padding +
+          DIMENSIONS.buttonHeight
+        : DIMENSIONS.singleLineHeight + SPACING.padding;
+
+    return {
+        chatButton: chatButtonHeight,
+        input: chatButtonHeight + inputHeight + SPACING.gap,
+    };
+};
 
 const DEFAULT_INPUT_STATE = {
     value: '',
@@ -30,30 +43,29 @@ const DEFAULT_INPUT_STATE = {
     isSubmitting: false,
 };
 
-export const Chat = ({ rect, isOpen }: ChatProps) => {
+export const Chat = ({ selectedEl }: { selectedEl: RectDimensions | null }) => {
     const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
 
     const editorEngine = useEditorEngine();
-    const selectedEl = editorEngine.elements.selected[0];
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    if (!isOpen) {
+    if (!selectedEl) {
         return null;
     }
 
     const inputStyle: React.CSSProperties = {
         position: 'absolute',
-        top: rect.top - (inputState.isMultiline ? INPUT_OFFSET_MULTI : INPUT_OFFSET_SINGLE),
-        left: rect.left,
-        minWidth: `${MIN_INPUT_WIDTH}px`,
+        top: selectedEl.top - getOffsets(inputState.isMultiline).input,
+        left: selectedEl.left,
+        minWidth: `${DIMENSIONS.minInputWidth}px`,
         zIndex: 1000,
         pointerEvents: 'auto',
     };
 
     const chatStyle: React.CSSProperties = {
         position: 'absolute',
-        top: rect.top - CHAT_BUTTON_OFFSET,
-        left: rect.left,
+        top: selectedEl.top - getOffsets(false).chatButton,
+        left: selectedEl.left,
         zIndex: 1000,
         pointerEvents: 'auto',
     };
@@ -82,7 +94,7 @@ export const Chat = ({ rect, isOpen }: ChatProps) => {
                 const scrollHeight = textareaRef.current.scrollHeight;
                 setInputState((prev) => ({
                     ...prev,
-                    isMultiline: scrollHeight > SINGLE_LINE_HEIGHT,
+                    isMultiline: scrollHeight > DIMENSIONS.singleLineHeight,
                 }));
             }
         } else {
@@ -92,28 +104,30 @@ export const Chat = ({ rect, isOpen }: ChatProps) => {
     };
 
     const handleToggleChat = () => {
-        setInputState((prev) => ({ ...prev, isVisible: !prev.isVisible, value: '' }));
+        if (selectedEl) {
+            setInputState((prev) => ({ ...prev, isVisible: !prev.isVisible, value: '' }));
+        }
     };
 
     useEffect(() => {
-        if (!isOpen) {
+        if (!selectedEl) {
             setInputState(DEFAULT_INPUT_STATE);
         }
-    }, [isOpen]);
+    }, [selectedEl]);
 
     return (
         <>
             <div
                 style={chatStyle}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-background-secondary/75 rounded-lg p-1 flex flex-row gap-2"
+                className="bg-background-secondary/75 rounded-xl p-1 flex flex-row gap-2"
             >
                 <ToggleGroup
                     type="single"
                     value={inputState.isVisible ? 'chat' : 'input'}
                     onValueChange={handleToggleChat}
                 >
-                    <ToggleGroupItem value="chat">
+                    <ToggleGroupItem value="chat" className="rounded-lg">
                         <div className="flex flex-row gap-2 items-center p-1 min-w-28">
                             <Icons.Sparkles className="w-4 h-4" />
                             <span>Chat with AI</span>
@@ -125,8 +139,8 @@ export const Chat = ({ rect, isOpen }: ChatProps) => {
                 <div
                     style={inputStyle}
                     className={cn(
-                        'bg-background-secondary/75 rounded-lg p-2',
-                        'flex flex-row gap-2',
+                        'bg-background-secondary/75 rounded-xl p-1',
+                        'flex flex-row gap-1',
                         inputState.isMultiline ? 'flex-col' : 'flex-row items-center',
                     )}
                 >
@@ -142,29 +156,26 @@ export const Chat = ({ rect, isOpen }: ChatProps) => {
                         aria-label="Chat message input"
                         ref={textareaRef}
                         className={cn(
-                            'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px]',
+                            'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px] rounded-lg',
                             'transition-colors duration-150',
                             editorEngine.style.mode === StyleMode.Root
                                 ? 'bg-background-tertiary text-foreground-active border-background-tertiary cursor-text'
                                 : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-background-tertiary/50 group-hover:text-foreground-active group-hover:border-background-tertiary/50 cursor-pointer',
-                            selectedEl.instanceId
-                                ? 'rounded-t-none'
-                                : 'bg-background-secondary/75 focus:bg-background-tertiary',
                         )}
                         value={inputState.value}
                         onChange={handleTextareaChange}
                         placeholder="Type your message..."
                         style={{
                             resize: 'none',
-                            minHeight: SINGLE_LINE_HEIGHT,
+                            minHeight: DIMENSIONS.singleLineHeight,
                             overflow: 'hidden',
                         }}
-                        rows={inputState.isMultiline ? MULTI_LINE_ROWS : 1}
+                        rows={inputState.isMultiline ? DIMENSIONS.multiLineRows : 1}
                         autoFocus
                         disabled={inputState.isSubmitting}
                     />
                     {inputState.value.trim().split(/\s+/).filter(Boolean).length >=
-                        MIN_WORDS_TO_SUBMIT && (
+                        DIMENSIONS.minWordsToSubmit && (
                         <Button
                             size="sm"
                             onClick={handleSubmit}
