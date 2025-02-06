@@ -1,31 +1,36 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
-import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
+import {
+    ApiRoutes,
+    BASE_API_ROUTE,
+    FUNCTIONS_ROUTE,
+} from '../../../../../packages/models/src/constants/api';
+import { MainChannels } from '@onlook/models/constants';
 import { type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
-import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
+import { WebSocketManager } from './websocket';
+import { getRefreshedAuthTokens } from '../auth';
 
 class LlmManager {
     private static instance: LlmManager;
-    private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
     private promptProvider: PromptProvider;
+    private webSocket: WebSocketManager;
 
     private constructor() {
         this.restoreSettings();
         this.promptProvider = new PromptProvider();
+        this.webSocket = new WebSocketManager();
+        this.webSocket.setMessageCallback((response) => {
+            mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, response);
+        });
     }
 
     private restoreSettings() {
         const settings = PersistentStorage.USER_SETTINGS.read() || {};
-        const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
-
-        if (enable) {
-            this.useAnalytics = true;
-        } else {
-            this.useAnalytics = false;
-        }
+        this.useAnalytics =
+            settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
     }
 
     public toggleAnalytics(enable: boolean) {
@@ -47,11 +52,8 @@ class LlmManager {
             skipSystemPrompt?: boolean;
         },
     ): Promise<StreamResponse> {
-        const { abortController, skipSystemPrompt } = options || {};
-        this.abortController = abortController || new AbortController();
+        const { skipSystemPrompt } = options || {};
         try {
-            const authTokens = await getRefreshedAuthTokens();
-
             if (!skipSystemPrompt) {
                 const systemMessage = {
                     role: 'system',
@@ -62,75 +64,24 @@ class LlmManager {
                 } as CoreSystemMessage;
                 messages = [systemMessage, ...messages];
             }
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authTokens.accessToken}`,
-                    },
-                    body: JSON.stringify({
-                        messages,
-                        useAnalytics: this.useAnalytics,
-                        requestType,
-                    } satisfies StreamRequestV2),
-                    signal: this.abortController.signal,
-                },
-            );
 
-            if (response.status !== 200) {
-                if (response.status === 403) {
-                    return {
-                        status: 'rate-limited',
-                        content: 'You have reached your daily limit.',
-                        rateLimitResult: await response.json(),
-                    };
-                }
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
-            }
+            await this.webSocket.send({
+                messages,
+                useAnalytics: this.useAnalytics,
+                requestType,
+            });
 
-            const reader = response.body?.getReader();
-            if (!reader) {
-                throw new Error('No response from server');
-            }
-
-            let fullContent = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    break;
-                }
-
-                const chunk = new TextDecoder().decode(value);
-                fullContent += chunk;
-                this.emitPartialMessage(fullContent);
-            }
-            return { status: 'full', content: fullContent };
+            return { status: 'full', content: '' }; // WebSocket will handle streaming
         } catch (error) {
-            console.error('Error receiving stream', error);
+            console.error('Error in stream:', error);
             const errorMessage = this.getErrorMessage(error);
             return { content: errorMessage, status: 'error' };
-        } finally {
-            this.abortController = null;
         }
     }
 
     public abortStream(): boolean {
-        if (this.abortController) {
-            this.abortController.abort();
-            return true;
-        }
-        return false;
-    }
-
-    private emitPartialMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'partial',
-            content,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
+        this.webSocket.close();
+        return true;
     }
 
     private getErrorMessage(error: unknown): string {
@@ -147,24 +98,17 @@ class LlmManager {
     }
 
     public async generateSuggestions(messages: CoreMessage[]): Promise<string[]> {
-        const authTokens = await getRefreshedAuthTokens();
-        const response: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authTokens.accessToken}`,
-                },
-                body: JSON.stringify({
-                    messages,
-                    useAnalytics: this.useAnalytics,
-                    requestType: StreamRequestType.SUGGESTIONS,
-                } satisfies StreamRequestV2),
-            },
-        );
-
-        return (await response.json()) as string[];
+        try {
+            await this.webSocket.send({
+                messages,
+                useAnalytics: this.useAnalytics,
+                requestType: StreamRequestType.SUGGESTIONS,
+            });
+            return []; // WebSocket will handle suggestions through the callback
+        } catch (error) {
+            console.error('Error generating suggestions:', error);
+            return [];
+        }
     }
 }
 

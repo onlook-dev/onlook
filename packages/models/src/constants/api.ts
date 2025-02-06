@@ -4,6 +4,7 @@ export const BASE_API_ROUTE = '/api';
 export enum ApiRoutes {
     AI = '/ai',
     AI_V2 = '/ai-v2',
+    AI_V3_WS = '/ai-v3/ws',
     ANALYTICS = '/analytics',
     HOSTING = '/hosting',
     CUSTOM_DOMAINS = '/custom-domains',
