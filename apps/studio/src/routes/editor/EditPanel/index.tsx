@@ -12,6 +12,7 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import StylesTab from './StylesTab';
 import WindowSettings from './WindowSettings';
+import PropsTab from './PropsTab';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -75,6 +76,13 @@ const EditPanel = observer(() => {
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={EditorTabValue.PROPS}
+                        >
+                            <Icons.Sparkles className="mr-1.5 mb-0.5" />
+                            Properties
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.STYLES}
                         >
                             <Icons.Styles className="mr-1.5" />
@@ -87,6 +95,13 @@ const EditPanel = observer(() => {
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
+                    </TabsContent>
+                    <TabsContent value={EditorTabValue.PROPS}>
+                        {editorEngine.elements.selected.length > 0 ? (
+                            <PropsTab />
+                        ) : (
+                            renderEmptyState()
+                        )}
                     </TabsContent>
                     <TabsContent value={EditorTabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
@@ -103,9 +118,9 @@ const EditPanel = observer(() => {
     return (
         <ResizablePanel
             side="right"
-            defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
-            forceWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
-            minWidth={240}
+            defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 295}
+            forceWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 295}
+            minWidth={295}
             maxWidth={500}
         >
             <div
