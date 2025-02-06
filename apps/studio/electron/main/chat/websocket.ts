@@ -1,11 +1,7 @@
-import {
-    ApiRoutes,
-    BASE_API_ROUTE,
-    FUNCTIONS_ROUTE,
-} from '../../../../../packages/models/src/constants/api';
-import type { StreamResponse, StreamRequestV2 } from '../../../../../packages/models/src/chat';
-import { getRefreshedAuthTokens } from '../auth';
+import type { StreamRequestV2, StreamResponse } from '@onlook/models/chat';
+import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE } from '@onlook/models/constants';
 import WebSocket from 'ws';
+import { getRefreshedAuthTokens } from '../auth';
 
 export class WebSocketManager {
     private ws: WebSocket | null = null;
@@ -16,17 +12,20 @@ export class WebSocketManager {
 
     async connect(): Promise<void> {
         const authTokens = await getRefreshedAuthTokens();
-        const apiUrl = process.env.VITE_SUPABASE_API_URL;
+        const apiUrl = import.meta.env.VITE_SUPABASE_API_URL;
         if (!apiUrl) {
             throw new Error('VITE_SUPABASE_API_URL is not defined');
         }
         const wsUrl = `${apiUrl.replace('http', 'ws')}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V3_WS}`;
 
-        this.ws = new WebSocket(wsUrl);
+        this.ws = new WebSocket(wsUrl, {
+            headers: {
+                Authorization: `Bearer ${authTokens.accessToken}`,
+            },
+        });
 
         this.ws.on('open', () => {
             this.reconnectAttempts = 0;
-            this.ws?.send(JSON.stringify({ type: 'auth', token: authTokens.accessToken }));
         });
 
         this.ws.on('message', (data) => {

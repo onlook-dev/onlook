@@ -1,16 +1,10 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
-import {
-    ApiRoutes,
-    BASE_API_ROUTE,
-    FUNCTIONS_ROUTE,
-} from '../../../../../packages/models/src/constants/api';
+import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { WebSocketManager } from './websocket';
-import { getRefreshedAuthTokens } from '../auth';
 
 class LlmManager {
     private static instance: LlmManager;
