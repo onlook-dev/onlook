@@ -35,8 +35,8 @@ async function downloadBun() {
     const BUN_VERSION = '1.2.2';
     const RESOURCES_DIR = resolve(process.cwd(), 'apps', 'studio', 'resources', 'bun');
     const FILENAME = PLATFORM === 'win64'
-        ? `bun-windows-${ARCH}.zip`
-        : `bun-${PLATFORM}-${ARCH}.zip`;
+        ? `bun-windows-${ARCH}${ARCH === 'x64' ? '-baseline' : ''}.zip`
+        : `bun-${PLATFORM}-${ARCH}${ARCH === 'x64' ? '-baseline' : ''}.zip`;
 
     const DOWNLOAD_URL = `https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/${FILENAME}`;
     const BUN_EXECUTABLE = join(RESOURCES_DIR, PLATFORM === 'win64' ? 'bun.exe' : 'bun');
