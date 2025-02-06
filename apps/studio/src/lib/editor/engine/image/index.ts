@@ -1,11 +1,84 @@
-import { sendAnalytics, compressImage } from '@/lib/utils';
+import { sendAnalytics, compressImage, invokeMainChannel } from '@/lib/utils';
 import type { ActionTarget, InsertImageAction } from '@onlook/models/actions';
 import { getExtension } from 'mime-lite';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
+import type { ProjectsManager } from '@/lib/projects';
+import { makeAutoObservable } from 'mobx';
+import { MainChannels } from '@onlook/models/constants';
 
 export class ImageManager {
-    constructor(private editorEngine: EditorEngine) {}
+    private images: string[] = [];
+
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
+        makeAutoObservable(this);
+        this.scanImages();
+    }
+
+    async upload(file: File): Promise<void> {
+        const SUPPORTED_MIME_TYPES = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+        ];
+
+        try {
+            if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
+                throw new Error('Unsupported image type');
+            }
+
+            const compressedImage = await compressImage(file);
+
+            // If compression failed, fall back to original file
+            const base64Image =
+                compressedImage ||
+                (await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        resolve(reader.result as string);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                }));
+            const projectFolder = this.projectsManager.project?.folderPath;
+
+            if (!projectFolder) {
+                console.error('Failed to write image, projectFolder not found');
+                return;
+            }
+
+            await invokeMainChannel<string, string>(
+                MainChannels.UPLOAD_IMAGES,
+                projectFolder,
+                base64Image,
+                file.name,
+            );
+
+            this.scanImages();
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw error;
+        }
+    }
+
+    async delete(imageName: string): Promise<void> {
+        const projectFolder = this.projectsManager.project?.folderPath;
+        if (!projectFolder) {
+            console.error('Failed to delete image, projectFolder not found');
+            return;
+        }
+        await invokeMainChannel<string, string>(
+            MainChannels.DELETE_IMAGE,
+            projectFolder,
+            imageName,
+        );
+        this.scanImages();
+    }
 
     async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
         const targets = this.getTargets();
@@ -43,6 +116,10 @@ export class ImageManager {
         sendAnalytics('image-inserted', { mimeType });
     }
 
+    get assets() {
+        return this.images;
+    }
+
     remove() {
         this.editorEngine.style.update('backgroundImage', 'none');
         sendAnalytics('image-removed');
@@ -63,6 +140,24 @@ export class ImageManager {
         }));
 
         return targets;
+    }
+
+    async scanImages() {
+        const projectRoot = this.projectsManager.project?.folderPath;
+
+        if (!projectRoot) {
+            console.warn('No project root found');
+            return;
+        }
+        const images = await invokeMainChannel<string, string[]>(
+            MainChannels.SCAN_IMAGES,
+            projectRoot,
+        );
+        if (images?.length) {
+            this.images = images;
+        } else {
+            this.images = [];
+        }
     }
 
     dispose() {
