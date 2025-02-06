@@ -307,11 +307,14 @@ export const ChatInput = observer(() => {
                                 onClick={() => editorEngine.chat.context.toggleScreenshotEnabled()}
                                 disabled={disabled}
                             >
-                                {editorEngine.chat.context.screenshotEnabled ? (
-                                    <Icons.Image className="w-5 h-5" />
-                                ) : (
-                                    <Icons.ImageOff className="w-5 h-5" />
-                                )}
+                                <Icons.Image
+                                    className={cn(
+                                        'w-5 h-5',
+                                        editorEngine.chat.context.screenshotEnabled
+                                            ? 'text-primary'
+                                            : 'text-foreground-tertiary',
+                                    )}
+                                />
                             </Button>
                         </TooltipTrigger>
                         <TooltipPortal>
