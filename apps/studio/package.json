@@ -87,11 +87,13 @@
         "remark-gfm": "^4.0.0",
         "shell-quote": "^1.8.2",
         "shiki": "^1.22.0",
+        "socket.io": "^4.8.1",
+        "socket.io-client": "^4.8.1",
         "ts-morph": "^25.0.0",
         "type-fest": "^4.26.1",
         "use-resize-observer": "^9.1.0",
+        "websocket": "^1.0.35",
         "write-file-atomic": "^6.0.0",
-        "ws": "^8.18.0",
         "zod": "^3.23.8"
     },
     "devDependencies": {
@@ -112,6 +114,7 @@
         "@types/react": "^18.2.64",
         "@types/react-dom": "^18.2.21",
         "@types/shell-quote": "^1.7.5",
+        "@types/websocket": "^1.0.10",
         "@types/write-file-atomic": "^4.0.3",
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "^10.4.20",

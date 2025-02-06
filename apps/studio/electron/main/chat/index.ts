@@ -2,7 +2,7 @@ import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
 import { type CoreMessage, type CoreSystemMessage } from 'ai';
-import WebSocket from 'ws';
+import { Manager, Socket } from 'socket.io-client';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
@@ -12,7 +12,7 @@ class LlmManager {
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
     private promptProvider: PromptProvider;
-    private ws: WebSocket | null = null;
+    private ws: Socket | null = null;
 
     private constructor() {
         this.restoreSettings();
@@ -67,52 +67,54 @@ class LlmManager {
             }
 
             // Connect to WebSocket
-            const wsApi = import.meta.env.VITE_SUPABASE_API_URL?.replace('https://', 'wss://').replace('http://', 'ws://');
+            const wsApi = import.meta.env.VITE_SUPABASE_API_URL;
             if (!wsApi) {
                 throw new Error('WebSocket API URL not found');
             }
-            console.log('WebSocket API URL', wsApi);
-            const wsUrl = `${wsApi}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_WS}`;
-            console.log('WebSocket URL', wsUrl);
-            this.ws = new WebSocket(wsUrl);
+            // Update WebSocket connection with proper options
+            const manager = new Manager(wsApi);
 
+            this.ws = manager.socket(`${FUNCTIONS_ROUTE}${ApiRoutes.CHAT}`); // main namespace
+            this.ws.connect();
             return new Promise((resolve, reject) => {
                 let fullContent = '';
 
-                this.ws!.onopen = () => {
+                this.ws!.on('connect', () => {
+                    console.log('WebSocket connected');
                     // Send the request once connected
-                    this.ws!.send(JSON.stringify({
-                        messages,
-                        useAnalytics: this.useAnalytics,
-                        requestType,
-                        authToken: authTokens.accessToken,
-                    }));
-                };
+                    this.ws!.send(
+                        JSON.stringify({
+                            messages,
+                            useAnalytics: this.useAnalytics,
+                            requestType,
+                            authToken: authTokens.accessToken,
+                        }),
+                    );
+                });
 
-                this.ws!.onmessage = (event) => {
+                this.ws!.on('message', (event) => {
                     console.log('WebSocket message received', event.data);
                     const chunk = event.data;
                     fullContent += chunk;
                     this.emitPartialMessage(fullContent);
-                };
+                });
 
-                this.ws!.onclose = () => {
+                this.ws!.on('close', () => {
                     console.log('WebSocket connection closed');
                     resolve({ status: 'full', content: fullContent });
-                };
+                });
 
-                this.ws!.onerror = (error) => {
+                this.ws!.on('error', (error) => {
                     reject(error);
-                };
+                });
 
                 // Handle abort
                 this.abortController?.signal.addEventListener('abort', () => {
-                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    if (this.ws && this.ws.connected) {
                         this.ws.close();
                     }
                 });
             });
-
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
@@ -174,27 +176,6 @@ class LlmManager {
         );
 
         return (await response.json()) as string[];
-    }
-
-    public async connectToWebSocket(): Promise<void> {
-        const wsUrl = `${import.meta.env.VITE_SUPABASE_API_URL?.replace('https://', 'wss://')}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_WS}`;
-        if (!wsUrl) {
-            throw new Error('WebSocket URL not found');
-        }
-
-        const ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-            console.log('WebSocket connection opened');
-        };
-
-        ws.onmessage = (event) => {
-            console.log('WebSocket message received', event.data);
-        };
-
-        ws.onclose = () => {
-            console.log('WebSocket connection closed');
-        };
     }
 }
 
