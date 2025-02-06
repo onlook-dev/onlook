@@ -308,9 +308,9 @@ export const ChatInput = observer(() => {
                                 disabled={disabled}
                             >
                                 {editorEngine.chat.context.screenshotEnabled ? (
-                                    <Icons.Camera className="w-5 h-5" />
+                                    <Icons.Image className="w-5 h-5" />
                                 ) : (
-                                    <Icons.CameraOff className="w-5 h-5" />
+                                    <Icons.ImageOff className="w-5 h-5" />
                                 )}
                             </Button>
                         </TooltipTrigger>

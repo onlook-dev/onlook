@@ -3,6 +3,7 @@ import {
     type ChatMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
+    type ImageMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable, reaction } from 'mobx';
