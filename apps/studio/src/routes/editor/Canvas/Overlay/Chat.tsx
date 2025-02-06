@@ -50,9 +50,7 @@ export const Chat = ({ selectedEl }: { selectedEl: RectDimensions | null }) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
-        if (!selectedEl) {
-            setInputState(DEFAULT_INPUT_STATE);
-        }
+        setInputState(DEFAULT_INPUT_STATE);
     }, [selectedEl]);
 
     if (!selectedEl) {
