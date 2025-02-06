@@ -49,6 +49,12 @@ export const Chat = ({ selectedEl }: { selectedEl: RectDimensions | null }) => {
     const editorEngine = useEditorEngine();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+    useEffect(() => {
+        if (!selectedEl) {
+            setInputState(DEFAULT_INPUT_STATE);
+        }
+    }, [selectedEl]);
+
     if (!selectedEl) {
         return null;
     }
@@ -108,12 +114,6 @@ export const Chat = ({ selectedEl }: { selectedEl: RectDimensions | null }) => {
             setInputState((prev) => ({ ...prev, isVisible: !prev.isVisible, value: '' }));
         }
     };
-
-    useEffect(() => {
-        if (!selectedEl) {
-            setInputState(DEFAULT_INPUT_STATE);
-        }
-    }, [selectedEl]);
 
     return (
         <>
