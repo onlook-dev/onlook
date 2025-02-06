@@ -10,7 +10,7 @@ export const parseCommandAndArgs = (
         arg.replace(/^["'](.+)["']$/, '$1'),
     );
 
-    const packageManagers = ['npm', 'bun', 'pnpm'];
+    const packageManagers = ['npm'];
     const finalCommand = (packageManagers.includes(cmdName) ? newCommand : cmdName) || '';
     const allArgs = [...cmdArgs, ...args];
 
