@@ -35,7 +35,7 @@ function getNodeAttributes(node: t.JSXElement): PropsParsingResult {
             }
 
             const attrName = attr.name.name;
-            let attrValue: any = true;
+            let attrValue: boolean | string = true;
             let attrType: 'boolean' | 'text' | 'code' = 'code';
 
             if (attr.value) {
@@ -70,6 +70,7 @@ function getNodeAttributes(node: t.JSXElement): PropsParsingResult {
             props,
         };
     } catch (error) {
+        console.error('Failed to parse component props:', error);
         return {
             type: 'error',
             reason: 'Failed to parse component props.',
