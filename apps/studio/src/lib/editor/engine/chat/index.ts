@@ -86,28 +86,28 @@ export class ChatManager {
         await this.sendChatToAi(StreamRequestType.CHAT);
     }
 
-    async sendFixErrorToAi(error: ParsedError): Promise<boolean> {
+    async sendFixErrorToAi(errors: ParsedError[]): Promise<boolean> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return false;
         }
 
-        const prompt = `For the code present, we get this error: ${error.message}. How can I resolve this? If you propose a fix, please make it concise.`;
+        const prompt = `For the code present, we get these errors: ${errors.map((e) => e.message).join(', ')}. How can I resolve this? If you propose a fix, please make it concise.`;
 
-        const context = await this.editorEngine.errors.getMessageContextFromError(error);
+        const context = await this.editorEngine.errors.getMessageContextFromError(errors);
         if (!context) {
             console.error('No context found');
             return false;
         }
         // Add error message to conversation
         const userMessage = this.conversation.addUserMessage(prompt, context);
-        this.conversation.current.updateName(error.message);
+        this.conversation.current.updateName(errors[0].fullMessage);
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;
         }
         sendAnalytics('send fix error chat message', {
-            error: error.fullMessage,
+            errors: errors.map((e) => e.fullMessage),
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;

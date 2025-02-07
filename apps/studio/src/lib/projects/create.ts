@@ -17,10 +17,33 @@ export class CreateManager {
     message: string | null = null;
     error: string | null = null;
     private cleanupListener: (() => void) | null = null;
+    private slowConnectionTimer: ReturnType<typeof setTimeout> | null = null;
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
         this.listenForPromptProgress();
+    }
+
+    private startSlowConnectionTimer() {
+        // Clear any existing timer
+        if (this.slowConnectionTimer) {
+            clearTimeout(this.slowConnectionTimer);
+        }
+
+        // Set a new timer for 10 seconds
+        this.slowConnectionTimer = setTimeout(() => {
+            if (this.state === CreateState.CREATE_LOADING) {
+                this.message =
+                    'This is taking longer than usual. This could be due to a slow internet connection...';
+            }
+        }, 10000);
+    }
+
+    private clearSlowConnectionTimer() {
+        if (this.slowConnectionTimer) {
+            clearTimeout(this.slowConnectionTimer);
+            this.slowConnectionTimer = null;
+        }
     }
 
     listenForPromptProgress() {
@@ -45,6 +68,11 @@ export class CreateManager {
 
     set state(newState: CreateState) {
         this.createState = newState;
+        if (newState === CreateState.CREATE_LOADING) {
+            this.startSlowConnectionTimer();
+        } else {
+            this.clearSlowConnectionTimer();
+        }
     }
 
     async sendPrompt(prompt: string, images: ImageMessageContext[]) {
@@ -81,6 +109,8 @@ export class CreateManager {
                     images,
                 );
             }
+
+            this.clearSlowConnectionTimer();
 
             setTimeout(() => {
                 this.projectsManager.runner?.start();
@@ -122,5 +152,6 @@ export class CreateManager {
             this.cleanupListener();
             this.cleanupListener = null;
         }
+        this.clearSlowConnectionTimer();
     }
 }
