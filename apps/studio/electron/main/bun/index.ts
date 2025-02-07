@@ -31,13 +31,8 @@ export const runBunCommand = (
     command: string,
     options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
-    let commandToExecute = command;
-
-    const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
-    if (!isMacIntel) {
-        const bunBinary = getBunExecutablePath();
-        commandToExecute = replaceCommand(command, bunBinary);
-    }
+    const bunBinary = getBunExecutablePath();
+    const commandToExecute = replaceCommand(command, bunBinary);
 
     return new Promise((resolve, reject) => {
         exec(
