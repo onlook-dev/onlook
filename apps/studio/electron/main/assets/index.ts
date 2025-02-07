@@ -1,10 +1,12 @@
-import { existsSync, promises as fs, unlinkSync } from 'fs';
+import { promises as fs, readFileSync } from 'fs';
 import * as path from 'path';
 import { writeFile } from '../code/files';
 import { DefaultSettings } from '@onlook/models/constants';
-async function scanImagesDirectory(projectRoot: string): Promise<string[]> {
+import type { ImageContentData } from '@onlook/models/actions';
+
+async function scanImagesDirectory(projectRoot: string): Promise<ImageContentData[]> {
     const imagesPath = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
-    const images: string[] = [];
+    const images: ImageContentData[] = [];
 
     try {
         const entries = await fs.readdir(imagesPath, { withFileTypes: true });
@@ -16,9 +18,14 @@ async function scanImagesDirectory(projectRoot: string): Promise<string[]> {
                 if (
                     ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico'].includes(extension)
                 ) {
-                    images.push(
-                        `${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${entry.name}`,
-                    );
+                    const imagePath = path.join(imagesPath, entry.name);
+                    const image = readFileSync(imagePath, { encoding: 'base64' });
+
+                    images.push({
+                        fileName: entry.name,
+                        content: `data:image/png;base64,${image}`,
+                        mimeType: 'image/png',
+                    });
                 }
             }
         }
@@ -30,7 +37,7 @@ async function scanImagesDirectory(projectRoot: string): Promise<string[]> {
     }
 }
 
-export async function scanNextJsImages(projectRoot: string): Promise<string[]> {
+export async function scanNextJsImages(projectRoot: string): Promise<ImageContentData[]> {
     try {
         return await scanImagesDirectory(projectRoot);
     } catch (error) {
@@ -39,25 +46,18 @@ export async function scanNextJsImages(projectRoot: string): Promise<string[]> {
     }
 }
 
-export async function uploadImage(projectRoot: string, image: string, fileName: string) {
+export async function uploadImage(
+    projectRoot: string,
+    image: string,
+    fileName: string,
+): Promise<string> {
     try {
-        const imageFolder = `${projectRoot}/${DefaultSettings.IMAGE_FOLDER}`;
+        const imageFolder = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
         const imagePath = path.join(imageFolder, fileName);
         await writeFile(imagePath, image, 'base64');
         return imagePath;
     } catch (error) {
         console.error('Error uploading image:', error);
-        throw error;
-    }
-}
-
-export async function deleteImage(image: string) {
-    try {
-        if (existsSync(image)) {
-            unlinkSync(image);
-        }
-    } catch (error) {
-        console.error('Error deleting image:', error);
         throw error;
     }
 }

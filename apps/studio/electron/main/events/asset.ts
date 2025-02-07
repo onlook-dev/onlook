@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { MainChannels } from '@onlook/models/constants';
-import { deleteImage, scanNextJsImages, uploadImage } from '../assets';
+import { scanNextJsImages, uploadImage } from '../assets';
 
 export function listenForAssetMessages() {
     ipcMain.handle(MainChannels.SCAN_IMAGES, async (_event, projectRoot: string) => {
@@ -15,8 +15,4 @@ export function listenForAssetMessages() {
             return imagePath;
         },
     );
-
-    ipcMain.handle(MainChannels.DELETE_IMAGE, async (_event, image: string) => {
-        await deleteImage(image);
-    });
 }

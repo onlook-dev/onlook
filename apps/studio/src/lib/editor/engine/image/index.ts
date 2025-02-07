@@ -1,5 +1,5 @@
 import { sendAnalytics, compressImage, invokeMainChannel } from '@/lib/utils';
-import type { ActionTarget, InsertImageAction } from '@onlook/models/actions';
+import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import { getExtension } from 'mime-lite';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
@@ -8,7 +8,7 @@ import { makeAutoObservable } from 'mobx';
 import { MainChannels } from '@onlook/models/constants';
 
 export class ImageManager {
-    private images: string[] = [];
+    private images: ImageContentData[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
@@ -149,7 +149,7 @@ export class ImageManager {
             console.warn('No project root found');
             return;
         }
-        const images = await invokeMainChannel<string, string[]>(
+        const images = await invokeMainChannel<string, ImageContentData[]>(
             MainChannels.SCAN_IMAGES,
             projectRoot,
         );
@@ -163,5 +163,9 @@ export class ImageManager {
     dispose() {
         // Clear references
         this.editorEngine = null as any;
+        this.projectsManager = null as any;
+
+        // Clean up images
+        this.images = [];
     }
 }

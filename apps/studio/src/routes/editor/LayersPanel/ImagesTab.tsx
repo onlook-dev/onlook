@@ -1,4 +1,4 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -14,8 +14,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 const ImagesTab = observer(() => {
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [search, setSearch] = useState('');
+    const [uploadError, setUploadError] = useState<string | null>(null);
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
 
     useEffect(() => {
         scanImages();
@@ -29,11 +29,21 @@ const ImagesTab = observer(() => {
         editorEngine.image.scanImages();
     };
 
-    const handleUploadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUploadError(null);
         const files = Array.from(e.target.files || []);
         const imageFile = files.find((file) => file.type.startsWith('image/'));
-        if (imageFile) {
-            editorEngine.image.upload(imageFile);
+
+        if (!imageFile) {
+            setUploadError('Please select a valid image file');
+            return;
+        }
+
+        try {
+            await editorEngine.image.upload(imageFile);
+        } catch (error) {
+            setUploadError('Failed to upload image. Please try again.');
+            console.error('Image upload error:', error);
         }
     };
 
@@ -62,10 +72,10 @@ const ImagesTab = observer(() => {
     }, [debouncedSearch]);
 
     const filteredImages = useMemo(() => {
-        return imageAssets.filter((image) => image.includes(search));
+        return imageAssets.filter((image) => image.fileName.includes(search));
     }, [imageAssets, search]);
 
-    return projectsManager.runner?.isRunning ? (
+    return (
         <div className="w-full">
             <input
                 type="file"
@@ -75,6 +85,11 @@ const ImagesTab = observer(() => {
                 onChange={handleUploadFile}
                 // multiple TODO: add multiple
             />
+            {uploadError && (
+                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
+                    {uploadError}
+                </div>
+            )}
             {imageAssets.length === 0 ? (
                 <div className="h-screen flex items-center justify-center text-center opacity-70">
                     <div>
@@ -110,26 +125,31 @@ const ImagesTab = observer(() => {
                         </Button>
                     </div>
                     <div className="w-full flex flex-wrap gap-2">
-                        {filteredImages.map((imageName) => (
-                            <div key={imageName} className="relative group flex-shrink-0 w-[120px]">
+                        {filteredImages.map((image) => (
+                            <div
+                                key={image.fileName}
+                                className="relative group flex-shrink-0 w-[120px]"
+                            >
                                 <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center">
                                     <img
                                         className="w-full h-full object-cover"
-                                        src={`${projectsManager.project?.url}/${imageName}`}
-                                        alt={imageName.split('/').pop()}
+                                        src={image.content}
+                                        alt={image.fileName}
                                     />
                                 </div>
                                 <span className="text-xs block w-full text-center truncate">
-                                    {imageName.split('/').pop()}
+                                    {image.fileName}
                                 </span>
                                 <div
                                     className={`absolute right-2 top-2 ${
-                                        activeDropdown === imageName ? 'opacity-100' : 'opacity-0'
+                                        activeDropdown === image.fileName
+                                            ? 'opacity-100'
+                                            : 'opacity-0'
                                     } group-hover:opacity-100 transition-opacity duration-300`}
                                 >
                                     <DropdownMenu
                                         onOpenChange={(isOpen) =>
-                                            setActiveDropdown(isOpen ? imageName : null)
+                                            setActiveDropdown(isOpen ? image.fileName : null)
                                         }
                                     >
                                         <DropdownMenuTrigger>
@@ -183,8 +203,6 @@ const ImagesTab = observer(() => {
                 </div>
             )}
         </div>
-    ) : (
-        <div></div>
     );
 });
 
