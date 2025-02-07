@@ -29,17 +29,19 @@ export class ErrorManager {
     }
 
     async sendFixError() {
-        if (this.validError) {
+        if (this.validErrors.length > 0) {
             const res = await this.editorEngine.chat.sendFixErrorToAi(this.validErrors);
             if (res) {
-                this.removeErrorFromMap(this.validError);
+                this.removeErrorsFromMap(this.validErrors);
             }
         }
     }
 
-    removeErrorFromMap(error: ParsedError) {
-        for (const [webviewId, errors] of Object.entries(this.webviewIdToError)) {
-            this.webviewIdToError[webviewId] = errors.filter((e) => !compareErrors(e, error));
+    removeErrorsFromMap(errors: ParsedError[]) {
+        for (const [webviewId, existingErrors] of Object.entries(this.webviewIdToError)) {
+            this.webviewIdToError[webviewId] = existingErrors.filter(
+                (existing) => !errors.some((error) => compareErrors(existing, error)),
+            );
         }
     }
 

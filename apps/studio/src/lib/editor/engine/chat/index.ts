@@ -101,13 +101,13 @@ export class ChatManager {
         }
         // Add error message to conversation
         const userMessage = this.conversation.addUserMessage(prompt, context);
-        this.conversation.current.updateName(error.message);
+        this.conversation.current.updateName(errors[0].fullMessage);
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;
         }
         sendAnalytics('send fix error chat message', {
-            error: error.fullMessage,
+            errors: errors.map((e) => e.fullMessage),
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
@@ -135,8 +135,6 @@ export class ChatManager {
         requestType: StreamRequestType,
     ): Promise<StreamResponse | null> {
         const requestId = nanoid();
-        console.log('sendStreamRequest', messages, requestType);
-        return;
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
             requestId,
