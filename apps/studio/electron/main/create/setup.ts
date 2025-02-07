@@ -8,7 +8,7 @@ export const installProjectDependencies = async (
 ): Promise<void> => {
     try {
         onProgress(SetupStage.INSTALLING, 'Installing required packages...');
-        runBunCommand(installCommand, [], {
+        runBunCommand(installCommand, {
             cwd: targetPath,
             callbacks: {
                 onStdout: (data) => onProgress(SetupStage.INSTALLING, data),

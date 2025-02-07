@@ -1,18 +1,12 @@
-export const parseCommandAndArgs = (
-    command: string,
-    args: string[] = [],
-    newCommand: string,
-): { finalCommand: string; allArgs: string[] } => {
-    // Parse command string while preserving quoted arguments
-    const parsedArgs = command.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
-    const [cmdName, ...cmdArgs] = parsedArgs.map((arg) =>
-        // Remove surrounding quotes if present
-        arg.replace(/^["'](.+)["']$/, '$1'),
-    );
+import { parse, quote } from 'shell-quote';
+
+export const replaceCommand = (command: string, newCommand: string): string => {
+    const parsedArgs = parse(command);
+    const [cmdName, ...cmdArgs] = parsedArgs;
 
     const packageManagers = ['npm'];
-    const finalCommand = (packageManagers.includes(cmdName) ? newCommand : cmdName) || '';
-    const allArgs = [...cmdArgs, ...args];
+    const finalCommand = (packageManagers.includes(cmdName as string) ? newCommand : cmdName) || '';
 
-    return { finalCommand, allArgs };
+    // Use shell-quote's quote function to properly handle quoted arguments
+    return quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg.toString())]);
 };

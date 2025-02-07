@@ -23,7 +23,7 @@ export async function createProject(
         await downloadTemplate(fullPath);
 
         // Install dependencies
-        await runBunCommand('npm install -y --no-audit --no-fund', [], {
+        await runBunCommand('npm install -y --no-audit --no-fund', {
             cwd: fullPath,
             callbacks: {
                 onStdout: (data) =>

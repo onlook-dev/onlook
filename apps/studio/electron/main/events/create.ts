@@ -30,7 +30,7 @@ export function listenForCreateMessages() {
                 });
             };
             const { folderPath, installCommand } = args;
-            return runBunCommand(installCommand, [], {
+            return runBunCommand(installCommand, {
                 cwd: folderPath,
                 callbacks: {
                     onStdout: (data) => progressCallback(SetupStage.CONFIGURING, data),

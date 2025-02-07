@@ -1,9 +1,8 @@
-import { spawn } from 'child_process';
+import { exec } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
-import { quote } from 'shell-quote';
 import { __dirname } from '../index';
-import { parseCommandAndArgs } from './parse';
+import { replaceCommand } from './parse';
 
 export const getBunExecutablePath = (): string => {
     const platform = process.platform;
@@ -14,7 +13,7 @@ export const getBunExecutablePath = (): string => {
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
 
-    return quote([bunPath]);
+    return bunPath;
 };
 
 export interface RunBunCommandOptions {
@@ -30,57 +29,53 @@ export interface RunBunCommandOptions {
 
 export const runBunCommand = (
     command: string,
-    args: string[] = [],
     options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
     let commandToExecute = command;
-    let argsToExecute = args;
 
     const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
     if (!isMacIntel) {
         const bunBinary = getBunExecutablePath();
-        const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunBinary);
-        commandToExecute = quote([finalCommand]);
-        argsToExecute = allArgs;
+        commandToExecute = replaceCommand(command, bunBinary);
     }
 
     return new Promise((resolve, reject) => {
-        const spawnProcess = spawn(commandToExecute, argsToExecute, {
-            stdio: 'pipe',
-            cwd: options.cwd,
-            env: options.env,
-        });
-        let stdout = '';
-        let stderr = '';
+        exec(
+            commandToExecute,
+            {
+                cwd: options.cwd,
+                env: {
+                    ...options.env,
+                    ...process.env,
+                },
+                maxBuffer: 1024 * 1024 * 10, // 10MB buffer to handle larger outputs
+            },
+            (error: Error | null, stdout: string, stderr: string) => {
+                // Call the callbacks with the complete output
+                if (stdout && options.callbacks?.onStdout) {
+                    options.callbacks.onStdout(stdout);
+                }
 
-        spawnProcess.stdout.on('data', (data) => {
-            stdout += data.toString();
-            options.callbacks?.onStdout?.(stdout);
-        });
+                if (stderr && options.callbacks?.onStderr) {
+                    options.callbacks.onStderr(stderr);
+                }
 
-        spawnProcess.stderr.on('data', (data) => {
-            stderr += data.toString();
-            options.callbacks?.onStderr?.(stderr);
-        });
+                if (error) {
+                    options.callbacks?.onError?.(error);
+                    reject(
+                        new Error(`Process exited with error: ${error.message}\nStderr: ${stderr}`),
+                    );
+                    return;
+                }
 
-        spawnProcess.on('close', (code, signal) => {
-            options.callbacks?.onClose?.(code, signal);
-            if (code === 0) {
+                options.callbacks?.onClose?.(0, null);
                 resolve({ stdout, stderr });
-            } else {
-                reject(new Error(`Process exited with code ${code}\nStderr: ${stderr}`));
-            }
-        });
-
-        spawnProcess.on('error', (err: Error) => {
-            options.callbacks?.onError?.(err);
-            reject(err);
-        });
+            },
+        );
     });
 };
 
-export const getBunCommand = (command: string, args: string[] = []) => {
+export const getBunCommand = (command: string): string => {
     const bunExecutable = getBunExecutablePath();
-    const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunExecutable);
-    return `${finalCommand} ${allArgs.join(' ')}`;
+    return replaceCommand(command, bunExecutable);
 };
