@@ -33,12 +33,19 @@ export const runBunCommand = (
     args: string[] = [],
     options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
-    const bunBinary = getBunExecutablePath();
-    const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunBinary);
-    const quotedCommand = quote([finalCommand]);
+    let commandToExecute = command;
+    let argsToExecute = args;
+
+    const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
+    if (!isMacIntel) {
+        const bunBinary = getBunExecutablePath();
+        const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunBinary);
+        commandToExecute = quote([finalCommand]);
+        argsToExecute = allArgs;
+    }
 
     return new Promise((resolve, reject) => {
-        const spawnProcess = spawn(quotedCommand, allArgs, {
+        const spawnProcess = spawn(commandToExecute, argsToExecute, {
             stdio: 'pipe',
             cwd: options.cwd,
             env: options.env,
