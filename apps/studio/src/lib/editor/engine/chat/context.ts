@@ -3,6 +3,7 @@ import {
     type ChatMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
+    type ImageMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -27,10 +28,16 @@ export class ChatContext {
         const fileNames = new Set<string>();
         const highlightedContext = await this.getHighlightedContext(selected, fileNames);
         const fileContext = await this.getFileContext(fileNames);
+        const imageContext = await this.getImageContext();
+        const context = [...fileContext, ...highlightedContext, ...imageContext];
+        return context;
+    }
+
+    private async getImageContext(): Promise<ImageMessageContext[]> {
         const imageContext = this.context.filter(
             (context) => context.type === MessageContextType.IMAGE,
         );
-        return [...fileContext, ...highlightedContext, ...imageContext];
+        return imageContext;
     }
 
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
@@ -87,6 +94,38 @@ export class ChatContext {
 
     clear() {
         this.context = [];
+    }
+
+    async getScreenshotContext(): Promise<ImageMessageContext | null> {
+        if (this.editorEngine.elements.selected.length === 0) {
+            return null;
+        }
+        const webviewId = this.editorEngine.elements.selected[0].webviewId;
+        if (!webviewId) {
+            return null;
+        }
+
+        const timestamp = Date.now();
+        const screenshotName = `chat-screenshot-${timestamp}`;
+
+        try {
+            const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
+            if (!result || !result.image) {
+                console.error('Failed to capture screenshot');
+                return null;
+            }
+            const { image } = result;
+
+            return {
+                type: MessageContextType.IMAGE,
+                content: image,
+                mimeType: 'image/png',
+                displayName: 'screen',
+            };
+        } catch (error) {
+            console.error('Failed to capture screenshot:', error);
+            return null;
+        }
     }
 
     dispose() {

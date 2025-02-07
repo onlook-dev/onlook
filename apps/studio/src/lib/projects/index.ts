@@ -86,10 +86,10 @@ export class ProjectsManager {
 
     updateProject(project: Project) {
         const updatedProjects = this.projectList.map((p) => (p.id === project.id ? project : p));
-        this.projects = updatedProjects;
         if (project.id === this.project?.id) {
             this.project = project;
         }
+        this.projects = updatedProjects;
     }
 
     updateAppState(appState: AppState) {
