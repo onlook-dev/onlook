@@ -205,7 +205,7 @@ export const Chat = ({
                             <div
                                 className={cn(
                                     'absolute right-2 h-full flex flex-col ',
-                                    inputState.isMultiline ? ' pb-4 justify-end' : 'justify-center',
+                                    inputState.isMultiline ? 'pb-3 justify-end' : 'justify-center',
                                 )}
                             >
                                 <Button
