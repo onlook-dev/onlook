@@ -1,6 +1,6 @@
 import { parse, quote } from 'shell-quote';
 
-export const parseCommand = (command: string, newCommand: string): string => {
+export const replaceCommand = (command: string, newCommand: string): string => {
     const parsedArgs = parse(command);
     const [cmdName, ...cmdArgs] = parsedArgs;
 

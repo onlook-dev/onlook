@@ -1,9 +1,8 @@
 import { exec } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
-import { quote } from 'shell-quote';
 import { __dirname } from '../index';
-import { parseCommand } from './parse';
+import { replaceCommand } from './parse';
 
 export const getBunExecutablePath = (): string => {
     const platform = process.platform;
@@ -14,7 +13,7 @@ export const getBunExecutablePath = (): string => {
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
 
-    return quote([bunPath]);
+    return bunPath;
 };
 
 export interface RunBunCommandOptions {
@@ -37,7 +36,7 @@ export const runBunCommand = (
     const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
     if (!isMacIntel) {
         const bunBinary = getBunExecutablePath();
-        commandToExecute = quote([parseCommand(command, bunBinary)]);
+        commandToExecute = replaceCommand(command, bunBinary);
     }
 
     return new Promise((resolve, reject) => {
@@ -45,7 +44,10 @@ export const runBunCommand = (
             commandToExecute,
             {
                 cwd: options.cwd,
-                env: options.env,
+                env: {
+                    ...options.env,
+                    ...process.env,
+                },
                 maxBuffer: 1024 * 1024 * 10, // 10MB buffer to handle larger outputs
             },
             (error: Error | null, stdout: string, stderr: string) => {
@@ -75,5 +77,5 @@ export const runBunCommand = (
 
 export const getBunCommand = (command: string): string => {
     const bunExecutable = getBunExecutablePath();
-    return parseCommand(command, bunExecutable);
+    return replaceCommand(command, bunExecutable);
 };
