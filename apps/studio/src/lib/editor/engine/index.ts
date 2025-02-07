@@ -18,11 +18,11 @@ import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
+import { PagesManager } from './pages';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { PagesManager } from './pages';
 
 export class EditorEngine {
     private plansOpen: boolean = false;
@@ -198,8 +198,17 @@ export class EditorEngine {
         webview.executeJavaScript('window.api?.processDom()');
     }
 
-    async takeScreenshot(name: string): Promise<string | null> {
-        const webview = this.webviews.webviews.values().next().value?.webview;
+    async takeActiveWebviewScreenshot(name: string): Promise<string | null> {
+        if (this.webviews.webviews.size === 0) {
+            console.error('No webviews found');
+            return null;
+        }
+        const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;
+        return this.takeWebviewScreenshot(name, webviewId);
+    }
+
+    async takeWebviewScreenshot(name: string, webviewId: string): Promise<string | null> {
+        const webview = this.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('No webview found');
             return null;

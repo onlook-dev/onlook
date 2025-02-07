@@ -29,8 +29,10 @@ const ProjectBreadcrumb = observer(() => {
         } catch (error) {
             console.error('Failed to take screenshot:', error);
         }
-        projectsManager.project = null;
-        routeManager.route = Route.PROJECTS;
+        setTimeout(() => {
+            projectsManager.project = null;
+            routeManager.route = Route.PROJECTS;
+        }, 100);
     }
 
     const handleOpenProjectFolder = () => {
@@ -47,7 +49,7 @@ const ProjectBreadcrumb = observer(() => {
             return;
         }
         const projectId = project.id;
-        const imageName = await editorEngine.takeScreenshot(projectId);
+        const imageName = await editorEngine.takeActiveWebviewScreenshot(projectId);
         if (!imageName) {
             console.error('Failed to take screenshot');
             return;

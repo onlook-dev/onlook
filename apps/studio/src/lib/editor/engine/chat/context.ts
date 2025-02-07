@@ -36,7 +36,7 @@ export class ChatContext {
         const context = [...fileContext, ...highlightedContext, ...imageContext];
 
         if (this.screenshotEnabled) {
-            const screenshot = await this.captureScreenshot();
+            const screenshot = await this.addScreenshotContext(selected[0].webviewId);
             if (screenshot) {
                 context.push(screenshot);
             }
@@ -101,12 +101,12 @@ export class ChatContext {
         this.context = [];
     }
 
-    private async captureScreenshot(): Promise<ImageMessageContext | null> {
+    private async addScreenshotContext(webviewId: string): Promise<ImageMessageContext | null> {
         const timestamp = Date.now();
         const screenshotName = `chat-screenshot-${timestamp}`;
 
         try {
-            const image = await this.editorEngine.takeScreenshot(screenshotName);
+            const image = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
             if (!image) {
                 return null;
             }
@@ -115,7 +115,7 @@ export class ChatContext {
                 type: MessageContextType.IMAGE,
                 content: image,
                 mimeType: 'image/png',
-                displayName: 'Current View',
+                displayName: 'Current webview screenshot',
             };
         } catch (error) {
             console.error('Failed to capture screenshot:', error);
