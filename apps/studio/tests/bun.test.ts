@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { replaceCommand } from '../electron/main/bun/parse';
 
-describe('parseCommand', () => {
+describe('replaceCommand', () => {
     it('should handle simple commands without quotes', () => {
         const result = replaceCommand('echo hello world', 'newecho');
         expect(result).toEqual('echo hello world');
