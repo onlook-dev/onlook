@@ -74,10 +74,6 @@ export class ChatManager {
         }
 
         const context = await this.context.getChatContext();
-        const screenshot = await this.context.getScreenshotContext();
-        if (screenshot) {
-            context.push(screenshot);
-        }
         const userMessage = this.conversation.addUserMessage(content, context);
         this.conversation.current.updateName(content);
         if (!userMessage) {
@@ -217,6 +213,8 @@ export class ChatManager {
             this.suggestions.shouldHide = true;
             this.suggestions.generateNextSuggestions(this.conversation.current.messages);
         }
+
+        this.context.clearAttachments();
     }
 
     dispose() {

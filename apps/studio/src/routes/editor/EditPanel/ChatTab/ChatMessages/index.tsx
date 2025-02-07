@@ -6,13 +6,20 @@ import { ChatMessageType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import AssistantMessage from './AssistantMessage';
 import StreamMessage from './StreamMessage';
 import UserMessage from './UserMessage';
 
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
+    const chatMessagesRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (chatMessagesRef.current) {
+            chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+        }
+    }, [editorEngine.chat.conversation.current?.messages.length]);
 
     const renderMessage = useCallback((message: AssistantChatMessageImpl | UserChatMessageImpl) => {
         let messageNode;
@@ -63,7 +70,10 @@ const ChatMessages = observer(() => {
 
     // Render in reverse order to make the latest message appear at the bottom
     return editorEngine.chat.conversation.current ? (
-        <div className="flex flex-col-reverse gap-2 select-text overflow-auto">
+        <div
+            className="flex flex-col-reverse gap-2 select-text overflow-auto"
+            ref={chatMessagesRef}
+        >
             <StreamMessage />
             {renderErrorMessage()}
             {[...editorEngine.chat.conversation.current.messages]
