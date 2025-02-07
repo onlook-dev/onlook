@@ -298,33 +298,6 @@ export const ChatInput = observer(() => {
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row justify-start gap-1.5">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
-                                onClick={() => editorEngine.chat.context.toggleScreenshotEnabled()}
-                                disabled={disabled}
-                            >
-                                <Icons.Image
-                                    className={cn(
-                                        'w-5 h-5',
-                                        editorEngine.chat.context.screenshotEnabled
-                                            ? 'text-primary'
-                                            : 'text-foreground-tertiary',
-                                    )}
-                                />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipPortal>
-                            <TooltipContent side="top" sideOffset={5}>
-                                {disabled
-                                    ? 'Select an element to start'
-                                    : 'Toggle Screenshot Context'}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    </Tooltip>
                     <Tooltip
                         open={imageTooltipOpen && !isHandlingFile}
                         onOpenChange={(open) => !isHandlingFile && setImageTooltipOpen(open)}
