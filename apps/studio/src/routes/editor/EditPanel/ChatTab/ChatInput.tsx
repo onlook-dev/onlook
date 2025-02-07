@@ -21,9 +21,7 @@ export const ChatInput = observer(() => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
     const [isComposing, setIsComposing] = useState(false);
-    const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
-    const [isHandlingFile, setIsHandlingFile] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [hideSuggestions, setHideSuggestions] = useState(false);
 
@@ -67,8 +65,6 @@ export const ChatInput = observer(() => {
     };
 
     const handleOpenFileDialog = () => {
-        setImageTooltipOpen(false);
-        setIsHandlingFile(true);
         const inputElement = document.createElement('input');
         inputElement.type = 'file';
         inputElement.accept = 'image/*';
@@ -77,9 +73,6 @@ export const ChatInput = observer(() => {
                 const file = inputElement.files[0];
                 const fileName = file.name;
                 handleImageEvent(file, fileName);
-                setTimeout(() => setIsHandlingFile(false), 100);
-            } else {
-                setIsHandlingFile(false);
             }
         };
         inputElement.click();
@@ -298,10 +291,7 @@ export const ChatInput = observer(() => {
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row justify-start gap-1.5">
-                    <Tooltip
-                        open={imageTooltipOpen && !isHandlingFile}
-                        onOpenChange={(open) => !isHandlingFile && setImageTooltipOpen(open)}
-                    >
+                    <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant={'ghost'}
@@ -323,6 +313,35 @@ export const ChatInput = observer(() => {
                         <TooltipPortal>
                             <TooltipContent side="top" sideOffset={5}>
                                 {disabled ? 'Select an element to start' : 'Upload Image Reference'}
+                            </TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
+                                onClick={() => {
+                                    editorEngine.chat.context.addScreenshotContext();
+                                }}
+                                disabled={disabled}
+                            >
+                                <Icons.Laptop
+                                    className={cn(
+                                        'w-5 h-5',
+                                        disabled
+                                            ? 'text-foreground-tertiary'
+                                            : 'group-hover:text-foreground',
+                                    )}
+                                />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                            <TooltipContent side="top" sideOffset={5}>
+                                {disabled
+                                    ? 'Select an element to start'
+                                    : 'Add screenshot of the current page'}
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>

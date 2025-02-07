@@ -74,13 +74,6 @@ export class ChatManager {
         }
 
         const context = await this.context.getChatContext();
-
-        // TODO: Screenshots are useful with more context, but they are not always helpful and can add latency
-        // const screenshot = await this.context.getScreenshotContext();
-        // if (screenshot) {
-        //     context.push(screenshot);
-        // }
-
         const userMessage = this.conversation.addUserMessage(content, context);
         this.conversation.current.updateName(content);
         if (!userMessage) {

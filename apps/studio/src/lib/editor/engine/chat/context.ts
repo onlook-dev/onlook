@@ -96,6 +96,13 @@ export class ChatContext {
         this.context = [];
     }
 
+    async addScreenshotContext() {
+        const screenshot = await this.getScreenshotContext();
+        if (screenshot) {
+            this.context.push(screenshot);
+        }
+    }
+
     async getScreenshotContext(): Promise<ImageMessageContext | null> {
         if (this.editorEngine.elements.selected.length === 0) {
             return null;
