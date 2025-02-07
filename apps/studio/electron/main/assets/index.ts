@@ -21,10 +21,20 @@ async function scanImagesDirectory(projectRoot: string): Promise<ImageContentDat
                     const imagePath = path.join(imagesPath, entry.name);
                     const image = readFileSync(imagePath, { encoding: 'base64' });
 
+                    const mimeTypes: { [key: string]: string } = {
+                        '.jpg': 'image/jpeg',
+                        '.jpeg': 'image/jpeg',
+                        '.png': 'image/png',
+                        '.gif': 'image/gif',
+                        '.webp': 'image/webp',
+                        '.svg': 'image/svg+xml',
+                        '.ico': 'image/x-icon',
+                    };
+
                     images.push({
                         fileName: entry.name,
-                        content: `data:image/png;base64,${image}`,
-                        mimeType: 'image/png',
+                        content: `data:${mimeTypes[extension]};base64,${image}`,
+                        mimeType: mimeTypes[extension],
                     });
                 }
             }
@@ -46,7 +56,7 @@ export async function scanNextJsImages(projectRoot: string): Promise<ImageConten
     }
 }
 
-export async function uploadImage(
+export async function saveImageToProject(
     projectRoot: string,
     image: string,
     fileName: string,

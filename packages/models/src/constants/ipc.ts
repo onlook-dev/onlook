@@ -135,7 +135,7 @@ export enum MainChannels {
     CREATE_PAGE = 'create-page',
 
     // Images
-    SCAN_IMAGES = 'scan-images',
-    UPLOAD_IMAGES = 'upload-images',
-    DELETE_IMAGE = 'delete-image',
+    SCAN_IMAGES_IN_PROJECT = 'scan-images-in-project',
+    SAVE_IMAGE_TO_PROJECT = 'save-image-to-project',
+    DELETE_IMAGE_FROM_PROJECT = 'delete-image-from-project',
 }

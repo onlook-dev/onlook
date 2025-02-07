@@ -53,7 +53,7 @@ export class ImageManager {
             }
 
             await invokeMainChannel<string, string>(
-                MainChannels.UPLOAD_IMAGES,
+                MainChannels.SAVE_IMAGE_TO_PROJECT,
                 projectFolder,
                 base64Image,
                 file.name,
@@ -67,17 +67,22 @@ export class ImageManager {
     }
 
     async delete(imageName: string): Promise<void> {
-        const projectFolder = this.projectsManager.project?.folderPath;
-        if (!projectFolder) {
-            console.error('Failed to delete image, projectFolder not found');
-            return;
+        try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                console.error('Failed to delete image, projectFolder not found');
+                return;
+            }
+            await invokeMainChannel<string, string>(
+                MainChannels.DELETE_IMAGE_FROM_PROJECT,
+                projectFolder,
+                imageName,
+            );
+            this.scanImages();
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            throw error;
         }
-        await invokeMainChannel<string, string>(
-            MainChannels.DELETE_IMAGE,
-            projectFolder,
-            imageName,
-        );
-        this.scanImages();
     }
 
     async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
@@ -150,7 +155,7 @@ export class ImageManager {
             return;
         }
         const images = await invokeMainChannel<string, ImageContentData[]>(
-            MainChannels.SCAN_IMAGES,
+            MainChannels.SCAN_IMAGES_IN_PROJECT,
             projectRoot,
         );
         if (images?.length) {
