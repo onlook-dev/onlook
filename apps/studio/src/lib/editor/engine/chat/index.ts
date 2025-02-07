@@ -86,15 +86,15 @@ export class ChatManager {
         await this.sendChatToAi(StreamRequestType.CHAT);
     }
 
-    async sendFixErrorToAi(error: ParsedError): Promise<boolean> {
+    async sendFixErrorToAi(errors: ParsedError[]): Promise<boolean> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return false;
         }
 
-        const prompt = `For the code present, we get this error: ${error.message}. How can I resolve this? If you propose a fix, please make it concise.`;
+        const prompt = `For the code present, we get these errors: ${errors.map((e) => e.message).join(', ')}. How can I resolve this? If you propose a fix, please make it concise.`;
 
-        const context = await this.editorEngine.errors.getMessageContextFromError(error);
+        const context = await this.editorEngine.errors.getMessageContextFromError(errors);
         if (!context) {
             console.error('No context found');
             return false;
@@ -135,6 +135,8 @@ export class ChatManager {
         requestType: StreamRequestType,
     ): Promise<StreamResponse | null> {
         const requestId = nanoid();
+        console.log('sendStreamRequest', messages, requestType);
+        return;
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
             requestId,
