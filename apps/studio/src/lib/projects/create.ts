@@ -32,11 +32,11 @@ export class CreateManager {
 
         // Set a new timer for 10 seconds
         this.slowConnectionTimer = setTimeout(() => {
-            if (this.state === CreateState.CREATE_LOADING && this.progress < 300) {
+            if (this.state === CreateState.CREATE_LOADING) {
                 this.message =
                     'This is taking longer than usual. This could be due to a slow internet connection...';
             }
-        }, 10000); // 10 seconds
+        }, 10000);
     }
 
     private clearSlowConnectionTimer() {
@@ -109,6 +109,8 @@ export class CreateManager {
                     images,
                 );
             }
+
+            this.clearSlowConnectionTimer();
 
             setTimeout(() => {
                 this.projectsManager.runner?.start();
