@@ -30,8 +30,6 @@ export const ChatInput = observer(() => {
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         if (isComposing) {
             return;
@@ -71,20 +69,21 @@ export const ChatInput = observer(() => {
     const handleOpenFileDialog = () => {
         setImageTooltipOpen(false);
         setIsHandlingFile(true);
-        fileInputRef.current?.click();
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const file = e.target.files[0];
-            const fileName = file.name;
-            handleImageEvent(file, fileName);
-            setTimeout(() => setIsHandlingFile(false), 100);
-        } else {
-            setIsHandlingFile(false);
-        }
-        // Reset the input value so the same file can be selected again
-        e.target.value = '';
+        const inputElement = document.createElement('input');
+        inputElement.type = 'file';
+        inputElement.accept = 'image/*';
+        inputElement.onchange = () => {
+            if (inputElement.files && inputElement.files.length > 0) {
+                const file = inputElement.files[0];
+                const fileName = file.name;
+                handleImageEvent(file, fileName);
+                setTimeout(() => setIsHandlingFile(false), 100);
+            } else {
+                setIsHandlingFile(false);
+            }
+        };
+        console.log('inputElement', inputElement);
+        inputElement.click();
     };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -300,13 +299,7 @@ export const ChatInput = observer(() => {
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row justify-start gap-1.5">
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                    />
+                    <input></input>
                     <Tooltip
                         open={imageTooltipOpen && !isHandlingFile}
                         onOpenChange={(open) => !isHandlingFile && setImageTooltipOpen(open)}
