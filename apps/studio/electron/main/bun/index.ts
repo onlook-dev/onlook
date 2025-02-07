@@ -36,8 +36,8 @@ export const runBunCommand = (
     let commandToExecute = command;
     let argsToExecute = args;
 
-    // Skip mac intel
-    if (!(process.platform === 'darwin' && process.arch === 'x64')) {
+    const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
+    if (!isMacIntel) {
         const bunBinary = getBunExecutablePath();
         const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunBinary);
         commandToExecute = quote([finalCommand]);

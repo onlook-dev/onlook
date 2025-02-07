@@ -99,8 +99,9 @@ class TerminalManager {
     executeCommand(id: string, command: string): boolean {
         try {
             let commandToExecute = command;
-            // Skip mac intel
-            if (!(process.platform === 'darwin' && process.arch === 'x64')) {
+
+            const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
+            if (!isMacIntel) {
                 commandToExecute = getBunCommand(command);
             }
             const newline = os.platform() === 'win32' ? '\r\n' : '\n';
