@@ -81,7 +81,12 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         isComponent={overlayState.textEditor.isComponent}
                     />
                 )}
-                {<MemoizedChat selectedEl={overlayState.clickRects[0]} />}
+                {
+                    <MemoizedChat
+                        elementId={editorEngine.elements.selected[0]?.domId}
+                        selectedEl={overlayState.clickRects[0]}
+                    />
+                }
             </div>
         </>
     );

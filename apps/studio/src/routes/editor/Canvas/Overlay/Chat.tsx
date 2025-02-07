@@ -6,9 +6,9 @@ import { cn } from '@onlook/ui/utils';
 import { StyleMode } from '@/lib/editor/engine/style';
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@onlook/ui/icons/index';
-import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { EditorTabValue } from '@/lib/models';
 import debounce from 'lodash/debounce';
+import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 
 const SPACING = {
     base: 8,
@@ -42,7 +42,13 @@ const DEFAULT_INPUT_STATE = {
     isSubmitting: false,
 };
 
-export const Chat = ({ selectedEl }: { selectedEl: RectDimensions | null }) => {
+export const Chat = ({
+    selectedEl,
+    elementId,
+}: {
+    selectedEl: ClickRectState | null;
+    elementId: string;
+}) => {
     const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
 
     const editorEngine = useEditorEngine();
@@ -60,7 +66,7 @@ export const Chat = ({ selectedEl }: { selectedEl: RectDimensions | null }) => {
 
     useEffect(() => {
         setInputState(DEFAULT_INPUT_STATE);
-    }, [selectedEl]);
+    }, [elementId]);
 
     if (!selectedEl) {
         return null;
@@ -184,7 +190,10 @@ export const Chat = ({ selectedEl }: { selectedEl: RectDimensions | null }) => {
                             style={{
                                 resize: 'none',
                                 minHeight: DIMENSIONS.singleLineHeight,
-                                overflow: 'hidden',
+                                overflowY: 'auto',
+                                overflowX: 'hidden',
+                                overscrollBehavior: 'contain',
+                                // There is a bug with the textarea where it scrolls, the whole page scrolls.
                             }}
                             rows={inputState.isMultiline ? DIMENSIONS.multiLineRows : 1}
                             autoFocus
