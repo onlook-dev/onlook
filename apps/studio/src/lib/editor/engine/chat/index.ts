@@ -213,6 +213,8 @@ export class ChatManager {
             this.suggestions.shouldHide = true;
             this.suggestions.generateNextSuggestions(this.conversation.current.messages);
         }
+
+        this.context.clearAttachments();
     }
 
     dispose() {
