@@ -82,7 +82,6 @@ export const ChatInput = observer(() => {
                 setIsHandlingFile(false);
             }
         };
-        console.log('inputElement', inputElement);
         inputElement.click();
     };
 
@@ -299,7 +298,6 @@ export const ChatInput = observer(() => {
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row justify-start gap-1.5">
-                    <input></input>
                     <Tooltip
                         open={imageTooltipOpen && !isHandlingFile}
                         onOpenChange={(open) => !isHandlingFile && setImageTooltipOpen(open)}
