@@ -81,7 +81,6 @@ jobs:
             
             - name: Build and Release 
               uses: samuelmeuli/action-electron-builder@v1
-              if: ${{ !startsWith(matrix.os, 'macos') || (startsWith(matrix.os, 'macos') && runner.arch == matrix.arch) }}
               with:
                   skip_build: true
                   package_root: apps/studio
@@ -89,7 +88,12 @@ jobs:
                   release: ${{ startsWith(github.ref, 'refs/tags/v') }}
                   mac_certs: ${{ secrets.MAC_CERTS }}
                   mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
-                  args: ${{ startsWith(matrix.os, 'macos') && format('--{0}', matrix.arch) || '' }}
+                  args: >-
+                    --config ${{
+                      (startsWith(matrix.os, 'macos') && matrix.arch == 'x64' && 'builder-config/darwin-x64.ts')
+                      || (startsWith(matrix.os, 'macos') && matrix.arch == 'arm64' && 'builder-config/darwin-arm64.ts')
+                      || 'builder-config/base.ts'
+                    }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
