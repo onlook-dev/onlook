@@ -59,6 +59,6 @@ export async function listenForRunMessages() {
 
     ipcMain.handle(MainChannels.RUN_COMMAND, async (_, args) => {
         const { cwd, command } = args as { cwd: string; command: string };
-        return await runBunCommand(command, [], { cwd });
+        return await runBunCommand(command, { cwd });
     });
 }
