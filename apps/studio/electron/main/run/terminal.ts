@@ -100,10 +100,10 @@ class TerminalManager {
         try {
             let commandToExecute = command;
 
-            const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
-            if (!isMacIntel) {
-                commandToExecute = getBunCommand(command);
-            }
+            // const isMacIntel = process.platform === 'darwin' && process.arch === 'x64';
+            // if (!isMacIntel) {
+            commandToExecute = getBunCommand(command);
+            // }
             const newline = os.platform() === 'win32' ? '\r\n' : '\n';
             return this.write(id, commandToExecute + newline);
         } catch (error) {
