@@ -198,16 +198,33 @@ export class EditorEngine {
         webview.executeJavaScript('window.api?.processDom()');
     }
 
-    async takeActiveWebviewScreenshot(name: string): Promise<string | null> {
+    async takeActiveWebviewScreenshot(
+        name: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
         if (this.webviews.webviews.size === 0) {
             console.error('No webviews found');
             return null;
         }
         const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;
-        return this.takeWebviewScreenshot(name, webviewId);
+        return this.takeWebviewScreenshot(name, webviewId, options);
     }
 
-    async takeWebviewScreenshot(name: string, webviewId: string): Promise<string | null> {
+    async takeWebviewScreenshot(
+        name: string,
+        webviewId: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
         const webview = this.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('No webview found');
@@ -222,12 +239,22 @@ export class EditorEngine {
             return null;
         }
 
-        const imageName = `${name}-preview.png`;
         const image: NativeImage = await webview.capturePage();
-        const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
-            img: image.toDataURL(),
-            name: imageName,
-        });
-        return imageName;
+
+        if (options?.save) {
+            const imageName = `${name}-preview.png`;
+            const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
+                img: image.toDataURL(),
+                name: imageName,
+            });
+            return {
+                name: imageName,
+            };
+        }
+        return {
+            image: image.toDataURL({
+                scaleFactor: 0.1,
+            }),
+        };
     }
 }

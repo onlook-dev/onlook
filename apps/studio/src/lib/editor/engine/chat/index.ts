@@ -74,6 +74,10 @@ export class ChatManager {
         }
 
         const context = await this.context.getChatContext();
+        const screenshot = await this.context.getScreenshotContext();
+        if (screenshot) {
+            context.push(screenshot);
+        }
         const userMessage = this.conversation.addUserMessage(content, context);
         this.conversation.current.updateName(content);
         if (!userMessage) {

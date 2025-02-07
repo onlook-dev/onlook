@@ -49,12 +49,14 @@ const ProjectBreadcrumb = observer(() => {
             return;
         }
         const projectId = project.id;
-        const imageName = await editorEngine.takeActiveWebviewScreenshot(projectId);
-        if (!imageName) {
+        const result = await editorEngine.takeActiveWebviewScreenshot(projectId, {
+            save: true,
+        });
+        if (!result || !result.name) {
             console.error('Failed to take screenshot');
             return;
         }
-        project.previewImg = imageName;
+        project.previewImg = result.name;
         project.updatedAt = new Date().toISOString();
         projectsManager.updateProject(project);
     }

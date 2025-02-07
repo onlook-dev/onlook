@@ -11,7 +11,6 @@ import type { EditorEngine } from '..';
 
 export class ChatContext {
     context: ChatMessageContext[] = [];
-    screenshotEnabled: boolean = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -29,20 +28,16 @@ export class ChatContext {
         const fileNames = new Set<string>();
         const highlightedContext = await this.getHighlightedContext(selected, fileNames);
         const fileContext = await this.getFileContext(fileNames);
+        const imageContext = await this.getImageContext();
+        const context = [...fileContext, ...highlightedContext, ...imageContext];
+        return context;
+    }
+
+    private async getImageContext(): Promise<ImageMessageContext[]> {
         const imageContext = this.context.filter(
             (context) => context.type === MessageContextType.IMAGE,
         );
-
-        const context = [...fileContext, ...highlightedContext, ...imageContext];
-
-        if (this.screenshotEnabled) {
-            const screenshot = await this.addScreenshotContext(selected[0].webviewId);
-            if (screenshot) {
-                context.push(screenshot);
-            }
-        }
-
-        return context;
+        return imageContext;
     }
 
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
@@ -101,30 +96,36 @@ export class ChatContext {
         this.context = [];
     }
 
-    private async addScreenshotContext(webviewId: string): Promise<ImageMessageContext | null> {
+    async getScreenshotContext(): Promise<ImageMessageContext | null> {
+        if (this.editorEngine.elements.selected.length === 0) {
+            return null;
+        }
+        const webviewId = this.editorEngine.elements.selected[0].webviewId;
+        if (!webviewId) {
+            return null;
+        }
+
         const timestamp = Date.now();
         const screenshotName = `chat-screenshot-${timestamp}`;
 
         try {
-            const image = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
-            if (!image) {
+            const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
+            if (!result || !result.image) {
+                console.error('Failed to capture screenshot');
                 return null;
             }
+            const { image } = result;
 
             return {
                 type: MessageContextType.IMAGE,
                 content: image,
                 mimeType: 'image/png',
-                displayName: 'Current webview screenshot',
+                displayName: 'screen',
             };
         } catch (error) {
             console.error('Failed to capture screenshot:', error);
             return null;
         }
-    }
-
-    toggleScreenshotEnabled() {
-        this.screenshotEnabled = !this.screenshotEnabled;
     }
 
     dispose() {
