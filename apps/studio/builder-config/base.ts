@@ -75,6 +75,6 @@ const config: Configuration = {
         owner: 'onlook-dev',
         repo: 'onlook',
     },
-} as const;
+};
 
 export default config;
