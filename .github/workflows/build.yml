@@ -31,7 +31,7 @@ jobs:
                       arch: x64
                     - os: macos-latest
                       arch: arm64
-                    # - os: windows-latest
+                    - os: windows-latest
 
         steps:
             - name: Checkout code
