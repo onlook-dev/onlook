@@ -112,7 +112,7 @@ class LlmManager {
             // return { status: 'full', content: fullContent };
         } catch (error) {
             console.error('Error receiving stream', error);
-            const errorMessage = await this.getErrorMessage(error);
+            const errorMessage = this.getErrorMessage(error);
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
@@ -135,7 +135,7 @@ class LlmManager {
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
     }
 
-    private async getErrorMessage(error: unknown): Promise<string> {
+    private getErrorMessage(error: unknown): string {
         if (error instanceof Error) {
             return error.message;
         }
@@ -143,12 +143,7 @@ class LlmManager {
             return error;
         }
         if (error instanceof Response) {
-            try {
-                const errorBody = await error.text();
-                return `${error.statusText}: ${errorBody}`;
-            } catch {
-                return error.statusText;
-            }
+            return error.statusText;
         }
         if (error && typeof error === 'object' && 'message' in error) {
             return String(error.message);

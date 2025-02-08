@@ -43,9 +43,10 @@ function getAnthropicProvider(model: CLAUDE_MODELS, payload: OnlookPayload) {
     if (apiKey) {
         config.apiKey = apiKey;
     } else if (payload) {
-        config.apiKey = payload.accessToken;
+        config.apiKey = '';
         config.baseURL = proxyUrl;
         config.headers = {
+            Authorization: `Bearer ${payload.accessToken}`,
             'X-Onlook-Request-Type': payload.requestType,
         };
     } else {
