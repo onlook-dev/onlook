@@ -1,10 +1,17 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
-import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import { type CoreMessage, type CoreSystemMessage } from 'ai';
+import {
+    ChatSuggestionSchema,
+    StreamRequestType,
+    type ChatSuggestion,
+    type StreamResponse,
+    type UsageCheckResult,
+} from '@onlook/models/chat';
+import { MainChannels } from '@onlook/models/constants';
+import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
+import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -62,54 +69,36 @@ class LlmManager {
                 } as CoreSystemMessage;
                 messages = [systemMessage, ...messages];
             }
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authTokens.accessToken}`,
-                    },
-                    body: JSON.stringify({
-                        messages,
-                        useAnalytics: this.useAnalytics,
-                        requestType,
-                    } satisfies StreamRequestV2),
-                    signal: this.abortController.signal,
+            const model = initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
+                accessToken: authTokens.accessToken,
+                requestType,
+            });
+
+            const { textStream } = await streamText({
+                model,
+                messages,
+                abortSignal: this.abortController?.signal,
+                onError: (error) => {
+                    throw error;
                 },
-            );
+            });
 
-            if (response.status !== 200) {
-                if (response.status === 403) {
-                    return {
-                        status: 'rate-limited',
-                        content: 'You have reached your daily limit.',
-                        rateLimitResult: await response.json(),
-                    };
-                }
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
+            let fullText = '';
+            for await (const partialText of textStream) {
+                fullText += partialText;
+                this.emitPartialMessage(fullText);
             }
-
-            const reader = response.body?.getReader();
-            if (!reader) {
-                throw new Error('No response from server');
+            return { content: fullText, status: 'full' };
+        } catch (error: any) {
+            console.log('error', error.error.statusCode);
+            if (error.error.statusCode === 403) {
+                const rateLimitError = JSON.parse(error.error.responseBody) as UsageCheckResult;
+                return {
+                    status: 'rate-limited',
+                    content: 'You have reached your daily limit.',
+                    rateLimitResult: rateLimitError,
+                };
             }
-
-            let fullContent = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    break;
-                }
-
-                const chunk = new TextDecoder().decode(value);
-                fullContent += chunk;
-                this.emitPartialMessage(fullContent);
-            }
-            return { status: 'full', content: fullContent };
-        } catch (error) {
-            console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
             return { content: errorMessage, status: 'error' };
         } finally {
@@ -140,31 +129,34 @@ class LlmManager {
         if (typeof error === 'string') {
             return error;
         }
+        if (error instanceof Response) {
+            return error.statusText;
+        }
         if (error && typeof error === 'object' && 'message' in error) {
             return String(error.message);
         }
         return 'An unknown error occurred';
     }
 
-    public async generateSuggestions(messages: CoreMessage[]): Promise<string[]> {
-        const authTokens = await getRefreshedAuthTokens();
-        const response: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authTokens.accessToken}`,
-                },
-                body: JSON.stringify({
-                    messages,
-                    useAnalytics: this.useAnalytics,
-                    requestType: StreamRequestType.SUGGESTIONS,
-                } satisfies StreamRequestV2),
-            },
-        );
+    public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
+        try {
+            const authTokens = await getRefreshedAuthTokens();
+            const model = initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
+                accessToken: authTokens.accessToken,
+                requestType: StreamRequestType.SUGGESTIONS,
+            });
 
-        return (await response.json()) as string[];
+            const { object } = await generateObject({
+                model,
+                output: 'array',
+                schema: ChatSuggestionSchema,
+                messages,
+            });
+            return object as ChatSuggestion[];
+        } catch (error) {
+            console.error(error);
+            return [];
+        }
     }
 }
 
