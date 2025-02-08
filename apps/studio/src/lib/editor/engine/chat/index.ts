@@ -122,10 +122,6 @@ export class ChatManager {
         this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-
-        // TESTING
-        this.suggestions.generateNextSuggestions(this.conversation.current.messages);
-        return;
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
 
         this.stream.clear();
