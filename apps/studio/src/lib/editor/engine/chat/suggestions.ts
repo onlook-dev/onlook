@@ -100,9 +100,7 @@ export class SuggestionManager {
 
         if (newSuggestions) {
             this.suggestions = newSuggestions;
-            sendAnalytics('generated suggestions', {
-                suggestions: this.suggestions,
-            });
+            sendAnalytics('generated suggestions');
         } else {
             console.error('Failed to generate suggestions');
             sendAnalytics('generate suggestions failed');
@@ -127,9 +125,7 @@ export class SuggestionManager {
         );
         if (newSuggestions) {
             this.suggestions = newSuggestions;
-            sendAnalytics('generated suggestions', {
-                suggestions: this.suggestions,
-            });
+            sendAnalytics('generated suggestions');
         } else {
             console.error('Failed to generate suggestions');
             sendAnalytics('generate suggestions failed');

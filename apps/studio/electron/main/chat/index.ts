@@ -1,12 +1,13 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import {
+    ChatSuggestionSchema,
     StreamRequestType,
-    type StreamRequestV2,
+    type ChatSuggestion,
     type StreamResponse,
     type UsageCheckResult,
 } from '@onlook/models/chat';
-import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import { streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
+import { MainChannels } from '@onlook/models/constants';
+import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
@@ -137,26 +138,25 @@ class LlmManager {
         return 'An unknown error occurred';
     }
 
-    public async generateSuggestions(messages: CoreMessage[]): Promise<string[]> {
-        return [];
-        const authTokens = await getRefreshedAuthTokens();
-        const response: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authTokens.accessToken}`,
-                },
-                body: JSON.stringify({
-                    messages,
-                    useAnalytics: this.useAnalytics,
-                    requestType: StreamRequestType.SUGGESTIONS,
-                } satisfies StreamRequestV2),
-            },
-        );
+    public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
+        try {
+            const authTokens = await getRefreshedAuthTokens();
+            const model = initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
+                accessToken: authTokens.accessToken,
+                requestType: StreamRequestType.SUGGESTIONS,
+            });
 
-        return (await response.json()) as string[];
+            const { object } = await generateObject({
+                model,
+                output: 'array',
+                schema: ChatSuggestionSchema,
+                messages,
+            });
+            return object as ChatSuggestion[];
+        } catch (error) {
+            console.error(error);
+            return [];
+        }
     }
 }
 
