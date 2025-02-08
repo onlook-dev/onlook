@@ -132,7 +132,7 @@ export function runBuildScript(
     error?: string;
 }> {
     return new Promise((resolve, reject) => {
-        runBunCommand(buildScript, [], {
+        runBunCommand(buildScript, {
             cwd: folderPath,
             env: { ...process.env, NODE_ENV: 'production' },
             callbacks: {

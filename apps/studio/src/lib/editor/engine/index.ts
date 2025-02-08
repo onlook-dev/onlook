@@ -18,11 +18,11 @@ import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
+import { PagesManager } from './pages';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { PagesManager } from './pages';
 
 export class EditorEngine {
     private plansOpen: boolean = false;
@@ -198,8 +198,34 @@ export class EditorEngine {
         webview.executeJavaScript('window.api?.processDom()');
     }
 
-    async takeScreenshot(name: string): Promise<string | null> {
-        const webview = this.webviews.webviews.values().next().value?.webview;
+    async takeActiveWebviewScreenshot(
+        name: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
+        if (this.webviews.webviews.size === 0) {
+            console.error('No webviews found');
+            return null;
+        }
+        const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;
+        return this.takeWebviewScreenshot(name, webviewId, options);
+    }
+
+    async takeWebviewScreenshot(
+        name: string,
+        webviewId: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
+        const webview = this.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('No webview found');
             return null;
@@ -213,12 +239,22 @@ export class EditorEngine {
             return null;
         }
 
-        const imageName = `${name}-preview.png`;
         const image: NativeImage = await webview.capturePage();
-        const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
-            img: image.toDataURL(),
-            name: imageName,
-        });
-        return imageName;
+
+        if (options?.save) {
+            const imageName = `${name}-preview.png`;
+            const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
+                img: image.toDataURL(),
+                name: imageName,
+            });
+            return {
+                name: imageName,
+            };
+        }
+        return {
+            image: image.toDataURL({
+                scaleFactor: 0.1,
+            }),
+        };
     }
 }

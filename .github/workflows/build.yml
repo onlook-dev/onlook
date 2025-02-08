@@ -63,6 +63,8 @@ jobs:
               run: bun install --frozen-lockfile
 
             - name: Download Bun binary
+              env:
+                  CI_ARCH: ${{ matrix.arch }}
               run: bun run download_bun
 
             - name: Set environment variables
@@ -86,7 +88,12 @@ jobs:
                   release: ${{ startsWith(github.ref, 'refs/tags/v') }}
                   mac_certs: ${{ secrets.MAC_CERTS }}
                   mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
-                  args: ${{ startsWith(matrix.os, 'macos') && format('--{0}', matrix.arch) || '' }}
+                  args: >-
+                    --config ${{
+                      (startsWith(matrix.os, 'macos') && matrix.arch == 'x64' && 'builder-config/darwin-x64.ts')
+                      || (startsWith(matrix.os, 'macos') && matrix.arch == 'arm64' && 'builder-config/darwin-arm64.ts')
+                      || 'builder-config/base.ts'
+                    }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}

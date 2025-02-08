@@ -98,6 +98,9 @@ const Frame = observer(
             if (state === WebviewState.DOM_ONLOOK_ENABLED) {
                 setTimeout(() => {
                     selectFirstElement(webview);
+                    editorEngine.takeActiveWebviewScreenshot(settings.id, {
+                        save: true,
+                    });
                 }, 1000);
             }
 

@@ -29,17 +29,19 @@ export class ErrorManager {
     }
 
     async sendFixError() {
-        if (this.validError) {
-            const res = await this.editorEngine.chat.sendFixErrorToAi(this.validError);
+        if (this.validErrors.length > 0) {
+            const res = await this.editorEngine.chat.sendFixErrorToAi(this.validErrors);
             if (res) {
-                this.removeErrorFromMap(this.validError);
+                this.removeErrorsFromMap(this.validErrors);
             }
         }
     }
 
-    removeErrorFromMap(error: ParsedError) {
-        for (const [webviewId, errors] of Object.entries(this.webviewIdToError)) {
-            this.webviewIdToError[webviewId] = errors.filter((e) => !compareErrors(e, error));
+    removeErrorsFromMap(errors: ParsedError[]) {
+        for (const [webviewId, existingErrors] of Object.entries(this.webviewIdToError)) {
+            this.webviewIdToError[webviewId] = existingErrors.filter(
+                (existing) => !errors.some((error) => compareErrors(existing, error)),
+            );
         }
     }
 
@@ -71,40 +73,49 @@ export class ErrorManager {
     }
 
     async getMessageContextFromError(
-        error: ParsedError,
+        error: ParsedError[],
     ): Promise<(FileMessageContext | HighlightMessageContext)[] | null> {
-        const filePath = error.filePath;
-        if (!filePath) {
-            console.error('No file path found');
-            return null;
+        const contexts: (FileMessageContext | HighlightMessageContext)[] = [];
+        const processedFilePaths = new Set<string>();
+
+        for (const err of error) {
+            const filePath = err.filePath;
+            if (!filePath) {
+                console.error('No file path found for error:', err);
+                continue;
+            }
+
+            // Only fetch file content and create FileMessageContext if we haven't seen this file
+            if (!processedFilePaths.has(filePath)) {
+                const content = await this.editorEngine.code.getFileContent(filePath, true);
+                if (!content) {
+                    console.error('No content found for file:', filePath);
+                    continue;
+                }
+
+                contexts.push({
+                    content,
+                    path: filePath,
+                    type: MessageContextType.FILE,
+                    displayName: filePath,
+                });
+                processedFilePaths.add(filePath);
+            }
+
+            // Add highlight context if line number exists
+            if (err.line) {
+                contexts.push({
+                    content: err.message,
+                    path: filePath,
+                    type: MessageContextType.HIGHLIGHT,
+                    displayName: 'error',
+                    start: err.line,
+                    end: err.line + 1,
+                });
+            }
         }
 
-        const content = await this.editorEngine.code.getFileContent(filePath, true);
-        if (!content) {
-            console.error('No content found');
-            return null;
-        }
-
-        const fileContext: FileMessageContext = {
-            content,
-            path: filePath,
-            type: MessageContextType.FILE,
-            displayName: filePath,
-        };
-
-        if (!error.line) {
-            return [fileContext];
-        }
-
-        const highlightContext: HighlightMessageContext = {
-            content: error.message,
-            path: filePath,
-            type: MessageContextType.HIGHLIGHT,
-            displayName: 'error',
-            start: error.line,
-            end: error.line + 1,
-        };
-        return [fileContext, highlightContext];
+        return contexts.length > 0 ? contexts : null;
     }
 
     getUseableFilePath(filePath: string) {

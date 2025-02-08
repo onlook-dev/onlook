@@ -1,7 +1,9 @@
+import { Configuration, TargetConfiguration } from 'electron-builder';
+
 /**
  * @see https://www.electron.build/#documentation
  */
-{
+const config: Configuration = {
     appId: 'dev.onlook.studio',
     asar: true,
     directories: {
@@ -24,11 +26,11 @@
             {
                 target: 'dmg',
                 arch: ['x64', 'arm64'],
-            },
+            } as TargetConfiguration,
             {
                 target: 'zip',
                 arch: ['x64', 'arm64'],
-            },
+            } as TargetConfiguration,
         ],
     },
     win: {
@@ -36,7 +38,7 @@
             {
                 target: 'nsis',
                 arch: ['x64'],
-            },
+            } as TargetConfiguration,
         ],
         artifactName: '${productName}-setup.${ext}',
         signtoolOptions: {
@@ -55,11 +57,11 @@
             {
                 target: 'AppImage',
                 arch: ['x64', 'arm64'],
-            },
+            } as TargetConfiguration,
             {
                 target: 'deb',
                 arch: ['x64', 'arm64'],
-            },
+            } as TargetConfiguration,
         ],
         artifactName: '${productName}-${arch}.${ext}',
         category: 'Utility',
@@ -73,4 +75,6 @@
         owner: 'onlook-dev',
         repo: 'onlook',
     },
-}
+};
+
+export default config;
