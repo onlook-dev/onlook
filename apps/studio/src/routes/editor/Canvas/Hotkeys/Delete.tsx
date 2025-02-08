@@ -22,10 +22,17 @@ const DeleteKey = () => {
     );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
-        if (shouldWarnDelete) {
-            setShowDeleteDialog(true);
+        if (
+            editorEngine.webviews.selected.length > 0 &&
+            editorEngine.elements.selected.length === 0
+        ) {
+            deleteDuplicateWindow();
         } else {
-            editorEngine.elements.delete();
+            if (shouldWarnDelete) {
+                setShowDeleteDialog(true);
+            } else {
+                editorEngine.elements.delete();
+            }
         }
     });
 
@@ -38,6 +45,24 @@ const DeleteKey = () => {
         editorEngine.elements.delete();
         setShowDeleteDialog(false);
     };
+
+    function deleteDuplicateWindow() {
+        const settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
+        if (settings && settings.duplicate) {
+            editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
+                (frame) => frame.id !== settings.id,
+            );
+
+            editorEngine.canvas.frames.forEach((frame) => {
+                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
+            });
+
+            const webview = editorEngine.webviews.getWebview(settings.id);
+            if (webview) {
+                editorEngine.webviews.deregister(webview);
+            }
+        }
+    }
 
     return (
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

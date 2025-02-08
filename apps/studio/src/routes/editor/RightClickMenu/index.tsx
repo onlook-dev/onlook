@@ -60,9 +60,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.OPEN_DEV_TOOL,
             disabled:
                 editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0
-                    ? true
-                    : false,
+                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Add to AI Chat',
@@ -73,9 +71,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.ADD_AI_CHAT,
             disabled:
                 editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0
-                    ? true
-                    : false,
+                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'New AI Chat',
@@ -87,9 +83,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.NEW_AI_CHAT,
             disabled:
                 editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0
-                    ? true
-                    : false,
+                editorEngine.elements.selected.length === 0,
         },
     ];
 
@@ -124,9 +118,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.ENTER,
             disabled:
                 editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0
-                    ? true
-                    : false,
+                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Copy',
@@ -137,9 +129,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.COPY,
             disabled:
                 editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0
-                    ? true
-                    : false,
+                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Paste',
@@ -150,9 +140,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.PASTE,
             disabled:
                 editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0
-                    ? true
-                    : false,
+                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Cut',
@@ -163,9 +151,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.CUT,
             disabled:
                 editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0
-                    ? true
-                    : false,
+                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Duplicate',
@@ -264,13 +250,6 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 });
             }
             editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
-            const lastFrame = editorEngine.canvas.getFrame(newFrame.id);
-            if (lastFrame) {
-                const webview = editorEngine.webviews.getWebview(lastFrame.id);
-                if (webview) {
-                    editorEngine.webviews.register(webview);
-                }
-            }
         }
     }
 

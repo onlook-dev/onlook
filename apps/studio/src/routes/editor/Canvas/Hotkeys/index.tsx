@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import DeleteKey from './Delete';
 import { Hotkey } from '/common/hotkeys';
+import type { FrameSettings } from '@onlook/models';
+import { nanoid } from 'nanoid';
 
 const HotkeysArea = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -60,7 +62,16 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
-    useHotkeys(Hotkey.DUPLICATE.command, () => editorEngine.copy.duplicate());
+    useHotkeys(Hotkey.DUPLICATE.command, () => {
+        if (
+            editorEngine.webviews.selected.length > 0 &&
+            editorEngine.elements.selected.length === 0
+        ) {
+            duplicateWindow();
+        } else {
+            editorEngine.copy.duplicate();
+        }
+    });
 
     // AI
     useHotkeys(Hotkey.ADD_AI_CHAT.command, () => (editorEngine.editPanelTab = EditorTabValue.CHAT));
@@ -72,6 +83,36 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     // Move
     useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
     useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => editorEngine.move.moveSelected('down'));
+
+    function duplicateWindow(linked: boolean = false) {
+        const settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
+        if (settings) {
+            const currentFrame = settings;
+            const newFrame: FrameSettings = {
+                id: nanoid(),
+                url: currentFrame.url,
+                dimension: {
+                    width: currentFrame.dimension.width,
+                    height: currentFrame.dimension.height,
+                },
+                position: currentFrame.position,
+                duplicate: true,
+                linkedIds: linked ? [currentFrame.id] : [],
+                aspectRatioLocked: currentFrame.aspectRatioLocked,
+                orientation: currentFrame.orientation,
+                device: currentFrame.device,
+                theme: currentFrame.theme,
+            };
+
+            if (linked) {
+                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
+                editorEngine.canvas.saveFrame(currentFrame.id, {
+                    linkedIds: currentFrame.linkedIds,
+                });
+            }
+            editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
+        }
+    }
 
     return (
         <>
