@@ -20,7 +20,7 @@ const DIMENSIONS = {
     minInputWidth: 280,
     buttonHeight: 36, // Standard button height
     multiLineRows: 4,
-    minWordsToSubmit: 4,
+    minCharsToSubmit: 4,
 };
 
 const getOffsets = (isMultiline: boolean) => {
@@ -50,6 +50,7 @@ export const Chat = ({
     elementId: string;
 }) => {
     const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
+    const [isComposing, setIsComposing] = useState(false);
 
     const editorEngine = useEditorEngine();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -72,20 +73,16 @@ export const Chat = ({
         return null;
     }
 
-    const inputStyle: React.CSSProperties = {
+    const containerStyle: React.CSSProperties = {
         position: 'absolute',
-        top: selectedEl.top - getOffsets(inputState.isMultiline).input,
-        left: selectedEl.left,
-        minWidth: `${DIMENSIONS.minInputWidth}px`,
-        zIndex: 1000,
-        pointerEvents: 'auto',
-    };
-
-    const chatStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: selectedEl.top - getOffsets(false).chatButton,
-        left: selectedEl.left,
-        zIndex: 1000,
+        top:
+            selectedEl.top -
+            DIMENSIONS.buttonHeight -
+            SPACING.padding / 8 -
+            (inputState.isVisible ? DIMENSIONS.singleLineHeight / 2 : 0),
+        left: selectedEl.left + selectedEl.width / 2,
+        transform: 'translateX(-50%)',
+        zIndex: 40,
         pointerEvents: 'auto',
     };
 
@@ -110,65 +107,71 @@ export const Chat = ({
 
     const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInputState((prev) => ({ ...prev, value: e.target.value }));
-        if (e.target.value) {
-            if (textareaRef.current) {
-                debouncedSetMultiline(textareaRef.current.scrollHeight);
-            }
-        } else {
-            setInputState((prev) => ({ ...prev, isMultiline: false }));
-            debouncedSetMultiline.cancel();
+
+        if (textareaRef.current) {
+            // Reset height to auto to get the correct scrollHeight
+            textareaRef.current.style.height = 'auto';
+            // Calculate max height (4 lines)
+            const maxHeight = DIMENSIONS.singleLineHeight * 4;
+            // Set height, capped at maxHeight
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
+
+            // Scroll to bottom
+            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+
+            // Update multiline state based on content height
+            debouncedSetMultiline(textareaRef.current.scrollHeight);
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
-            const wordCount = inputState.value.trim().split(/\s+/).filter(Boolean).length;
-            if (wordCount >= DIMENSIONS.minWordsToSubmit) {
+            const charCount = inputState.value.trim().length;
+            if (charCount >= DIMENSIONS.minCharsToSubmit) {
                 handleSubmit();
             }
-        }
-    };
-
-    const handleToggleChat = () => {
-        if (selectedEl) {
-            setInputState((prev) => ({ ...prev, isVisible: !prev.isVisible, value: '' }));
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            setInputState((prev) => ({ ...prev, isVisible: false, value: '' }));
         }
     };
 
     return (
-        <>
+        <div style={containerStyle} onClick={(e) => e.stopPropagation()}>
             <div
-                style={chatStyle}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-background-secondary/30 dark:bg-background/85 rounded-xl p-1 flex flex-row gap-2 border backdrop-blur-lg drop-shadow-xl"
+                className={cn(
+                    'rounded-xl backdrop-blur-lg transition-all duration-200',
+                    inputState.isVisible
+                        ? 'bg-background/80 border shadow p-1'
+                        : 'bg-background-secondary/30 dark:bg-background/85 border-foreground-secondary/20 hover:border-foreground-secondary/50 p-0.5',
+                    'border flex relative',
+                )}
             >
-                <ToggleGroup
-                    type="single"
-                    value={inputState.isVisible ? 'chat' : 'input'}
-                    onValueChange={handleToggleChat}
-                >
-                    <ToggleGroupItem value="chat" className="rounded-lg">
-                        <div className="flex flex-row gap-2 items-center p-1 min-w-28">
-                            <Icons.Sparkles className="w-4 h-4" />
-                            <span>Chat with AI</span>
-                        </div>
-                    </ToggleGroupItem>
-                </ToggleGroup>
-            </div>
-            {inputState.isVisible && (
-                <div style={inputStyle}>
-                    <div
-                        className={cn(
-                            'bg-background/80 rounded-xl p-1 border backdrop-blur-lg shadow',
-                            'flex flex-row gap-1 relative',
-                            inputState.isMultiline ? 'flex-col' : 'flex-row items-center',
-                        )}
+                {!inputState.isVisible ? (
+                    // Chat Button
+                    <button
+                        onClick={() => setInputState((prev) => ({ ...prev, isVisible: true }))}
+                        className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1 flex flex-row items-center gap-2 w-full"
                     >
+                        <Icons.Sparkles className="w-4 h-4" />
+                        <span className="text-miniPlus whitespace-nowrap">Chat with AI</span>
+                    </button>
+                ) : (
+                    // Input Field
+                    <div className="flex flex-row items-top gap-1 w-full min-w-[280px] relative">
                         <Button
                             size="icon"
-                            onClick={handleToggleChat}
-                            className="h-6 w-6 absolute left-2 z-10 border-none shadow-none bg-transparent hover:bg-transparent"
+                            onClick={() =>
+                                setInputState((prev) => ({ ...prev, isVisible: false, value: '' }))
+                            }
+                            className={cn(
+                                'h-6 w-6 absolute left-2 z-10 border-none shadow-none bg-transparent hover:bg-transparent',
+                                'transition-all duration-200',
+                                inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
+                                    ? 'opacity-0 -translate-x-2 scale-75 pointer-events-none'
+                                    : 'opacity-100 translate-x-0 scale-100 pointer-events-auto',
+                            )}
                             disabled={inputState.isSubmitting}
                         >
                             <Icons.CrossS className="h-4 w-4 text-foreground-active dark:text-white" />
@@ -177,12 +180,15 @@ export const Chat = ({
                             aria-label="Chat message input"
                             ref={textareaRef}
                             className={cn(
-                                'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px] rounded-lg',
-                                'transition-colors duration-150',
-                                'pr-10 pl-8 backdrop-blur-lg',
-                                editorEngine.style.mode === StyleMode.Root
-                                    ? 'bg-background-tertiary text-foreground-active border-background-tertiary cursor-text'
-                                    : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-background-tertiary/50 group-hover:text-foreground-active group-hover:border-background-tertiary/50 cursor-pointer',
+                                'w-full text-xs break-words p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px] rounded-lg',
+                                'transition-all duration-150 ease-in-out',
+                                'pr-10 backdrop-blur-lg',
+                                inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
+                                    ? 'pl-2'
+                                    : 'pl-8',
+                                'bg-background-secondary/75 text-foreground-primary border-background-secondary/75',
+                                'max-h-[80px] caret-[#FA003C]',
+                                'selection:bg-[#FA003C]/30 selection:text-[#FA003C]',
                             )}
                             value={inputState.value}
                             onChange={handleTextareaChange}
@@ -190,38 +196,38 @@ export const Chat = ({
                             style={{
                                 resize: 'none',
                                 minHeight: DIMENSIONS.singleLineHeight,
-                                overflowY: 'auto',
+                                height: 'auto',
+                                overflowY: 'auto', // Always allow vertical scrolling
                                 overflowX: 'hidden',
                                 overscrollBehavior: 'contain',
-                                // There is a bug with the textarea where it scrolls, the whole page scrolls.
+                                lineHeight: '1.5',
                             }}
-                            rows={inputState.isMultiline ? DIMENSIONS.multiLineRows : 1}
+                            rows={1}
                             autoFocus
                             disabled={inputState.isSubmitting}
                             onKeyDown={handleKeyDown}
+                            onCompositionStart={() => setIsComposing(true)}
+                            onCompositionEnd={(e) => {
+                                setIsComposing(false);
+                            }}
                         />
-                        {inputState.value.trim().split(/\s+/).filter(Boolean).length >=
-                            DIMENSIONS.minWordsToSubmit && (
-                            <div
+                        {inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit && (
+                            <Button
+                                size="icon"
+                                variant="secondary"
+                                onClick={handleSubmit}
                                 className={cn(
-                                    'absolute right-2 h-full flex flex-col ',
-                                    inputState.isMultiline ? 'pb-3 justify-end' : 'justify-center',
+                                    'absolute right-0.5 bottom-0.5 h-7 w-7',
+                                    'bg-foreground-primary text-white hover:bg-foreground-hover',
                                 )}
+                                disabled={inputState.isSubmitting}
                             >
-                                <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={handleSubmit}
-                                    className="rounded-full p-0 w-6 h-6 border-2 border-foreground-active dark:border-white"
-                                    disabled={inputState.isSubmitting}
-                                >
-                                    <Icons.ArrowUp className="h-4 w-4 text-foreground-active dark:text-white" />
-                                </Button>
-                            </div>
+                                <Icons.ArrowUp className="h-4 w-4 text-background" />
+                            </Button>
                         )}
                     </div>
-                </div>
-            )}
-        </>
+                )}
+            </div>
+        </div>
     );
 };
