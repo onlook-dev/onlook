@@ -23,6 +23,11 @@ const DIMENSIONS = {
     minCharsToSubmit: 4,
 };
 
+const ANIMATION = {
+    DISTANCE_THRESHOLD: 300, // pixels - adjust this value as needed
+    TRANSITION_DURATION: 100, // ms
+};
+
 const getOffsets = (isMultiline: boolean) => {
     const chatButtonHeight = DIMENSIONS.buttonHeight + SPACING.padding;
     const inputHeight = isMultiline
@@ -51,6 +56,9 @@ export const Chat = ({
 }) => {
     const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
     const [isComposing, setIsComposing] = useState(false);
+    const [prevPosition, setPrevPosition] = useState({ top: 0, left: 0 });
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [shouldFloat, setShouldFloat] = useState(true);
 
     const editorEngine = useEditorEngine();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -69,21 +77,51 @@ export const Chat = ({
         setInputState(DEFAULT_INPUT_STATE);
     }, [elementId]);
 
+    useEffect(() => {
+        if (selectedEl) {
+            const newTop = selectedEl.top - 8;
+            const newLeft = selectedEl.left + selectedEl.width / 2;
+
+            // Calculate distance between old and new position
+            const distance = Math.sqrt(
+                Math.pow(newTop - prevPosition.top, 2) + Math.pow(newLeft - prevPosition.left, 2),
+            );
+
+            const shouldFloatToNewPosition = distance < ANIMATION.DISTANCE_THRESHOLD;
+
+            if (!shouldFloatToNewPosition) {
+                // First, hide the element
+                setIsAnimating(true);
+
+                // Small delay before updating position and showing animation
+                setTimeout(() => {
+                    setShouldFloat(false);
+                    setPrevPosition({ top: newTop, left: newLeft });
+                    setIsAnimating(false);
+                }, 16); // One frame delay
+            } else {
+                setShouldFloat(true);
+                setPrevPosition({ top: newTop, left: newLeft });
+            }
+        }
+    }, [selectedEl]);
+
     if (!selectedEl) {
         return null;
     }
 
     const containerStyle: React.CSSProperties = {
-        position: 'absolute',
-        top:
-            selectedEl.top -
-            DIMENSIONS.buttonHeight -
-            SPACING.padding / 8 -
-            (inputState.isVisible ? DIMENSIONS.singleLineHeight / 2 : 0),
+        position: 'fixed',
+        top: selectedEl.top - 8,
         left: selectedEl.left + selectedEl.width / 2,
         transform: 'translateX(-50%)',
         zIndex: 40,
         pointerEvents: 'auto',
+        transition: shouldFloat ? 'top 200ms ease-out, left 200ms ease-out' : 'none',
+        animation: !shouldFloat
+            ? `scaleIn ${ANIMATION.TRANSITION_DURATION}ms ease-out forwards`
+            : 'none',
+        opacity: isAnimating ? 0 : 1, // Ensure element is hidden during animation reset
     };
 
     const handleSubmit = async () => {
@@ -139,11 +177,20 @@ export const Chat = ({
 
     return (
         <div style={containerStyle} onClick={(e) => e.stopPropagation()}>
+            <style>
+                {`
+                @keyframes scaleIn {
+                    0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+                    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+                }
+                `}
+            </style>
             <div
                 className={cn(
-                    'rounded-xl backdrop-blur-lg transition-all duration-200',
+                    'rounded-xl backdrop-blur-lg transition-all duration-300',
+                    'shadow-xl shadow-background-secondary/50',
                     inputState.isVisible
-                        ? 'bg-background/80 border shadow p-1'
+                        ? 'bg-background/80 border shadow-xl shadow-background-secondary/50 p-1'
                         : 'bg-background-secondary/30 dark:bg-background/85 border-foreground-secondary/20 hover:border-foreground-secondary/50 p-0.5',
                     'border flex relative',
                 )}
@@ -152,7 +199,7 @@ export const Chat = ({
                     // Chat Button
                     <button
                         onClick={() => setInputState((prev) => ({ ...prev, isVisible: true }))}
-                        className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1 flex flex-row items-center gap-2 w-full"
+                        className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
                     >
                         <Icons.Sparkles className="w-4 h-4" />
                         <span className="text-miniPlus whitespace-nowrap">Chat with AI</span>
@@ -166,7 +213,7 @@ export const Chat = ({
                                 setInputState((prev) => ({ ...prev, isVisible: false, value: '' }))
                             }
                             className={cn(
-                                'h-6 w-6 absolute left-2 z-10 border-none shadow-none bg-transparent hover:bg-transparent',
+                                'group h-6 w-6 absolute left-1 top-1 z-10 border-none shadow-none bg-transparent hover:bg-transparent',
                                 'transition-all duration-200',
                                 inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
                                     ? 'opacity-0 -translate-x-2 scale-75 pointer-events-none'
@@ -174,7 +221,7 @@ export const Chat = ({
                             )}
                             disabled={inputState.isSubmitting}
                         >
-                            <Icons.CrossS className="h-4 w-4 text-foreground-active dark:text-white" />
+                            <Icons.CrossS className="h-4 w-4 text-foreground-active dark:text-white group-hover:text-foreground/50 transition-colors" />
                         </Button>
                         <Textarea
                             aria-label="Chat message input"
@@ -222,7 +269,7 @@ export const Chat = ({
                                 )}
                                 disabled={inputState.isSubmitting}
                             >
-                                <Icons.ArrowUp className="h-4 w-4 text-background" />
+                                <Icons.ArrowRight className="h-4 w-4 text-background" />
                             </Button>
                         )}
                     </div>
