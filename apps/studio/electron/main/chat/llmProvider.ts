@@ -30,7 +30,7 @@ export function initModel(
     }
 }
 
-function getAnthropicProvider(model: CLAUDE_MODELS, payload: OnlookPayload) {
+function getAnthropicProvider(model: CLAUDE_MODELS, payload: OnlookPayload): LanguageModelV1 {
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     const proxyUrl = `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_PROXY_ROUTE}${ProxyRoutes.ANTHROPIC}`;
 
