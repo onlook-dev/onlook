@@ -14,6 +14,8 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import type { FrameSettings } from '@onlook/models';
+import { nanoid } from 'nanoid';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -32,10 +34,21 @@ interface MenuItem {
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
+    const [settings, setSettings] = useState<FrameSettings>();
 
     useEffect(() => {
         updateMenuItems();
-    }, [editorEngine.elements.selected, editorEngine.ast.mappings.layers]);
+        if (
+            editorEngine.webviews.selected.length > 0 &&
+            editorEngine.elements.selected.length === 0
+        ) {
+            setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
+        }
+    }, [
+        editorEngine.elements.selected,
+        editorEngine.ast.mappings.layers,
+        editorEngine.webviews.selected,
+    ]);
 
     const TOOL_ITEMS: MenuItem[] = [
         {
@@ -45,6 +58,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.Code className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.OPEN_DEV_TOOL,
+            disabled:
+                editorEngine.webviews.selected.length > 0 &&
+                editorEngine.elements.selected.length === 0
+                    ? true
+                    : false,
         },
         {
             label: 'Add to AI Chat',
@@ -53,7 +71,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ADD_AI_CHAT,
-            disabled: !editorEngine.elements.selected.length,
+            disabled:
+                editorEngine.webviews.selected.length > 0 &&
+                editorEngine.elements.selected.length === 0
+                    ? true
+                    : false,
         },
         {
             label: 'New AI Chat',
@@ -63,6 +85,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.NEW_AI_CHAT,
+            disabled:
+                editorEngine.webviews.selected.length > 0 &&
+                editorEngine.elements.selected.length === 0
+                    ? true
+                    : false,
         },
     ];
 
@@ -95,6 +122,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.Pencil className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ENTER,
+            disabled:
+                editorEngine.webviews.selected.length > 0 &&
+                editorEngine.elements.selected.length === 0
+                    ? true
+                    : false,
         },
         {
             label: 'Copy',
@@ -103,6 +135,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.Clipboard className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.COPY,
+            disabled:
+                editorEngine.webviews.selected.length > 0 &&
+                editorEngine.elements.selected.length === 0
+                    ? true
+                    : false,
         },
         {
             label: 'Paste',
@@ -111,6 +148,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.ClipboardCopy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.PASTE,
+            disabled:
+                editorEngine.webviews.selected.length > 0 &&
+                editorEngine.elements.selected.length === 0
+                    ? true
+                    : false,
         },
         {
             label: 'Cut',
@@ -119,24 +161,43 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.Scissors className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.CUT,
+            disabled:
+                editorEngine.webviews.selected.length > 0 &&
+                editorEngine.elements.selected.length === 0
+                    ? true
+                    : false,
         },
         {
             label: 'Duplicate',
             action: () => {
-                editorEngine.copy.duplicate();
+                if (
+                    editorEngine.webviews.selected.length > 0 &&
+                    editorEngine.elements.selected.length === 0
+                ) {
+                    duplicateWindow();
+                } else {
+                    editorEngine.copy.duplicate();
+                }
             },
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
         },
-
         {
             label: 'Delete',
             action: () => {
-                editorEngine.elements.delete();
+                if (
+                    editorEngine.webviews.selected.length > 0 &&
+                    editorEngine.elements.selected.length === 0
+                ) {
+                    deleteDuplicateWindow();
+                } else {
+                    editorEngine.elements.delete();
+                }
             },
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
+            disabled: !settings?.duplicate,
         },
     ];
 
@@ -175,6 +236,59 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
 
     function viewSource(oid: string | null) {
         editorEngine.code.viewSource(oid);
+    }
+
+    function duplicateWindow(linked: boolean = false) {
+        if (settings) {
+            const currentFrame = settings;
+            const newFrame: FrameSettings = {
+                id: nanoid(),
+                url: currentFrame.url,
+                dimension: {
+                    width: currentFrame.dimension.width,
+                    height: currentFrame.dimension.height,
+                },
+                position: currentFrame.position,
+                duplicate: true,
+                linkedIds: linked ? [currentFrame.id] : [],
+                aspectRatioLocked: currentFrame.aspectRatioLocked,
+                orientation: currentFrame.orientation,
+                device: currentFrame.device,
+                theme: currentFrame.theme,
+            };
+
+            if (linked) {
+                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
+                editorEngine.canvas.saveFrame(currentFrame.id, {
+                    linkedIds: currentFrame.linkedIds,
+                });
+            }
+            editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
+            const lastFrame = editorEngine.canvas.getFrame(newFrame.id);
+            if (lastFrame) {
+                const webview = editorEngine.webviews.getWebview(lastFrame.id);
+                if (webview) {
+                    editorEngine.webviews.register(webview);
+                }
+            }
+        }
+    }
+
+    function deleteDuplicateWindow() {
+        if (settings && settings.duplicate) {
+            editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
+                (frame) => frame.id !== settings.id,
+            );
+
+            editorEngine.canvas.frames.forEach((frame) => {
+                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
+            });
+
+            const webview = editorEngine.webviews.getWebview(settings.id);
+            if (webview) {
+                editorEngine.webviews.deregister(webview);
+            }
+        }
     }
 
     return (

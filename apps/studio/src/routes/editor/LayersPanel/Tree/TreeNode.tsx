@@ -189,10 +189,16 @@ const TreeNode = observer(
             switch (action) {
                 case MouseAction.MOVE:
                     editorEngine.elements.mouseover(el, webview);
+                    if (el.tagName.toLocaleLowerCase() === 'body') {
+                        editorEngine.webviews.select(webview);
+                        return;
+                    }
                     break;
                 case MouseAction.MOUSE_DOWN:
                     if (el.tagName.toLocaleLowerCase() === 'body') {
+                        editorEngine.webviews.deselectAll();
                         editorEngine.webviews.select(webview);
+                        editorEngine.elements.clear();
                         return;
                     }
                     if (e.shiftKey) {
