@@ -1,10 +1,11 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { StreamRequestType, type StreamRequestV2, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import { type CoreMessage, type CoreSystemMessage } from 'ai';
+import { streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
+import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -62,55 +63,56 @@ class LlmManager {
                 } as CoreSystemMessage;
                 messages = [systemMessage, ...messages];
             }
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI_V2}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authTokens.accessToken}`,
-                    },
-                    body: JSON.stringify({
-                        messages,
-                        useAnalytics: this.useAnalytics,
-                        requestType,
-                    } satisfies StreamRequestV2),
-                    signal: this.abortController.signal,
-                },
-            );
+            const model = initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
+                accessToken: authTokens.accessToken,
+                requestType,
+            });
 
-            if (response.status !== 200) {
-                if (response.status === 403) {
-                    return {
-                        status: 'rate-limited',
-                        content: 'You have reached your daily limit.',
-                        rateLimitResult: await response.json(),
-                    };
-                }
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
+            const { textStream, text } = await streamText({
+                model,
+                messages,
+            });
+
+            let fullText = '';
+            for await (const partialText of textStream) {
+                fullText += partialText;
+                this.emitPartialMessage(fullText);
             }
 
-            const reader = response.body?.getReader();
-            if (!reader) {
-                throw new Error('No response from server');
-            }
+            return { content: fullText, status: 'full' };
 
-            let fullContent = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    break;
-                }
+            // if (response.status !== 200) {
+            //     if (response.status === 403) {
+            //         return {
+            //             status: 'rate-limited',
+            //             content: 'You have reached your daily limit.',
+            //             rateLimitResult: await response.json(),
+            //         };
+            //     }
+            //     const errorMessage = await response.text();
+            //     throw new Error(errorMessage);
+            // }
 
-                const chunk = new TextDecoder().decode(value);
-                fullContent += chunk;
-                this.emitPartialMessage(fullContent);
-            }
-            return { status: 'full', content: fullContent };
+            // const reader = response.body?.getReader();
+            // if (!reader) {
+            //     throw new Error('No response from server');
+            // }
+
+            // let fullContent = '';
+            // while (true) {
+            //     const { done, value } = await reader.read();
+            //     if (done) {
+            //         break;
+            //     }
+
+            //     const chunk = new TextDecoder().decode(value);
+            //     fullContent += chunk;
+            //     this.emitPartialMessage(fullContent);
+            // }
+            // return { status: 'full', content: fullContent };
         } catch (error) {
             console.error('Error receiving stream', error);
-            const errorMessage = this.getErrorMessage(error);
+            const errorMessage = await this.getErrorMessage(error);
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
@@ -133,12 +135,20 @@ class LlmManager {
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
     }
 
-    private getErrorMessage(error: unknown): string {
+    private async getErrorMessage(error: unknown): Promise<string> {
         if (error instanceof Error) {
             return error.message;
         }
         if (typeof error === 'string') {
             return error;
+        }
+        if (error instanceof Response) {
+            try {
+                const errorBody = await error.text();
+                return `${error.statusText}: ${errorBody}`;
+            } catch {
+                return error.statusText;
+            }
         }
         if (error && typeof error === 'object' && 'message' in error) {
             return String(error.message);

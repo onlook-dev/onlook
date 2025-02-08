@@ -11,4 +11,9 @@ export enum ApiRoutes {
     CHECK_SUBSCRIPTION = '/check-subscription',
     CREATE_CUSTOMER_PORTAL_SESSION = '/create-customer-portal-session',
 }
+
+export const BASE_PROXY_ROUTE = '/proxy';
+export enum ProxyRoutes {
+    ANTHROPIC = '/anthropic',
+}
 export const REDIRECT_APP_URL = 'https://onlook.dev/redirect-app';
