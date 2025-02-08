@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/studio",
-    "version": "0.1.42",
+    "version": "0.1.43",
     "homepage": "https://onlook.com",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -115,7 +115,7 @@
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "^10.4.20",
         "css-tree": "^3.1.0",
-        "electron": "^34.1.1",
+        "electron": "34.1.1",
         "electron-builder": "^25.1.8",
         "eslint": "9.x",
         "eslint-config-prettier": "^9.1.0",
