@@ -1,6 +1,6 @@
 import { globSync } from 'glob';
 
-const IGNORE_PATHS = [
+export const IGNORE_PATHS = [
     'node_modules/**',
     'dist/**',
     'build/**',
