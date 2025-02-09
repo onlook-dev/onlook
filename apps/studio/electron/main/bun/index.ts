@@ -1,7 +1,6 @@
 import { exec } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
-import { quote } from 'shell-quote';
 import { __dirname } from '../index';
 import { replaceCommand } from './parse';
 
@@ -15,7 +14,8 @@ export const getBunExecutablePath = (): string => {
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
 
-    return isWindows ? `& ${quote([bunPath])}` : bunPath;
+    // On Windows, we need to prefix with & and properly quote the path
+    return isWindows ? `& "${bunPath}"` : bunPath;
 };
 
 export interface RunBunCommandOptions {
