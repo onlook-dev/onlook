@@ -17,7 +17,7 @@ const PagesTab = observer(() => {
 
     const dimensions = useMemo(
         () => ({
-            height: (height ?? 8) - 16,
+            height: Math.max((height ?? 8) - 16, 100),
             width: width ?? 365,
         }),
         [height, width],
@@ -43,6 +43,7 @@ const PagesTab = observer(() => {
             rowHeight: 24,
             openByDefault: true,
             renderRow: PageTreeRow,
+            animationDuration: 200,
         }),
         [
             editorEngine.pages.tree,

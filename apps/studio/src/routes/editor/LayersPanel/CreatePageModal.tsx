@@ -10,7 +10,11 @@ import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
-import { doesRouteExist, validateNextJsRoute } from '@/lib/editor/engine/pages/helper';
+import {
+    doesRouteExist,
+    normalizeRoute,
+    validateNextJsRoute,
+} from '@/lib/editor/engine/pages/helper';
 import { useEditorEngine } from '@/components/Context';
 
 interface CreatePageModalProps {
@@ -24,7 +28,7 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
     const [pageName, setPageName] = useState('');
     const [warning, setWarning] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const fullPath = `${baseRoute}/${pageName}`.replace(/\/+/g, '/');
+    const fullPath = normalizeRoute(`${baseRoute}/${pageName}`);
 
     useEffect(() => {
         if (!pageName) {
@@ -32,16 +36,14 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
             return;
         }
 
-        // First check if the page name is valid
         const { valid, error } = validateNextJsRoute(pageName);
         if (!valid) {
             setWarning(error || 'Invalid page name');
             return;
         }
 
-        // Then check if the route already exists
         if (doesRouteExist(editorEngine.pages.tree, fullPath)) {
-            setWarning('This route already exists');
+            setWarning('This page already exists');
             return;
         }
 
@@ -67,7 +69,7 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
                 <DialogHeader>
                     <DialogTitle>Create a New Page</DialogTitle>
                     <DialogDescription>
-                        This page will be {fullPath} on your website
+                        This page will be /{fullPath} on your site
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">

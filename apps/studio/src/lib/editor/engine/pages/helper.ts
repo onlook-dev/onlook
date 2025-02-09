@@ -1,11 +1,19 @@
 import type { PageNode } from '@onlook/models';
 
+export const normalizeRoute = (route: string): string => {
+    return route
+        .replace(/\\/g, '/') // Replace backslashes with forward slashes
+        .replace(/\/+/g, '/') // Replace multiple slashes with single slash
+        .replace(/^\/|\/$/g, '') // Remove leading and trailing slashes
+        .toLowerCase(); // Ensure lowercase
+};
+
 export const validateNextJsRoute = (route: string): { valid: boolean; error?: string } => {
     if (!route) {
         return { valid: false, error: 'Page name is required' };
     }
 
-    // Check if it's a dynamic route
+    // Checks if it's a dynamic route
     if (route.includes('[') || route.includes(']')) {
         const dynamicRegex = /^\[([a-z0-9-]+)\]$/;
         if (!dynamicRegex.test(route)) {
@@ -30,7 +38,7 @@ export const validateNextJsRoute = (route: string): { valid: boolean; error?: st
 };
 
 export const doesRouteExist = (nodes: PageNode[], route: string): boolean => {
-    const normalizedRoute = route.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+    const normalizedRoute = normalizeRoute(route);
 
     const checkNode = (nodes: PageNode[]): boolean => {
         for (const node of nodes) {

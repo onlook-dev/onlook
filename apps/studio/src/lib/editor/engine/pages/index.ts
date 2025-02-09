@@ -4,7 +4,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { EditorEngine } from '..';
 import type { ProjectsManager } from '@/lib/projects';
-import { doesRouteExist, validateNextJsRoute } from './helper';
+import { doesRouteExist, normalizeRoute, validateNextJsRoute } from './helper';
 
 export class PagesManager {
     private pages: PageNode[] = [];
@@ -140,10 +140,10 @@ export class PagesManager {
             throw new Error(error);
         }
 
-        const normalizedPath = `${baseRoute}/${pageName}`.replace(/\/+/g, '/');
+        const normalizedPath = normalizeRoute(`${baseRoute}/${pageName}`);
 
         if (doesRouteExist(this.pages, normalizedPath)) {
-            throw new Error('This route already exists');
+            throw new Error('This page already exists');
         }
 
         try {
