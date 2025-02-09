@@ -8,13 +8,14 @@ import { replaceCommand } from './parse';
 export const getBunExecutablePath = (): string => {
     const platform = process.platform;
     const isProduction = app.isPackaged;
-    const binName = platform === 'win32' ? 'bun.exe' : 'bun';
+    const isWindows = platform === 'win32';
+    const binName = isWindows ? 'bun.exe' : 'bun';
 
     const bunPath = isProduction
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
 
-    return quote([bunPath]);
+    return isWindows ? `& ${quote([bunPath])}` : bunPath;
 };
 
 export interface RunBunCommandOptions {
