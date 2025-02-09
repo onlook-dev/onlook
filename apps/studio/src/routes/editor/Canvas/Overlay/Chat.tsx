@@ -9,6 +9,8 @@ import { Icons } from '@onlook/ui/icons/index';
 import { EditorTabValue } from '@/lib/models';
 import debounce from 'lodash/debounce';
 import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
+import { EditorMode } from '@/lib/models';
+import { observer } from 'mobx-react-lite';
 
 const SPACING = {
     base: 8,
@@ -47,234 +49,212 @@ const DEFAULT_INPUT_STATE = {
     isSubmitting: false,
 };
 
-export const Chat = ({
-    selectedEl,
-    elementId,
-}: {
-    selectedEl: ClickRectState | null;
-    elementId: string;
-}) => {
-    const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
-    const [isComposing, setIsComposing] = useState(false);
-    const [prevPosition, setPrevPosition] = useState({ top: 0, left: 0 });
-    const [isAnimating, setIsAnimating] = useState(false);
-    const [shouldFloat, setShouldFloat] = useState(true);
+export const Chat = observer(
+    ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
+        const editorEngine = useEditorEngine();
+        const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
+        const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
+        const [isComposing, setIsComposing] = useState(false);
+        const textareaRef = useRef<HTMLTextAreaElement>(null);
+        const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
 
-    const editorEngine = useEditorEngine();
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+        // Add effect to reset input state when elementId changes
+        useEffect(() => {
+            setInputState(DEFAULT_INPUT_STATE);
+        }, [elementId]);
 
-    const debouncedSetMultiline = useCallback(
-        debounce((scrollHeight: number) => {
-            setInputState((prev) => ({
-                ...prev,
-                isMultiline: scrollHeight > DIMENSIONS.singleLineHeight,
-            }));
-        }, 150),
-        [],
-    );
+        // Get current chat position
+        const chatPosition = {
+            x: elementId
+                ? (document.getElementById(elementId)?.getBoundingClientRect().left ?? 0)
+                : 0,
+            y: elementId
+                ? (document.getElementById(elementId)?.getBoundingClientRect().bottom ?? 0)
+                : 0,
+        };
 
-    useEffect(() => {
-        setInputState(DEFAULT_INPUT_STATE);
-    }, [elementId]);
+        // Calculate distance from previous chat position
+        const distance = prevChatPositionRef.current
+            ? Math.sqrt(
+                  Math.pow(chatPosition.x - prevChatPositionRef.current.x, 2) +
+                      Math.pow(chatPosition.y - prevChatPositionRef.current.y, 2),
+              )
+            : 0;
 
-    useEffect(() => {
-        if (selectedEl) {
-            const newTop = selectedEl.top - 8;
-            const newLeft = selectedEl.left + selectedEl.width / 2;
+        useEffect(() => {
+            prevChatPositionRef.current = chatPosition;
+        }, [chatPosition.x, chatPosition.y]);
 
-            // Calculate distance between old and new position
-            const distance = Math.sqrt(
-                Math.pow(newTop - prevPosition.top, 2) + Math.pow(newLeft - prevPosition.left, 2),
-            );
+        const animationClass =
+            distance > ANIMATION.DISTANCE_THRESHOLD
+                ? 'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200'
+                : 'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200';
 
-            const shouldFloatToNewPosition = distance < ANIMATION.DISTANCE_THRESHOLD;
-
-            if (!shouldFloatToNewPosition) {
-                // First, hide the element
-                setIsAnimating(true);
-
-                // Small delay before updating position and showing animation
-                setTimeout(() => {
-                    setShouldFloat(false);
-                    setPrevPosition({ top: newTop, left: newLeft });
-                    setIsAnimating(false);
-                }, 16); // One frame delay
-            } else {
-                setShouldFloat(true);
-                setPrevPosition({ top: newTop, left: newLeft });
+        useEffect(() => {
+            if (elementId) {
+                requestAnimationFrame(() => {
+                    const element = document.querySelector(`[data-element-id="${elementId}"]`);
+                    if (element) {
+                        element.classList.remove('scale-[0.2]', 'opacity-0', '-translate-y-2');
+                        element.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                    }
+                });
             }
+        }, [elementId]);
+
+        if (
+            !selectedEl ||
+            isInteractMode ||
+            editorEngine.chat.isWaiting ||
+            editorEngine.chat.streamingMessage
+        ) {
+            return null;
         }
-    }, [selectedEl]);
 
-    if (!selectedEl) {
-        return null;
-    }
-
-    const containerStyle: React.CSSProperties = {
-        position: 'fixed',
-        top: selectedEl.top - 8,
-        left: selectedEl.left + selectedEl.width / 2,
-        transform: 'translateX(-50%)',
-        zIndex: 40,
-        pointerEvents: 'auto',
-        transition: shouldFloat ? 'top 200ms ease-out, left 200ms ease-out' : 'none',
-        animation: !shouldFloat
-            ? `scaleIn ${ANIMATION.TRANSITION_DURATION}ms ease-out forwards`
-            : 'none',
-        opacity: isAnimating ? 0 : 1, // Ensure element is hidden during animation reset
-    };
-
-    const handleSubmit = async () => {
-        try {
-            setInputState((prev) => ({ ...prev, isSubmitting: true }));
+        const handleSubmit = async () => {
+            const messageToSend = inputState.value;
             editorEngine.editPanelTab = EditorTabValue.CHAT;
-            setInputState((prev) => ({
-                ...prev,
-                value: '',
-                isSubmitting: false,
-                isVisible: false,
-                isMultiline: false,
-            }));
+            await editorEngine.chat.sendNewMessage(messageToSend);
+            setInputState(DEFAULT_INPUT_STATE);
+        };
 
-            await editorEngine.chat.sendNewMessage(inputState.value);
-        } catch (error) {
-            console.error('Failed to send message:', error);
-            setInputState((prev) => ({ ...prev, isSubmitting: false }));
-        }
-    };
+        const containerStyle: React.CSSProperties = {
+            position: 'fixed',
+            top: selectedEl.top - 8,
+            left: selectedEl.left + selectedEl.width / 2,
+            transform: 'translate(-50%, 0)',
+            transformOrigin: 'center center',
+            zIndex: 40,
+            pointerEvents: 'auto',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        };
 
-    const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setInputState((prev) => ({ ...prev, value: e.target.value }));
-
-        if (textareaRef.current) {
-            // Reset height to auto to get the correct scrollHeight
-            textareaRef.current.style.height = 'auto';
-            // Calculate max height (4 lines)
-            const maxHeight = DIMENSIONS.singleLineHeight * 4;
-            // Set height, capped at maxHeight
-            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
-
-            // Scroll to bottom
-            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
-
-            // Update multiline state based on content height
-            debouncedSetMultiline(textareaRef.current.scrollHeight);
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
-            e.preventDefault();
-            const charCount = inputState.value.trim().length;
-            if (charCount >= DIMENSIONS.minCharsToSubmit) {
-                handleSubmit();
-            }
-        } else if (e.key === 'Escape') {
-            e.preventDefault();
-            setInputState((prev) => ({ ...prev, isVisible: false, value: '' }));
-        }
-    };
-
-    return (
-        <div style={containerStyle} onClick={(e) => e.stopPropagation()}>
-            <style>
-                {`
-                @keyframes scaleIn {
-                    0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
-                    100% { transform: translateX(-50%) scale(1); opacity: 1; }
-                }
-                `}
-            </style>
+        return (
             <div
-                className={cn(
-                    'rounded-xl backdrop-blur-lg transition-all duration-300',
-                    'shadow-xl shadow-background-secondary/50',
-                    inputState.isVisible
-                        ? 'bg-background/80 border shadow-xl shadow-background-secondary/50 p-1'
-                        : 'bg-background-secondary/30 dark:bg-background/85 border-foreground-secondary/20 hover:border-foreground-secondary/50 p-0.5',
-                    'border flex relative',
-                )}
+                style={containerStyle}
+                onClick={(e) => e.stopPropagation()}
+                className={animationClass}
+                data-element-id={elementId}
             >
-                {!inputState.isVisible ? (
-                    // Chat Button
-                    <button
-                        onClick={() => setInputState((prev) => ({ ...prev, isVisible: true }))}
-                        className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
-                    >
-                        <Icons.Sparkles className="w-4 h-4" />
-                        <span className="text-miniPlus whitespace-nowrap">Chat with AI</span>
-                    </button>
-                ) : (
-                    // Input Field
-                    <div className="flex flex-row items-top gap-1 w-full min-w-[280px] relative">
-                        <Button
-                            size="icon"
-                            onClick={() =>
-                                setInputState((prev) => ({ ...prev, isVisible: false, value: '' }))
-                            }
-                            className={cn(
-                                'group h-6 w-6 absolute left-1 top-1 z-10 border-none shadow-none bg-transparent hover:bg-transparent',
-                                'transition-all duration-200',
-                                inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
-                                    ? 'opacity-0 -translate-x-2 scale-75 pointer-events-none'
-                                    : 'opacity-100 translate-x-0 scale-100 pointer-events-auto',
-                            )}
-                            disabled={inputState.isSubmitting}
+                <div
+                    className={cn(
+                        'rounded-xl backdrop-blur-lg transition-all duration-300',
+                        'shadow-xl shadow-background-secondary/50',
+                        inputState.isVisible
+                            ? 'bg-background/80 border shadow-xl shadow-background-secondary/50 p-1'
+                            : 'bg-background-secondary/85 dark:bg-background/85 border-foreground-secondary/20 hover:border-foreground-secondary/50 p-0.5',
+                        'border flex relative',
+                    )}
+                >
+                    {!inputState.isVisible ? (
+                        // Chat Button
+                        <button
+                            onClick={() => setInputState((prev) => ({ ...prev, isVisible: true }))}
+                            className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
                         >
-                            <Icons.CrossS className="h-4 w-4 text-foreground-active dark:text-white group-hover:text-foreground/50 transition-colors" />
-                        </Button>
-                        <Textarea
-                            aria-label="Chat message input"
-                            ref={textareaRef}
-                            className={cn(
-                                'w-full text-xs break-words p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px] rounded-lg',
-                                'transition-all duration-150 ease-in-out',
-                                'pr-10 backdrop-blur-lg',
-                                inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
-                                    ? 'pl-2'
-                                    : 'pl-8',
-                                'bg-background-secondary/75 text-foreground-primary border-background-secondary/75',
-                                'max-h-[80px] caret-[#FA003C]',
-                                'selection:bg-[#FA003C]/30 selection:text-[#FA003C]',
-                            )}
-                            value={inputState.value}
-                            onChange={handleTextareaChange}
-                            placeholder="Type your message..."
-                            style={{
-                                resize: 'none',
-                                minHeight: DIMENSIONS.singleLineHeight,
-                                height: 'auto',
-                                overflowY: 'auto', // Always allow vertical scrolling
-                                overflowX: 'hidden',
-                                overscrollBehavior: 'contain',
-                                lineHeight: '1.5',
-                            }}
-                            rows={1}
-                            autoFocus
-                            disabled={inputState.isSubmitting}
-                            onKeyDown={handleKeyDown}
-                            onCompositionStart={() => setIsComposing(true)}
-                            onCompositionEnd={(e) => {
-                                setIsComposing(false);
-                            }}
-                        />
-                        {inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit && (
+                            <Icons.Sparkles className="w-4 h-4" />
+                            <span className="text-miniPlus whitespace-nowrap">Chat with AI</span>
+                        </button>
+                    ) : (
+                        // Input Field
+                        <div className="flex flex-row items-top gap-1 w-full min-w-[280px] relative">
                             <Button
                                 size="icon"
-                                variant="secondary"
-                                onClick={handleSubmit}
+                                onClick={() =>
+                                    setInputState((prev) => ({
+                                        ...prev,
+                                        isVisible: false,
+                                        value: '',
+                                    }))
+                                }
                                 className={cn(
-                                    'absolute right-0.5 bottom-0.5 h-7 w-7',
-                                    'bg-foreground-primary text-white hover:bg-foreground-hover',
+                                    'group h-6 w-6 absolute left-1 top-1 z-10 border-none shadow-none bg-transparent hover:bg-transparent',
+                                    'transition-all duration-200',
+                                    inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
+                                        ? 'opacity-0 -translate-x-2 scale-75 pointer-events-none'
+                                        : 'opacity-100 translate-x-0 scale-100 pointer-events-auto',
                                 )}
                                 disabled={inputState.isSubmitting}
                             >
-                                <Icons.ArrowRight className="h-4 w-4 text-background" />
+                                <Icons.CrossS className="h-4 w-4 text-foreground-secondary group-hover:text-foreground transition-colors" />
                             </Button>
-                        )}
-                    </div>
-                )}
+                            <Textarea
+                                aria-label="Chat message input"
+                                ref={textareaRef}
+                                className={cn(
+                                    'w-full text-xs break-words p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px] rounded-lg',
+                                    'transition-all duration-150 ease-in-out',
+                                    'pr-10 backdrop-blur-lg',
+                                    inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
+                                        ? 'pl-2'
+                                        : 'pl-8',
+                                    'bg-background-secondary/75 text-foreground-primary border-background-secondary/75',
+                                    'max-h-[80px] caret-[#FA003C]',
+                                    'selection:bg-[#FA003C]/30 selection:text-[#FA003C]',
+                                )}
+                                value={inputState.value}
+                                onChange={(e) => {
+                                    setInputState((prev) => ({ ...prev, value: e.target.value }));
+                                    if (textareaRef.current) {
+                                        textareaRef.current.style.height = 'auto';
+                                        const maxHeight = DIMENSIONS.singleLineHeight * 4;
+                                        textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`;
+                                        textareaRef.current.scrollTop =
+                                            textareaRef.current.scrollHeight;
+                                    }
+                                }}
+                                placeholder="Type your message..."
+                                style={{
+                                    resize: 'none',
+                                    minHeight: DIMENSIONS.singleLineHeight,
+                                    height: 'auto',
+                                    overflowY: 'auto',
+                                    overflowX: 'hidden',
+                                    overscrollBehavior: 'contain',
+                                    lineHeight: '1.5',
+                                }}
+                                rows={1}
+                                autoFocus
+                                disabled={inputState.isSubmitting}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+                                        e.preventDefault();
+                                        const charCount = inputState.value.trim().length;
+                                        if (charCount >= DIMENSIONS.minCharsToSubmit) {
+                                            handleSubmit();
+                                        }
+                                    } else if (e.key === 'Escape') {
+                                        e.preventDefault();
+                                        setInputState((prev) => ({
+                                            ...prev,
+                                            isVisible: false,
+                                            value: '',
+                                        }));
+                                    }
+                                }}
+                                onCompositionStart={() => setIsComposing(true)}
+                                onCompositionEnd={(e) => {
+                                    setIsComposing(false);
+                                }}
+                            />
+                            {inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit && (
+                                <Button
+                                    size="icon"
+                                    variant="secondary"
+                                    onClick={handleSubmit}
+                                    className={cn(
+                                        'absolute right-0.5 bottom-0.5 h-7 w-7',
+                                        'bg-foreground-primary text-white hover:bg-foreground-hover',
+                                    )}
+                                    disabled={inputState.isSubmitting}
+                                >
+                                    <Icons.ArrowRight className="h-4 w-4 text-background" />
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
-    );
-};
+        );
+    },
+);
