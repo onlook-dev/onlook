@@ -16,9 +16,8 @@ import {
     DropdownMenuSub,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import PricingPage from '../Profile/PricingPage';
 
 const ProjectBreadcrumb = observer(() => {
@@ -27,6 +26,17 @@ const ProjectBreadcrumb = observer(() => {
     const routeManager = useRouteManager();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const closeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+    const handleMouseLeave = (e: React.MouseEvent) => {
+        const relatedTarget = e.relatedTarget as HTMLElement;
+        if (!relatedTarget?.closest('[role="menu"]')) {
+            if (closeTimeoutRef.current) {
+                clearTimeout(closeTimeoutRef.current);
+            }
+            closeTimeoutRef.current = setTimeout(() => setIsOpen(false), 200);
+        }
+    };
 
     async function handleReturn() {
         try {
@@ -77,12 +87,7 @@ const ProjectBreadcrumb = observer(() => {
                         <Button
                             variant={'ghost'}
                             onMouseEnter={() => setIsOpen(true)}
-                            onMouseLeave={(e) => {
-                                const relatedTarget = e.relatedTarget as HTMLElement;
-                                if (!relatedTarget?.closest('[role="menu"]')) {
-                                    setIsOpen(false);
-                                }
-                            }}
+                            onMouseLeave={handleMouseLeave}
                             className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                         >
                             <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
@@ -96,7 +101,7 @@ const ProjectBreadcrumb = observer(() => {
                         align="start"
                         className="w-48"
                         onMouseEnter={() => setIsOpen(true)}
-                        onMouseLeave={() => setIsOpen(false)}
+                        onMouseLeave={handleMouseLeave}
                     >
                         <DropdownMenuItem onClick={handleReturn}>
                             <div className="flex row center items-center group">
@@ -109,16 +114,36 @@ const ProjectBreadcrumb = observer(() => {
                             <DropdownMenuSubTrigger>
                                 <Icons.Plus className="mr-2 h-4 w-4" />
                                 New Project
-                                <ChevronRightIcon className="ml-auto h-4 w-4" />
+                                <Icons.ChevronRight className="ml-auto h-4 w-4" />
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
                                 <DropdownMenuItem
-                                    onClick={() => (routeManager.route = Route.PROJECTS)}
+                                    onClick={async () => {
+                                        try {
+                                            await saveScreenshot();
+                                        } catch (error) {
+                                            console.error('Failed to take screenshot:', error);
+                                        }
+                                        setTimeout(() => {
+                                            projectsManager.project = null;
+                                            routeManager.route = Route.NEW_PROJECT;
+                                        }, 100);
+                                    }}
                                 >
                                     Create a new project
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => (routeManager.route = Route.PROJECTS)}
+                                    onClick={async () => {
+                                        try {
+                                            await saveScreenshot();
+                                        } catch (error) {
+                                            console.error('Failed to take screenshot:', error);
+                                        }
+                                        setTimeout(() => {
+                                            projectsManager.project = null;
+                                            routeManager.route = Route.IMPORT_PROJECT;
+                                        }, 100);
+                                    }}
                                 >
                                     Import a project
                                 </DropdownMenuItem>

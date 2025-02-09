@@ -191,14 +191,6 @@ const CornerHandle: React.FC<HandleProps> = ({
         >
             {/* Invisible larger circle for hit area */}
             <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
-            <circle
-                cx={halfSize}
-                cy={halfSize}
-                r={halfSize}
-                fill="white"
-                stroke={color}
-                strokeWidth={1}
-            />
         </g>
     );
 };

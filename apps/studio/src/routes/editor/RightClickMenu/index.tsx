@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
-import { IDE } from '/common/ide';
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import { IdeType } from '@onlook/models/ide';
 import type { DomElement } from '@onlook/models/element';
 import {
@@ -151,7 +152,17 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance = element.instanceId;
             root = element.oid;
         }
-        const ideType = IDE.fromType(IdeType.VS_CODE);
+        const [ideType, setIdeType] = useState('IDE');
+
+        useEffect(() => {
+            async function getIdeType() {
+                const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
+                const ideType = (settings as { ideType?: IdeType })?.ideType || IdeType.VS_CODE;
+                setIdeType(ideType === IdeType.VS_CODE ? 'VS Code' : 'IDE');
+            }
+            getIdeType();
+        }, []);
+
         const UPDATED_TOOL_ITEMS: MenuItem[] = [
             instance && {
                 label: 'View instance code',
