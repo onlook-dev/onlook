@@ -26,8 +26,9 @@ const PagesTab = observer(() => {
     const pageTreeProps = useMemo(
         () => ({
             data: editorEngine.pages.tree,
-            idAccessor: (node: PageNode) => node.path,
-            childrenAccessor: (node: PageNode) => node.children ?? null,
+            idAccessor: (node: PageNode) => node.id,
+            childrenAccessor: (node: PageNode) =>
+                node.children && node.children.length > 0 ? node.children : null,
             onSelect: async (nodes: NodeApi<PageNode>[]) => {
                 if (nodes.length > 0) {
                     try {
@@ -58,7 +59,7 @@ const PagesTab = observer(() => {
             ref={ref}
             className="flex h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full"
         >
-            <Tree<PageNode> {...pageTreeProps}>{(props) => <PageTreeNode {...props} />}</Tree>
+            <Tree {...pageTreeProps}>{(props) => <PageTreeNode {...props} />}</Tree>
         </div>
     );
 });

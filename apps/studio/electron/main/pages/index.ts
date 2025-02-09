@@ -1,6 +1,7 @@
-import { promises as fs } from 'fs';
-import * as path from 'path';
 import type { PageNode } from '@onlook/models/pages';
+import { promises as fs } from 'fs';
+import { nanoid } from 'nanoid';
+import * as path from 'path';
 import { ALLOWED_EXTENSIONS } from '../run/helpers';
 
 const IGNORED_DIRECTORIES = ['api', 'components', 'lib', 'utils', 'node_modules'];
@@ -130,6 +131,7 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
         cleanPath = '/' + cleanPath.replace(/^\/|\/$/g, '');
 
         nodes.push({
+            id: nanoid(),
             name: isDynamicRoute ? currentDir : parentPath ? path.basename(parentPath) : 'home',
             path: cleanPath,
             children: [],
@@ -152,6 +154,7 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
                 const dirPath = relativePath.replace(/\\/g, '/');
                 const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
                 nodes.push({
+                    id: nanoid(),
                     name: entry.name,
                     path: cleanPath,
                     children,
@@ -193,6 +196,7 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
             }
 
             nodes.push({
+                id: nanoid(),
                 name:
                     fileName === 'index'
                         ? parentPath
@@ -224,6 +228,7 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
                 const dirPath = relativePath.replace(/\\/g, '/');
                 const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
                 nodes.push({
+                    id: nanoid(),
                     name: entry.name,
                     path: cleanPath,
                     children,
