@@ -71,7 +71,7 @@ const LayersPanel = observer(() => {
                     </button>
                 </TabsList>
                 <Separator className="mt-0" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
+                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2 hidden">
                     <TabsContent value={TabValue.PAGES}>
                         <PagesTab />
                     </TabsContent>
