@@ -48,7 +48,7 @@ export const ErrorView = observer(() => {
                                 </div>
                                 <div className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
                                     {errorCount === 1
-                                        ? editorEngine.errors.errors[0].message
+                                        ? editorEngine.errors.errors[0].content
                                         : `You have ${errorCount} errors`}
                                 </div>
                             </div>
@@ -82,14 +82,14 @@ export const ErrorView = observer(() => {
                             style={{ overflow: 'hidden' }}
                             className="border-t border-amber-200/20 dark:border-amber-500/20"
                         >
-                            <div className="px-2.5 py-2">
+                            <div className="px-2.5 py-2 max-h-60 overflow-auto">
                                 {editorEngine.errors.errors.map((error) => (
-                                    <div key={error.message} className="mb-3 last:mb-0 font-mono">
+                                    <div key={error.content} className="mb-3 last:mb-0 font-mono">
                                         <div className="text-miniPlus text-amber-800/80 dark:text-amber-200/80 mb-1 truncate">
                                             {error.sourceId}
                                         </div>
                                         <div className="text-micro text-amber-800/60 dark:text-amber-200/60">
-                                            {error.message}
+                                            {error.content}
                                         </div>
                                     </div>
                                 ))}
