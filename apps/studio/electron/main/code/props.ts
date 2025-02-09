@@ -35,8 +35,8 @@ function getNodeAttributes(node: t.JSXElement): PropsParsingResult {
             }
 
             const attrName = attr.name.name;
-            let attrValue: boolean | string = true;
-            let attrType: 'boolean' | 'text' | 'code' = 'code';
+            let attrValue: boolean | string | number = true;
+            let attrType: 'boolean' | 'text' | 'code' | 'number' = 'code';
 
             if (attr.value) {
                 if (t.isStringLiteral(attr.value)) {
@@ -50,6 +50,9 @@ function getNodeAttributes(node: t.JSXElement): PropsParsingResult {
                     } else if (t.isStringLiteral(expr)) {
                         attrValue = expr.value;
                         attrType = 'text';
+                    } else if (t.isNumericLiteral(expr)) {
+                        attrValue = expr.value;
+                        attrType = 'number';
                     } else {
                         attrValue = `{${expr.type}}`;
                         attrType = 'code';

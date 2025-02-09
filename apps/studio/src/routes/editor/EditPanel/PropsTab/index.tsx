@@ -142,9 +142,10 @@ const PropsTab = () => {
                                                 }}
                                             />
                                         ) : (
-                                            prop.type === 'text' && (
+                                            (prop.type === 'text' || prop.type === 'number') && (
                                                 <TextProp
                                                     prop={prop}
+                                                    type={prop.type}
                                                     onChange={(value) => {
                                                         setProps((prev) =>
                                                             prev !== null
@@ -162,7 +163,9 @@ const PropsTab = () => {
                                                         selectedEl?.oid &&
                                                             createCodeDiffRequest(
                                                                 selectedEl?.oid,
-                                                                val,
+                                                                prop.type === 'number'
+                                                                    ? parseInt(val)
+                                                                    : val,
                                                                 key,
                                                             );
                                                     }}

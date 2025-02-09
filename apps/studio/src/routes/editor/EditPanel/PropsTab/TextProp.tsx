@@ -5,14 +5,16 @@ interface TextPropProps {
     prop: Prop;
     onChange: (value: string) => void;
     onBlur: (value: string) => void;
+    type: 'text' | 'number';
 }
 
-const TextProp = ({ prop, onChange, onBlur }: TextPropProps) => {
+const TextProp = ({ prop, onChange, onBlur, type }: TextPropProps) => {
     return (
         <Input
             className="w-32 px-2 h-8 text-xs rounded border-none text-foreground-active bg-background-secondary focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             onChange={(e) => onChange(e.target.value)}
             value={prop.value as string}
+            type={type}
             onBlur={(e) => onBlur(e.target.value)}
         />
     );
