@@ -1,7 +1,7 @@
+import { getAllFiles } from '@onlook/ai/src/tools/helpers';
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { getAllFiles } from '../electron/main/chat/helpers';
 
 describe('getAllFiles', () => {
     const testDir = join(__dirname, 'test-files');

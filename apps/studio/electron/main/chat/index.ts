@@ -1,4 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
+import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
 import {
     ChatSuggestionSchema,
     StreamRequestType,
@@ -7,13 +8,10 @@ import {
     type UsageCheckResult,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { generateObject, streamText, tool, type CoreMessage, type CoreSystemMessage } from 'ai';
-import { readFileSync } from 'fs';
-import { z } from 'zod';
+import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
-import { getAllFiles } from './helpers';
 import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
 
 class LlmManager {
@@ -85,29 +83,8 @@ class LlmManager {
                 },
                 maxSteps: 10,
                 tools: {
-                    listAllFiles: tool({
-                        description:
-                            'List all files in the current directory, including subdirectories',
-                        parameters: z.object({
-                            path: z
-                                .string()
-                                .describe('The absolute path to the directory to get files from'),
-                        }),
-                        execute: async ({ path }) => {
-                            const files = getAllFiles(path);
-                            return files;
-                        },
-                    }),
-                    readFile: tool({
-                        description: 'Read a file',
-                        parameters: z.object({
-                            path: z.string().describe('The absolute path to the file to read'),
-                        }),
-                        execute: async ({ path }) => {
-                            const file = readFileSync(path, 'utf8');
-                            return file;
-                        },
-                    }),
+                    listAllFiles: listFilesTool,
+                    readFile: readFileTool,
                 },
             });
 

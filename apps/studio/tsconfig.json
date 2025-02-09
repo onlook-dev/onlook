@@ -7,6 +7,14 @@
             "/*": ["./*"]
         }
     },
-    "include": ["src", "electron", "common", "data", "tests"],
+    "include": [
+        "src",
+        "electron",
+        "common",
+        "data",
+        "tests",
+        "../../packages/ai/src/tools/helpers.ts",
+        "../../packages/ai/test/tools/list-files.ts"
+    ],
     "exclude": ["node_modules"]
 }
