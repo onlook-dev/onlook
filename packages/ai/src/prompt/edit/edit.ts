@@ -63,6 +63,8 @@ If you want to put code in a new file, use a ${searchReplaceName} block with:
 
 To rename files which have been added to the chat, use shell commands at the end of your response.
 
+If you want to edit a file that has not been added to the chat, use tools to list the available files and read their contents before proposing any changes. NEVER EDIT A FILE WITHOUT READING IT FIRST!
+
 ${BASE_PROMPTS.lazy}
 ONLY EVER RETURN CODE IN A ${searchReplaceName} BLOCK!
 ${SHELL.reminder}
