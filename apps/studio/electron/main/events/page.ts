@@ -1,5 +1,5 @@
-import { ipcMain } from 'electron';
 import { MainChannels } from '@onlook/models/constants';
+import { ipcMain } from 'electron';
 import { createNextJsPage, scanNextJsPages } from '../pages';
 
 export function listenForPageMessages() {
@@ -11,11 +11,7 @@ export function listenForPageMessages() {
     ipcMain.handle(
         MainChannels.CREATE_PAGE,
         async (_event, { projectRoot, pagePath }: { projectRoot: string; pagePath: string }) => {
-            try {
-                return await createNextJsPage(projectRoot, pagePath);
-            } catch (error) {
-                throw error instanceof Error ? error : new Error('Failed to create page');
-            }
+            return await createNextJsPage(projectRoot, pagePath);
         },
     );
 }

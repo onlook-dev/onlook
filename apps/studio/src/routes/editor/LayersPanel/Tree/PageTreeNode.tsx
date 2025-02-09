@@ -1,18 +1,18 @@
 import { useEditorEngine } from '@/components/Context';
 import type { PageNode } from '@onlook/models/pages';
-import { Icons } from '@onlook/ui/icons';
-import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
-import type { NodeApi } from 'react-arborist';
 import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
     ContextMenuTrigger,
 } from '@onlook/ui/context-menu';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
+import { motion } from 'motion/react';
 import { useState } from 'react';
-import { CreatePageModal } from '../CreatePageModal';
+import type { NodeApi } from 'react-arborist';
+import { CreatePageModal } from '../PageTab/CreatePageModal';
 
 interface PageTreeNodeProps {
     node: NodeApi<PageNode>;
@@ -67,7 +67,7 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                     <div
                         style={style}
                         className={cn(
-                            'flex items-center h-6 cursor-pointer hover:bg-background-hover',
+                            'flex items-center h-6 cursor-pointer hover:bg-background-hover rounded',
                             {
                                 'bg-red-500 text-white': !hasChildren && isActive,
                             },
