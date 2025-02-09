@@ -1,4 +1,8 @@
-import type { FileMessageContext, HighlightMessageContext } from '@onlook/models/chat';
+import type {
+    ErrorMessageContext,
+    FileMessageContext,
+    HighlightMessageContext,
+} from '@onlook/models/chat';
 import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
 import { FILE_PROMPTS } from './file';
 import { FENCE } from './format';
@@ -40,6 +44,7 @@ export class PromptProvider {
         context: {
             files: FileMessageContext[];
             highlights: HighlightMessageContext[];
+            errors: ErrorMessageContext[];
         },
     ) {
         if (message.length === 0) {
@@ -53,6 +58,16 @@ export class PromptProvider {
                 contextPrompt = wrapXml('context', contextPrompt);
             }
             prompt += contextPrompt;
+        }
+
+        if (context.errors.length > 0) {
+            let errorPrompt = this.getErrorsContent(context.errors);
+            if (errorPrompt) {
+                if (this.shouldWrapXml) {
+                    errorPrompt = wrapXml('errors', errorPrompt);
+                }
+                prompt += errorPrompt;
+            }
         }
 
         if (this.shouldWrapXml) {
@@ -87,8 +102,19 @@ export class PromptProvider {
         return prompt;
     }
 
-    getLanguageFromFilePath(filePath: string) {
-        return filePath.split('.').pop();
+    getErrorsContent(errors: ErrorMessageContext[]) {
+        if (errors.length === 0) {
+            return '';
+        }
+        let prompt = `${FILE_PROMPTS.errorsContentPrefix}\n`;
+        for (const error of errors) {
+            prompt += `${error.content}\n`;
+        }
+        return prompt;
+    }
+
+    getLanguageFromFilePath(filePath: string): string {
+        return filePath.split('.').pop() || '';
     }
 
     getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]) {

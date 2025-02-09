@@ -1,11 +1,18 @@
-import { promises as fs } from 'fs';
-import * as path from 'path';
 import type { PageNode } from '@onlook/models/pages';
+import { promises as fs } from 'fs';
+import { nanoid } from 'nanoid';
+import * as path from 'path';
 import { ALLOWED_EXTENSIONS } from '../run/helpers';
 
 const IGNORED_DIRECTORIES = ['api', 'components', 'lib', 'utils', 'node_modules'];
 const APP_ROUTER_PATHS = ['src/app', 'app'];
 const PAGES_ROUTER_PATHS = ['src/pages', 'pages'];
+const DEFAULT_PAGE_CONTENT = `export default function Page() {
+    return (
+        <div>Your new page!</div>
+    );
+}
+`;
 
 interface RouterConfig {
     type: 'app' | 'pages';
@@ -124,6 +131,7 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
         cleanPath = '/' + cleanPath.replace(/^\/|\/$/g, '');
 
         nodes.push({
+            id: nanoid(),
             name: isDynamicRoute ? currentDir : parentPath ? path.basename(parentPath) : 'home',
             path: cleanPath,
             children: [],
@@ -146,6 +154,7 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
                 const dirPath = relativePath.replace(/\\/g, '/');
                 const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
                 nodes.push({
+                    id: nanoid(),
                     name: entry.name,
                     path: cleanPath,
                     children,
@@ -187,6 +196,7 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
             }
 
             nodes.push({
+                id: nanoid(),
                 name:
                     fileName === 'index'
                         ? parentPath
@@ -218,6 +228,7 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
                 const dirPath = relativePath.replace(/\\/g, '/');
                 const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
                 nodes.push({
+                    id: nanoid(),
                     name: entry.name,
                     path: cleanPath,
                     children,
@@ -246,6 +257,43 @@ export async function scanNextJsPages(projectRoot: string): Promise<PageNode[]> 
         }
     } catch (error) {
         console.error('Error scanning pages:', error);
+        throw error;
+    }
+}
+
+export async function createNextJsPage(projectRoot: string, pagePath: string): Promise<boolean> {
+    try {
+        const routerConfig = await detectRouterType(projectRoot);
+
+        if (!routerConfig) {
+            throw new Error('Could not detect Next.js router type');
+        }
+
+        if (routerConfig.type !== 'app') {
+            throw new Error('Page creation is only supported for App Router projects for now.');
+        }
+
+        // Validate and normalize the path
+        const normalizedPagePath = pagePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+        if (!/^[a-zA-Z0-9\-_[\]()/]+$/.test(normalizedPagePath)) {
+            throw new Error('Page path contains invalid characters');
+        }
+        const fullPath = path.join(routerConfig.basePath, normalizedPagePath);
+        const pageFilePath = path.join(fullPath, 'page.tsx');
+
+        const pageExists = await fs
+            .access(pageFilePath)
+            .then(() => true)
+            .catch(() => false);
+        if (pageExists) {
+            throw new Error('Page already exists at this path');
+        }
+        await fs.mkdir(fullPath, { recursive: true });
+        await fs.writeFile(pageFilePath, DEFAULT_PAGE_CONTENT);
+
+        return true;
+    } catch (error) {
+        console.error('Error creating page:', error);
         throw error;
     }
 }

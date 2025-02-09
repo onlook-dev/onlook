@@ -2,6 +2,7 @@ export enum MessageContextType {
     FILE = 'file',
     HIGHLIGHT = 'highlight',
     IMAGE = 'image',
+    ERROR = 'error',
 }
 
 type BaseMessageContext = {
@@ -27,4 +28,12 @@ export type ImageMessageContext = BaseMessageContext & {
     mimeType: string;
 };
 
-export type ChatMessageContext = FileMessageContext | HighlightMessageContext | ImageMessageContext;
+export type ErrorMessageContext = BaseMessageContext & {
+    type: MessageContextType.ERROR;
+};
+
+export type ChatMessageContext =
+    | FileMessageContext
+    | HighlightMessageContext
+    | ImageMessageContext
+    | ErrorMessageContext;
