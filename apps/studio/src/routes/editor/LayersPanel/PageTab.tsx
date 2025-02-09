@@ -1,10 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
 import type { PageNode } from '@onlook/models/pages';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { type NodeApi, Tree } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import RightClickMenu from '../RightClickMenu';
 import PageTreeNode from './Tree/PageTreeNode';
 import PageTreeRow from './Tree/PageTreeRow';
 

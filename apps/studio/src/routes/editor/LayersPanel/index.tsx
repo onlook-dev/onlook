@@ -12,6 +12,7 @@ import ImagesTab from './ImagesTab';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
 import { capitalizeFirstLetter } from '/common/helpers';
+import { CreatePageModal } from './CreatePageModal';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -25,6 +26,7 @@ const LayersPanel = observer(() => {
     }
     const selectedTab: string = TabValue.LAYERS;
     const [isOpen, setIsOpen] = useState(true);
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     function renderTabs() {
         return (
@@ -48,7 +50,7 @@ const LayersPanel = observer(() => {
                             </div>
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.PAGES}
                         >
                             {capitalizeFirstLetter(TabValue.PAGES)}
@@ -63,6 +65,13 @@ const LayersPanel = observer(() => {
                             </div>
                         </TabsTrigger>
                     </div>
+
+                    <button
+                        className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
+                        onClick={() => setShowCreateModal(true)}
+                    >
+                        <Icons.Plus />
+                    </button>
                     <button
                         className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                         onClick={() => setIsOpen(false)}
@@ -93,34 +102,38 @@ const LayersPanel = observer(() => {
         );
     }
     return (
-        <ResizablePanel side="left" defaultWidth={300} minWidth={240} maxWidth={500}>
-            <div
-                className={cn(
-                    'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                    isOpen
-                        ? 'w-full h-[calc(100vh-5rem)]'
-                        : 'w-10 h-10 rounded-r-xl cursor-pointer',
-                )}
-            >
-                {!isOpen && (
-                    <div
-                        className="border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
-                        onClick={() => setIsOpen(true)}
-                    >
-                        <Icons.PinRight className="z-51" />
-                    </div>
-                )}
+        <>
+            <ResizablePanel side="left" defaultWidth={300} minWidth={240} maxWidth={500}>
                 <div
                     className={cn(
-                        'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
-                        isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
+                        'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
+                        editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                        isOpen
+                            ? 'w-full h-[calc(100vh-5rem)]'
+                            : 'w-10 h-10 rounded-r-xl cursor-pointer',
                     )}
                 >
-                    {renderTabs()}
+                    {!isOpen && (
+                        <div
+                            className="border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
+                            onClick={() => setIsOpen(true)}
+                        >
+                            <Icons.PinRight className="z-51" />
+                        </div>
+                    )}
+                    <div
+                        className={cn(
+                            'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
+                            isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
+                        )}
+                    >
+                        {renderTabs()}
+                    </div>
                 </div>
-            </div>
-        </ResizablePanel>
+            </ResizablePanel>
+
+            <CreatePageModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+        </>
     );
 });
 
