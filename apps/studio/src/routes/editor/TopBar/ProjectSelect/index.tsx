@@ -22,6 +22,7 @@ const ProjectBreadcrumb = observer(() => {
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     async function handleReturn() {
         try {
@@ -64,7 +65,7 @@ const ProjectBreadcrumb = observer(() => {
                 onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
             >
                 <div className="mx-2 flex flex-row items-center text-small gap-2">
-                    <DropdownMenu>
+                    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant={'ghost'}
@@ -91,6 +92,7 @@ const ProjectBreadcrumb = observer(() => {
                             <DropdownMenuItem
                                 onClick={() => {
                                     setIsSettingsOpen(true);
+                                    setIsDropdownOpen(false);
                                     editorEngine.isPlansOpen = false;
                                 }}
                             >
