@@ -20,6 +20,7 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import PricingPage from '../Profile/PricingPage';
+import { cn } from '@onlook/ui/utils';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -31,11 +32,14 @@ const ProjectBreadcrumb = observer(() => {
 
     const handleMouseLeave = (e: React.MouseEvent) => {
         const relatedTarget = e.relatedTarget as HTMLElement;
-        if (!relatedTarget?.closest('[role="menu"]')) {
+        if (
+            !relatedTarget?.closest('[role="menu"]') &&
+            !relatedTarget?.closest('[role="menuitem"]')
+        ) {
             if (closeTimeoutRef.current) {
                 clearTimeout(closeTimeoutRef.current);
             }
-            closeTimeoutRef.current = setTimeout(() => setIsOpen(false), 200);
+            closeTimeoutRef.current = setTimeout(() => setIsOpen(false), 100);
         }
     };
 
@@ -119,27 +123,41 @@ const ProjectBreadcrumb = observer(() => {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>
-                                <Icons.Plus className="mr-2 h-4 w-4" />
-                                New Project
-                                <Icons.ChevronRight className="ml-auto h-4 w-4" />
-                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubTrigger>New Project</DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
-                                <DropdownMenuItem onClick={() => handleNavigateToProject()}>
-                                    Create a new project
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleNavigateToProject(ProjectTabs.PROMPT_CREATE)
+                                    }
+                                    className={cn(
+                                        'focus:bg-blue-100 focus:text-blue-900',
+                                        'hover:bg-blue-100 hover:text-blue-900',
+                                        'dark:focus:bg-blue-900 dark:focus:text-blue-100',
+                                        'dark:hover:bg-blue-900 dark:hover:text-blue-100',
+                                    )}
+                                >
+                                    <Icons.FilePlus className="mr-2 h-4 w-4" />
+                                    Start from scratch
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() =>
                                         handleNavigateToProject(ProjectTabs.IMPORT_PROJECT)
                                     }
+                                    className={cn(
+                                        'focus:bg-teal-100 focus:text-teal-900',
+                                        'hover:bg-teal-100 hover:text-teal-900',
+                                        'dark:focus:bg-teal-900 dark:focus:text-teal-100',
+                                        'dark:hover:bg-teal-900 dark:hover:text-teal-100',
+                                    )}
                                 >
+                                    <Icons.Download className="mr-2 h-4 w-4" />
                                     Import a project
                                 </DropdownMenuItem>
                             </DropdownMenuSubContent>
                         </DropdownMenuSub>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                            Open folder
+                            Open project folder
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
                             Settings

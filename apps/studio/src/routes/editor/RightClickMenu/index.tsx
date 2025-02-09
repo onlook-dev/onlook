@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
@@ -17,6 +17,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import { IDE } from '/common/ide';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -34,16 +35,18 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
-    const [ideType, setIdeType] = useState('IDE');
+    const userManager = useUserManager();
+    const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
 
     useEffect(() => {
         async function getIdeType() {
             const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
             const ideType = (settings as { ideType?: IdeType })?.ideType || IdeType.VS_CODE;
-            setIdeType(ideType === IdeType.VS_CODE ? 'VS Code' : 'IDE');
+            setIde(IDE.fromType(ideType));
         }
         getIdeType();
-    }, []);
+    }, [userManager.user]);
+
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
 
     useEffect(() => {
@@ -170,7 +173,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
             },
             {
-                label: `View ${instance ? 'component' : 'element'} in ${ideType}`,
+                label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
                 disabled: !root,
                 action: () => viewSource(root),
                 icon: instance ? (

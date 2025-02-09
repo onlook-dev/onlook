@@ -161,7 +161,7 @@ const EdgeHandle: React.FC<EdgeHandleProps> = ({
             width={isVertical ? size : '100%'}
             height={isVertical ? '100%' : size}
             fill="transparent"
-            style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
+            style={{ cursor: 'default', pointerEvents: 'auto' }}
             onMouseDown={handleMouseDownRect}
         />
     );
@@ -184,7 +184,7 @@ const CornerHandle: React.FC<HandleProps> = ({
         <g
             style={{
                 pointerEvents: 'auto',
-                cursor: getCursorStyle(position),
+                cursor: 'default',
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
             onMouseDown={(e) => handleMouseDown(e, position, styles)}
@@ -212,7 +212,7 @@ const RadiusHandle: React.FC<HandleProps> = ({
         <g
             style={{
                 pointerEvents: 'auto',
-                cursor: 'nwse-resize',
+                cursor: 'auto',
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
             onMouseDown={(e) => handleMouseDown(e, position, styles)}
