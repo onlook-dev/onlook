@@ -34,6 +34,16 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
+    const [ideType, setIdeType] = useState('IDE');
+
+    useEffect(() => {
+        async function getIdeType() {
+            const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
+            const ideType = (settings as { ideType?: IdeType })?.ideType || IdeType.VS_CODE;
+            setIdeType(ideType === IdeType.VS_CODE ? 'VS Code' : 'IDE');
+        }
+        getIdeType();
+    }, []);
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
 
     useEffect(() => {
@@ -152,19 +162,9 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance = element.instanceId;
             root = element.oid;
         }
-        const [ideType, setIdeType] = useState('IDE');
-
-        useEffect(() => {
-            async function getIdeType() {
-                const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
-                const ideType = (settings as { ideType?: IdeType })?.ideType || IdeType.VS_CODE;
-                setIdeType(ideType === IdeType.VS_CODE ? 'VS Code' : 'IDE');
-            }
-            getIdeType();
-        }, []);
 
         const UPDATED_TOOL_ITEMS: MenuItem[] = [
-            instance && {
+            instance !== null && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
                 icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,

@@ -1,5 +1,6 @@
 import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
+import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';
@@ -38,7 +39,7 @@ const ProjectBreadcrumb = observer(() => {
         }
     };
 
-    async function handleReturn() {
+    async function handleNavigateToProject(tab?: ProjectTabs) {
         try {
             await saveScreenshot();
         } catch (error) {
@@ -46,8 +47,15 @@ const ProjectBreadcrumb = observer(() => {
         }
         setTimeout(() => {
             projectsManager.project = null;
+            if (tab) {
+                projectsManager.projectsTab = tab;
+            }
             routeManager.route = Route.PROJECTS;
         }, 100);
+    }
+
+    async function handleReturn() {
+        handleNavigateToProject();
     }
 
     const handleOpenProjectFolder = () => {
@@ -117,33 +125,13 @@ const ProjectBreadcrumb = observer(() => {
                                 <Icons.ChevronRight className="ml-auto h-4 w-4" />
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
-                                <DropdownMenuItem
-                                    onClick={async () => {
-                                        try {
-                                            await saveScreenshot();
-                                        } catch (error) {
-                                            console.error('Failed to take screenshot:', error);
-                                        }
-                                        setTimeout(() => {
-                                            projectsManager.project = null;
-                                            routeManager.route = Route.NEW_PROJECT;
-                                        }, 100);
-                                    }}
-                                >
+                                <DropdownMenuItem onClick={() => handleNavigateToProject()}>
                                     Create a new project
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={async () => {
-                                        try {
-                                            await saveScreenshot();
-                                        } catch (error) {
-                                            console.error('Failed to take screenshot:', error);
-                                        }
-                                        setTimeout(() => {
-                                            projectsManager.project = null;
-                                            routeManager.route = Route.IMPORT_PROJECT;
-                                        }, 100);
-                                    }}
+                                    onClick={() =>
+                                        handleNavigateToProject(ProjectTabs.IMPORT_PROJECT)
+                                    }
                                 >
                                     Import a project
                                 </DropdownMenuItem>

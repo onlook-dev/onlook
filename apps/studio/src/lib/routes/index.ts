@@ -5,8 +5,6 @@ export enum Route {
     EDITOR = 'editor',
     SIGN_IN = 'signin',
     PROJECTS = 'projects',
-    NEW_PROJECT = 'new-project',
-    IMPORT_PROJECT = 'import-project',
 }
 
 export class RouteManager {
