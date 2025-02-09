@@ -25,7 +25,7 @@ describe('getAllFiles', () => {
     });
 
     test('should get all files without filters', () => {
-        const files = getAllFiles(testDir);
+        const files = getAllFiles(testDir, { patterns: ['**/*'], ignore: [] });
         expect(files.length).toBe(4);
         expect(files.some((f) => f.endsWith('file1.txt'))).toBe(true);
         expect(files.some((f) => f.endsWith('file2.js'))).toBe(true);
@@ -34,21 +34,42 @@ describe('getAllFiles', () => {
     });
 
     test('should filter by extensions', () => {
-        const files = getAllFiles(testDir, { extensions: ['.js'] });
+        const files = getAllFiles(testDir, { patterns: ['**/*.js'], ignore: [] });
         expect(files.length).toBe(2);
         expect(files.every((f) => f.endsWith('.js'))).toBe(true);
     });
 
     test('should exclude specified paths', () => {
-        const files = getAllFiles(testDir, { exclude: ['node_modules'] });
+        const files = getAllFiles(testDir, { patterns: ['**/*'], ignore: ['node_modules/**'] });
         expect(files.length).toBe(3);
         expect(files.every((f) => !f.includes('node_modules'))).toBe(true);
     });
 
     test('should handle both extensions and exclusions', () => {
         const files = getAllFiles(testDir, {
-            extensions: ['.js'],
-            exclude: ['node_modules'],
+            patterns: ['**/*.js'],
+            ignore: ['node_modules/**'],
+        });
+        expect(files.length).toBe(1);
+        expect(files[0].endsWith('file2.js')).toBe(true);
+    });
+
+    test('should exclude specific subdirectory', () => {
+        const files = getAllFiles(testDir, { patterns: ['**/*'], ignore: ['subdir/**'] });
+        expect(files.length).toBe(3);
+        expect(files.every((f) => !f.includes('subdir'))).toBe(true);
+    });
+
+    test('should exclude specific file', () => {
+        const files = getAllFiles(testDir, { patterns: ['**/*'], ignore: ['file1.txt'] });
+        expect(files.length).toBe(3);
+        expect(files.every((f) => !f.endsWith('file1.txt'))).toBe(true);
+    });
+
+    test('should handle multiple ignore patterns', () => {
+        const files = getAllFiles(testDir, {
+            patterns: ['**/*'],
+            ignore: ['subdir/**', 'file1.txt', 'node_modules/**'],
         });
         expect(files.length).toBe(1);
         expect(files[0].endsWith('file2.js')).toBe(true);

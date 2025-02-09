@@ -58,7 +58,6 @@ class LlmManager {
     ): Promise<StreamResponse> {
         const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
-        console.log('messages', messages);
         try {
             const authTokens = await getRefreshedAuthTokens();
             if (!skipSystemPrompt) {
@@ -96,6 +95,7 @@ class LlmManager {
                         execute: async ({ path }) => {
                             console.log('List all files in', path);
                             const files = getAllFiles(path);
+                            console.log('Files', files);
                             return files;
                         },
                     }),
@@ -121,19 +121,24 @@ class LlmManager {
             }
             return { content: fullText, status: 'full' };
         } catch (error: any) {
-            console.log('error', error.error.statusCode);
-            if (error.error.statusCode === 403) {
-                const rateLimitError = JSON.parse(error.error.responseBody) as UsageCheckResult;
-                return {
-                    status: 'rate-limited',
-                    content: 'You have reached your daily limit.',
-                    rateLimitResult: rateLimitError,
-                };
+            try {
+                console.log('error', error);
+                if (error?.error?.statusCode === 403) {
+                    const rateLimitError = JSON.parse(error.error.responseBody) as UsageCheckResult;
+                    return {
+                        status: 'rate-limited',
+                        content: 'You have reached your daily limit.',
+                        rateLimitResult: rateLimitError,
+                    };
+                }
+                const errorMessage = this.getErrorMessage(error);
+                return { content: errorMessage, status: 'error' };
+            } catch (error) {
+                console.error('Error', error);
+                return { content: 'An unknown error occurred', status: 'error' };
+            } finally {
+                this.abortController = null;
             }
-            const errorMessage = this.getErrorMessage(error);
-            return { content: errorMessage, status: 'error' };
-        } finally {
-            this.abortController = null;
         }
     }
 
