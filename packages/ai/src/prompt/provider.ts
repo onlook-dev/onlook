@@ -113,8 +113,8 @@ export class PromptProvider {
         return prompt;
     }
 
-    getLanguageFromFilePath(filePath: string) {
-        return filePath.split('.').pop();
+    getLanguageFromFilePath(filePath: string): string {
+        return filePath.split('.').pop() || '';
     }
 
     getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]) {

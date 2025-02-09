@@ -85,7 +85,7 @@ export const ErrorView = observer(() => {
                             <div className="px-2.5 py-2">
                                 {editorEngine.errors.errors.map((error) => (
                                     <div key={error.message} className="mb-3 last:mb-0 font-mono">
-                                        <div className="text-miniPlus text-amber-800/80 dark:text-amber-200/80 mb-1">
+                                        <div className="text-miniPlus text-amber-800/80 dark:text-amber-200/80 mb-1 truncate">
                                             {error.sourceId}
                                         </div>
                                         <div className="text-micro text-amber-800/60 dark:text-amber-200/60">
