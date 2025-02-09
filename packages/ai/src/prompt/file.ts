@@ -4,9 +4,12 @@ Any other messages in the chat may contain outdated versions of the files' conte
 
 const highlightPrefix = 'I am looking at this specific part of the file in the browser UI';
 
+const errorsContentPrefix = `I'm getting these errors:`;
+
 const FILE_PROMPTS = {
     filesContentPrefix,
     highlightPrefix,
+    errorsContentPrefix,
 };
 
 export { FILE_PROMPTS };
