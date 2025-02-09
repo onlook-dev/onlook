@@ -155,7 +155,8 @@ export class PagesManager {
             await this.scanPages();
         } catch (error) {
             console.error('Failed to create page:', error);
-            throw new Error(error instanceof Error ? error.message : 'Failed to create page');
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(errorMessage);
         }
     }
 

@@ -8,7 +8,14 @@ export function listenForPageMessages() {
         return pages;
     });
 
-    ipcMain.handle(MainChannels.CREATE_PAGE, async (_event, { projectRoot, pagePath }) => {
-        return createNextJsPage(projectRoot, pagePath);
-    });
+    ipcMain.handle(
+        MainChannels.CREATE_PAGE,
+        async (_event, { projectRoot, pagePath }: { projectRoot: string; pagePath: string }) => {
+            try {
+                return await createNextJsPage(projectRoot, pagePath);
+            } catch (error) {
+                throw error instanceof Error ? error : new Error('Failed to create page');
+            }
+        },
+    );
 }

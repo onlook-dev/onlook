@@ -14,7 +14,8 @@ export const validateNextJsRoute = (route: string): { valid: boolean; error?: st
     }
 
     // Checks if it's a dynamic route
-    if (route.includes('[') || route.includes(']')) {
+    const hasMatchingBrackets = /\[[^\]]*\]/.test(route);
+    if (hasMatchingBrackets) {
         const dynamicRegex = /^\[([a-z0-9-]+)\]$/;
         if (!dynamicRegex.test(route)) {
             return {
@@ -42,10 +43,14 @@ export const doesRouteExist = (nodes: PageNode[], route: string): boolean => {
 
     const checkNode = (nodes: PageNode[]): boolean => {
         for (const node of nodes) {
-            if (node.path === `/${normalizedRoute}`) {
+            if (normalizeRoute(node.path) === normalizedRoute) {
                 return true;
             }
-            if (node.children && checkNode(node.children)) {
+            if (
+                Array.isArray(node.children) &&
+                node.children.length > 0 &&
+                checkNode(node.children)
+            ) {
                 return true;
             }
         }

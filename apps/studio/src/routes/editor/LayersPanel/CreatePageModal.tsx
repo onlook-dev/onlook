@@ -9,7 +9,7 @@ import {
 import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     doesRouteExist,
     normalizeRoute,
@@ -28,7 +28,10 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
     const [pageName, setPageName] = useState('');
     const [warning, setWarning] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const fullPath = normalizeRoute(`${baseRoute}/${pageName}`);
+    const fullPath = useMemo(
+        () => normalizeRoute(`${baseRoute}/${pageName}`),
+        [baseRoute, pageName],
+    );
 
     useEffect(() => {
         if (!pageName) {
@@ -56,8 +59,9 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
             await editorEngine.pages.createPage(baseRoute, pageName);
             setPageName('');
             onOpenChange(false);
-        } catch (err) {
-            setWarning((err as Error).message);
+        } catch (error) {
+            console.error('Failed to create page:', error);
+            setWarning('Failed to create page. Please try again.');
         } finally {
             setIsLoading(false);
         }
