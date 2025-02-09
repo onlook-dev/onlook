@@ -10,4 +10,6 @@ I am looking at this specific part of the file in the browser UI
 ```
 test
 ```
-</highlight></file></context><instruction>test</instruction>
+</highlight></file></context><errors>I'm getting these errors:
+test
+</errors><instruction>test</instruction>
