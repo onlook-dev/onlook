@@ -48,7 +48,7 @@ const LayersPanel = observer(() => {
                             </div>
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.PAGES}
                         >
                             {capitalizeFirstLetter(TabValue.PAGES)}
@@ -71,7 +71,7 @@ const LayersPanel = observer(() => {
                     </button>
                 </TabsList>
                 <Separator className="mt-0" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2 hidden">
+                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
                     <TabsContent value={TabValue.PAGES}>
                         <PagesTab />
                     </TabsContent>
