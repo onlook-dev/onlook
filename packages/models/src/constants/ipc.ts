@@ -132,4 +132,5 @@ export enum MainChannels {
 
     // Pages
     SCAN_PAGES = 'scan-pages',
+    CREATE_PAGE = 'create-page',
 }

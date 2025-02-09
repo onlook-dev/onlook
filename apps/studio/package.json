@@ -76,7 +76,7 @@
         "prosemirror-model": "^1.22.3",
         "prosemirror-state": "^1.4.3",
         "prosemirror-view": "^1.34.2",
-        "react-arborist": "^3.4.0",
+        "react-arborist": "^3.4.2",
         "react-diff-viewer-continued": "^3.4.0",
         "react-hotkeys-hook": "^4.5.0",
         "react-i18next": "^15.4.0",
