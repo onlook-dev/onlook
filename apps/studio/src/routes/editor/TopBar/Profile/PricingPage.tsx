@@ -1,5 +1,6 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
+import { useEditorEngine } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
@@ -31,6 +32,7 @@ const PRO_PLAN: UsagePlan = {
 };
 
 export const PricingPage = () => {
+    const editorEngine = useEditorEngine();
     const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
@@ -93,6 +95,7 @@ export const PricingPage = () => {
                     setCurrentPlan(PRO_PLAN);
                     saveCachedCurrentPlan(PRO_PLAN);
                     setIsCheckingOut(null);
+                    editorEngine.chat.stream.clear();
                     return true;
                 } else if (res?.success && res.data.name === 'basic') {
                     setCurrentPlan(BASIC_PLAN);
