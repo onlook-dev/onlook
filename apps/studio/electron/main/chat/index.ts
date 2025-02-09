@@ -1,4 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
+import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
 import {
     ChatSuggestionSchema,
     StreamRequestType,
@@ -58,7 +59,6 @@ class LlmManager {
         this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
-
             if (!skipSystemPrompt) {
                 const systemMessage = {
                     role: 'system',
@@ -81,6 +81,11 @@ class LlmManager {
                 onError: (error) => {
                     throw error;
                 },
+                maxSteps: 10,
+                tools: {
+                    listAllFiles: listFilesTool,
+                    readFile: readFileTool,
+                },
             });
 
             let fullText = '';
@@ -90,19 +95,33 @@ class LlmManager {
             }
             return { content: fullText, status: 'full' };
         } catch (error: any) {
-            console.log('error', error.error.statusCode);
-            if (error.error.statusCode === 403) {
-                const rateLimitError = JSON.parse(error.error.responseBody) as UsageCheckResult;
-                return {
-                    status: 'rate-limited',
-                    content: 'You have reached your daily limit.',
-                    rateLimitResult: rateLimitError,
-                };
+            try {
+                console.error('Error', error);
+                if (error?.error?.statusCode) {
+                    if (error?.error?.statusCode === 403) {
+                        const rateLimitError = JSON.parse(
+                            error.error.responseBody,
+                        ) as UsageCheckResult;
+                        return {
+                            status: 'rate-limited',
+                            content: 'You have reached your daily limit.',
+                            rateLimitResult: rateLimitError,
+                        };
+                    } else {
+                        return {
+                            status: 'error',
+                            content: error.error.responseBody,
+                        };
+                    }
+                }
+                const errorMessage = this.getErrorMessage(error);
+                return { content: errorMessage, status: 'error' };
+            } catch (error) {
+                console.error('Error parsing error', error);
+                return { content: 'An unknown error occurred', status: 'error' };
+            } finally {
+                this.abortController = null;
             }
-            const errorMessage = this.getErrorMessage(error);
-            return { content: errorMessage, status: 'error' };
-        } finally {
-            this.abortController = null;
         }
     }
 

@@ -59,6 +59,7 @@
         "fflate": "^0.8.2",
         "fix-path": "^4.0.0",
         "freestyle-sandboxes": "^0.0.20",
+        "glob": "^11.0.1",
         "i18next": "^24.2.2",
         "istextorbinary": "^9.5.0",
         "js-string-escape": "^1.0.1",
