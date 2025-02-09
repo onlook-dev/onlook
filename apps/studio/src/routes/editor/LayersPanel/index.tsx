@@ -13,6 +13,8 @@ import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { CreatePageModal } from './CreatePageModal';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -30,75 +32,79 @@ const LayersPanel = observer(() => {
 
     function renderTabs() {
         return (
-            <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full select-none justify-between items-center h-11 px-2">
-                    <div className="flex flex-row items-center gap-2">
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.LAYERS}
-                        >
-                            <Icons.Layers className="mr-1.5 mb-0.5" />
-                            {capitalizeFirstLetter(TabValue.LAYERS)}
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.COMPONENTS}
-                        >
-                            <div className="flex items-center gap-1">
-                                <Icons.Component />
-                                {capitalizeFirstLetter(TabValue.COMPONENTS)}
-                            </div>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.PAGES}
-                        >
-                            {capitalizeFirstLetter(TabValue.PAGES)}
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
-                            value={TabValue.IMAGES}
-                        >
-                            <div className="flex items-center gap-1">
-                                <Icons.Image />
-                                {capitalizeFirstLetter(TabValue.IMAGES)}
-                            </div>
-                        </TabsTrigger>
-                    </div>
+            <DndProvider backend={HTML5Backend}>
+                <Tabs defaultValue={selectedTab}>
+                    <TabsList className="bg-transparent w-full select-none justify-between items-center h-11 px-2">
+                        <div className="flex flex-row items-center gap-2">
+                            <TabsTrigger
+                                className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                                value={TabValue.LAYERS}
+                            >
+                                <Icons.Layers className="mr-1.5 mb-0.5" />
+                                {capitalizeFirstLetter(TabValue.LAYERS)}
+                            </TabsTrigger>
+                            <TabsTrigger
+                                className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                                value={TabValue.COMPONENTS}
+                            >
+                                <div className="flex items-center gap-1">
+                                    <Icons.Component />
+                                    {capitalizeFirstLetter(TabValue.COMPONENTS)}
+                                </div>
+                            </TabsTrigger>
+                            <TabsTrigger
+                                className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                                value={TabValue.PAGES}
+                            >
+                                {capitalizeFirstLetter(TabValue.PAGES)}
+                            </TabsTrigger>
+                            <TabsTrigger
+                                className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                                value={TabValue.IMAGES}
+                            >
+                                <div className="flex items-center gap-1">
+                                    <Icons.Image />
+                                    {capitalizeFirstLetter(TabValue.IMAGES)}
+                                </div>
+                            </TabsTrigger>
+                        </div>
 
-                    <button
-                        className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
-                        onClick={() => setShowCreateModal(true)}
-                    >
-                        <Icons.Plus />
-                    </button>
-                    <button
-                        className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
-                        onClick={() => setIsOpen(false)}
-                    >
-                        <Icons.PinLeft />
-                    </button>
-                </TabsList>
-                <Separator className="mt-0" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
-                    <TabsContent value={TabValue.PAGES}>
-                        <PagesTab />
-                    </TabsContent>
-                    <TabsContent value={TabValue.LAYERS}>
-                        <LayersTab />
-                    </TabsContent>
-                    <TabsContent value={TabValue.COMPONENTS}>
-                        {COMPONENT_DISCOVERY_ENABLED ? (
-                            <ComponentsTab components={editorEngine.projectInfo.components} />
-                        ) : (
-                            <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
-                        )}
-                    </TabsContent>
-                    <TabsContent value={TabValue.IMAGES}>
-                        <ImagesTab />
-                    </TabsContent>
-                </div>
-            </Tabs>
+                        <button
+                            className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
+                            onClick={() => setShowCreateModal(true)}
+                        >
+                            <Icons.Plus />
+                        </button>
+                        <button
+                            className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <Icons.PinLeft />
+                        </button>
+                    </TabsList>
+                    <Separator className="mt-0" />
+                    <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
+                        <TabsContent value={TabValue.PAGES}>
+                            <PagesTab />
+                        </TabsContent>
+                        <TabsContent value={TabValue.LAYERS}>
+                            <LayersTab />
+                        </TabsContent>
+                        <TabsContent value={TabValue.COMPONENTS}>
+                            {COMPONENT_DISCOVERY_ENABLED ? (
+                                <ComponentsTab components={editorEngine.projectInfo.components} />
+                            ) : (
+                                <div className="w-full pt-96 text-center opacity-70">
+                                    Coming soon
+                                </div>
+                            )}
+                        </TabsContent>
+                        <TabsContent value={TabValue.IMAGES}>
+                            <ImagesTab />
+                        </TabsContent>
+                    </div>
+                </Tabs>
+            </DndProvider>
         );
     }
     return (
