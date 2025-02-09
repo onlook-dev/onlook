@@ -8,6 +8,7 @@ import {
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { generateObject, streamText, tool, type CoreMessage, type CoreSystemMessage } from 'ai';
+import { readFileSync } from 'fs';
 import { z } from 'zod';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
@@ -93,9 +94,7 @@ class LlmManager {
                                 .describe('The absolute path to the directory to get files from'),
                         }),
                         execute: async ({ path }) => {
-                            console.log('List all files in', path);
                             const files = getAllFiles(path);
-                            console.log('Files', files);
                             return files;
                         },
                     }),
@@ -105,9 +104,7 @@ class LlmManager {
                             path: z.string().describe('The absolute path to the file to read'),
                         }),
                         execute: async ({ path }) => {
-                            console.log('Read file', path);
-                            const file = await Bun.file(path).text();
-                            console.log('File content', file);
+                            const file = readFileSync(path, 'utf8');
                             return file;
                         },
                     }),
@@ -122,7 +119,7 @@ class LlmManager {
             return { content: fullText, status: 'full' };
         } catch (error: any) {
             try {
-                console.log('error', error);
+                console.error('error', error);
                 if (error?.error?.statusCode === 403) {
                     const rateLimitError = JSON.parse(error.error.responseBody) as UsageCheckResult;
                     return {
