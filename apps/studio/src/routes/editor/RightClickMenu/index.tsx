@@ -1,5 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
+import { IDE } from '/common/ide';
+import { IdeType } from '@onlook/models/ide';
 import type { DomElement } from '@onlook/models/element';
 import {
     ContextMenu,
@@ -149,6 +151,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance = element.instanceId;
             root = element.oid;
         }
+        const ideType = IDE.fromType(IdeType.VS_CODE);
         const UPDATED_TOOL_ITEMS: MenuItem[] = [
             instance && {
                 label: 'View instance code',
@@ -156,7 +159,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
             },
             {
-                label: `View ${instance ? 'component' : 'element'} code`,
+                label: `View ${instance ? 'component' : 'element'} in ${ideType}`,
                 disabled: !root,
                 action: () => viewSource(root),
                 icon: instance ? (

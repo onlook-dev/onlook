@@ -293,85 +293,14 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
         }
     };
 
+    // Temporarily disabled drag functionality while preserving double-click
     const handleMouseDownDimensions = (
         startEvent: React.MouseEvent,
         position: ResizeHandlePosition,
         styles: Record<string, string>,
     ) => {
-        startEvent.preventDefault();
-        startEvent.stopPropagation();
-
-        editorEngine.history.startTransaction();
-        const startX = startEvent.clientX;
-        const startY = startEvent.clientY;
-        const startDimensions = {
-            width: parseFloat(styles.width),
-            height: parseFloat(styles.height),
-        };
-
-        const captureOverlay = createCaptureOverlay(startEvent);
-
-        const onMouseMove = (moveEvent: MouseEvent) => {
-            moveEvent.preventDefault();
-            moveEvent.stopPropagation();
-
-            const deltaX = moveEvent.clientX - startX;
-            const deltaY = moveEvent.clientY - startY;
-            const adjustedDelta = {
-                x: adaptValueToCanvas(deltaX, true),
-                y: adaptValueToCanvas(deltaY, true),
-            };
-
-            const newElementDimensions = calculateNewElementDimensions(
-                position,
-                startDimensions,
-                adjustedDelta,
-            );
-            const newOverlayDimensions = calculateNewOverlayDimensions(
-                position,
-                { width, height },
-                {
-                    x: deltaX,
-                    y: deltaY,
-                },
-            );
-
-            const widthChanged = newElementDimensions.width !== startDimensions.width;
-            const heightChanged = newElementDimensions.height !== startDimensions.height;
-
-            if (widthChanged && heightChanged) {
-                updateWidthHeight(
-                    `${newElementDimensions.width}px`,
-                    `${newElementDimensions.height}px`,
-                );
-                editorEngine.overlay.state.updateClickedRects({
-                    width: newOverlayDimensions.width,
-                    height: newOverlayDimensions.height,
-                });
-            } else if (widthChanged) {
-                updateWidth(`${newElementDimensions.width}px`);
-                editorEngine.overlay.state.updateClickedRects({
-                    width: newOverlayDimensions.width,
-                });
-            } else if (heightChanged) {
-                updateHeight(`${newElementDimensions.height}px`);
-                editorEngine.overlay.state.updateClickedRects({
-                    height: newOverlayDimensions.height,
-                });
-            }
-        };
-
-        const onMouseUp = (upEvent: MouseEvent) => {
-            upEvent.preventDefault();
-            upEvent.stopPropagation();
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            document.body.removeChild(captureOverlay);
-            editorEngine.history.commitTransaction();
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        // No-op to disable drag functionality
+        return;
     };
 
     const handleMouseDownRadius = (
