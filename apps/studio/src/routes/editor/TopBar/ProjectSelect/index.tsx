@@ -1,6 +1,6 @@
 import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
-import { Route } from '@/lib/routes';
 import { ProjectTabs } from '@/lib/projects';
+import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';
@@ -11,16 +11,16 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuTrigger,
-    DropdownMenuSubTrigger,
-    DropdownMenuSubContent,
     DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import PricingPage from '../Profile/PricingPage';
-import { cn } from '@onlook/ui/utils';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
