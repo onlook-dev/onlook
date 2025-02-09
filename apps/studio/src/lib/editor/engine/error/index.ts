@@ -47,7 +47,7 @@ export class ErrorManager {
         }
         const error: ParsedError = {
             sourceId: event.sourceId,
-            message: event.message,
+            content: event.message,
         };
         const existingErrors = this.webviewIdToError[webviewId] || [];
         if (!existingErrors.some((e) => compareErrors(e, error))) {
@@ -56,7 +56,7 @@ export class ErrorManager {
     }
 
     getMessageContext(errors: ParsedError[]): ErrorMessageContext {
-        const content = errors.map((e) => e.message).join('\n');
+        const content = errors.map((e) => e.content).join('\n');
         return {
             type: MessageContextType.ERROR,
             content,

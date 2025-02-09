@@ -95,13 +95,13 @@ export class ChatManager {
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const context = this.editorEngine.errors.getMessageContext(errors);
         const userMessage = this.conversation.addUserMessage(prompt, [context]);
-        this.conversation.current.updateName(errors[0].message);
+        this.conversation.current.updateName(errors[0].content);
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;
         }
         sendAnalytics('send fix error chat message', {
-            errors: errors.map((e) => e.message),
+            errors: errors.map((e) => e.content),
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
