@@ -7,10 +7,12 @@ import {
     type UsageCheckResult,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
+import { generateObject, streamText, tool, type CoreMessage, type CoreSystemMessage } from 'ai';
+import { z } from 'zod';
 import { mainWindow } from '..';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
+import { getAllFiles } from './helpers';
 import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
 
 class LlmManager {
@@ -56,9 +58,9 @@ class LlmManager {
     ): Promise<StreamResponse> {
         const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
+        console.log('messages', messages);
         try {
             const authTokens = await getRefreshedAuthTokens();
-
             if (!skipSystemPrompt) {
                 const systemMessage = {
                     role: 'system',
@@ -80,6 +82,35 @@ class LlmManager {
                 abortSignal: this.abortController?.signal,
                 onError: (error) => {
                     throw error;
+                },
+                maxSteps: 10,
+                tools: {
+                    listAllFiles: tool({
+                        description:
+                            'List all files in the current directory, including subdirectories',
+                        parameters: z.object({
+                            path: z
+                                .string()
+                                .describe('The absolute path to the directory to get files from'),
+                        }),
+                        execute: async ({ path }) => {
+                            console.log('List all files in', path);
+                            const files = getAllFiles(path);
+                            return files;
+                        },
+                    }),
+                    readFile: tool({
+                        description: 'Read a file',
+                        parameters: z.object({
+                            path: z.string().describe('The absolute path to the file to read'),
+                        }),
+                        execute: async ({ path }) => {
+                            console.log('Read file', path);
+                            const file = await Bun.file(path).text();
+                            console.log('File content', file);
+                            return file;
+                        },
+                    }),
                 },
             });
 

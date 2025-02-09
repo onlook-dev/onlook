@@ -1,0 +1,56 @@
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
+import { mkdirSync, rmSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { getAllFiles } from '../electron/main/chat/helpers';
+
+describe('getAllFiles', () => {
+    const testDir = join(__dirname, 'test-files');
+
+    beforeEach(() => {
+        // Create test directory structure
+        mkdirSync(testDir);
+        mkdirSync(join(testDir, 'subdir'));
+        mkdirSync(join(testDir, 'node_modules'));
+
+        // Create test files
+        writeFileSync(join(testDir, 'file1.txt'), 'content');
+        writeFileSync(join(testDir, 'file2.js'), 'content');
+        writeFileSync(join(testDir, 'subdir', 'file3.ts'), 'content');
+        writeFileSync(join(testDir, 'node_modules', 'file4.js'), 'content');
+    });
+
+    afterEach(() => {
+        // Cleanup test directory
+        rmSync(testDir, { recursive: true, force: true });
+    });
+
+    test('should get all files without filters', () => {
+        const files = getAllFiles(testDir);
+        expect(files.length).toBe(4);
+        expect(files.some((f) => f.endsWith('file1.txt'))).toBe(true);
+        expect(files.some((f) => f.endsWith('file2.js'))).toBe(true);
+        expect(files.some((f) => f.endsWith('file3.ts'))).toBe(true);
+        expect(files.some((f) => f.endsWith('file4.js'))).toBe(true);
+    });
+
+    test('should filter by extensions', () => {
+        const files = getAllFiles(testDir, { extensions: ['.js'] });
+        expect(files.length).toBe(2);
+        expect(files.every((f) => f.endsWith('.js'))).toBe(true);
+    });
+
+    test('should exclude specified paths', () => {
+        const files = getAllFiles(testDir, { exclude: ['node_modules'] });
+        expect(files.length).toBe(3);
+        expect(files.every((f) => !f.includes('node_modules'))).toBe(true);
+    });
+
+    test('should handle both extensions and exclusions', () => {
+        const files = getAllFiles(testDir, {
+            extensions: ['.js'],
+            exclude: ['node_modules'],
+        });
+        expect(files.length).toBe(1);
+        expect(files[0].endsWith('file2.js')).toBe(true);
+    });
+});
