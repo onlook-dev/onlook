@@ -92,22 +92,16 @@ export class ChatManager {
             return false;
         }
 
-        const prompt = `For the code present, we get these errors: ${errors.map((e) => e.message).join(', ')}. How can I resolve this? If you propose a fix, please make it concise.`;
-
-        const context = await this.editorEngine.errors.getMessageContextFromError(errors);
-        if (!context) {
-            console.error('No context found');
-            return false;
-        }
-        // Add error message to conversation
-        const userMessage = this.conversation.addUserMessage(prompt, context);
-        this.conversation.current.updateName(errors[0].fullMessage);
+        const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
+        const context = this.editorEngine.errors.getMessageContext(errors);
+        const userMessage = this.conversation.addUserMessage(prompt, [context]);
+        this.conversation.current.updateName(errors[0].message);
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;
         }
         sendAnalytics('send fix error chat message', {
-            errors: errors.map((e) => e.fullMessage),
+            errors: errors.map((e) => e.message),
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;

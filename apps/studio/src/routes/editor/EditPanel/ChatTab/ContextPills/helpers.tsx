@@ -24,6 +24,9 @@ export function getContextIcon(context: ChatMessageContext) {
         case 'image':
             icon = Icons.Image;
             break;
+        case 'error':
+            icon = Icons.InfoCircled;
+            break;
         case 'highlight':
             return (
                 <NodeIcon tagName={context.displayName} iconClass="w-3 h-3 ml-1 mr-2 flex-none" />

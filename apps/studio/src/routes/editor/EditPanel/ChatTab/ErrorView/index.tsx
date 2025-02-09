@@ -10,7 +10,7 @@ import { useState } from 'react';
 export const ErrorView = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
-    const errorCount = editorEngine.errors.validErrors.length;
+    const errorCount = editorEngine.errors.errors.length;
 
     return (
         <Collapsible
@@ -48,25 +48,13 @@ export const ErrorView = observer(() => {
                                 </div>
                                 <div className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
                                     {errorCount === 1
-                                        ? editorEngine.errors.validError?.message
+                                        ? editorEngine.errors.errors[0].message
                                         : `You have ${errorCount} errors`}
                                 </div>
                             </div>
                         </div>
                     </CollapsibleTrigger>
                     <div className="flex items-center gap-1 pr-1 py-1 shrink-0">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                editorEngine.errors.openErrorFile();
-                            }}
-                        >
-                            <Icons.ExternalLink className="h-4 w-4 mr-2" />
-                            View
-                        </Button>
                         <Button
                             variant="ghost"
                             size="sm"
@@ -95,21 +83,16 @@ export const ErrorView = observer(() => {
                             className="border-t border-amber-200/20 dark:border-amber-500/20"
                         >
                             <div className="px-2.5 py-2">
-                                {editorEngine.errors.errors.map((errorGroup, groupIndex) => {
-                                    const filteredErrors = errorGroup.filter(
-                                        (e) => e.type !== 'UNKNOWN',
-                                    );
-                                    return filteredErrors.map((e) => (
-                                        <div key={e.message} className="mb-3 last:mb-0 font-mono">
-                                            <div className="text-miniPlus text-amber-800/80 dark:text-amber-200/80 mb-1">
-                                                {e.type}
-                                            </div>
-                                            <div className="text-micro text-amber-800/60 dark:text-amber-200/60">
-                                                {e.message}
-                                            </div>
+                                {editorEngine.errors.errors.map((error) => (
+                                    <div key={error.message} className="mb-3 last:mb-0 font-mono">
+                                        <div className="text-miniPlus text-amber-800/80 dark:text-amber-200/80 mb-1 truncate">
+                                            {error.sourceId}
                                         </div>
-                                    ));
-                                })}
+                                        <div className="text-micro text-amber-800/60 dark:text-amber-200/60">
+                                            {error.message}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </motion.div>
                     </AnimatePresence>

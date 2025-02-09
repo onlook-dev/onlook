@@ -48,6 +48,7 @@ export class UserChatMessageImpl implements UserChatMessage {
         return this.promptProvider.getUserMessage(this.content, {
             files: this.context.filter((c) => c.type === MessageContextType.FILE),
             highlights: this.context.filter((c) => c.type === MessageContextType.HIGHLIGHT),
+            errors: this.context.filter((c) => c.type === MessageContextType.ERROR),
         });
     }
 
