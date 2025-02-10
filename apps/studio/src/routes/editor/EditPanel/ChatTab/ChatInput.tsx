@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
 import { Suggestions } from './Suggestions';
@@ -24,6 +24,25 @@ export const ChatInput = observer(() => {
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [hideSuggestions, setHideSuggestions] = useState(false);
+
+    useEffect(() => {
+        if (textareaRef.current && !editorEngine.chat.isWaiting) {
+            textareaRef.current.focus();
+        }
+    }, [editorEngine.chat.conversation.current?.messages.length]);
+
+    useEffect(() => {
+        const focusHandler = () => {
+            if (textareaRef.current && !editorEngine.chat.isWaiting) {
+                requestAnimationFrame(() => {
+                    textareaRef.current?.focus();
+                });
+            }
+        };
+
+        window.addEventListener('focus-chat-input', focusHandler);
+        return () => window.removeEventListener('focus-chat-input', focusHandler);
+    }, [editorEngine.chat.isWaiting]);
 
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
