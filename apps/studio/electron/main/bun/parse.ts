@@ -7,6 +7,11 @@ export const replaceCommand = (command: string, newCommand: string): string => {
     const finalCommand =
         (packageManagers.includes(cmdName?.toString() || '') ? newCommand : cmdName) || '';
 
-    // Use shell-quote's quote function to properly handle quoted arguments
-    return quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')]);
+    let finalCommandString = finalCommand.toString();
+
+    // For Windows, wrap the entire command in single quotes to handle spaces in the command
+    if (process.platform === 'win32') {
+        finalCommandString = `& "${finalCommandString}"`;
+    }
+    return quote([finalCommandString, ...cmdArgs.map((arg) => arg?.toString() || '')]);
 };
