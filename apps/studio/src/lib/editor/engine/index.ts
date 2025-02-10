@@ -252,7 +252,7 @@ export class EditorEngine {
             };
         }
         return {
-            image: image.toDataURL({
+            image: image.resize({ quality: 'good', height: 100 }).toDataURL({
                 scaleFactor: 0.1,
             }),
         };
