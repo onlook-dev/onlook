@@ -114,6 +114,7 @@ const ImagesTab = observer(() => {
     const [imageToDelete, setImageToDelete] = useState<string | null>(null);
     const [imageToRename, setImageToRename] = useState<string | null>(null);
     const [newImageName, setNewImageName] = useState<string>('');
+    const [renameError, setRenameError] = useState<string | null>(null);
 
     useEffect(() => {
         scanImages();
@@ -260,14 +261,34 @@ const ImagesTab = observer(() => {
         }
     };
 
-    const onRenameImage = (newName: string) => {
-        if (imageToRename && newName && newName !== imageToRename) {
-            console.log('Renaming image', imageToRename, newName);
-            editorEngine.image.rename(imageToRename, newName);
+    const onRenameImage = async (newName: string) => {
+        try {
+            if (imageToRename && newName && newName !== imageToRename) {
+                await editorEngine.image.rename(imageToRename, newName);
+            }
+        } catch (error) {
+            setRenameError(
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to rename image. Please try again.',
+            );
+            console.error('Image rename error:', error);
+            return;
+        } finally {
+            setImageToRename(null);
+            setNewImageName('');
         }
-        setImageToRename(null);
-        setNewImageName('');
     };
+
+    useEffect(() => {
+        if (renameError) {
+            const timer = setTimeout(() => {
+                setRenameError(null);
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [renameError]);
 
     return (
         <div className="w-full h-full flex flex-col gap-2">
@@ -282,6 +303,11 @@ const ImagesTab = observer(() => {
             {uploadError && (
                 <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
                     {uploadError}
+                </div>
+            )}
+            {renameError && (
+                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
+                    {renameError}
                 </div>
             )}
             {!!imageAssets.length && (
@@ -354,7 +380,7 @@ const ImagesTab = observer(() => {
                                     {imageToRename === image.fileName ? (
                                         <input
                                             type="text"
-                                            className="w-full px-1 text-center bg-background-active rounded"
+                                            className="w-full p-1 text-center bg-background-active rounded "
                                             defaultValue={image.fileName.replace(/\.[^/.]+$/, '')}
                                             autoFocus
                                             onBlur={(e) => handleRenameInputBlur(e.target.value)}
