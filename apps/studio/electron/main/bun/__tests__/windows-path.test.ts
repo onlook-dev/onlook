@@ -7,6 +7,7 @@ describe('Windows Path Handling', () => {
     beforeAll(() => {
         Object.defineProperty(process, 'platform', {
             value: 'win32',
+            configurable: true,
         });
     });
 
