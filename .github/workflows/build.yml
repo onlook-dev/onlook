@@ -27,7 +27,7 @@ jobs:
             fail-fast: false
             matrix:
                  include:
-                    # - os: macos-latest
+                    - os: macos-latest
                     - os: windows-latest
 
         steps:

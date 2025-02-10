@@ -33,13 +33,7 @@ export const runBunCommand = (
     command: string,
     options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
-    const bunBinary = getBunExecutablePath();
-    let commandToExecute = replaceCommand(command, bunBinary);
-
-    // For Windows, wrap the entire command in single quotes
-    if (process.platform === 'win32') {
-        commandToExecute = `'& "${bunBinary}" ${command}'`;
-    }
+    const commandToExecute = getBunCommand(command);
     const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
 
     return new Promise((resolve, reject) => {
@@ -81,5 +75,11 @@ export const runBunCommand = (
 
 export const getBunCommand = (command: string): string => {
     const bunExecutable = getBunExecutablePath();
-    return replaceCommand(command, bunExecutable);
+    let commandToExecute = replaceCommand(command, bunExecutable);
+
+    // For Windows, wrap the entire command in single quotes to handle spaces in the command
+    if (process.platform === 'win32') {
+        commandToExecute = `'& "${bunExecutable}" ${command}'`;
+    }
+    return commandToExecute;
 };
