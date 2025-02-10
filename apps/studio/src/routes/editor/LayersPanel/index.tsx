@@ -23,56 +23,62 @@ const LayersPanel = observer(() => {
         COMPONENTS = 'components',
         IMAGES = 'images',
     }
-    const selectedTab: string = TabValue.LAYERS;
+    const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.LAYERS);
     const [isOpen, setIsOpen] = useState(true);
+
+    // Add hover handling functions
+    const handleMouseEnter = (tab: TabValue) => {
+        setSelectedTab(tab);
+        setIsOpen(true);
+    };
 
     function renderTabs() {
         return (
-            <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full select-none justify-between items-center h-11 px-2">
-                    <div className="flex flex-row items-center gap-2">
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.LAYERS}
-                        >
-                            <Icons.Layers className="mr-1.5 mb-0.5" />
-                            {capitalizeFirstLetter(TabValue.LAYERS)}
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
-                            value={TabValue.COMPONENTS}
-                        >
-                            <div className="flex items-center gap-1">
-                                <Icons.Component />
-                                {capitalizeFirstLetter(TabValue.COMPONENTS)}
-                            </div>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.PAGES}
-                        >
-                            <Icons.File className="mr-1.5 mb-0.5" />
-                            {capitalizeFirstLetter(TabValue.PAGES)}
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
-                            value={TabValue.IMAGES}
-                        >
-                            <div className="flex items-center gap-1">
-                                <Icons.Image />
-                                {capitalizeFirstLetter(TabValue.IMAGES)}
-                            </div>
-                        </TabsTrigger>
-                    </div>
-                    <button
-                        className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
-                        onClick={() => setIsOpen(false)}
+            <Tabs defaultValue={selectedTab} orientation="vertical" className="flex">
+                <TabsList className="bg-transparent h-full flex-col items-start gap-1 py-2 border-r">
+                    <TabsTrigger
+                        className={cn(
+                            'w-full flex items-center gap-2 px-3 py-2 data-[state=active]:bg-accent rounded-none justify-start',
+                            selectedTab === TabValue.LAYERS && isOpen
+                                ? 'bg-accent text-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                        )}
+                        value={TabValue.LAYERS}
                     >
-                        <Icons.PinLeft />
-                    </button>
+                        <Icons.Layers className="w-5 h-5" />
+                        <span className="text-sm">{capitalizeFirstLetter(TabValue.LAYERS)}</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        className={cn(
+                            'w-full flex items-center gap-2 px-3 py-2 data-[state=active]:bg-accent rounded-none justify-start',
+                            selectedTab === TabValue.COMPONENTS
+                                ? 'bg-accent text-foreground'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                        )}
+                        value={TabValue.COMPONENTS}
+                    >
+                        <Icons.Component className="w-5 h-5" />
+                        <span className="text-sm">
+                            {capitalizeFirstLetter(TabValue.COMPONENTS)}
+                        </span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        className="w-full flex items-center gap-2 px-3 py-2 data-[state=active]:bg-accent rounded-none justify-start hidden"
+                        value={TabValue.PAGES}
+                    >
+                        <Icons.File className="w-5 h-5" />
+                        <span className="text-sm">{capitalizeFirstLetter(TabValue.PAGES)}</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        className="w-full flex items-center gap-2 px-3 py-2 data-[state=active]:bg-accent rounded-none justify-start hidden"
+                        value={TabValue.IMAGES}
+                    >
+                        <Icons.Image className="w-5 h-5" />
+                        <span className="text-sm">{capitalizeFirstLetter(TabValue.IMAGES)}</span>
+                    </TabsTrigger>
                 </TabsList>
-                <Separator className="mt-0" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
+
+                <div className="flex-1 h-[calc(100vh-7.75rem)] overflow-auto p-4">
                     <TabsContent value={TabValue.PAGES}>
                         <PagesTab />
                     </TabsContent>
@@ -94,34 +100,90 @@ const LayersPanel = observer(() => {
         );
     }
     return (
-        <ResizablePanel side="left" defaultWidth={300} minWidth={240} maxWidth={500}>
-            <div
-                className={cn(
-                    'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                    isOpen
-                        ? 'w-full h-[calc(100vh-5rem)]'
-                        : 'w-10 h-10 rounded-r-xl cursor-pointer',
-                )}
-            >
-                {!isOpen && (
-                    <div
-                        className="border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
-                        onClick={() => setIsOpen(true)}
-                    >
-                        <Icons.PinRight className="z-51" />
-                    </div>
-                )}
-                <div
+        <div
+            className={cn(
+                'flex gap-0',
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+            )}
+        >
+            {/* Left sidebar with tabs */}
+            <div className="w-20 bg-background-onlook/80 backdrop-blur-xl flex flex-col items-center py-0.5 gap-2">
+                <button
                     className={cn(
-                        'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
-                        isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.LAYERS && isOpen
+                            ? 'bg-accent text-foreground'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                     )}
+                    onClick={() => setIsOpen(!isOpen)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.LAYERS)}
                 >
-                    {renderTabs()}
-                </div>
+                    <Icons.Layers className="w-6 h-6" />
+                    <span className="text-xs leading-tight">Layers</span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.COMPONENTS
+                            ? 'bg-accent text-foreground'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    )}
+                    onClick={() => setIsOpen(!isOpen)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.COMPONENTS)}
+                >
+                    <Icons.Component className="w-6 h-6" />
+                    <span className="text-xs leading-tight">Elements</span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.IMAGES
+                            ? 'bg-accent text-foreground'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    )}
+                    onClick={() => setIsOpen(!isOpen)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.IMAGES)}
+                >
+                    <Icons.Image className="w-6 h-6" />
+                    <span className="text-xs leading-tight">Images</span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.PAGES
+                            ? 'bg-accent text-foreground'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    )}
+                    onClick={() => setIsOpen(!isOpen)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
+                >
+                    <Icons.File className="w-6 h-6" />
+                    <span className="text-xs leading-tight">Pages</span>
+                </button>
             </div>
-        </ResizablePanel>
+
+            {/* Content panel - only show if isOpen is true */}
+            {isOpen && (
+                <div className="flex-1 max-w-[280px] bg-background/80 rounded-xl">
+                    <div className="border backdrop-blur shadow h-[calc(100vh-5.75rem)] overflow-auto p-2 rounded-xl">
+                        {selectedTab === TabValue.LAYERS && <LayersTab />}
+                        {selectedTab === TabValue.COMPONENTS &&
+                            (COMPONENT_DISCOVERY_ENABLED ? (
+                                <ComponentsTab components={editorEngine.projectInfo.components} />
+                            ) : (
+                                <div className="w-full pt-96 text-center opacity-70">
+                                    Coming soon
+                                </div>
+                            ))}
+                        {selectedTab === TabValue.PAGES && <PagesTab />}
+                        {selectedTab === TabValue.IMAGES && <ImagesTab />}
+                    </div>
+                </div>
+            )}
+        </div>
     );
 });
 
