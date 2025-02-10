@@ -170,8 +170,6 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        // Clear references
-        this.projectsManager = null as any;
         this.editorMode = EditorMode.DESIGN;
         this.editorPanelTab = EditorTabValue.STYLES;
     }

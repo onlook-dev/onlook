@@ -85,7 +85,7 @@ const LayersPanel = observer(() => {
                             <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
                         )}
                     </TabsContent>
-                    <TabsContent value={TabValue.IMAGES} className="h-full">
+                    <TabsContent value={TabValue.IMAGES}>
                         <ImagesTab />
                     </TabsContent>
                 </div>

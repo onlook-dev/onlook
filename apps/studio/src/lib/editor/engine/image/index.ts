@@ -143,10 +143,6 @@ export class ImageManager {
     }
 
     dispose() {
-        // Clear references
-        this.editorEngine = null as any;
-        this.projectsManager = null as any;
-
         // Clean up images
         this.images = [];
     }

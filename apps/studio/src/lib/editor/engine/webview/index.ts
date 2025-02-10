@@ -169,10 +169,6 @@ export class WebviewManager {
         // Run all disposers
         this.disposers.forEach((dispose) => dispose());
         this.disposers = [];
-
-        // Clear references
-        this.editorEngine = null as any;
-        this.projectsManager = null as any;
     }
 
     disposeWebview(id: string) {
