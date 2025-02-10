@@ -124,6 +124,10 @@ export class EditorEngine {
         return this.errorManager;
     }
 
+    get isWindowSelected() {
+        return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+    }
+
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }

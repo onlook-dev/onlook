@@ -1,6 +1,7 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
 import { invokeMainChannel } from '@/lib/utils';
+import type { FrameSettings } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
@@ -15,10 +16,9 @@ import { Icons } from '@onlook/ui/icons';
 import { Kbd } from '@onlook/ui/kbd';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
-import type { FrameSettings } from '@onlook/models';
-import { nanoid } from 'nanoid';
 import { IDE } from '/common/ide';
 
 interface RightClickMenuProps {
@@ -54,10 +54,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
 
     useEffect(() => {
         updateMenuItems();
-        if (
-            editorEngine.webviews.selected.length > 0 &&
-            editorEngine.elements.selected.length === 0
-        ) {
+        if (editorEngine.isWindowSelected) {
             setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
         }
     }, [
@@ -69,25 +66,15 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const TOOL_ITEMS: MenuItem[] = [
         {
             label: 'Open devtool',
-            action: () => {
-                editorEngine.inspect();
-            },
+            action: () => editorEngine.inspect(),
             icon: <Icons.Code className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.OPEN_DEV_TOOL,
-            disabled:
-                editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Add to AI Chat',
-            action: () => {
-                editorEngine.editPanelTab = EditorTabValue.CHAT;
-            },
+            action: () => (editorEngine.editPanelTab = EditorTabValue.CHAT),
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ADD_AI_CHAT,
-            disabled:
-                editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'New AI Chat',
@@ -97,27 +84,20 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.NEW_AI_CHAT,
-            disabled:
-                editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0,
         },
     ];
 
     const GROUP_ITEMS: MenuItem[] = [
         {
             label: 'Group',
-            action: () => {
-                editorEngine.group.groupSelectedElements();
-            },
+            action: () => editorEngine.group.groupSelectedElements(),
             icon: <Icons.Box className="mr-2 h-4 w-4" />,
             disabled: !editorEngine.group.canGroupElements(),
             hotkey: Hotkey.GROUP,
         },
         {
             label: 'Ungroup',
-            action: () => {
-                editorEngine.group.ungroupSelectedElement();
-            },
+            action: () => editorEngine.group.ungroupSelectedElement(),
             icon: <Icons.Group className="mr-2 h-4 w-4" />,
             disabled: !editorEngine.group.canUngroupElement(),
             hotkey: Hotkey.UNGROUP,
@@ -127,79 +107,57 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const EDITING_ITEMS: MenuItem[] = [
         {
             label: 'Edit text',
-            action: () => {
-                editorEngine.text.editSelectedElement();
-            },
+            action: () => editorEngine.text.editSelectedElement(),
             icon: <Icons.Pencil className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ENTER,
-            disabled:
-                editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Copy',
-            action: () => {
-                editorEngine.copy.copy();
-            },
+            action: () => editorEngine.copy.copy(),
             icon: <Icons.Clipboard className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.COPY,
-            disabled:
-                editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Paste',
-            action: () => {
-                editorEngine.copy.paste();
-            },
+            action: () => editorEngine.copy.paste(),
             icon: <Icons.ClipboardCopy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.PASTE,
-            disabled:
-                editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Cut',
-            action: () => {
-                editorEngine.copy.cut();
-            },
+            action: () => editorEngine.copy.cut(),
             icon: <Icons.Scissors className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.CUT,
-            disabled:
-                editorEngine.webviews.selected.length > 0 &&
-                editorEngine.elements.selected.length === 0,
         },
         {
             label: 'Duplicate',
-            action: () => {
-                if (
-                    editorEngine.webviews.selected.length > 0 &&
-                    editorEngine.elements.selected.length === 0
-                ) {
-                    duplicateWindow();
-                } else {
-                    editorEngine.copy.duplicate();
-                }
-            },
+            action: () => editorEngine.copy.duplicate(),
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
         },
         {
             label: 'Delete',
-            action: () => {
-                if (
-                    editorEngine.webviews.selected.length > 0 &&
-                    editorEngine.elements.selected.length === 0
-                ) {
-                    deleteDuplicateWindow();
-                } else {
-                    editorEngine.elements.delete();
-                }
-            },
+            action: deleteDuplicateWindow,
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
-            disabled: !settings?.duplicate,
+        },
+    ];
+
+    const WINDOW_ITEMS: MenuItem[] = [
+        {
+            label: 'Duplicate',
+            action: () => {
+                duplicateWindow();
+            },
+            icon: <Icons.Copy className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Delete',
+            action: () => {
+                deleteDuplicateWindow();
+            },
+            icon: <Icons.Trash className="mr-2 h-4 w-4" />,
         },
     ];
 

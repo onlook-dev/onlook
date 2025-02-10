@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
+import type { FrameSettings } from '@onlook/models';
 import { DefaultSettings } from '@onlook/models/constants';
+import { nanoid } from 'nanoid';
 import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import DeleteKey from './Delete';
 import { Hotkey } from '/common/hotkeys';
-import type { FrameSettings } from '@onlook/models';
-import { nanoid } from 'nanoid';
 
 const HotkeysArea = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -63,10 +63,7 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
     useHotkeys(Hotkey.DUPLICATE.command, () => {
-        if (
-            editorEngine.webviews.selected.length > 0 &&
-            editorEngine.elements.selected.length === 0
-        ) {
+        if (editorEngine.isWindowSelected) {
             duplicateWindow();
         } else {
             editorEngine.copy.duplicate();
