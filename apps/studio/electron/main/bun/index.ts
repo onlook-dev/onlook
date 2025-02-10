@@ -76,8 +76,10 @@ export const getBunCommand = (command: string): string => {
     let commandToExecute = replaceCommand(command, bunExecutable);
 
     // For Windows, wrap the entire command in single quotes to handle spaces in the command
-    if (process.platform === 'win32') {
-        commandToExecute = `'& "${bunExecutable}" ${command}'`;
-    }
+    // if (process.platform === 'win32') {
+    //     commandToExecute = `'& "${bunExecutable}" ${command}'`;
+    // }
+    commandToExecute = `'& "${bunExecutable}" ${command}'`;
+
     return commandToExecute;
 };
