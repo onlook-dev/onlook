@@ -150,6 +150,14 @@ export class EditorEngine {
         return this.pagesManager;
     }
 
+    get isDuplicateWindow() {
+        if (this.isWindowSelected) {
+            const selectedWindow = this.canvasManager.getFrame(this.webviewManager.selected[0].id);
+            return !(selectedWindow?.duplicate ?? false);
+        }
+        return false;
+    }
+
     dispose() {
         this.overlay.clear();
         this.elements.clear();
