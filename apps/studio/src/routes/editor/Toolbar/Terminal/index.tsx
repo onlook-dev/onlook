@@ -125,7 +125,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
     return (
         <div
             className={cn(
-                'bg-background rounded-lg overflow-hidden transition-all duration-300',
+                'bg-background rounded-lg overflow-auto transition-all duration-300',
                 hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
             )}
         >

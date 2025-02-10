@@ -22,6 +22,7 @@ const ProjectBreadcrumb = observer(() => {
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     async function handleReturn() {
         try {
@@ -62,58 +63,68 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <Dialog
-            open={editorEngine.isPlansOpen}
-            onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
-        >
-            <div className="mx-2 flex flex-row items-center text-small gap-2">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant={'ghost'}
-                            className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
-                        >
-                            <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
-                            <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
-                                {projectsManager.project?.name}
-                            </span>
-                            <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48">
-                        <DropdownMenuItem onClick={handleReturn}>
-                            <div className="flex row center items-center group">
-                                <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
-                                {'Go to all Projects'}
-                            </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                            Open folder
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                            Settings
-                        </DropdownMenuItem>
-                        <DialogTrigger asChild>
-                            <DropdownMenuItem>Subscriptions</DropdownMenuItem>
-                        </DialogTrigger>
-                        <DropdownMenuItem
-                            onClick={() => window.open('https://onlook.com', '_blank')}
-                        >
-                            About Onlook
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
+        <>
+            <Dialog
+                open={editorEngine.isPlansOpen}
+                onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
+            >
+                <div className="mx-2 flex flex-row items-center text-small gap-2">
+                    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant={'ghost'}
+                                className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
+                            >
+                                <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
+                                <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
+                                    {projectsManager.project?.name}
+                                </span>
+                                <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-48">
+                            <DropdownMenuItem onClick={handleReturn}>
+                                <div className="flex row center items-center group">
+                                    <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
+                                    {'Go to all Projects'}
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                                Open folder
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setIsSettingsOpen(true);
+                                    setIsDropdownOpen(false);
+                                    editorEngine.isPlansOpen = false;
+                                }}
+                            >
+                                Settings
+                            </DropdownMenuItem>
+                            <DialogTrigger asChild>
+                                <DropdownMenuItem onClick={() => setIsSettingsOpen(false)}>
+                                    Subscriptions
+                                </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DropdownMenuItem
+                                onClick={() => window.open('https://onlook.com', '_blank')}
+                            >
+                                About Onlook
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
+                    <PricingPage />
+                </DialogContent>
+            </Dialog>
             <ProjectSettingsModal
                 project={projectsManager.project}
                 open={isSettingsOpen}
                 onOpenChange={setIsSettingsOpen}
-            ></ProjectSettingsModal>
-            <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
-                <PricingPage />
-            </DialogContent>
-        </Dialog>
+            />
+        </>
     );
 });
 
