@@ -81,7 +81,11 @@ const ImagesTab = observer(() => {
     }, [debouncedSearch]);
 
     const filteredImages = useMemo(() => {
-        return imageAssets.filter((image) => image.fileName.includes(search));
+        if (!search.trim()) {
+            return imageAssets;
+        }
+        const searchLower = search.toLowerCase();
+        return imageAssets.filter((image) => image.fileName?.toLowerCase()?.includes(searchLower));
     }, [imageAssets, search]);
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
