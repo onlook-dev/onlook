@@ -66,6 +66,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => (editorEngine.editPanelTab = EditorTabValue.CHAT),
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ADD_AI_CHAT,
+            disabled: !editorEngine.elements.selected.length,
         },
         {
             label: 'New AI Chat',
