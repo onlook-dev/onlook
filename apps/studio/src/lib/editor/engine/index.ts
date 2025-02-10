@@ -265,6 +265,10 @@ export class EditorEngine {
     }
 
     deleteDuplicateWindow() {
+        if (this.webviews.selected.length === 0) {
+            console.error('No window selected');
+            return;
+        }
         const settings = this.canvas.getFrame(this.webviews.selected[0].id);
         if (settings && settings.duplicate) {
             this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);

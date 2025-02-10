@@ -46,10 +46,12 @@ export const CodeBlock = ({
     };
 
     async function initMonaco() {
-        if (editorContainer.current?.style) {
+        if (editorContainer.current) {
             await initHighlighter();
-            const height = getEditorHeight(code);
-            editorContainer.current.style.height = `${height}px`;
+            if (editorContainer.current?.style) {
+                const height = getEditorHeight(code);
+                editorContainer.current.style.height = `${height}px`;
+            }
 
             editor.current = monaco.editor.create(editorContainer.current, {
                 value: '',
