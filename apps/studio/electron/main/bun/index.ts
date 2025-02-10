@@ -34,11 +34,13 @@ export const runBunCommand = (
 ): Promise<{ stdout: string; stderr: string }> => {
     const bunBinary = getBunExecutablePath();
     const commandToExecute = replaceCommand(command, bunBinary);
+    const shell = process.platform === 'win32' ? 'powershell' : 'bash';
 
     return new Promise((resolve, reject) => {
         exec(
             commandToExecute,
             {
+                shell,
                 cwd: options.cwd,
                 env: {
                     ...options.env,
