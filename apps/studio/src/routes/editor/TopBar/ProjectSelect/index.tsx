@@ -5,7 +5,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogTrigger } from '@onlook/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,6 +20,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
+import PricingPage from '../Profile/PricingPage';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -177,6 +178,9 @@ const ProjectBreadcrumb = observer(() => {
                     open={isSettingsOpen}
                     onOpenChange={setIsSettingsOpen}
                 />
+                <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
+                    <PricingPage />
+                </DialogContent>
             </Dialog>
         </>
     );
