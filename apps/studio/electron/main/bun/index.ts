@@ -6,8 +6,9 @@ import { replaceCommand } from './parse';
 
 export const getBunExecutablePath = (): string => {
     const platform = process.platform;
+    const arch = process.arch === 'arm64' ? 'aarch64' : process.arch;
     const isProduction = app.isPackaged;
-    const binName = platform === 'win32' ? 'bun.exe' : 'bun';
+    const binName = platform === 'win32' ? `bun.exe` : `bun-${arch}`;
 
     const bunPath = isProduction
         ? path.join(process.resourcesPath, 'bun', binName)

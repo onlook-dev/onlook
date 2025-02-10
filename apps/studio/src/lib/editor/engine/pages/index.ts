@@ -4,12 +4,12 @@ import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { EditorEngine } from '..';
 import type { ProjectsManager } from '@/lib/projects';
+import { doesRouteExist, normalizeRoute, validateNextJsRoute } from './helper';
 
 export class PagesManager {
     private pages: PageNode[] = [];
-    private activeRoutes: Map<string, string> = new Map();
+    private activeRoutesByWebviewId: Record<string, string> = {};
     private currentPath: string = '';
-    private subscribers: Set<() => void> = new Set();
 
     constructor(
         private editorEngine: EditorEngine,
@@ -23,19 +23,13 @@ export class PagesManager {
         return this.pages;
     }
 
+    get activeRoute(): string | undefined {
+        const webview = this.getActiveWebview();
+        return webview ? this.activeRoutesByWebviewId[webview.id] : undefined;
+    }
+
     private getActiveWebview(): Electron.WebviewTag | undefined {
         return this.editorEngine.webviews.selected[0] || this.editorEngine.webviews.getAll()[0];
-    }
-
-    public subscribe(callback: () => void): () => void {
-        this.subscribers.add(callback);
-        return () => {
-            this.subscribers.delete(callback);
-        };
-    }
-
-    private notifySubscribers(): void {
-        this.subscribers.forEach((callback) => callback());
     }
 
     public isNodeActive(node: PageNode): boolean {
@@ -44,8 +38,12 @@ export class PagesManager {
             return false;
         }
 
-        const activePath = this.activeRoutes.get(webview.id);
+        const activePath = this.activeRoute;
         if (!activePath) {
+            return false;
+        }
+
+        if (node.children && node.children?.length > 0) {
             return false;
         }
 
@@ -83,13 +81,11 @@ export class PagesManager {
     }
 
     public setActivePath(webviewId: string, path: string) {
-        this.activeRoutes.set(webviewId, path);
-
+        this.activeRoutesByWebviewId[webviewId] = path;
         if (webviewId === this.getActiveWebview()?.id) {
             this.currentPath = path;
         }
-
-        this.notifySubscribers();
+        this.updateActiveStates(this.pages, path);
     }
 
     private updateActiveStates(nodes: PageNode[], activePath: string) {
@@ -100,10 +96,6 @@ export class PagesManager {
                 this.updateActiveStates(node.children, activePath);
             }
         });
-    }
-
-    public isActivePath(webviewId: string, path: string): boolean {
-        return this.activeRoutes.get(webviewId) === path;
     }
 
     private setPages(pages: PageNode[]) {
@@ -137,6 +129,37 @@ export class PagesManager {
         }
     }
 
+    public async createPage(baseRoute: string, pageName: string): Promise<void> {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            throw new Error('No project root found');
+        }
+
+        const { valid, error } = validateNextJsRoute(pageName);
+        if (!valid) {
+            throw new Error(error);
+        }
+
+        const normalizedPath = normalizeRoute(`${baseRoute}/${pageName}`);
+
+        if (doesRouteExist(this.pages, normalizedPath)) {
+            throw new Error('This page already exists');
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.CREATE_PAGE, {
+                projectRoot,
+                pagePath: normalizedPath,
+            });
+
+            await this.scanPages();
+        } catch (error) {
+            console.error('Failed to create page:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(errorMessage);
+        }
+    }
+
     async navigateTo(path: string) {
         const webview = this.getActiveWebview();
 
@@ -166,7 +189,6 @@ export class PagesManager {
 
     public setCurrentPath(path: string) {
         this.currentPath = path;
-        this.notifySubscribers();
     }
 
     public handleWebviewUrlChange(webviewId: string) {
@@ -192,7 +214,6 @@ export class PagesManager {
     dispose() {
         this.pages = [];
         this.currentPath = '';
-        this.subscribers.clear();
         this.editorEngine = null as any;
     }
 }
