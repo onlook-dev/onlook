@@ -34,8 +34,12 @@ export const runBunCommand = (
     options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
     const bunBinary = getBunExecutablePath();
-    const wrappedBinary = process.platform === 'win32' ? `& "${bunBinary}"` : bunBinary;
-    const commandToExecute = replaceCommand(command, wrappedBinary);
+    let commandToExecute = replaceCommand(command, bunBinary);
+
+    // For Windows, wrap the entire command in single quotes
+    if (process.platform === 'win32') {
+        commandToExecute = `'& "${bunBinary}" ${command}'`;
+    }
     const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
 
     return new Promise((resolve, reject) => {
