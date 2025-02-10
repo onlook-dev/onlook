@@ -1,7 +1,8 @@
 import type { ImageContentData } from '@onlook/models/actions';
 import { DefaultSettings } from '@onlook/models/constants';
 import { promises as fs, readFileSync } from 'fs';
-import * as path from 'path';
+import mime from 'mime-lite';
+import path from 'path';
 
 async function scanImagesDirectory(projectRoot: string): Promise<ImageContentData[]> {
     const imagesPath = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
@@ -19,21 +20,15 @@ async function scanImagesDirectory(projectRoot: string): Promise<ImageContentDat
                 ) {
                     const imagePath = path.join(imagesPath, entry.name);
                     const image = readFileSync(imagePath, { encoding: 'base64' });
-
-                    const mimeTypes: { [key: string]: string } = {
-                        '.jpg': 'image/jpeg',
-                        '.jpeg': 'image/jpeg',
-                        '.png': 'image/png',
-                        '.gif': 'image/gif',
-                        '.webp': 'image/webp',
-                        '.svg': 'image/svg+xml',
-                        '.ico': 'image/x-icon',
-                    };
-
+                    const mimeType = mime.getType(imagePath);
+                    if (!mimeType) {
+                        console.error(`Failed to get mime type for ${imagePath}`);
+                        continue;
+                    }
                     images.push({
                         fileName: entry.name,
-                        content: `data:${mimeTypes[extension]};base64,${image}`,
-                        mimeType: mimeTypes[extension],
+                        content: `data:${mimeType};base64,${image}`,
+                        mimeType,
                     });
                 }
             }
@@ -64,12 +59,10 @@ export async function saveImageToProject(
         const imageFolder = path.join(projectFolder, DefaultSettings.IMAGE_FOLDER);
         const imagePath = path.join(imageFolder, fileName);
 
-        // Check if file already exists
         try {
             await fs.access(imagePath);
             throw new Error(`File ${fileName} already exists`);
         } catch (err: any) {
-            // File doesn't exist, proceed with saving
             if (err.code === 'ENOENT') {
                 const buffer = Buffer.from(content, 'base64');
                 await fs.writeFile(imagePath, buffer);

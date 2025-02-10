@@ -2,7 +2,7 @@ import type { ProjectsManager } from '@/lib/projects';
 import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import { MainChannels } from '@onlook/models/constants';
-import { getExtension } from 'mime-lite';
+import mime from 'mime-lite';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
@@ -36,7 +36,9 @@ export class ImageManager {
                 fileName: file.name,
             });
 
-            this.scanImages();
+            setTimeout(() => {
+                this.scanImages();
+            }, 100);
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -83,7 +85,7 @@ export class ImageManager {
             return;
         }
 
-        const fileName = `${nanoid(4)}.${getExtension(mimeType)}`;
+        const fileName = `${nanoid(4)}.${mime.getExtension(mimeType)}`;
         const action: InsertImageAction = {
             type: 'insert-image',
             targets: targets,
@@ -95,6 +97,9 @@ export class ImageManager {
         };
 
         this.editorEngine.action.run(action);
+        setTimeout(() => {
+            this.scanImages();
+        }, 2000);
         sendAnalytics('image-inserted', { mimeType });
     }
 
@@ -143,7 +148,6 @@ export class ImageManager {
     }
 
     dispose() {
-        // Clean up images
         this.images = [];
     }
 }
