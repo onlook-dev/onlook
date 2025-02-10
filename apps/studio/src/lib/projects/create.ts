@@ -36,7 +36,7 @@ export class CreateManager {
                 this.message =
                     'This is taking longer than usual. This could be due to a slow internet connection...';
             }
-        }, 10000);
+        }, 30000);
     }
 
     private clearSlowConnectionTimer() {

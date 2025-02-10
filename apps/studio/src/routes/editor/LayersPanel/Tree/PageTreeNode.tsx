@@ -1,22 +1,36 @@
 import { useEditorEngine } from '@/components/Context';
 import type { PageNode } from '@onlook/models/pages';
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+} from '@onlook/ui/context-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { NodeApi } from 'react-arborist';
+import { CreatePageModal } from '../PageTab/CreatePageModal';
 
-const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.CSSProperties }) => {
+interface PageTreeNodeProps {
+    node: NodeApi<PageNode>;
+    style: React.CSSProperties;
+}
+
+const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
-    const [isActive, setIsActive] = useState(false);
+    const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     const handleClick = async (e: React.MouseEvent) => {
         if (hasChildren) {
             node.toggle();
             return;
         }
-        setIsActive(true);
 
         const webviewId = editorEngine.webviews.selected[0]?.id;
         if (webviewId) {
@@ -29,44 +43,80 @@ const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.C
         await editorEngine.pages.navigateTo(node.data.path);
     };
 
-    useEffect(() => {
-        const updateActive = () => {
-            const active = editorEngine.pages.isNodeActive(node.data);
-            if (active !== isActive) {
-                setIsActive(active);
-            }
-        };
-
-        updateActive();
-        return editorEngine.pages.subscribe(updateActive);
-    }, [editorEngine.pages, node.data, isActive]);
+    const menuItems = [
+        {
+            label: 'Create New Page',
+            action: () => {
+                setShowCreateModal(true);
+            },
+            icon: <Icons.File className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Delete',
+            action: () => {
+                //TODO implement delete page
+            },
+            icon: <Icons.Trash className="mr-2 h-4 w-4" />,
+        },
+    ];
 
     return (
-        <div
-            style={style}
-            className={cn('flex items-center h-6 cursor-pointer hover:bg-background-hover', {
-                'bg-red-500 text-white hover:bg-red-500': !hasChildren && isActive,
-            })}
-            onClick={handleClick}
-        >
-            <span className="w-4 h-4 flex-none relative">
-                {hasChildren && (
-                    <div className="w-4 h-4 flex items-center justify-center absolute z-50">
-                        <motion.div initial={false} animate={{ rotate: node.isOpen ? 90 : 0 }}>
-                            <Icons.ChevronRight className="h-2.5 w-2.5" />
-                        </motion.div>
+        <>
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <div
+                        style={style}
+                        className={cn(
+                            'flex items-center h-6 cursor-pointer hover:bg-background-hover rounded',
+                            {
+                                'bg-red-500 text-white': !hasChildren && isActive,
+                            },
+                        )}
+                        onClick={handleClick}
+                    >
+                        <span className="w-4 h-4 flex-none relative">
+                            {hasChildren && (
+                                <div className="w-4 h-4 flex items-center justify-center absolute z-50">
+                                    <motion.div
+                                        initial={false}
+                                        animate={{ rotate: node.isOpen ? 90 : 0 }}
+                                    >
+                                        <Icons.ChevronRight className="h-2.5 w-2.5" />
+                                    </motion.div>
+                                </div>
+                            )}
+                        </span>
+                        {hasChildren ? (
+                            <Icons.Directory className="w-4 h-4 mr-2" />
+                        ) : (
+                            <Icons.File className="w-4 h-4 mr-2" />
+                        )}
+                        <span>{node.data.name}</span>
                     </div>
-                )}
-            </span>
-            {hasChildren ? (
-                <Icons.Directory className="w-4 h-4 mr-2" />
-            ) : (
-                <Icons.File className="w-4 h-4 mr-2" />
-            )}
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    {menuItems.map((item) => (
+                        <ContextMenuItem
+                            key={item.label}
+                            onClick={item.action}
+                            className="cursor-pointer"
+                        >
+                            <span className="flex w-full items-center gap-1">
+                                {item.icon}
+                                {item.label}
+                            </span>
+                        </ContextMenuItem>
+                    ))}
+                </ContextMenuContent>
+            </ContextMenu>
 
-            <span>{node.data.name}</span>
-        </div>
+            <CreatePageModal
+                open={showCreateModal}
+                onOpenChange={setShowCreateModal}
+                baseRoute={node.data.path}
+            />
+        </>
     );
 };
 
-export default PageTreeNode;
+export default observer(PageTreeNode);

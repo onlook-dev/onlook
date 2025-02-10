@@ -252,7 +252,6 @@ export const PromptingCard = () => {
                                     onCompositionStart={() => setIsComposing(true)}
                                     onCompositionEnd={(e) => {
                                         setIsComposing(false);
-                                        setInputValue(e.currentTarget.value);
                                     }}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey && !isComposing) {

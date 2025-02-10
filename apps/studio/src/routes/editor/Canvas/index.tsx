@@ -102,6 +102,10 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
 
     const handleWheel = useCallback(
         (event: WheelEvent) => {
+            // This is a workaround to prevent the canvas from scrolling when textarea in Chat with AI is focused.
+            if (event.target instanceof HTMLTextAreaElement) {
+                return; // Let the default scroll behavior happen
+            }
             if (event.ctrlKey || event.metaKey) {
                 handleZoom(event);
             } else {

@@ -21,7 +21,7 @@ export const Suggestions = observer(
             hideSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
-            editorEngine.errors.validErrors.length > 0;
+            editorEngine.errors.errors.length > 0;
 
         return (
             <AnimatePresence>
