@@ -8,12 +8,12 @@ export const replaceCommand = (command: string, newCommand: string): string => {
         (packageManagers.includes(cmdName?.toString() || '') ? newCommand : cmdName) || '';
 
     // For Windows, wrap the entire command in single quotes to handle spaces in the command
-    if (process.platform === 'win32') {
-        return `"${quote([
-            '&',
-            finalCommand.toString(),
-            ...cmdArgs.map((arg) => arg?.toString() || ''),
-        ])}"`;
-    }
+    // if (process.platform === 'win32') {
+    //     return `"${quote([
+    //         '&',
+    //         finalCommand.toString(),
+    //         ...cmdArgs.map((arg) => arg?.toString() || ''),
+    //     ])}"`;
+    // }
     return quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')]);
 };
