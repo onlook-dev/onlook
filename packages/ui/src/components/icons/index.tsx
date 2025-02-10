@@ -73,6 +73,7 @@ import {
     ListBulletIcon,
     LockClosedIcon,
     LockOpen1Icon,
+    MagnifyingGlassIcon,
     MagicWandIcon,
     MinusCircledIcon,
     MinusIcon,
@@ -1245,6 +1246,7 @@ export const Icons = {
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
 
+    MagnifyingGlass: MagnifyingGlassIcon,
     MagicWand: MagicWandIcon,
     Minus: MinusIcon,
     MinusCircled: MinusCircledIcon,
