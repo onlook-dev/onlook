@@ -1,4 +1,6 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { invokeMainChannel, platformSlash } from '@/lib/utils';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -14,11 +16,16 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const ImagesTab = observer(() => {
+    const editorEngine = useEditorEngine();
+    const projectsManager = useProjectsManager();
+
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
-    const editorEngine = useEditorEngine();
+    const imageFolder: string | null = projectsManager.project?.folderPath
+        ? `${projectsManager.project.folderPath}${platformSlash}${DefaultSettings.IMAGE_FOLDER}`
+        : null;
 
     useEffect(() => {
         scanImages();
@@ -270,6 +277,15 @@ const ImagesTab = observer(() => {
                                                 <Button
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                                    onClick={() => {
+                                                        if (!imageFolder) {
+                                                            return;
+                                                        }
+                                                        invokeMainChannel(
+                                                            MainChannels.OPEN_IN_EXPLORER,
+                                                            imageFolder,
+                                                        );
+                                                    }}
                                                 >
                                                     <span className="flex w-full text-smallPlus items-center">
                                                         <Icons.File className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
