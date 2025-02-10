@@ -1,25 +1,24 @@
 import { parse, quote, type ParseEntry } from 'shell-quote';
-import { escapeWindowsPath } from '../utils/windows-path';
-import { escapeWindowsCommand } from '../utils/windows-command';
+import { buildPowerShellCommand, isPowerShellCommand } from '../utils/powershell-command';
 
 export const replaceCommand = (command: string, newCommand: string): string => {
-    // For Windows, we need to handle command parsing differently to preserve quotes
-    if (process.platform === 'win32') {
-        const parts = command.split(' ');
-        const [cmdName, ...cmdArgs] = parts;
-        const packageManagers = ['npm'];
-        const finalCommand = packageManagers.includes(cmdName)
-            ? escapeWindowsPath(newCommand)
-            : cmdName;
-        return escapeWindowsCommand([finalCommand, ...cmdArgs]);
-    }
-
-    // For non-Windows platforms, use shell-quote as before
     const parsedArgs = parse(command);
     const [cmdName, ...cmdArgs]: (ParseEntry | undefined)[] = parsedArgs;
     const packageManagers = ['npm'];
+
+    // For PowerShell, we need special handling
+    if (isPowerShellCommand(command)) {
+        if (packageManagers.includes(cmdName?.toString() || '')) {
+            return buildPowerShellCommand(
+                newCommand,
+                cmdArgs.map((arg) => arg?.toString() || ''),
+            );
+        }
+        return command; // Non-npm commands are passed through unchanged
+    }
+
+    // For non-Windows platforms, use shell-quote as before
     const finalCommand =
         (packageManagers.includes(cmdName?.toString() || '') ? newCommand : cmdName) || '';
-
     return quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')]);
 };
