@@ -168,7 +168,7 @@ export class ChatManager {
     async handleChatResponse(
         res: StreamResponse | null,
         requestType: StreamRequestType,
-        applyCode: boolean = false,
+        autoApplyCode: boolean = true,
     ) {
         if (!res) {
             console.error('No response found');
@@ -195,10 +195,6 @@ export class ChatManager {
             return;
         }
 
-        if (applyCode) {
-            this.code.applyCode(assistantMessage.id);
-        }
-
         if (
             requestType === StreamRequestType.CHAT &&
             this.conversation.current?.messages &&
@@ -209,6 +205,12 @@ export class ChatManager {
         }
 
         this.context.clearAttachments();
+
+        if (autoApplyCode) {
+            setTimeout(() => {
+                this.code.applyCode(assistantMessage.id);
+            }, 100);
+        }
     }
 
     dispose() {
