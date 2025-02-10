@@ -63,6 +63,9 @@ export class ChatCodeManager {
         }
 
         this.chat.suggestions.shouldHide = false;
+        setTimeout(() => {
+            this.editorEngine.webviews.reloadWebviews();
+        }, 500);
         sendAnalytics('apply code change');
     }
 
@@ -96,6 +99,9 @@ export class ChatCodeManager {
         message.applied = false;
         this.chat.conversation.current?.updateMessage(message);
         this.chat.conversation.saveConversationToStorage();
+        setTimeout(() => {
+            this.editorEngine.webviews.reloadWebviews();
+        }, 500);
         sendAnalytics('revert code change');
     }
 

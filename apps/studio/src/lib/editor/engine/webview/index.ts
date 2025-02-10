@@ -182,4 +182,10 @@ export class WebviewManager {
         this.editorEngine?.ast?.mappings?.remove(id);
         this.editorEngine?.errors.clearErrors(id);
     }
+
+    reloadWebviews() {
+        for (const webview of this.selected) {
+            webview.reload();
+        }
+    }
 }

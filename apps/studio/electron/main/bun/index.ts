@@ -5,10 +5,9 @@ import { __dirname } from '../index';
 import { replaceCommand } from './parse';
 
 export const getBunExecutablePath = (): string => {
-    const platform = process.platform;
     const arch = process.arch === 'arm64' ? 'aarch64' : process.arch;
     const isProduction = app.isPackaged;
-    const binName = platform === 'win32' ? `bun.exe` : `bun-${arch}`;
+    const binName = process.platform === 'win32' ? `bun.exe` : `bun-${arch}`;
 
     const bunPath = isProduction
         ? path.join(process.resourcesPath, 'bun', binName)
@@ -32,8 +31,8 @@ export const runBunCommand = (
     command: string,
     options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
-    const bunBinary = getBunExecutablePath();
-    const commandToExecute = replaceCommand(command, bunBinary);
+    const commandToExecute = getBunCommand(command);
+    const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
 
     return new Promise((resolve, reject) => {
         exec(
@@ -44,7 +43,8 @@ export const runBunCommand = (
                     ...options.env,
                     ...process.env,
                 },
-                maxBuffer: 1024 * 1024 * 10, // 10MB buffer to handle larger outputs
+                maxBuffer: 1024 * 1024 * 10,
+                shell,
             },
             (error: Error | null, stdout: string, stderr: string) => {
                 // Call the callbacks with the complete output
