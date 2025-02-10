@@ -1,8 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
-import type { FrameSettings } from '@onlook/models';
 import { DefaultSettings } from '@onlook/models/constants';
-import { nanoid } from 'nanoid';
 import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import DeleteKey from './Delete';
@@ -64,7 +62,7 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
     useHotkeys(Hotkey.DUPLICATE.command, () => {
         if (editorEngine.isWindowSelected) {
-            duplicateWindow();
+            editorEngine.duplicateWindow();
         } else {
             editorEngine.copy.duplicate();
         }
@@ -80,36 +78,6 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     // Move
     useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
     useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => editorEngine.move.moveSelected('down'));
-
-    function duplicateWindow(linked: boolean = false) {
-        const settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
-        if (settings) {
-            const currentFrame = settings;
-            const newFrame: FrameSettings = {
-                id: nanoid(),
-                url: currentFrame.url,
-                dimension: {
-                    width: currentFrame.dimension.width,
-                    height: currentFrame.dimension.height,
-                },
-                position: currentFrame.position,
-                duplicate: true,
-                linkedIds: linked ? [currentFrame.id] : [],
-                aspectRatioLocked: currentFrame.aspectRatioLocked,
-                orientation: currentFrame.orientation,
-                device: currentFrame.device,
-                theme: currentFrame.theme,
-            };
-
-            if (linked) {
-                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
-                editorEngine.canvas.saveFrame(currentFrame.id, {
-                    linkedIds: currentFrame.linkedIds,
-                });
-            }
-            editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
-        }
-    }
 
     return (
         <>

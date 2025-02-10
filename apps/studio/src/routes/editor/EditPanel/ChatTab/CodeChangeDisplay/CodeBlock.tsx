@@ -46,7 +46,7 @@ export const CodeBlock = ({
     };
 
     async function initMonaco() {
-        if (editorContainer.current) {
+        if (editorContainer.current?.style) {
             await initHighlighter();
             const height = getEditorHeight(code);
             editorContainer.current.style.height = `${height}px`;

@@ -1,7 +1,6 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
 import { invokeMainChannel } from '@/lib/utils';
-import type { FrameSettings } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
@@ -16,7 +15,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Kbd } from '@onlook/ui/kbd';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import { IDE } from '/common/ide';
@@ -39,6 +37,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
     const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
+    const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
 
     useEffect(() => {
         async function getIdeType() {
@@ -49,27 +48,19 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         getIdeType();
     }, [userManager.user]);
 
-    const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
-    const [settings, setSettings] = useState<FrameSettings>();
-
     useEffect(() => {
         updateMenuItems();
-        if (editorEngine.isWindowSelected) {
-            setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
-        }
-    }, [
-        editorEngine.elements.selected,
-        editorEngine.ast.mappings.layers,
-        editorEngine.webviews.selected,
-    ]);
+    }, [editorEngine.elements.selected, editorEngine.ast.mappings.layers]);
+
+    const OPEN_DEV_TOOL_ITEM: MenuItem = {
+        label: 'Open devtool',
+        action: () => editorEngine.inspect(),
+        icon: <Icons.Code className="mr-2 h-4 w-4" />,
+        hotkey: Hotkey.OPEN_DEV_TOOL,
+    };
 
     const TOOL_ITEMS: MenuItem[] = [
-        {
-            label: 'Open devtool',
-            action: () => editorEngine.inspect(),
-            icon: <Icons.Code className="mr-2 h-4 w-4" />,
-            hotkey: Hotkey.OPEN_DEV_TOOL,
-        },
+        OPEN_DEV_TOOL_ITEM,
         {
             label: 'Add to AI Chat',
             action: () => (editorEngine.editPanelTab = EditorTabValue.CHAT),
@@ -137,7 +128,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         },
         {
             label: 'Delete',
-            action: deleteDuplicateWindow,
+            action: () => editorEngine.elements.delete(),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
@@ -147,17 +138,16 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const WINDOW_ITEMS: MenuItem[] = [
         {
             label: 'Duplicate',
-            action: () => {
-                duplicateWindow();
-            },
+            action: () => editorEngine.duplicateWindow(),
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.DUPLICATE,
         },
         {
             label: 'Delete',
-            action: () => {
-                deleteDuplicateWindow();
-            },
+            action: () => editorEngine.deleteDuplicateWindow(),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.DELETE,
+            destructive: true,
         },
     ];
 
@@ -170,79 +160,38 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance = element.instanceId;
             root = element.oid;
         }
+        let menuItems: MenuItem[][] = [];
 
-        const UPDATED_TOOL_ITEMS: MenuItem[] = [
-            instance !== null && {
-                label: 'View instance code',
-                action: () => viewSource(instance),
-                icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
-            },
-            {
-                label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
-                disabled: !root,
-                action: () => viewSource(root),
-                icon: instance ? (
-                    <Icons.Component className="mr-2 h-4 w-4" />
-                ) : (
-                    <Icons.ExternalLink className="mr-2 h-4 w-4" />
-                ),
-            },
-            ...TOOL_ITEMS,
-        ].filter(Boolean) as MenuItem[];
+        if (editorEngine.isWindowSelected) {
+            menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
+        } else {
+            const updatedToolItems = [
+                instance !== null && {
+                    label: 'View instance code',
+                    action: () => viewSource(instance),
+                    icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
+                },
+                {
+                    label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
+                    disabled: !root,
+                    action: () => viewSource(root),
+                    icon: instance ? (
+                        <Icons.Component className="mr-2 h-4 w-4" />
+                    ) : (
+                        <Icons.ExternalLink className="mr-2 h-4 w-4" />
+                    ),
+                },
+                ...TOOL_ITEMS,
+            ].filter(Boolean) as MenuItem[];
 
-        const menuItems = [UPDATED_TOOL_ITEMS, GROUP_ITEMS, EDITING_ITEMS];
+            menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
+        }
 
         setMenuItems(menuItems);
     };
 
     function viewSource(oid: string | null) {
         editorEngine.code.viewSource(oid);
-    }
-
-    function duplicateWindow(linked: boolean = false) {
-        if (settings) {
-            const currentFrame = settings;
-            const newFrame: FrameSettings = {
-                id: nanoid(),
-                url: currentFrame.url,
-                dimension: {
-                    width: currentFrame.dimension.width,
-                    height: currentFrame.dimension.height,
-                },
-                position: currentFrame.position,
-                duplicate: true,
-                linkedIds: linked ? [currentFrame.id] : [],
-                aspectRatioLocked: currentFrame.aspectRatioLocked,
-                orientation: currentFrame.orientation,
-                device: currentFrame.device,
-                theme: currentFrame.theme,
-            };
-
-            if (linked) {
-                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
-                editorEngine.canvas.saveFrame(currentFrame.id, {
-                    linkedIds: currentFrame.linkedIds,
-                });
-            }
-            editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
-        }
-    }
-
-    function deleteDuplicateWindow() {
-        if (settings && settings.duplicate) {
-            editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
-                (frame) => frame.id !== settings.id,
-            );
-
-            editorEngine.canvas.frames.forEach((frame) => {
-                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
-            });
-
-            const webview = editorEngine.webviews.getWebview(settings.id);
-            if (webview) {
-                editorEngine.webviews.deregister(webview);
-            }
-        }
     }
 
     return (

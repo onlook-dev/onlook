@@ -23,7 +23,7 @@ const DeleteKey = () => {
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
         if (editorEngine.isWindowSelected) {
-            deleteDuplicateWindow();
+            editorEngine.deleteDuplicateWindow();
         } else {
             if (shouldWarnDelete) {
                 setShowDeleteDialog(true);
@@ -42,24 +42,6 @@ const DeleteKey = () => {
         editorEngine.elements.delete();
         setShowDeleteDialog(false);
     };
-
-    function deleteDuplicateWindow() {
-        const settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
-        if (settings && settings.duplicate) {
-            editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
-                (frame) => frame.id !== settings.id,
-            );
-
-            editorEngine.canvas.frames.forEach((frame) => {
-                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
-            });
-
-            const webview = editorEngine.webviews.getWebview(settings.id);
-            if (webview) {
-                editorEngine.webviews.deregister(webview);
-            }
-        }
-    }
 
     return (
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
