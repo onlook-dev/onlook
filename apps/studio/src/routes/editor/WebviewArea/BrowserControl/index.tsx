@@ -15,7 +15,6 @@ import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';
 
@@ -180,49 +179,6 @@ const BrowserControls = observer(
                 return webviewRef?.current?.canGoForward();
             } catch (e) {
                 return false;
-            }
-        }
-
-        function duplicateWindow(linked: boolean = false) {
-            const currentFrame = settings;
-            const newFrame: FrameSettings = {
-                id: nanoid(),
-                url: currentFrame.url,
-                dimension: {
-                    width: currentFrame.dimension.width,
-                    height: currentFrame.dimension.height,
-                },
-                position: currentFrame.position,
-                duplicate: true,
-                linkedIds: linked ? [currentFrame.id] : [],
-                aspectRatioLocked: currentFrame.aspectRatioLocked,
-                orientation: currentFrame.orientation,
-                device: currentFrame.device,
-                theme: currentFrame.theme,
-            };
-
-            if (linked) {
-                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
-                editorEngine.canvas.saveFrame(currentFrame.id, {
-                    linkedIds: currentFrame.linkedIds,
-                });
-            }
-
-            editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
-        }
-
-        function deleteDuplicateWindow() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
-            editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
-                (frame) => frame.id !== settings.id,
-            );
-
-            editorEngine.canvas.frames.forEach((frame) => {
-                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
-            });
-
-            if (webview) {
-                deregisterWebview();
             }
         }
 
@@ -438,7 +394,7 @@ const BrowserControls = observer(
                                 <Button
                                     variant={'ghost'}
                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                    onClick={() => duplicateWindow(true)}
+                                    onClick={() => editorEngine.duplicateWindow(true)}
                                 >
                                     <span className="flex w-full items-center text-smallPlus">
                                         <Icons.Copy className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
@@ -520,7 +476,7 @@ const BrowserControls = observer(
                                 <Button
                                     variant={'ghost'}
                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                    onClick={deleteDuplicateWindow}
+                                    onClick={() => editorEngine.deleteDuplicateWindow()}
                                     disabled={!settings.duplicate}
                                 >
                                     <span className="flex w-full items-center">

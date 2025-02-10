@@ -21,16 +21,13 @@ const EditPanel = observer(() => {
     const [settings, setSettings] = useState<FrameSettings>();
 
     useEffect(() => {
-        if (
-            editorEngine.webviews.selected.length > 0 &&
-            editorEngine.elements.selected.length === 0
-        ) {
+        if (editorEngine.isWindowSelected) {
             setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
             setWindowSettingsOpen(true);
         } else {
             setWindowSettingsOpen(false);
         }
-    }, [editorEngine.webviews.selected, editorEngine.elements.selected]);
+    }, [editorEngine.isWindowSelected]);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);

@@ -2,8 +2,10 @@ import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
+import type { FrameSettings } from '@onlook/models/projects';
 import type { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid/non-secure';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
@@ -122,6 +124,10 @@ export class EditorEngine {
     }
     get errors() {
         return this.errorManager;
+    }
+
+    get isWindowSelected() {
+        return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
     }
 
     set mode(mode: EditorMode) {
@@ -256,5 +262,59 @@ export class EditorEngine {
                 scaleFactor: 0.1,
             }),
         };
+    }
+
+    deleteDuplicateWindow() {
+        if (this.webviews.selected.length === 0) {
+            console.error('No window selected');
+            return;
+        }
+        const settings = this.canvas.getFrame(this.webviews.selected[0].id);
+        if (settings && settings.duplicate) {
+            this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);
+
+            this.canvas.frames.forEach((frame) => {
+                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
+            });
+
+            const webview = this.webviews.getWebview(settings.id);
+            if (webview) {
+                this.webviews.deregister(webview);
+            }
+        }
+    }
+
+    duplicateWindow(linked: boolean = false) {
+        if (this.webviews.selected.length === 0) {
+            console.error('No window selected');
+            return;
+        }
+        const settings = this.canvas.getFrame(this.webviews.selected[0].id);
+        if (settings) {
+            const currentFrame = settings;
+            const newFrame: FrameSettings = {
+                id: nanoid(),
+                url: currentFrame.url,
+                dimension: {
+                    width: currentFrame.dimension.width,
+                    height: currentFrame.dimension.height,
+                },
+                position: currentFrame.position,
+                duplicate: true,
+                linkedIds: linked ? [currentFrame.id] : [],
+                aspectRatioLocked: currentFrame.aspectRatioLocked,
+                orientation: currentFrame.orientation,
+                device: currentFrame.device,
+                theme: currentFrame.theme,
+            };
+
+            if (linked) {
+                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
+                this.canvas.saveFrame(currentFrame.id, {
+                    linkedIds: currentFrame.linkedIds,
+                });
+            }
+            this.canvas.frames = [...this.canvas.frames, newFrame];
+        }
     }
 }
