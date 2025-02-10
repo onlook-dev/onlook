@@ -1,11 +1,11 @@
-import { sendAnalytics, compressImage, invokeMainChannel } from '@/lib/utils';
+import type { ProjectsManager } from '@/lib/projects';
+import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
+import { MainChannels } from '@onlook/models/constants';
 import { getExtension } from 'mime-lite';
+import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
-import type { ProjectsManager } from '@/lib/projects';
-import { makeAutoObservable } from 'mobx';
-import { MainChannels } from '@onlook/models/constants';
 
 export class ImageManager {
     private images: ImageContentData[] = [];
@@ -19,45 +19,22 @@ export class ImageManager {
     }
 
     async upload(file: File): Promise<void> {
-        const SUPPORTED_MIME_TYPES = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'image/svg+xml',
-        ];
-
         try {
-            if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
-                throw new Error('Unsupported image type');
-            }
-
-            const compressedImage = await compressImage(file);
-
-            // If compression failed, fall back to original file
-            const base64Image =
-                compressedImage ||
-                (await new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        resolve(reader.result as string);
-                    };
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                }));
+            const buffer = await file.arrayBuffer();
+            const base64String = btoa(
+                new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
+            );
             const projectFolder = this.projectsManager.project?.folderPath;
-
             if (!projectFolder) {
                 console.error('Failed to write image, projectFolder not found');
                 return;
             }
 
-            await invokeMainChannel<string, string>(
-                MainChannels.SAVE_IMAGE_TO_PROJECT,
+            await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
                 projectFolder,
-                base64Image,
-                file.name,
-            );
+                content: base64String,
+                fileName: file.name,
+            });
 
             this.scanImages();
         } catch (error) {

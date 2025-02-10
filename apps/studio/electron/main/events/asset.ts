@@ -1,6 +1,6 @@
-import { ipcMain } from 'electron';
 import { MainChannels } from '@onlook/models/constants';
-import { scanNextJsImages, saveImageToProject } from '../assets';
+import { ipcMain } from 'electron';
+import { saveImageToProject, scanNextJsImages } from '../assets';
 
 export function listenForAssetMessages() {
     ipcMain.handle(MainChannels.SCAN_IMAGES_IN_PROJECT, async (_event, projectRoot: string) => {
@@ -10,8 +10,19 @@ export function listenForAssetMessages() {
 
     ipcMain.handle(
         MainChannels.SAVE_IMAGE_TO_PROJECT,
-        async (_event, image: string, fileName: string, mimeType: string) => {
-            const imagePath = await saveImageToProject(image, fileName, mimeType);
+        async (
+            _event,
+            {
+                projectFolder,
+                content,
+                fileName,
+            }: {
+                projectFolder: string;
+                content: string;
+                fileName: string;
+            },
+        ) => {
+            const imagePath = await saveImageToProject(projectFolder, content, fileName);
             return imagePath;
         },
     );

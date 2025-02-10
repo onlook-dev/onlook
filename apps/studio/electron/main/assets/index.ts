@@ -1,8 +1,7 @@
+import type { ImageContentData } from '@onlook/models/actions';
+import { DefaultSettings } from '@onlook/models/constants';
 import { promises as fs, readFileSync } from 'fs';
 import * as path from 'path';
-import { writeFile } from '../code/files';
-import { DefaultSettings } from '@onlook/models/constants';
-import type { ImageContentData } from '@onlook/models/actions';
 
 async function scanImagesDirectory(projectRoot: string): Promise<ImageContentData[]> {
     const imagesPath = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
@@ -57,15 +56,27 @@ export async function scanNextJsImages(projectRoot: string): Promise<ImageConten
 }
 
 export async function saveImageToProject(
-    projectRoot: string,
-    image: string,
+    projectFolder: string,
+    content: string,
     fileName: string,
 ): Promise<string> {
     try {
-        const imageFolder = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
+        const imageFolder = path.join(projectFolder, DefaultSettings.IMAGE_FOLDER);
         const imagePath = path.join(imageFolder, fileName);
-        await writeFile(imagePath, image, 'base64');
-        return imagePath;
+
+        // Check if file already exists
+        try {
+            await fs.access(imagePath);
+            throw new Error(`File ${fileName} already exists`);
+        } catch (err: any) {
+            // File doesn't exist, proceed with saving
+            if (err.code === 'ENOENT') {
+                const buffer = Buffer.from(content, 'base64');
+                await fs.writeFile(imagePath, buffer);
+                return imagePath;
+            }
+            throw err;
+        }
     } catch (error) {
         console.error('Error uploading image:', error);
         throw error;
