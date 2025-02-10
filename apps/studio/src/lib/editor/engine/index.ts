@@ -37,6 +37,7 @@ export class EditorEngine {
     private codeManager: CodeManager;
     private pagesManager: PagesManager;
     private errorManager: ErrorManager;
+    private imageManager: ImageManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
@@ -49,7 +50,6 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
-    private imageManager: ImageManager = new ImageManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -60,6 +60,7 @@ export class EditorEngine {
         this.codeManager = new CodeManager(this, this.projectsManager);
         this.pagesManager = new PagesManager(this, this.projectsManager);
         this.errorManager = new ErrorManager(this, this.projectsManager);
+        this.imageManager = new ImageManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -169,8 +170,6 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        // Clear references
-        this.projectsManager = null as any;
         this.editorMode = EditorMode.DESIGN;
         this.editorPanelTab = EditorTabValue.STYLES;
     }

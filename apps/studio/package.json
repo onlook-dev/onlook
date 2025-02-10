@@ -103,7 +103,6 @@
         "@types/istextorbinary": "^2.3.4",
         "@types/js-string-escape": "^1.0.3",
         "@types/lodash": "^4.17.7",
-        "@types/mime-types": "^2.1.4",
         "@types/node": "^22.8.6",
         "@types/react": "^18.2.64",
         "@types/react-dom": "^18.2.21",

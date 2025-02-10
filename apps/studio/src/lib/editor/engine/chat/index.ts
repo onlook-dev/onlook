@@ -228,9 +228,5 @@ export class ChatManager {
         if (this.conversation) {
             this.conversation.current = null;
         }
-
-        // Clear references
-        this.editorEngine = null as any;
-        this.projectsManager = null as any;
     }
 }
