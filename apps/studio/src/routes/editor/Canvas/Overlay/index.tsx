@@ -4,17 +4,17 @@ import { EditorMode } from '@/lib/models';
 import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
 import { memo, useMemo } from 'react';
+import { OverlayChat } from './Chat';
 import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
 import { InsertRect } from './InsertRect';
 import { TextEditor } from './TextEditor';
-import { Chat } from './Chat';
 
 // Memoize child components
 const MemoizedInsertRect = memo(InsertRect);
 const MemoizedClickRect = memo(ClickRect);
 const MemoizedTextEditor = memo(TextEditor);
-const MemoizedChat = memo(Chat);
+const MemoizedChat = memo(OverlayChat);
 
 const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();

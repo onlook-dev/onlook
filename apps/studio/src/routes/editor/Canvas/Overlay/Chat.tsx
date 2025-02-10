@@ -45,7 +45,7 @@ const DEFAULT_INPUT_STATE = {
     isSubmitting: false,
 };
 
-export const Chat = observer(
+export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
