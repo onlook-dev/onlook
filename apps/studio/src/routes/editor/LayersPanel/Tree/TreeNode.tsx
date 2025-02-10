@@ -69,10 +69,15 @@ const TreeNode = observer(
         dragHandle?: React.RefObject<HTMLDivElement> | any;
     }) => {
         const editorEngine = useEditorEngine();
+        const isWindow = node.data.tagName.toLowerCase() === 'body';
         const nodeRef = useRef<HTMLDivElement>(null);
         const isText = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
             node.data.tagName.toLowerCase(),
         );
+        const isWindowSelected =
+            isWindow &&
+            editorEngine.elements.selected.length === 0 &&
+            editorEngine.webviews.selected.some((el) => el.id === node.data.webviewId);
 
         const { hovered, selected, isParentSelected } = useMemo(
             () => ({
@@ -120,7 +125,8 @@ const TreeNode = observer(
                         rounded:
                             (hovered && !isParentSelected && !selected) ||
                             (selected && node.isLeaf) ||
-                            (selected && node.isClosed),
+                            (selected && node.isClosed) ||
+                            isWindowSelected,
                         'rounded-t': selected && node.isInternal,
                         'rounded-b': isParentSelected && parentGroupEnd(node),
                         'rounded-none': isParentSelected && node.nextSibling,
@@ -138,10 +144,20 @@ const TreeNode = observer(
                         'bg-purple-300/30 dark:bg-purple-900/30': isParentSelected?.data.instanceId,
                         'bg-purple-300/50 dark:bg-purple-900/50':
                             hovered && isParentSelected?.data.instanceId,
-                        'text-white dark:text-primary': !node.data.instanceId && selected,
+                        'text-white dark:text-primary':
+                            (!node.data.instanceId && selected) || isWindowSelected,
+                        'bg-teal-500': isWindowSelected,
                     }),
                 ),
-            [hovered, selected, isParentSelected, node.isLeaf, node.isClosed, node.nextSibling],
+            [
+                hovered,
+                selected,
+                isParentSelected,
+                node.isLeaf,
+                node.isClosed,
+                node.nextSibling,
+                isWindowSelected,
+            ],
         );
 
         function sideOffset() {
@@ -189,16 +205,11 @@ const TreeNode = observer(
             switch (action) {
                 case MouseAction.MOVE:
                     editorEngine.elements.mouseover(el, webview);
-                    if (el.tagName.toLocaleLowerCase() === 'body') {
-                        editorEngine.webviews.select(webview);
-                        return;
-                    }
                     break;
                 case MouseAction.MOUSE_DOWN:
-                    if (el.tagName.toLocaleLowerCase() === 'body') {
-                        editorEngine.webviews.deselectAll();
+                    if (isWindow) {
+                        editorEngine.clearUI();
                         editorEngine.webviews.select(webview);
-                        editorEngine.elements.clear();
                         return;
                     }
                     if (e.shiftKey) {
@@ -220,7 +231,7 @@ const TreeNode = observer(
         }
 
         function getNodeName() {
-            if (node.data.tagName.toLocaleLowerCase() === 'body') {
+            if (isWindow) {
                 return 'window';
             }
             return (
