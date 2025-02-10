@@ -7,7 +7,8 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,6 +17,7 @@ const ImagesTab = observer(() => {
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
@@ -30,21 +32,27 @@ const ImagesTab = observer(() => {
         editorEngine.image.scanImages();
     };
 
-    const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadImage = async (file: File) => {
         setUploadError(null);
-        const files = Array.from(e.target.files || []);
-        const imageFile = files.find((file) => file.type.startsWith('image/'));
 
-        if (!imageFile) {
+        if (!file.type.startsWith('image/')) {
             setUploadError('Please select a valid image file');
             return;
         }
-
         try {
-            await editorEngine.image.upload(imageFile);
+            await editorEngine.image.upload(file);
         } catch (error) {
             setUploadError('Failed to upload image. Please try again.');
             console.error('Image upload error:', error);
+        }
+    };
+
+    const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+
+        for (const imageFile of imageFiles) {
+            await uploadImage(imageFile);
         }
     };
 
@@ -76,15 +84,72 @@ const ImagesTab = observer(() => {
         return imageAssets.filter((image) => image.fileName.includes(search));
     }, [imageAssets, search]);
 
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+
+        setIsDragging(false);
+        e.currentTarget.removeAttribute('data-dragging-image');
+
+        const items = Array.from(e.dataTransfer.items);
+        const imageFiles = items
+            .filter((item) => item.type.startsWith('image/'))
+            .map((item) => item.getAsFile())
+            .filter((file): file is File => file !== null);
+
+        for (const file of imageFiles) {
+            await uploadImage(file);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        handleDragStateChange(true, e);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            handleDragStateChange(false, e);
+        }
+    };
+
+    const handleDragStateChange = (isDragging: boolean, e: React.DragEvent<HTMLDivElement>) => {
+        const hasImage =
+            e.dataTransfer.types.length > 0 &&
+            Array.from(e.dataTransfer.items).some(
+                (item) =>
+                    item.type.startsWith('image/') ||
+                    (item.type === 'Files' && e.dataTransfer.types.includes('public.file-url')),
+            );
+        if (hasImage) {
+            setIsDragging(isDragging);
+            e.currentTarget.setAttribute('data-dragging-image', isDragging.toString());
+        }
+    };
+
     return (
-        <div className="w-full">
+        <div
+            className={cn(
+                'w-full h-full',
+                '[&[data-dragging-image=true]]:bg-teal-500/40',
+                isDragging && 'cursor-copy',
+            )}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+        >
             <input
                 type="file"
                 accept="image/*"
                 className="hidden"
                 id="images-upload"
                 onChange={handleUploadFile}
-                // multiple TODO: add multiple
+                multiple
             />
             {uploadError && (
                 <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
@@ -131,7 +196,9 @@ const ImagesTab = observer(() => {
                                     <Icons.Plus />
                                 </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Upload an image</TooltipContent>
+                            <TooltipPortal>
+                                <TooltipContent>Upload an image</TooltipContent>
+                            </TooltipPortal>
                         </Tooltip>
                     </div>
                     <div className="w-full flex flex-wrap gap-2">
