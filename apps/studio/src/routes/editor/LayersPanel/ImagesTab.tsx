@@ -1,7 +1,17 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { invokeMainChannel, platformSlash } from '@/lib/utils';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
+import type { ImageContentData } from '@onlook/models';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogTitle,
+    AlertDialogHeader,
+} from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
+import { Checkbox } from '@onlook/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,6 +25,81 @@ import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+function DeleteImageModal({
+    onDelete,
+    isOpen,
+    toggleOpen,
+}: {
+    onDelete: () => void;
+    isOpen: boolean;
+    toggleOpen: () => void;
+}) {
+    const handleDelete = () => {
+        onDelete();
+        toggleOpen();
+    };
+
+    return (
+        <AlertDialog open={isOpen} onOpenChange={toggleOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{'Delete this image?'}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {'This will delete the image from the project. You can undo this action.'}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <Button variant={'ghost'} onClick={toggleOpen}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant={'destructive'}
+                        className="rounded-md text-sm"
+                        onClick={handleDelete}
+                    >
+                        Delete
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+
+const RenameImageModal = observer(
+    ({
+        isOpen,
+        toggleOpen,
+        onRename,
+        newName,
+    }: {
+        isOpen: boolean;
+        toggleOpen: () => void;
+        onRename: (newName: string) => void;
+        newName: string;
+    }) => {
+        return (
+            <AlertDialog open={isOpen} onOpenChange={toggleOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Rename Image</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {`Rename image to "${newName}"`}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <Button variant={'ghost'} onClick={toggleOpen}>
+                            Cancel
+                        </Button>
+                        <Button variant={'default'} onClick={() => onRename(newName)}>
+                            Rename
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        );
+    },
+);
+
 const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
@@ -26,6 +111,9 @@ const ImagesTab = observer(() => {
     const imageFolder: string | null = projectsManager.project?.folderPath
         ? `${projectsManager.project.folderPath}${platformSlash}${DefaultSettings.IMAGE_FOLDER}`
         : null;
+    const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+    const [imageToRename, setImageToRename] = useState<string | null>(null);
+    const [newImageName, setNewImageName] = useState<string>('');
 
     useEffect(() => {
         scanImages();
@@ -142,6 +230,45 @@ const ImagesTab = observer(() => {
         }
     };
 
+    const handleDeleteImage = (image: ImageContentData) => {
+        setImageToDelete(image.fileName);
+    };
+
+    const onDeleteImage = () => {
+        if (imageToDelete) {
+            editorEngine.image.delete(imageToDelete);
+            setImageToDelete(null);
+        }
+    };
+
+    const handleRenameImage = (image: ImageContentData) => {
+        setImageToRename(image.fileName);
+        setNewImageName(image.fileName);
+    };
+
+    const handleRenameInputBlur = (value: string) => {
+        if (imageToRename) {
+            const extension = imageToRename.split('.').pop() || '';
+            const newBaseName = value.replace(`.${extension}`, '');
+            const proposedNewName = `${newBaseName}.${extension}`;
+
+            if (proposedNewName !== imageToRename) {
+                setNewImageName(proposedNewName);
+            } else {
+                setImageToRename(null);
+            }
+        }
+    };
+
+    const onRenameImage = (newName: string) => {
+        if (imageToRename && newName && newName !== imageToRename) {
+            console.log('Renaming image', imageToRename, newName);
+            editorEngine.image.rename(imageToRename, newName);
+        }
+        setImageToRename(null);
+        setNewImageName('');
+    };
+
     return (
         <div className="w-full h-full flex flex-col gap-2">
             <input
@@ -224,7 +351,25 @@ const ImagesTab = observer(() => {
                                     />
                                 </div>
                                 <span className="text-xs block w-full text-center truncate">
-                                    {image.fileName}
+                                    {imageToRename === image.fileName ? (
+                                        <input
+                                            type="text"
+                                            className="w-full px-1 text-center bg-background-active rounded"
+                                            defaultValue={image.fileName.replace(/\.[^/.]+$/, '')}
+                                            autoFocus
+                                            onBlur={(e) => handleRenameInputBlur(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.currentTarget.blur();
+                                                }
+                                                if (e.key === 'Escape') {
+                                                    setImageToRename(null);
+                                                }
+                                            }}
+                                        />
+                                    ) : (
+                                        image.fileName
+                                    )}
                                 </span>
                                 <div
                                     className={`absolute right-2 top-2 ${
@@ -253,6 +398,7 @@ const ImagesTab = observer(() => {
                                         >
                                             <DropdownMenuItem asChild>
                                                 <Button
+                                                    onClick={() => handleRenameImage(image)}
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                                 >
@@ -266,6 +412,7 @@ const ImagesTab = observer(() => {
                                                 <Button
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                                    onClick={() => handleDeleteImage(image)}
                                                 >
                                                     <span className="flex w-full text-smallPlus items-center">
                                                         <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
@@ -301,6 +448,20 @@ const ImagesTab = observer(() => {
                     </div>
                 )}
             </div>
+            <DeleteImageModal
+                onDelete={onDeleteImage}
+                isOpen={!!imageToDelete}
+                toggleOpen={() => setImageToDelete(null)}
+            />
+            <RenameImageModal
+                onRename={onRenameImage}
+                isOpen={!!imageToRename && !!newImageName && newImageName !== imageToRename}
+                toggleOpen={() => {
+                    setImageToRename(null);
+                    setNewImageName('');
+                }}
+                newName={newImageName}
+            />
         </div>
     );
 });

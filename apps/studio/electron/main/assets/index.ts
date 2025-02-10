@@ -75,3 +75,98 @@ export async function saveImageToProject(
         throw error;
     }
 }
+
+export async function deleteImageFromProject(
+    projectRoot: string,
+    imageName: string,
+): Promise<string> {
+    try {
+        const imageFolder = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
+        const imagePath = path.join(imageFolder, imageName);
+        await fs.unlink(imagePath);
+        return imagePath;
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        throw error;
+    }
+}
+
+export async function renameImageInProject(
+    projectRoot: string,
+    imageName: string,
+    newName: string,
+): Promise<string> {
+    try {
+        const imageFolder = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
+        if (!imageName || !newName) {
+            throw new Error('Image name and new name are required');
+        }
+
+        const oldImagePath = path.join(imageFolder, imageName);
+        const newImagePath = path.join(imageFolder, newName);
+
+        // Check if source file exists
+        try {
+            await fs.access(oldImagePath);
+        } catch {
+            throw new Error(`Source image "${imageName}" does not exist`);
+        }
+
+        // Check if destination file already exists
+        try {
+            await fs.access(newImagePath);
+            throw new Error(`A file named "${newName}" already exists`);
+        } catch (err) {
+            // This is the expected path - file should not exist
+        }
+
+        await fs.rename(oldImagePath, newImagePath);
+
+        // 2. Find and update all image references in the project
+        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const oldImageUrl = `/${prefix}/${imageName}`;
+        const newImageUrl = `/${prefix}/${newName}`;
+
+        // Search through all .tsx and .jsx files in the project
+        const sourceFiles = await findSourceFiles(projectRoot);
+        for (const file of sourceFiles) {
+            let content = await fs.readFile(file, 'utf8');
+
+            // Update image references in src attributes and background URLs
+            const hasChanges = content.includes(oldImageUrl);
+            if (hasChanges) {
+                content = content.replace(
+                    new RegExp(oldImageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+                    newImageUrl,
+                );
+                await fs.writeFile(file, content, 'utf8');
+            }
+        }
+
+        return newImagePath;
+    } catch (error) {
+        console.error('Error renaming image:', error);
+        throw error;
+    }
+}
+
+async function findSourceFiles(dir: string): Promise<string[]> {
+    const files: string[] = [];
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+            files.push(...(await findSourceFiles(fullPath)));
+        } else if (
+            entry.isFile() &&
+            (entry.name.endsWith('.tsx') ||
+                entry.name.endsWith('.jsx') ||
+                entry.name.endsWith('.ts'))
+        ) {
+            files.push(fullPath);
+        }
+    }
+
+    return files;
+}
