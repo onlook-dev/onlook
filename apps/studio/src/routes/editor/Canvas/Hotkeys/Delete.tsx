@@ -22,10 +22,14 @@ const DeleteKey = () => {
     );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
-        if (shouldWarnDelete) {
-            setShowDeleteDialog(true);
+        if (editorEngine.isWindowSelected) {
+            editorEngine.deleteDuplicateWindow();
         } else {
-            editorEngine.elements.delete();
+            if (shouldWarnDelete) {
+                setShowDeleteDialog(true);
+            } else {
+                editorEngine.elements.delete();
+            }
         }
     });
 
