@@ -136,17 +136,7 @@ const ImagesTab = observer(() => {
     };
 
     return (
-        <div
-            className={cn(
-                'w-full h-full',
-                '[&[data-dragging-image=true]]:bg-teal-500/40',
-                isDragging && 'cursor-copy',
-            )}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-        >
+        <div className="w-full h-full flex flex-col gap-2">
             <input
                 type="file"
                 accept="image/*"
@@ -160,52 +150,60 @@ const ImagesTab = observer(() => {
                     {uploadError}
                 </div>
             )}
-            {imageAssets.length === 0 ? (
-                <div className="h-screen flex items-center justify-center text-center opacity-70">
-                    <div>
-                        <Button
-                            onClick={handleClickAddButton}
-                            variant={'ghost'}
-                            size={'icon'}
-                            className="p-2 w-fit h-fit hover:bg-background-onlook"
-                        >
-                            <Icons.Plus />
-                        </Button>
-                        <span className="block w-2/3 mx-auto text-sm">
-                            Upload images using the Plus icon
-                        </span>
-                    </div>
-                </div>
-            ) : (
-                <div className="w-full flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                        <div className="relative w-full">
-                            <input
-                                placeholder="Search"
-                                className="flex h-9 w-full rounded border-none bg-secondary px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-background-active focus-visible:border-border-active focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
-                                type="text"
-                                onChange={handleSearch}
-                            />
-                            <div className="absolute pointer-events-none inset-y-0 right-0 h-full flex px-2 items-center justify-center">
-                                <Icons.MagnifyingGlass className="text-foreground-secondary" />
-                            </div>
+            {!!imageAssets.length && (
+                <div className="flex items-center gap-2">
+                    <div className="relative w-full">
+                        <input
+                            placeholder="Search"
+                            className="flex h-9 w-full rounded border-none bg-secondary px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-background-active focus-visible:border-border-active focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                            type="text"
+                            onChange={handleSearch}
+                        />
+                        <div className="absolute pointer-events-none inset-y-0 right-0 h-full flex px-2 items-center justify-center">
+                            <Icons.MagnifyingGlass className="text-foreground-secondary" />
                         </div>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant={'ghost'}
-                                    size={'icon'}
-                                    onClick={handleClickAddButton}
-                                >
-                                    <Icons.Plus />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipPortal>
-                                <TooltipContent>Upload an image</TooltipContent>
-                            </TooltipPortal>
-                        </Tooltip>
                     </div>
-                    <div className="w-full flex flex-wrap gap-2">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant={'ghost'} size={'icon'} onClick={handleClickAddButton}>
+                                <Icons.Plus />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                            <TooltipContent>Upload an image</TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
+                </div>
+            )}
+            <div
+                className={cn(
+                    'flex-1 overflow-y-auto',
+                    '[&[data-dragging-image=true]]:bg-teal-500/40',
+                    isDragging && 'cursor-copy',
+                )}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+            >
+                {imageAssets.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-center opacity-70">
+                        <div>
+                            <Button
+                                onClick={handleClickAddButton}
+                                variant={'ghost'}
+                                size={'icon'}
+                                className="p-2 w-fit h-fit hover:bg-background-onlook"
+                            >
+                                <Icons.Plus />
+                            </Button>
+                            <span className="block w-2/3 mx-auto text-sm">
+                                Upload images using the Plus icon
+                            </span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="w-full flex flex-wrap gap-2 p-2">
                         {filteredImages.map((image) => (
                             <div
                                 key={image.fileName}
@@ -285,8 +283,8 @@ const ImagesTab = observer(() => {
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 });
