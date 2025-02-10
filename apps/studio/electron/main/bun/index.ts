@@ -35,6 +35,8 @@ export const runBunCommand = (
     const bunBinary = getBunExecutablePath();
     const commandToExecute = replaceCommand(command, bunBinary);
 
+    const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+
     return new Promise((resolve, reject) => {
         exec(
             commandToExecute,
@@ -45,6 +47,7 @@ export const runBunCommand = (
                     ...process.env,
                 },
                 maxBuffer: 1024 * 1024 * 10, // 10MB buffer to handle larger outputs
+                shell,
             },
             (error: Error | null, stdout: string, stderr: string) => {
                 // Call the callbacks with the complete output
