@@ -2,7 +2,7 @@ import { useEditorEngine, useProjectsManager, useUserManager } from '@/component
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
-import { IdeType } from '@onlook/models/ide';
+import { DEFAULT_IDE } from '@onlook/models/ide';
 import type { UserSettings } from '@onlook/models/settings';
 import {
     DropdownMenu,
@@ -26,7 +26,7 @@ const OpenCode = observer(() => {
     const [folderPath, setFolder] = useState<string | null>(null);
     const [instance, setInstance] = useState<string | null>(null);
     const [root, setRoot] = useState<string | null>(null);
-    const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
+    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFolderHovered, setIsFolderHovered] = useState(false);
     const [scopeDropdownIcon, animateDropdownIcon] = useAnimate();
@@ -43,7 +43,7 @@ const OpenCode = observer(() => {
     useEffect(() => {
         invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
-            setIde(IDE.fromType(settings.ideType || IdeType.VS_CODE));
+            setIde(IDE.fromType(settings.ideType || DEFAULT_IDE));
         });
     }, []);
 
