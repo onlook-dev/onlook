@@ -7,6 +7,7 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -120,9 +121,18 @@ const ImagesTab = observer(() => {
                                 <Icons.MagnifyingGlass className="text-foreground-secondary" />
                             </div>
                         </div>
-                        <Button variant={'ghost'} size={'icon'} onClick={handleClickAddButton}>
-                            <Icons.Plus />
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant={'ghost'}
+                                    size={'icon'}
+                                    onClick={handleClickAddButton}
+                                >
+                                    <Icons.Plus />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Upload an image</TooltipContent>
+                        </Tooltip>
                     </div>
                     <div className="w-full flex flex-wrap gap-2">
                         {filteredImages.map((image) => (
@@ -160,7 +170,11 @@ const ImagesTab = observer(() => {
                                                 <Icons.DotsHorizontal className="text-foreground dark:text-white w-4 h-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="rounded-md bg-background">
+                                        <DropdownMenuContent
+                                            className="rounded-md bg-background"
+                                            align="start"
+                                            side="right"
+                                        >
                                             <DropdownMenuItem asChild>
                                                 <Button
                                                     variant={'ghost'}

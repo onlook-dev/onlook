@@ -54,7 +54,7 @@ const LayersPanel = observer(() => {
                             {capitalizeFirstLetter(TabValue.PAGES)}
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.IMAGES}
                         >
                             <div className="flex items-center gap-1">
