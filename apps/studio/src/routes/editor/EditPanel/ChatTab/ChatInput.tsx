@@ -239,7 +239,6 @@ export const ChatInput = observer(() => {
                     onCompositionStart={() => setIsComposing(true)}
                     onCompositionEnd={(e) => {
                         setIsComposing(false);
-                        setInputValue(e.currentTarget.value);
                     }}
                     onDragEnter={(e) => {
                         e.preventDefault();

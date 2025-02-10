@@ -16,6 +16,9 @@ export class MoveManager {
     }
 
     async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
+        if (this.editorEngine.chat.isWaiting) {
+            return;
+        }
         if (!this.editorEngine.elements.selected.some((selected) => selected.domId === el.domId)) {
             console.warn('Element not selected, cannot start drag');
             return;

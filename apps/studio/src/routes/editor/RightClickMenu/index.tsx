@@ -1,6 +1,9 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
+import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -14,6 +17,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import { IDE } from '/common/ide';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -31,6 +35,18 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
+    const userManager = useUserManager();
+    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
+
+    useEffect(() => {
+        async function getIdeType() {
+            const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
+            const ideType = (settings as { ideType?: IdeType })?.ideType || DEFAULT_IDE;
+            setIde(IDE.fromType(ideType));
+        }
+        getIdeType();
+    }, [userManager.user]);
+
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
 
     useEffect(() => {
@@ -149,14 +165,15 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance = element.instanceId;
             root = element.oid;
         }
+
         const UPDATED_TOOL_ITEMS: MenuItem[] = [
-            instance && {
+            instance !== null && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
                 icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
             },
             {
-                label: `View ${instance ? 'component' : 'element'} code`,
+                label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
                 disabled: !root,
                 action: () => viewSource(root),
                 icon: instance ? (
