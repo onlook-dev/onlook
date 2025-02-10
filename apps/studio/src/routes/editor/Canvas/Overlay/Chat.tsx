@@ -1,16 +1,12 @@
-import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useEditorEngine } from '@/components/Context';
+import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
+import { EditorMode, EditorTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
-import { StyleMode } from '@/lib/editor/engine/style';
-import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons/index';
-import { EditorTabValue } from '@/lib/models';
-import debounce from 'lodash/debounce';
-import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
-import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useRef, useState } from 'react';
 
 const SPACING = {
     base: 8,
@@ -124,7 +120,6 @@ export const Chat = observer(
             left: selectedEl.left + selectedEl.width / 2,
             transform: 'translate(-50%, 0)',
             transformOrigin: 'center center',
-            zIndex: 40,
             pointerEvents: 'auto',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         };
