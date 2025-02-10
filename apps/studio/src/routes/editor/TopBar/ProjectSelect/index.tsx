@@ -27,21 +27,7 @@ const ProjectBreadcrumb = observer(() => {
     const routeManager = useRouteManager();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const closeTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-    const handleMouseLeave = (e: React.MouseEvent) => {
-        const relatedTarget = e.relatedTarget as HTMLElement;
-        if (
-            !relatedTarget?.closest('[role="menu"]') &&
-            !relatedTarget?.closest('[role="menuitem"]')
-        ) {
-            if (closeTimeoutRef.current) {
-                clearTimeout(closeTimeoutRef.current);
-            }
-            closeTimeoutRef.current = setTimeout(() => setIsOpen(false), 100);
-        }
-    };
+    const closeTimeoutRef = useRef<Timer>();
 
     async function handleNavigateToProject(tab?: ProjectTabs) {
         try {
@@ -99,8 +85,12 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant={'ghost'}
-                                onMouseEnter={() => setIsOpen(true)}
-                                onMouseLeave={handleMouseLeave}
+                                onMouseEnter={() => {
+                                    if (closeTimeoutRef.current) {
+                                        clearTimeout(closeTimeoutRef.current);
+                                    }
+                                    setIsOpen(true);
+                                }}
                                 className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                             >
                                 <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
@@ -113,8 +103,16 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuContent
                             align="start"
                             className="w-48"
-                            onMouseEnter={() => setIsOpen(true)}
-                            onMouseLeave={handleMouseLeave}
+                            onMouseEnter={() => {
+                                if (closeTimeoutRef.current) {
+                                    clearTimeout(closeTimeoutRef.current);
+                                }
+                            }}
+                            onMouseLeave={() => {
+                                closeTimeoutRef.current = setTimeout(() => {
+                                    setIsOpen(false);
+                                }, 300);
+                            }}
                         >
                             <DropdownMenuItem onClick={handleReturn}>
                                 <div className="flex row center items-center group">
