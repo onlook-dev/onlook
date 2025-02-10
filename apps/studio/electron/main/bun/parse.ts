@@ -7,7 +7,7 @@ export const replaceCommand = (command: string, newCommand: string): string => {
     const finalCommand =
         (packageManagers.includes(cmdName?.toString() || '') ? newCommand : cmdName) || '';
 
-    // For Windows, wrap the entire command in single quotes to handle spaces in the command
+    // For Windows, add '&' to the command to handle special characters
     if (process.platform === 'win32') {
         return (
             '& ' + quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')])
