@@ -15,7 +15,7 @@ export const getBunExecutablePath = (): string => {
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
 
-    return isWindows ? `& "${bunPath}"` : bunPath;
+    return bunPath;
 };
 
 export interface RunBunCommandOptions {
@@ -34,8 +34,8 @@ export const runBunCommand = (
     options: RunBunCommandOptions,
 ): Promise<{ stdout: string; stderr: string }> => {
     const bunBinary = getBunExecutablePath();
-    const commandToExecute = replaceCommand(command, bunBinary);
-
+    const wrappedBinary = process.platform === 'win32' ? `& "${bunBinary}"` : bunBinary;
+    const commandToExecute = replaceCommand(command, wrappedBinary);
     const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
 
     return new Promise((resolve, reject) => {
@@ -47,7 +47,7 @@ export const runBunCommand = (
                     ...options.env,
                     ...process.env,
                 },
-                maxBuffer: 1024 * 1024 * 10, // 10MB buffer to handle larger outputs
+                maxBuffer: 1024 * 1024 * 10,
                 shell,
             },
             (error: Error | null, stdout: string, stderr: string) => {
