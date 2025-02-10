@@ -7,11 +7,13 @@ export const replaceCommand = (command: string, newCommand: string): string => {
     const finalCommand =
         (packageManagers.includes(cmdName?.toString() || '') ? newCommand : cmdName) || '';
 
-    let finalCommandString = finalCommand.toString();
-
     // For Windows, wrap the entire command in single quotes to handle spaces in the command
-    if (process.platform === 'win32') {
-        finalCommandString = `& "${finalCommandString}"`;
+    if (process.platform !== 'win32') {
+        return quote([
+            '&',
+            finalCommand.toString(),
+            ...cmdArgs.map((arg) => arg?.toString() || ''),
+        ]);
     }
-    return quote([finalCommandString, ...cmdArgs.map((arg) => arg?.toString() || '')]);
+    return quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')]);
 };
