@@ -205,10 +205,6 @@ const TreeNode = observer(
             switch (action) {
                 case MouseAction.MOVE:
                     editorEngine.elements.mouseover(el, webview);
-                    if (isWindow) {
-                        editorEngine.webviews.select(webview);
-                        return;
-                    }
                     break;
                 case MouseAction.MOUSE_DOWN:
                     if (isWindow) {
