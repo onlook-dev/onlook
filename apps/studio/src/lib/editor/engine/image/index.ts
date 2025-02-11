@@ -65,18 +65,23 @@ export class ImageManager {
     }
 
     async rename(imageName: string, newName: string): Promise<void> {
-        const projectFolder = this.projectsManager.project?.folderPath;
-        if (!projectFolder) {
-            console.error('Failed to rename image, projectFolder not found');
-            return;
+        try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                console.error('Failed to rename image, projectFolder not found');
+                return;
+            }
+            await invokeMainChannel<string, string>(
+                MainChannels.RENAME_IMAGE_IN_PROJECT,
+                projectFolder,
+                imageName,
+                newName,
+            );
+            this.scanImages();
+        } catch (error) {
+            console.error('Error renaming image:', error);
+            throw error;
         }
-        await invokeMainChannel<string, string>(
-            MainChannels.RENAME_IMAGE_IN_PROJECT,
-            projectFolder,
-            imageName,
-            newName,
-        );
-        this.scanImages();
     }
 
     async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {

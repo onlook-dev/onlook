@@ -1,14 +1,14 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { invokeMainChannel, platformSlash } from '@/lib/utils';
-import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import type { ImageContentData } from '@onlook/models';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import {
     AlertDialog,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
-    AlertDialogTitle,
     AlertDialogHeader,
+    AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import {
@@ -45,7 +45,7 @@ function DeleteImageModal({
                 <AlertDialogHeader>
                     <AlertDialogTitle>{'Delete this image?'}</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {'This will delete the image from the project. You can undo this action.'}
+                        {"This will delete the image from the project. You can't undo this action."}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -249,6 +249,10 @@ const ImagesTab = observer(() => {
     };
 
     const handleRenameInputBlur = (value: string) => {
+        if (value.trim() === '') {
+            setRenameError('Image name cannot be empty');
+            return;
+        }
         if (imageToRename) {
             const extension = imageToRename.split('.').pop() || '';
             const newBaseName = value.replace(`.${extension}`, '');
