@@ -25,14 +25,11 @@ export async function createProject(
         // Install dependencies
         const result = await runBunCommand('npm install -y --no-audit --no-fund', {
             cwd: fullPath,
-            callbacks: {
-                onStdout: (data) =>
-                    onProgress(
-                        CreateStage.INSTALLING,
-                        'Installing dependencies. This may take a few minutes...',
-                    ),
-            },
         });
+
+        if (!result.success) {
+            throw new Error(`Failed to install dependencies: ${result.error}`);
+        }
 
         onProgress(CreateStage.COMPLETE, 'Project created successfully!');
     } catch (error) {

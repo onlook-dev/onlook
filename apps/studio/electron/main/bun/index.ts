@@ -35,6 +35,7 @@ export async function runBunCommand(
         const commandToExecute = getBunCommand(command);
         const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
 
+        console.log('Executing command: ', commandToExecute);
         const buffer = execSync(commandToExecute, {
             cwd: options.cwd,
             env: {
