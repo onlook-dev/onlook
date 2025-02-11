@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { execSync } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
 import { __dirname } from '../index';
@@ -19,57 +19,38 @@ export const getBunExecutablePath = (): string => {
 export interface RunBunCommandOptions {
     cwd: string;
     env?: NodeJS.ProcessEnv;
-    callbacks?: {
-        onStdout?: (data: string) => void;
-        onStderr?: (data: string) => void;
-        onClose?: (code: number | null, signal: string | null) => void;
-        onError?: (err: Error) => void;
-    };
 }
 
-export const runBunCommand = (
+export interface RunBunCommandResult {
+    success: boolean;
+    error?: string;
+    output?: string;
+}
+
+export async function runBunCommand(
     command: string,
     options: RunBunCommandOptions,
-): Promise<{ stdout: string; stderr: string }> => {
-    const commandToExecute = getBunCommand(command);
-    const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+): Promise<RunBunCommandResult> {
+    try {
+        const commandToExecute = getBunCommand(command);
+        const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
 
-    return new Promise((resolve, reject) => {
-        exec(
-            commandToExecute,
-            {
-                cwd: options.cwd,
-                env: {
-                    ...options.env,
-                    ...process.env,
-                },
-                maxBuffer: 1024 * 1024 * 10,
-                shell,
+        const buffer = execSync(commandToExecute, {
+            cwd: options.cwd,
+            env: {
+                ...options.env,
+                ...process.env,
             },
-            (error: Error | null, stdout: string, stderr: string) => {
-                // Call the callbacks with the complete output
-                if (stdout && options.callbacks?.onStdout) {
-                    options.callbacks.onStdout(stdout);
-                }
+            maxBuffer: 1024 * 1024 * 10,
+            shell,
+        });
 
-                if (stderr && options.callbacks?.onStderr) {
-                    options.callbacks.onStderr(stderr);
-                }
-
-                if (error) {
-                    options.callbacks?.onError?.(error);
-                    reject(
-                        new Error(`Process exited with error: ${error.message}\nStderr: ${stderr}`),
-                    );
-                    return;
-                }
-
-                options.callbacks?.onClose?.(0, null);
-                resolve({ stdout, stderr });
-            },
-        );
-    });
-};
+        return { success: true, output: buffer.toString() };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+}
 
 export const getBunCommand = (command: string): string => {
     const bunExecutable = getBunExecutablePath();

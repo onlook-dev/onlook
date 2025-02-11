@@ -124,41 +124,17 @@ export function copyDir(src: string, dest: string) {
     }
 }
 
-export function runBuildScript(
+export async function runBuildScript(
     folderPath: string,
     buildScript: string,
 ): Promise<{
     success: boolean;
+    output?: string;
     error?: string;
 }> {
-    return new Promise((resolve, reject) => {
-        let buildOutput = '';
-        let buildError = '';
-
-        runBunCommand(buildScript, {
-            cwd: folderPath,
-            env: { ...process.env, NODE_ENV: 'production' },
-            callbacks: {
-                onStdout: (data) => {
-                    buildOutput += data;
-                },
-                onStderr: (data) => {
-                    buildError += data;
-                },
-                onClose: (code, signal) => {
-                    console.log(`Build script closed with code ${code} and signal ${signal}`);
-                    if (code === 0) {
-                        resolve({ success: true });
-                    } else {
-                        const fullError = buildError || buildOutput;
-                        resolve({
-                            success: false,
-                            error: fullError.trim() || 'Build script failed without output',
-                        });
-                    }
-                },
-            },
-        });
+    return await runBunCommand(buildScript, {
+        cwd: folderPath,
+        env: { ...process.env, NODE_ENV: 'production' },
     });
 }
 
