@@ -132,16 +132,29 @@ export function runBuildScript(
     error?: string;
 }> {
     return new Promise((resolve, reject) => {
+        let buildOutput = '';
+        let buildError = '';
+
         runBunCommand(buildScript, {
             cwd: folderPath,
             env: { ...process.env, NODE_ENV: 'production' },
             callbacks: {
+                onStdout: (data) => {
+                    buildOutput += data;
+                },
+                onStderr: (data) => {
+                    buildError += data;
+                },
                 onClose: (code, signal) => {
                     console.log(`Build script closed with code ${code} and signal ${signal}`);
                     if (code === 0) {
                         resolve({ success: true });
                     } else {
-                        resolve({ success: false, error: 'Build script failed' });
+                        const fullError = buildError || buildOutput;
+                        resolve({
+                            success: false,
+                            error: fullError.trim() || 'Build script failed without output',
+                        });
                     }
                 },
             },
