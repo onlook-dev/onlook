@@ -54,9 +54,13 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
         {
             label: 'Delete',
             action: () => {
-                //TODO implement delete page
+                editorEngine.pages.deletePage(
+                    node.data.path,
+                    node.data.children && node.data.children?.length > 0 ? true : false,
+                );
             },
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
+            destructive: true,
         },
     ];
 
@@ -101,8 +105,14 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                             onClick={item.action}
                             className="cursor-pointer"
                         >
-                            <span className="flex w-full items-center gap-1">
+                            <span
+                                className={cn(
+                                    'flex w-full items-center gap-1',
+                                    item.destructive && 'text-red',
+                                )}
+                            >
                                 {item.icon}
+
                                 {item.label}
                             </span>
                         </ContextMenuItem>
