@@ -11,7 +11,6 @@ import {
     AlertDialogHeader,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
-import { Checkbox } from '@onlook/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -152,7 +151,8 @@ const ImagesTab = observer(() => {
         }
     };
 
-    const handleClickAddButton = () => {
+    const handleClickAddButton = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.blur(); // Removes focus from the button to prevent tooltip from showing
         const input = document.getElementById('images-upload');
         if (input) {
             input.click();
@@ -291,7 +291,7 @@ const ImagesTab = observer(() => {
     }, [renameError]);
 
     return (
-        <div className="w-full h-full flex flex-col gap-2">
+        <div className="w-full h-[calc(100vh-7.75rem)] flex flex-col gap-2">
             <input
                 type="file"
                 accept="image/*"
@@ -330,7 +330,9 @@ const ImagesTab = observer(() => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipPortal>
-                            <TooltipContent>Upload an image</TooltipContent>
+                            <TooltipContent side="top" sideOffset={5}>
+                                Upload an image
+                            </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>
                 </div>
