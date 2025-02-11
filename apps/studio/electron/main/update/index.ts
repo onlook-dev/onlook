@@ -23,6 +23,9 @@ class AppUpdater {
         log.transports.file.level = 'info';
         autoUpdater.logger = log;
         autoUpdater.autoDownload = true;
+        autoUpdater.allowDowngrade = true;
+        autoUpdater.allowPrerelease = true;
+        autoUpdater.channel = 'latest';
         AppUpdater.instance = this;
     }
 
