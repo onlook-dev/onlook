@@ -5,6 +5,7 @@ import { Configuration, TargetConfiguration } from 'electron-builder';
  */
 const config: Configuration = {
     appId: 'dev.onlook.studio',
+    electronUpdaterCompatibility: '>= 0.1.46-alpha-1',
     asar: true,
     directories: {
         output: 'release/${version}',
