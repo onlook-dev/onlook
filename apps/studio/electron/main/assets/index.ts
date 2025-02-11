@@ -167,19 +167,40 @@ async function updateImageReferences(
             }
 
             const updatedContent = content.replace(pattern, newImageUrl);
-            await fs.writeFile(file, updatedContent, 'utf8');
+            const tempFile = `${file}.tmp`;
+            // Write to temp file first to avoid partial writes
+            try {
+                await fs.writeFile(tempFile, updatedContent, 'utf8');
+                await fs.rename(tempFile, file);
+            } catch (error) {
+                try {
+                    await fs.unlink(tempFile);
+                } catch {
+                    // Ignore cleanup errors
+                }
+                throw error;
+            }
         }),
     );
 }
 
-async function findSourceFiles(dir: string): Promise<string[]> {
+async function findSourceFiles(
+    dirPath: string,
+    maxDepth: number = 10,
+    currentDepth: number = 0,
+): Promise<string[]> {
+    if (currentDepth >= maxDepth) {
+        console.warn(`Max directory depth (${maxDepth}) reached at: ${dirPath}`);
+        return [];
+    }
+
     const files: string[] = [];
-    const entries = await fs.readdir(dir, { withFileTypes: true });
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
     for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
+        const fullPath = path.join(dirPath, entry.name);
         if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
-            files.push(...(await findSourceFiles(fullPath)));
+            files.push(...(await findSourceFiles(fullPath, maxDepth, currentDepth + 1)));
         } else if (
             entry.isFile() &&
             (entry.name.endsWith('.tsx') ||
