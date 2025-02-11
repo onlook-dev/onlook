@@ -25,6 +25,7 @@ export enum WebviewChannels {
     WINDOW_MUTATED = 'window-mutated',
     DOM_PROCESSED = 'dom-processed',
     GET_WEBVIEW_ID = 'get-webview-id',
+    IMAGE_DROPPED = 'image-dropped',
 }
 
 export enum MainChannels {

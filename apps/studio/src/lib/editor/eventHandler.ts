@@ -23,6 +23,7 @@ export class WebviewEventHandler {
             [WebviewChannels.ELEMENT_TEXT_EDITED]: this.handleElementTextEdited(),
             [WebviewChannels.DOM_PROCESSED]: this.handleDomProcessed(),
             [WebviewChannels.GET_WEBVIEW_ID]: this.handleGetWebviewId(),
+            [WebviewChannels.IMAGE_DROPPED]: this.handleImageDropped(),
         };
     }
 
@@ -219,6 +220,38 @@ export class WebviewEventHandler {
 
     handleConsoleMessage(e: Electron.ConsoleMessageEvent) {
         console.log(`%c ${e.message}`, 'background: #000; color: #AAFF00');
+    }
+
+    handleImageDropped() {
+        return async (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for image dropped event');
+                return;
+            }
+
+            const { imageData, target } = e.args[0] as {
+                imageData: { content: string; mimeType: string; fileName: string };
+                target: { domId: string; oid: string };
+            };
+            const webview = e.target as Electron.WebviewTag;
+
+            if (!target) {
+                console.error('No target element found for image dropped event');
+                return;
+            }
+
+            const domEl = this.editorEngine.ast.getElementFromDomId(target.domId, webview.id);
+            if (!domEl) {
+                console.error('No target element found for image dropped event');
+                return;
+            }
+
+            this.editorEngine.image.handleImageDrop(imageData, {
+                domId: target.domId,
+                oid: target.oid,
+                webviewId: webview.id,
+            });
+        };
     }
 
     dispose() {

@@ -165,4 +165,22 @@ export class ImageManager {
     dispose() {
         this.images = [];
     }
+
+    handleImageDrop(imageData: ImageContentData, target: ActionTarget) {
+        if (!target) {
+            return;
+        }
+
+        const action: InsertImageAction = {
+            type: 'insert-image',
+            targets: [target],
+            image: {
+                content: imageData.content,
+                fileName: imageData.fileName,
+                mimeType: imageData.mimeType,
+            },
+        };
+
+        this.editorEngine.action.run(action);
+    }
 }

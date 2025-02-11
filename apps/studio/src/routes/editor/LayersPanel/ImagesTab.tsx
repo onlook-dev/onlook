@@ -290,6 +290,17 @@ const ImagesTab = observer(() => {
         }
     }, [renameError]);
 
+    const handleImageDragStart = (e: React.DragEvent<HTMLDivElement>, image: ImageContentData) => {
+        e.dataTransfer.setData(
+            'application/json',
+            JSON.stringify({
+                type: 'image',
+                content: image.content,
+                mimeType: image.mimeType,
+            }),
+        );
+    };
+
     return (
         <div className="w-full h-[calc(100vh-7.75rem)] flex flex-col gap-2">
             <input
@@ -370,8 +381,10 @@ const ImagesTab = observer(() => {
                             <div
                                 key={image.fileName}
                                 className="relative group flex-shrink-0 w-[120px]"
+                                draggable
+                                onDragStart={(e) => handleImageDragStart(e, image)}
                             >
-                                <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center">
+                                <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move">
                                     <img
                                         className="w-full h-full object-cover"
                                         src={image.content}
