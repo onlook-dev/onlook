@@ -245,7 +245,7 @@ export class PagesManager {
 
             await this.scanPages();
         } catch (error) {
-            console.error('Failed to create page:', error);
+            console.error('Failed to delete page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(errorMessage);
         }
