@@ -1,4 +1,5 @@
 import { addNextBuildConfig } from '@onlook/foundation';
+import type { RunBunCommandResult } from '@onlook/models';
 import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import {
     appendFileSync,
@@ -124,28 +125,13 @@ export function copyDir(src: string, dest: string) {
     }
 }
 
-export function runBuildScript(
+export async function runBuildScript(
     folderPath: string,
     buildScript: string,
-): Promise<{
-    success: boolean;
-    error?: string;
-}> {
-    return new Promise((resolve, reject) => {
-        runBunCommand(buildScript, {
-            cwd: folderPath,
-            env: { ...process.env, NODE_ENV: 'production' },
-            callbacks: {
-                onClose: (code, signal) => {
-                    console.log(`Build script closed with code ${code} and signal ${signal}`);
-                    if (code === 0) {
-                        resolve({ success: true });
-                    } else {
-                        resolve({ success: false, error: 'Build script failed' });
-                    }
-                },
-            },
-        });
+): Promise<RunBunCommandResult> {
+    return await runBunCommand(buildScript, {
+        cwd: folderPath,
+        env: { ...process.env, NODE_ENV: 'production' },
     });
 }
 
