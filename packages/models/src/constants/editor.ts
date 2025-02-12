@@ -71,4 +71,5 @@ export const DefaultSettings = {
         install: 'npm install',
     },
     IMAGE_FOLDER: 'public/images',
+    IMAGE_DIMENSION: { width: '100px', height: '100px' },
 };

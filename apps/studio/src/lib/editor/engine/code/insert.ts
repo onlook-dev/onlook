@@ -18,6 +18,10 @@ export function getInsertedElement(
             newClasses,
         ),
         [EditorAttributes.DATA_ONLOOK_ID]: actionElement.oid,
+        ...(actionElement.tagName.toLowerCase() === 'img' && {
+            src: actionElement.attributes['src'],
+            alt: actionElement.attributes['alt'],
+        }),
     };
 
     let children: CodeInsert[] = [];

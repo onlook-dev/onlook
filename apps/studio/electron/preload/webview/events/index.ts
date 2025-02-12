@@ -29,7 +29,6 @@ export function listenForEvents() {
     listenForWindowEvents();
     listenForDomMutation();
     listenForEditEvents();
-    listenForDocumentEvents();
 }
 
 function listenForWindowEvents() {
@@ -131,50 +130,5 @@ function listenForEditEvents() {
 
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
         processDom();
-    });
-}
-
-function listenForDocumentEvents() {
-    document.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer!.dropEffect = 'copy';
-    });
-
-    document.addEventListener('drop', (e) => {
-        try {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const data = e.dataTransfer?.getData('application/json');
-            if (!data) {
-                return;
-            }
-
-            const dragData = JSON.parse(data);
-            if (dragData.type !== 'image') {
-                return;
-            }
-
-            const target = e.target as HTMLElement;
-            const odid = target.getAttribute('data-odid');
-            const oid = target.getAttribute('data-oid');
-            if (!odid || !oid) {
-                return;
-            }
-
-            ipcRenderer.sendToHost(WebviewChannels.IMAGE_DROPPED, {
-                imageData: {
-                    content: dragData.content,
-                    mimeType: dragData.mimeType,
-                    fileName: dragData.fileName,
-                },
-                target: {
-                    domId: odid,
-                    oid: oid,
-                },
-            });
-        } catch (error) {
-            console.error('Error handling image drop:', error);
-        }
     });
 }

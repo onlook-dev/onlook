@@ -23,6 +23,7 @@ import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { EditorMode } from '@/lib/models';
 
 function DeleteImageModal({
     onDelete,
@@ -295,6 +296,7 @@ const ImagesTab = observer(() => {
             'application/json',
             JSON.stringify({
                 type: 'image',
+                fileName: image.fileName,
                 content: image.content,
                 mimeType: image.mimeType,
             }),
@@ -383,6 +385,8 @@ const ImagesTab = observer(() => {
                                 className="relative group flex-shrink-0 w-[120px]"
                                 draggable
                                 onDragStart={(e) => handleImageDragStart(e, image)}
+                                onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
+                                onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
                             >
                                 <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move">
                                     <img
