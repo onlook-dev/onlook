@@ -3,9 +3,9 @@ import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
-import { runBunCommand } from '../bun';
 import projectCreator from '../create';
 import { createProject } from '../create/install';
+import { installProjectDependencies } from '../create/setup';
 
 export function listenForCreateMessages() {
     ipcMain.handle(MainChannels.CREATE_NEW_PROJECT, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -30,26 +30,7 @@ export function listenForCreateMessages() {
                 });
             };
             const { folderPath, installCommand } = args;
-            return runBunCommand(installCommand, {
-                cwd: folderPath,
-                callbacks: {
-                    onStdout: (data) => progressCallback(SetupStage.CONFIGURING, data),
-                    onStderr: (data) => progressCallback(SetupStage.CONFIGURING, data),
-                    onClose: (code, signal) => {
-                        if (code !== 0) {
-                            progressCallback(
-                                SetupStage.ERROR,
-                                `Failed to install dependencies. Code: ${code}, Signal: ${signal}`,
-                            );
-                        } else {
-                            progressCallback(
-                                SetupStage.COMPLETE,
-                                'Project dependencies installed.',
-                            );
-                        }
-                    },
-                },
-            });
+            return installProjectDependencies(folderPath, installCommand, progressCallback);
         },
     );
 

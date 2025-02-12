@@ -8,23 +8,15 @@ export const installProjectDependencies = async (
 ): Promise<void> => {
     try {
         onProgress(SetupStage.INSTALLING, 'Installing required packages...');
-        runBunCommand(installCommand, {
+        const result = await runBunCommand(installCommand, {
             cwd: targetPath,
-            callbacks: {
-                onStdout: (data) => onProgress(SetupStage.INSTALLING, data),
-                onStderr: (data) => onProgress(SetupStage.INSTALLING, data),
-                onClose: (code, signal) => {
-                    if (code !== 0) {
-                        onProgress(
-                            SetupStage.ERROR,
-                            `Failed to install dependencies. Code: ${code}, Signal: ${signal}`,
-                        );
-                    } else {
-                        onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
-                    }
-                },
-            },
         });
+
+        if (!result.success) {
+            throw new Error(`Failed to install dependencies: ${result.error}`);
+        }
+
+        onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
     } catch (err) {
         console.error(err);
         onProgress(
