@@ -1,15 +1,14 @@
 import { EditorMode } from '@/lib/models';
 import { createDomId, createOid } from '@/lib/utils';
+import type { ImageContentData } from '@onlook/models';
 import type {
     ActionElement,
     ActionLocation,
     ActionTarget,
     InsertElementAction,
-    UpdateStyleAction,
 } from '@onlook/models/actions';
 import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
-import type { ImageContentData } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
@@ -266,66 +265,6 @@ export class InsertManager {
             editText: false,
             pasteParams: null,
         };
-        // If current element is an image, replace it
-        // Since I didn't support update-element yet, I'm not using this
-        // TODO: support update-element
-
-        // if (targetElement.tagName?.toLowerCase() === 'img') {
-        //     const imageElement: ActionElement = {
-        //         domId: targetElement.domId,
-        //         oid: targetElement.oid,
-        //         tagName: 'img',
-        //         children: [],
-        //         attributes: {
-        //             [EditorAttributes.DATA_ONLOOK_ID]: targetElement.oid,
-        //             [EditorAttributes.DATA_ONLOOK_DOM_ID]: targetElement.domId,
-        //             [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-        //             src: `/${prefix}/${imageData.fileName}`,
-        //         },
-        //         styles: {
-        //             width: `${targetElement.rect.width}px`,
-        //             height: `${targetElement.rect.height}px`,
-        //         },
-        //         textContent: null,
-        //     };
-        //     const action: InsertElementAction = {
-        //         type: 'insert-element',
-        //         targets: [
-        //             {
-        //                 webviewId: webview.id,
-        //                 domId: targetElement.domId,
-        //                 oid: targetElement.oid,
-        //             },
-        //         ],
-        //         element: imageElement,
-        //         location,
-        //         editText: false,
-        //         pasteParams: null,
-        //     };
-        //     this.editorEngine.action.run(action);
-        //     return;
-        // }
-
-        // If current element is not an image, update its background image
-        // const updateAction: UpdateStyleAction = {
-        //     type: 'update-style',
-        //     targets: [
-        //         {
-        //             change: {
-        //                 updated: {
-        //                     backgroundImage: `url('/${prefix}/${imageData.fileName}')`,
-        //                     backgroundSize: 'cover',
-        //                     backgroundPosition: 'center',
-        //                 },
-        //                 original: {},
-        //             },
-
-        //             domId: targetElement.domId,
-        //             oid: targetElement.oid,
-        //             webviewId: webview.id,
-        //         },
-        //     ],
-        // };
         this.editorEngine.action.run(action);
     }
 
