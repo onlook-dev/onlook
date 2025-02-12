@@ -8,7 +8,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
-import ImagesTab from './ImagesTab';
+import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
 import { capitalizeFirstLetter } from '/common/helpers';

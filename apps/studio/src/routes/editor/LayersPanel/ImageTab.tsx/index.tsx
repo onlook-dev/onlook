@@ -1,15 +1,8 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { EditorMode } from '@/lib/models';
 import { invokeMainChannel, platformSlash } from '@/lib/utils';
 import type { ImageContentData } from '@onlook/models';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -23,82 +16,8 @@ import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { EditorMode } from '@/lib/models';
-
-function DeleteImageModal({
-    onDelete,
-    isOpen,
-    toggleOpen,
-}: {
-    onDelete: () => void;
-    isOpen: boolean;
-    toggleOpen: () => void;
-}) {
-    const handleDelete = () => {
-        onDelete();
-        toggleOpen();
-    };
-
-    return (
-        <AlertDialog open={isOpen} onOpenChange={toggleOpen}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{'Delete this image?'}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        {"This will delete the image from the project. You can't undo this action."}
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={toggleOpen}>
-                        Cancel
-                    </Button>
-                    <Button
-                        variant={'destructive'}
-                        className="rounded-md text-sm"
-                        onClick={handleDelete}
-                    >
-                        Delete
-                    </Button>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    );
-}
-
-const RenameImageModal = observer(
-    ({
-        isOpen,
-        toggleOpen,
-        onRename,
-        newName,
-    }: {
-        isOpen: boolean;
-        toggleOpen: () => void;
-        onRename: (newName: string) => void;
-        newName: string;
-    }) => {
-        return (
-            <AlertDialog open={isOpen} onOpenChange={toggleOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Rename Image</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {`Rename image to "${newName}"`}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <Button variant={'ghost'} onClick={toggleOpen}>
-                            Cancel
-                        </Button>
-                        <Button variant={'default'} onClick={() => onRename(newName)}>
-                            Rename
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        );
-    },
-);
+import DeleteImageModal from './DeleteModal';
+import RenameImageModal from './RenameModal';
 
 const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
