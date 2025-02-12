@@ -39,7 +39,7 @@ const LayersPanel = observer(() => {
                             {capitalizeFirstLetter(TabValue.LAYERS)}
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.COMPONENTS}
                         >
                             <div className="flex items-center gap-1">

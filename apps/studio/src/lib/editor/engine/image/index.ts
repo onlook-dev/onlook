@@ -20,15 +20,15 @@ export class ImageManager {
 
     async upload(file: File): Promise<void> {
         try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                throw new Error('Project folder not found');
+            }
+
             const buffer = await file.arrayBuffer();
             const base64String = btoa(
                 new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
             );
-            const projectFolder = this.projectsManager.project?.folderPath;
-            if (!projectFolder) {
-                console.error('Failed to write image, projectFolder not found');
-                return;
-            }
 
             await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
                 projectFolder,
@@ -49,8 +49,7 @@ export class ImageManager {
         try {
             const projectFolder = this.projectsManager.project?.folderPath;
             if (!projectFolder) {
-                console.error('Failed to delete image, projectFolder not found');
-                return;
+                throw new Error('Project folder not found');
             }
             await invokeMainChannel<string, string>(
                 MainChannels.DELETE_IMAGE_FROM_PROJECT,
@@ -68,8 +67,7 @@ export class ImageManager {
         try {
             const projectFolder = this.projectsManager.project?.folderPath;
             if (!projectFolder) {
-                console.error('Failed to rename image, projectFolder not found');
-                return;
+                throw new Error('Project folder not found');
             }
             await invokeMainChannel<string, string>(
                 MainChannels.RENAME_IMAGE_IN_PROJECT,
@@ -169,23 +167,5 @@ export class ImageManager {
 
     dispose() {
         this.images = [];
-    }
-
-    handleImageDrop(imageData: ImageContentData, target: ActionTarget) {
-        if (!target) {
-            return;
-        }
-
-        const action: InsertImageAction = {
-            type: 'insert-image',
-            targets: [target],
-            image: {
-                content: imageData.content,
-                fileName: imageData.fileName,
-                mimeType: imageData.mimeType,
-            },
-        };
-
-        this.editorEngine.action.run(action);
     }
 }

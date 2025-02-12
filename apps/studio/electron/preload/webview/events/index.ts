@@ -25,6 +25,7 @@ import {
     publishStyleUpdate,
     publishUngroupElement,
 } from './publish';
+
 export function listenForEvents() {
     listenForWindowEvents();
     listenForDomMutation();
