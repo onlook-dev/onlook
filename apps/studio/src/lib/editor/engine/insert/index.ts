@@ -216,12 +216,6 @@ export class InsertManager {
         dropPosition: { x: number; y: number },
         imageData: ImageContentData,
     ) {
-        console.log('insertDroppedImage called with:', {
-            dropPosition,
-            imageData,
-            stack: new Error().stack, // This will show us where the call is coming from
-        });
-
         const location = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${dropPosition.x}, ${dropPosition.y})`,
         );

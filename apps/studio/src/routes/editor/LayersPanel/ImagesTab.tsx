@@ -301,6 +301,12 @@ const ImagesTab = observer(() => {
                 mimeType: image.mimeType,
             }),
         );
+
+        for (const webview of editorEngine.webviews.webviews.values()) {
+            webview.webview.style.pointerEvents = 'none';
+        }
+
+        editorEngine.mode = EditorMode.INSERT_IMAGE;
     };
 
     return (
@@ -385,6 +391,12 @@ const ImagesTab = observer(() => {
                                 className="relative group flex-shrink-0 w-[120px]"
                                 draggable
                                 onDragStart={(e) => handleImageDragStart(e, image)}
+                                onDragEnd={() => {
+                                    for (const webview of editorEngine.webviews.webviews.values()) {
+                                        webview.webview.style.pointerEvents = 'auto';
+                                    }
+                                    editorEngine.mode = EditorMode.DESIGN;
+                                }}
                                 onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
                                 onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
                             >
