@@ -289,6 +289,7 @@ export class EditorEngine {
             console.error('Window not found');
             return;
         }
+        this.ast.mappings.remove(settings.id);
         this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);
         const webview = this.webviews.getWebview(settings.id);
         if (webview) {
