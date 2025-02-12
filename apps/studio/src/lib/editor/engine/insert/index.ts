@@ -234,12 +234,20 @@ export class InsertManager {
             return;
         }
 
-        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        // TODO: Handle if element is already an image, should update source
+        // TODO: Handle if element has background image, should update style
+        this.insertImageElement(webview, location, imageData);
+    }
 
+    insertImageElement(
+        webview: Electron.WebviewTag,
+        location: ActionLocation,
+        imageData: ImageContentData,
+    ) {
+        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
         const domId = createDomId();
         const oid = createOid();
 
-        // TODO: Handle if element is already an image, should update source
         const imageElement: ActionElement = {
             domId,
             oid,
