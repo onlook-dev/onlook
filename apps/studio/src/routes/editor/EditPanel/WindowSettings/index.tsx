@@ -36,7 +36,7 @@ const WindowSettings = ({
                     <Button
                         variant={'outline'}
                         className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
-                        onClick={() => editorEngine.duplicateWindow(false)}
+                        onClick={() => editorEngine.duplicateWindow(settings.id)}
                     >
                         <Icons.Copy className="mr-2" />
                         <span className="text-xs">Duplicate</span>
@@ -44,8 +44,8 @@ const WindowSettings = ({
                     <Button
                         variant={'outline'}
                         className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
-                        disabled={!settings.duplicate}
-                        onClick={() => editorEngine.deleteDuplicateWindow()}
+                        disabled={!editorEngine.canDeleteWindow()}
+                        onClick={() => editorEngine.deleteWindow(settings.id)}
                     >
                         <Icons.Trash className="mr-2" />
                         <span className="text-xs">Delete</span>

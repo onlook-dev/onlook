@@ -263,57 +263,69 @@ export class EditorEngine {
         };
     }
 
-    deleteDuplicateWindow() {
-        if (this.webviews.selected.length === 0) {
-            console.error('No window selected');
+    canDeleteWindow() {
+        return this.canvas.frames.length > 1;
+    }
+
+    deleteWindow(id?: string) {
+        if (this.canvas.frames.length === 1) {
+            console.error('Cannot delete the last window');
             return;
         }
-        const settings = this.canvas.getFrame(this.webviews.selected[0].id);
-        if (settings && settings.duplicate) {
-            this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);
-
-            this.canvas.frames.forEach((frame) => {
-                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
-            });
-
-            const webview = this.webviews.getWebview(settings.id);
-            if (webview) {
-                this.webviews.deregister(webview);
+        let settings: FrameSettings | null = null;
+        if (id) {
+            settings = this.canvas.getFrame(id) || null;
+            if (!settings) {
+                console.error('Window not found');
+                return;
             }
+        } else if (this.webviews.selected.length === 0) {
+            console.error('No window selected');
+            return;
+        } else {
+            settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
+        }
+        if (!settings) {
+            console.error('Window not found');
+            return;
+        }
+        this.ast.mappings.remove(settings.id);
+        this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);
+        const webview = this.webviews.getWebview(settings.id);
+        if (webview) {
+            this.webviews.deregister(webview);
         }
     }
 
-    duplicateWindow(linked: boolean = false) {
-        if (this.webviews.selected.length === 0) {
+    duplicateWindow(id?: string) {
+        let settings: FrameSettings | null = null;
+        if (id) {
+            settings = this.canvas.getFrame(id) || null;
+        } else if (this.webviews.selected.length === 0) {
             console.error('No window selected');
             return;
+        } else {
+            settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
         }
-        const settings = this.canvas.getFrame(this.webviews.selected[0].id);
-        if (settings) {
-            const currentFrame = settings;
-            const newFrame: FrameSettings = {
-                id: nanoid(),
-                url: currentFrame.url,
-                dimension: {
-                    width: currentFrame.dimension.width,
-                    height: currentFrame.dimension.height,
-                },
-                position: currentFrame.position,
-                duplicate: true,
-                linkedIds: linked ? [currentFrame.id] : [],
-                aspectRatioLocked: currentFrame.aspectRatioLocked,
-                orientation: currentFrame.orientation,
-                device: currentFrame.device,
-                theme: currentFrame.theme,
-            };
+        if (!settings) {
+            console.error('Window not found');
+            return;
+        }
+        const currentFrame = settings;
+        const newFrame: FrameSettings = {
+            id: nanoid(),
+            url: currentFrame.url,
+            dimension: {
+                width: currentFrame.dimension.width,
+                height: currentFrame.dimension.height,
+            },
+            position: currentFrame.position,
+            aspectRatioLocked: currentFrame.aspectRatioLocked,
+            orientation: currentFrame.orientation,
+            device: currentFrame.device,
+            theme: currentFrame.theme,
+        };
 
-            if (linked) {
-                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
-                this.canvas.saveFrame(currentFrame.id, {
-                    linkedIds: currentFrame.linkedIds,
-                });
-            }
-            this.canvas.frames = [...this.canvas.frames, newFrame];
-        }
+        this.canvas.frames = [...this.canvas.frames, newFrame];
     }
 }

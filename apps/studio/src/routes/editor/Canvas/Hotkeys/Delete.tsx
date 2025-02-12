@@ -23,7 +23,7 @@ const DeleteKey = () => {
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
         if (editorEngine.isWindowSelected) {
-            editorEngine.deleteDuplicateWindow();
+            editorEngine.deleteWindow();
         } else {
             if (shouldWarnDelete) {
                 setShowDeleteDialog(true);

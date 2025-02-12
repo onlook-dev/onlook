@@ -15,8 +15,6 @@ export interface FrameSettings {
     url: string;
     position: RectPosition;
     dimension: RectDimension;
-    linkedIds: string[] | null;
-    duplicate: boolean | null;
     orientation: Orientation | null;
     aspectRatioLocked: boolean | null;
     device: string | null;

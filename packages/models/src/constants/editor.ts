@@ -58,8 +58,6 @@ export const DefaultSettings = {
     URL: 'http://localhost:3000/',
     FRAME_POSITION: { x: 0, y: 0 },
     FRAME_DIMENSION: { width: 1536, height: 960 },
-    DUPLICATE: false,
-    LINKED_IDS: [],
     ASPECT_RATIO_LOCKED: false,
     DEVICE: 'Custom:Custom',
     THEME: Theme.Device,
