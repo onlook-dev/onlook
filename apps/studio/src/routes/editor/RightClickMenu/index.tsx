@@ -149,11 +149,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         },
         {
             label: 'Delete',
-            action: () => editorEngine.deleteDuplicateWindow(),
+            action: () => editorEngine.deleteWindow(editorEngine.webviews.selected[0].id),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
-            disabled: editorEngine.isDuplicateWindow,
+            disabled: !editorEngine.canDeleteWindow(),
         },
     ];
 
