@@ -1,5 +1,7 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { EditorMode } from '@/lib/models';
 import { invokeMainChannel, platformSlash } from '@/lib/utils';
+import type { ImageContentData } from '@onlook/models';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
@@ -14,6 +16,8 @@ import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import DeleteImageModal from './DeleteModal';
+import RenameImageModal from './RenameModal';
 
 const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -26,6 +30,10 @@ const ImagesTab = observer(() => {
     const imageFolder: string | null = projectsManager.project?.folderPath
         ? `${projectsManager.project.folderPath}${platformSlash}${DefaultSettings.IMAGE_FOLDER}`
         : null;
+    const [imageToDelete, setImageToDelete] = useState<string | null>(null);
+    const [imageToRename, setImageToRename] = useState<string | null>(null);
+    const [newImageName, setNewImageName] = useState<string>('');
+    const [renameError, setRenameError] = useState<string | null>(null);
 
     useEffect(() => {
         scanImages();
@@ -63,7 +71,8 @@ const ImagesTab = observer(() => {
         }
     };
 
-    const handleClickAddButton = () => {
+    const handleClickAddButton = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.blur(); // Removes focus from the button to prevent tooltip from showing
         const input = document.getElementById('images-upload');
         if (input) {
             input.click();
@@ -142,8 +151,89 @@ const ImagesTab = observer(() => {
         }
     };
 
+    const handleDeleteImage = (image: ImageContentData) => {
+        setImageToDelete(image.fileName);
+    };
+
+    const onDeleteImage = () => {
+        if (imageToDelete) {
+            editorEngine.image.delete(imageToDelete);
+            setImageToDelete(null);
+        }
+    };
+
+    const handleRenameImage = (image: ImageContentData) => {
+        setImageToRename(image.fileName);
+        setNewImageName(image.fileName);
+    };
+
+    const handleRenameInputBlur = (value: string) => {
+        if (value.trim() === '') {
+            setRenameError('Image name cannot be empty');
+            return;
+        }
+        if (imageToRename) {
+            const extension = imageToRename.split('.').pop() || '';
+            const newBaseName = value.replace(`.${extension}`, '');
+            const proposedNewName = `${newBaseName}.${extension}`;
+
+            if (proposedNewName !== imageToRename) {
+                setNewImageName(proposedNewName);
+            } else {
+                setImageToRename(null);
+            }
+        }
+    };
+
+    const onRenameImage = async (newName: string) => {
+        try {
+            if (imageToRename && newName && newName !== imageToRename) {
+                await editorEngine.image.rename(imageToRename, newName);
+            }
+        } catch (error) {
+            setRenameError(
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to rename image. Please try again.',
+            );
+            console.error('Image rename error:', error);
+            return;
+        } finally {
+            setImageToRename(null);
+            setNewImageName('');
+        }
+    };
+
+    useEffect(() => {
+        if (renameError) {
+            const timer = setTimeout(() => {
+                setRenameError(null);
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [renameError]);
+
+    const handleImageDragStart = (e: React.DragEvent<HTMLDivElement>, image: ImageContentData) => {
+        e.dataTransfer.setData(
+            'application/json',
+            JSON.stringify({
+                type: 'image',
+                fileName: image.fileName,
+                content: image.content,
+                mimeType: image.mimeType,
+            }),
+        );
+
+        for (const webview of editorEngine.webviews.webviews.values()) {
+            webview.webview.style.pointerEvents = 'none';
+        }
+
+        editorEngine.mode = EditorMode.INSERT_IMAGE;
+    };
+
     return (
-        <div className="w-full h-full flex flex-col gap-2">
+        <div className="w-full h-[calc(100vh-7.75rem)] flex flex-col gap-2">
             <input
                 type="file"
                 accept="image/*"
@@ -155,6 +245,11 @@ const ImagesTab = observer(() => {
             {uploadError && (
                 <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
                     {uploadError}
+                </div>
+            )}
+            {renameError && (
+                <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
+                    {renameError}
                 </div>
             )}
             {!!imageAssets.length && (
@@ -177,7 +272,9 @@ const ImagesTab = observer(() => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipPortal>
-                            <TooltipContent>Upload an image</TooltipContent>
+                            <TooltipContent side="top" sideOffset={5}>
+                                Upload an image
+                            </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>
                 </div>
@@ -215,8 +312,18 @@ const ImagesTab = observer(() => {
                             <div
                                 key={image.fileName}
                                 className="relative group flex-shrink-0 w-[120px]"
+                                draggable
+                                onDragStart={(e) => handleImageDragStart(e, image)}
+                                onDragEnd={() => {
+                                    for (const webview of editorEngine.webviews.webviews.values()) {
+                                        webview.webview.style.pointerEvents = 'auto';
+                                    }
+                                    editorEngine.mode = EditorMode.DESIGN;
+                                }}
+                                onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
+                                onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
                             >
-                                <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center">
+                                <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move">
                                     <img
                                         className="w-full h-full object-cover"
                                         src={image.content}
@@ -224,7 +331,25 @@ const ImagesTab = observer(() => {
                                     />
                                 </div>
                                 <span className="text-xs block w-full text-center truncate">
-                                    {image.fileName}
+                                    {imageToRename === image.fileName ? (
+                                        <input
+                                            type="text"
+                                            className="w-full p-1 text-center bg-background-active rounded "
+                                            defaultValue={image.fileName.replace(/\.[^/.]+$/, '')}
+                                            autoFocus
+                                            onBlur={(e) => handleRenameInputBlur(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.currentTarget.blur();
+                                                }
+                                                if (e.key === 'Escape') {
+                                                    setImageToRename(null);
+                                                }
+                                            }}
+                                        />
+                                    ) : (
+                                        image.fileName
+                                    )}
                                 </span>
                                 <div
                                     className={`absolute right-2 top-2 ${
@@ -253,6 +378,7 @@ const ImagesTab = observer(() => {
                                         >
                                             <DropdownMenuItem asChild>
                                                 <Button
+                                                    onClick={() => handleRenameImage(image)}
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                                 >
@@ -266,6 +392,7 @@ const ImagesTab = observer(() => {
                                                 <Button
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                                    onClick={() => handleDeleteImage(image)}
                                                 >
                                                     <span className="flex w-full text-smallPlus items-center">
                                                         <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
@@ -301,6 +428,20 @@ const ImagesTab = observer(() => {
                     </div>
                 )}
             </div>
+            <DeleteImageModal
+                onDelete={onDeleteImage}
+                isOpen={!!imageToDelete}
+                toggleOpen={() => setImageToDelete(null)}
+            />
+            <RenameImageModal
+                onRename={onRenameImage}
+                isOpen={!!imageToRename && !!newImageName && newImageName !== imageToRename}
+                toggleOpen={() => {
+                    setImageToRename(null);
+                    setNewImageName('');
+                }}
+                newName={newImageName}
+            />
         </div>
     );
 });

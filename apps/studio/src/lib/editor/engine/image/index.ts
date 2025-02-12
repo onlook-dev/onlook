@@ -20,15 +20,15 @@ export class ImageManager {
 
     async upload(file: File): Promise<void> {
         try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                throw new Error('Project folder not found');
+            }
+
             const buffer = await file.arrayBuffer();
             const base64String = btoa(
                 new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
             );
-            const projectFolder = this.projectsManager.project?.folderPath;
-            if (!projectFolder) {
-                console.error('Failed to write image, projectFolder not found');
-                return;
-            }
 
             await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
                 projectFolder,
@@ -49,8 +49,7 @@ export class ImageManager {
         try {
             const projectFolder = this.projectsManager.project?.folderPath;
             if (!projectFolder) {
-                console.error('Failed to delete image, projectFolder not found');
-                return;
+                throw new Error('Project folder not found');
             }
             await invokeMainChannel<string, string>(
                 MainChannels.DELETE_IMAGE_FROM_PROJECT,
@@ -60,6 +59,25 @@ export class ImageManager {
             this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
+            throw error;
+        }
+    }
+
+    async rename(imageName: string, newName: string): Promise<void> {
+        try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                throw new Error('Project folder not found');
+            }
+            await invokeMainChannel<string, string>(
+                MainChannels.RENAME_IMAGE_IN_PROJECT,
+                projectFolder,
+                imageName,
+                newName,
+            );
+            this.scanImages();
+        } catch (error) {
+            console.error('Error renaming image:', error);
             throw error;
         }
     }

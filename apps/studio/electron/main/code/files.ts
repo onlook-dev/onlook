@@ -1,7 +1,7 @@
 import { existsSync, promises as fs } from 'fs';
 import * as path from 'path';
 import prettier from 'prettier';
-import * as writeFileAtomic from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 import run from '../run';
 
 export async function readFile(filePath: string): Promise<string | null> {
@@ -43,9 +43,7 @@ export async function writeFile(
             fileContent = Buffer.from(base64Data, 'base64').toString('base64');
         }
 
-        const tempPath = `${fullPath}.tmp`;
-        writeFileAtomic.sync(tempPath, fileContent, encoding);
-        await fs.rename(tempPath, fullPath);
+        writeFileAtomic(fullPath, fileContent, encoding);
 
         if (isNewFile) {
             console.log('New file created:', fullPath);
