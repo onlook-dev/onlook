@@ -1,8 +1,12 @@
-import { execSync } from 'child_process';
+import type { RunBunCommandOptions, RunBunCommandResult } from '@onlook/models';
+import { exec } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
+import { promisify } from 'util';
 import { __dirname } from '../index';
 import { replaceCommand } from './parse';
+
+const execAsync = promisify(exec);
 
 export const getBunExecutablePath = (): string => {
     const arch = process.arch === 'arm64' ? 'aarch64' : process.arch;
@@ -16,37 +20,24 @@ export const getBunExecutablePath = (): string => {
     return bunPath;
 };
 
-export interface RunBunCommandOptions {
-    cwd: string;
-    env?: NodeJS.ProcessEnv;
-}
-
-export interface RunBunCommandResult {
-    success: boolean;
-    error?: string;
-    output?: string;
-}
-
 export async function runBunCommand(
     command: string,
     options: RunBunCommandOptions,
 ): Promise<RunBunCommandResult> {
     try {
         const commandToExecute = getBunCommand(command);
-        const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+        const shell = process.platform === 'win32' ? 'powershell.exe' : '/bin/sh';
 
-        console.log('Executing command: ', commandToExecute);
-        const buffer = execSync(commandToExecute, {
+        console.log('Executing command: ', commandToExecute, options.cwd);
+        const { stdout, stderr } = await execAsync(commandToExecute, {
             cwd: options.cwd,
-            env: {
-                ...options.env,
-                ...process.env,
-            },
             maxBuffer: 1024 * 1024 * 10,
+            env: options.env,
             shell,
         });
 
-        return { success: true, output: buffer.toString() };
+        console.log('Command executed with output: ', stdout);
+        return { success: true, output: stdout.toString(), error: stderr.toString() };
     } catch (error) {
         console.error(error);
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };

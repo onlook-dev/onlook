@@ -3,7 +3,6 @@ import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
-import { runBunCommand } from '../bun';
 import projectCreator from '../create';
 import { createProject } from '../create/install';
 import { installProjectDependencies } from '../create/setup';
