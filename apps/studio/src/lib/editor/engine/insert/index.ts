@@ -6,6 +6,7 @@ import type {
     ActionLocation,
     ActionTarget,
     InsertElementAction,
+    UpdateStyleAction,
 } from '@onlook/models/actions';
 import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
@@ -238,6 +239,7 @@ export class InsertManager {
         const domId = createDomId();
         const oid = createOid();
 
+        // TODO: Handle if element is already an image, should update source
         const imageElement: ActionElement = {
             domId,
             oid,
@@ -264,6 +266,34 @@ export class InsertManager {
             location,
             editText: false,
             pasteParams: null,
+        };
+        this.editorEngine.action.run(action);
+    }
+
+    updateElementBackgroundAction(
+        webview: Electron.WebviewTag,
+        targetElement: ActionElement,
+        imageData: ImageContentData,
+    ) {
+        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const action: UpdateStyleAction = {
+            type: 'update-style',
+            targets: [
+                {
+                    change: {
+                        updated: {
+                            backgroundImage: `url('/${prefix}/${imageData.fileName}')`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                        },
+                        original: {},
+                    },
+
+                    domId: targetElement.domId,
+                    oid: targetElement.oid,
+                    webviewId: webview.id,
+                },
+            ],
         };
         this.editorEngine.action.run(action);
     }
