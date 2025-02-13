@@ -4,14 +4,13 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState, useRef, forwardRef } from 'react';
-import { type NodeApi, Tree, type TreeApi, type RowRendererProps } from 'react-arborist';
+import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { type NodeApi, type RowRendererProps, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import PageTreeNode from '../Tree/PageTreeNode';
-import PageTreeRow from '../Tree/PageTreeRow';
 import { CreatePageModal } from './CreatePageModal';
-import { cn } from '@onlook/ui/utils';
 
 const PagesTab = observer(() => {
     const editorEngine = useEditorEngine();

@@ -85,9 +85,8 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                         style={style}
                         className={cn(
                             'flex items-center h-6 cursor-pointer hover:bg-background-hover rounded',
-                            {
-                                'bg-red-500 text-white': !hasChildren && isActive,
-                            },
+                            !hasChildren && isActive && 'bg-red-500 text-white',
+                            isActive && 'hover:bg-red-500',
                         )}
                         onClick={handleClick}
                     >
