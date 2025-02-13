@@ -169,10 +169,6 @@ export class WebviewManager {
         // Run all disposers
         this.disposers.forEach((dispose) => dispose());
         this.disposers = [];
-
-        // Clear references
-        this.editorEngine = null as any;
-        this.projectsManager = null as any;
     }
 
     disposeWebview(id: string) {
@@ -185,5 +181,11 @@ export class WebviewManager {
         // Clean up AST mappings
         this.editorEngine?.ast?.mappings?.remove(id);
         this.editorEngine?.errors.clearErrors(id);
+    }
+
+    reloadWebviews() {
+        for (const webview of this.selected) {
+            webview.reload();
+        }
     }
 }

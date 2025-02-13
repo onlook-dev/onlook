@@ -56,6 +56,7 @@ export class GroupManager {
             }
             return null;
         }
+
         const webviewId = elements[0].webviewId;
         const sameWebview = elements.every((el) => el.webviewId === webviewId);
 

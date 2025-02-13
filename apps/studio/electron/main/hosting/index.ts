@@ -117,14 +117,17 @@ class HostingManager {
             console.log('Skipping build');
             return;
         }
-        const { success: buildSuccess, error: buildError } = await runBuildScript(
-            folderPath,
-            BUILD_SCRIPT_NO_LINT,
-        );
+        const {
+            success: buildSuccess,
+            error: buildError,
+            output: buildOutput,
+        } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
 
         if (!buildSuccess) {
             this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
             throw new Error(`Build failed with error: ${buildError}`);
+        } else {
+            console.log('Build succeeded with output: ', buildOutput);
         }
     }
 

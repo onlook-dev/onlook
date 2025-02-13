@@ -136,9 +136,17 @@ export class CopyManager {
             [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
         };
 
+        // Process children recursively
+        const processedChildren = copiedEl.children?.map((child) => {
+            const newChildDomId = createDomId();
+            const newChildOid = createOid();
+            return this.getCleanedCopyEl(child, newChildDomId, newChildOid);
+        });
+
         return {
             ...copiedEl,
             attributes: filteredAttr,
+            children: processedChildren || [],
         };
     }
 

@@ -67,7 +67,6 @@ export class AstManager {
             console.warn('Failed to processNodeForMap: No oid found');
             return;
         }
-
         const templateNode = await this.getTemplateNodeById(node.oid);
         if (!templateNode) {
             console.warn('Failed to processNodeForMap: Template node not found');
@@ -102,7 +101,6 @@ export class AstManager {
             ${templateNode.coreElementType ? `'${templateNode.coreElementType}'` : 'undefined'}
         )`,
         );
-
         this.findNodeInstance(webviewId, node, node, templateNode);
     }
 
