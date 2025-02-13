@@ -2,6 +2,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import type { StreamRequestType } from '@onlook/models/chat';
 import { BASE_PROXY_ROUTE, FUNCTIONS_ROUTE, ProxyRoutes } from '@onlook/models/constants';
 import { type LanguageModelV1 } from 'ai';
+import { getRefreshedAuthTokens } from '../auth';
 
 export enum LLMProvider {
     ANTHROPIC = 'anthropic',
@@ -14,23 +15,25 @@ export enum CLAUDE_MODELS {
 
 export interface OnlookPayload {
     requestType: StreamRequestType;
-    accessToken: string;
 }
 
-export function initModel(
+export async function initModel(
     provider: LLMProvider,
     model: CLAUDE_MODELS,
     payload: OnlookPayload,
-): LanguageModelV1 {
+): Promise<LanguageModelV1> {
     switch (provider) {
         case LLMProvider.ANTHROPIC:
-            return getAnthropicProvider(model, payload);
+            return await getAnthropicProvider(model, payload);
         default:
             throw new Error(`Unsupported provider: ${provider}`);
     }
 }
 
-function getAnthropicProvider(model: CLAUDE_MODELS, payload: OnlookPayload): LanguageModelV1 {
+async function getAnthropicProvider(
+    model: CLAUDE_MODELS,
+    payload: OnlookPayload,
+): Promise<LanguageModelV1> {
     const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     const proxyUrl = `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_PROXY_ROUTE}${ProxyRoutes.ANTHROPIC}`;
 
@@ -42,15 +45,17 @@ function getAnthropicProvider(model: CLAUDE_MODELS, payload: OnlookPayload): Lan
 
     if (apiKey) {
         config.apiKey = apiKey;
-    } else if (payload) {
+    } else {
+        const authTokens = await getRefreshedAuthTokens();
+        if (!authTokens) {
+            throw new Error('No auth tokens found');
+        }
         config.apiKey = '';
         config.baseURL = proxyUrl;
         config.headers = {
-            Authorization: `Bearer ${payload.accessToken}`,
+            Authorization: `Bearer ${authTokens.accessToken}`,
             'X-Onlook-Request-Type': payload.requestType,
         };
-    } else {
-        throw new Error('Either Anthropic API key or access token must be set');
     }
 
     const anthropic = createAnthropic(config);
