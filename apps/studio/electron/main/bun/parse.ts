@@ -1,18 +1,17 @@
-export const parseCommandAndArgs = (
-    command: string,
-    args: string[] = [],
-    newCommand: string,
-): { finalCommand: string; allArgs: string[] } => {
-    // Parse command string while preserving quoted arguments
-    const parsedArgs = command.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
-    const [cmdName, ...cmdArgs] = parsedArgs.map((arg) =>
-        // Remove surrounding quotes if present
-        arg.replace(/^["'](.+)["']$/, '$1'),
-    );
+import { parse, quote, type ParseEntry } from 'shell-quote';
 
-    const packageManagers = ['npm', 'bun', 'pnpm'];
-    const finalCommand = (packageManagers.includes(cmdName) ? newCommand : cmdName) || '';
-    const allArgs = [...cmdArgs, ...args];
+export const replaceCommand = (command: string, newCommand: string): string => {
+    const parsedArgs = parse(command);
+    const [cmdName, ...cmdArgs]: (ParseEntry | undefined)[] = parsedArgs;
+    const packageManagers = ['npm'];
+    const finalCommand =
+        (packageManagers.includes(cmdName?.toString() || '') ? newCommand : cmdName) || '';
 
-    return { finalCommand, allArgs };
+    // For Windows, add '&' to the command to handle special characters
+    if (process.platform === 'win32') {
+        return (
+            '& ' + quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')])
+        );
+    }
+    return quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')]);
 };

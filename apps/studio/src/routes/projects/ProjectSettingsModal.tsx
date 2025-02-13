@@ -16,7 +16,7 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const ProjectSettingsModal = observer(
     ({
@@ -44,7 +44,16 @@ const ProjectSettingsModal = observer(
 
         // Use controlled props if provided, otherwise use internal state
         const isOpen = controlledOpen ?? uncontrolledOpen;
-        const onOpenChange = controlledOnOpenChange ?? setUncontrolledOpen;
+        const triggerRef = useRef<HTMLDivElement>(null);
+        const onOpenChange = (open: boolean) => {
+            if (!open) {
+                // Reset collapsible state when dialog closes
+                setIsCommandsOpen(false);
+                // Return focus to trigger
+                triggerRef.current?.focus();
+            }
+            (controlledOnOpenChange ?? setUncontrolledOpen)(open);
+        };
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const { id, value } = e.target;
@@ -77,7 +86,9 @@ const ProjectSettingsModal = observer(
 
         return (
             <Dialog open={isOpen} onOpenChange={onOpenChange}>
-                <DialogTrigger asChild>{children}</DialogTrigger>
+                <DialogTrigger asChild>
+                    <div ref={triggerRef}>{children}</div>
+                </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Project Settings</DialogTitle>

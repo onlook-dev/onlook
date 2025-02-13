@@ -60,7 +60,13 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
-    useHotkeys(Hotkey.DUPLICATE.command, () => editorEngine.copy.duplicate());
+    useHotkeys(Hotkey.DUPLICATE.command, () => {
+        if (editorEngine.isWindowSelected) {
+            editorEngine.duplicateWindow();
+        } else {
+            editorEngine.copy.duplicate();
+        }
+    });
 
     // AI
     useHotkeys(Hotkey.ADD_AI_CHAT.command, () => (editorEngine.editPanelTab = EditorTabValue.CHAT));

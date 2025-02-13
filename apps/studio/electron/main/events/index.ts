@@ -5,15 +5,16 @@ import { mainWindow } from '..';
 import { imageStorage } from '../storage/images';
 import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
+import { listenForAssetMessages } from './asset';
 import { listenForAuthMessages } from './auth';
 import { listenForChatMessages } from './chat';
 import { listenForCodeMessages } from './code';
 import { listenForCreateMessages } from './create';
 import { listenForHostingMessages } from './hosting';
+import { listenForPageMessages } from './page';
 import { listenForPaymentMessages } from './payments';
 import { listenForRunMessages } from './run';
 import { listenForStorageMessages } from './storage';
-import { listenForPageMessages } from './page';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -27,6 +28,7 @@ export function listenForIpcMessages() {
     listenForHostingMessages();
     listenForPaymentMessages();
     listenForPageMessages();
+    listenForAssetMessages();
 }
 
 export function removeIpcListeners() {

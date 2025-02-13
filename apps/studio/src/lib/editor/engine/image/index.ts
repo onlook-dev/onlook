@@ -1,11 +1,86 @@
-import { sendAnalytics, compressImage } from '@/lib/utils';
-import type { ActionTarget, InsertImageAction } from '@onlook/models/actions';
-import { getExtension } from 'mime-lite';
+import type { ProjectsManager } from '@/lib/projects';
+import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
+import { MainChannels } from '@onlook/models/constants';
+import mime from 'mime-lite';
+import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 
 export class ImageManager {
-    constructor(private editorEngine: EditorEngine) {}
+    private images: ImageContentData[] = [];
+
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
+        makeAutoObservable(this);
+        this.scanImages();
+    }
+
+    async upload(file: File): Promise<void> {
+        try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                throw new Error('Project folder not found');
+            }
+
+            const buffer = await file.arrayBuffer();
+            const base64String = btoa(
+                new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
+            );
+
+            await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
+                projectFolder,
+                content: base64String,
+                fileName: file.name,
+            });
+
+            setTimeout(() => {
+                this.scanImages();
+            }, 100);
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw error;
+        }
+    }
+
+    async delete(imageName: string): Promise<void> {
+        try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                throw new Error('Project folder not found');
+            }
+            await invokeMainChannel<string, string>(
+                MainChannels.DELETE_IMAGE_FROM_PROJECT,
+                projectFolder,
+                imageName,
+            );
+            this.scanImages();
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            throw error;
+        }
+    }
+
+    async rename(imageName: string, newName: string): Promise<void> {
+        try {
+            const projectFolder = this.projectsManager.project?.folderPath;
+            if (!projectFolder) {
+                throw new Error('Project folder not found');
+            }
+            await invokeMainChannel<string, string>(
+                MainChannels.RENAME_IMAGE_IN_PROJECT,
+                projectFolder,
+                imageName,
+                newName,
+            );
+            this.scanImages();
+        } catch (error) {
+            console.error('Error renaming image:', error);
+            throw error;
+        }
+    }
 
     async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
         const targets = this.getTargets();
@@ -28,7 +103,7 @@ export class ImageManager {
             return;
         }
 
-        const fileName = `${nanoid(4)}.${getExtension(mimeType)}`;
+        const fileName = `${nanoid(4)}.${mime.getExtension(mimeType)}`;
         const action: InsertImageAction = {
             type: 'insert-image',
             targets: targets,
@@ -40,7 +115,14 @@ export class ImageManager {
         };
 
         this.editorEngine.action.run(action);
+        setTimeout(() => {
+            this.scanImages();
+        }, 2000);
         sendAnalytics('image-inserted', { mimeType });
+    }
+
+    get assets() {
+        return this.images;
     }
 
     remove() {
@@ -65,8 +147,25 @@ export class ImageManager {
         return targets;
     }
 
+    async scanImages() {
+        const projectRoot = this.projectsManager.project?.folderPath;
+
+        if (!projectRoot) {
+            console.warn('No project root found');
+            return;
+        }
+        const images = await invokeMainChannel<string, ImageContentData[]>(
+            MainChannels.SCAN_IMAGES_IN_PROJECT,
+            projectRoot,
+        );
+        if (images?.length) {
+            this.images = images;
+        } else {
+            this.images = [];
+        }
+    }
+
     dispose() {
-        // Clear references
-        this.editorEngine = null as any;
+        this.images = [];
     }
 }

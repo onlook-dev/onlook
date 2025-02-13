@@ -89,7 +89,8 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                 } else if (
                     editorEngine.mode === EditorMode.DESIGN ||
                     ((editorEngine.mode === EditorMode.INSERT_DIV ||
-                        editorEngine.mode === EditorMode.INSERT_TEXT) &&
+                        editorEngine.mode === EditorMode.INSERT_TEXT ||
+                        editorEngine.mode === EditorMode.INSERT_IMAGE) &&
                         !editorEngine.insert.isDrawing)
                 ) {
                     handleMouseEvent(e, MouseAction.MOVE);
@@ -127,7 +128,8 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
             handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
             editorEngine.mode === EditorMode.INSERT_DIV ||
-            editorEngine.mode === EditorMode.INSERT_TEXT
+            editorEngine.mode === EditorMode.INSERT_TEXT ||
+            editorEngine.mode === EditorMode.INSERT_IMAGE
         ) {
             editorEngine.insert.start(e);
         }
@@ -155,11 +157,18 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                 return;
             }
 
-            const properties: DropElementProperties = JSON.parse(propertiesData);
-            const webview = getWebview();
-            const dropPosition = getRelativeMousePosition(e);
+            const properties = JSON.parse(propertiesData);
 
-            await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
+            if (properties.type === 'image') {
+                const webview = getWebview();
+                const dropPosition = getRelativeMousePosition(e);
+                await editorEngine.insert.insertDroppedImage(webview, dropPosition, properties);
+            } else {
+                const webview = getWebview();
+                const dropPosition = getRelativeMousePosition(e);
+                await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
+            }
+
             editorEngine.mode = EditorMode.DESIGN;
         } catch (error) {
             console.error('drop operation failed:', error);

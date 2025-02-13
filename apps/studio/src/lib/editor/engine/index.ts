@@ -2,8 +2,10 @@ import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
+import type { FrameSettings } from '@onlook/models/projects';
 import type { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid/non-secure';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
@@ -18,11 +20,11 @@ import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
+import { PagesManager } from './pages';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { PagesManager } from './pages';
 
 export class EditorEngine {
     private plansOpen: boolean = false;
@@ -35,6 +37,7 @@ export class EditorEngine {
     private codeManager: CodeManager;
     private pagesManager: PagesManager;
     private errorManager: ErrorManager;
+    private imageManager: ImageManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
@@ -47,7 +50,6 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
-    private imageManager: ImageManager = new ImageManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -58,6 +60,7 @@ export class EditorEngine {
         this.codeManager = new CodeManager(this, this.projectsManager);
         this.pagesManager = new PagesManager(this, this.projectsManager);
         this.errorManager = new ErrorManager(this, this.projectsManager);
+        this.imageManager = new ImageManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -124,6 +127,10 @@ export class EditorEngine {
         return this.errorManager;
     }
 
+    get isWindowSelected() {
+        return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+    }
+
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }
@@ -163,8 +170,6 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        // Clear references
-        this.projectsManager = null as any;
         this.editorMode = EditorMode.DESIGN;
         this.editorPanelTab = EditorTabValue.STYLES;
     }
@@ -198,8 +203,34 @@ export class EditorEngine {
         webview.executeJavaScript('window.api?.processDom()');
     }
 
-    async takeScreenshot(name: string): Promise<string | null> {
-        const webview = this.webviews.webviews.values().next().value?.webview;
+    async takeActiveWebviewScreenshot(
+        name: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
+        if (this.webviews.webviews.size === 0) {
+            console.error('No webviews found');
+            return null;
+        }
+        const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;
+        return this.takeWebviewScreenshot(name, webviewId, options);
+    }
+
+    async takeWebviewScreenshot(
+        name: string,
+        webviewId: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
+        const webview = this.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('No webview found');
             return null;
@@ -213,12 +244,88 @@ export class EditorEngine {
             return null;
         }
 
-        const imageName = `${name}-preview.png`;
         const image: NativeImage = await webview.capturePage();
-        const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
-            img: image.toDataURL(),
-            name: imageName,
-        });
-        return imageName;
+
+        if (options?.save) {
+            const imageName = `${name}-preview.png`;
+            const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
+                img: image.toDataURL(),
+                name: imageName,
+            });
+            return {
+                name: imageName,
+            };
+        }
+        return {
+            image: image.resize({ quality: 'good', height: 100 }).toDataURL({
+                scaleFactor: 0.1,
+            }),
+        };
+    }
+
+    canDeleteWindow() {
+        return this.canvas.frames.length > 1;
+    }
+
+    deleteWindow(id?: string) {
+        if (this.canvas.frames.length === 1) {
+            console.error('Cannot delete the last window');
+            return;
+        }
+        let settings: FrameSettings | null = null;
+        if (id) {
+            settings = this.canvas.getFrame(id) || null;
+            if (!settings) {
+                console.error('Window not found');
+                return;
+            }
+        } else if (this.webviews.selected.length === 0) {
+            console.error('No window selected');
+            return;
+        } else {
+            settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
+        }
+        if (!settings) {
+            console.error('Window not found');
+            return;
+        }
+        this.ast.mappings.remove(settings.id);
+        this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);
+        const webview = this.webviews.getWebview(settings.id);
+        if (webview) {
+            this.webviews.deregister(webview);
+        }
+    }
+
+    duplicateWindow(id?: string) {
+        let settings: FrameSettings | null = null;
+        if (id) {
+            settings = this.canvas.getFrame(id) || null;
+        } else if (this.webviews.selected.length === 0) {
+            console.error('No window selected');
+            return;
+        } else {
+            settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
+        }
+        if (!settings) {
+            console.error('Window not found');
+            return;
+        }
+        const currentFrame = settings;
+        const newFrame: FrameSettings = {
+            id: nanoid(),
+            url: currentFrame.url,
+            dimension: {
+                width: currentFrame.dimension.width,
+                height: currentFrame.dimension.height,
+            },
+            position: currentFrame.position,
+            aspectRatioLocked: currentFrame.aspectRatioLocked,
+            orientation: currentFrame.orientation,
+            device: currentFrame.device,
+            theme: currentFrame.theme,
+        };
+
+        this.canvas.frames = [...this.canvas.frames, newFrame];
     }
 }

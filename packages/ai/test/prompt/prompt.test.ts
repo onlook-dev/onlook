@@ -58,6 +58,13 @@ describe('Prompt', () => {
                     displayName: 'test.txt',
                 },
             ],
+            errors: [
+                {
+                    content: 'test',
+                    type: MessageContextType.ERROR,
+                    displayName: 'test',
+                },
+            ],
         });
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
@@ -73,6 +80,7 @@ describe('Prompt', () => {
         const prompt = new PromptProvider().getUserMessage('test', {
             files: [],
             highlights: [],
+            errors: [],
         });
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);

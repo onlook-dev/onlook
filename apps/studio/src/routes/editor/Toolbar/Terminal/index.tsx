@@ -1,7 +1,7 @@
 import { useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import type { RunManager, TerminalMessage } from '@/lib/projects/run';
-import { MainChannels, TerminalCommands } from '@onlook/models/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { RunState } from '@onlook/models/run';
 import { cn } from '@onlook/ui/utils';
 import { Terminal as XTerm, type ITheme } from '@xterm/xterm';
@@ -96,10 +96,6 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         // Set up event listeners
         term.onData((data) => {
-            if (data === TerminalCommands.CTRL_C) {
-                runner.stop();
-                return;
-            }
             runner.handleTerminalInput(data);
         });
 
@@ -125,7 +121,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
     return (
         <div
             className={cn(
-                'bg-background rounded-lg overflow-hidden transition-all duration-300',
+                'bg-background rounded-lg overflow-auto transition-all duration-300',
                 hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
             )}
         >

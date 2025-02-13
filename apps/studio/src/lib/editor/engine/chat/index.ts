@@ -86,28 +86,22 @@ export class ChatManager {
         await this.sendChatToAi(StreamRequestType.CHAT);
     }
 
-    async sendFixErrorToAi(error: ParsedError): Promise<boolean> {
+    async sendFixErrorToAi(errors: ParsedError[]): Promise<boolean> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return false;
         }
 
-        const prompt = `For the code present, we get this error: ${error.message}. How can I resolve this? If you propose a fix, please make it concise.`;
-
-        const context = await this.editorEngine.errors.getMessageContextFromError(error);
-        if (!context) {
-            console.error('No context found');
-            return false;
-        }
-        // Add error message to conversation
-        const userMessage = this.conversation.addUserMessage(prompt, context);
-        this.conversation.current.updateName(error.message);
+        const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
+        const context = this.editorEngine.errors.getMessageContext(errors);
+        const userMessage = this.conversation.addUserMessage(prompt, [context]);
+        this.conversation.current.updateName(errors[0].content);
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;
         }
         sendAnalytics('send fix error chat message', {
-            error: error.fullMessage,
+            errors: errors.map((e) => e.content),
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
@@ -174,7 +168,7 @@ export class ChatManager {
     async handleChatResponse(
         res: StreamResponse | null,
         requestType: StreamRequestType,
-        applyCode: boolean = false,
+        autoApplyCode: boolean = true,
     ) {
         if (!res) {
             console.error('No response found');
@@ -201,10 +195,6 @@ export class ChatManager {
             return;
         }
 
-        if (applyCode) {
-            this.code.applyCode(assistantMessage.id);
-        }
-
         if (
             requestType === StreamRequestType.CHAT &&
             this.conversation.current?.messages &&
@@ -212,6 +202,14 @@ export class ChatManager {
         ) {
             this.suggestions.shouldHide = true;
             this.suggestions.generateNextSuggestions(this.conversation.current.messages);
+        }
+
+        this.context.clearAttachments();
+
+        if (autoApplyCode) {
+            setTimeout(() => {
+                this.code.applyCode(assistantMessage.id);
+            }, 100);
         }
     }
 
@@ -230,9 +228,5 @@ export class ChatManager {
         if (this.conversation) {
             this.conversation.current = null;
         }
-
-        // Clear references
-        this.editorEngine = null as any;
-        this.projectsManager = null as any;
     }
 }

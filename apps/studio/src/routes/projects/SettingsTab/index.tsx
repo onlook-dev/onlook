@@ -2,7 +2,7 @@ import { useProjectsManager, useUserManager } from '@/components/Context';
 import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
-import { IdeType } from '@onlook/models/ide';
+import { DEFAULT_IDE } from '@onlook/models/ide';
 import type { UserSettings } from '@onlook/models/settings';
 import { Button } from '@onlook/ui/button';
 import {
@@ -21,7 +21,7 @@ const SettingsTab = observer(() => {
     const userManager = useUserManager();
     const projectsManager = useProjectsManager();
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
-    const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
+    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
 
     const IDEIcon = Icons[ide.icon];
@@ -29,7 +29,7 @@ const SettingsTab = observer(() => {
     useEffect(() => {
         invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
-            setIde(IDE.fromType(settings.ideType || IdeType.VS_CODE));
+            setIde(IDE.fromType(settings.ideType || DEFAULT_IDE));
             setIsAnalyticsEnabled(settings.enableAnalytics || false);
             setShouldWarnDelete(settings.shouldWarnDelete ?? true);
         });

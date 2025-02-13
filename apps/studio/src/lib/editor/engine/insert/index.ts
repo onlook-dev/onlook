@@ -1,12 +1,14 @@
 import { EditorMode } from '@/lib/models';
 import { createDomId, createOid } from '@/lib/utils';
+import type { ImageContentData } from '@onlook/models';
 import type {
     ActionElement,
     ActionLocation,
     ActionTarget,
     InsertElementAction,
+    UpdateStyleAction,
 } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
+import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
 import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
@@ -207,6 +209,101 @@ export class InsertManager {
             editText: mode === EditorMode.INSERT_TEXT,
             pasteParams: null,
         };
+    }
+
+    async insertDroppedImage(
+        webview: Electron.WebviewTag,
+        dropPosition: { x: number; y: number },
+        imageData: ImageContentData,
+    ) {
+        const location = await webview.executeJavaScript(
+            `window.api?.getInsertLocation(${dropPosition.x}, ${dropPosition.y})`,
+        );
+
+        if (!location) {
+            console.error('Failed to get insert location for drop');
+            return;
+        }
+
+        const targetElement = await webview.executeJavaScript(
+            `window.api?.getElementAtLoc(${dropPosition.x}, ${dropPosition.y})`,
+        );
+
+        if (!targetElement) {
+            console.error('Failed to get element at drop position');
+            return;
+        }
+
+        // TODO: Handle if element is already an image, should update source
+        // TODO: Handle if element has background image, should update style
+        this.insertImageElement(webview, location, imageData);
+    }
+
+    insertImageElement(
+        webview: Electron.WebviewTag,
+        location: ActionLocation,
+        imageData: ImageContentData,
+    ) {
+        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const domId = createDomId();
+        const oid = createOid();
+
+        const imageElement: ActionElement = {
+            domId,
+            oid,
+            tagName: 'img',
+            children: [],
+            attributes: {
+                [EditorAttributes.DATA_ONLOOK_ID]: oid,
+                [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+                src: `/${prefix}/${imageData.fileName}`,
+                alt: imageData.fileName,
+            },
+            styles: {
+                width: DefaultSettings.IMAGE_DIMENSION.width,
+                height: DefaultSettings.IMAGE_DIMENSION.height,
+            },
+            textContent: null,
+        };
+
+        const action: InsertElementAction = {
+            type: 'insert-element',
+            targets: [{ webviewId: webview.id, domId, oid }],
+            element: imageElement,
+            location,
+            editText: false,
+            pasteParams: null,
+        };
+        this.editorEngine.action.run(action);
+    }
+
+    updateElementBackgroundAction(
+        webview: Electron.WebviewTag,
+        targetElement: ActionElement,
+        imageData: ImageContentData,
+    ) {
+        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const action: UpdateStyleAction = {
+            type: 'update-style',
+            targets: [
+                {
+                    change: {
+                        updated: {
+                            backgroundImage: `url('/${prefix}/${imageData.fileName}')`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                        },
+                        original: {},
+                    },
+
+                    domId: targetElement.domId,
+                    oid: targetElement.oid,
+                    webviewId: webview.id,
+                },
+            ],
+        };
+        this.editorEngine.action.run(action);
     }
 
     async insertDroppedElement(

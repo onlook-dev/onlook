@@ -1,79 +1,50 @@
-import { spawn } from 'child_process';
+import type { RunBunCommandOptions, RunBunCommandResult } from '@onlook/models';
+import { exec } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
-import { quote } from 'shell-quote';
+import { promisify } from 'util';
 import { __dirname } from '../index';
-import { parseCommandAndArgs } from './parse';
+import { replaceCommand } from './parse';
+
+const execAsync = promisify(exec);
 
 export const getBunExecutablePath = (): string => {
-    const platform = process.platform;
+    const arch = process.arch === 'arm64' ? 'aarch64' : process.arch;
     const isProduction = app.isPackaged;
-    const binName = platform === 'win32' ? 'bun.exe' : 'bun';
+    const binName = process.platform === 'win32' ? `bun.exe` : `bun-${arch}`;
 
     const bunPath = isProduction
         ? path.join(process.resourcesPath, 'bun', binName)
         : path.join(__dirname, 'resources', 'bun', binName);
 
-    return quote([bunPath]);
+    return bunPath;
 };
 
-export interface RunBunCommandOptions {
-    cwd: string;
-    env?: NodeJS.ProcessEnv;
-    callbacks?: {
-        onStdout?: (data: string) => void;
-        onStderr?: (data: string) => void;
-        onClose?: (code: number | null, signal: string | null) => void;
-        onError?: (err: Error) => void;
-    };
+export async function runBunCommand(
+    command: string,
+    options: RunBunCommandOptions,
+): Promise<RunBunCommandResult> {
+    try {
+        const commandToExecute = getBunCommand(command);
+        const shell = process.platform === 'win32' ? 'powershell.exe' : '/bin/sh';
+
+        console.log('Executing command: ', commandToExecute, options.cwd);
+        const { stdout, stderr } = await execAsync(commandToExecute, {
+            cwd: options.cwd,
+            maxBuffer: 1024 * 1024 * 10,
+            env: options.env,
+            shell,
+        });
+
+        console.log('Command executed with output: ', stdout);
+        return { success: true, output: stdout.toString(), error: stderr.toString() };
+    } catch (error) {
+        console.error(error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
 }
 
-export const runBunCommand = (
-    command: string,
-    args: string[] = [],
-    options: RunBunCommandOptions,
-): Promise<{ stdout: string; stderr: string }> => {
-    const bunBinary = getBunExecutablePath();
-    const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunBinary);
-    const quotedCommand = quote([finalCommand]);
-
-    return new Promise((resolve, reject) => {
-        const spawnProcess = spawn(quotedCommand, allArgs, {
-            stdio: 'pipe',
-            cwd: options.cwd,
-            env: options.env,
-        });
-        let stdout = '';
-        let stderr = '';
-
-        spawnProcess.stdout.on('data', (data) => {
-            stdout += data.toString();
-            options.callbacks?.onStdout?.(stdout);
-        });
-
-        spawnProcess.stderr.on('data', (data) => {
-            stderr += data.toString();
-            options.callbacks?.onStderr?.(stderr);
-        });
-
-        spawnProcess.on('close', (code, signal) => {
-            options.callbacks?.onClose?.(code, signal);
-            if (code === 0) {
-                resolve({ stdout, stderr });
-            } else {
-                reject(new Error(`Process exited with code ${code}\nStderr: ${stderr}`));
-            }
-        });
-
-        spawnProcess.on('error', (err: Error) => {
-            options.callbacks?.onError?.(err);
-            reject(err);
-        });
-    });
-};
-
-export const getBunCommand = (command: string, args: string[] = []) => {
+export const getBunCommand = (command: string): string => {
     const bunExecutable = getBunExecutablePath();
-    const { finalCommand, allArgs } = parseCommandAndArgs(command, args, bunExecutable);
-    return `${finalCommand} ${allArgs.join(' ')}`;
+    return replaceCommand(command, bunExecutable);
 };

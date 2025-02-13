@@ -1,6 +1,6 @@
 import { type CodeBlock } from '@onlook/models/chat/message';
 import { FENCE } from '../prompt/format';
-import { flexibleSearchAndReplace } from './search_replace';
+import { flexibleSearchAndReplace } from './search-replace';
 
 export class CodeBlockProcessor {
     /**

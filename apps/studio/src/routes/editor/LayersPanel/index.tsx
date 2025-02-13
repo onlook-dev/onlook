@@ -8,7 +8,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
-import ImagesTab from './ImagesTab';
+import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
 import { capitalizeFirstLetter } from '/common/helpers';
@@ -39,7 +39,7 @@ const LayersPanel = observer(() => {
                             {capitalizeFirstLetter(TabValue.LAYERS)}
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.COMPONENTS}
                         >
                             <div className="flex items-center gap-1">
@@ -48,13 +48,14 @@ const LayersPanel = observer(() => {
                             </div>
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.PAGES}
                         >
+                            <Icons.Square className="mr-1.5 mb-0.5" />
                             {capitalizeFirstLetter(TabValue.PAGES)}
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.IMAGES}
                         >
                             <div className="flex items-center gap-1">

@@ -5,7 +5,7 @@ import {
     flexibleSearchAndReplace,
     RelativeIndenter,
     searchAndReplace,
-} from '../../src/coder/search_replace';
+} from '../../src/coder/search-replace';
 
 describe('RelativeIndenter', () => {
     const indenter = new RelativeIndenter();
