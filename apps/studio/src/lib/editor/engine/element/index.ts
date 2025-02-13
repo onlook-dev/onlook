@@ -135,48 +135,50 @@ export class ElementManager {
         if (selected.length === 0) {
             return;
         }
-        const selectedEl: DomElement = selected[0];
-        const webviewId = selectedEl.webviewId;
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
-        if (!webview) {
-            return;
-        }
 
-        const { shouldDelete, error } = await this.shouldDelete(selectedEl, webview);
+        for (const selectedEl of selected) {
+            const webviewId = selectedEl.webviewId;
+            const webview = this.editorEngine.webviews.getWebview(webviewId);
+            if (!webview) {
+                return;
+            }
 
-        if (!shouldDelete) {
-            toast({
-                title: 'Cannot delete element',
-                description: error,
-                variant: 'destructive',
-            });
-            return;
-        }
+            const { shouldDelete, error } = await this.shouldDelete(selectedEl, webview);
 
-        const removeAction = (await webview.executeJavaScript(
-            `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
-        )) as RemoveElementAction | null;
-        if (!removeAction) {
-            console.error('Remove action not found');
-            toast({
-                title: 'Cannot delete element',
-                description: 'Remove action not found. Try refreshing the page.',
-                variant: 'destructive',
-            });
-            return;
-        }
-        const oid = selectedEl.instanceId || selectedEl.oid;
-        const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-        if (!codeBlock) {
-            toast({
-                title: 'Cannot delete element',
-                description: 'Code block not found. Try refreshing the page.',
-                variant: 'destructive',
-            });
-            return;
-        }
+            if (!shouldDelete) {
+                toast({
+                    title: 'Cannot delete element',
+                    description: error,
+                    variant: 'destructive',
+                });
+                return;
+            }
 
-        this.editorEngine.action.run(removeAction);
+            const removeAction = (await webview.executeJavaScript(
+                `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
+            )) as RemoveElementAction | null;
+            if (!removeAction) {
+                console.error('Remove action not found');
+                toast({
+                    title: 'Cannot delete element',
+                    description: 'Remove action not found. Try refreshing the page.',
+                    variant: 'destructive',
+                });
+                return;
+            }
+            const oid = selectedEl.instanceId || selectedEl.oid;
+            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            if (!codeBlock) {
+                toast({
+                    title: 'Cannot delete element',
+                    description: 'Code block not found. Try refreshing the page.',
+                    variant: 'destructive',
+                });
+                return;
+            }
+
+            this.editorEngine.action.run(removeAction);
+        }
     }
 
     private async shouldDelete(

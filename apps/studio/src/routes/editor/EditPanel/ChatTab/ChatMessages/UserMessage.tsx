@@ -4,6 +4,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
 import { SentContextPill } from '../ContextPills/SentContextPill';
 
@@ -147,7 +148,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
                     <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
                         <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
                             {message.context.map((context) => (
-                                <SentContextPill key={context.displayName} context={context} />
+                                <SentContextPill key={nanoid()} context={context} />
                             ))}
                         </div>
                     </div>

@@ -64,7 +64,8 @@ export const ChatInput = observer(() => {
         editorEngine.chat.context.context = newContext;
     };
 
-    const handleOpenFileDialog = () => {
+    const handleOpenFileDialog = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.blur(); // Removes focus from the button to prevent tooltip from showing
         const inputElement = document.createElement('input');
         inputElement.type = 'file';
         inputElement.accept = 'image/*';

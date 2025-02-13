@@ -23,11 +23,10 @@ class TerminalManager {
 
     create(id: string, options?: { cwd?: string }): boolean {
         try {
-            const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
+            const shell = os.platform() === 'win32' ? 'powershell.exe' : '/bin/sh';
             const ptyProcess = pty.spawn(shell, [], {
                 name: 'xterm-color',
-                cwd: options?.cwd ?? process.env.HOME,
-                env: process.env,
+                cwd: options?.cwd,
             });
 
             ptyProcess.onData((data: string) => {

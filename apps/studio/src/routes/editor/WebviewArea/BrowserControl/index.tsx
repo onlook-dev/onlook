@@ -321,7 +321,6 @@ const BrowserControls = observer(
                             ref={inputRef}
                             className={cn(
                                 'text-regular text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none',
-                                settings.linkedIds && settings.linkedIds.length > 0 && 'pr-8',
                             )}
                             value={urlInputValue}
                             onChange={(e) => setUrlInputValue(e.target.value)}
@@ -357,10 +356,6 @@ const BrowserControls = observer(
                     >
                         {getCleanURL(urlInputValue)}
                     </p>
-
-                    {/* {settings.linkedIds && settings.linkedIds.length > 0 && (
-                    <Icons.Link className="text-foreground-secondary absolute right-3" />
-                )} */}
                 </div>
 
                 <div
@@ -394,7 +389,7 @@ const BrowserControls = observer(
                                 <Button
                                     variant={'ghost'}
                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                    onClick={() => editorEngine.duplicateWindow(true)}
+                                    onClick={() => editorEngine.duplicateWindow(settings.id)}
                                 >
                                     <span className="flex w-full items-center text-smallPlus">
                                         <Icons.Copy className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
@@ -476,13 +471,13 @@ const BrowserControls = observer(
                                 <Button
                                     variant={'ghost'}
                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                    onClick={() => editorEngine.deleteDuplicateWindow()}
-                                    disabled={!settings.duplicate}
+                                    onClick={() => editorEngine.deleteWindow(settings.id)}
+                                    disabled={!editorEngine.canDeleteWindow()}
                                 >
                                     <span className="flex w-full items-center">
                                         <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                         <span>
-                                            {settings.duplicate
+                                            {editorEngine.canDeleteWindow()
                                                 ? 'Delete Window'
                                                 : "Can't delete this!"}
                                         </span>

@@ -10,6 +10,7 @@ export enum EditorMode {
     PAN = 'pan',
     INSERT_TEXT = 'insert-text',
     INSERT_DIV = 'insert-div',
+    INSERT_IMAGE = 'insert-image',
 }
 
 export enum EditorTabValue {

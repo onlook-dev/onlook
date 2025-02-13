@@ -1,5 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
+import type { RunBunCommandResult } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -20,18 +21,18 @@ const BashCodeDisplay = observer(
                 return;
             }
             setRunning(true);
-            const res: { stdout: string; stderr: string } | null = await invokeMainChannel(
+            const res: RunBunCommandResult | null = await invokeMainChannel(
                 MainChannels.RUN_COMMAND,
                 {
                     cwd: projectPath,
                     command: content,
                 },
             );
-            if (!res) {
-                setStdErr('Failed to run command');
+            if (!res || !res.success) {
+                setStdErr(res?.error || 'Failed to run command');
             } else {
-                setStdOut(res.stdout);
-                setStdErr(res.stderr);
+                setStdOut(res.output || '');
+                setStdErr(null);
             }
             setRunning(false);
         };
