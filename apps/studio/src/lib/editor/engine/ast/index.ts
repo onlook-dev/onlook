@@ -8,7 +8,6 @@ import { LayersManager } from './layers';
 
 export class AstManager {
     private layersManager: LayersManager = new LayersManager();
-    private templateNodeCache = new Map<string, TemplateNode>();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -185,12 +184,7 @@ export class AstManager {
             console.warn('Failed to getTemplateNodeById: No oid found');
             return null;
         }
-        if (this.templateNodeCache.has(oid)) {
-            return this.templateNodeCache.get(oid) as TemplateNode;
-        }
-        const templateNode = await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
-        this.templateNodeCache.set(oid, templateNode as TemplateNode);
-        return templateNode as TemplateNode;
+        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
     }
 
     updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
