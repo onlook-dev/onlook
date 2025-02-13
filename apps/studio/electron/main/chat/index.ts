@@ -10,7 +10,6 @@ import {
 import { MainChannels } from '@onlook/models/constants';
 import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
-import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
 import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
 
@@ -58,7 +57,6 @@ class LlmManager {
         const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
         try {
-            const authTokens = await getRefreshedAuthTokens();
             if (!skipSystemPrompt) {
                 const systemMessage = {
                     role: 'system',
@@ -69,8 +67,7 @@ class LlmManager {
                 } as CoreSystemMessage;
                 messages = [systemMessage, ...messages];
             }
-            const model = initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
-                accessToken: authTokens.accessToken,
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
                 requestType,
             });
 
@@ -159,9 +156,7 @@ class LlmManager {
 
     public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
         try {
-            const authTokens = await getRefreshedAuthTokens();
-            const model = initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
-                accessToken: authTokens.accessToken,
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
                 requestType: StreamRequestType.SUGGESTIONS,
             });
 
