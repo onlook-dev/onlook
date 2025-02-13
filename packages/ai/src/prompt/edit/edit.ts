@@ -49,7 +49,7 @@ Keep ${searchReplaceName} blocks concise.
 Break large ${searchReplaceName} blocks into a series of smaller blocks that each change a small portion of the file.
 Include just the changing lines, and a few surrounding lines if needed for uniqueness.
 Do not include long runs of unchanging lines in ${searchReplaceName} blocks.
-Make sure all the changes add up to valid code when applied to the existing file.
+Make sure all the changes add up to valid code when applied to the existing file. If new divs are added, make sure to close them.
 
 Only create ${searchReplaceName} blocks for files that the user has added to the chat!
 To move code within a file, use 2 ${searchReplaceName} blocks: 1 to delete it from its current location, 1 to insert it in the new location.
