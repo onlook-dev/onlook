@@ -4,12 +4,12 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
-import { type NodeApi, type RowRendererProps, Tree, type TreeApi } from 'react-arborist';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import PageTreeNode from '../Tree/PageTreeNode';
+import PageTreeRow from '../Tree/PageTreeRow';
 import { CreatePageModal } from './CreatePageModal';
 
 const PagesTab = observer(() => {
@@ -56,11 +56,6 @@ const PagesTab = observer(() => {
 
         return filterNodes(editorEngine.pages.tree);
     }, [editorEngine.pages.tree, searchQuery]);
-
-    // Reset highlight when filtered results change
-    useEffect(() => {
-        setHighlightedIndex(null);
-    }, [filteredPages]);
 
     const handleKeyDown = async (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
@@ -141,7 +136,7 @@ const PagesTab = observer(() => {
             rowHeight: 24,
             openByDefault: true,
             renderRow: (props: any) => (
-                <HighlightablePageTreeRow
+                <PageTreeRow
                     {...props}
                     isHighlighted={
                         highlightedIndex !== null &&
@@ -210,34 +205,5 @@ const PagesTab = observer(() => {
         </div>
     );
 });
-
-const HighlightablePageTreeRow = forwardRef<
-    HTMLDivElement,
-    RowRendererProps<PageNode> & { isHighlighted?: boolean }
->(({ attrs, children, isHighlighted }, ref) => {
-    return (
-        <div
-            ref={ref}
-            {...attrs}
-            className={cn(
-                'outline-none h-6 cursor-pointer w-full rounded',
-                'text-foreground-onlook/70',
-                !attrs['aria-selected'] && [
-                    isHighlighted && 'bg-background-onlook text-foreground-primary',
-                    'hover:text-foreground-primary hover:bg-background-onlook',
-                ],
-                attrs['aria-selected'] && [
-                    '!bg-[#FA003C] dark:!bg-[#FA003C]',
-                    '!text-primary dark:!text-primary',
-                    '![&]:hover:bg-[#FA003C] dark:[&]:hover:bg-[#FA003C]',
-                ],
-            )}
-        >
-            {children}
-        </div>
-    );
-});
-
-HighlightablePageTreeRow.displayName = 'HighlightablePageTreeRow';
 
 export default PagesTab;
