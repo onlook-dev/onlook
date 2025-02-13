@@ -7,6 +7,7 @@ import {
     ContextMenuTrigger,
 } from '@onlook/ui/context-menu';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
@@ -23,7 +24,7 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
     const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
-
+    const isRootPage = node.data.path === '/' || node.data.path === '' || node.data.path === '';
     const [showCreateModal, setShowCreateModal] = useState(false);
 
     const handleClick = async (e: React.MouseEvent) => {
@@ -43,6 +44,22 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
         await editorEngine.pages.navigateTo(node.data.path);
     };
 
+    const handleDelete = async () => {
+        try {
+            await editorEngine.pages.deletePage(
+                node.data.path,
+                node.data.children && node.data.children?.length > 0 ? true : false,
+            );
+        } catch (error) {
+            console.error('Failed to delete page:', error);
+            toast({
+                title: 'Failed to delete page',
+                description: error instanceof Error ? error.message : String(error),
+                variant: 'destructive',
+            });
+        }
+    };
+
     const menuItems = [
         {
             label: 'Create New Page',
@@ -53,14 +70,10 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
         },
         {
             label: 'Delete',
-            action: () => {
-                editorEngine.pages.deletePage(
-                    node.data.path,
-                    node.data.children && node.data.children?.length > 0 ? true : false,
-                );
-            },
+            action: handleDelete,
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             destructive: true,
+            disabled: isRootPage,
         },
     ];
 
@@ -104,6 +117,7 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                             key={item.label}
                             onClick={item.action}
                             className="cursor-pointer"
+                            disabled={item.disabled}
                         >
                             <span
                                 className={cn(

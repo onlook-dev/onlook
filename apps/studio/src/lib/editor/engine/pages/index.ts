@@ -1,9 +1,9 @@
-import { makeAutoObservable } from 'mobx';
-import type { PageNode } from '@onlook/models/pages';
+import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
+import type { PageNode } from '@onlook/models/pages';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import type { ProjectsManager } from '@/lib/projects';
 import { doesRouteExist, normalizeRoute, validateNextJsRoute } from './helper';
 
 export class PagesManager {
@@ -235,6 +235,9 @@ export class PagesManager {
         }
 
         const normalizedPath = normalizeRoute(`${pageName}`);
+        if (normalizedPath === '' || normalizedPath === '/') {
+            throw new Error('Cannot delete root page');
+        }
 
         try {
             await invokeMainChannel(MainChannels.DELETE_PAGE, {
