@@ -8,6 +8,7 @@ import { LayersManager } from './layers';
 
 export class AstManager {
     private layersManager: LayersManager = new LayersManager();
+    private templateNodeCache = new Map<string, TemplateNode>();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -67,7 +68,6 @@ export class AstManager {
             console.warn('Failed to processNodeForMap: No oid found');
             return;
         }
-
         const templateNode = await this.getTemplateNodeById(node.oid);
         if (!templateNode) {
             console.warn('Failed to processNodeForMap: Template node not found');
@@ -87,11 +87,11 @@ export class AstManager {
             return;
         }
 
-        if (templateNode.dynamicType) {
+        if (templateNode.dynamicType && !node.dynamicType) {
             node.dynamicType = templateNode.dynamicType;
         }
 
-        if (templateNode.coreElementType) {
+        if (templateNode.coreElementType && !node.coreElementType) {
             node.coreElementType = templateNode.coreElementType;
         }
 
@@ -102,7 +102,6 @@ export class AstManager {
             ${templateNode.coreElementType ? `'${templateNode.coreElementType}'` : 'undefined'}
         )`,
         );
-
         this.findNodeInstance(webviewId, node, node, templateNode);
     }
 
@@ -186,7 +185,12 @@ export class AstManager {
             console.warn('Failed to getTemplateNodeById: No oid found');
             return null;
         }
-        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
+        if (this.templateNodeCache.has(oid)) {
+            return this.templateNodeCache.get(oid) as TemplateNode;
+        }
+        const templateNode = await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
+        this.templateNodeCache.set(oid, templateNode as TemplateNode);
+        return templateNode as TemplateNode;
     }
 
     updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
