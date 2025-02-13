@@ -69,12 +69,12 @@ export class PagesManager {
 
         return nodeSegments.every((nodeSegment, index) => {
             const activeSegment = activeSegments[index];
-            // const isDynamic = nodeSegment.startsWith('[') && nodeSegment.endsWith(']');
+            const isDynamic = nodeSegment.startsWith('[') && nodeSegment.endsWith(']');
 
-            // For dynamic segments, check if active segment exists
-            // if (isDynamic) {
-            //     return nodeSegments.length === activeSegments.length && activeSegment.length > 0;
-            // }
+            // For dynamic segments, just verify the active segment exists
+            if (isDynamic) {
+                return activeSegment.length > 0;
+            }
 
             // For static segments, do exact match after cleaning escapes
             return nodeSegment.replace(/\\/g, '') === activeSegment.replace(/\\/g, '');
