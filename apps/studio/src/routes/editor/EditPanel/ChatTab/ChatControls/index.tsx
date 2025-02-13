@@ -15,6 +15,7 @@ const ChatControls = observer(() => {
     const handleNewChat = () => {
         editorEngine.chat.conversation.startNewConversation();
         setIsHistoryOpen(false);
+        editorEngine.chat.focusChatInput();
     };
 
     const handleHistoryOpenChange = (open: boolean) => {

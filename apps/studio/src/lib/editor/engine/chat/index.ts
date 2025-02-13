@@ -16,6 +16,7 @@ import { StreamResolver } from './stream';
 import { SuggestionManager } from './suggestions';
 const USE_MOCK = false;
 
+export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 export class ChatManager {
     isWaiting = false;
     conversation: ConversationManager;
@@ -48,6 +49,10 @@ export class ChatManager {
             (content) => this.resolveStreamObject(content),
         );
         this.disposers.push(disposer);
+    }
+
+    focusChatInput() {
+        window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
     resolveStreamObject(content: string | null) {
