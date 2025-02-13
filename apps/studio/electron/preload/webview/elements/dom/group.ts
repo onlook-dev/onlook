@@ -12,7 +12,7 @@ export function groupElements(
 ): DomElement | null {
     const parentEl = elementFromDomId(parent.domId);
     if (!parentEl) {
-        console.error('Failed to find parent element', parent.domId);
+        console.warn('Failed to find parent element', parent.domId);
         return null;
     }
 
@@ -29,7 +29,7 @@ export function groupElements(
         .filter(({ domId }) => childrenMap.has(domId));
 
     if (childrenWithIndices.length === 0) {
-        console.error('No valid children found to group');
+        console.warn('No valid children found to group');
         return null;
     }
 
@@ -57,7 +57,7 @@ export function ungroupElements(
 ): DomElement | null {
     const parentEl = elementFromDomId(parent.domId);
     if (!parentEl) {
-        console.error('Failed to find parent element', parent.domId);
+        console.warn('Failed to find parent element', parent.domId);
         return null;
     }
 
@@ -65,7 +65,7 @@ export function ungroupElements(
         (child) => child.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) === container.domId,
     ) as HTMLElement | undefined;
     if (!containerEl) {
-        console.error('Failed to find container element', parent.domId);
+        console.warn('Failed to find container element', parent.domId);
         return null;
     }
 

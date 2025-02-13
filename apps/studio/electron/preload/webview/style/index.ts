@@ -18,7 +18,7 @@ class CSSManager {
         `;
             document.head.appendChild(styleElement);
         } catch (error) {
-            console.error('Error injecting default styles', error);
+            console.warn('Error injecting default styles', error);
         }
     }
 

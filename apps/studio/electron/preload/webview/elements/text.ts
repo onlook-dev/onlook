@@ -18,7 +18,7 @@ export function startEditingText(domId: string): {
 } | null {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Start editing text failed. No element for selector:', domId);
+        console.warn('Start editing text failed. No element for selector:', domId);
         return null;
     }
 
@@ -33,7 +33,7 @@ export function startEditingText(domId: string): {
         targetEl = el as HTMLElement;
     }
     if (!targetEl) {
-        console.error('Start editing text failed. No target element found for selector:', domId);
+        console.warn('Start editing text failed. No target element found for selector:', domId);
         return null;
     }
     const originalContent = el.textContent || '';
@@ -45,7 +45,7 @@ export function startEditingText(domId: string): {
 export function editText(domId: string, content: string): DomElement | null {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Edit text failed. No element for selector:', domId);
+        console.warn('Edit text failed. No element for selector:', domId);
         return null;
     }
     prepareElementForEditing(el);
@@ -56,7 +56,7 @@ export function editText(domId: string, content: string): DomElement | null {
 export function stopEditingText(domId: string): { newContent: string; domEl: DomElement } | null {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Stop editing text failed. No element for selector:', domId);
+        console.warn('Stop editing text failed. No element for selector:', domId);
         return null;
     }
     cleanUpElementAfterEditing(el);
