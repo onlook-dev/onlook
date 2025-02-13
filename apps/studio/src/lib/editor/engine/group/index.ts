@@ -56,13 +56,6 @@ export class GroupManager {
             }
             return null;
         }
-        // If there is only one element, we can't group it
-        if (elements.length === 1) {
-            if (log) {
-                console.error('Only one element selected');
-            }
-            return null;
-        }
 
         const webviewId = elements[0].webviewId;
         const sameWebview = elements.every((el) => el.webviewId === webviewId);
