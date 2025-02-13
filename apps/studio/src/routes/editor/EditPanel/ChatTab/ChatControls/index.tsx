@@ -15,12 +15,7 @@ const ChatControls = observer(() => {
     const handleNewChat = () => {
         editorEngine.chat.conversation.startNewConversation();
         setIsHistoryOpen(false);
-
-        // Use requestAnimationFrame to ensure DOM is ready
-        requestAnimationFrame(() => {
-            const event = new Event('focus-chat-input');
-            window.dispatchEvent(event);
-        });
+        editorEngine.chat.focusChatInput();
     };
 
     const handleHistoryOpenChange = (open: boolean) => {
