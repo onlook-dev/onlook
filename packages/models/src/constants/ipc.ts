@@ -133,6 +133,7 @@ export enum MainChannels {
     // Pages
     SCAN_PAGES = 'scan-pages',
     CREATE_PAGE = 'create-page',
+    DELETE_PAGE = 'delete-page',
 
     // Images
     SCAN_IMAGES_IN_PROJECT = 'scan-images-in-project',

@@ -1,15 +1,16 @@
-import { makeAutoObservable } from 'mobx';
-import type { PageNode } from '@onlook/models/pages';
+import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
+import type { PageNode } from '@onlook/models/pages';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import type { ProjectsManager } from '@/lib/projects';
 import { doesRouteExist, normalizeRoute, validateNextJsRoute } from './helper';
 
 export class PagesManager {
     private pages: PageNode[] = [];
     private activeRoutesByWebviewId: Record<string, string> = {};
     private currentPath: string = '';
+    private groupedRoutes: string = '';
 
     constructor(
         private editorEngine: EditorEngine,
@@ -70,7 +71,7 @@ export class PagesManager {
             const activeSegment = activeSegments[index];
             const isDynamic = nodeSegment.startsWith('[') && nodeSegment.endsWith(']');
 
-            // For dynamic segments, check if active segment exists
+            // For dynamic segments, just verify the active segment exists
             if (isDynamic) {
                 return activeSegment.length > 0;
             }
@@ -169,6 +170,21 @@ export class PagesManager {
         }
 
         path = path.startsWith('/') ? path : `/${path}`;
+        const originalPath = path;
+
+        const normalizedPath = path.replace(/\\/g, '/');
+        const splitPath = normalizedPath.split('/').filter(Boolean);
+        const removedGroupedRoutes = splitPath.filter(
+            (val) => !(val.startsWith('(') && val.endsWith(')')),
+        );
+        const isGroupedRoutes = splitPath.length !== removedGroupedRoutes.length;
+
+        if (isGroupedRoutes) {
+            path = '/' + removedGroupedRoutes.join('/');
+            this.groupedRoutes = originalPath;
+        } else {
+            this.groupedRoutes = '';
+        }
 
         try {
             const currentUrl = await webview.getURL();
@@ -180,7 +196,7 @@ export class PagesManager {
             }
 
             await webview.loadURL(`${baseUrl}${path}`);
-            this.setActivePath(webview.id, path);
+            this.setActivePath(webview.id, originalPath);
             await webview.executeJavaScript('window.api?.processDom()');
         } catch (error) {
             console.error('Navigation failed:', error);
@@ -205,9 +221,36 @@ export class PagesManager {
 
             const urlObj = new URL(url);
             const path = urlObj.pathname;
-            this.setActivePath(webviewId, path);
+            const activePath = this.groupedRoutes ? this.groupedRoutes : path;
+            this.setActivePath(webviewId, activePath);
         } catch (error) {
             console.error('Failed to parse URL:', error);
+        }
+    }
+
+    public async deletePage(pageName: string, isDir: boolean): Promise<void> {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            throw new Error('No project root found');
+        }
+
+        const normalizedPath = normalizeRoute(`${pageName}`);
+        if (normalizedPath === '' || normalizedPath === '/') {
+            throw new Error('Cannot delete root page');
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.DELETE_PAGE, {
+                projectRoot,
+                pagePath: normalizedPath,
+                isDir,
+            });
+
+            await this.scanPages();
+        } catch (error) {
+            console.error('Failed to delete page:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(errorMessage);
         }
     }
 

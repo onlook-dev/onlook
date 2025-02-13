@@ -48,9 +48,10 @@ const LayersPanel = observer(() => {
                             </div>
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.PAGES}
                         >
+                            <Icons.Square className="mr-1.5 mb-0.5" />
                             {capitalizeFirstLetter(TabValue.PAGES)}
                         </TabsTrigger>
                         <TabsTrigger
