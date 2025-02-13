@@ -27,23 +27,24 @@ export function startDrag(domId: string): number | null {
 }
 
 export function drag(domId: string, dx: number, dy: number, x: number, y: number) {
-    const el = getDragElement();
+    const el = elementFromDomId(domId);
     if (!el) {
         console.warn('Dragging element not found');
         return;
     }
     const styles = window.getComputedStyle(el);
-    el.style.width = styles.width + 1;
-    el.style.height = styles.height + 1;
-    el.style.position = 'fixed';
-
     const pos = JSON.parse(
         el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
     );
     const left = pos.left + dx - window.scrollX;
     const top = pos.top + dy - window.scrollY;
+
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
+    el.style.width = styles.width + 1;
+    el.style.height = styles.height + 1;
+    el.style.position = 'fixed';
+
     moveStub(el, x, y);
 }
 
