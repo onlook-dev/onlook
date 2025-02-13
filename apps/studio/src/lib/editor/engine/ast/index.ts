@@ -86,11 +86,11 @@ export class AstManager {
             return;
         }
 
-        if (templateNode.dynamicType && !node.dynamicType) {
+        if (templateNode.dynamicType) {
             node.dynamicType = templateNode.dynamicType;
         }
 
-        if (templateNode.coreElementType && !node.coreElementType) {
+        if (templateNode.coreElementType) {
             node.coreElementType = templateNode.coreElementType;
         }
 
