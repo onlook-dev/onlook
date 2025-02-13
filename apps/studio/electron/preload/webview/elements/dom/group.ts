@@ -39,8 +39,12 @@ export function groupElements(
 
     // Move children into container
     childrenWithIndices.forEach(({ element }) => {
-        containerEl.appendChild(element.cloneNode(true));
+        const newElement = element.cloneNode(true) as HTMLElement;
+
+        newElement.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+        containerEl.appendChild(newElement);
         element.style.display = 'none';
+        removeIdsFromChildElement(element);
     });
 
     return getDomElement(containerEl, true);
@@ -83,4 +87,19 @@ function createContainerElement(target: GroupContainer): HTMLElement {
     containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, target.domId);
     containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_ID, target.oid);
     return containerEl;
+}
+
+function removeIdsFromChildElement(el: HTMLElement) {
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
+
+    const children = Array.from(el.children);
+    if (children.length === 0) {
+        return;
+    }
+
+    children.forEach((child) => {
+        removeIdsFromChildElement(child as HTMLElement);
+    });
 }
