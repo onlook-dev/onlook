@@ -9,12 +9,12 @@ import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 export function startDrag(domId: string): number | null {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.error(`Start drag element not found: ${domId}`);
+        console.warn(`Start drag element not found: ${domId}`);
         return null;
     }
     const parent = el.parentElement;
     if (!parent) {
-        console.error('Start drag parent not found');
+        console.warn('Start drag parent not found');
         return null;
     }
     const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
@@ -29,7 +29,7 @@ export function startDrag(domId: string): number | null {
 export function drag(domId: string, dx: number, dy: number, x: number, y: number) {
     const el = getDragElement();
     if (!el) {
-        console.error('Dragging element not found');
+        console.warn('Dragging element not found');
         return;
     }
     const styles = window.getComputedStyle(el);
@@ -54,14 +54,14 @@ export function endDrag(domId: string): {
 } | null {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.error('End drag element not found');
+        console.warn('End drag element not found');
         endAllDrag();
         return null;
     }
 
     const parent = el.parentElement;
     if (!parent) {
-        console.error('End drag parent not found');
+        console.warn('End drag parent not found');
         cleanUpElementAfterDragging(el);
         return null;
     }
