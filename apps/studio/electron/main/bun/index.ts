@@ -32,7 +32,11 @@ export async function runBunCommand(
         const { stdout, stderr } = await execAsync(commandToExecute, {
             cwd: options.cwd,
             maxBuffer: 1024 * 1024 * 10,
-            env: options.env,
+            env: {
+                ...process.env,
+                ...options.env,
+                NODE_VERSION: '18.17.0', // LTS version compatible with both Electron and node-pty
+            },
             shell,
         });
 
