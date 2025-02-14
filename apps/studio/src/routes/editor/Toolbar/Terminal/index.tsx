@@ -82,6 +82,8 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             allowTransparency: true,
             disableStdin: false,
             allowProposedApi: true,
+            // Using allowProposedApi for copy functionality
+            macOptionIsMeta: true,
         });
 
         term.open(container);
