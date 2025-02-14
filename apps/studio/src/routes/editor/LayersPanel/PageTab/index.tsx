@@ -10,7 +10,7 @@ import { type NodeApi, Tree } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import PageTreeNode from '../Tree/PageTreeNode';
 import PageTreeRow from '../Tree/PageTreeRow';
-import { CreatePageModal } from './CreatePageModal';
+import { PageModal } from './PageModal';
 
 const PagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -87,7 +87,7 @@ const PagesTab = observer(() => {
             </div>
 
             <Tree {...pageTreeProps}>{(props) => <PageTreeNode {...props} />}</Tree>
-            <CreatePageModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+            <PageModal mode="create" open={showCreateModal} onOpenChange={setShowCreateModal} />
         </div>
     );
 });

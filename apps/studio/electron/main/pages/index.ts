@@ -13,6 +13,8 @@ const DEFAULT_PAGE_CONTENT = `export default function Page() {
     );
 }
 `;
+const ROOT_PATH_IDENTIFIERS = ['', '/', '.'];
+const ROOT_PAGE_COPY_NAME = 'landing-page-copy';
 
 interface RouterConfig {
     type: 'app' | 'pages';
@@ -132,7 +134,11 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
 
         nodes.push({
             id: nanoid(),
-            name: isDynamicRoute ? currentDir : parentPath ? path.basename(parentPath) : 'home',
+            name: isDynamicRoute
+                ? currentDir
+                : parentPath
+                  ? path.basename(parentPath)
+                  : '🏠 Landing Page',
             path: cleanPath,
             children: [],
             isActive: false,
@@ -201,7 +207,7 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
                     fileName === 'index'
                         ? parentPath
                             ? `/${path.basename(parentPath)}`
-                            : 'home'
+                            : '🏠 Landing Page'
                         : '/' + fileName,
                 path: cleanPath,
                 children: [],
@@ -270,7 +276,7 @@ export async function createNextJsPage(projectRoot: string, pagePath: string): P
         }
 
         if (routerConfig.type !== 'app') {
-            throw new Error('Page creation is only supported for App Router projects for now.');
+            throw new Error('Page creation is only supported for App Router projects.');
         }
 
         // Validate and normalize the path
@@ -355,4 +361,156 @@ async function cleanupEmptyFolders(folderPath: string) {
             }
         }
     }
+}
+
+export async function renameNextJsPage1(
+    projectRoot: string,
+    oldPath: string,
+    newName: string,
+): Promise<boolean> {
+    try {
+        const routerConfig = await detectRouterType(projectRoot);
+        if (!routerConfig || routerConfig.type !== 'app') {
+            throw new Error('Page renaming is only supported for App Router projects.');
+        }
+
+        if (ROOT_PATH_IDENTIFIERS.includes(oldPath)) {
+            throw new Error('Cannot rename root page');
+        }
+
+        const oldFullPath = path.join(routerConfig.basePath, oldPath);
+        const parentDir = path.dirname(oldFullPath);
+        const newFullPath = path.join(parentDir, newName);
+
+        // Check if source exists
+        if (
+            !(await fs
+                .access(oldFullPath)
+                .then(() => true)
+                .catch(() => false))
+        ) {
+            throw new Error('Source page not found');
+        }
+
+        // Check if target already exists
+        if (
+            await fs
+                .access(newFullPath)
+                .then(() => true)
+                .catch(() => false)
+        ) {
+            throw new Error('Target path already exists');
+        }
+
+        await fs.rename(oldFullPath, newFullPath);
+        return true;
+    } catch (error) {
+        console.error('Error renaming page:', error);
+        throw error;
+    }
+}
+
+export async function renameNextJsPage(
+    projectRoot: string,
+    oldPath: string,
+    newName: string,
+): Promise<boolean> {
+    try {
+        const routerConfig = await detectRouterType(projectRoot);
+        if (!routerConfig || routerConfig.type !== 'app') {
+            throw new Error('Page renaming is only supported for App Router projects.');
+        }
+
+        if (ROOT_PATH_IDENTIFIERS.includes(oldPath)) {
+            throw new Error('Cannot rename root page');
+        }
+
+        const oldFullPath = path.join(routerConfig.basePath, oldPath);
+        const parentDir = path.dirname(oldFullPath);
+        const newFullPath = path.join(parentDir, newName);
+
+        // Check if source exists
+        if (
+            !(await fs
+                .access(oldFullPath)
+                .then(() => true)
+                .catch(() => false))
+        ) {
+            throw new Error(`Source page not found: ${oldFullPath}`);
+        }
+
+        // Check if target already exists
+        if (
+            await fs
+                .access(newFullPath)
+                .then(() => true)
+                .catch(() => false)
+        ) {
+            throw new Error(`Target path already exists: ${newFullPath}`);
+        }
+
+        // Add a small delay to ensure any file operations are complete
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        await fs.rename(oldFullPath, newFullPath);
+
+        return true;
+    } catch (error) {
+        console.error('Error renaming page:', error);
+        throw error;
+    }
+}
+
+export async function duplicateNextJsPage(
+    projectRoot: string,
+    sourcePath: string,
+    targetPath: string,
+): Promise<boolean> {
+    const routerConfig = await detectRouterType(projectRoot);
+    if (!routerConfig || routerConfig.type !== 'app') {
+        throw new Error('Page duplication is only supported for App Router projects.');
+    }
+
+    // Handle root path case
+    const isRootPath = ROOT_PATH_IDENTIFIERS.includes(sourcePath);
+
+    if (isRootPath) {
+        const sourcePageFile = path.join(routerConfig.basePath, 'page.tsx');
+        const targetDir = path.join(routerConfig.basePath, ROOT_PAGE_COPY_NAME);
+        const targetPageFile = path.join(targetDir, 'page.tsx');
+
+        // Check if target already exists
+        if (
+            await fs
+                .access(targetDir)
+                .then(() => true)
+                .catch(() => false)
+        ) {
+            throw new Error('Target path already exists');
+        }
+
+        await fs.mkdir(targetDir, { recursive: true });
+        await fs.copyFile(sourcePageFile, targetPageFile);
+        return true;
+    }
+
+    // Handle non-root pages
+    const normalizedSourcePath = sourcePath;
+    const normalizedTargetPath = targetPath.endsWith('-copy') ? targetPath : `${targetPath}-copy`;
+
+    const sourceFull = path.join(routerConfig.basePath, normalizedSourcePath);
+    const targetFull = path.join(routerConfig.basePath, normalizedTargetPath);
+
+    // Check if target already exists
+    if (
+        await fs
+            .access(targetFull)
+            .then(() => true)
+            .catch(() => false)
+    ) {
+        throw new Error('Target path already exists');
+    }
+
+    await fs.cp(sourceFull, targetFull, { recursive: true });
+    return true;
 }
