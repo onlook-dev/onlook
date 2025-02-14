@@ -130,7 +130,7 @@ export class ActionManager {
             }
             sendToWebview(webview, WebviewChannels.MOVE_ELEMENT, {
                 domId: target.domId,
-                newIndex: location.index,
+                location,
             });
         });
     }

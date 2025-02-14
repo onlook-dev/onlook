@@ -22,31 +22,25 @@ export function createStub(el: HTMLElement) {
     document.body.appendChild(stub);
 }
 
-export function moveStub(el: HTMLElement, x: number, y: number) {
+export function moveStub(el: HTMLElement, x: number, y: number, targetContainer: HTMLElement) {
     const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
     if (!stub) {
         return;
     }
 
-    const parent = el.parentElement;
-    if (!parent) {
-        return;
-    }
+    const displayDirection = getDisplayDirection(targetContainer);
 
-    let displayDirection = el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
-    if (!displayDirection) {
-        displayDirection = getDisplayDirection(parent);
-    }
+    // Check if the target container is using grid layout
+    const containerStyle = window.getComputedStyle(targetContainer);
+    const isGridLayout = containerStyle.display === 'grid';
 
-    // Check if the parent is using grid layout
-    const parentStyle = window.getComputedStyle(parent);
-    const isGridLayout = parentStyle.display === 'grid';
-
-    const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
+    const siblings = Array.from(targetContainer.children).filter(
+        (child) => child !== el && child !== stub,
+    );
 
     let insertionIndex;
     if (isGridLayout) {
-        insertionIndex = findGridInsertionIndex(parent, siblings, x, y);
+        insertionIndex = findGridInsertionIndex(targetContainer, siblings, x, y);
     } else {
         insertionIndex = findFlexBlockInsertionIndex(
             siblings,
@@ -60,9 +54,9 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
 
     // Append element at the insertion index
     if (insertionIndex >= siblings.length) {
-        parent.appendChild(stub);
+        targetContainer.appendChild(stub);
     } else {
-        parent.insertBefore(stub, siblings[insertionIndex]);
+        targetContainer.insertBefore(stub, siblings[insertionIndex]);
     }
 
     stub.style.display = 'block';
