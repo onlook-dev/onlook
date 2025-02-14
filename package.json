@@ -15,6 +15,7 @@
         "tooling/*"
     ],
     "scripts": {
+        "preinstall": "./scripts/install-with-node.sh",
         "build:foundation": "bun --filter @onlook/foundation build",
         "build:cli": "bun build:foundation && bun --filter onlook typecheck && bun --filter onlook build",
         "build:studio": "bun build:foundation && bun --filter @onlook/studio build",
