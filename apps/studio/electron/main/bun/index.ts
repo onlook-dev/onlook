@@ -29,13 +29,15 @@ export async function runBunCommand(
         const shell = process.platform === 'win32' ? 'powershell.exe' : '/bin/sh';
 
         console.log('Executing command: ', commandToExecute, options.cwd);
+        const projectNodeVersion = require(path.join(options.cwd, 'package.json')).engines?.node;
         const { stdout, stderr } = await execAsync(commandToExecute, {
             cwd: options.cwd,
             maxBuffer: 1024 * 1024 * 10,
             env: {
                 ...process.env,
                 ...options.env,
-                NODE_VERSION: '18.17.0', // LTS version compatible with both Electron and node-pty
+                NODE_VERSION: projectNodeVersion || '18.17.0',
+                PYTHON: process.env.PYTHON || '/home/ubuntu/.pyenv/versions/3.8.18/bin/python3'
             },
             shell,
         });
