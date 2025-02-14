@@ -6,10 +6,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
-import { cleanupAuthAutoRefresh, handleAuthCallback, setupAuthAutoRefresh } from './auth';
-import { listenForIpcMessages, removeIpcListeners } from './events';
-import run from './run';
-import terminal from './run/terminal';
+import { handleAuthCallback, setupAuthAutoRefresh } from './auth';
+import { listenForIpcMessages } from './events';
 import { updater } from './update';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
@@ -91,79 +89,14 @@ const initMainWindow = () => {
     setupAuthAutoRefresh();
 };
 
-let isCleaningUp = false;
-
-export const cleanup = async () => {
-    // No longer needed, but keeping for reference
-    return;
-    if (isCleaningUp) {
-        return;
-    }
-    isCleaningUp = true;
-
-    try {
-        // Stop supabase auto-refresh
-        await cleanupAuthAutoRefresh();
-
-        // Stop all processes
-        await run.stopAll();
-        await terminal.killAll();
-
-        // Clean up window
-        if (mainWindow) {
-            mainWindow?.removeAllListeners();
-            mainWindow = null;
-        }
-
-        // Clean up IPC handlers
-        removeIpcListeners();
-    } catch (err) {
-        console.error('Error during cleanup:', err);
-    } finally {
-        isCleaningUp = false;
-    }
-};
-
-const cleanUpAndExit = async () => {
-    await cleanup();
-    app.quit();
-};
-
-const listenForExitEvents = () => {
-    process.on('exit', cleanUpAndExit);
-    process.on('SIGTERM', cleanUpAndExit);
-    process.on('SIGINT', cleanUpAndExit);
-    process.on('uncaughtException', async (error) => {
-        console.error('Uncaught Exception:', error);
-        sendAnalytics('uncaught exception', { error });
-        await cleanup();
-        process.exit(1);
-    });
-};
-
 const setupAppEventListeners = () => {
     app.whenReady().then(() => {
-        listenForExitEvents();
         initMainWindow();
     });
 
     app.on('ready', () => {
         updater.listen();
         sendAnalytics('start app');
-    });
-
-    let isQuitting = false;
-    app.on('before-quit', async (event) => {
-        if (!isQuitting) {
-            event.preventDefault();
-            isQuitting = true;
-            await cleanup();
-            app.quit();
-        }
-    });
-
-    app.on('will-quit', () => {
-        isQuitting = true;
     });
 
     app.on('window-all-closed', async () => {
@@ -203,7 +136,6 @@ const setupAppEventListeners = () => {
 // Main function
 const main = async () => {
     if (!app.requestSingleInstanceLock()) {
-        await cleanup();
         app.quit();
         process.exit(0);
     }
