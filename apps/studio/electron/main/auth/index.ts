@@ -68,21 +68,28 @@ export async function signIn(provider: 'github' | 'google') {
 
     supabase.auth.signOut();
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-            skipBrowserRedirect: true,
-            redirectTo: APP_SCHEMA + '://auth',
-        },
-    });
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+                skipBrowserRedirect: true,
+                redirectTo: APP_SCHEMA + '://auth',
+            },
+        });
 
-    if (error) {
-        console.error('Authentication error:', error);
-        return;
+        if (error) {
+            console.error('Authentication error:', error);
+            return;
+        }
+
+        await shell.openExternal(data.url, {
+            activate: true, // Ensure browser window is brought to foreground on macOS
+        });
+        sendAnalytics('sign in', { provider });
+    } catch (error) {
+        console.error('Failed to open auth URL:', error);
+        throw error;
     }
-
-    shell.openExternal(data.url);
-    sendAnalytics('sign in', { provider });
 }
 
 export async function handleAuthCallback(url: string) {
