@@ -94,6 +94,8 @@ const initMainWindow = () => {
 let isCleaningUp = false;
 
 export const cleanup = async () => {
+    // No longer needed, but keeping for reference
+    return;
     if (isCleaningUp) {
         return;
     }
@@ -109,7 +111,7 @@ export const cleanup = async () => {
 
         // Clean up window
         if (mainWindow) {
-            mainWindow.removeAllListeners();
+            mainWindow?.removeAllListeners();
             mainWindow = null;
         }
 
@@ -204,7 +206,6 @@ const main = async () => {
         await cleanup();
         app.quit();
         process.exit(0);
-        return;
     }
 
     setupEnvironment();
