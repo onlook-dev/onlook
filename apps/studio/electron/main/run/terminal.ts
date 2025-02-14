@@ -1,17 +1,18 @@
 import { MainChannels } from '@onlook/models/constants';
-import * as pty from 'node-pty';
+import { fork, ChildProcess } from 'child_process';
+import path from 'path';
 import os from 'os';
 import { mainWindow } from '..';
 import { getBunCommand } from '../bun';
 
 class TerminalManager {
     private static instance: TerminalManager;
-    private processes: Map<string, pty.IPty>;
+    private ptyProcess: ChildProcess | null = null;
     private outputHistory: Map<string, string>;
 
     private constructor() {
-        this.processes = new Map();
         this.outputHistory = new Map();
+        this.initPtyProcess();
     }
 
     static getInstance(): TerminalManager {
@@ -21,19 +22,26 @@ class TerminalManager {
         return TerminalManager.instance;
     }
 
+    private initPtyProcess() {
+        const ptyScriptPath = path.join(__dirname, '../run/pty-process/index.js');
+        this.ptyProcess = fork(ptyScriptPath, [], {
+            env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+        });
+
+        this.ptyProcess.on('message', (message: any) => {
+            const { type, payload } = message;
+            if (type === 'DATA') {
+                this.addTerminalMessage(payload.id, payload.data);
+            }
+        });
+    }
+
     create(id: string, options?: { cwd?: string }): boolean {
         try {
-            const shell = os.platform() === 'win32' ? 'powershell.exe' : '/bin/sh';
-            const ptyProcess = pty.spawn(shell, [], {
-                name: 'xterm-color',
-                cwd: options?.cwd,
+            this.ptyProcess?.send({
+                type: 'CREATE',
+                payload: { id, cwd: options?.cwd },
             });
-
-            ptyProcess.onData((data: string) => {
-                this.addTerminalMessage(id, data);
-            });
-
-            this.processes.set(id, ptyProcess);
             return true;
         } catch (error) {
             console.error('Failed to create terminal.', error);
@@ -56,7 +64,10 @@ class TerminalManager {
 
     write(id: string, data: string): boolean {
         try {
-            this.processes.get(id)?.write(data);
+            this.ptyProcess?.send({
+                type: 'WRITE',
+                payload: { id, data },
+            });
             return true;
         } catch (error) {
             console.error('Failed to write to terminal.', error);
@@ -66,7 +77,10 @@ class TerminalManager {
 
     resize(id: string, cols: number, rows: number): boolean {
         try {
-            this.processes.get(id)?.resize(cols, rows);
+            this.ptyProcess?.send({
+                type: 'RESIZE',
+                payload: { id, cols, rows },
+            });
             return true;
         } catch (error) {
             console.error('Failed to resize terminal.', error);
@@ -76,12 +90,11 @@ class TerminalManager {
 
     kill(id: string): boolean {
         try {
-            const process = this.processes.get(id);
-            if (process) {
-                process.kill();
-                this.processes.delete(id);
-                this.outputHistory.delete(id);
-            }
+            this.ptyProcess?.send({
+                type: 'KILL',
+                payload: { id },
+            });
+            this.outputHistory.delete(id);
             return true;
         } catch (error) {
             console.error('Failed to kill terminal.', error);
@@ -90,9 +103,16 @@ class TerminalManager {
     }
 
     killAll(): boolean {
-        this.processes.forEach((process) => process.kill());
-        this.processes.clear();
-        return true;
+        try {
+            this.ptyProcess?.send({
+                type: 'KILL_ALL',
+                payload: {},
+            });
+            return true;
+        } catch (error) {
+            console.error('Failed to kill all terminals.', error);
+            return false;
+        }
     }
 
     executeCommand(id: string, command: string): boolean {
