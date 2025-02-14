@@ -157,7 +157,7 @@ const ProjectBreadcrumb = observer(() => {
                             </DropdownMenuSub>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                                Open project folder
+                                {'Show in Explorer'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
                                 Settings
