@@ -1,4 +1,6 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { FOCUS_CHAT_INPUT_EVENT } from '@/lib/editor/engine/chat';
+import { EditorTabValue } from '@/lib/models';
 import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
@@ -9,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
 import { Suggestions } from './Suggestions';
@@ -24,6 +26,35 @@ export const ChatInput = observer(() => {
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [hideSuggestions, setHideSuggestions] = useState(false);
+
+    const focusInput = () => {
+        requestAnimationFrame(() => {
+            textareaRef.current?.focus();
+        });
+    };
+
+    useEffect(() => {
+        if (textareaRef.current && !editorEngine.chat.isWaiting) {
+            focusInput();
+        }
+    }, [editorEngine.chat.conversation.current?.messages.length]);
+
+    useEffect(() => {
+        if (editorEngine.editPanelTab === EditorTabValue.CHAT) {
+            focusInput();
+        }
+    }, [editorEngine.editPanelTab]);
+
+    useEffect(() => {
+        const focusHandler = () => {
+            if (textareaRef.current && !editorEngine.chat.isWaiting) {
+                focusInput();
+            }
+        };
+
+        window.addEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
+        return () => window.removeEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
+    }, []);
 
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;

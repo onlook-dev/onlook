@@ -67,7 +67,10 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         OPEN_DEV_TOOL_ITEM,
         {
             label: 'Add to AI Chat',
-            action: () => (editorEngine.editPanelTab = EditorTabValue.CHAT),
+            action: () => {
+                editorEngine.editPanelTab = EditorTabValue.CHAT;
+                editorEngine.chat.focusChatInput();
+            },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ADD_AI_CHAT,
             disabled: !editorEngine.elements.selected.length,
@@ -77,6 +80,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.editPanelTab = EditorTabValue.CHAT;
                 editorEngine.chat.conversation.startNewConversation();
+                editorEngine.chat.focusChatInput();
             },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.NEW_AI_CHAT,

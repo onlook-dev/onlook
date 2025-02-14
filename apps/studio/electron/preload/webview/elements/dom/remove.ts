@@ -9,19 +9,19 @@ export function getRemoveActionFromDomId(
 ): RemoveElementAction | undefined {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Element not found for domId:', domId);
+        console.warn('Element not found for domId:', domId);
         return;
     }
 
     const location = getElementLocation(el);
     if (!location) {
-        console.error('Failed to get location for element:', el);
+        console.warn('Failed to get location for element:', el);
         return;
     }
 
     const actionEl = getActionElement(el);
     if (!actionEl) {
-        console.error('Failed to get action element for element:', el);
+        console.warn('Failed to get action element for element:', el);
         return;
     }
 
