@@ -14,6 +14,7 @@ export enum ProjectTabs {
     SETTINGS = 'settings',
     PROMPT_CREATE = 'prompt-create',
     IMPORT_PROJECT = 'import-project',
+    BLANK_CREATE = 'blank-create',
 }
 
 export class ProjectsManager {

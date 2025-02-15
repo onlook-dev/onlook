@@ -137,7 +137,21 @@ const ProjectBreadcrumb = observer(() => {
                                         )}
                                     >
                                         <Icons.FilePlus className="mr-2 h-4 w-4" />
-                                        Start from scratch
+                                        Start from Prompt
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() =>
+                                            handleNavigateToProject(ProjectTabs.BLANK_CREATE)
+                                        }
+                                        className={cn(
+                                            'focus:bg-blue-100 focus:text-blue-900',
+                                            'hover:bg-blue-100 hover:text-blue-900',
+                                            'dark:focus:bg-blue-900 dark:focus:text-blue-100',
+                                            'dark:hover:bg-blue-900 dark:hover:text-blue-100',
+                                        )}
+                                    >
+                                        <Icons.File className="mr-2 h-4 w-4" />
+                                        Start from Blank
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onClick={() =>

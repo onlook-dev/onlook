@@ -5,6 +5,7 @@ import { capitalizeFirstLetter } from '/common/helpers';
 export enum CreateMethod {
     LOAD = 'load',
     NEW = 'new',
+    BLANK = 'blank',
 }
 
 export const PLACEHOLDER_NAMES = [
@@ -54,6 +55,7 @@ export async function getPreviewImage(filename: string): Promise<string | null> 
 const STEP_MAP = {
     [CreateMethod.LOAD]: ['Select folder', 'Verify project', 'Name project', 'Set URL'],
     [CreateMethod.NEW]: ['Name project', 'Select folder', 'Install project', 'Run project'],
+    [CreateMethod.BLANK]: ['Name project', 'Select folder', 'Install project', 'Run project'],
 };
 
 export function getStepName(method: CreateMethod | null, step: number): string {

@@ -75,7 +75,36 @@ export class CreateManager {
         }
     }
 
-    async sendPrompt(prompt: string, images: ImageMessageContext[]) {
+    async sendPrompt(prompt: string, images: ImageMessageContext[], skipAI: boolean = false) {
+        if (skipAI) {
+            // For blank projects, we'll use the same channel but with an empty prompt
+            const result: {
+                success: boolean;
+                response?: {
+                    projectPath?: string;
+                    content?: string;
+                };
+                error?: string;
+            } = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
+                prompt: '',
+                images: [],
+                skipAI: true,
+            });
+
+            if (result.success && result.response?.projectPath) {
+                this.state = CreateState.PROMPT;
+                const newProject = this.createProject(result.response.projectPath, true);
+                this.projectsManager.project = newProject;
+                setTimeout(() => {
+                    this.projectsManager.projectsTab = ProjectTabs.PROJECTS;
+                }, 100);
+                return;
+            }
+            this.error = 'Failed to create blank project';
+            this.state = CreateState.ERROR;
+            return;
+        }
+
         sendAnalytics('prompt create project', {
             prompt,
         });
@@ -91,11 +120,12 @@ export class CreateManager {
         } = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
             prompt: prompt,
             images: images,
+            skipAI: false,
         });
 
         if (result.success && result.response?.projectPath) {
             this.state = CreateState.PROMPT;
-            const newProject = this.createProject(result.response.projectPath);
+            const newProject = this.createProject(result.response.projectPath, false);
             this.projectsManager.project = newProject;
             setTimeout(() => {
                 this.projectsManager.projectsTab = ProjectTabs.PROJECTS;
@@ -125,7 +155,7 @@ export class CreateManager {
         }
     }
 
-    createProject(projectPath: string) {
+    createProject(projectPath: string, skipAI: boolean = false) {
         const projectName = 'New Project';
         const projectUrl = 'http://localhost:3000';
         const projectCommands = {
@@ -133,6 +163,18 @@ export class CreateManager {
             run: 'npm run dev',
             build: 'npm run build',
         };
+
+        if (skipAI) {
+            this.state = CreateState.PROMPT;
+            const newProject = this.projectsManager.createProject(
+                projectName,
+                projectUrl,
+                projectPath,
+                projectCommands,
+            );
+            this.projectsManager.project = newProject;
+            return newProject;
+        }
 
         return this.projectsManager.createProject(
             projectName,
