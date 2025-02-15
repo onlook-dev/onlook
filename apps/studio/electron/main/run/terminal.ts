@@ -27,6 +27,7 @@ class TerminalManager {
             const ptyProcess = pty.spawn(shell, [], {
                 name: 'xterm-color',
                 cwd: options?.cwd,
+                env: process.env,
             });
 
             ptyProcess.onData((data: string) => {
