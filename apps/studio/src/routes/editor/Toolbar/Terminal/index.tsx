@@ -82,6 +82,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             allowTransparency: true,
             disableStdin: false,
             allowProposedApi: true,
+            macOptionIsMeta: true,
         });
 
         term.open(container);

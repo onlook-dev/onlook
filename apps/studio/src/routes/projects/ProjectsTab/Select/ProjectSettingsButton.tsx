@@ -76,7 +76,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         ) : (
                             <Icons.Directory className="w-4 h-4" />
                         )}
-                        {'Open Project Folder'}
+                        {'Show in Explorer'}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
