@@ -238,9 +238,13 @@ export class ChatManager {
 
     async updateSettings(settings: Partial<ChatSettings>) {
         this.settings = { ...this.settings, ...settings };
-        await this.editorEngine.projects.user?.updateUserSettings({
-            chatSettings: this.settings,
-        });
+        if (this.editorEngine.projects.user) {
+            const currentSettings = await this.editorEngine.projects.user.user;
+            await this.editorEngine.projects.user.updateUserSettings({
+                ...currentSettings,
+                chatSettings: this.settings,
+            });
+        }
     }
 
     dispose() {
