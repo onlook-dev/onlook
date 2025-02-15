@@ -24,20 +24,20 @@ export const SettingsModal = ({
     }, [open]);
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl">
+            <DialogContent className="max-w-3xl">
                 <div className="flex flex-col h-full">
                     {/* Top bar */}
-                    <div className="flex justify-between items-center border-b border-border pb-4">
-                        <DialogTitle>Settings</DialogTitle>
+                    <div className="flex justify-between items-center px-6 pb-4 border-b border-border -mx-6">
+                        <DialogTitle className="text-title3">Settings</DialogTitle>
                         <DialogClose>
                             <Icons.CrossL className="h-4 w-4" />
                         </DialogClose>
                     </div>
 
                     {/* Main content */}
-                    <div className="flex gap-8 pt-6">
+                    <div className="flex gap-2 pt-6">
                         {/* Left navigation */}
-                        <div className="w-48 space-y-2">
+                        <div className="w-40 space-y-2">
                             <Button
                                 variant="ghost"
                                 className={cn(
