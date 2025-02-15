@@ -70,7 +70,7 @@ const EditPanel = observer(() => {
                             <Icons.PinRight />
                         </button>
                         <ContextMenu>
-                            <ContextMenuTrigger>
+                            <ContextMenuTrigger asChild>
                                 <TabsTrigger
                                     className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                                     value={EditorTabValue.CHAT}
