@@ -4,6 +4,12 @@ import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 
 export const SettingsModal = ({
     open,
@@ -13,8 +19,8 @@ export const SettingsModal = ({
     onOpenChange: (open: boolean) => void;
 }) => {
     const [activeTab, setActiveTab] = React.useState('domain');
-    const [isPro] = React.useState(false); // Will be replaced with actual pro check
-    const [isVerified] = React.useState(false); // Will be replaced with domain verification check
+    const [isPro] = React.useState(true); // Will be replaced with actual pro check
+    const [isVerified] = React.useState(true); // Will be replaced with domain verification check
 
     // Reset state when dialog closes
     React.useEffect(() => {
@@ -35,13 +41,13 @@ export const SettingsModal = ({
                     </div>
 
                     {/* Main content */}
-                    <div className="flex gap-2 pt-6">
+                    <div className="flex gap-4 pt-6">
                         {/* Left navigation */}
-                        <div className="w-40 space-y-2">
+                        <div className="w-32 space-y-2 mt-[-4px]">
                             <Button
                                 variant="ghost"
                                 className={cn(
-                                    'w-full justify-start',
+                                    'w-full justify-start px-0 hover:bg-transparent',
                                     activeTab === 'domain'
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
@@ -54,7 +60,7 @@ export const SettingsModal = ({
                             <Button
                                 variant="ghost"
                                 className={cn(
-                                    'w-full justify-start',
+                                    'w-full justify-start px-0 hover:bg-transparent',
                                     activeTab === 'project'
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
@@ -67,7 +73,7 @@ export const SettingsModal = ({
                             <Button
                                 variant="ghost"
                                 className={cn(
-                                    'w-full justify-start',
+                                    'w-full justify-start px-0 hover:bg-transparent',
                                     activeTab === 'editor'
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
@@ -80,26 +86,35 @@ export const SettingsModal = ({
                         </div>
 
                         {/* Right content */}
-                        <div className="flex-1 space-y-6">
+                        <div className="flex-1 space-y-8">
                             <div className="space-y-4">
                                 <h2 className="text-lg font-medium">Base Domain</h2>
                                 <div className="space-y-2">
-                                    <p className="text-sm text-muted-foreground">URL</p>
-                                    <Input
-                                        value="cookies-and-creme.onlook.live"
-                                        disabled
-                                        className="bg-muted"
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        Last updated 3 mins ago
-                                    </p>
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <p className="text-regularPlus text-muted-foreground">
+                                                URL
+                                            </p>
+                                            <p className="text-small text-muted-foreground">
+                                                Last updated 3 mins ago
+                                            </p>
+                                        </div>
+                                        <Input
+                                            value="cookies-and-creme.onlook.live"
+                                            disabled
+                                            className="bg-muted w-2/3"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
+                            {/* Add divider */}
+                            <div className="border-t border-border" />
+
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-start gap-3">
                                     <h2 className="text-lg font-medium">Custom Domain</h2>
-                                    <div className="flex h-5 items-center space-x-2">
+                                    <div className="flex h-5 items-center space-x-2 bg-blue-500 px-2 rounded-full">
                                         <Icons.Sparkles className="h-4 w-4" />
                                         <span className="text-xs">Pro</span>
                                     </div>
@@ -130,88 +145,126 @@ export const SettingsModal = ({
                                 ) : !isVerified ? (
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <p className="text-sm text-muted-foreground">
-                                                Custom URL
-                                            </p>
-                                            <Input
-                                                placeholder="Input your domain"
-                                                className="bg-background"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <p className="text-sm text-muted-foreground">
-                                                Configure
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Your DNS records must be set up with these values.
-                                            </p>
-                                            <div className="grid grid-cols-3 gap-4 rounded-lg border p-4">
-                                                <div className="text-sm font-medium">Name</div>
-                                                <div className="text-sm font-medium">Type</div>
-                                                <div className="text-sm font-medium">Value</div>
-
-                                                <div className="text-sm">@</div>
-                                                <div className="text-sm">A</div>
-                                                <div className="text-sm">32.233.32.3</div>
-
-                                                <div className="text-sm">@</div>
-                                                <div className="text-sm">A</div>
-                                                <div className="text-sm">32.243.32.3</div>
-
-                                                <div className="text-sm">www</div>
-                                                <div className="text-sm">CNAME</div>
-                                                <div className="text-sm">onlook.live</div>
-                                            </div>
-                                        </div>
-                                        <Button className="w-full">Verify Setup</Button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-2">
-                                                <p className="text-sm text-muted-foreground">
-                                                    Custom URL
-                                                </p>
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-regularPlus text-muted-foreground">
+                                                        Custom URL
+                                                    </p>
+                                                </div>
                                                 <Input
-                                                    value="cookieshop.com"
-                                                    disabled
-                                                    className="bg-muted"
+                                                    placeholder="Input your domain"
+                                                    className="bg-background w-2/3"
                                                 />
                                             </div>
-                                            <div className="flex items-center space-x-2">
-                                                <Icons.CheckCircled className="h-4 w-4 text-green-500" />
-                                                <span className="text-xs text-muted-foreground">
-                                                    Verified
-                                                </span>
-                                                <Button variant="ghost" size="icon">
-                                                    <Icons.DotsVertical className="h-4 w-4" />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <div className="space-y-2">
+                                                    <p className="text-regularPlus text-muted-foreground">
+                                                        Configure
+                                                    </p>
+                                                    <p className="text-small text-muted-foreground">
+                                                        Your DNS records must be set up with these
+                                                        values.
+                                                    </p>
+                                                </div>
+                                                <Button
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    className="h-8 px-3 text-sm"
+                                                >
+                                                    Verify Setup
                                                 </Button>
                                             </div>
                                         </div>
+                                        <div className="grid grid-cols-3 gap-4 rounded-lg border p-4">
+                                            <div className="text-sm font-medium">Name</div>
+                                            <div className="text-sm font-medium">Type</div>
+                                            <div className="text-sm font-medium">Value</div>
+
+                                            <div className="text-sm">@</div>
+                                            <div className="text-sm">A</div>
+                                            <div className="text-sm">32.233.32.3</div>
+
+                                            <div className="text-sm">@</div>
+                                            <div className="text-sm">A</div>
+                                            <div className="text-sm">32.243.32.3</div>
+
+                                            <div className="text-sm">www</div>
+                                            <div className="text-sm">CNAME</div>
+                                            <div className="text-sm">onlook.live</div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <p className="text-sm text-muted-foreground">
-                                                Configure
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Your DNS records must be set up with these values.
-                                            </p>
-                                            <div className="grid grid-cols-3 gap-4 rounded-lg border p-4">
-                                                <div className="text-sm font-medium">Name</div>
-                                                <div className="text-sm font-medium">Type</div>
-                                                <div className="text-sm font-medium">Value</div>
-
-                                                <div className="text-sm">@</div>
-                                                <div className="text-sm">A</div>
-                                                <div className="text-sm">32.233.32.3</div>
-
-                                                <div className="text-sm">@</div>
-                                                <div className="text-sm">A</div>
-                                                <div className="text-sm">32.243.32.3</div>
-
-                                                <div className="text-sm">www</div>
-                                                <div className="text-sm">CNAME</div>
-                                                <div className="text-sm">onlook.live</div>
+                                            <div className="flex justify-between items-center">
+                                                <div>
+                                                    <p className="text-regularPlus text-muted-foreground">
+                                                        Custom URL
+                                                    </p>
+                                                </div>
+                                                <Input
+                                                    value="cookieshop.com"
+                                                    disabled
+                                                    className="bg-muted w-2/3"
+                                                />
                                             </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center">
+                                                <div className="space-y-2">
+                                                    <p className="text-regularPlus text-muted-foreground">
+                                                        Configure
+                                                    </p>
+                                                    <p className="text-small text-muted-foreground">
+                                                        Your DNS records must be set up with these
+                                                        values.
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1">
+                                                        <Icons.CheckCircled className="h-4 w-4 text-green-500" />
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Verified
+                                                        </span>
+                                                    </div>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon">
+                                                                <Icons.DotsVertical className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem className="hover:bg-muted focus:bg-muted cursor-pointer">
+                                                                <Icons.Reset className="mr-2 h-4 w-4" />
+                                                                Reconfigure DNS
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive cursor-pointer">
+                                                                <Icons.Trash className="mr-2 h-4 w-4" />
+                                                                Remove Domain
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-4 rounded-lg border p-4">
+                                            <div className="text-sm font-medium">Name</div>
+                                            <div className="text-sm font-medium">Type</div>
+                                            <div className="text-sm font-medium">Value</div>
+
+                                            <div className="text-sm">@</div>
+                                            <div className="text-sm">A</div>
+                                            <div className="text-sm">32.233.32.3</div>
+
+                                            <div className="text-sm">@</div>
+                                            <div className="text-sm">A</div>
+                                            <div className="text-sm">32.243.32.3</div>
+
+                                            <div className="text-sm">www</div>
+                                            <div className="text-sm">CNAME</div>
+                                            <div className="text-sm">onlook.live</div>
                                         </div>
                                     </div>
                                 )}
