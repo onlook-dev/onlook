@@ -2,7 +2,7 @@ import { useEditorEngine, useProjectsManager, useRouteManager } from '@/componen
 import { ProjectTabs } from '@/lib/projects';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
-import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
+import { SettingsModal } from '@/routes/settings/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
@@ -173,15 +173,19 @@ const ProjectBreadcrumb = observer(() => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <ProjectSettingsModal
-                    project={projectsManager.project}
-                    open={isSettingsOpen}
-                    onOpenChange={setIsSettingsOpen}
-                />
                 <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
                     <PricingPage />
                 </DialogContent>
             </Dialog>
+            <SettingsModal
+                open={isSettingsOpen}
+                onOpenChange={(open) => {
+                    setIsSettingsOpen(open);
+                    if (!open) {
+                        setIsOpen(false); // Close dropdown menu
+                    }
+                }}
+            />
         </>
     );
 });
