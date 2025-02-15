@@ -14,6 +14,19 @@ import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 import { SuggestionManager } from './suggestions';
+
+interface ChatSettings {
+    showSuggestions: boolean;
+    autoApplyCode: boolean;
+    expandCodeBlocks: boolean;
+}
+
+const DEFAULT_CHAT_SETTINGS: ChatSettings = {
+    showSuggestions: true,
+    autoApplyCode: true,
+    expandCodeBlocks: false,
+};
+
 const USE_MOCK = false;
 
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
@@ -28,6 +41,7 @@ export class ChatManager {
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
     shouldAutoScroll = true;
+    settings: ChatSettings = DEFAULT_CHAT_SETTINGS;
     private disposers: Array<() => void> = [];
 
     constructor(
@@ -40,6 +54,7 @@ export class ChatManager {
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectsManager);
+        this.loadSettings();
         this.listen();
     }
 
@@ -170,11 +185,7 @@ export class ChatManager {
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(
-        res: StreamResponse | null,
-        requestType: StreamRequestType,
-        autoApplyCode: boolean = true,
-    ) {
+    async handleChatResponse(res: StreamResponse | null, requestType: StreamRequestType) {
         if (!res) {
             console.error('No response found');
             return;
@@ -211,11 +222,25 @@ export class ChatManager {
 
         this.context.clearAttachments();
 
-        if (autoApplyCode) {
+        if (this.settings.autoApplyCode) {
             setTimeout(() => {
                 this.code.applyCode(assistantMessage.id);
             }, 100);
         }
+    }
+
+    private async loadSettings() {
+        const userSettings = await this.editorEngine.projects.user?.user;
+        if (userSettings?.chatSettings) {
+            this.settings = { ...DEFAULT_CHAT_SETTINGS, ...userSettings.chatSettings };
+        }
+    }
+
+    async updateSettings(settings: Partial<ChatSettings>) {
+        this.settings = { ...this.settings, ...settings };
+        await this.editorEngine.projects.user?.updateUserSettings({
+            chatSettings: this.settings,
+        });
     }
 
     dispose() {

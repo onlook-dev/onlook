@@ -4,7 +4,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useEditorEngine } from '@/components/Context';
+import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 
@@ -29,8 +30,13 @@ export function CollapsibleCodeBlock({
     onApply,
     onRevert,
 }: CollapsibleCodeBlockProps) {
-    const [isOpen, setIsOpen] = useState(false);
+    const editorEngine = useEditorEngine();
+    const [isOpen, setIsOpen] = useState(editorEngine.chat.settings.expandCodeBlocks);
     const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        setIsOpen(editorEngine.chat.settings.expandCodeBlocks);
+    }, [editorEngine.chat.settings.expandCodeBlocks]);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(replaceContent);

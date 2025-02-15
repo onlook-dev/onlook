@@ -8,6 +8,7 @@ import { invokeMainChannel, sendAnalytics } from '../utils';
 import { CreateManager } from './create';
 import { HostingManager } from './hosting';
 import { RunManager } from './run';
+import type { UserManager } from '../user';
 
 export enum ProjectTabs {
     PROJECTS = 'projects',
@@ -19,6 +20,7 @@ export enum ProjectTabs {
 export class ProjectsManager {
     projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
     editorEngine: EditorEngine | null = null;
+    user: UserManager | null = null;
 
     private createManager: CreateManager;
     private activeProject: Project | null = null;

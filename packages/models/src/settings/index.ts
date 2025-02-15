@@ -7,6 +7,11 @@ export interface UserSettings {
     ideType?: IdeType;
     signInMethod?: string;
     shouldWarnDelete?: boolean;
+    chatSettings?: {
+        showSuggestions: boolean;
+        autoApplyCode: boolean;
+        expandCodeBlocks: boolean;
+    };
 }
 
 export interface ProjectsCache {

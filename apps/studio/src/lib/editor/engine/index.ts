@@ -150,6 +150,10 @@ export class EditorEngine {
         return this.pagesManager;
     }
 
+    get projects() {
+        return this.projectsManager;
+    }
+
     dispose() {
         this.overlay.clear();
         this.elements.clear();
