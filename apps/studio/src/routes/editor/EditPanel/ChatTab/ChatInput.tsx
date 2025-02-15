@@ -219,72 +219,7 @@ export const ChatInput = observer(() => {
                     }, 100);
                 }}
             />
-            <ContextMenu>
-                <ContextMenuTrigger asChild>
-                    <div className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-accent/50">
-                        <div className="flex items-center gap-1.5">
-                            <span className="text-base font-medium">AI Chat</span>
-                            <Icons.ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                    </div>
-                </ContextMenuTrigger>
-                <ContextMenuContent className="min-w-[220px]">
-                    <ContextMenuItem
-                        className="flex items-center py-1.5"
-                        onClick={() =>
-                            editorEngine.chat.updateSettings({
-                                showSuggestions: !editorEngine.chat.settings.showSuggestions,
-                            })
-                        }
-                    >
-                        <Icons.Check
-                            className={cn(
-                                'mr-2 h-4 w-4',
-                                editorEngine.chat.settings.showSuggestions
-                                    ? 'opacity-100'
-                                    : 'opacity-0',
-                            )}
-                        />
-                        Show suggestions
-                    </ContextMenuItem>
-                    <ContextMenuItem
-                        className="flex items-center py-1.5"
-                        onClick={() =>
-                            editorEngine.chat.updateSettings({
-                                autoApplyCode: !editorEngine.chat.settings.autoApplyCode,
-                            })
-                        }
-                    >
-                        <Icons.Check
-                            className={cn(
-                                'mr-2 h-4 w-4',
-                                editorEngine.chat.settings.autoApplyCode
-                                    ? 'opacity-100'
-                                    : 'opacity-0',
-                            )}
-                        />
-                        Auto-apply results
-                    </ContextMenuItem>
-                    <ContextMenuItem
-                        className="flex items-center py-1.5"
-                        onClick={() =>
-                            editorEngine.chat.updateSettings({
-                                expandCodeBlocks: !editorEngine.chat.settings.expandCodeBlocks,
-                            })
-                        }
-                    >
-                        <Icons.Check
-                            className={cn(
-                                'mr-2 h-4 w-4',
-                                editorEngine.chat.settings.expandCodeBlocks
-                                    ? 'opacity-100'
-                                    : 'opacity-0',
-                            )}
-                        />
-                        Show code while rendering
-                    </ContextMenuItem>
-                </ContextMenuContent>
-            </ContextMenu>
+
             <div className="flex flex-col w-full p-4">
                 <div
                     className={cn(
