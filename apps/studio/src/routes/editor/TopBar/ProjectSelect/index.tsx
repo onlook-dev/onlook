@@ -2,7 +2,7 @@ import { useEditorEngine, useProjectsManager, useRouteManager } from '@/componen
 import { ProjectTabs } from '@/lib/projects';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
-import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
+import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
@@ -27,7 +27,7 @@ const ProjectBreadcrumb = observer(() => {
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer>();
 
     async function handleNavigateToProject(tab?: ProjectTabs) {
@@ -82,7 +82,7 @@ const ProjectBreadcrumb = observer(() => {
                 onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
             >
                 <div className="mx-2 flex flex-row items-center text-small gap-2">
-                    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant={'ghost'}
@@ -90,7 +90,7 @@ const ProjectBreadcrumb = observer(() => {
                                     if (closeTimeoutRef.current) {
                                         clearTimeout(closeTimeoutRef.current);
                                     }
-                                    setIsOpen(true);
+                                    setIsDropdownOpen(true);
                                 }}
                                 className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                             >
@@ -111,7 +111,7 @@ const ProjectBreadcrumb = observer(() => {
                             }}
                             onMouseLeave={() => {
                                 closeTimeoutRef.current = setTimeout(() => {
-                                    setIsOpen(false);
+                                    setIsDropdownOpen(false);
                                 }, 300);
                             }}
                         >
@@ -173,14 +173,18 @@ const ProjectBreadcrumb = observer(() => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <ProjectSettingsModal
-                    project={projectsManager.project}
-                    open={isSettingsOpen}
-                    onOpenChange={setIsSettingsOpen}
-                />
                 <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
                     <PricingPage />
                 </DialogContent>
+                <SettingsModal
+                    open={isSettingsOpen}
+                    onOpenChange={(open) => {
+                        setIsSettingsOpen(open);
+                        if (!open) {
+                            setIsDropdownOpen(false);
+                        }
+                    }}
+                />
             </Dialog>
         </>
     );
