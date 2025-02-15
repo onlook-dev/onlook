@@ -2,7 +2,7 @@ import { useEditorEngine, useProjectsManager, useRouteManager } from '@/componen
 import { ProjectTabs } from '@/lib/projects';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
-import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal/SettingsModal';
+import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';

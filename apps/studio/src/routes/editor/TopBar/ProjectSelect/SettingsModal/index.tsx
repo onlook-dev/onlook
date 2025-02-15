@@ -6,6 +6,7 @@ import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
 import { DomainTab } from './DomainTab';
 import ProjectTab from './ProjectTab';
+import EditorTab from './EditorTab';
 
 enum TabValue {
     DOMAIN = 'domain',
@@ -81,7 +82,7 @@ export const SettingsModal = ({
                         <div className="flex-1 overflow-auto p-4">
                             {activeTab === TabValue.DOMAIN && <DomainTab />}
                             {activeTab === TabValue.PROJECT && <ProjectTab />}
-                            {activeTab === TabValue.EDITOR && 'Editor'}
+                            {activeTab === TabValue.EDITOR && <EditorTab />}
                         </div>
                     </div>
                 </div>
