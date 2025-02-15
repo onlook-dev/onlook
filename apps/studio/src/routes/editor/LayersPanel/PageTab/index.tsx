@@ -158,9 +158,9 @@ const PagesTab = observer(() => {
     return (
         <div
             ref={ref}
-            className="flex flex-col gap-2 h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full"
+            className="flex flex-col gap-2 h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0.5"
         >
-            <div className="flex flex-row justify-between items-center gap-2 m-2">
+            <div className="flex flex-row justify-between items-center gap-2 m-0">
                 <div className="relative flex-grow">
                     <Input
                         ref={inputRef}
@@ -198,9 +198,18 @@ const PagesTab = observer(() => {
                 </Tooltip>
             </div>
 
-            <Tree ref={treeRef} {...pageTreeProps}>
-                {(props) => <PageTreeNode {...props} />}
-            </Tree>
+            {filteredPages.length === 0 ? (
+                <div
+                    style={{ width: dimensions.width }}
+                    className="flex items-center justify-center h-32 text-foreground-primary/50"
+                >
+                    No pages found
+                </div>
+            ) : (
+                <Tree ref={treeRef} {...pageTreeProps}>
+                    {(props) => <PageTreeNode {...props} />}
+                </Tree>
+            )}
             <CreatePageModal open={showCreateModal} onOpenChange={setShowCreateModal} />
         </div>
     );
