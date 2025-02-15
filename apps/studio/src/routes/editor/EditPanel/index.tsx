@@ -7,11 +7,11 @@ import {
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { FrameSettings } from '@onlook/models/projects';
+import { cn } from '@onlook/ui/utils';
 import { Icons } from '@onlook/ui/icons';
 import ResizablePanel from '@onlook/ui/resizable';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
@@ -69,77 +69,14 @@ const EditPanel = observer(() => {
                         >
                             <Icons.PinRight />
                         </button>
-                        <ContextMenu>
-                            <ContextMenuTrigger>
-                                <TabsTrigger
-                                    className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                                    value={EditorTabValue.CHAT}
-                                >
-                                    <Icons.Sparkles className="mr-1.5 mb-0.5" />
-                                    Chat
-                                    <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
-                                </TabsTrigger>
-                            </ContextMenuTrigger>
-                            <ContextMenuContent className="min-w-[220px]">
-                                <ContextMenuItem
-                                    className="flex items-center py-1.5"
-                                    onClick={() =>
-                                        editorEngine.chat.updateSettings({
-                                            showSuggestions:
-                                                !editorEngine.chat.settings.showSuggestions,
-                                        })
-                                    }
-                                >
-                                    <Icons.Check
-                                        className={cn(
-                                            'mr-2 h-4 w-4',
-                                            editorEngine.chat.settings.showSuggestions
-                                                ? 'opacity-100'
-                                                : 'opacity-0',
-                                        )}
-                                    />
-                                    Show suggestions
-                                </ContextMenuItem>
-                                <ContextMenuItem
-                                    className="flex items-center py-1.5"
-                                    onClick={() =>
-                                        editorEngine.chat.updateSettings({
-                                            autoApplyCode:
-                                                !editorEngine.chat.settings.autoApplyCode,
-                                        })
-                                    }
-                                >
-                                    <Icons.Check
-                                        className={cn(
-                                            'mr-2 h-4 w-4',
-                                            editorEngine.chat.settings.autoApplyCode
-                                                ? 'opacity-100'
-                                                : 'opacity-0',
-                                        )}
-                                    />
-                                    Auto-apply results
-                                </ContextMenuItem>
-                                <ContextMenuItem
-                                    className="flex items-center py-1.5"
-                                    onClick={() =>
-                                        editorEngine.chat.updateSettings({
-                                            expandCodeBlocks:
-                                                !editorEngine.chat.settings.expandCodeBlocks,
-                                        })
-                                    }
-                                >
-                                    <Icons.Check
-                                        className={cn(
-                                            'mr-2 h-4 w-4',
-                                            editorEngine.chat.settings.expandCodeBlocks
-                                                ? 'opacity-100'
-                                                : 'opacity-0',
-                                        )}
-                                    />
-                                    Show code while rendering
-                                </ContextMenuItem>
-                            </ContextMenuContent>
-                        </ContextMenu>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={EditorTabValue.CHAT}
+                        >
+                            <Icons.Sparkles className="mr-1.5 mb-0.5" />
+                            Chat
+                            <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
+                        </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.STYLES}
