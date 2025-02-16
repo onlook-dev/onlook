@@ -14,6 +14,16 @@ import { mainWindow } from '..';
 import Chat from '../chat';
 import { createProject } from './install';
 
+interface CreateProjectResponse {
+    success: boolean;
+    error?: string;
+    response?: {
+        projectPath: string;
+        content: string;
+    };
+    cancelled?: boolean;
+}
+
 export class ProjectCreator {
     private static instance: ProjectCreator;
     private abortController: AbortController | null = null;
@@ -64,6 +74,24 @@ export class ProjectCreator {
         }
     }
 
+    public async createBlankProject(): Promise<CreateProjectResponse> {
+        this.cancel();
+        this.abortController = new AbortController();
+
+        try {
+            const projectPath = await this.runCreate();
+            return { success: true, response: { projectPath, content: '' } };
+        } catch (error) {
+            if ((error as Error).name === 'AbortError') {
+                return { success: false, cancelled: true };
+            }
+            console.error('Failed to create project:', error);
+            return { success: false, error: (error as Error).message };
+        } finally {
+            this.abortController = null;
+        }
+    }
+
     public cancel(): void {
         if (this.abortController) {
             this.abortController.abort();
@@ -71,7 +99,10 @@ export class ProjectCreator {
         }
     }
 
-    private async generatePage(prompt: string, images: ImageMessageContext[]) {
+    private async generatePage(
+        prompt: string,
+        images: ImageMessageContext[],
+    ): Promise<{ path: string; content: string }> {
         if (!this.abortController) {
             throw new Error('No active creation process');
         }

@@ -75,23 +75,33 @@ export class CreateManager {
         }
     }
 
-    async sendPrompt(prompt: string, images: ImageMessageContext[]) {
+    async sendPrompt(prompt: string, images: ImageMessageContext[], blank: boolean = false) {
         sendAnalytics('prompt create project', {
             prompt,
         });
         this.state = CreateState.CREATE_LOADING;
         this.error = null;
-        const result: {
+
+        let result: {
             success: boolean;
             response?: {
                 projectPath?: string;
                 content?: string;
             };
             error?: string;
-        } = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
-            prompt: prompt,
-            images: images,
-        });
+        };
+
+        if (blank) {
+            result = await invokeMainChannel(MainChannels.CREATE_NEW_BLANK_PROJECT, {
+                prompt,
+                images,
+            });
+        } else {
+            result = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
+                prompt,
+                images,
+            });
+        }
 
         if (result.success && result.response?.projectPath) {
             this.state = CreateState.PROMPT;
