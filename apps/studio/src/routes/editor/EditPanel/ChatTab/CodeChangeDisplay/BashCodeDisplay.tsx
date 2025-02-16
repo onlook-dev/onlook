@@ -73,7 +73,7 @@ const BashCodeDisplay = observer(
                             ) : (
                                 <Icons.Reload className="text-foreground group-hover:text-foreground-secondary transition-none" />
                             )}
-                            Retry
+                            Run again
                         </Button>
                     ) : (
                         <Button

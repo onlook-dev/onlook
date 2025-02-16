@@ -5,6 +5,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
+import { HelpDropdown } from './HelpDropdown.tsx';
 import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
@@ -135,6 +136,10 @@ const LayersPanel = observer(() => {
                     <Icons.Component className="w-5 h-5" />
                     <span className="text-xs leading-tight">Elements</span>
                 </button>
+
+                <div className="mt-auto">
+                    <HelpDropdown />
+                </div>
             </div>
 
             {/* Content panel */}

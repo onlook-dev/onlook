@@ -18,8 +18,9 @@ const AppBar = observer(() => {
     const updateManager = useUpdateManager();
     const { theme, nextTheme, setTheme } = useTheme();
     const className = cn(
+        'opacity-50 hover:opacity-100',
         updateManager.updateAvailable &&
-            'opacity-50 hover:opacity-100 hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+            'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
     );
 
     return (
