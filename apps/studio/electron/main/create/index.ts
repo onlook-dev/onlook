@@ -1,5 +1,5 @@
 import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
-import { CreateStage, type CreateCallback } from '@onlook/models';
+import { CreateStage, type CreateCallback, type CreateProjectResponse } from '@onlook/models';
 import {
     StreamRequestType,
     type ImageMessageContext,
@@ -14,16 +14,6 @@ import { mainWindow } from '..';
 import Chat from '../chat';
 import { createProject } from './install';
 
-interface CreateProjectResponse {
-    success: boolean;
-    error?: string;
-    response?: {
-        projectPath: string;
-        content: string;
-    };
-    cancelled?: boolean;
-}
-
 export class ProjectCreator {
     private static instance: ProjectCreator;
     private abortController: AbortController | null = null;
@@ -37,32 +27,18 @@ export class ProjectCreator {
         return ProjectCreator.instance;
     }
 
-    public async createProject(
-        prompt: string,
-        images: ImageMessageContext[],
-    ): Promise<{
+    private async executeProjectCreation<T>(action: () => Promise<T>): Promise<{
         success: boolean;
         error?: string;
-        response?: {
-            projectPath: string;
-            content: string;
-        };
+        response?: T;
         cancelled?: boolean;
     }> {
         this.cancel();
         this.abortController = new AbortController();
 
         try {
-            const [generatedPage, projectPath] = await Promise.all([
-                this.generatePage(prompt, images),
-                this.runCreate(),
-            ]);
-
-            if (this.abortController.signal.aborted) {
-                return { success: false, cancelled: true };
-            }
-            await this.applyGeneratedPage(projectPath, generatedPage);
-            return { success: true, response: { projectPath, content: generatedPage.content } };
+            const result = await action();
+            return { success: true, response: result };
         } catch (error) {
             if ((error as Error).name === 'AbortError') {
                 return { success: false, cancelled: true };
@@ -74,22 +50,30 @@ export class ProjectCreator {
         }
     }
 
-    public async createBlankProject(): Promise<CreateProjectResponse> {
-        this.cancel();
-        this.abortController = new AbortController();
+    public async createProject(
+        prompt: string,
+        images: ImageMessageContext[],
+    ): Promise<CreateProjectResponse> {
+        return this.executeProjectCreation(async () => {
+            const [generatedPage, projectPath] = await Promise.all([
+                this.generatePage(prompt, images),
+                this.runCreate(),
+            ]);
 
-        try {
-            const projectPath = await this.runCreate();
-            return { success: true, response: { projectPath, content: '' } };
-        } catch (error) {
-            if ((error as Error).name === 'AbortError') {
-                return { success: false, cancelled: true };
+            if (this.abortController?.signal.aborted) {
+                throw new Error('AbortError');
             }
-            console.error('Failed to create project:', error);
-            return { success: false, error: (error as Error).message };
-        } finally {
-            this.abortController = null;
-        }
+
+            await this.applyGeneratedPage(projectPath, generatedPage);
+            return { projectPath, content: generatedPage.content };
+        });
+    }
+
+    public async createBlankProject(): Promise<CreateProjectResponse> {
+        return this.executeProjectCreation(async () => {
+            const projectPath = await this.runCreate();
+            return { projectPath, content: '' };
+        });
     }
 
     public cancel(): void {

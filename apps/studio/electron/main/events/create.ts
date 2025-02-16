@@ -45,13 +45,9 @@ export function listenForCreateMessages() {
         },
     );
 
-    ipcMain.handle(
-        MainChannels.CREATE_NEW_BLANK_PROJECT,
-        (e: Electron.IpcMainInvokeEvent, args) => {
-            const { prompt } = args as { prompt: string };
-            return projectCreator.createProject(prompt, []);
-        },
-    );
+    ipcMain.handle(MainChannels.CREATE_NEW_BLANK_PROJECT, (e: Electron.IpcMainInvokeEvent) => {
+        return projectCreator.createBlankProject();
+    });
 
     ipcMain.handle(
         MainChannels.CANCEL_CREATE_NEW_PROJECT_PROMPT,
