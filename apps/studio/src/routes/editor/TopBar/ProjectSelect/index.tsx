@@ -164,16 +164,17 @@ const ProjectBreadcrumb = observer(() => {
                 </div>
                 <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
                     <PricingPage />
+                    <SettingsModal
+                        open={isSettingsOpen}
+                        onOpenChange={(open) => {
+                            setIsSettingsOpen(open);
+                            if (!open) {
+                                setIsDropdownOpen(false);
+                                editorEngine.isPlansOpen = false;
+                            }
+                        }}
+                    />
                 </DialogContent>
-                <SettingsModal
-                    open={isSettingsOpen}
-                    onOpenChange={(open) => {
-                        setIsSettingsOpen(open);
-                        if (!open) {
-                            setIsDropdownOpen(false);
-                        }
-                    }}
-                />
             </Dialog>
         </>
     );
