@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
 import { Suggestions } from './Suggestions';
+import type { SuggestionsRef } from './Suggestions';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -56,6 +57,23 @@ export const ChatInput = observer(() => {
         return () => window.removeEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
     }, []);
 
+    useEffect(() => {
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' && suggestionRef.current?.handleEnterSelection()) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Stop the event from bubbling to the canvas
+                e.stopImmediatePropagation();
+                // Handle the suggestion selection
+                suggestionRef.current.handleEnterSelection();
+            }
+        };
+
+        // Capture phase to intercept before it reaches the canvas
+        window.addEventListener('keydown', handleGlobalKeyDown, true);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
+    }, []);
+
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
@@ -67,10 +85,30 @@ export const ChatInput = observer(() => {
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
 
-    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (!isComposing && e.key === 'Enter' && !e.shiftKey) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Tab') {
+            // Always prevent default tab behavior
             e.preventDefault();
-            sendMessage();
+            e.stopPropagation();
+            
+            // Only let natural tab order continue if handleTabNavigation returns false
+            const handled = suggestionRef.current?.handleTabNavigation();
+            if (!handled) {
+                // Focus the textarea
+                textareaRef.current?.focus();
+            }
+        } else if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (suggestionRef.current?.handleEnterSelection()) {
+                setTimeout(() => textareaRef.current?.focus(), 0);
+                return;
+            }
+            
+            if (!inputEmpty) {
+                sendMessage();
+            }
         }
     }
 
@@ -177,6 +215,8 @@ export const ChatInput = observer(() => {
         }
     };
 
+    const suggestionRef = useRef<SuggestionsRef>(null);
+
     return (
         <div
             className={cn(
@@ -200,6 +240,7 @@ export const ChatInput = observer(() => {
             }}
         >
             <Suggestions
+                ref={suggestionRef}
                 hideSuggestions={hideSuggestions}
                 disabled={disabled}
                 inputValue={inputValue}
@@ -211,6 +252,11 @@ export const ChatInput = observer(() => {
                             textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
                         }
                     }, 100);
+                }}
+                onSuggestionFocus={(isFocused) => {
+                    if (!isFocused) {
+                        textareaRef.current?.focus();
+                    }
                 }}
             />
             <div className="flex flex-col w-full p-4">
@@ -255,7 +301,7 @@ export const ChatInput = observer(() => {
                             : 'Ask follow up questions or provide more context...'
                     }
                     className={cn(
-                        'mt-2 overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',
+                        'mt-2 overflow-auto max-h-32 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary',
                         'placeholder:text-foreground-primary/50',
                         'cursor-text',
