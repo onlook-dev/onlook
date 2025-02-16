@@ -1,7 +1,7 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
-import { Links, MainChannels } from '@onlook/models/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -19,8 +19,9 @@ const AppBar = observer(() => {
     const { theme, nextTheme, setTheme } = useTheme();
     const className = cn(
         updateManager.updateAvailable &&
-            'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+            'opacity-50 hover:opacity-100 hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
     );
+
     return (
         <div
             className={cn(
@@ -37,7 +38,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn('opacity-50 hover:opacity-100', className)}
+                        className={className}
                         onClick={() => invokeMainChannel(MainChannels.RELOAD_APP)}
                     >
                         <Icons.Reload className="w-3.5" />
@@ -52,7 +53,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn('opacity-50 hover:opacity-100', className)}
+                        className={className}
                         onClick={() => {
                             setTheme(nextTheme);
                         }}

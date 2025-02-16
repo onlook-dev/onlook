@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
-import { GREETING_MSG } from '@/lib/editor/engine/chat/mockData';
 import { ChatMessageType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -72,7 +71,8 @@ const ChatMessages = observer(() => {
     // Render in reverse order to make the latest message appear at the bottom
     return (
         <AnimatePresence mode="wait">
-            {editorEngine.chat.conversation.current ? (
+            {editorEngine.chat.conversation.current &&
+            editorEngine.chat.conversation.current?.messages.length !== 0 ? (
                 <motion.div
                     className="flex flex-col-reverse gap-2 select-text overflow-auto"
                     ref={chatMessagesRef}
@@ -87,9 +87,6 @@ const ChatMessages = observer(() => {
                     {[...editorEngine.chat.conversation.current.messages]
                         .reverse()
                         .map((message) => renderMessage(message))}
-                    {editorEngine.chat.conversation.current.messages.length === 0 && (
-                        <AssistantMessage message={GREETING_MSG} />
-                    )}
                 </motion.div>
             ) : (
                 <motion.div
@@ -100,8 +97,12 @@ const ChatMessages = observer(() => {
                     transition={{ duration: 0.15 }}
                     className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80"
                 >
-                    <Icons.Shadow className="h-6 w-6 animate-spin" />
-                    <span>Loading conversations</span>
+                    <div className="w-32 h-32">
+                        <Icons.EmptyState className="w-full h-full" />
+                    </div>
+                    <p className="text-center text-regularPlus text-balance max-w-[300px]">
+                        Select an element <br /> to chat with AI
+                    </p>
                 </motion.div>
             )}
         </AnimatePresence>
