@@ -11,11 +11,11 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DeleteImageModal from './DeleteModal';
 import RenameImageModal from './RenameModal';
 
@@ -34,6 +34,7 @@ const ImagesTab = observer(() => {
     const [imageToRename, setImageToRename] = useState<string | null>(null);
     const [newImageName, setNewImageName] = useState<string>('');
     const [renameError, setRenameError] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         scanImages();
@@ -78,23 +79,6 @@ const ImagesTab = observer(() => {
             input.click();
         }
     };
-
-    const debouncedSearch = useCallback(
-        debounce((value: string) => {
-            setSearch(value);
-        }, 300),
-        [],
-    );
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        debouncedSearch(e.target.value);
-    };
-
-    useEffect(() => {
-        return () => {
-            debouncedSearch.cancel();
-        };
-    }, [debouncedSearch]);
 
     const filteredImages = useMemo(() => {
         if (!search.trim()) {
@@ -232,8 +216,15 @@ const ImagesTab = observer(() => {
         editorEngine.mode = EditorMode.INSERT_IMAGE;
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            setSearch('');
+            inputRef.current?.blur();
+        }
+    };
+
     return (
-        <div className="w-full h-[calc(100vh-7.75rem)] flex flex-col gap-2">
+        <div className="w-full h-full flex flex-col gap-2 p-0.5">
             <input
                 type="file"
                 accept="image/*"
@@ -253,27 +244,39 @@ const ImagesTab = observer(() => {
                 </div>
             )}
             {!!imageAssets.length && (
-                <div className="flex items-center gap-2">
-                    <div className="relative w-full">
-                        <input
-                            placeholder="Search"
-                            className="flex h-9 w-full rounded border-none bg-secondary px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-background-active focus-visible:border-border-active focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
-                            type="text"
-                            onChange={handleSearch}
+                <div className="flex flex-row justify-between items-center gap-2 m-0">
+                    <div className="relative flex-grow">
+                        <Input
+                            ref={inputRef}
+                            className="h-8 text-xs pr-8"
+                            placeholder="Search pages"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            onKeyDown={handleKeyDown}
                         />
-                        <div className="absolute pointer-events-none inset-y-0 right-0 h-full flex px-2 items-center justify-center">
-                            <Icons.MagnifyingGlass className="text-foreground-secondary" />
-                        </div>
+                        {search && (
+                            <button
+                                className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
+                                onClick={() => setSearch('')}
+                            >
+                                <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
+                            </button>
+                        )}
                     </div>
                     <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant={'ghost'} size={'icon'} onClick={handleClickAddButton}>
+                        <TooltipTrigger>
+                            <Button
+                                variant={'default'}
+                                size={'icon'}
+                                className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                                onClick={handleClickAddButton}
+                            >
                                 <Icons.Plus />
                             </Button>
                         </TooltipTrigger>
                         <TooltipPortal>
-                            <TooltipContent side="top" sideOffset={5}>
-                                Upload an image
+                            <TooltipContent>
+                                <p>Upload an image</p>
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>
@@ -301,10 +304,14 @@ const ImagesTab = observer(() => {
                             >
                                 <Icons.Plus />
                             </Button>
-                            <span className="block w-2/3 mx-auto text-sm">
+                            <span className="block w-2/3 mx-auto text-xs">
                                 Upload images using the Plus icon
                             </span>
                         </div>
+                    </div>
+                ) : filteredImages.length === 0 ? (
+                    <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
+                        No images found
                     </div>
                 ) : (
                     <div className="w-full flex flex-wrap gap-2 p-2">
@@ -415,7 +422,7 @@ const ImagesTab = observer(() => {
                                                     }}
                                                 >
                                                     <span className="flex w-full text-smallPlus items-center">
-                                                        <Icons.File className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                                        <Icons.DirectoryOpen className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                                         <span>Open Folder</span>
                                                     </span>
                                                 </Button>

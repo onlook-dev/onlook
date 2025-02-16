@@ -20,6 +20,16 @@ export enum SetupStage {
     ERROR = 'error',
 }
 
+export interface CreateProjectResponse {
+    success: boolean;
+    error?: string;
+    response?: {
+        projectPath: string;
+        content: string;
+    };
+    cancelled?: boolean;
+}
+
 export type CreateCallback = (stage: CreateStage, message: string) => void;
 export type VerifyCallback = (stage: VerifyStage, message: string) => void;
 export type SetupCallback = (stage: SetupStage, message: string) => void;

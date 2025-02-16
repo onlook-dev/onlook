@@ -86,6 +86,7 @@ export enum MainChannels {
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
     INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',
     CREATE_NEW_PROJECT_PROMPT = 'create-new-project-prompt',
+    CREATE_NEW_BLANK_PROJECT = 'create-new-blank-project',
     CREATE_NEW_PROJECT_PROMPT_CALLBACK = 'create-new-project-prompt-callback',
     CANCEL_CREATE_NEW_PROJECT_PROMPT = 'cancel-create-new-project-prompt',
 
