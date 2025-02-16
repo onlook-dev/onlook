@@ -23,10 +23,6 @@ export const TopBar = observer(() => {
         authManager.signOut();
     }
 
-    function openSettings() {
-        projectsManager.projectsTab = ProjectTabs.SETTINGS;
-    }
-
     function openPromptCreation() {
         projectsManager.projectsTab = ProjectTabs.PROMPT_CREATE;
     }
@@ -89,10 +85,6 @@ export const TopBar = observer(() => {
                                 Plans
                             </DropdownMenuItem>
                         </DialogTrigger>
-                        <DropdownMenuItem onSelect={openSettings}>
-                            <Icons.Gear className="w-4 h-4 mr-2" />
-                            Settings
-                        </DropdownMenuItem>
                         <DropdownMenuItem disabled={!authManager.isAuthEnabled} onSelect={signOut}>
                             <Icons.Exit className="w-4 h-4 mr-2" />
                             Sign out
