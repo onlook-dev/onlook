@@ -71,7 +71,7 @@ const OpenCode = observer(() => {
     }
 
     function updateIde(newIde: IDE) {
-        userManager.updateUserSettings({ ideType: newIde.type });
+        userManager.updateSettings({ ideType: newIde.type });
         setIde(newIde);
     }
 

@@ -18,14 +18,14 @@ const SignIn = observer(() => {
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        if (userManager.user && userManager.user.signInMethod) {
-            setLastSignInMethod(userManager.user.signInMethod as SignInMethod);
+        if (userManager.settings && userManager.settings.signInMethod) {
+            setLastSignInMethod(userManager.settings.signInMethod as SignInMethod);
         }
     }, [authManager.authenticated]);
 
     const handleLogin = (method: SignInMethod) => {
         authManager.signIn(method);
-        userManager.updateUserSettings({ signInMethod: method });
+        userManager.updateSettings({ signInMethod: method });
     };
 
     function openExternalLink(url: string) {

@@ -5,12 +5,6 @@ import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuTrigger,
-} from '@onlook/ui/context-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -31,7 +25,6 @@ export const ChatInput = observer(() => {
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const hideSuggestions = !editorEngine.chat.settings.showSuggestions;
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -206,7 +199,6 @@ export const ChatInput = observer(() => {
             }}
         >
             <Suggestions
-                hideSuggestions={hideSuggestions}
                 disabled={disabled}
                 inputValue={inputValue}
                 setInput={(suggestion) => {
@@ -380,49 +372,6 @@ export const ChatInput = observer(() => {
                                 {disabled
                                     ? 'Select an element to start'
                                     : 'Add screenshot of the current page'}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className={cn(
-                                    'w-9 h-9 text-foreground-tertiary group hover:bg-transparent',
-                                )}
-                                onClick={() =>
-                                    editorEngine.chat.updateSettings({
-                                        showSuggestions:
-                                            !editorEngine.chat.settings.showSuggestions,
-                                    })
-                                }
-                                disabled={disabled}
-                            >
-                                {editorEngine.chat.settings.showSuggestions ? (
-                                    <Icons.Lightbulb
-                                        className={cn(
-                                            'w-5 h-5',
-                                            disabled
-                                                ? 'text-foreground-tertiary'
-                                                : 'group-hover:text-foreground',
-                                        )}
-                                    />
-                                ) : (
-                                    <Icons.LightbulbSlash
-                                        className={cn(
-                                            'w-5 h-5',
-                                            disabled
-                                                ? 'text-foreground-tertiary'
-                                                : 'group-hover:text-foreground',
-                                        )}
-                                    />
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipPortal>
-                            <TooltipContent side="top" sideOffset={5}>
-                                {disabled ? 'Select an element to start' : 'Toggle Suggestions'}
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>

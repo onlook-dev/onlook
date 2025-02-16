@@ -1,5 +1,6 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
+import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import {
     DropdownMenu,
@@ -21,14 +22,17 @@ import WindowSettings from './WindowSettings';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
+    const userManager = useUserManager();
+
+    const chatSettings = userManager.settings?.chatSettings || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
-    const [settings, setSettings] = useState<FrameSettings>();
+    const [frameSettings, setFrameSettings] = useState<FrameSettings>();
 
     useEffect(() => {
         if (editorEngine.isWindowSelected) {
-            setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
+            setFrameSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
             setWindowSettingsOpen(true);
         } else {
             setWindowSettingsOpen(false);
@@ -88,17 +92,17 @@ const EditPanel = observer(() => {
                             <DropdownMenuContent className="min-w-[220px]">
                                 <DropdownMenuItem
                                     className="flex items-center py-1.5"
-                                    onClick={() =>
-                                        editorEngine.chat.updateSettings({
-                                            showSuggestions:
-                                                !editorEngine.chat.settings.showSuggestions,
-                                        })
-                                    }
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.updateChatSettings({
+                                            showSuggestions: !chatSettings.showSuggestions,
+                                        });
+                                    }}
                                 >
                                     <Icons.Check
                                         className={cn(
                                             'mr-2 h-4 w-4',
-                                            editorEngine.chat.settings.showSuggestions
+                                            chatSettings.showSuggestions
                                                 ? 'opacity-100'
                                                 : 'opacity-0',
                                         )}
@@ -107,17 +111,17 @@ const EditPanel = observer(() => {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     className="flex items-center py-1.5"
-                                    onClick={() =>
-                                        editorEngine.chat.updateSettings({
-                                            autoApplyCode:
-                                                !editorEngine.chat.settings.autoApplyCode,
-                                        })
-                                    }
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.updateChatSettings({
+                                            autoApplyCode: !chatSettings.autoApplyCode,
+                                        });
+                                    }}
                                 >
                                     <Icons.Check
                                         className={cn(
                                             'mr-2 h-4 w-4',
-                                            editorEngine.chat.settings.autoApplyCode
+                                            chatSettings.autoApplyCode
                                                 ? 'opacity-100'
                                                 : 'opacity-0',
                                         )}
@@ -126,17 +130,17 @@ const EditPanel = observer(() => {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     className="flex items-center py-1.5"
-                                    onClick={() =>
-                                        editorEngine.chat.updateSettings({
-                                            expandCodeBlocks:
-                                                !editorEngine.chat.settings.expandCodeBlocks,
-                                        })
-                                    }
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.updateChatSettings({
+                                            expandCodeBlocks: !chatSettings.expandCodeBlocks,
+                                        });
+                                    }}
                                 >
                                     <Icons.Check
                                         className={cn(
                                             'mr-2 h-4 w-4',
-                                            editorEngine.chat.settings.expandCodeBlocks
+                                            chatSettings.expandCodeBlocks
                                                 ? 'opacity-100'
                                                 : 'opacity-0',
                                         )}
@@ -204,8 +208,8 @@ const EditPanel = observer(() => {
                         isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                     )}
                 >
-                    {windowSettingsOpen && settings ? (
-                        <WindowSettings setIsOpen={setIsOpen} settings={settings} />
+                    {windowSettingsOpen && frameSettings ? (
+                        <WindowSettings setIsOpen={setIsOpen} settings={frameSettings} />
                     ) : (
                         renderTabs()
                     )}

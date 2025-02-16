@@ -1,10 +1,10 @@
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEditorEngine } from '@/components/Context';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
@@ -31,12 +31,13 @@ export function CollapsibleCodeBlock({
     onRevert,
 }: CollapsibleCodeBlockProps) {
     const editorEngine = useEditorEngine();
-    const [isOpen, setIsOpen] = useState(editorEngine.chat.settings.expandCodeBlocks);
+    const userManager = useUserManager();
+    const [isOpen, setIsOpen] = useState(userManager.settings?.chatSettings?.expandCodeBlocks);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-        setIsOpen(editorEngine.chat.settings.expandCodeBlocks);
-    }, [editorEngine.chat.settings.expandCodeBlocks]);
+        setIsOpen(userManager.settings?.chatSettings?.expandCodeBlocks);
+    }, [userManager.settings?.chatSettings?.expandCodeBlocks]);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(replaceContent);

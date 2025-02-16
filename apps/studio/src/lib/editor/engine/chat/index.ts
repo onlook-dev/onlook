@@ -1,8 +1,8 @@
 import type { ProjectsManager } from '@/lib/projects';
+import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
-import { DefaultSettings, MainChannels } from '@onlook/models/constants';
-import type { ChatSettings } from '@onlook/models/settings';
+import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -17,8 +17,8 @@ import { StreamResolver } from './stream';
 import { SuggestionManager } from './suggestions';
 
 const USE_MOCK = false;
-
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
+
 export class ChatManager {
     isWaiting = false;
     conversation: ConversationManager;
@@ -30,12 +30,12 @@ export class ChatManager {
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
     shouldAutoScroll = true;
-    settings: ChatSettings = DefaultSettings.CHAT_SETTINGS;
     private disposers: Array<() => void> = [];
 
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
+        private userManager: UserManager,
     ) {
         makeAutoObservable(this);
         this.context = new ChatContext(this.editorEngine);
@@ -43,7 +43,6 @@ export class ChatManager {
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectsManager);
-        this.loadSettings();
         this.listen();
     }
 
@@ -211,28 +210,10 @@ export class ChatManager {
 
         this.context.clearAttachments();
 
-        if (this.settings.autoApplyCode) {
+        if (this.userManager.settings?.chatSettings?.autoApplyCode) {
             setTimeout(() => {
                 this.code.applyCode(assistantMessage.id);
             }, 100);
-        }
-    }
-
-    private async loadSettings() {
-        const userSettings = await this.editorEngine.projects.user?.user;
-        if (userSettings?.chatSettings) {
-            this.settings = { ...DEFAULT_CHAT_SETTINGS, ...userSettings.chatSettings };
-        }
-    }
-
-    async updateSettings(settings: Partial<ChatSettings>) {
-        this.settings = { ...this.settings, ...settings };
-        if (this.editorEngine.projects.user) {
-            const currentSettings = await this.editorEngine.projects.user.user;
-            await this.editorEngine.projects.user.updateUserSettings({
-                ...currentSettings,
-                chatSettings: this.settings,
-            });
         }
     }
 

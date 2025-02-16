@@ -25,6 +25,7 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
+import type { UserManager } from '@/lib/user';
 
 export class EditorEngine {
     private plansOpen: boolean = false;
@@ -51,10 +52,13 @@ export class EditorEngine {
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
 
-    constructor(private projectsManager: ProjectsManager) {
+    constructor(
+        private projectsManager: ProjectsManager,
+        private userManager: UserManager,
+    ) {
         makeAutoObservable(this);
         this.canvasManager = new CanvasManager(this.projectsManager);
-        this.chatManager = new ChatManager(this, this.projectsManager);
+        this.chatManager = new ChatManager(this, this.projectsManager, this.userManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
         this.codeManager = new CodeManager(this, this.projectsManager);
