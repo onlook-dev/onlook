@@ -24,10 +24,11 @@ const LayersPanel = observer(() => {
     const [isLocked, setIsLocked] = useState(false);
 
     const handleMouseEnter = (tab: TabValue) => {
-        if (!isLocked || selectedTab !== tab) {
-            setSelectedTab(tab);
-            setIsContentPanelOpen(true);
+        if (isLocked) {
+            return;
         }
+        setSelectedTab(tab);
+        setIsContentPanelOpen(true);
     };
 
     const isMouseInContentPanel = (e: React.MouseEvent<HTMLDivElement>): boolean => {
