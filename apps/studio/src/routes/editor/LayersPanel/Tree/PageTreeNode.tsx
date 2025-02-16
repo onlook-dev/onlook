@@ -23,7 +23,6 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
     const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
-    const isRootPage = node.data.path === '/' || node.data.path === '';
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'rename'>('create');
 
@@ -105,19 +104,20 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                 handleDuplicate();
             },
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
+            disabled: node.data.isRoot,
         },
         {
             label: 'Rename',
             action: handleRename,
             icon: <Icons.Pencil className="mr-2 h-4 w-4" />,
-            disabled: isRootPage,
+            disabled: node.data.isRoot,
         },
         {
             label: 'Delete',
             action: handleDelete,
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             destructive: true,
-            disabled: isRootPage,
+            disabled: node.data.isRoot,
         },
     ];
 
@@ -146,7 +146,7 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                                 </div>
                             )}
                         </span>
-                        {!isRootPage &&
+                        {!node.data.isRoot &&
                             (hasChildren ? (
                                 <Icons.Directory className="w-4 h-4 mr-2" />
                             ) : (

@@ -129,16 +129,14 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
         // Normalize path and ensure leading slash & no trailing slash
         cleanPath = '/' + cleanPath.replace(/^\/|\/$/g, '');
 
+        const isRoot = ROOT_PATH_IDENTIFIERS.includes(cleanPath);
         nodes.push({
             id: nanoid(),
-            name: isDynamicRoute
-                ? currentDir
-                : parentPath
-                  ? path.basename(parentPath)
-                  : '🏠 Landing Page',
+            name: isDynamicRoute ? currentDir : parentPath ? path.basename(parentPath) : 'Home',
             path: cleanPath,
             children: [],
             isActive: false,
+            isRoot,
         });
     }
 
@@ -198,17 +196,20 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
                 cleanPath = '/' + cleanPath.replace(/\\/g, '/').replace(/^\/|\/$/g, '');
             }
 
+            const isRoot = ROOT_PATH_IDENTIFIERS.includes(cleanPath);
+
             nodes.push({
                 id: nanoid(),
                 name:
                     fileName === 'index'
                         ? parentPath
                             ? `/${path.basename(parentPath)}`
-                            : '🏠 Landing Page'
+                            : 'Home'
                         : '/' + fileName,
                 path: cleanPath,
                 children: [],
                 isActive: false,
+                isRoot,
             });
         }
     }
