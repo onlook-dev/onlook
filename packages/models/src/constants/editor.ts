@@ -1,3 +1,5 @@
+import { DEFAULT_IDE } from '../ide';
+
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
 export const HOSTING_DOMAIN = 'onlook.live';
@@ -74,5 +76,9 @@ export const DefaultSettings = {
         showSuggestions: true,
         autoApplyCode: true,
         expandCodeBlocks: false,
+    },
+    EDITOR_SETTINGS: {
+        shouldWarnDelete: true,
+        ideType: DEFAULT_IDE,
     },
 };

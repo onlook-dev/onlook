@@ -43,7 +43,7 @@ const OpenCode = observer(() => {
     useEffect(() => {
         invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
-            setIde(IDE.fromType(settings.ideType || DEFAULT_IDE));
+            setIde(IDE.fromType(settings.editor?.ideType || DEFAULT_IDE));
         });
     }, []);
 
@@ -71,7 +71,7 @@ const OpenCode = observer(() => {
     }
 
     function updateIde(newIde: IDE) {
-        userManager.updateSettings({ ideType: newIde.type });
+        userManager.settings.updateEditor({ ideType: newIde.type });
         setIde(newIde);
     }
 

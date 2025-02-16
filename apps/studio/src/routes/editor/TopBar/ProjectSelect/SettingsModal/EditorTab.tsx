@@ -28,25 +28,25 @@ const EditorTab = observer(() => {
     useEffect(() => {
         invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
-            setIde(IDE.fromType(settings.ideType || DEFAULT_IDE));
+            setIde(IDE.fromType(settings.editor?.ideType || DEFAULT_IDE));
             setIsAnalyticsEnabled(settings.enableAnalytics || false);
-            setShouldWarnDelete(settings.shouldWarnDelete ?? true);
+            setShouldWarnDelete(settings.editor?.shouldWarnDelete ?? true);
         });
     }, []);
 
     function updateIde(ide: IDE) {
-        userManager.updateSettings({ ideType: ide.type });
+        userManager.settings.updateEditor({ ideType: ide.type });
         setIde(ide);
     }
 
     function updateAnalytics(enabled: boolean) {
-        userManager.updateSettings({ enableAnalytics: enabled });
+        userManager.settings.update({ enableAnalytics: enabled });
         invokeMainChannel(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
         setIsAnalyticsEnabled(enabled);
     }
 
     function updateDeleteWarning(enabled: boolean) {
-        userManager.updateSettings({ shouldWarnDelete: enabled });
+        userManager.settings.updateEditor({ shouldWarnDelete: enabled });
         setShouldWarnDelete(enabled);
     }
 

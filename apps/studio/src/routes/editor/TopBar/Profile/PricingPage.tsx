@@ -42,7 +42,7 @@ export const PricingPage = () => {
     const { toast } = useToast();
 
     const [currentPlan, setCurrentPlan] = useState<UsagePlan>({
-        type: userManager.currentPlan,
+        type: userManager.subscription.plan,
     });
 
     useEffect(() => {
@@ -69,7 +69,7 @@ export const PricingPage = () => {
         const BASE_INTERVAL = 2000;
 
         const scheduleNextCheck = async () => {
-            const success = await userManager.checkPremiumStatus();
+            const success = await userManager.subscription.checkPremiumStatus();
             if (success) {
                 setCurrentPlan({ type: UsagePlanType.PRO });
                 setIsCheckingOut(null);
