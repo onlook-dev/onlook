@@ -3,7 +3,7 @@ import { ProjectTabs } from '@/lib/projects';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
-import { MainChannels, Links } from '@onlook/models/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
 import {
@@ -153,28 +153,11 @@ const ProjectBreadcrumb = observer(() => {
                             <DropdownMenuItem onClick={handleOpenProjectFolder}>
                                 {'Show in Explorer'}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                                Settings
-                            </DropdownMenuItem>
                             <DialogTrigger asChild>
                                 <DropdownMenuItem>Subscriptions</DropdownMenuItem>
                             </DialogTrigger>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                onClick={() => window.open('https://onlook.com', '_blank')}
-                            >
-                                About Onlook
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => window.open(Links.DISCORD, '_blank')}>
-                                Join our Discord
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => window.open(Links.GITHUB, '_blank')}>
-                                Visit our GitHub
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}
-                            >
-                                Report Issue
+                            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                                Settings
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

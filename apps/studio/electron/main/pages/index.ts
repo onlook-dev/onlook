@@ -1,5 +1,5 @@
 import type { PageNode } from '@onlook/models/pages';
-import { promises as fs } from 'fs';
+import { promises as fs, type Dirent } from 'fs';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
 import { ALLOWED_EXTENSIONS } from '../run/helpers';
@@ -25,84 +25,75 @@ interface RouterConfig {
     basePath: string;
 }
 
+interface FileCheck {
+    prefix: string;
+    required?: boolean;
+}
+
+const APP_ROUTER_FILES: FileCheck[] = [
+    { prefix: 'layout', required: true },
+    { prefix: 'page' },
+    { prefix: 'template' },
+    { prefix: 'loading' },
+    { prefix: 'error' },
+];
+
+async function hasFileWithPrefix(entries: Dirent[], fileCheck: FileCheck): Promise<boolean> {
+    return entries.some(
+        (entry) =>
+            entry.isFile() &&
+            entry.name.startsWith(`${fileCheck.prefix}.`) &&
+            ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
+    );
+}
+
+async function isAppRouter(entries: Dirent[]): Promise<boolean> {
+    const fileChecks = await Promise.all(
+        APP_ROUTER_FILES.map((check) => hasFileWithPrefix(entries, check)),
+    );
+
+    // Must have layout.tsx and at least one other app router file
+    return fileChecks[0] && fileChecks.slice(1).some((hasFile) => hasFile);
+}
+
+async function isPagesRouter(entries: Dirent[]): Promise<boolean> {
+    return hasFileWithPrefix(entries, { prefix: 'index' });
+}
+
+async function checkDirectory(
+    fullPath: string,
+    routerTypeCheck: (entries: Dirent[]) => Promise<boolean>,
+): Promise<string | null> {
+    try {
+        const stats = await fs.stat(fullPath);
+        if (stats.isDirectory()) {
+            const entries = await fs.readdir(fullPath, { withFileTypes: true });
+            if (await routerTypeCheck(entries)) {
+                return fullPath;
+            }
+        }
+    } catch (error) {
+        console.error(`Error checking directory ${fullPath}:`, error);
+    }
+    return null;
+}
+
 async function detectRouterType(projectRoot: string): Promise<RouterConfig | null> {
+    // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         const fullPath = path.join(projectRoot, appPath);
-        try {
-            const stats = await fs.stat(fullPath);
-            if (stats.isDirectory()) {
-                // Find App Router specific indicators
-                const entries = await fs.readdir(fullPath, { withFileTypes: true });
-
-                const hasLayoutFile = entries.some(
-                    (entry) =>
-                        entry.isFile() &&
-                        entry.name.startsWith('layout.') &&
-                        ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
-                );
-
-                const hasRootPageFile = entries.some(
-                    (entry) =>
-                        entry.isFile() &&
-                        entry.name.startsWith('page.') &&
-                        ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
-                );
-
-                // Find additional App Router specific files/patterns
-                const hasTemplateFile = entries.some(
-                    (entry) =>
-                        entry.isFile() &&
-                        entry.name.startsWith('template.') &&
-                        ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
-                );
-
-                const hasLoadingFile = entries.some(
-                    (entry) =>
-                        entry.isFile() &&
-                        entry.name.startsWith('loading.') &&
-                        ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
-                );
-
-                const hasErrorFile = entries.some(
-                    (entry) =>
-                        entry.isFile() &&
-                        entry.name.startsWith('error.') &&
-                        ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
-                );
-
-                if (
-                    hasLayoutFile &&
-                    (hasRootPageFile || hasTemplateFile || hasLoadingFile || hasErrorFile)
-                ) {
-                    return { type: 'app', basePath: fullPath };
-                }
-            }
-        } catch (error) {
-            console.error(`Error detecting router type for ${appPath}:`, error);
-            continue;
+        const result = await checkDirectory(fullPath, isAppRouter);
+        if (result) {
+            return { type: 'app', basePath: result };
         }
     }
 
-    // check for Pages Router
+    // Check for Pages Router
     for (const pagesPath of PAGES_ROUTER_PATHS) {
         const fullPath = path.join(projectRoot, pagesPath);
-        try {
-            const stats = await fs.stat(fullPath);
-            if (stats.isDirectory()) {
-                const entries = await fs.readdir(fullPath, { withFileTypes: true });
-                const hasIndexFile = entries.some(
-                    (entry) =>
-                        entry.isFile() &&
-                        entry.name.startsWith('index.') &&
-                        ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
-                );
-                if (hasIndexFile) {
-                    return { type: 'pages', basePath: fullPath };
-                }
-            }
-        } catch (error) {
-            console.error(`Error detecting router type for ${pagesPath}:`, error);
-            continue;
+        const result = await checkDirectory(fullPath, isPagesRouter);
+        if (result) {
+            return { type: 'pages', basePath: result };
         }
     }
 
