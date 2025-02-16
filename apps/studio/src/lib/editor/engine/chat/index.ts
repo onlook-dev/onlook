@@ -1,4 +1,5 @@
 import type { ProjectsManager } from '@/lib/projects';
+import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
@@ -14,9 +15,10 @@ import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 import { SuggestionManager } from './suggestions';
-const USE_MOCK = false;
 
+const USE_MOCK = false;
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
+
 export class ChatManager {
     isWaiting = false;
     conversation: ConversationManager;
@@ -33,6 +35,7 @@ export class ChatManager {
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
+        private userManager: UserManager,
     ) {
         makeAutoObservable(this);
         this.context = new ChatContext(this.editorEngine);
@@ -164,17 +167,13 @@ export class ChatManager {
             return;
         }
 
-        message.content = content;
+        message.updateContent(content);
         this.conversation.current.removeAllMessagesAfter(message);
         this.sendChatToAi(StreamRequestType.CHAT);
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(
-        res: StreamResponse | null,
-        requestType: StreamRequestType,
-        autoApplyCode: boolean = true,
-    ) {
+    async handleChatResponse(res: StreamResponse | null, requestType: StreamRequestType) {
         if (!res) {
             console.error('No response found');
             return;
@@ -211,7 +210,7 @@ export class ChatManager {
 
         this.context.clearAttachments();
 
-        if (autoApplyCode) {
+        if (this.userManager.settings?.chatSettings?.autoApplyCode) {
             setTimeout(() => {
                 this.code.applyCode(assistantMessage.id);
             }, 100);

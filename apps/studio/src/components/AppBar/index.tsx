@@ -31,16 +31,13 @@ const AppBar = observer(() => {
             )}
         >
             <div className="appbar w-full h-full"></div>
-            
+
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn(
-                            "opacity-50 hover:opacity-100",
-                            className
-                        )}
+                        className={cn('opacity-50 hover:opacity-100', className)}
                         onClick={() => invokeMainChannel(MainChannels.RELOAD_APP)}
                     >
                         <Icons.Reload className="w-3.5" />
@@ -55,10 +52,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn(
-                            "opacity-50 hover:opacity-100",
-                            className
-                        )}
+                        className={cn('opacity-50 hover:opacity-100', className)}
                         onClick={() => {
                             setTheme(nextTheme);
                         }}

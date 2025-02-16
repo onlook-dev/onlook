@@ -6,17 +6,15 @@ import { ChatMessageType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef } from 'react';
 import AssistantMessage from './AssistantMessage';
 import StreamMessage from './StreamMessage';
 import UserMessage from './UserMessage';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const chatMessagesRef = useRef<HTMLDivElement>(null);
-    
-    const hasSelectedElements = editorEngine.elements.selected.length > 0;
 
     useEffect(() => {
         if (chatMessagesRef.current) {
@@ -71,46 +69,42 @@ const ChatMessages = observer(() => {
         }
     }
 
+    // Render in reverse order to make the latest message appear at the bottom
     return (
-        <div className="flex-1 flex flex-col">
-            <AnimatePresence mode="wait">
-                {hasSelectedElements ? (
-                    <motion.div
-                        key="conversation"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="flex flex-col justify-end gap-2 select-text overflow-auto h-full"
-                        ref={chatMessagesRef}
-                    >
-                        <StreamMessage />
-                        {renderErrorMessage()}
-                        {editorEngine.chat.conversation.current && 
-                            [...editorEngine.chat.conversation.current.messages]
-                                .reverse()
-                                .map((message) => renderMessage(message))
-                        }
-                    </motion.div>
-                ) : (
-                    <motion.div
-                        key="empty-state"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80"
-                    >
-                        <div className="w-32 h-32">
-                            <Icons.EmptyState className="w-full h-full" />
-                        </div>
-                        <p className="text-center text-regularPlus text-balance max-w-[300px]">
-                            Select an element <br /> to chat with AI
-                        </p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+            {editorEngine.chat.conversation.current ? (
+                <motion.div
+                    className="flex flex-col-reverse gap-2 select-text overflow-auto"
+                    ref={chatMessagesRef}
+                    key="conversation"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                >
+                    <StreamMessage />
+                    {renderErrorMessage()}
+                    {[...editorEngine.chat.conversation.current.messages]
+                        .reverse()
+                        .map((message) => renderMessage(message))}
+                    {editorEngine.chat.conversation.current.messages.length === 0 && (
+                        <AssistantMessage message={GREETING_MSG} />
+                    )}
+                </motion.div>
+            ) : (
+                <motion.div
+                    key="empty-state"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80"
+                >
+                    <Icons.Shadow className="h-6 w-6 animate-spin" />
+                    <span>Loading conversations</span>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 });
 

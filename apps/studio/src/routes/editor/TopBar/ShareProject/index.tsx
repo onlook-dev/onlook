@@ -67,7 +67,7 @@ const ShareProject = observer(() => {
             console.error('Hosting is not available');
             return;
         }
-        if (!userManager.user) {
+        if (!userManager.settings) {
             console.error('User is not available');
             return;
         }
@@ -243,11 +243,7 @@ const ShareProject = observer(() => {
                         onClick={onClick}
                     >
                         <Icons.Globe className="mr-2 h-4 w-4" />
-                        {editorEngine.history.length > 0 
-                            ? 'Update' 
-                            : endpoint 
-                                ? 'Live'
-                                : 'Publish'}
+                        {editorEngine.history.length > 0 ? 'Update' : endpoint ? 'Live' : 'Publish'}
                     </Button>
                 );
             case HostingStatus.ERROR:

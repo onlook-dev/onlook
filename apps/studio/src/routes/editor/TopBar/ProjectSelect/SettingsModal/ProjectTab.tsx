@@ -3,7 +3,6 @@ import { DefaultSettings } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
-import { Label } from '@onlook/ui/label';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 
@@ -115,14 +114,16 @@ const ProjectTab = observer(
                 <div className="space-y-4">
                     <h2 className="text-lg font-medium">Commands</h2>
                     <p className="text-small text-foreground-secondary">
-                        Only update these if you know what you're doing!
+                        {" Only update these if you know what you're doing!"}
                     </p>
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <p className="text-regularPlus text-muted-foreground">Install</p>
                             <Input
                                 id="install"
-                                value={formValues.commands.install || DefaultSettings.COMMANDS.install}
+                                value={
+                                    formValues.commands.install || DefaultSettings.COMMANDS.install
+                                }
                                 onChange={handleChange}
                                 className="w-2/3"
                             />

@@ -165,14 +165,10 @@ const ProjectBreadcrumb = observer(() => {
                             >
                                 About Onlook
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => window.open(Links.DISCORD, '_blank')}
-                            >
+                            <DropdownMenuItem onClick={() => window.open(Links.DISCORD, '_blank')}>
                                 Join our Discord
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => window.open(Links.GITHUB, '_blank')}
-                            >
+                            <DropdownMenuItem onClick={() => window.open(Links.GITHUB, '_blank')}>
                                 Visit our GitHub
                             </DropdownMenuItem>
                             <DropdownMenuItem

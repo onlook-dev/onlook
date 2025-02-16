@@ -35,18 +35,18 @@ const EditorTab = observer(() => {
     }, []);
 
     function updateIde(ide: IDE) {
-        userManager.updateUserSettings({ ideType: ide.type });
+        userManager.updateSettings({ ideType: ide.type });
         setIde(ide);
     }
 
     function updateAnalytics(enabled: boolean) {
-        userManager.updateUserSettings({ enableAnalytics: enabled });
+        userManager.updateSettings({ enableAnalytics: enabled });
         invokeMainChannel(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
         setIsAnalyticsEnabled(enabled);
     }
 
     function updateDeleteWarning(enabled: boolean) {
-        userManager.updateUserSettings({ shouldWarnDelete: enabled });
+        userManager.updateSettings({ shouldWarnDelete: enabled });
         setShouldWarnDelete(enabled);
     }
 
