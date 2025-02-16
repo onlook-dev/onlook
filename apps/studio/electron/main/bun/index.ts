@@ -1,10 +1,15 @@
-import type { RunBunCommandOptions, RunBunCommandResult } from '@onlook/models';
+import type {
+    DetectedPortResults,
+    RunBunCommandOptions,
+    RunBunCommandResult,
+} from '@onlook/models';
 import { exec } from 'child_process';
 import { app } from 'electron';
 import path from 'path';
 import { promisify } from 'util';
 import { __dirname } from '../index';
 import { replaceCommand } from './parse';
+import { detect } from 'detect-port';
 
 const execAsync = promisify(exec);
 
@@ -48,3 +53,28 @@ export const getBunCommand = (command: string): string => {
     const bunExecutable = getBunExecutablePath();
     return replaceCommand(command, bunExecutable);
 };
+
+export async function isPortTaken(port: number): Promise<DetectedPortResults> {
+    try {
+        let nextPossiblePort = port;
+
+        while (true) {
+            const latestAvailablePort = await detect(nextPossiblePort);
+
+            if (nextPossiblePort === latestAvailablePort) {
+                return {
+                    isPortTaken: nextPossiblePort !== port, // Only true if the original port was taken
+                    availablePort: latestAvailablePort,
+                };
+            }
+
+            nextPossiblePort++; // Increment only when port is taken
+        }
+    } catch (error) {
+        console.error('Error detecting port:', error);
+        return {
+            isPortTaken: true,
+            availablePort: 3000,
+        };
+    }
+}
