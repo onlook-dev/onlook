@@ -1,7 +1,8 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
-import { MainChannels } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
+import type { ChatSettings } from '@onlook/models/settings';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -14,18 +15,6 @@ import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 import { SuggestionManager } from './suggestions';
-
-interface ChatSettings {
-    showSuggestions: boolean;
-    autoApplyCode: boolean;
-    expandCodeBlocks: boolean;
-}
-
-const DEFAULT_CHAT_SETTINGS: ChatSettings = {
-    showSuggestions: true,
-    autoApplyCode: true,
-    expandCodeBlocks: false,
-};
 
 const USE_MOCK = false;
 
@@ -41,7 +30,7 @@ export class ChatManager {
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
     shouldAutoScroll = true;
-    settings: ChatSettings = DEFAULT_CHAT_SETTINGS;
+    settings: ChatSettings = DefaultSettings.CHAT_SETTINGS;
     private disposers: Array<() => void> = [];
 
     constructor(

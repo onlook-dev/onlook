@@ -12,9 +12,7 @@ const projectsManager = new ProjectsManager();
 const updateManager = new UpdateManager();
 const userManager = new UserManager();
 const editorEngine = new EditorEngine(projectsManager);
-// Pass editorEngine and userManager to projectsManager for usages
 projectsManager.editorEngine = editorEngine;
-projectsManager.user = userManager;
 
 const AuthContext = createContext(authManager);
 const RouteContext = createContext(routeManager);
