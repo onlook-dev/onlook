@@ -28,7 +28,6 @@ const Frame = observer(
     }) => {
         const RETRY_TIMEOUT = 3000;
         const DOM_FAILED_DELAY = 3000;
-        const INITIAL_X_OFFSET = -200;
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
@@ -46,10 +45,8 @@ const Frame = observer(
 
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
-        const [webviewPosition, setWebviewPosition] = useState({
-            x: settings.position.x || INITIAL_X_OFFSET,
-            y: settings.position.y || 0,
-        });
+        const [webviewPosition, setWebviewPosition] = useState(settings.position);
+
         const [isResizing, setIsResizing] = useState<boolean>(false);
         const [aspectRatioLocked, setAspectRatioLocked] = useState(
             settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
