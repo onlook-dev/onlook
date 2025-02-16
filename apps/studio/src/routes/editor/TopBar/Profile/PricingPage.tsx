@@ -1,6 +1,6 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
@@ -32,32 +32,18 @@ const PRO_PLAN: UsagePlan = {
 };
 
 export const PricingPage = () => {
+    const userManager = useUserManager();
     const editorEngine = useEditorEngine();
+
     const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
     const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
     const { toast } = useToast();
 
-    const getCachedCurrentPlan = (): UsagePlan => {
-        const cachedPlan = localStorage.getItem('currentPlan');
-        if (cachedPlan) {
-            return cachedPlan === UsagePlanType.PRO ? PRO_PLAN : BASIC_PLAN;
-        }
-        return BASIC_PLAN;
-    };
-    const [currentPlan, setCurrentPlan] = useState(getCachedCurrentPlan());
-
-    const saveCachedCurrentPlan = (plan: UsagePlan) => {
-        localStorage.setItem('currentPlan', plan.type);
-        updateUserMetadata(plan.type);
-    };
-
-    const updateUserMetadata = async (plan: UsagePlanType) => {
-        invokeMainChannel(MainChannels.UPDATE_USER_METADATA, {
-            plan,
-        });
-    };
+    const [currentPlan, setCurrentPlan] = useState<UsagePlan>({
+        type: userManager.currentPlan,
+    });
 
     useEffect(() => {
         const determineBackgroundImage = () => {
@@ -79,40 +65,18 @@ export const PricingPage = () => {
     useEffect(() => {
         let timeoutId: Timer;
         let attempts = 0;
-        const MAX_INTERVAL = 10000; // Maximum interval of 10 seconds
-        const BASE_INTERVAL = 2000; // Start with 2 seconds
-
-        const checkPremiumStatus = async () => {
-            try {
-                const res:
-                    | {
-                          success: boolean;
-                          error?: string;
-                          data?: any;
-                      }
-                    | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-                if (res?.success && res.data.name === 'pro') {
-                    setCurrentPlan(PRO_PLAN);
-                    saveCachedCurrentPlan(PRO_PLAN);
-                    setIsCheckingOut(null);
-                    editorEngine.chat.stream.clear();
-                    return true;
-                } else if (res?.success && res.data.name === 'basic') {
-                    setCurrentPlan(BASIC_PLAN);
-                    saveCachedCurrentPlan(BASIC_PLAN);
-                }
-                return false;
-            } catch (error) {
-                console.error('Error checking premium status:', error);
-                return false;
-            }
-        };
+        const MAX_INTERVAL = 10000;
+        const BASE_INTERVAL = 2000;
 
         const scheduleNextCheck = async () => {
-            const success = await checkPremiumStatus();
-            if (!success) {
+            const success = await userManager.checkPremiumStatus();
+            if (success) {
+                setCurrentPlan({ type: UsagePlanType.PRO });
+                setIsCheckingOut(null);
+                editorEngine.chat.stream.clear();
+            } else {
+                setCurrentPlan({ type: UsagePlanType.BASIC });
                 attempts++;
-                // Exponential backoff with a maximum interval
                 const nextInterval = Math.min(
                     BASE_INTERVAL * Math.pow(1.5, attempts),
                     MAX_INTERVAL,
@@ -209,7 +173,7 @@ export const PricingPage = () => {
                             >
                                 <div className="flex flex-row gap-2 w-[46rem] justify-between">
                                     <h1 className="text-title2 text-foreground-primary">
-                                        {currentPlan === PRO_PLAN
+                                        {currentPlan.type === PRO_PLAN.type
                                             ? t('pricing.titles.proMember')
                                             : t('pricing.titles.choosePlan')}
                                     </h1>
