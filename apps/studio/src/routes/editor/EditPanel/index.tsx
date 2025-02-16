@@ -68,7 +68,7 @@ const EditPanel = observer(() => {
                 >
                     <div className="flex flex-row items-center gap-2 ">
                         <button
-                            className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
+                            className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover hidden"
                             onClick={() => setIsOpen(false)}
                         >
                             <Icons.PinRight />

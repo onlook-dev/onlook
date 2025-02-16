@@ -8,7 +8,7 @@ import WebviewArea from './WebviewArea';
 function ProjectEditor() {
     return (
         <>
-            <div className="relative flex flex-row h-[calc(100vh-2.75rem)] select-none">
+            <div className="relative flex flex-row h-[calc(100vh-2.60rem)] select-none">
                 <Canvas>
                     <WebviewArea />
                 </Canvas>

@@ -1,4 +1,4 @@
-import { useProjectsManager, useUserManager } from '@/components/Context';
+import { useProjectsManager, useUserManager, useEditorEngine } from '@/components/Context';
 import { HostingStateMessages, HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
@@ -15,6 +15,7 @@ import { assertNever } from '/common/helpers';
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const userManager = useUserManager();
+    const editorEngine = useEditorEngine();
     const endpoint = projectsManager.hosting?.state.url
         ? `https://${projectsManager.hosting?.state.url}`
         : undefined;
@@ -242,7 +243,7 @@ const ShareProject = observer(() => {
                         onClick={onClick}
                     >
                         <Icons.Globe className="mr-2 h-4 w-4" />
-                        Live
+                        {editorEngine.history.length > 0 ? 'Update' : endpoint ? 'Live' : 'Publish'}
                     </Button>
                 );
             case HostingStatus.ERROR:
@@ -280,7 +281,7 @@ const ShareProject = observer(() => {
                         onClick={onClick}
                     >
                         <Icons.Globe className="mr-2 h-4 w-4" />
-                        Share
+                        Publish
                     </Button>
                 );
         }

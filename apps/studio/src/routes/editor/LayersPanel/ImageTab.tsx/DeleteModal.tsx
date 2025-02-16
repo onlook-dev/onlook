@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -7,6 +8,7 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
+import { EditorMode } from '@/lib/models';
 
 export default function DeleteImageModal({
     onDelete,
@@ -17,13 +19,25 @@ export default function DeleteImageModal({
     isOpen: boolean;
     toggleOpen: () => void;
 }) {
+    const editorEngine = useEditorEngine();
+
     const handleDelete = () => {
         onDelete();
         toggleOpen();
     };
 
+    const handleClose = () => {
+        // Reset pointer-events and editor mode when modal is closed
+        for (const webview of editorEngine.webviews.webviews.values()) {
+            webview.webview.style.pointerEvents = 'auto';
+        }
+        editorEngine.mode = EditorMode.DESIGN;
+        editorEngine.overlay.clear();
+        toggleOpen();
+    };
+
     return (
-        <AlertDialog open={isOpen} onOpenChange={toggleOpen}>
+        <AlertDialog open={isOpen} onOpenChange={handleClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>{'Delete this image?'}</AlertDialogTitle>
@@ -32,7 +46,7 @@ export default function DeleteImageModal({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={toggleOpen}>
+                    <Button variant={'ghost'} onClick={handleClose}>
                         Cancel
                     </Button>
                     <Button

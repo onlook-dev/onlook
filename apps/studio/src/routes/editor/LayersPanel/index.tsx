@@ -5,6 +5,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
+import { HelpDropdown } from './HelpDropdown.tsx';
 import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
@@ -110,7 +111,7 @@ const LayersPanel = observer(() => {
 
                 <button
                     className={cn(
-                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
                         selectedTab === TabValue.IMAGES && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
@@ -124,7 +125,7 @@ const LayersPanel = observer(() => {
 
                 <button
                     className={cn(
-                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
                         selectedTab === TabValue.COMPONENTS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
@@ -135,6 +136,10 @@ const LayersPanel = observer(() => {
                     <Icons.Component className="w-5 h-5" />
                     <span className="text-xs leading-tight">Elements</span>
                 </button>
+
+                <div className="mt-auto">
+                    <HelpDropdown />
+                </div>
             </div>
 
             {/* Content panel */}

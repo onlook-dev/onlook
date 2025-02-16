@@ -85,34 +85,34 @@ export function CollapsibleCodeBlock({
                     </CollapsibleTrigger>
 
                     <div className="flex items-center gap-1 pr-1 py-1">
-                        {applied ? (
-                            <Button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onRevert();
-                                }}
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-3 text-foreground-secondary hover:text-foreground font-sans select-none"
-                            >
-                                <Icons.Return className="h-4 w-4 mr-2" />
-                                Revert
-                            </Button>
-                        ) : (
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-3 dark:text-teal-200 dark:bg-teal-900/80 dark:border-teal-600 text-teal-700 bg-teal-50 border-teal-300 border-[0.5px] dark:hover:border-teal-400 dark:hover:text-teal-100 dark:hover:bg-teal-700 hover:bg-teal-100 hover:border-teal-400 hover:text-teal-800 transition-all font-sans select-none"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onApply();
-                                }}
-                                disabled={isStream}
-                            >
-                                <Icons.Sparkles className="h-4 w-4 mr-2" />
-                                Apply
-                            </Button>
-                        )}
+                        {!isStream &&
+                            (applied ? (
+                                <Button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRevert();
+                                    }}
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 px-3 text-foreground-secondary hover:text-foreground font-sans select-none"
+                                >
+                                    <Icons.Return className="h-4 w-4 mr-2" />
+                                    Revert
+                                </Button>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 px-3 dark:text-teal-200 dark:bg-teal-900/80 dark:border-teal-600 text-teal-700 bg-teal-50 border-teal-300 border-[0.5px] dark:hover:border-teal-400 dark:hover:text-teal-100 dark:hover:bg-teal-700 hover:bg-teal-100 hover:border-teal-400 hover:text-teal-800 transition-all font-sans select-none"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onApply();
+                                    }}
+                                >
+                                    <Icons.Sparkles className="h-4 w-4 mr-2" />
+                                    Apply
+                                </Button>
+                            ))}
                     </div>
                 </div>
 

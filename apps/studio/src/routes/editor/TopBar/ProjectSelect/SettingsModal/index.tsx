@@ -25,18 +25,18 @@ export const SettingsModal = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-screen min-h-[600px]">
-                <div className="flex flex-col">
-                    {/* Top bar */}
-                    <div className="flex items-center">
-                        <DialogTitle className="text-title3 mb-4">Settings</DialogTitle>
+            <DialogContent className="max-w-4xl h-[600px] p-0">
+                <div className="flex flex-col h-full overflow-hidden">
+                    {/* Top bar - fixed height */}
+                    <div className="shrink-0 flex items-center p-6 pb-4">
+                        <DialogTitle className="text-title3">Settings</DialogTitle>
                     </div>
-                    <Separator orientation="horizontal" />
+                    <Separator orientation="horizontal" className="shrink-0" />
 
                     {/* Main content */}
-                    <div className="flex gap-4 h-full overflow-auto">
-                        {/* Left navigation */}
-                        <div className="w-32 space-y-2 mt-4">
+                    <div className="flex gap-4 flex-1 min-h-0 overflow-hidden">
+                        {/* Left navigation - fixed width */}
+                        <div className="shrink-0 w-32 space-y-2 p-6 text-regularPlus">
                             <Button
                                 variant="ghost"
                                 className={cn(
@@ -77,9 +77,9 @@ export const SettingsModal = ({
                                 Editor
                             </Button>
                         </div>
-                        <Separator orientation="vertical" />
+                        <Separator orientation="vertical" className="h-full" />
                         {/* Right content */}
-                        <div className="flex-1 overflow-auto p-4">
+                        <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
                             {activeTab === TabValue.DOMAIN && <DomainTab />}
                             {activeTab === TabValue.PROJECT && <ProjectTab />}
                             {activeTab === TabValue.EDITOR && <EditorTab />}

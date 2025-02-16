@@ -3,7 +3,6 @@ import { DefaultSettings } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
-import { Label } from '@onlook/ui/label';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 
@@ -75,77 +74,78 @@ const ProjectTab = observer(
         };
 
         return (
-            <div>
-                <div className="grid gap-4 py-4 text-small">
-                    <div className="text-largePlus">Metadata</div>
-                    <div className="flex items-center gap-4">
-                        <Label htmlFor="name" className={INPUT_CLASS}>
-                            Name
-                        </Label>
-                        <Input
-                            id="name"
-                            value={formValues.name}
-                            onChange={handleChange}
-                            className="col-span-3"
-                        />
+            <div className="space-y-8">
+                <div className="space-y-4">
+                    <h2 className="text-lg font-medium">Metadata</h2>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <p className="text-regularPlus text-muted-foreground">Name</p>
+                            <Input
+                                id="name"
+                                value={formValues.name}
+                                onChange={handleChange}
+                                className="w-2/3"
+                            />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <p className="text-regularPlus text-muted-foreground">URL</p>
+                            <Input
+                                id="url"
+                                value={formValues.url}
+                                onChange={handleChange}
+                                className="w-2/3"
+                            />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <p className="text-regularPlus text-muted-foreground">Path</p>
+                            <Input
+                                id="folderPath"
+                                value={formValues.folderPath}
+                                onChange={handleChange}
+                                className="w-2/3"
+                            />
+                        </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Label htmlFor="url" className={INPUT_CLASS}>
-                            Url
-                        </Label>
-                        <Input
-                            id="url"
-                            value={formValues.url}
-                            onChange={handleChange}
-                            className="col-span-3"
-                        />
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Label htmlFor="folderPath" className={INPUT_CLASS}>
-                            Path
-                        </Label>
-                        <Input
-                            id="folderPath"
-                            value={formValues.folderPath}
-                            onChange={handleChange}
-                            className="col-span-3"
-                        />
-                    </div>
+                </div>
 
-                    <div className="text-largePlus">Commands</div>
+                {/* Add divider */}
+                <div className="border-t border-border" />
 
-                    <div className="flex items-center gap-4">
-                        <Label htmlFor="install" className={INPUT_CLASS}>
-                            Install
-                        </Label>
-                        <Input
-                            id="install"
-                            value={formValues.commands.install || DefaultSettings.COMMANDS.install}
-                            onChange={handleChange}
-                            className="col-span-3"
-                        />
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Label htmlFor="run" className={INPUT_CLASS}>
-                            Run
-                        </Label>
-                        <Input
-                            id="run"
-                            value={formValues.commands.run || DefaultSettings.COMMANDS.run}
-                            onChange={handleChange}
-                            className="col-span-3"
-                        />
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Label htmlFor="build" className={INPUT_CLASS}>
-                            Build
-                        </Label>
-                        <Input
-                            id="build"
-                            value={formValues.commands.build || DefaultSettings.COMMANDS.build}
-                            onChange={handleChange}
-                            className="col-span-3"
-                        />
+                <div className="space-y-4">
+                    <h2 className="text-lg font-medium">Commands</h2>
+                    <p className="text-small text-foreground-secondary">
+                        {" Only update these if you know what you're doing!"}
+                    </p>
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <p className="text-regularPlus text-muted-foreground">Install</p>
+                            <Input
+                                id="install"
+                                value={
+                                    formValues.commands.install || DefaultSettings.COMMANDS.install
+                                }
+                                onChange={handleChange}
+                                className="w-2/3"
+                            />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <p className="text-regularPlus text-muted-foreground">Run</p>
+                            <Input
+                                id="run"
+                                value={formValues.commands.run || DefaultSettings.COMMANDS.run}
+                                onChange={handleChange}
+                                className="w-2/3"
+                            />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <p className="text-regularPlus text-muted-foreground">Build</p>
+                            <Input
+                                id="build"
+                                value={formValues.commands.build || DefaultSettings.COMMANDS.build}
+                                onChange={handleChange}
+                                className="w-2/3"
+                            />
+                        </div>
                     </div>
                 </div>
 

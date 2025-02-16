@@ -153,16 +153,11 @@ const ProjectBreadcrumb = observer(() => {
                             <DropdownMenuItem onClick={handleOpenProjectFolder}>
                                 {'Show in Explorer'}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                                Settings
-                            </DropdownMenuItem>
                             <DialogTrigger asChild>
                                 <DropdownMenuItem>Subscriptions</DropdownMenuItem>
                             </DialogTrigger>
-                            <DropdownMenuItem
-                                onClick={() => window.open('https://onlook.com', '_blank')}
-                            >
-                                About Onlook
+                            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                                Settings
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
