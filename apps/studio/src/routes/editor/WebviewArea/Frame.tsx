@@ -46,7 +46,6 @@ const Frame = observer(
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
         const [webviewPosition, setWebviewPosition] = useState(settings.position);
-
         const [isResizing, setIsResizing] = useState<boolean>(false);
         const [aspectRatioLocked, setAspectRatioLocked] = useState(
             settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,

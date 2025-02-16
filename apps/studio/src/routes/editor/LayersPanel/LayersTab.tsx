@@ -138,25 +138,27 @@ const LayersTab = observer(() => {
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={handleMouseLeaveTree}
         >
-            <Tree
-                idAccessor={(node) => node.domId}
-                childrenAccessor={childrenAccessor}
-                ref={treeRef}
-                data={editorEngine.ast.mappings.layers}
-                openByDefault={true}
-                overscanCount={0}
-                indent={8}
-                padding={0}
-                rowHeight={24}
-                height={height ?? 300}
-                width={width ?? 365}
-                renderRow={TreeRow as any}
-                onMove={handleDragEnd}
-                disableDrop={disableDrop}
-                className="overflow-auto"
-            >
-                {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
-            </Tree>
+            <RightClickMenu>
+                <Tree
+                    idAccessor={(node) => node.domId}
+                    childrenAccessor={childrenAccessor}
+                    ref={treeRef}
+                    data={editorEngine.ast.mappings.layers}
+                    openByDefault={true}
+                    overscanCount={0}
+                    indent={8}
+                    padding={0}
+                    rowHeight={24}
+                    height={height ?? 300}
+                    width={width ?? 365}
+                    renderRow={TreeRow as any}
+                    onMove={handleDragEnd}
+                    disableDrop={disableDrop}
+                    className="overflow-auto"
+                >
+                    {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
+                </Tree>
+            </RightClickMenu>
         </div>
     );
 });
