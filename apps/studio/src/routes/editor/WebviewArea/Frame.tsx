@@ -213,7 +213,6 @@ const Frame = observer(
 
         async function detectPort() {
             const webViewUrl = editorEngine.webviews.validUrl(webviewSrc);
-
             const urlObj = new URL(webViewUrl);
             const port = parseInt(urlObj.port, 10);
 
@@ -227,6 +226,11 @@ const Frame = observer(
             if (response) {
                 setIsModalOpen(response.isPortTaken);
                 setAvailablePort(response.availablePort);
+                if (projectsManager.runner) {
+                    projectsManager.runner.portConflict = response.isPortTaken;
+                }
+            } else if (projectsManager.runner) {
+                projectsManager.runner.portConflict = false;
             }
         }
 
@@ -475,6 +479,13 @@ const Frame = observer(
                     setWebviewSrc={setWebviewSrc}
                     currentPort={currentPort}
                     availablePort={availablePort}
+                    checkPortStatus={async (port: number) => {
+                        const response = await editorEngine.webviews.isPortTaken(`http://localhost:${port}`);
+                        if (!response.isPortTaken && projectsManager.runner) {
+                            projectsManager.runner.portConflict = false;
+                        }
+                        return response.isPortTaken;
+                    }}
                 />
             </div>
         );
