@@ -16,7 +16,6 @@ interface CollapsibleCodeBlockProps {
     replaceContent: string;
     applied: boolean;
     isStream?: boolean;
-    isApplying?: boolean;
     onApply: () => void;
     onRevert: () => void;
 }
@@ -28,7 +27,6 @@ export function CollapsibleCodeBlock({
     replaceContent,
     applied,
     isStream,
-    isApplying,
     onApply,
     onRevert,
 }: CollapsibleCodeBlockProps) {
@@ -88,7 +86,6 @@ export function CollapsibleCodeBlock({
 
                     <div className="flex items-center gap-1 pr-1 py-1">
                         {!isStream &&
-                            !isApplying &&
                             (applied ? (
                                 <Button
                                     onClick={(e) => {
