@@ -20,35 +20,32 @@ const LayersPanel = observer(() => {
         IMAGES = 'images',
     }
     const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.LAYERS);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
 
-    // Handle hover - allow opening different tabs even when one is locked
     const handleMouseEnter = (tab: TabValue) => {
         if (!isLocked || selectedTab !== tab) {
             setSelectedTab(tab);
-            setIsOpen(true);
+            setIsContentPanelOpen(true);
         }
     };
 
-    // Handle mouse leave - only close if not locked
     const handleMouseLeave = () => {
         if (!isLocked) {
-            setIsOpen(false);
+            setIsContentPanelOpen(false);
         } else {
             // If we're locked, return to the locked tab when mouse leaves
             setSelectedTab(selectedTab);
         }
     };
 
-    // Handle click - toggle lock state
     const handleClick = (tab: TabValue) => {
         if (selectedTab === tab && isLocked) {
             setIsLocked(false);
-            setIsOpen(false);
+            setIsContentPanelOpen(false);
         } else {
             setSelectedTab(tab);
-            setIsOpen(true);
+            setIsContentPanelOpen(true);
             setIsLocked(true);
         }
     };
@@ -79,21 +76,21 @@ const LayersPanel = observer(() => {
 
                 <button
                     className={cn(
-                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
-                        selectedTab === TabValue.COMPONENTS && isLocked
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.PAGES && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                            : 'text-muted-foreground hover:text-foreground',
                     )}
-                    onClick={() => handleClick(TabValue.COMPONENTS)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.COMPONENTS)}
+                    onClick={() => handleClick(TabValue.PAGES)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
                 >
-                    <Icons.Component className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Elements</span>
+                    <Icons.File className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Pages</span>
                 </button>
 
                 <button
                     className={cn(
-                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
                         selectedTab === TabValue.IMAGES && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
@@ -108,26 +105,26 @@ const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        selectedTab === TabValue.PAGES && isLocked
+                        selectedTab === TabValue.COMPONENTS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
-                            : 'text-muted-foreground hover:text-foreground',
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                     )}
-                    onClick={() => handleClick(TabValue.PAGES)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
+                    onClick={() => handleClick(TabValue.COMPONENTS)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.COMPONENTS)}
                 >
-                    <Icons.File className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Pages</span>
+                    <Icons.Component className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Elements</span>
                 </button>
             </div>
 
-            {/* Content panel - only show if isOpen is true */}
-            {isOpen && (
+            {/* Content panel */}
+            {isContentPanelOpen && (
                 <>
                     <div
                         className="flex-1 max-w-[280px] bg-background/80 rounded-xl"
-                        onMouseEnter={() => setIsOpen(true)}
+                        onMouseEnter={() => setIsContentPanelOpen(true)}
                     >
-                        <div className="border backdrop-blur shadow h-[calc(100vh-5rem)] overflow-auto p-2 rounded-xl">
+                        <div className="border backdrop-blur h-full shadow overflow-auto p-2 rounded-xl">
                             {selectedTab === TabValue.LAYERS && <LayersTab />}
                             {selectedTab === TabValue.COMPONENTS &&
                                 (COMPONENT_DISCOVERY_ENABLED ? (
@@ -135,7 +132,7 @@ const LayersPanel = observer(() => {
                                         components={editorEngine.projectInfo.components}
                                     />
                                 ) : (
-                                    <div className="w-full pt-96 text-center opacity-70">
+                                    <div className="w-[260px] pt-96 text-center opacity-70">
                                         Coming soon
                                     </div>
                                 ))}
@@ -145,7 +142,10 @@ const LayersPanel = observer(() => {
                     </div>
                     {/* Invisible padding area that maintains hover state */}
                     {!isLocked && (
-                        <div className="w-24 h-full" onMouseEnter={() => setIsOpen(true)} />
+                        <div
+                            className="w-24 h-full"
+                            onMouseEnter={() => setIsContentPanelOpen(true)}
+                        />
                     )}
                 </>
             )}

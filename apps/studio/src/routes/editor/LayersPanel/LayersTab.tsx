@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import type { LayerNode } from '@onlook/models/element';
 import { observer } from 'mobx-react-lite';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
@@ -121,14 +121,6 @@ const LayersTab = observer(() => {
             return children?.length ? children : null;
         },
         [editorEngine.ast.mappings],
-    );
-
-    const dimensions = useMemo(
-        () => ({
-            height: (height ?? 8) - 8,
-            width: width ?? 365,
-        }),
-        [height, width],
     );
 
     return (

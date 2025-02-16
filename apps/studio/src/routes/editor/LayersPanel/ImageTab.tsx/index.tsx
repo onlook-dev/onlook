@@ -11,13 +11,13 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DeleteImageModal from './DeleteModal';
 import RenameImageModal from './RenameModal';
-import { Input } from '@onlook/ui/input';
 
 const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -224,7 +224,7 @@ const ImagesTab = observer(() => {
     };
 
     return (
-        <div className="w-full h-[calc(100vh-7.75rem)] flex flex-col gap-2 p-0.5">
+        <div className="w-full h-full flex flex-col gap-2 p-0.5">
             <input
                 type="file"
                 accept="image/*"
