@@ -1,5 +1,11 @@
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogTitle } from '@onlook/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
@@ -28,9 +34,13 @@ export const SettingsModal = ({
             <DialogContent className="max-w-4xl h-[600px] p-0">
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* Top bar - fixed height */}
-                    <div className="shrink-0 flex items-center p-6 pb-4">
+                    <DialogHeader className="shrink-0 p-6 pb-4">
                         <DialogTitle className="text-title3">Settings</DialogTitle>
-                    </div>
+                        <DialogDescription className="sr-only">
+                            Configure project settings including domain, project, and editor
+                            preferences
+                        </DialogDescription>
+                    </DialogHeader>
                     <Separator orientation="horizontal" className="shrink-0" />
 
                     {/* Main content */}

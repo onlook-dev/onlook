@@ -149,10 +149,22 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuItem onClick={handleOpenProjectFolder}>
                             {'Show in Explorer'}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => (editorEngine.isPlansOpen = true)}>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                editorEngine.isPlansOpen = true;
+                                setIsSettingsOpen(false);
+                                setIsDropdownOpen(false);
+                            }}
+                        >
                             Subscriptions
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setIsSettingsOpen(true);
+                                editorEngine.isPlansOpen = false;
+                                setIsDropdownOpen(false);
+                            }}
+                        >
                             Settings
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -172,17 +184,16 @@ const ProjectBreadcrumb = observer(() => {
                 </DialogContent>
             </Dialog>
 
-            <Dialog
+            <SettingsModal
                 open={isSettingsOpen}
                 onOpenChange={(open) => {
                     setIsSettingsOpen(open);
                     setIsDropdownOpen(false);
+                    if (open) {
+                        editorEngine.isPlansOpen = false;
+                    }
                 }}
-            >
-                <DialogContent>
-                    <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
-                </DialogContent>
-            </Dialog>
+            />
         </>
     );
 });
