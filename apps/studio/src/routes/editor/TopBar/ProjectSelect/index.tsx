@@ -86,12 +86,6 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant={'ghost'}
-                                onMouseEnter={() => {
-                                    if (closeTimeoutRef.current) {
-                                        clearTimeout(closeTimeoutRef.current);
-                                    }
-                                    setIsDropdownOpen(true);
-                                }}
                                 className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                             >
                                 <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />

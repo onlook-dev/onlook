@@ -146,7 +146,7 @@ const ResizeHandles = observer(
         return (
             <div
                 className={cn(
-                    'absolute inset-0 opacity-10 transition min-w-0',
+                    'absolute inset-0 opacity-40 transition min-w-0',
                     editorEngine.mode === EditorMode.INTERACT ? 'visible' : 'visible',
                     { 'hover:opacity-60': !lockedPreset },
                 )}
@@ -161,7 +161,7 @@ const ResizeHandles = observer(
                         lockedPreset ? handleLockedResize() : startResize(e, [HandleType.Bottom])
                     }
                 >
-                    <div className="rounded bg-foreground-primary w-32 h-1"></div>
+                    <div className="rounded bg-foreground-primary/80 w-48 h-1"></div>
                 </div>
                 <div
                     ref={resizeHandleRef}
@@ -173,7 +173,7 @@ const ResizeHandles = observer(
                         lockedPreset ? handleLockedResize() : startResize(e, [HandleType.Right])
                     }
                 >
-                    <div className="rounded bg-foreground-primary w-1 h-32"></div>
+                    <div className="rounded bg-foreground-primary/80 w-1 h-48"></div>
                 </div>
                 <div
                     ref={resizeHandleRef}
@@ -187,7 +187,7 @@ const ResizeHandles = observer(
                             : startResize(e, [HandleType.Right, HandleType.Bottom])
                     }
                 >
-                    <div className="rounded bg-foreground-primary w-2 h-2"></div>
+                    <div className="rounded bg-foreground-primary/80 w-2 h-2"></div>
                 </div>
             </div>
         );

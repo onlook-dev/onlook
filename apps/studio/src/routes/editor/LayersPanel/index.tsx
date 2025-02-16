@@ -1,9 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { Icons } from '@onlook/ui/icons';
-import ResizablePanel from '@onlook/ui/resizable';
-import { Separator } from '@onlook/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -11,7 +8,6 @@ import ComponentsTab from './ComponentsTab';
 import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
-import { capitalizeFirstLetter } from '/common/helpers';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -23,105 +19,157 @@ const LayersPanel = observer(() => {
         COMPONENTS = 'components',
         IMAGES = 'images',
     }
-    const selectedTab: string = TabValue.LAYERS;
-    const [isOpen, setIsOpen] = useState(true);
+    const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.LAYERS);
+    const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
+    const [isLocked, setIsLocked] = useState(false);
 
-    function renderTabs() {
-        return (
-            <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full select-none justify-between items-center h-11 px-2">
-                    <div className="flex flex-row items-center gap-2">
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.LAYERS}
-                        >
-                            <Icons.Layers className="mr-1.5 mb-0.5" />
-                            {capitalizeFirstLetter(TabValue.LAYERS)}
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
-                            value={TabValue.COMPONENTS}
-                        >
-                            <div className="flex items-center gap-1">
-                                <Icons.Component />
-                                {capitalizeFirstLetter(TabValue.COMPONENTS)}
-                            </div>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.PAGES}
-                        >
-                            <Icons.File className="mr-1.5 mb-0.5" />
-                            {capitalizeFirstLetter(TabValue.PAGES)}
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
-                            value={TabValue.IMAGES}
-                        >
-                            <div className="flex items-center gap-1">
-                                <Icons.Image />
-                                {capitalizeFirstLetter(TabValue.IMAGES)}
-                            </div>
-                        </TabsTrigger>
-                    </div>
-                    <button
-                        className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
-                        onClick={() => setIsOpen(false)}
-                    >
-                        <Icons.PinLeft />
-                    </button>
-                </TabsList>
-                <Separator className="mt-0" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
-                    <TabsContent value={TabValue.PAGES}>
-                        <PagesTab />
-                    </TabsContent>
-                    <TabsContent value={TabValue.LAYERS}>
-                        <LayersTab />
-                    </TabsContent>
-                    <TabsContent value={TabValue.COMPONENTS}>
-                        {COMPONENT_DISCOVERY_ENABLED ? (
-                            <ComponentsTab components={editorEngine.projectInfo.components} />
-                        ) : (
-                            <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
-                        )}
-                    </TabsContent>
-                    <TabsContent value={TabValue.IMAGES}>
-                        <ImagesTab />
-                    </TabsContent>
-                </div>
-            </Tabs>
-        );
-    }
+    const handleMouseEnter = (tab: TabValue) => {
+        if (isLocked) {
+            return;
+        }
+        setSelectedTab(tab);
+        setIsContentPanelOpen(true);
+    };
+
+    const isMouseInContentPanel = (e: React.MouseEvent<HTMLDivElement>): boolean => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        const contentPanel = e.currentTarget;
+        if (contentPanel) {
+            const { left, right, top, bottom } = contentPanel.getBoundingClientRect();
+            if (mouseX < left || mouseX > right || mouseY < top || mouseY > bottom) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isLocked) {
+            // This is to handle things like dropdown where the mouse is still in the content panel
+            if (!isMouseInContentPanel(e)) {
+                setIsContentPanelOpen(false);
+            } else {
+                // TODO: Since mouse leave won't trigger anymore, we need to listen and check
+                //  if the mouse actually left the content panel and then close the content panel
+            }
+        } else {
+            // If we're locked, return to the locked tab when mouse leaves
+            setSelectedTab(selectedTab);
+        }
+    };
+
+    const handleClick = (tab: TabValue) => {
+        if (selectedTab === tab && isLocked) {
+            setIsLocked(false);
+            setIsContentPanelOpen(false);
+        } else {
+            setSelectedTab(tab);
+            setIsContentPanelOpen(true);
+            setIsLocked(true);
+        }
+    };
+
     return (
-        <ResizablePanel side="left" defaultWidth={300} minWidth={240} maxWidth={500}>
-            <div
-                className={cn(
-                    'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                    isOpen
-                        ? 'w-full h-[calc(100vh-5rem)]'
-                        : 'w-10 h-10 rounded-r-xl cursor-pointer',
-                )}
-            >
-                {!isOpen && (
-                    <div
-                        className="border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
-                        onClick={() => setIsOpen(true)}
-                    >
-                        <Icons.PinRight className="z-51" />
-                    </div>
-                )}
-                <div
+        <div
+            className={cn(
+                'flex gap-0 h-[calc(100vh-5rem)] ',
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+            )}
+            onMouseLeave={handleMouseLeave}
+        >
+            {/* Left sidebar with tabs */}
+            <div className="w-20 bg-background-onlook/60 backdrop-blur-sm flex flex-col items-center py-0.5 gap-2">
+                <button
                     className={cn(
-                        'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
-                        isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.LAYERS && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground',
                     )}
+                    onClick={() => handleClick(TabValue.LAYERS)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.LAYERS)}
                 >
-                    {renderTabs()}
-                </div>
+                    <Icons.Layers className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Layers</span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.PAGES && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => handleClick(TabValue.PAGES)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
+                >
+                    <Icons.File className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Pages</span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.IMAGES && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => handleClick(TabValue.IMAGES)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.IMAGES)}
+                >
+                    <Icons.Image className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Images</span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.COMPONENTS && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    )}
+                    onClick={() => handleClick(TabValue.COMPONENTS)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.COMPONENTS)}
+                >
+                    <Icons.Component className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Elements</span>
+                </button>
             </div>
-        </ResizablePanel>
+
+            {/* Content panel */}
+            {isContentPanelOpen && (
+                <>
+                    <div
+                        className="flex-1 max-w-[280px] bg-background/80 rounded-xl"
+                        onMouseEnter={() => setIsContentPanelOpen(true)}
+                    >
+                        <div className="border backdrop-blur h-full shadow overflow-auto p-2 rounded-xl">
+                            {selectedTab === TabValue.LAYERS && <LayersTab />}
+                            {selectedTab === TabValue.COMPONENTS &&
+                                (COMPONENT_DISCOVERY_ENABLED ? (
+                                    <ComponentsTab
+                                        components={editorEngine.projectInfo.components}
+                                    />
+                                ) : (
+                                    <div className="w-[260px] pt-96 text-center opacity-70">
+                                        Coming soon
+                                    </div>
+                                ))}
+                            {selectedTab === TabValue.PAGES && <PagesTab />}
+                            {selectedTab === TabValue.IMAGES && <ImagesTab />}
+                        </div>
+                    </div>
+                    {/* Invisible padding area that maintains hover state */}
+                    {!isLocked && (
+                        <div
+                            className="w-24 h-full"
+                            onMouseEnter={() => setIsContentPanelOpen(true)}
+                        />
+                    )}
+                </>
+            )}
+        </div>
     );
 });
 

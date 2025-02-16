@@ -15,8 +15,8 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
         () => {
             editorEngine.canvas.scale = DefaultSettings.SCALE;
             editorEngine.canvas.position = {
-                x: DefaultSettings.POSITION.x,
-                y: DefaultSettings.POSITION.y,
+                x: DefaultSettings.PAN_POSITION.x,
+                y: DefaultSettings.PAN_POSITION.y,
             };
         },
         { preventDefault: true },
