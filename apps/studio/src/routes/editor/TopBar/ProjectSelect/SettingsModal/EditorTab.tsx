@@ -3,7 +3,6 @@ import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { DEFAULT_IDE } from '@onlook/models/ide';
-import type { UserSettings } from '@onlook/models/settings';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -26,12 +25,9 @@ const EditorTab = observer(() => {
     const IDEIcon = Icons[ide.icon];
 
     useEffect(() => {
-        invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
-            const settings: UserSettings = res as UserSettings;
-            setIde(IDE.fromType(settings.editor?.ideType || DEFAULT_IDE));
-            setIsAnalyticsEnabled(settings.enableAnalytics || false);
-            setShouldWarnDelete(settings.editor?.shouldWarnDelete ?? true);
-        });
+        setIde(IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE));
+        setIsAnalyticsEnabled(userManager.settings.settings?.enableAnalytics || false);
+        setShouldWarnDelete(userManager.settings.settings?.editor?.shouldWarnDelete ?? true);
     }, []);
 
     function updateIde(ide: IDE) {
@@ -48,10 +44,6 @@ const EditorTab = observer(() => {
     function updateDeleteWarning(enabled: boolean) {
         userManager.settings.updateEditor({ shouldWarnDelete: enabled });
         setShouldWarnDelete(enabled);
-    }
-
-    function openExternalLink(url: string) {
-        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, url);
     }
 
     function handleBackButtonClick() {

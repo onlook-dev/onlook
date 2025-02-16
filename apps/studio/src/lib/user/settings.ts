@@ -33,7 +33,7 @@ export class UserSettingsManager {
         };
 
         await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, {
-            chatSettings: newChatSettings,
+            chat: newChatSettings,
         });
     }
 
@@ -43,5 +43,14 @@ export class UserSettingsManager {
             ...this.settings?.editor,
             ...newSettings,
         };
+
+        this.settings = {
+            ...this.settings,
+            editor: newEditorSettings,
+        };
+
+        await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, {
+            editor: newEditorSettings,
+        });
     }
 }
