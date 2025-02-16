@@ -1,17 +1,17 @@
-import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuTrigger,
-} from '@onlook/ui/context-menu';
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { FrameSettings } from '@onlook/models/projects';
-import { cn } from '@onlook/ui/utils';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import ResizablePanel from '@onlook/ui/resizable';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
@@ -69,8 +69,11 @@ const EditPanel = observer(() => {
                         >
                             <Icons.PinRight />
                         </button>
-                        <ContextMenu>
-                            <ContextMenuTrigger asChild>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger
+                                asChild
+                                disabled={selectedTab !== EditorTabValue.CHAT}
+                            >
                                 <div className="flex items-center">
                                     <TabsTrigger
                                         className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
@@ -81,9 +84,9 @@ const EditPanel = observer(() => {
                                         <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
                                     </TabsTrigger>
                                 </div>
-                            </ContextMenuTrigger>
-                            <ContextMenuContent className="min-w-[220px]">
-                                <ContextMenuItem
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="min-w-[220px]">
+                                <DropdownMenuItem
                                     className="flex items-center py-1.5"
                                     onClick={() =>
                                         editorEngine.chat.updateSettings({
@@ -101,8 +104,8 @@ const EditPanel = observer(() => {
                                         )}
                                     />
                                     Show suggestions
-                                </ContextMenuItem>
-                                <ContextMenuItem
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
                                     className="flex items-center py-1.5"
                                     onClick={() =>
                                         editorEngine.chat.updateSettings({
@@ -120,8 +123,8 @@ const EditPanel = observer(() => {
                                         )}
                                     />
                                     Auto-apply results
-                                </ContextMenuItem>
-                                <ContextMenuItem
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
                                     className="flex items-center py-1.5"
                                     onClick={() =>
                                         editorEngine.chat.updateSettings({
@@ -139,9 +142,9 @@ const EditPanel = observer(() => {
                                         )}
                                     />
                                     Show code while rendering
-                                </ContextMenuItem>
-                            </ContextMenuContent>
-                        </ContextMenu>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.STYLES}
