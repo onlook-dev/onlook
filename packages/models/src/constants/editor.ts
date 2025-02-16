@@ -1,10 +1,11 @@
-import { DEFAULT_IDE } from '../ide';
+import { DEFAULT_IDE } from '../ide/index.ts';
 
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
 export const HOSTING_DOMAIN = 'onlook.live';
 export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const MAX_NAME_LENGTH = 50;
+
 export enum EditorAttributes {
     // DOM attributes
     ONLOOK_TOOLBAR = 'onlook-toolbar',

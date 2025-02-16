@@ -34,16 +34,8 @@ interface MenuItem {
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
-    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
-
-    useEffect(() => {
-        async function getIdeType() {
-            const ideType = userManager.settings.settings?.editor?.ideType || DEFAULT_IDE;
-            setIde(IDE.fromType(ideType));
-        }
-        getIdeType();
-    }, [userManager.settings]);
+    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE);
 
     useEffect(() => {
         updateMenuItems();

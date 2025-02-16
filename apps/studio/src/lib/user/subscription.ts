@@ -22,7 +22,7 @@ export class SubscriptionManager {
         await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 
-    async checkPremiumStatus(): Promise<boolean> {
+    async getUserPlan(): Promise<UsagePlanType> {
         try {
             const res:
                 | {
@@ -31,15 +31,15 @@ export class SubscriptionManager {
                       data?: any;
                   }
                 | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-            if (res?.success) {
-                const newPlan = res.data.name === 'pro' ? UsagePlanType.PRO : UsagePlanType.BASIC;
-                await this.updatePlan(newPlan);
-                return res.data.name === 'pro';
+            if (!res?.success) {
+                throw new Error(res?.error || 'Error checking premium status');
             }
-            return false;
+            const newPlan = res.data.name === 'pro' ? UsagePlanType.PRO : UsagePlanType.BASIC;
+            await this.updatePlan(newPlan);
+            return newPlan;
         } catch (error) {
             console.error('Error checking premium status:', error);
-            return false;
+            return UsagePlanType.BASIC;
         }
     }
 }

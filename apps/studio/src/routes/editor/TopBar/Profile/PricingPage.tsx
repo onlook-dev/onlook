@@ -40,7 +40,6 @@ export const PricingPage = () => {
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
     const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
     const { toast } = useToast();
-
     const [currentPlan, setCurrentPlan] = useState<UsagePlan>({
         type: userManager.subscription.plan,
     });
@@ -69,14 +68,12 @@ export const PricingPage = () => {
         const BASE_INTERVAL = 2000;
 
         const scheduleNextCheck = async () => {
-            const success = await userManager.subscription.checkPremiumStatus();
-            if (success) {
-                setCurrentPlan({ type: UsagePlanType.PRO });
-                setIsCheckingOut(null);
-                editorEngine.chat.stream.clear();
-            } else {
-                setCurrentPlan({ type: UsagePlanType.BASIC });
-                attempts++;
+            const plan = await userManager.subscription.getUserPlan();
+            setCurrentPlan({ type: plan });
+            setIsCheckingOut(null);
+            editorEngine.chat.stream.clear();
+            attempts++;
+            if (plan === UsagePlanType.BASIC) {
                 const nextInterval = Math.min(
                     BASE_INTERVAL * Math.pow(1.5, attempts),
                     MAX_INTERVAL,
