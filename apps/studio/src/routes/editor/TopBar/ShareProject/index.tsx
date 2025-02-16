@@ -243,7 +243,11 @@ const ShareProject = observer(() => {
                         onClick={onClick}
                     >
                         <Icons.Globe className="mr-2 h-4 w-4" />
-                        {editorEngine.history.length > 0 ? 'Update' : 'Publish'}
+                        {editorEngine.history.length > 0 
+                            ? 'Update' 
+                            : endpoint 
+                                ? 'Live'
+                                : 'Publish'}
                     </Button>
                 );
             case HostingStatus.ERROR:
