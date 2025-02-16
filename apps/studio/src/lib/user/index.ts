@@ -8,10 +8,10 @@ export class UserManager {
 
     constructor() {
         makeAutoObservable(this);
-        this.fetchSettings();
+        this.restoreSettings();
     }
 
-    async fetchSettings() {
+    async restoreSettings() {
         this.settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
     }
 
@@ -20,20 +20,20 @@ export class UserManager {
         await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, settings);
     }
 
-    async updateChatSettings(settings: Partial<ChatSettings>) {
-        this.settings = {
-            ...this.settings,
-            chatSettings: {
-                ...DefaultSettings.CHAT_SETTINGS,
-                ...this.settings?.chatSettings,
-                ...settings,
-            },
+    async updateChatSettings(newSettings: Partial<ChatSettings>) {
+        const newChatSettings = {
+            ...DefaultSettings.CHAT_SETTINGS,
+            ...this.settings?.chatSettings,
+            ...newSettings,
         };
 
-        console.log('this.settings', JSON.stringify(this.settings, null, 2));
+        this.settings = {
+            ...this.settings,
+            chatSettings: newChatSettings,
+        };
 
         await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, {
-            chatSettings: settings,
+            chatSettings: newChatSettings,
         });
     }
 }
