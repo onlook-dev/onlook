@@ -224,7 +224,7 @@ const ImagesTab = observer(() => {
     };
 
     return (
-        <div className="w-full h-full flex flex-col gap-2 p-0.5">
+        <div className="w-[248px] h-full flex flex-col gap-2 p-0.5 overflow-x-hidden">
             <input
                 type="file"
                 accept="image/*"
@@ -244,11 +244,11 @@ const ImagesTab = observer(() => {
                 </div>
             )}
             {!!imageAssets.length && (
-                <div className="flex flex-row justify-between items-center gap-2 m-0">
-                    <div className="relative flex-grow">
+                <div className="flex flex-row items-center gap-2 m-0">
+                    <div className="relative min-w-0 flex-1">
                         <Input
                             ref={inputRef}
-                            className="h-8 text-xs pr-8"
+                            className="h-8 text-xs pr-8 w-full"
                             placeholder="Search pages"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -314,11 +314,11 @@ const ImagesTab = observer(() => {
                         No images found
                     </div>
                 ) : (
-                    <div className="w-full flex flex-wrap gap-2 p-2">
+                    <div className="w-full flex flex-wrap gap-3 p-0">
                         {filteredImages.map((image) => (
                             <div
                                 key={image.fileName}
-                                className="relative group flex-shrink-0 w-[120px]"
+                                className="relative group flex-shrink-0 w-[116px]"
                                 draggable
                                 onDragStart={(e) => handleImageDragStart(e, image)}
                                 onDragEnd={() => {
