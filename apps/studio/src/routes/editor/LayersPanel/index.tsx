@@ -62,7 +62,7 @@ const LayersPanel = observer(() => {
             onMouseLeave={handleMouseLeave}
         >
             {/* Left sidebar with tabs */}
-            <div className="w-20 bg-background-onlook/80 backdrop-blur-xl flex flex-col items-center py-0.5 gap-2">
+            <div className="w-20 bg-background-onlook/60 backdrop-blur-sm flex flex-col items-center py-0.5 gap-2">
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',

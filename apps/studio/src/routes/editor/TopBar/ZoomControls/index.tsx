@@ -47,12 +47,12 @@ const ZoomControls = observer(() => {
             const containerRect = container.getBoundingClientRect();
             const scaleX = containerRect.width / contentRect.width;
             const scaleY = containerRect.height / contentRect.height;
-            const newScale = Math.min(scaleX, scaleY) * 0.9;
+            const newScale = Math.min(scaleX, scaleY) * DefaultSettings.SCALE;
             editorEngine.canvas.scale = newScale;
             //Position fit
             const newPosition = {
-                x: DefaultSettings.POSITION.x,
-                y: DefaultSettings.POSITION.y,
+                x: DefaultSettings.PAN_POSITION.x,
+                y: DefaultSettings.PAN_POSITION.y,
             };
             editorEngine.canvas.position = newPosition;
         }

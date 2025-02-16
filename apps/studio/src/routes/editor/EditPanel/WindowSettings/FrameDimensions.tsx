@@ -433,22 +433,6 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
                     </p>
                 </div>
             </div>
-            {/* <div className="flex flex-row justify-between items-center">
-                <span className="text-xs text-foreground-secondary">Responsive</span>
-                <Select value={responsive} onValueChange={setResponsive}>
-                    <SelectTrigger className="w-3/5 rounded bg-background-secondary border-background-secondary px-2 h-8 text-xs">
-                        <SelectValue placeholder="Select size" defaultValue={'Closest Size'} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-md bg-background-secondary">
-                        <SelectItem
-                            value="Closest Size"
-                            className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
-                        >
-                            Closest Size
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div> */}
         </div>
     );
 };
