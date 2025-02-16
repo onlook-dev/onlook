@@ -22,7 +22,7 @@ export class SubscriptionManager {
         await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 
-    async getUserPlan(): Promise<UsagePlanType> {
+    async getPlanFromServer(): Promise<UsagePlanType> {
         try {
             const res:
                 | {

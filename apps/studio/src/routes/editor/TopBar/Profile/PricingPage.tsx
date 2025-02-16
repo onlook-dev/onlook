@@ -13,36 +13,20 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons/index';
-import { useToast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/use-toast';
 import { motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PricingCard } from './PricingCard';
 
-interface UsagePlan {
-    type: UsagePlanType;
-}
-
-const BASIC_PLAN: UsagePlan = {
-    type: UsagePlanType.BASIC,
-};
-
-const PRO_PLAN: UsagePlan = {
-    type: UsagePlanType.PRO,
-};
-
 export const PricingPage = () => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
-
     const { t, i18n } = useTranslation();
     const { theme } = useTheme();
+
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
     const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
-    const { toast } = useToast();
-    const [currentPlan, setCurrentPlan] = useState<UsagePlan>({
-        type: userManager.subscription.plan,
-    });
 
     useEffect(() => {
         const determineBackgroundImage = () => {
@@ -68,8 +52,7 @@ export const PricingPage = () => {
         const BASE_INTERVAL = 2000;
 
         const scheduleNextCheck = async () => {
-            const plan = await userManager.subscription.getUserPlan();
-            setCurrentPlan({ type: plan });
+            const plan = await userManager.subscription.getPlanFromServer();
             setIsCheckingOut(null);
             editorEngine.chat.stream.clear();
             attempts++;
@@ -170,7 +153,7 @@ export const PricingPage = () => {
                             >
                                 <div className="flex flex-row gap-2 w-[46rem] justify-between">
                                     <h1 className="text-title2 text-foreground-primary">
-                                        {currentPlan.type === PRO_PLAN.type
+                                        {userManager.subscription.plan === UsagePlanType.PRO
                                             ? t('pricing.titles.proMember')
                                             : t('pricing.titles.choosePlan')}
                                     </h1>
@@ -213,7 +196,7 @@ export const PricingPage = () => {
                                         }) as string[]
                                     }
                                     buttonText={
-                                        currentPlan.type === BASIC_PLAN.type
+                                        userManager.subscription.plan === UsagePlanType.BASIC
                                             ? t('pricing.buttons.currentPlan')
                                             : t('pricing.buttons.manageSubscription')
                                     }
@@ -222,7 +205,7 @@ export const PricingPage = () => {
                                             manageSubscription();
                                         },
                                         disabled:
-                                            currentPlan.type === BASIC_PLAN.type ||
+                                            userManager.subscription.plan === UsagePlanType.BASIC ||
                                             isCheckingOut === 'basic',
                                     }}
                                     delay={0.1}
@@ -238,14 +221,14 @@ export const PricingPage = () => {
                                         }) as string[]
                                     }
                                     buttonText={
-                                        currentPlan.type === PRO_PLAN.type
+                                        userManager.subscription.plan === UsagePlanType.PRO
                                             ? t('pricing.buttons.currentPlan')
                                             : t('pricing.buttons.getPro')
                                     }
                                     buttonProps={{
                                         onClick: startProCheckout,
                                         disabled:
-                                            currentPlan.type === PRO_PLAN.type ||
+                                            userManager.subscription.plan === UsagePlanType.PRO ||
                                             isCheckingOut === 'pro',
                                     }}
                                     delay={0.2}
