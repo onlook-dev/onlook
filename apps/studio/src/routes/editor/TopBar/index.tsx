@@ -8,7 +8,6 @@ import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
 import ProjectBreadcrumb from './ProjectSelect';
 import ShareProject from './ShareProject';
-import ZoomControls from './ZoomControls';
 import { Hotkey } from '/common/hotkeys';
 
 const EditorTopBar = observer(() => {
@@ -79,7 +78,6 @@ const EditorTopBar = observer(() => {
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center">
-                <ZoomControls />
                 <OpenCode />
                 <ShareProject />
             </div>

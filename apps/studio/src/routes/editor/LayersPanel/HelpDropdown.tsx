@@ -21,7 +21,7 @@ export const HelpDropdown = () => {
                 align="end"
                 side="left"
                 alignOffset={55}
-                sideOffset={-45}
+                sideOffset={-55}
                 className="w-48"
             >
                 <DropdownMenuItem onClick={() => window.open('https://onlook.com', '_blank')}>

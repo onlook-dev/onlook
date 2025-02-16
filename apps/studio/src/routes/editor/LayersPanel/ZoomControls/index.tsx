@@ -72,13 +72,12 @@ const ZoomControls = observer(() => {
     };
 
     return (
-        <div className="mx-2 flex flex-row items-center text-mini text-foreground-onlook hover:text-foreground-active transition-all duration-300 ease-in-out h-full p-1">
+        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground">
             <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                <PopoverTrigger className="group flex items-center px-2 py-1 rounded hover:bg-accent data-[state=open]:text-foreground-active">
+                <PopoverTrigger className="w-full h-full flex items-center justify-center">
                     <span>{Math.round(scale * 100)}%</span>
-                    <ChevronDownIcon className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                 </PopoverTrigger>
-                <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42">
+                <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
                     <Input
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
@@ -131,7 +130,7 @@ const ZoomControls = observer(() => {
                     </button>
                 </PopoverContent>
             </Popover>
-        </div>
+        </button>
     );
 });
 export default ZoomControls;
