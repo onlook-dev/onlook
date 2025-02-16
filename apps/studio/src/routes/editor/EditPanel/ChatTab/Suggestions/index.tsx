@@ -1,24 +1,24 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 
 export const Suggestions = observer(
     ({
-        hideSuggestions,
         disabled,
         inputValue,
         setInput,
     }: {
-        hideSuggestions: boolean;
         disabled: boolean;
         inputValue: string;
         setInput: (input: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
+        const userManager = useUserManager();
+
         const shouldHideSuggestions =
             editorEngine.chat.suggestions.shouldHide ||
-            hideSuggestions ||
+            !userManager.settings?.chatSettings?.showSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
             editorEngine.errors.errors.length > 0;

@@ -1,3 +1,4 @@
+import { useUserManager } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
@@ -29,6 +30,7 @@ export function CollapsibleCodeBlock({
     onApply,
     onRevert,
 }: CollapsibleCodeBlockProps) {
+    const userManager = useUserManager();
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -36,6 +38,13 @@ export function CollapsibleCodeBlock({
         navigator.clipboard.writeText(replaceContent);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const getAnimation = () => {
+        if (isStream && userManager.settings?.chatSettings?.expandCodeBlocks) {
+            return { height: 'auto', opacity: 1 };
+        }
+        return isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 };
     };
 
     return (
@@ -111,10 +120,8 @@ export function CollapsibleCodeBlock({
                     <AnimatePresence mode="wait">
                         <motion.div
                             key="content"
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={
-                                isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 }
-                            }
+                            initial={getAnimation()}
+                            animate={getAnimation()}
                             transition={{ duration: 0.2, ease: 'easeInOut' }}
                             style={{ overflow: 'hidden' }}
                         >

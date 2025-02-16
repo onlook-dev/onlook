@@ -1,6 +1,13 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
+import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import ResizablePanel from '@onlook/ui/resizable';
 import { Separator } from '@onlook/ui/separator';
@@ -15,14 +22,17 @@ import WindowSettings from './WindowSettings';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
+    const userManager = useUserManager();
+
+    const chatSettings = userManager.settings?.chatSettings || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
-    const [settings, setSettings] = useState<FrameSettings>();
+    const [frameSettings, setFrameSettings] = useState<FrameSettings>();
 
     useEffect(() => {
         if (editorEngine.isWindowSelected) {
-            setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
+            setFrameSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
             setWindowSettingsOpen(true);
         } else {
             setWindowSettingsOpen(false);
@@ -63,13 +73,82 @@ const EditPanel = observer(() => {
                         >
                             <Icons.PinRight />
                         </button>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={EditorTabValue.CHAT}
-                        >
-                            <Icons.Sparkles className="mr-1.5 mb-0.5" />
-                            Chat
-                        </TabsTrigger>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger
+                                asChild
+                                disabled={selectedTab !== EditorTabValue.CHAT}
+                            >
+                                <div className="flex items-center">
+                                    <TabsTrigger
+                                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                                        value={EditorTabValue.CHAT}
+                                    >
+                                        <Icons.Sparkles className="mr-1.5 mb-0.5" />
+                                        Chat
+                                        <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
+                                    </TabsTrigger>
+                                </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="min-w-[220px]">
+                                <DropdownMenuItem
+                                    className="flex items-center py-1.5"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.updateChatSettings({
+                                            showSuggestions: !chatSettings.showSuggestions,
+                                        });
+                                    }}
+                                >
+                                    <Icons.Check
+                                        className={cn(
+                                            'mr-2 h-4 w-4',
+                                            chatSettings.showSuggestions
+                                                ? 'opacity-100'
+                                                : 'opacity-0',
+                                        )}
+                                    />
+                                    Show suggestions
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="flex items-center py-1.5"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.updateChatSettings({
+                                            autoApplyCode: !chatSettings.autoApplyCode,
+                                        });
+                                    }}
+                                >
+                                    <Icons.Check
+                                        className={cn(
+                                            'mr-2 h-4 w-4',
+                                            chatSettings.autoApplyCode
+                                                ? 'opacity-100'
+                                                : 'opacity-0',
+                                        )}
+                                    />
+                                    Auto-apply results
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="flex items-center py-1.5"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.updateChatSettings({
+                                            expandCodeBlocks: !chatSettings.expandCodeBlocks,
+                                        });
+                                    }}
+                                >
+                                    <Icons.Check
+                                        className={cn(
+                                            'mr-2 h-4 w-4',
+                                            chatSettings.expandCodeBlocks
+                                                ? 'opacity-100'
+                                                : 'opacity-0',
+                                        )}
+                                    />
+                                    Show code while rendering
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.STYLES}
@@ -129,8 +208,8 @@ const EditPanel = observer(() => {
                         isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                     )}
                 >
-                    {windowSettingsOpen && settings ? (
-                        <WindowSettings setIsOpen={setIsOpen} settings={settings} />
+                    {windowSettingsOpen && frameSettings ? (
+                        <WindowSettings setIsOpen={setIsOpen} settings={frameSettings} />
                     ) : (
                         renderTabs()
                     )}

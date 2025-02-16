@@ -66,7 +66,7 @@ const ShareProject = observer(() => {
             console.error('Hosting is not available');
             return;
         }
-        if (!userManager.user) {
+        if (!userManager.settings) {
             console.error('User is not available');
             return;
         }

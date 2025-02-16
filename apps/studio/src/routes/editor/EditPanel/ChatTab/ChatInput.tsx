@@ -25,7 +25,6 @@ export const ChatInput = observer(() => {
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const [hideSuggestions, setHideSuggestions] = useState(false);
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -200,7 +199,6 @@ export const ChatInput = observer(() => {
             }}
         >
             <Suggestions
-                hideSuggestions={hideSuggestions}
                 disabled={disabled}
                 inputValue={inputValue}
                 setInput={(suggestion) => {
@@ -213,6 +211,7 @@ export const ChatInput = observer(() => {
                     }, 100);
                 }}
             />
+
             <div className="flex flex-col w-full p-4">
                 <div
                     className={cn(
@@ -373,44 +372,6 @@ export const ChatInput = observer(() => {
                                 {disabled
                                     ? 'Select an element to start'
                                     : 'Add screenshot of the current page'}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className={cn(
-                                    'w-9 h-9 text-foreground-tertiary group hover:bg-transparent',
-                                )}
-                                onClick={() => setHideSuggestions(!hideSuggestions)}
-                                disabled={disabled}
-                            >
-                                {!hideSuggestions ? (
-                                    <Icons.Lightbulb
-                                        className={cn(
-                                            'w-5 h-5',
-                                            disabled
-                                                ? 'text-foreground-tertiary'
-                                                : 'group-hover:text-foreground',
-                                        )}
-                                    />
-                                ) : (
-                                    <Icons.LightbulbSlash
-                                        className={cn(
-                                            'w-5 h-5',
-                                            disabled
-                                                ? 'text-foreground-tertiary'
-                                                : 'group-hover:text-foreground',
-                                        )}
-                                    />
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipPortal>
-                            <TooltipContent side="top" sideOffset={5}>
-                                {disabled ? 'Select an element to start' : 'Toggle Suggestions'}
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>

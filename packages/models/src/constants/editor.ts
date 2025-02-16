@@ -70,4 +70,9 @@ export const DefaultSettings = {
     },
     IMAGE_FOLDER: 'public/images',
     IMAGE_DIMENSION: { width: '100px', height: '100px' },
+    CHAT_SETTINGS: {
+        showSuggestions: true,
+        autoApplyCode: true,
+        expandCodeBlocks: false,
+    },
 };

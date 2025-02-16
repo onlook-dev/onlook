@@ -12,7 +12,7 @@ export function listenForStorageMessages() {
 
     ipcMain.handle(
         MainChannels.UPDATE_USER_SETTINGS,
-        (e: Electron.IpcMainInvokeEvent, args: UserSettings) => {
+        (e: Electron.IpcMainInvokeEvent, args: Partial<UserSettings>) => {
             PersistentStorage.USER_SETTINGS.update(args);
         },
     );
