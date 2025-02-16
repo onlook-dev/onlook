@@ -128,7 +128,7 @@ export function CollapsibleCodeBlock({
                             <div className="border-t">
                                 {isStream ? (
                                     <code className="p-4 text-xs w-full overflow-x-auto block">
-                                        {content}
+                                        {replaceContent}
                                     </code>
                                 ) : (
                                     <CodeBlock code={replaceContent} variant="minimal" />

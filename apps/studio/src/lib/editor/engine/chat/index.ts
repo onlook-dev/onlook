@@ -167,7 +167,7 @@ export class ChatManager {
             return;
         }
 
-        message.content = content;
+        message.updateContent(content);
         this.conversation.current.removeAllMessagesAfter(message);
         this.sendChatToAi(StreamRequestType.CHAT);
         sendAnalytics('resubmit chat message');
