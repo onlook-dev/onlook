@@ -77,4 +77,9 @@ export class UserChatMessageImpl implements UserChatMessage {
             content: [...imageParts, textPart],
         };
     }
+
+    updateContent(content: string) {
+        this.content = content;
+        this.hydratedContent = this.createHydratedContent();
+    }
 }

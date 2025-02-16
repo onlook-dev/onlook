@@ -37,10 +37,17 @@ export function listenForCreateMessages() {
     ipcMain.handle(
         MainChannels.CREATE_NEW_PROJECT_PROMPT,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { prompt, images } = args as { prompt: string; images: ImageMessageContext[] };
+            const { prompt, images } = args as {
+                prompt: string;
+                images: ImageMessageContext[];
+            };
             return projectCreator.createProject(prompt, images);
         },
     );
+
+    ipcMain.handle(MainChannels.CREATE_NEW_BLANK_PROJECT, (e: Electron.IpcMainInvokeEvent) => {
+        return projectCreator.createBlankProject();
+    });
 
     ipcMain.handle(
         MainChannels.CANCEL_CREATE_NEW_PROJECT_PROMPT,

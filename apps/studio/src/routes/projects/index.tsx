@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import ProjectsTab from './ProjectsTab';
 import CreateProject from './ProjectsTab/Create';
 import PromptCreation from './PromptCreation';
-import SettingsTab from './SettingsTab';
 import TopBar from './TopBar';
 import { CreateMethod } from './helpers';
 
@@ -14,8 +13,6 @@ const Projects = observer(() => {
         switch (projectsManager.projectsTab) {
             case ProjectTabs.PROJECTS:
                 return <ProjectsTab />;
-            case ProjectTabs.SETTINGS:
-                return <SettingsTab />;
             case ProjectTabs.PROMPT_CREATE:
                 return <PromptCreation />;
             case ProjectTabs.IMPORT_PROJECT:

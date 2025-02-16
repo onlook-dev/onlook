@@ -24,7 +24,6 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useMemo, useState } from 'react';
-import ProjectSettingsModal from '../../ProjectSettingsModal';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
@@ -84,13 +83,6 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     >
                         <Icons.Pencil className="w-4 h-4" />
                         Rename Project
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <ProjectSettingsModal project={project}>
-                            <div className="flex row center items-center">
-                                <Icons.Gear className="mr-2" /> Edit Settings
-                            </div>
-                        </ProjectSettingsModal>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}

@@ -46,7 +46,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             setIde(IDE.fromType(ideType));
         }
         getIdeType();
-    }, [userManager.user]);
+    }, [userManager.settings]);
 
     useEffect(() => {
         updateMenuItems();
