@@ -30,9 +30,28 @@ const LayersPanel = observer(() => {
         }
     };
 
-    const handleMouseLeave = () => {
+    const isMouseInContentPanel = (e: React.MouseEvent<HTMLDivElement>): boolean => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        const contentPanel = e.currentTarget;
+        if (contentPanel) {
+            const { left, right, top, bottom } = contentPanel.getBoundingClientRect();
+            if (mouseX < left || mouseX > right || mouseY < top || mouseY > bottom) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isLocked) {
-            setIsContentPanelOpen(false);
+            // This is to handle things like dropdown where the mouse is still in the content panel
+            if (!isMouseInContentPanel(e)) {
+                setIsContentPanelOpen(false);
+            } else {
+                // TODO: Since mouse leave won't trigger anymore, we need to listen and check
+                //  if the mouse actually left the content panel and then close the content panel
+            }
         } else {
             // If we're locked, return to the locked tab when mouse leaves
             setSelectedTab(selectedTab);
