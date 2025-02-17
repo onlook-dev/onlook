@@ -4,6 +4,7 @@ import { useAuthManager, useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
 import { CreateState } from '@/lib/projects/create';
+import { Theme } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -46,11 +47,11 @@ export const PromptCreation = observer(({ initialScreen = false }: { initialScre
 
     useEffect(() => {
         const determineBackgroundImage = () => {
-            if (theme === 'dark') {
+            if (theme === Theme.Dark) {
                 return backgroundImageDark;
-            } else if (theme === 'light') {
+            } else if (theme === Theme.Light) {
                 return backgroundImageLight;
-            } else if (theme === 'system') {
+            } else if (theme === Theme.System) {
                 return window.matchMedia('(prefers-color-scheme: dark)').matches
                     ? backgroundImageDark
                     : backgroundImageLight;

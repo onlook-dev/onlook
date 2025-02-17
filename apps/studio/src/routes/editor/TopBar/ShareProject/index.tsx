@@ -1,4 +1,4 @@
-import { useProjectsManager, useUserManager, useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { HostingStateMessages, HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
@@ -224,6 +224,19 @@ const ShareProject = observer(() => {
         );
     };
 
+    const buttonTextCharacters = useMemo(() => {
+        let text = 'Publish';
+        if (editorEngine.history.length > 0) {
+            text = 'Update';
+        } else if (endpoint) {
+            text = 'Live';
+        }
+        return text.split('').map((ch, index) => ({
+            id: `sharebutton_${ch}${index}`,
+            label: ch,
+        }));
+    }, [editorEngine.history.length, endpoint]);
+
     const renderDialogButton = () => {
         const onClick = () => {
             setIsOpen(true);
@@ -235,16 +248,51 @@ const ShareProject = observer(() => {
 
         switch (projectsManager.hosting?.state.status) {
             case HostingStatus.READY:
-                colorClasses = 'border-teal-300 bg-teal-700 hover:bg-teal-500/20 text-teal-100';
+                colorClasses =
+                    'border-teal-300 bg-teal-400/90 hover:bg-teal-500 dark:border-teal-300 dark:bg-teal-700 dark:hover:bg-teal-500/20 dark:text-teal-100';
                 return (
-                    <Button
-                        variant="default"
-                        className={cn(buttonClasses, colorClasses)}
-                        onClick={onClick}
+                    <motion.div
+                        layout
+                        transition={{
+                            width: {
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 30,
+                                delay: 0.2, // Add 200ms delay
+                            },
+                        }}
                     >
-                        <Icons.Globe className="mr-2 h-4 w-4" />
-                        {editorEngine.history.length > 0 ? 'Update' : endpoint ? 'Live' : 'Publish'}
-                    </Button>
+                        <Button
+                            variant="default"
+                            className={cn(buttonClasses, colorClasses)}
+                            onClick={onClick}
+                        >
+                            <Icons.Globe className="mr-2 h-4 w-4" />
+                            <div className="overflow-hidden">
+                                <AnimatePresence mode="popLayout">
+                                    {buttonTextCharacters.map((character) => (
+                                        <motion.span
+                                            key={character.id}
+                                            layoutId={character.id}
+                                            layout="position"
+                                            className="inline-block"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{
+                                                type: 'spring',
+                                                bounce: 0.1,
+                                                duration: 0.4,
+                                                delay: 0.2, // Add 200ms delay
+                                            }}
+                                        >
+                                            {character.label}
+                                        </motion.span>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        </Button>
+                    </motion.div>
                 );
             case HostingStatus.ERROR:
                 colorClasses = 'border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500';

@@ -52,7 +52,7 @@ export enum Orientation {
 export enum Theme {
     Light = 'light',
     Dark = 'dark',
-    Device = 'device',
+    System = 'system',
 }
 
 export const DefaultSettings = {
@@ -63,7 +63,7 @@ export const DefaultSettings = {
     FRAME_DIMENSION: { width: 1536, height: 960 },
     ASPECT_RATIO_LOCKED: false,
     DEVICE: 'Custom:Custom',
-    THEME: Theme.Device,
+    THEME: Theme.System,
     ORIENTATION: Orientation.Potrait,
     MIN_DIMENSIONS: { width: '280px', height: '360px' },
     COMMANDS: {
