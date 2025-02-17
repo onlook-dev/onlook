@@ -33,6 +33,7 @@ export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     if (insertedChild.codeBlock) {
         element =
             parseJsxCodeBlock(insertedChild.codeBlock, true) || createJSXElement(insertedChild);
+        addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, insertedChild.oid);
     } else {
         element = createJSXElement(insertedChild);
     }
