@@ -29,7 +29,7 @@ export interface BaseCodeInsert extends BaseCodeAction {
     attributes: Record<string, string>;
     textContent: string | null;
     pasteParams: PasteParams | null;
-    codeBlock?: string | null;
+    codeBlock: string | null;
 }
 
 export interface CodeInsert extends BaseCodeInsert {
@@ -39,7 +39,7 @@ export interface CodeInsert extends BaseCodeInsert {
 export interface CodeRemove {
     type: CodeActionType.REMOVE;
     oid: string;
-    codeBlock?: string | null;
+    codeBlock: string | null;
 }
 
 export interface CodeStyle {

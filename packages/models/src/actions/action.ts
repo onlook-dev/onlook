@@ -33,7 +33,7 @@ interface BaseInsertRemoveAction {
     element: ActionElement;
     editText: boolean | null;
     pasteParams: PasteParams | null;
-    codeBlock?: string | null;
+    codeBlock: string | null;
 }
 
 export interface InsertElementAction extends BaseInsertRemoveAction {
