@@ -25,8 +25,9 @@ const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
     const closeTimeoutRef = useRef<Timer>();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     async function handleNavigateToProject(tab?: ProjectTabs) {

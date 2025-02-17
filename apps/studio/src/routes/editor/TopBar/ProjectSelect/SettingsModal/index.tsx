@@ -1,10 +1,9 @@
 import { Button } from '@onlook/ui/button';
-import { DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
-import { DomainTab } from './DomainTab';
+import { DomainTab } from './Domain';
 import EditorTab from './EditorTab';
 import ProjectTab from './ProjectTab';
 
@@ -27,7 +26,7 @@ export const SettingsModal = ({
         <div className="flex flex-col h-full overflow-hidden">
             {/* Top bar - fixed height */}
             <div className="shrink-0 flex items-center p-6 pb-4">
-                <DialogTitle className="text-title3">Settings</DialogTitle>
+                <h1 className="text-title3">Settings</h1>
             </div>
             <Separator orientation="horizontal" className="shrink-0" />
 
