@@ -1,10 +1,9 @@
 import { Button } from '@onlook/ui/button';
-import { DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
-import { DomainTab } from './DomainTab';
+import { DomainTab } from './Domain';
 import EditorTab from './EditorTab';
 import ProjectTab from './ProjectTab';
 
@@ -14,13 +13,20 @@ enum TabValue {
     EDITOR = 'editor',
 }
 
-export const SettingsModal = () => {
+export const SettingsModal = ({
+    isOpen,
+    setOpen,
+}: {
+    isOpen: boolean;
+    setOpen: (open: boolean) => void;
+}) => {
     const [activeTab, setActiveTab] = useState<TabValue>(TabValue.DOMAIN);
+
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* Top bar - fixed height */}
             <div className="shrink-0 flex items-center p-6 pb-4">
-                <DialogTitle className="text-title3">Settings</DialogTitle>
+                <h1 className="text-title3">Settings</h1>
             </div>
             <Separator orientation="horizontal" className="shrink-0" />
 
@@ -71,7 +77,9 @@ export const SettingsModal = () => {
                 <Separator orientation="vertical" className="h-full" />
                 {/* Right content */}
                 <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
-                    {activeTab === TabValue.DOMAIN && <DomainTab />}
+                    {activeTab === TabValue.DOMAIN && (
+                        <DomainTab isOpen={isOpen} setOpen={setOpen} />
+                    )}
                     {activeTab === TabValue.PROJECT && <ProjectTab />}
                     {activeTab === TabValue.EDITOR && <EditorTab />}
                 </div>
