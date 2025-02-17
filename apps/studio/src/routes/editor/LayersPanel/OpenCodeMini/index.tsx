@@ -11,7 +11,6 @@ import { useEffect, useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@onlook/ui/dropdown-menu';
 import { cn } from '@onlook/ui/utils';
 import { TabValue } from '../../TopBar/ProjectSelect/SettingsModal';
-import { SettingsModal } from '../../TopBar/ProjectSelect/SettingsModal';
 
 const OpenCodeMini = observer(() => {
     const editorEngine = useEditorEngine();
@@ -167,15 +166,6 @@ const OpenCodeMini = observer(() => {
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
-
-            <SettingsModal
-                open={editorEngine.isSettingsOpen}
-                activeTab={editorEngine.settingsTab}
-                onOpenChange={(open) => {
-                    editorEngine.isSettingsOpen = open;
-                    setIsDropdownOpen(false);
-                }}
-            />
         </>
     );
 });

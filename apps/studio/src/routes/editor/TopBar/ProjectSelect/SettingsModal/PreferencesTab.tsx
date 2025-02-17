@@ -1,4 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
+import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
@@ -14,6 +15,7 @@ import { IDE } from '/common/ide';
 const PreferencesTab = observer(() => {
     const userManager = useUserManager();
     const projectsManager = useProjectsManager();
+    const { theme, nextTheme, setTheme } = useTheme();
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
@@ -55,6 +57,42 @@ const PreferencesTab = observer(() => {
 
     return (
         <div className="flex flex-col gap-8">
+            <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-2">
+                    <p className="text-foreground-onlook text-largePlus">Theme</p>
+                    <p className="text-foreground-onlook text-small">
+                        Choose your preferred appearance
+                    </p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="text-smallPlus min-w-[150px]">
+                            {theme === 'dark' && <Icons.Moon className="mr-2 h-4 w-4" />}
+                            {theme === 'light' && <Icons.Sun className="mr-2 h-4 w-4" />}
+                            {theme === 'system' && <Icons.Laptop className="mr-2 h-4 w-4" />}
+                            <span className="capitalize">{theme}</span>
+                            <Icons.ChevronDown className="ml-auto" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="min-w-[150px]">
+                        <DropdownMenuItem onClick={() => setTheme('light')}>
+                            <Icons.Sun className="mr-2 h-4 w-4" />
+                            <span>Light</span>
+                            {theme === 'light' && <Icons.CheckCircled className="ml-auto" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme('dark')}>
+                            <Icons.Moon className="mr-2 h-4 w-4" />
+                            <span>Dark</span>
+                            {theme === 'dark' && <Icons.CheckCircled className="ml-auto" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme('system')}>
+                            <Icons.Laptop className="mr-2 h-4 w-4" />
+                            <span>System</span>
+                            {theme === 'system' && <Icons.CheckCircled className="ml-auto" />}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             <div className="flex justify-between items-center">
                 <p className="text-foreground-onlook text-largePlus">Default Code Editor</p>
                 <DropdownMenu>
