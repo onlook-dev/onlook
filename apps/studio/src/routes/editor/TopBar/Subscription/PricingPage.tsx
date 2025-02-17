@@ -47,28 +47,28 @@ export const PricingPage = observer(() => {
     }, [theme]);
 
     useEffect(() => {
-        let timeoutId: Timer;
-        let attempts = 0;
-        const MAX_INTERVAL = 10000;
-        const BASE_INTERVAL = 2000;
+        let pollInterval: Timer | null = null;
 
-        const scheduleNextCheck = async () => {
+        const getPlan = async () => {
             const plan = await userManager.subscription.getPlanFromServer();
+            if (plan === UsagePlanType.PRO) {
+                editorEngine.chat.stream.clear();
+            }
             setIsCheckingOut(null);
-            editorEngine.chat.stream.clear();
-            attempts++;
-            const nextInterval = Math.min(BASE_INTERVAL * Math.pow(1.5, attempts), MAX_INTERVAL);
-            timeoutId = setTimeout(scheduleNextCheck, nextInterval);
         };
 
-        scheduleNextCheck();
+        if (editorEngine.isPlansOpen) {
+            getPlan();
+            pollInterval = setInterval(getPlan, 3000);
+        }
 
+        // Cleanup function to clear interval when component unmounts or isPlansOpen changes
         return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
+            if (pollInterval) {
+                clearInterval(pollInterval);
             }
         };
-    }, []);
+    }, [editorEngine.isPlansOpen]);
 
     const startProCheckout = async () => {
         sendAnalytics('start pro checkout');
