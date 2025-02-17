@@ -38,5 +38,6 @@ export function getRemoveActionFromDomId(
         element: actionEl,
         editText: false,
         pasteParams: null,
+        codeBlock: null,
     };
 }
