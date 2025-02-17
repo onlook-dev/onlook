@@ -226,7 +226,8 @@ const BrowserControls = observer(
         return (
             <div
                 className={clsx(
-                    'flex flex-row items-center backdrop-blur-sm pb-1.5 overflow-hidden',
+                    'm-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative max-w-96 px-3 border-[0.5px] shadow-sm rounded-md border-input text-foreground',
+
                     selected ? ' bg-active/60 ' : '',
                     hovered ? ' bg-hover/20 ' : '',
                     selected
@@ -238,9 +239,16 @@ const BrowserControls = observer(
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
                 onClick={handleSelect}
+                style={{
+                    transform: `scale(${1 / editorEngine.canvas.scale})`,
+                    transformOrigin: '',
+                    marginBottom: `${40 / editorEngine.canvas.scale}px`,
+                }}
             >
+                {/* Making sure the dropdown arrow is visible */}
+                <div className="absolute right-0 bottom-0 top-0 bg-gradient-to-r from-transparent via-background-primary to-background-primary w-20 z-50"></div>
                 <div
-                    className={`absolute left-0 flex flex-row z-50 `}
+                    className={`absolute left-0 flex flex-row z-50`}
                     style={{
                         transition: 'opacity 0.5s, transform 0.5s',
                         transform: editingURL
