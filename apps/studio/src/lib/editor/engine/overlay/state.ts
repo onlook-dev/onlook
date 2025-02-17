@@ -2,6 +2,11 @@ import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { RectDimensions } from './rect';
 
+export interface MeasurementState {
+    fromRect: RectDimensions;
+    toRect: RectDimensions;
+}
+
 export interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
     styles?: Record<string, string>;
@@ -27,6 +32,7 @@ export class OverlayState {
     insertRect: RectDimensions | null = null;
     textEditor: TextEditorState | null = null;
     hoverRect: HoverRectState | null = null;
+    measurement: MeasurementState | null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -86,10 +92,19 @@ export class OverlayState {
         this.textEditor = null;
     };
 
+    updateMeasurement = (fromRect: RectDimensions, toRect: RectDimensions) => {
+        this.measurement = { fromRect, toRect };
+    };
+
+    removeMeasurement = () => {
+        this.measurement = null;
+    };
+
     clear = () => {
         this.hoverRect = null;
         this.insertRect = null;
         this.clickRects = [];
         this.textEditor = null;
+        this.measurement = null;
     };
 }
