@@ -1,13 +1,12 @@
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogTitle } from '@onlook/ui/dialog';
+import { Dialog, DialogContent } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
-import { useState, useEffect } from 'react';
-import { DomainTab } from './DomainTab';
-import ProjectTab from './ProjectTab';
-import EditorTab from './PreferencesTab';
+import { useEffect, useState } from 'react';
+import { DomainTab } from './Domain';
 import PreferencesTab from './PreferencesTab';
+import ProjectTab from './ProjectTab';
 
 export enum TabValue {
     DOMAIN = 'domain',
@@ -16,11 +15,13 @@ export enum TabValue {
 }
 
 export const SettingsModal = ({
-    open,
-    onOpenChange,
     activeTab = TabValue.DOMAIN,
+    isOpen,
+    setOpen,
+    onOpenChange,
 }: {
-    open: boolean;
+    isOpen: boolean;
+    setOpen: (open: boolean) => void;
     onOpenChange: (open: boolean) => void;
     activeTab?: TabValue;
 }) => {
@@ -31,12 +32,12 @@ export const SettingsModal = ({
     }, [activeTab]);
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl h-[600px] p-0">
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* Top bar - fixed height */}
                     <div className="shrink-0 flex items-center p-6 pb-4">
-                        <DialogTitle className="text-title3">Settings</DialogTitle>
+                        <h1 className="text-title3">Settings</h1>
                     </div>
                     <Separator orientation="horizontal" className="shrink-0" />
 
@@ -87,7 +88,9 @@ export const SettingsModal = ({
                         <Separator orientation="vertical" className="h-full" />
                         {/* Right content */}
                         <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
-                            {selectedTab === TabValue.DOMAIN && <DomainTab />}
+                            {selectedTab === TabValue.DOMAIN && (
+                                <DomainTab isOpen={isOpen} setOpen={setOpen} />
+                            )}
                             {selectedTab === TabValue.PROJECT && <ProjectTab />}
                             {selectedTab === TabValue.PREFERENCES && <PreferencesTab />}
                         </div>

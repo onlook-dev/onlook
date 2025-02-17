@@ -210,7 +210,7 @@ export class ChatManager {
 
         this.context.clearAttachments();
 
-        if (this.userManager.settings?.chatSettings?.autoApplyCode) {
+        if (this.userManager.settings.settings?.chat?.autoApplyCode) {
             setTimeout(() => {
                 this.code.applyCode(assistantMessage.id);
             }, 100);

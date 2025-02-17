@@ -8,7 +8,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@onlook/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from '@onlook/ui/dropdown-menu';
 import { cn } from '@onlook/ui/utils';
 import { TabValue } from '../../TopBar/ProjectSelect/SettingsModal';
 
@@ -53,7 +59,7 @@ const OpenCodeMini = observer(() => {
             setInstance(element.instanceId);
             setRoot(element.oid);
             const { coreType } = await editorEngine.webviews.selected[0].executeJavaScript(
-                `window.api?.getElementType('${element.domId}')`
+                `window.api?.getElementType('${element.domId}')`,
             );
             setCoreElementType(coreType);
         } else {
@@ -77,7 +83,7 @@ const OpenCodeMini = observer(() => {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <DropdownMenuTrigger asChild>
-                            <button 
+                            <button
                                 className="w-16 h-14 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground"
                                 disabled={!instance && !root && !folderPath}
                             >
@@ -95,8 +101,15 @@ const OpenCodeMini = observer(() => {
                             </button>
                         </DropdownMenuTrigger>
                     </TooltipTrigger>
-                    <TooltipContent side="left" sideOffset={5} className={cn(isDropdownOpen && 'invisible')}>
-                        <p>Open {instance || root ? 'selected element' : 'folder'} in {ide.displayName}</p>
+                    <TooltipContent
+                        side="left"
+                        sideOffset={5}
+                        className={cn(isDropdownOpen && 'invisible')}
+                    >
+                        <p>
+                            Open {instance || root ? 'selected element' : 'folder'} in{' '}
+                            {ide.displayName}
+                        </p>
                     </TooltipContent>
                 </Tooltip>
                 <DropdownMenuContent
@@ -117,9 +130,9 @@ const OpenCodeMini = observer(() => {
                         <Icons.Gear className="mr-2 w-4 h-4" />
                         Change IDE
                     </DropdownMenuItem>
-                    
+
                     <DropdownMenuSeparator />
-                    
+
                     <DropdownMenuItem
                         className="text-sm"
                         onClick={() => {
@@ -161,7 +174,8 @@ const OpenCodeMini = observer(() => {
                             ) : (
                                 <Icons.Code className="mr-2 w-4 h-4" />
                             )}
-                            Locate {coreElementType === 'component-root' ? 'Component' : 'Element'} Code
+                            Locate {coreElementType === 'component-root' ? 'Component' : 'Element'}{' '}
+                            Code
                         </DropdownMenuItem>
                     )}
                 </DropdownMenuContent>

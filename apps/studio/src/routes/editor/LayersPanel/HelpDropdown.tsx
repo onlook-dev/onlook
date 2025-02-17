@@ -39,9 +39,13 @@ export const HelpDropdown = observer(() => {
                         className="text-sm"
                         onClick={() => {
                             setIsDropdownOpen(false);
-                            if (theme === 'light') setTheme('dark');
-                            else if (theme === 'dark') setTheme('system');
-                            else setTheme('light');
+                            if (theme === 'light') {
+                                setTheme('dark');
+                            } else if (theme === 'dark') {
+                                setTheme('system');
+                            } else {
+                                setTheme('light');
+                            }
                         }}
                     >
                         {theme === 'dark' && <Icons.Moon className="w-4 h-4 mr-2" />}
@@ -51,7 +55,7 @@ export const HelpDropdown = observer(() => {
                         {theme === 'light' && 'Light Theme'}
                         {theme === 'system' && 'System Theme'}
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                         className="text-sm"
                         onClick={() => {
                             setIsDropdownOpen(false);
@@ -97,7 +101,7 @@ export const HelpDropdown = observer(() => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <SettingsModal 
+            <SettingsModal
                 open={isSettingsOpen}
                 onOpenChange={setIsSettingsOpen}
                 activeTab={TabValue.PREFERENCES}

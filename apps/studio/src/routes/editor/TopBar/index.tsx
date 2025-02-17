@@ -37,7 +37,7 @@ const EditorTopBar = observer(() => {
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2">
                 {/* <OpenCode /> */}
-                <div className="flex flex-row items-center gap-2 layout" >
+                <div className="flex flex-row items-center gap-2 layout">
                     <AnimatePresence mode="sync">
                         {editorEngine.history.length > 0 && (
                             <motion.div
@@ -45,9 +45,9 @@ const EditorTopBar = observer(() => {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 10 }}
                                 transition={{
-                                    type: "spring",
+                                    type: 'spring',
                                     stiffness: 300,
-                                    damping: 25
+                                    damping: 25,
                                 }}
                                 layout
                             >
@@ -73,14 +73,14 @@ const EditorTopBar = observer(() => {
                             </motion.div>
                         )}
                     </AnimatePresence>
-                    <motion.div 
+                    <motion.div
                         className="space-x-0 hidden lg:block"
                         layout
                         transition={{
-                            type: "spring",
+                            type: 'spring',
                             stiffness: 300,
                             damping: 30,
-                            delay: 0
+                            delay: 0,
                         }}
                     >
                         {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (

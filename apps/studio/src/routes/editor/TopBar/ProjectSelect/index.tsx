@@ -5,7 +5,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
+import { Dialog, DialogContent } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,7 +20,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
-import PricingPage from '../Profile/PricingPage';
+import { PricingPage } from '../Subscription/PricingPage';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -149,36 +149,34 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuItem onClick={handleOpenProjectFolder}>
                             {'Show in Explorer'}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                            setIsSubscriptionOpen(true);
-                            setIsDropdownOpen(false);
-                        }}>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                setIsSubscriptionOpen(true);
+                                setIsDropdownOpen(false);
+                            }}
+                        >
                             Subscriptions
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                            editorEngine.isSettingsOpen = true;
-                            setIsDropdownOpen(false);
-                        }}>
+                        <DropdownMenuItem
+                            onClick={() => {
+                                editorEngine.isSettingsOpen = true;
+                                setIsDropdownOpen(false);
+                            }}
+                        >
                             Settings
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
-            <Dialog 
-                open={isSubscriptionOpen} 
-                onOpenChange={(open) => {
-                    setIsSubscriptionOpen(open);
-                    editorEngine.isPlansOpen = open;
-                }}
-            >
-                <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
-                    <PricingPage />
-                </DialogContent>
-            </Dialog>
-
             <SettingsModal
-                open={editorEngine.isSettingsOpen}
+                isOpen={editorEngine.isSettingsOpen}
+                setOpen={(open) => {
+                    editorEngine.isSettingsOpen = open;
+                    if (!open) {
+                        setIsDropdownOpen(false);
+                    }
+                }}
                 activeTab={editorEngine.settingsTab}
                 onOpenChange={(open) => {
                     editorEngine.isSettingsOpen = open;

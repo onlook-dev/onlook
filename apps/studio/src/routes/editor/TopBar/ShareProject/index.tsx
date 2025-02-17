@@ -254,11 +254,11 @@ const ShareProject = observer(() => {
                         layout
                         transition={{
                             width: {
-                                type: "spring",
+                                type: 'spring',
                                 stiffness: 300,
                                 damping: 30,
-                                delay: 0.2  // Add 200ms delay
-                            }
+                                delay: 0.2, // Add 200ms delay
+                            },
                         }}
                     >
                         <Button
@@ -282,7 +282,7 @@ const ShareProject = observer(() => {
                                                 type: 'spring',
                                                 bounce: 0.1,
                                                 duration: 0.4,
-                                                delay: 0.2  // Add 200ms delay
+                                                delay: 0.2, // Add 200ms delay
                                             }}
                                         >
                                             {character.label}
