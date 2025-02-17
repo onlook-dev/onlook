@@ -115,6 +115,7 @@ export class WebviewManager {
     }
 
     computeState(body: Element) {
+        this.editorEngine.errors.shouldShowErrors = false;
         const running: boolean = this.projectsManager.runner?.state === RunState.RUNNING || false;
         if (!running) {
             return WebviewState.NOT_RUNNING;
