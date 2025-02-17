@@ -1,4 +1,5 @@
 import { MainChannels } from '@onlook/models/constants';
+import { RunState } from '@onlook/models/run';
 import * as pty from 'node-pty';
 import os from 'os';
 import { mainWindow } from '..';
@@ -31,6 +32,16 @@ class TerminalManager {
 
             ptyProcess.onData((data: string) => {
                 this.addTerminalMessage(id, data);
+            });
+
+            // Add exit handler to detect errors
+            ptyProcess.onExit(({ exitCode, signal }) => {
+                if (exitCode !== 0) {
+                    mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
+                        state: RunState.ERROR,
+                        message: `Terminal process exited with code ${exitCode}${signal ? ` (signal: ${signal})` : ''}`,
+                    });
+                }
             });
 
             this.processes.set(id, ptyProcess);
