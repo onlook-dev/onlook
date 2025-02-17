@@ -14,8 +14,15 @@ enum TabValue {
     EDITOR = 'editor',
 }
 
-export const SettingsModal = () => {
+export const SettingsModal = ({
+    isOpen,
+    setOpen,
+}: {
+    isOpen: boolean;
+    setOpen: (open: boolean) => void;
+}) => {
     const [activeTab, setActiveTab] = useState<TabValue>(TabValue.DOMAIN);
+
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {/* Top bar - fixed height */}
@@ -71,7 +78,7 @@ export const SettingsModal = () => {
                 <Separator orientation="vertical" className="h-full" />
                 {/* Right content */}
                 <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
-                    {activeTab === TabValue.DOMAIN && <DomainTab />}
+                    {activeTab === TabValue.DOMAIN && <DomainTab setOpen={setOpen} />}
                     {activeTab === TabValue.PROJECT && <ProjectTab />}
                     {activeTab === TabValue.EDITOR && <EditorTab />}
                 </div>

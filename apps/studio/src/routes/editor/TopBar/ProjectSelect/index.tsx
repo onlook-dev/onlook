@@ -27,6 +27,7 @@ const ProjectBreadcrumb = observer(() => {
     const routeManager = useRouteManager();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer>();
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     async function handleNavigateToProject(tab?: ProjectTabs) {
         try {
@@ -74,7 +75,7 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <Dialog>
+        <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
             <div className="mx-2 flex flex-row items-center text-small gap-2">
                 <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                     <DropdownMenuTrigger asChild>
@@ -157,7 +158,7 @@ const ProjectBreadcrumb = observer(() => {
                 </DropdownMenu>
             </div>
             <DialogContent className="max-w-4xl h-[600px] p-0">
-                <SettingsModal />
+                <SettingsModal isOpen={isSettingsOpen} setOpen={setIsSettingsOpen} />
             </DialogContent>
         </Dialog>
     );

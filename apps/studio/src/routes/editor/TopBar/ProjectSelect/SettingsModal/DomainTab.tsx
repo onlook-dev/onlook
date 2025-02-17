@@ -1,4 +1,5 @@
-import { useUserManager } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
+import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,12 +10,19 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
-import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 
-export const DomainTab = () => {
+export const DomainTab = observer(({ setOpen }: { setOpen: (open: boolean) => void }) => {
     const userManager = useUserManager();
-    const [isPro] = useState(false); // Will be replaced with actual pro check
+    const editorEngine = useEditorEngine();
+
     const [isVerified] = useState(true); // Will be replaced with domain verification check
+    const plan = userManager.subscription.plan;
+
+    useEffect(() => {
+        userManager.subscription.getPlanFromServer();
+    }, []);
 
     return (
         <div className="space-y-8">
@@ -43,18 +51,16 @@ export const DomainTab = () => {
             <div className="space-y-4">
                 <div className="flex items-center justify-start gap-3">
                     <h2 className="text-lg font-medium">Custom Domain</h2>
-                    <div className="flex h-5 items-center space-x-2 bg-blue-500 px-2 rounded-full">
+                    <div className="flex h-5 items-center space-x-2 bg-blue-500/20 dark:bg-blue-500 px-2 rounded-full">
                         <Icons.Sparkles className="h-4 w-4" />
                         <span className="text-xs">Pro</span>
                     </div>
                 </div>
 
-                {!isPro ? (
+                {plan !== UsagePlanType.PRO ? (
                     <div
                         className={cn(
-                            'rounded-md p-4',
-                            'bg-[#172554] border border-[#2563eb]', // blue-950 and blue-600
-                            'text-[#dbeafe]', // blue-100
+                            'rounded-md p-4 border bg-blue-600/10 text-blue-600 border-blue-600 dark:bg-blue-950 dark:border-blue-600 dark:text-blue-100',
                         )}
                     >
                         <p className="text-sm flex items-center gap-2">
@@ -62,10 +68,12 @@ export const DomainTab = () => {
                             <Button
                                 variant="link"
                                 className={cn(
-                                    'px-2 h-auto p-0',
-                                    'text-[#dbeafe] hover:text-[#bfdbfe]', // blue-100 to blue-200
-                                    'font-medium',
+                                    'px-2 h-auto p-0 text-blue-600 hover:text-blue-700 dark:text-blue-100 dark:hover:text-blue-200 font-medium',
                                 )}
+                                onClick={() => {
+                                    setOpen(false);
+                                    editorEngine.isPlansOpen = true;
+                                }}
                             >
                                 Upgrade today!
                             </Button>
@@ -190,4 +198,6 @@ export const DomainTab = () => {
             </div>
         </div>
     );
-};
+});
+
+export default DomainTab;
