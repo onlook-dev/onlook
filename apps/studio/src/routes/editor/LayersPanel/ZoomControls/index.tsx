@@ -3,11 +3,10 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 const ZoomControls = observer(() => {
     const editorEngine = useEditorEngine();
@@ -73,7 +72,7 @@ const ZoomControls = observer(() => {
     };
 
     return (
-        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground">
+        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-foreground hover:text-muted-foreground">
             <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -81,7 +80,9 @@ const ZoomControls = observer(() => {
                             <span>{Math.round(scale * 100)}%</span>
                         </PopoverTrigger>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Zoom Level</TooltipContent>
+                    <TooltipPortal>
+                        <TooltipContent side="right">Zoom Level</TooltipContent>
+                    </TooltipPortal>
                 </Tooltip>
                 <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
                     <Input

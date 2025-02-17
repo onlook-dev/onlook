@@ -3,13 +3,12 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
-import OpenCode from './OpenCode';
 import ProjectBreadcrumb from './ProjectSelect';
 import ShareProject from './ShareProject';
 import { Hotkey } from '/common/hotkeys';
-import { AnimatePresence, motion } from 'framer-motion';
 
 const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();
@@ -36,7 +35,6 @@ const EditorTopBar = observer(() => {
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2">
-                {/* <OpenCode /> */}
                 <div className="flex flex-row items-center gap-2 layout">
                     <AnimatePresence mode="sync">
                         {editorEngine.history.length > 0 && (

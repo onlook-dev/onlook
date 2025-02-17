@@ -149,7 +149,6 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuItem
                             onClick={() => {
                                 editorEngine.isPlansOpen = true;
-                                setIsDropdownOpen(false);
                             }}
                         >
                             Subscriptions
@@ -157,7 +156,6 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuItem
                             onClick={() => {
                                 editorEngine.isSettingsOpen = true;
-                                setIsDropdownOpen(false);
                             }}
                         >
                             Settings
