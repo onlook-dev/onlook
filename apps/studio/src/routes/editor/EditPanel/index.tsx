@@ -24,7 +24,7 @@ const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
 
-    const chatSettings = userManager.settings?.chatSettings || DefaultSettings.CHAT_SETTINGS;
+    const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
@@ -94,7 +94,7 @@ const EditPanel = observer(() => {
                                     className="flex items-center py-1.5"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        userManager.updateChatSettings({
+                                        userManager.settings.updateChat({
                                             showSuggestions: !chatSettings.showSuggestions,
                                         });
                                     }}
@@ -113,7 +113,7 @@ const EditPanel = observer(() => {
                                     className="flex items-center py-1.5"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        userManager.updateChatSettings({
+                                        userManager.settings.updateChat({
                                             autoApplyCode: !chatSettings.autoApplyCode,
                                         });
                                     }}
@@ -132,7 +132,7 @@ const EditPanel = observer(() => {
                                     className="flex items-center py-1.5"
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        userManager.updateChatSettings({
+                                        userManager.settings.updateChat({
                                             expandCodeBlocks: !chatSettings.expandCodeBlocks,
                                         });
                                     }}

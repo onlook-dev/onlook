@@ -1,9 +1,7 @@
 import { useAuthManager, useEditorEngine, useProjectsManager } from '@/components/Context';
 import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
 import { ProjectTabs } from '@/lib/projects';
-import PricingPage from '@/routes/editor/TopBar/Profile/PricingPage';
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -74,26 +72,12 @@ export const TopBar = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <Dialog
-                    open={editorEngine.isPlansOpen}
-                    onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
-                >
-                    <UserProfileDropdown>
-                        <DialogTrigger asChild>
-                            <DropdownMenuItem className="hidden">
-                                <Icons.Person className="w-4 h-4 mr-2" />
-                                Plans
-                            </DropdownMenuItem>
-                        </DialogTrigger>
-                        <DropdownMenuItem disabled={!authManager.isAuthEnabled} onSelect={signOut}>
-                            <Icons.Exit className="w-4 h-4 mr-2" />
-                            Sign out
-                        </DropdownMenuItem>
-                    </UserProfileDropdown>
-                    <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
-                        <PricingPage />
-                    </DialogContent>
-                </Dialog>
+                <UserProfileDropdown>
+                    <DropdownMenuItem disabled={!authManager.isAuthEnabled} onSelect={signOut}>
+                        <Icons.Exit className="w-4 h-4 mr-2" />
+                        Sign out
+                    </DropdownMenuItem>
+                </UserProfileDropdown>
             </div>
         </div>
     );

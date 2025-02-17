@@ -1,9 +1,6 @@
 import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
-import type { UserSettings } from '@onlook/models/settings';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -26,7 +23,9 @@ const OpenCode = observer(() => {
     const [folderPath, setFolder] = useState<string | null>(null);
     const [instance, setInstance] = useState<string | null>(null);
     const [root, setRoot] = useState<string | null>(null);
-    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
+    const [ide, setIde] = useState<IDE>(
+        IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE),
+    );
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFolderHovered, setIsFolderHovered] = useState(false);
     const [scopeDropdownIcon, animateDropdownIcon] = useAnimate();
@@ -38,13 +37,6 @@ const OpenCode = observer(() => {
             const folder = projectsManager.project.folderPath;
             setFolder(folder);
         }
-    }, []);
-
-    useEffect(() => {
-        invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
-            const settings: UserSettings = res as UserSettings;
-            setIde(IDE.fromType(settings.ideType || DEFAULT_IDE));
-        });
     }, []);
 
     useEffect(() => {
@@ -71,7 +63,7 @@ const OpenCode = observer(() => {
     }
 
     function updateIde(newIde: IDE) {
-        userManager.updateSettings({ ideType: newIde.type });
+        userManager.settings.updateEditor({ ideType: newIde.type });
         setIde(newIde);
     }
 

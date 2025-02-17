@@ -1,39 +1,20 @@
-import { DefaultSettings, MainChannels } from '@onlook/models/constants';
-import type { ChatSettings, UserSettings } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
-import { invokeMainChannel } from '../utils';
+import { UserSettingsManager } from './settings';
+import { SubscriptionManager } from './subscription';
 
 export class UserManager {
-    settings: UserSettings | null = null;
+    private subscriptionManager = new SubscriptionManager();
+    private settingsManager = new UserSettingsManager();
 
     constructor() {
         makeAutoObservable(this);
-        this.restoreSettings();
     }
 
-    async restoreSettings() {
-        this.settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
+    get subscription() {
+        return this.subscriptionManager;
     }
 
-    async updateSettings(settings: Partial<UserSettings>) {
-        this.settings = { ...this.settings, ...settings };
-        await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, settings);
-    }
-
-    async updateChatSettings(newSettings: Partial<ChatSettings>) {
-        const newChatSettings = {
-            ...DefaultSettings.CHAT_SETTINGS,
-            ...this.settings?.chatSettings,
-            ...newSettings,
-        };
-
-        this.settings = {
-            ...this.settings,
-            chatSettings: newChatSettings,
-        };
-
-        await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, {
-            chatSettings: newChatSettings,
-        });
+    get settings() {
+        return this.settingsManager;
     }
 }

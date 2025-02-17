@@ -1,3 +1,4 @@
+import { useUserManager } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,7 +12,8 @@ import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
 
 export const DomainTab = () => {
-    const [isPro] = useState(true); // Will be replaced with actual pro check
+    const userManager = useUserManager();
+    const [isPro] = useState(false); // Will be replaced with actual pro check
     const [isVerified] = useState(true); // Will be replaced with domain verification check
 
     return (
