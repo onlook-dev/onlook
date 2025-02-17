@@ -2,6 +2,9 @@ import { colors } from '@onlook/ui/tokens';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { RectDimensions } from '../../../../lib/editor/engine/overlay/rect';
 import React, { memo, useMemo } from 'react';
+import { BaseRect } from './BaseRect';
+import { useEditorEngine } from '@/components/Context';
+import { adaptRectToCanvas } from '@/lib/editor/engine/overlay/utils';
 
 interface Point {
     x: number;
@@ -72,8 +75,20 @@ const getInsideRect = (rectA: RectPoint, rectB: RectPoint): RectPoint | null => 
 };
 
 export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, toRect }) => {
-    const fromRectPoint = useMemo(() => toRectPoint(fromRect), [fromRect]);
-    const toRectPointResult = useMemo(() => toRectPoint(toRect), [toRect]);
+    const editorEngine = useEditorEngine();
+    const webview = editorEngine.webviews.getWebview(editorEngine.elements.selected[0]?.webviewId);
+
+    const fromRectAdjusted = useMemo(
+        () => (webview ? adaptRectToCanvas(fromRect, webview) : fromRect),
+        [fromRect, webview],
+    );
+    const toRectAdjusted = useMemo(
+        () => (webview ? adaptRectToCanvas(toRect, webview) : toRect),
+        [toRect, webview],
+    );
+
+    const fromRectPoint = useMemo(() => toRectPoint(fromRectAdjusted), [fromRectAdjusted]);
+    const toRectPointResult = useMemo(() => toRectPoint(toRectAdjusted), [toRectAdjusted]);
 
     type DistanceWithoutSupportLine = Omit<Distance, 'supportLine'>;
 
@@ -101,6 +116,9 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
     };
 
     const distances = useMemo(() => {
+        if (!webview) {
+            return [];
+        }
         const result: Distance[] = [];
 
         // Calculate horizontal distances
@@ -346,117 +364,113 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
 
     const viewBox = useMemo(
         () => ({
-            minX: Math.min(fromRect.left, toRect.left) - 100,
-            minY: Math.min(fromRect.top, toRect.top) - 100,
+            minX: Math.min(fromRectAdjusted.left, toRectAdjusted.left) - 100,
+            minY: Math.min(fromRectAdjusted.top, toRectAdjusted.top) - 100,
             width:
-                Math.abs(toRect.left - fromRect.left) +
-                Math.max(fromRect.width, toRect.width) +
+                Math.abs(toRectAdjusted.left - fromRectAdjusted.left) +
+                Math.max(fromRectAdjusted.width, toRectAdjusted.width) +
                 200,
             height:
-                Math.abs(toRect.top - fromRect.top) +
-                Math.max(fromRect.height, toRect.height) +
+                Math.abs(toRectAdjusted.top - fromRectAdjusted.top) +
+                Math.max(fromRectAdjusted.height, toRectAdjusted.height) +
                 200,
         }),
-        [fromRect, toRect],
+        [fromRectAdjusted, toRectAdjusted],
     );
 
-    return (
-        <div
-            style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                pointerEvents: 'none',
-            }}
-            data-onlook-ignore="true"
-            id={EditorAttributes.ONLOOK_RECT_ID}
-        >
-            <svg
-                style={{ overflow: 'visible' }}
-                width={viewBox.width}
-                height={viewBox.height}
-                viewBox={`${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`}
-            >
-                {/* Rectangles */}
-                <rect
-                    x={fromRect.left}
-                    y={fromRect.top}
-                    width={fromRect.width}
-                    height={fromRect.height}
-                    fill="none"
-                    stroke={colors.red[500]}
-                    strokeWidth={1}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-                <rect
-                    x={toRect.left}
-                    y={toRect.top}
-                    width={toRect.width}
-                    height={toRect.height}
-                    fill="none"
-                    stroke={colors.red[500]}
-                    strokeWidth={1}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
+    const svgContent = (
+        <g transform={`translate(${-viewBox.minX},${-viewBox.minY})`}>
+            <rect
+                x={fromRectAdjusted.left}
+                y={fromRectAdjusted.top}
+                width={fromRectAdjusted.width}
+                height={fromRectAdjusted.height}
+                fill="none"
+                stroke={colors.red[500]}
+                strokeWidth={1}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <rect
+                x={toRectAdjusted.left}
+                y={toRectAdjusted.top}
+                width={toRectAdjusted.width}
+                height={toRectAdjusted.height}
+                fill="none"
+                stroke={colors.red[500]}
+                strokeWidth={1}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            {/* Distance lines and labels */}
 
-                {/* Distance lines and labels */}
-                {distances.map((distance, index) => {
-                    const isHorizontal = distance.start.y === distance.end.y;
-                    const midX = (distance.start.x + distance.end.x) / 2 + (isHorizontal ? 24 : 0);
-                    const midY = (distance.start.y + distance.end.y) / 2 + (isHorizontal ? 0 : 16);
+            {/* Distance lines and labels */}
+            {distances.map((distance, index) => {
+                const isHorizontal = distance.start.y === distance.end.y;
+                const midX = (distance.start.x + distance.end.x) / 2 + (isHorizontal ? 24 : 0);
+                const midY = (distance.start.y + distance.end.y) / 2 + (isHorizontal ? 0 : 16);
 
-                    return (
-                        <g key={index}>
+                return (
+                    <g key={index}>
+                        <line
+                            x1={distance.start.x}
+                            y1={distance.start.y}
+                            x2={distance.end.x}
+                            y2={distance.end.y}
+                            stroke={colors.red[500]}
+                            strokeWidth={1}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                        {distance.supportLine && (
                             <line
-                                x1={distance.start.x}
-                                y1={distance.start.y}
-                                x2={distance.end.x}
-                                y2={distance.end.y}
+                                x1={distance.supportLine.start.x}
+                                y1={distance.supportLine.start.y}
+                                x2={distance.supportLine.end.x}
+                                y2={distance.supportLine.end.y}
                                 stroke={colors.red[500]}
                                 strokeWidth={1}
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
+                                strokeDasharray="10 6"
                             />
-                            {distance.supportLine && (
-                                <line
-                                    x1={distance.supportLine.start.x}
-                                    y1={distance.supportLine.start.y}
-                                    x2={distance.supportLine.end.x}
-                                    y2={distance.supportLine.end.y}
-                                    stroke={colors.red[500]}
-                                    strokeWidth={1}
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeDasharray="10 6"
-                                />
-                            )}
-                            <g transform={`translate(${midX},${midY})`}>
-                                <rect
-                                    x={-20}
-                                    y={-10}
-                                    width={40}
-                                    height={20}
-                                    fill={colors.red[500]}
-                                    rx={2}
-                                />
-                                <text
-                                    x={0}
-                                    y={0}
-                                    fill="white"
-                                    fontSize={12}
-                                    textAnchor="middle"
-                                    dominantBaseline="middle"
-                                >
-                                    {Math.round(distance.value)}
-                                </text>
-                            </g>
+                        )}
+                        <g transform={`translate(${midX},${midY})`}>
+                            <rect
+                                x={-20}
+                                y={-10}
+                                width={40}
+                                height={20}
+                                fill={colors.red[500]}
+                                rx={2}
+                            />
+                            <text
+                                x={0}
+                                y={0}
+                                fill="white"
+                                fontSize={12}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                            >
+                                {Math.round(distance.value)}
+                            </text>
                         </g>
-                    );
-                })}
-            </svg>
-        </div>
+                    </g>
+                );
+            })}
+        </g>
+    );
+
+    return (
+        <BaseRect
+            width={viewBox.width}
+            height={viewBox.height}
+            top={viewBox.minY}
+            left={viewBox.minX}
+            strokeWidth={0}
+        >
+            {svgContent}
+        </BaseRect>
     );
 });
 
