@@ -241,7 +241,6 @@ const BrowserControls = observer(
                 onClick={handleSelect}
                 style={{
                     transform: `scale(${1 / editorEngine.canvas.scale})`,
-                    transformOrigin: '',
                     marginBottom: `${40 / editorEngine.canvas.scale}px`,
                 }}
             >
