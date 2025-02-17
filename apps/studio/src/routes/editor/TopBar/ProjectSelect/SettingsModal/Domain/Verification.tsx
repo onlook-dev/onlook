@@ -28,8 +28,53 @@ export const Verification = observer(() => {
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
+    const [error, setError] = useState<string | null>(null);
+
+    function validateDomain(): string | false {
+        if (!domain) {
+            setError('Domain is required');
+            return false;
+        }
+
+        try {
+            // Add protocol if missing to make URL parsing work
+            let urlString = domain.trim();
+            if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
+                urlString = 'https://' + urlString;
+            }
+
+            const url = new URL(urlString);
+            const hostname = url.hostname.toLowerCase();
+
+            // Split hostname into parts and ensure only two parts (domain + TLD)
+            const parts = hostname.split('.');
+            if (parts.length !== 2) {
+                setError('Please enter a domain without subdomains (e.g., example.com)');
+                return false;
+            }
+
+            // Basic domain validation regex for the final format
+            const domainRegex = /^[a-z0-9]+(-[a-z0-9]+)*\.[a-z]{2,}$/;
+            if (!domainRegex.test(hostname)) {
+                setError('Please enter a valid domain name (e.g., example.com)');
+                return false;
+            }
+
+            setError(null);
+            return hostname;
+        } catch (err) {
+            setError('Invalid domain format');
+            return false;
+        }
+    }
 
     function setupDomain() {
+        const validDomain = validateDomain();
+        if (!validDomain) {
+            return;
+        }
+
+        setDomain(validDomain); // Update with sanitized domain
         setStatus(VerificationStatus.PENDING);
         // Send verification request to server
 
@@ -81,11 +126,7 @@ export const Verification = observer(() => {
             <div className="space-y-2">
                 <div className="flex justify-between items-center gap-2">
                     <div>
-                        <p className="text-regularPlus text-muted-foreground">
-                            {status === VerificationStatus.NO_DOMAIN
-                                ? 'Set up your custom domain'
-                                : 'Custom URL'}
-                        </p>
+                        <p className="text-regularPlus text-muted-foreground">Custom URL</p>
                     </div>
                     <Input
                         disabled={status !== VerificationStatus.NO_DOMAIN}
@@ -182,6 +223,7 @@ export const Verification = observer(() => {
             {renderDomainInput()}
             {status !== VerificationStatus.NO_DOMAIN && renderConfigureHeader()}
             {status !== VerificationStatus.NO_DOMAIN && renderRecords()}
+            {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );
 
