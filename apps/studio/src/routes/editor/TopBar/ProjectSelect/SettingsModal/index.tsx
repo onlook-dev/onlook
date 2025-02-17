@@ -77,7 +77,9 @@ export const SettingsModal = ({
                 <Separator orientation="vertical" className="h-full" />
                 {/* Right content */}
                 <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
-                    {activeTab === TabValue.DOMAIN && <DomainTab setOpen={setOpen} />}
+                    {activeTab === TabValue.DOMAIN && (
+                        <DomainTab isOpen={isOpen} setOpen={setOpen} />
+                    )}
                     {activeTab === TabValue.PROJECT && <ProjectTab />}
                     {activeTab === TabValue.EDITOR && <EditorTab />}
                 </div>
