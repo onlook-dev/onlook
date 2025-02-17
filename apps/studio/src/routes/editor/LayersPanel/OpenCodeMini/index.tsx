@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@onlook/ui/dropdown-menu';
 import { cn } from '@onlook/ui/utils';
 import { TabValue } from '../../TopBar/ProjectSelect/SettingsModal';
+import { SettingsModal } from '../../TopBar/ProjectSelect/SettingsModal';
 
 const OpenCodeMini = observer(() => {
     const editorEngine = useEditorEngine();
@@ -24,7 +25,6 @@ const OpenCodeMini = observer(() => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFolderHovered, setIsFolderHovered] = useState(false);
     const [coreElementType, setCoreElementType] = useState<string | null>(null);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     const IDEIcon = Icons[ide.icon as keyof typeof Icons];
 
@@ -73,96 +73,110 @@ const OpenCodeMini = observer(() => {
     };
 
     return (
-        <DropdownMenu onOpenChange={setIsDropdownOpen}>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <button 
-                            className="w-16 h-14 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground"
-                            disabled={!instance && !root && !folderPath}
-                        >
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={ide.type}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 1.2 }}
-                                    transition={{ duration: 0.2 }}
-                                >
-                                    <IDEIcon className="w-4 h-4 overflow-visible" />
-                                </motion.div>
-                            </AnimatePresence>
-                        </button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="left" sideOffset={5} className={cn(isDropdownOpen && 'invisible')}>
-                    <p>Open {instance || root ? 'selected element' : 'folder'} in {ide.displayName}</p>
-                </TooltipContent>
-            </Tooltip>
-            <DropdownMenuContent
-                align="end"
-                side="left"
-                alignOffset={55}
-                sideOffset={-55}
-                className="w-64"
-            >
-                <DropdownMenuItem
-                    className="text-sm"
-                    onSelect={() => {
-                        setIsDropdownOpen(false);
-                        editorEngine.settingsTab = TabValue.EDITOR;
-                        editorEngine.isSettingsOpen = true;
-                    }}
+        <>
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                            <button 
+                                className="w-16 h-14 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground"
+                                disabled={!instance && !root && !folderPath}
+                            >
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={ide.type}
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 1.2 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <IDEIcon className="w-4 h-4 overflow-visible" />
+                                    </motion.div>
+                                </AnimatePresence>
+                            </button>
+                        </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" sideOffset={5} className={cn(isDropdownOpen && 'invisible')}>
+                        <p>Open {instance || root ? 'selected element' : 'folder'} in {ide.displayName}</p>
+                    </TooltipContent>
+                </Tooltip>
+                <DropdownMenuContent
+                    align="end"
+                    side="left"
+                    alignOffset={55}
+                    sideOffset={-55}
+                    className="w-64"
                 >
-                    <Icons.Gear className="mr-2 w-4 h-4" />
-                    Change IDE
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator />
-                
-                <DropdownMenuItem
-                    className="text-sm"
-                    onSelect={() => {
-                        editorEngine.code.viewSourceFile(folderPath);
-                    }}
-                    onMouseEnter={() => setIsFolderHovered(true)}
-                    onMouseLeave={() => setIsFolderHovered(false)}
-                >
-                    {isFolderHovered ? (
-                        <Icons.DirectoryOpen className="mr-2 w-4 h-4" />
-                    ) : (
-                        <Icons.Directory className="mr-2 w-4 h-4" />
-                    )}
-                    Open Project File in {ide.displayName}
-                </DropdownMenuItem>
-                {instance && (
                     <DropdownMenuItem
                         className="text-sm"
-                        onSelect={() => {
-                            editorEngine.code.viewSource(instance);
+                        onClick={() => {
+                            setIsDropdownOpen(false);
+                            editorEngine.settingsTab = TabValue.PREFERENCES;
+                            editorEngine.isSettingsOpen = true;
                         }}
                     >
-                        <Icons.ComponentInstance className="mr-2 w-4 h-4" />
-                        Locate Instance Code
+                        <Icons.Gear className="mr-2 w-4 h-4" />
+                        Change IDE
                     </DropdownMenuItem>
-                )}
-                {root && (
+                    
+                    <DropdownMenuSeparator />
+                    
                     <DropdownMenuItem
                         className="text-sm"
-                        onSelect={() => {
-                            editorEngine.code.viewSource(root);
+                        onClick={() => {
+                            setIsDropdownOpen(false);
+                            editorEngine.code.viewSourceFile(folderPath);
                         }}
+                        onMouseEnter={() => setIsFolderHovered(true)}
+                        onMouseLeave={() => setIsFolderHovered(false)}
                     >
-                        {coreElementType === 'component-root' ? (
-                            <Icons.Component className="mr-2 w-4 h-4" />
+                        {isFolderHovered ? (
+                            <Icons.DirectoryOpen className="mr-2 w-4 h-4" />
                         ) : (
-                            <Icons.Code className="mr-2 w-4 h-4" />
+                            <Icons.Directory className="mr-2 w-4 h-4" />
                         )}
-                        Locate {coreElementType === 'component-root' ? 'Component' : 'Element'} Code
+                        Open Project File in {ide.displayName}
                     </DropdownMenuItem>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                    {instance && (
+                        <DropdownMenuItem
+                            className="text-sm"
+                            onClick={() => {
+                                setIsDropdownOpen(false);
+                                editorEngine.code.viewSource(instance);
+                            }}
+                        >
+                            <Icons.ComponentInstance className="mr-2 w-4 h-4" />
+                            Locate Instance Code
+                        </DropdownMenuItem>
+                    )}
+                    {root && (
+                        <DropdownMenuItem
+                            className="text-sm"
+                            onClick={() => {
+                                setIsDropdownOpen(false);
+                                editorEngine.code.viewSource(root);
+                            }}
+                        >
+                            {coreElementType === 'component-root' ? (
+                                <Icons.Component className="mr-2 w-4 h-4" />
+                            ) : (
+                                <Icons.Code className="mr-2 w-4 h-4" />
+                            )}
+                            Locate {coreElementType === 'component-root' ? 'Component' : 'Element'} Code
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <SettingsModal
+                open={editorEngine.isSettingsOpen}
+                activeTab={editorEngine.settingsTab}
+                onOpenChange={(open) => {
+                    editorEngine.isSettingsOpen = open;
+                    setIsDropdownOpen(false);
+                }}
+            />
+        </>
     );
 });
 

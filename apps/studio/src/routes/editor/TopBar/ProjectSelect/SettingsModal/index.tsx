@@ -6,12 +6,13 @@ import { cn } from '@onlook/ui/utils';
 import { useState, useEffect } from 'react';
 import { DomainTab } from './DomainTab';
 import ProjectTab from './ProjectTab';
-import EditorTab from './EditorTab';
+import EditorTab from './PreferencesTab';
+import PreferencesTab from './PreferencesTab';
 
 export enum TabValue {
     DOMAIN = 'domain',
     PROJECT = 'project',
-    EDITOR = 'editor',
+    PREFERENCES = 'preferences',
 }
 
 export const SettingsModal = ({
@@ -42,7 +43,7 @@ export const SettingsModal = ({
                     {/* Main content */}
                     <div className="flex gap-4 flex-1 min-h-0 overflow-hidden">
                         {/* Left navigation - fixed width */}
-                        <div className="shrink-0 w-32 space-y-2 p-6 text-regularPlus">
+                        <div className="shrink-0 w-40 space-y-2 p-6 text-regularPlus">
                             <Button
                                 variant="ghost"
                                 className={cn(
@@ -73,14 +74,14 @@ export const SettingsModal = ({
                                 variant="ghost"
                                 className={cn(
                                     'w-full justify-start px-0 hover:bg-transparent',
-                                    selectedTab === TabValue.EDITOR
+                                    selectedTab === TabValue.PREFERENCES
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
                                 )}
-                                onClick={() => setSelectedTab(TabValue.EDITOR)}
+                                onClick={() => setSelectedTab(TabValue.PREFERENCES)}
                             >
-                                <Icons.Pencil className="mr-2 h-4 w-4" />
-                                Editor
+                                <Icons.Person className="mr-2 h-4 w-4" />
+                                Preferences
                             </Button>
                         </div>
                         <Separator orientation="vertical" className="h-full" />
@@ -88,7 +89,7 @@ export const SettingsModal = ({
                         <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
                             {selectedTab === TabValue.DOMAIN && <DomainTab />}
                             {selectedTab === TabValue.PROJECT && <ProjectTab />}
-                            {selectedTab === TabValue.EDITOR && <EditorTab />}
+                            {selectedTab === TabValue.PREFERENCES && <PreferencesTab />}
                         </div>
                     </div>
                 </div>
