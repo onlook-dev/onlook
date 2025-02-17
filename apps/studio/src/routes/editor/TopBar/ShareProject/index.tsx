@@ -249,7 +249,7 @@ const ShareProject = observer(() => {
         switch (projectsManager.hosting?.state.status) {
             case HostingStatus.READY:
                 colorClasses =
-                    'border-teal-300 bg-teal-400 hover:bg-teal-500 dark:border-teal-300 dark:bg-teal-700 dark:hover:bg-teal-500/20 dark:text-teal-100';
+                    'border-teal-300 bg-teal-400/90 hover:bg-teal-500 dark:border-teal-300 dark:bg-teal-700 dark:hover:bg-teal-500/20 dark:text-teal-100';
                 return (
                     <motion.div
                         layout
