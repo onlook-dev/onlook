@@ -14,7 +14,6 @@ export class StreamResolver {
     }
 
     clear() {
-        console.error('Clearing stream');
         this.content = null;
         this.requestId = null;
         this.errorMessage = null;

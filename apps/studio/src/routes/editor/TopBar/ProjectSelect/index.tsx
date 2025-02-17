@@ -5,7 +5,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
-import { Dialog } from '@onlook/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,7 +25,6 @@ const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer>();
 
@@ -75,103 +74,92 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <>
-            <Dialog
-                open={editorEngine.isPlansOpen}
-                onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
-            >
-                <div className="mx-2 flex flex-row items-center text-small gap-2">
-                    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant={'ghost'}
-                                className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
-                            >
-                                <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
-                                <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
-                                    {projectsManager.project?.name}
-                                </span>
-                                <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="start"
-                            className="w-48"
-                            onMouseEnter={() => {
-                                if (closeTimeoutRef.current) {
-                                    clearTimeout(closeTimeoutRef.current);
-                                }
-                            }}
-                            onMouseLeave={() => {
-                                closeTimeoutRef.current = setTimeout(() => {
-                                    setIsDropdownOpen(false);
-                                }, 300);
-                            }}
+        <Dialog>
+            <div className="mx-2 flex flex-row items-center text-small gap-2">
+                <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant={'ghost'}
+                            className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                         >
-                            <DropdownMenuItem onClick={handleReturn}>
-                                <div className="flex row center items-center group">
-                                    <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
-                                    {'Go to all Projects'}
-                                </div>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger>New Project</DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleNavigateToProject(ProjectTabs.PROMPT_CREATE)
-                                        }
-                                        className={cn(
-                                            'focus:bg-blue-100 focus:text-blue-900',
-                                            'hover:bg-blue-100 hover:text-blue-900',
-                                            'dark:focus:bg-blue-900 dark:focus:text-blue-100',
-                                            'dark:hover:bg-blue-900 dark:hover:text-blue-100',
-                                        )}
-                                    >
-                                        <Icons.FilePlus className="mr-2 h-4 w-4" />
-                                        Start from scratch
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() =>
-                                            handleNavigateToProject(ProjectTabs.IMPORT_PROJECT)
-                                        }
-                                        className={cn(
-                                            'focus:bg-teal-100 focus:text-teal-900',
-                                            'hover:bg-teal-100 hover:text-teal-900',
-                                            'dark:focus:bg-teal-900 dark:focus:text-teal-100',
-                                            'dark:hover:bg-teal-900 dark:hover:text-teal-100',
-                                        )}
-                                    >
-                                        <Icons.Download className="mr-2 h-4 w-4" />
-                                        Import a project
-                                    </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                                {'Show in Explorer'}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => (editorEngine.isPlansOpen = true)}>
-                                Subscriptions
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                                Settings
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-                <SettingsModal
-                    open={isSettingsOpen}
-                    onOpenChange={(open) => {
-                        setIsSettingsOpen(open);
-                        if (!open) {
-                            setIsDropdownOpen(false);
-                        }
-                    }}
-                />
-            </Dialog>
-        </>
+                            <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
+                            <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
+                                {projectsManager.project?.name}
+                            </span>
+                            <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        align="start"
+                        className="w-48"
+                        onMouseEnter={() => {
+                            if (closeTimeoutRef.current) {
+                                clearTimeout(closeTimeoutRef.current);
+                            }
+                        }}
+                        onMouseLeave={() => {
+                            closeTimeoutRef.current = setTimeout(() => {
+                                setIsDropdownOpen(false);
+                            }, 300);
+                        }}
+                    >
+                        <DropdownMenuItem onClick={handleReturn}>
+                            <div className="flex row center items-center group">
+                                <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
+                                {'Go to all Projects'}
+                            </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>New Project</DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleNavigateToProject(ProjectTabs.PROMPT_CREATE)
+                                    }
+                                    className={cn(
+                                        'focus:bg-blue-100 focus:text-blue-900',
+                                        'hover:bg-blue-100 hover:text-blue-900',
+                                        'dark:focus:bg-blue-900 dark:focus:text-blue-100',
+                                        'dark:hover:bg-blue-900 dark:hover:text-blue-100',
+                                    )}
+                                >
+                                    <Icons.FilePlus className="mr-2 h-4 w-4" />
+                                    Start from scratch
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleNavigateToProject(ProjectTabs.IMPORT_PROJECT)
+                                    }
+                                    className={cn(
+                                        'focus:bg-teal-100 focus:text-teal-900',
+                                        'hover:bg-teal-100 hover:text-teal-900',
+                                        'dark:focus:bg-teal-900 dark:focus:text-teal-100',
+                                        'dark:hover:bg-teal-900 dark:hover:text-teal-100',
+                                    )}
+                                >
+                                    <Icons.Download className="mr-2 h-4 w-4" />
+                                    Import a project
+                                </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                            {'Show in Explorer'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => (editorEngine.isPlansOpen = true)}>
+                            Subscriptions
+                        </DropdownMenuItem>
+                        <DialogTrigger asChild>
+                            <DropdownMenuItem>Settings</DropdownMenuItem>
+                        </DialogTrigger>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <DialogContent className="max-w-4xl h-[600px] p-0">
+                <SettingsModal />
+            </DialogContent>
+        </Dialog>
     );
 });
 
