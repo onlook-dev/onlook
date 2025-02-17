@@ -2,6 +2,7 @@ import type { PageNode } from '@onlook/models/pages';
 import { promises as fs, type Dirent } from 'fs';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
+import runManager from '../run';
 import { ALLOWED_EXTENSIONS } from '../run/helpers';
 
 const IGNORED_DIRECTORIES = ['api', 'components', 'lib', 'utils', 'node_modules'];
@@ -288,6 +289,7 @@ export async function createNextJsPage(projectRoot: string, pagePath: string): P
         await fs.mkdir(fullPath, { recursive: true });
         await fs.writeFile(pageFilePath, DEFAULT_PAGE_CONTENT);
 
+        runManager.addFileToWatcher(pageFilePath);
         return true;
     } catch (error) {
         console.error('Error creating page:', error);
