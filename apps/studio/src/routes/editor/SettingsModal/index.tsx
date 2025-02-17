@@ -49,7 +49,7 @@ const SettingsModal = observer(() => {
                                         <Button
                                             variant="ghost"
                                             className={cn(
-                                                'w-full justify-start px-0 hover:bg-transparent',
+                                                'w-full justify-start px-0 hover:bg-transparent hidden',
                                                 editorEngine.settingsTab === SettingsTabValue.DOMAIN
                                                     ? 'text-foreground-active'
                                                     : 'text-muted-foreground',
