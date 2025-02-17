@@ -4,7 +4,7 @@ import type { RectDimensions } from '../../../../lib/editor/engine/overlay/rect'
 import React, { memo, useMemo } from 'react';
 import { BaseRect } from './BaseRect';
 import { useEditorEngine } from '@/components/Context';
-import { adaptRectToCanvas } from '@/lib/editor/engine/overlay/utils';
+import { adaptRectToCanvas, adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
 
 interface Point {
     x: number;
@@ -121,6 +121,9 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
         }
         const result: Distance[] = [];
 
+        // Scale values for display
+        const scaleValue = (value: number) => adaptValueToCanvas(Math.abs(value));
+
         // Calculate horizontal distances
         let y = fromRectPoint.top + fromRectPoint.height / 2;
         if (isIntersect(fromRectPoint, toRectPointResult)) {
@@ -134,7 +137,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             }
 
             const leftDistance: Distance = {
-                value: Math.abs(fromRectPoint.left - toRectPointResult.left),
+                value: scaleValue(fromRectPoint.left - toRectPointResult.left),
                 start: { x: fromRectPoint.left, y },
                 end: { x: toRectPointResult.left, y },
             };
@@ -147,7 +150,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(leftDistance);
 
             const rightDistance: Distance = {
-                value: Math.abs(fromRectPoint.right - toRectPointResult.right),
+                value: scaleValue(fromRectPoint.right - toRectPointResult.right),
                 start: { x: fromRectPoint.right, y },
                 end: { x: toRectPointResult.right, y },
             };
@@ -160,7 +163,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(rightDistance);
         } else if (fromRectPoint.left > toRectPointResult.right) {
             const distance: Distance = {
-                value: Math.abs(fromRectPoint.left - toRectPointResult.right),
+                value: scaleValue(fromRectPoint.left - toRectPointResult.right),
                 start: { x: fromRectPoint.left, y },
                 end: { x: toRectPointResult.right, y },
             };
@@ -173,7 +176,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(distance);
         } else if (fromRectPoint.right < toRectPointResult.left) {
             const distance: Distance = {
-                value: Math.abs(fromRectPoint.right - toRectPointResult.left),
+                value: scaleValue(fromRectPoint.right - toRectPointResult.left),
                 start: { x: fromRectPoint.right, y },
                 end: { x: toRectPointResult.left, y },
             };
@@ -189,7 +192,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             fromRectPoint.right >= toRectPointResult.left
         ) {
             const distance: Distance = {
-                value: Math.abs(fromRectPoint.left - toRectPointResult.left),
+                value: scaleValue(fromRectPoint.left - toRectPointResult.left),
                 start: { x: fromRectPoint.left, y },
                 end: { x: toRectPointResult.left, y },
             };
@@ -207,7 +210,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(
                 createDistance(
                     {
-                        value: Math.abs(fromRectPoint.right - toRectPointResult.right),
+                        value: scaleValue(fromRectPoint.right - toRectPointResult.right),
                         start: { x: fromRectPoint.right, y },
                         end: { x: toRectPointResult.right, y },
                     },
@@ -219,7 +222,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(
                 createDistance(
                     {
-                        value: Math.abs(fromRectPoint.left - toRectPointResult.left),
+                        value: scaleValue(fromRectPoint.left - toRectPointResult.left),
                         start: { x: fromRectPoint.left, y },
                         end: { x: toRectPointResult.left, y },
                     },
@@ -230,7 +233,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(
                 createDistance(
                     {
-                        value: Math.abs(fromRectPoint.right - toRectPointResult.right),
+                        value: scaleValue(fromRectPoint.right - toRectPointResult.right),
                         start: { x: fromRectPoint.right, y },
                         end: { x: toRectPointResult.right, y },
                     },
@@ -253,7 +256,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             }
 
             const topDistance: Distance = {
-                value: Math.abs(fromRectPoint.top - toRectPointResult.top),
+                value: scaleValue(fromRectPoint.top - toRectPointResult.top),
                 start: { x, y: fromRectPoint.top },
                 end: { x, y: toRectPointResult.top },
             };
@@ -266,7 +269,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(topDistance);
 
             const bottomDistance: Distance = {
-                value: Math.abs(fromRectPoint.bottom - toRectPointResult.bottom),
+                value: scaleValue(fromRectPoint.bottom - toRectPointResult.bottom),
                 start: { x, y: fromRectPoint.bottom },
                 end: { x, y: toRectPointResult.bottom },
             };
@@ -279,7 +282,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(bottomDistance);
         } else if (fromRectPoint.top > toRectPointResult.bottom) {
             const distance: Distance = {
-                value: Math.abs(fromRectPoint.top - toRectPointResult.bottom),
+                value: scaleValue(fromRectPoint.top - toRectPointResult.bottom),
                 start: { x, y: fromRectPoint.top },
                 end: { x, y: toRectPointResult.bottom },
             };
@@ -292,7 +295,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(distance);
         } else if (fromRectPoint.bottom < toRectPointResult.top) {
             const distance: Distance = {
-                value: Math.abs(fromRectPoint.bottom - toRectPointResult.top),
+                value: scaleValue(fromRectPoint.bottom - toRectPointResult.top),
                 start: { x, y: fromRectPoint.bottom },
                 end: { x, y: toRectPointResult.top },
             };
@@ -305,7 +308,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(distance);
         } else if (isBetween(fromRectPoint.top, toRectPointResult.top, toRectPointResult.bottom)) {
             const distance: Distance = {
-                value: Math.abs(fromRectPoint.top - toRectPointResult.top),
+                value: scaleValue(fromRectPoint.top - toRectPointResult.top),
                 start: { x, y: fromRectPoint.top },
                 end: { x, y: toRectPointResult.top },
             };
@@ -320,7 +323,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             isBetween(fromRectPoint.bottom, toRectPointResult.top, toRectPointResult.bottom)
         ) {
             const distance: Distance = {
-                value: Math.abs(fromRectPoint.bottom - toRectPointResult.bottom),
+                value: scaleValue(fromRectPoint.bottom - toRectPointResult.bottom),
                 start: { x, y: fromRectPoint.bottom },
                 end: { x, y: toRectPointResult.bottom },
             };
@@ -333,7 +336,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(distance);
         } else {
             const topDistance: Distance = {
-                value: Math.abs(fromRectPoint.top - toRectPointResult.top),
+                value: scaleValue(fromRectPoint.top - toRectPointResult.top),
                 start: { x, y: fromRectPoint.top },
                 end: { x, y: toRectPointResult.top },
             };
@@ -346,7 +349,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
             result.push(topDistance);
 
             const bottomDistance: Distance = {
-                value: Math.abs(fromRectPoint.bottom - toRectPointResult.bottom),
+                value: scaleValue(fromRectPoint.bottom - toRectPointResult.bottom),
                 start: { x, y: fromRectPoint.bottom },
                 end: { x, y: toRectPointResult.bottom },
             };
