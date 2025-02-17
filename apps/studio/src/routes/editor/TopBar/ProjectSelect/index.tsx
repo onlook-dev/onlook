@@ -5,7 +5,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
+import { Dialog } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,7 +20,6 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
-import PricingPage from '../Profile/PricingPage';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -153,18 +152,15 @@ const ProjectBreadcrumb = observer(() => {
                             <DropdownMenuItem onClick={handleOpenProjectFolder}>
                                 {'Show in Explorer'}
                             </DropdownMenuItem>
-                            <DialogTrigger asChild>
-                                <DropdownMenuItem>Subscriptions</DropdownMenuItem>
-                            </DialogTrigger>
+                            <DropdownMenuItem onClick={() => (editorEngine.isPlansOpen = true)}>
+                                Subscriptions
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
                                 Settings
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
-                    <PricingPage />
-                </DialogContent>
                 <SettingsModal
                     open={isSettingsOpen}
                     onOpenChange={(open) => {
