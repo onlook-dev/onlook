@@ -177,6 +177,7 @@ export class ElementManager {
                 return;
             }
 
+            removeAction.codeBlock = codeBlock;
             this.editorEngine.action.run(removeAction);
         }
     }
