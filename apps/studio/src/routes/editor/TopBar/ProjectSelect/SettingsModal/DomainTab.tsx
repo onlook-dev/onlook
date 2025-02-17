@@ -1,4 +1,4 @@
-import { useEditorEngine, useUserManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import {
@@ -16,9 +16,13 @@ import { useEffect, useState } from 'react';
 export const DomainTab = observer(({ setOpen }: { setOpen: (open: boolean) => void }) => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
+    const projectsManager = useProjectsManager();
 
     const [isVerified] = useState(true); // Will be replaced with domain verification check
     const plan = userManager.subscription.plan;
+    const url = projectsManager.hosting?.state.url
+        ? `https://${projectsManager.hosting?.state.url}`
+        : undefined;
 
     useEffect(() => {
         userManager.subscription.getPlanFromServer();
@@ -29,18 +33,28 @@ export const DomainTab = observer(({ setOpen }: { setOpen: (open: boolean) => vo
             <div className="space-y-4">
                 <h2 className="text-lg font-medium">Base Domain</h2>
                 <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                        <div>
+                    <div className="flex justify-between items-center gap-2">
+                        <div className="w-24">
                             <p className="text-regularPlus text-muted-foreground">URL</p>
-                            <p className="text-small text-muted-foreground">
+                            <p className="text-small text-muted-foreground hidden">
                                 Last updated 3 mins ago
                             </p>
                         </div>
                         <Input
-                            value="cookies-and-creme.onlook.live"
+                            value={projectsManager.hosting?.state.url ?? ''}
                             disabled
-                            className="bg-muted w-2/3"
+                            className="bg-muted"
                         />
+                        <Button
+                            onClick={() => {
+                                window.open(url, '_blank');
+                            }}
+                            variant="ghost"
+                            size="icon"
+                            className="text-sm"
+                        >
+                            <Icons.ExternalLink className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
             </div>
