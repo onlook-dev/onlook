@@ -3,7 +3,7 @@ import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
 import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
-import SettingsModal from './TopBar/ProjectSelect/SettingsModal';
+import SettingsModal from './SettingsModal';
 import PricingPage from './TopBar/Subscription/PricingPage';
 import WebviewArea from './WebviewArea';
 
