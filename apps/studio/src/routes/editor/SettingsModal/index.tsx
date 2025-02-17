@@ -39,6 +39,13 @@ const SettingsModal = observer(() => {
                                 {/* Top bar - fixed height */}
                                 <div className="shrink-0 flex items-center p-6 pb-4">
                                     <h1 className="text-title3">Settings</h1>
+                                    <Button
+                                        variant="ghost"
+                                        className="ml-auto p-0 h-8 w-8"
+                                        onClick={() => (editorEngine.isSettingsOpen = false)}
+                                    >
+                                        <Icons.CrossS className="h-4 w-4" />
+                                    </Button>
                                 </div>
                                 <Separator orientation="horizontal" className="shrink-0" />
 
