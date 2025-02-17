@@ -5,7 +5,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
+import { Dialog, DialogContent } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -152,9 +152,9 @@ const ProjectBreadcrumb = observer(() => {
                         <DropdownMenuItem onClick={() => (editorEngine.isPlansOpen = true)}>
                             Subscriptions
                         </DropdownMenuItem>
-                        <DialogTrigger asChild>
-                            <DropdownMenuItem>Settings</DropdownMenuItem>
-                        </DialogTrigger>
+                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                            Settings
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
