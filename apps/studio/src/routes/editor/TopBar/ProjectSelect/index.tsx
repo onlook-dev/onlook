@@ -2,10 +2,8 @@ import { useEditorEngine, useProjectsManager, useRouteManager } from '@/componen
 import { ProjectTabs } from '@/lib/projects';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
-import { SettingsModal } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,7 +18,6 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
-import { PricingPage } from '../Subscription/PricingPage';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -151,7 +148,7 @@ const ProjectBreadcrumb = observer(() => {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => {
-                                setIsSubscriptionOpen(true);
+                                editorEngine.isPlansOpen = true;
                                 setIsDropdownOpen(false);
                             }}
                         >
@@ -168,23 +165,6 @@ const ProjectBreadcrumb = observer(() => {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-
-            <SettingsModal
-                isOpen={editorEngine.isSettingsOpen}
-                setOpen={(open) => {
-                    editorEngine.isSettingsOpen = open;
-                    if (!open) {
-                        setIsDropdownOpen(false);
-                    }
-                }}
-                activeTab={editorEngine.settingsTab}
-                onOpenChange={(open) => {
-                    editorEngine.isSettingsOpen = open;
-                    if (!open) {
-                        setIsDropdownOpen(false);
-                    }
-                }}
-            />
         </>
     );
 });

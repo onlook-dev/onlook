@@ -3,6 +3,7 @@ import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
 import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
+import SettingsModal from './TopBar/ProjectSelect/SettingsModal';
 import PricingPage from './TopBar/Subscription/PricingPage';
 import WebviewArea from './WebviewArea';
 
@@ -31,6 +32,7 @@ function ProjectEditor() {
                 </div>
             </div>
             <PricingPage />
+            <SettingsModal />
         </>
     );
 }

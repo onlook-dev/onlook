@@ -1,38 +1,23 @@
+import { useEditorEngine } from '@/components/Context';
+import { SettingsTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
-import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { DomainTab } from './Domain';
 import PreferencesTab from './PreferencesTab';
 import ProjectTab from './ProjectTab';
 
-export enum TabValue {
-    DOMAIN = 'domain',
-    PROJECT = 'project',
-    PREFERENCES = 'preferences',
-}
-
-export const SettingsModal = ({
-    activeTab = TabValue.DOMAIN,
-    isOpen,
-    setOpen,
-    onOpenChange,
-}: {
-    isOpen: boolean;
-    setOpen: (open: boolean) => void;
-    onOpenChange: (open: boolean) => void;
-    activeTab?: TabValue;
-}) => {
-    const [selectedTab, setSelectedTab] = useState<TabValue>(activeTab);
-
-    useEffect(() => {
-        setSelectedTab(activeTab);
-    }, [activeTab]);
+const SettingsModal = observer(() => {
+    const editorEngine = useEditorEngine();
 
     return (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <Dialog
+            open={editorEngine.isSettingsOpen}
+            onOpenChange={(open) => (editorEngine.isSettingsOpen = open)}
+        >
             <DialogContent className="max-w-4xl h-[600px] p-0">
                 <div className="flex flex-col h-full overflow-hidden">
                     {/* Top bar - fixed height */}
@@ -49,11 +34,11 @@ export const SettingsModal = ({
                                 variant="ghost"
                                 className={cn(
                                     'w-full justify-start px-0 hover:bg-transparent',
-                                    selectedTab === 'domain'
+                                    editorEngine.settingsTab === SettingsTabValue.DOMAIN
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
                                 )}
-                                onClick={() => setSelectedTab(TabValue.DOMAIN)}
+                                onClick={() => (editorEngine.settingsTab = SettingsTabValue.DOMAIN)}
                             >
                                 <Icons.Globe className="mr-2 h-4 w-4" />
                                 Domain
@@ -62,11 +47,13 @@ export const SettingsModal = ({
                                 variant="ghost"
                                 className={cn(
                                     'w-full justify-start px-0 hover:bg-transparent',
-                                    selectedTab === TabValue.PROJECT
+                                    editorEngine.settingsTab === SettingsTabValue.PROJECT
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
                                 )}
-                                onClick={() => setSelectedTab(TabValue.PROJECT)}
+                                onClick={() =>
+                                    (editorEngine.settingsTab = SettingsTabValue.PROJECT)
+                                }
                             >
                                 <Icons.Gear className="mr-2 h-4 w-4" />
                                 Project
@@ -75,11 +62,13 @@ export const SettingsModal = ({
                                 variant="ghost"
                                 className={cn(
                                     'w-full justify-start px-0 hover:bg-transparent',
-                                    selectedTab === TabValue.PREFERENCES
+                                    editorEngine.settingsTab === SettingsTabValue.PREFERENCES
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
                                 )}
-                                onClick={() => setSelectedTab(TabValue.PREFERENCES)}
+                                onClick={() =>
+                                    (editorEngine.settingsTab = SettingsTabValue.PREFERENCES)
+                                }
                             >
                                 <Icons.Person className="mr-2 h-4 w-4" />
                                 Preferences
@@ -88,15 +77,19 @@ export const SettingsModal = ({
                         <Separator orientation="vertical" className="h-full" />
                         {/* Right content */}
                         <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
-                            {selectedTab === TabValue.DOMAIN && (
-                                <DomainTab isOpen={isOpen} setOpen={setOpen} />
+                            {editorEngine.settingsTab === SettingsTabValue.DOMAIN && <DomainTab />}
+                            {editorEngine.settingsTab === SettingsTabValue.PROJECT && (
+                                <ProjectTab />
                             )}
-                            {selectedTab === TabValue.PROJECT && <ProjectTab />}
-                            {selectedTab === TabValue.PREFERENCES && <PreferencesTab />}
+                            {editorEngine.settingsTab === SettingsTabValue.PREFERENCES && (
+                                <PreferencesTab />
+                            )}
                         </div>
                     </div>
                 </div>
             </DialogContent>
         </Dialog>
     );
-};
+});
+
+export default SettingsModal;

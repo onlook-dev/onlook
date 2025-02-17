@@ -1,22 +1,22 @@
 import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
+import { SettingsTabValue } from '@/lib/models';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
-import { IDE } from '/common/ide';
-import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { observer } from 'mobx-react-lite';
-import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuTrigger,
     DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TabValue } from '../../TopBar/ProjectSelect/SettingsModal';
+import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { IDE } from '/common/ide';
 
 const OpenCodeMini = observer(() => {
     const editorEngine = useEditorEngine();
@@ -123,7 +123,7 @@ const OpenCodeMini = observer(() => {
                         className="text-sm"
                         onClick={() => {
                             setIsDropdownOpen(false);
-                            editorEngine.settingsTab = TabValue.PREFERENCES;
+                            editorEngine.settingsTab = SettingsTabValue.PREFERENCES;
                             editorEngine.isSettingsOpen = true;
                         }}
                     >

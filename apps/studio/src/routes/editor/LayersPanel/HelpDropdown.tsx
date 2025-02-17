@@ -12,13 +12,11 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { SettingsModal, TabValue } from '../TopBar/ProjectSelect/SettingsModal';
 
 export const HelpDropdown = observer(() => {
     const editorEngine = useEditorEngine();
     const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     return (
         <>
@@ -59,7 +57,7 @@ export const HelpDropdown = observer(() => {
                         className="text-sm"
                         onClick={() => {
                             setIsDropdownOpen(false);
-                            setIsSettingsOpen(true);
+                            editorEngine.isSettingsOpen = true;
                         }}
                     >
                         <Icons.Gear className="w-4 h-4 mr-2" />
@@ -101,11 +99,6 @@ export const HelpDropdown = observer(() => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <SettingsModal
-                open={isSettingsOpen}
-                onOpenChange={setIsSettingsOpen}
-                activeTab={TabValue.PREFERENCES}
-            />
         </>
     );
 });

@@ -15,7 +15,6 @@ export interface DomElement extends BaseDomElement {
         computed: Record<string, string>; // Browser computed styles
     } | null;
     parent: ParentDomElement | null;
-    coreElementType?: 'component-root' | 'body-tag' | null;
 }
 
 export interface ElementPosition {
