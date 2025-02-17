@@ -6,7 +6,7 @@ import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { ALLOWED_EXTENSIONS, getValidFiles } from './helpers';
+import { ALLOWED_EXTENSIONS, IGNORED_DIRECTORIES, getValidFiles } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
@@ -122,32 +122,36 @@ class RunManager {
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(filePaths: string[]) {
+    async listen(initialFiles: string[]) {
         if (this.watcher) {
-            this.watcher.close();
+            await this.watcher.close();
             this.watcher = null;
         }
 
-        this.watcher = watch(filePaths, {
+        const projectDirs = Array.from(this.runningDirs);
+        const watchPatterns = projectDirs
+            .map((dir: string) => ALLOWED_EXTENSIONS.map((ext) => `${dir}/**/*${ext}`))
+            .flat();
+
+        this.watcher = watch(watchPatterns, {
             persistent: true,
+            ignored: IGNORED_DIRECTORIES.map((dir) => `**/${dir}/**`),
         });
 
         this.watcher
+            .on('add', (filePath) => {
+                this.processFileForMapping(filePath);
+            })
             .on('change', (filePath) => {
                 this.processFileForMapping(filePath);
             })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error}`);
             });
-    }
 
-    addFileToWatcher(filePath: string) {
-        for (const allowedExtension of ALLOWED_EXTENSIONS) {
-            if (filePath.endsWith(allowedExtension)) {
-                this.watcher?.add(filePath);
-                this.processFileForMapping(filePath);
-                break;
-            }
+        // Process initial files
+        for (const filePath of initialFiles) {
+            await this.processFileForMapping(filePath);
         }
     }
 
