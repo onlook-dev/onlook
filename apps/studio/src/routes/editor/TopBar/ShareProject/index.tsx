@@ -1,4 +1,4 @@
-import { useProjectsManager, useUserManager, useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { HostingStateMessages, HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
@@ -248,7 +248,8 @@ const ShareProject = observer(() => {
 
         switch (projectsManager.hosting?.state.status) {
             case HostingStatus.READY:
-                colorClasses = 'border-teal-300 bg-teal-700 hover:bg-teal-500/20 text-teal-100';
+                colorClasses =
+                    'border-teal-300 bg-teal-400 hover:bg-teal-500 dark:border-teal-300 dark:bg-teal-700 dark:hover:bg-teal-500/20 dark:text-teal-100';
                 return (
                     <motion.div
                         layout

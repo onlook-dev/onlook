@@ -50,8 +50,7 @@ export const HelpDropdown = observer(() => {
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => {
-                                setIsDropdownOpen(false);
-                                setTheme('light');
+                                setTheme(Theme.Light);
                             }}
                         >
                             <Icons.Sun className="w-4 h-4 mr-2" />
@@ -60,8 +59,7 @@ export const HelpDropdown = observer(() => {
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => {
-                                setIsDropdownOpen(false);
-                                setTheme('dark');
+                                setTheme(Theme.Dark);
                             }}
                         >
                             <Icons.Moon className="w-4 h-4 mr-2" />
@@ -70,8 +68,7 @@ export const HelpDropdown = observer(() => {
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => {
-                                setIsDropdownOpen(false);
-                                setTheme('system');
+                                setTheme(Theme.System);
                             }}
                         >
                             <Icons.Laptop className="w-4 h-4 mr-2" />
@@ -82,7 +79,6 @@ export const HelpDropdown = observer(() => {
                 <DropdownMenuItem
                     className="text-sm"
                     onClick={() => {
-                        setIsDropdownOpen(false);
                         editorEngine.isSettingsOpen = true;
                     }}
                 >
