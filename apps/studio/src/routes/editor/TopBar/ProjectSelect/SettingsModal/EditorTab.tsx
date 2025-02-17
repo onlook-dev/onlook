@@ -5,12 +5,7 @@ import { MainChannels } from '@onlook/models/constants';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import type { UserSettings } from '@onlook/models/settings';
 import { Button } from '@onlook/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@onlook/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';

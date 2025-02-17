@@ -10,6 +10,7 @@ import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
 import ZoomControls from './ZoomControls/index.tsx';
+import OpenCodeMini from './OpenCodeMini/index.tsx';
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
@@ -138,6 +139,7 @@ const LayersPanel = observer(() => {
                 </button>
 
                 <div className="mt-auto flex flex-col gap-0 items-center mb-4">
+                    <OpenCodeMini />
                     <ZoomControls />
                     <HelpDropdown />
                 </div>

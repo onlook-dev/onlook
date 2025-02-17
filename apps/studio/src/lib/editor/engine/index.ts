@@ -26,6 +26,7 @@ import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 import type { UserManager } from '@/lib/user';
+import { TabValue } from '@/routes/editor/TopBar/ProjectSelect/SettingsModal';
 
 export class EditorEngine {
     private plansOpen: boolean = false;
@@ -51,6 +52,9 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
+
+    private _isSettingsOpen: boolean = false;
+    private _settingsTab: TabValue = TabValue.DOMAIN;
 
     constructor(
         private projectsManager: ProjectsManager,
@@ -133,6 +137,22 @@ export class EditorEngine {
 
     get isWindowSelected() {
         return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+    }
+
+    get isSettingsOpen() {
+        return this._isSettingsOpen;
+    }
+
+    set isSettingsOpen(value: boolean) {
+        this._isSettingsOpen = value;
+    }
+
+    get settingsTab() {
+        return this._settingsTab;
+    }
+
+    set settingsTab(value: TabValue) {
+        this._settingsTab = value;
     }
 
     set mode(mode: EditorMode) {

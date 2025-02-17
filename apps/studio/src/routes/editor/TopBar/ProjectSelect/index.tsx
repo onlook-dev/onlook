@@ -166,9 +166,10 @@ const ProjectBreadcrumb = observer(() => {
                     <PricingPage />
                 </DialogContent>
                 <SettingsModal
-                    open={isSettingsOpen}
+                    open={editorEngine.isSettingsOpen}
+                    activeTab={editorEngine.settingsTab}
                     onOpenChange={(open) => {
-                        setIsSettingsOpen(open);
+                        editorEngine.isSettingsOpen = open;
                         if (!open) {
                             setIsDropdownOpen(false);
                         }

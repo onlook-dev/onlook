@@ -7,6 +7,7 @@ import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 const ZoomControls = observer(() => {
     const editorEngine = useEditorEngine();
@@ -74,9 +75,14 @@ const ZoomControls = observer(() => {
     return (
         <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground">
             <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                <PopoverTrigger className="w-full h-full flex items-center justify-center">
-                    <span>{Math.round(scale * 100)}%</span>
-                </PopoverTrigger>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger className="w-full h-full flex items-center justify-center">
+                            <span>{Math.round(scale * 100)}%</span>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">Zoom Level</TooltipContent>
+                </Tooltip>
                 <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
                     <Input
                         value={inputValue}

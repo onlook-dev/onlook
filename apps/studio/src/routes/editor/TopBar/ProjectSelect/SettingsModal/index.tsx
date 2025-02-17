@@ -3,12 +3,12 @@ import { Dialog, DialogContent, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DomainTab } from './DomainTab';
 import ProjectTab from './ProjectTab';
 import EditorTab from './EditorTab';
 
-enum TabValue {
+export enum TabValue {
     DOMAIN = 'domain',
     PROJECT = 'project',
     EDITOR = 'editor',
@@ -17,11 +17,17 @@ enum TabValue {
 export const SettingsModal = ({
     open,
     onOpenChange,
+    activeTab = TabValue.DOMAIN,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    activeTab?: TabValue;
 }) => {
-    const [activeTab, setActiveTab] = useState<TabValue>(TabValue.DOMAIN);
+    const [selectedTab, setSelectedTab] = useState<TabValue>(activeTab);
+
+    useEffect(() => {
+        setSelectedTab(activeTab);
+    }, [activeTab]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,11 +47,11 @@ export const SettingsModal = ({
                                 variant="ghost"
                                 className={cn(
                                     'w-full justify-start px-0 hover:bg-transparent',
-                                    activeTab === 'domain'
+                                    selectedTab === 'domain'
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
                                 )}
-                                onClick={() => setActiveTab(TabValue.DOMAIN)}
+                                onClick={() => setSelectedTab(TabValue.DOMAIN)}
                             >
                                 <Icons.Globe className="mr-2 h-4 w-4" />
                                 Domain
@@ -54,11 +60,11 @@ export const SettingsModal = ({
                                 variant="ghost"
                                 className={cn(
                                     'w-full justify-start px-0 hover:bg-transparent',
-                                    activeTab === TabValue.PROJECT
+                                    selectedTab === TabValue.PROJECT
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
                                 )}
-                                onClick={() => setActiveTab(TabValue.PROJECT)}
+                                onClick={() => setSelectedTab(TabValue.PROJECT)}
                             >
                                 <Icons.Gear className="mr-2 h-4 w-4" />
                                 Project
@@ -67,11 +73,11 @@ export const SettingsModal = ({
                                 variant="ghost"
                                 className={cn(
                                     'w-full justify-start px-0 hover:bg-transparent',
-                                    activeTab === TabValue.EDITOR
+                                    selectedTab === TabValue.EDITOR
                                         ? 'text-foreground-active'
                                         : 'text-muted-foreground',
                                 )}
-                                onClick={() => setActiveTab(TabValue.EDITOR)}
+                                onClick={() => setSelectedTab(TabValue.EDITOR)}
                             >
                                 <Icons.Pencil className="mr-2 h-4 w-4" />
                                 Editor
@@ -80,9 +86,9 @@ export const SettingsModal = ({
                         <Separator orientation="vertical" className="h-full" />
                         {/* Right content */}
                         <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
-                            {activeTab === TabValue.DOMAIN && <DomainTab />}
-                            {activeTab === TabValue.PROJECT && <ProjectTab />}
-                            {activeTab === TabValue.EDITOR && <EditorTab />}
+                            {selectedTab === TabValue.DOMAIN && <DomainTab />}
+                            {selectedTab === TabValue.PROJECT && <ProjectTab />}
+                            {selectedTab === TabValue.EDITOR && <EditorTab />}
                         </div>
                     </div>
                 </div>
