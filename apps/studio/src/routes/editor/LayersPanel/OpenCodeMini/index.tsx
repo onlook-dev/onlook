@@ -1,9 +1,7 @@
 import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
-import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
+import { DEFAULT_IDE } from '@onlook/models/ide';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -27,12 +25,12 @@ const OpenCodeMini = observer(() => {
     const [folderPath, setFolder] = useState<string | null>(null);
     const [instance, setInstance] = useState<string | null>(null);
     const [root, setRoot] = useState<string | null>(null);
-    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
+    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE);
+
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFolderHovered, setIsFolderHovered] = useState(false);
-    const [coreElementType, setCoreElementType] = useState<string | null>(null);
 
-    const IDEIcon = Icons[ide.icon as keyof typeof Icons];
+    const IDEIcon = Icons[ide.icon];
 
     useEffect(() => {
         if (projectsManager.project) {
@@ -40,15 +38,6 @@ const OpenCodeMini = observer(() => {
             setFolder(folder);
         }
     }, []);
-
-    useEffect(() => {
-        async function getIdeType() {
-            const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
-            const ideType = (settings as { ideType?: IdeType })?.ideType || DEFAULT_IDE;
-            setIde(IDE.fromType(ideType));
-        }
-        getIdeType();
-    }, [userManager.settings]);
 
     useEffect(() => {
         updateInstanceAndRoot();
@@ -111,7 +100,6 @@ const OpenCodeMini = observer(() => {
                 <DropdownMenuItem
                     className="text-sm"
                     onClick={() => {
-                        setIsDropdownOpen(false);
                         editorEngine.settingsTab = SettingsTabValue.PREFERENCES;
                         editorEngine.isSettingsOpen = true;
                     }}
@@ -125,7 +113,6 @@ const OpenCodeMini = observer(() => {
                 <DropdownMenuItem
                     className="text-sm"
                     onClick={() => {
-                        setIsDropdownOpen(false);
                         editorEngine.code.viewSourceFile(folderPath);
                     }}
                     onMouseEnter={() => setIsFolderHovered(true)}
@@ -142,7 +129,6 @@ const OpenCodeMini = observer(() => {
                     <DropdownMenuItem
                         className="text-sm"
                         onClick={() => {
-                            setIsDropdownOpen(false);
                             editorEngine.code.viewSource(instance);
                         }}
                     >
@@ -154,7 +140,6 @@ const OpenCodeMini = observer(() => {
                     <DropdownMenuItem
                         className="text-sm"
                         onClick={() => {
-                            setIsDropdownOpen(false);
                             editorEngine.code.viewSource(root);
                         }}
                     >

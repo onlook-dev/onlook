@@ -2,7 +2,7 @@ import { useProjectsManager, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
+import { MainChannels, Theme } from '@onlook/models/constants';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import { Button } from '@onlook/ui/button';
 import {
@@ -64,28 +64,28 @@ const PreferencesTab = observer(() => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="text-smallPlus min-w-[150px]">
-                            {theme === 'dark' && <Icons.Moon className="mr-2 h-4 w-4" />}
-                            {theme === 'light' && <Icons.Sun className="mr-2 h-4 w-4" />}
-                            {theme === 'system' && <Icons.Laptop className="mr-2 h-4 w-4" />}
+                            {theme === Theme.Dark && <Icons.Moon className="mr-2 h-4 w-4" />}
+                            {theme === Theme.Light && <Icons.Sun className="mr-2 h-4 w-4" />}
+                            {theme === Theme.System && <Icons.Laptop className="mr-2 h-4 w-4" />}
                             <span className="capitalize">{theme}</span>
                             <Icons.ChevronDown className="ml-auto" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="min-w-[150px]">
-                        <DropdownMenuItem onClick={() => setTheme('light')}>
+                        <DropdownMenuItem onClick={() => setTheme(Theme.Light)}>
                             <Icons.Sun className="mr-2 h-4 w-4" />
                             <span>Light</span>
-                            {theme === 'light' && <Icons.CheckCircled className="ml-auto" />}
+                            {theme === Theme.Light && <Icons.CheckCircled className="ml-auto" />}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme('dark')}>
+                        <DropdownMenuItem onClick={() => setTheme(Theme.Dark)}>
                             <Icons.Moon className="mr-2 h-4 w-4" />
                             <span>Dark</span>
-                            {theme === 'dark' && <Icons.CheckCircled className="ml-auto" />}
+                            {theme === Theme.Dark && <Icons.CheckCircled className="ml-auto" />}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTheme('system')}>
+                        <DropdownMenuItem onClick={() => setTheme(Theme.System)}>
                             <Icons.Laptop className="mr-2 h-4 w-4" />
                             <span>System</span>
-                            {theme === 'system' && <Icons.CheckCircled className="ml-auto" />}
+                            {theme === Theme.System && <Icons.CheckCircled className="ml-auto" />}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

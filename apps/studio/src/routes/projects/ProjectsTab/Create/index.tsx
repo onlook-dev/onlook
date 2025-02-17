@@ -4,7 +4,7 @@ import { useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings, Theme } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
@@ -59,11 +59,11 @@ const CreateProject = ({
 
     useEffect(() => {
         const determineBackgroundImage = () => {
-            if (theme === 'dark') {
+            if (theme === Theme.Dark) {
                 return backgroundImageDark;
-            } else if (theme === 'light') {
+            } else if (theme === Theme.Light) {
                 return backgroundImageLight;
-            } else if (theme === 'system') {
+            } else if (theme === Theme.System) {
                 return window.matchMedia('(prefers-color-scheme: dark)').matches
                     ? backgroundImageDark
                     : backgroundImageLight;

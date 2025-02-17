@@ -49,7 +49,7 @@ const BrowserControls = observer(
         const editorEngine = useEditorEngine();
         const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
         const [editingURL, setEditingURL] = useState(false);
-        const [theme, setTheme] = useState(Theme.Device);
+        const [theme, setTheme] = useState(Theme.System);
         const [state, setState] = useState<WebviewState>(WebviewState.NOT_RUNNING);
         const [editorMode, setEditorMode] = useState(EditorMode.DESIGN);
         const inputRef = useRef<HTMLInputElement>(null);
@@ -154,7 +154,7 @@ const BrowserControls = observer(
             }
 
             const themeValue =
-                theme === Theme.Device ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
+                theme === Theme.System ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
 
             webview.executeJavaScript(`window.api?.setTheme("${themeValue}")`).then((res) => {
                 setDarkmode(res);
@@ -438,11 +438,11 @@ const BrowserControls = observer(
                                     <Button
                                         size={'icon'}
                                         variant={'ghost'}
-                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === Theme.Device ? 'bg-background-tertiary' : ''}`}
-                                        onClick={() => changeTheme(Theme.Device)}
+                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === Theme.System ? 'bg-background-tertiary' : ''}`}
+                                        onClick={() => changeTheme(Theme.System)}
                                     >
                                         <Icons.Laptop
-                                            className={`${theme === Theme.Device ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                            className={`${theme === Theme.System ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
                                         />
                                     </Button>
                                     <Button

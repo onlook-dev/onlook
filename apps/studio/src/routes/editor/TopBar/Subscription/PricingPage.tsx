@@ -3,7 +3,7 @@ import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
+import { MainChannels, Theme } from '@onlook/models/constants';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import {
@@ -31,11 +31,11 @@ export const PricingPage = observer(() => {
 
     useEffect(() => {
         const determineBackgroundImage = () => {
-            if (theme === 'dark') {
+            if (theme === Theme.Dark) {
                 return backgroundImageDark;
-            } else if (theme === 'light') {
+            } else if (theme === Theme.Light) {
                 return backgroundImageLight;
-            } else if (theme === 'system') {
+            } else if (theme === Theme.System) {
                 return window.matchMedia('(prefers-color-scheme: dark)').matches
                     ? backgroundImageDark
                     : backgroundImageLight;

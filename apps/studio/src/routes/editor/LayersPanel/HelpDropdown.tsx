@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel } from '@/lib/utils';
-import { Links, MainChannels } from '@onlook/models/constants';
+import { Links, MainChannels, Theme } from '@onlook/models/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -41,9 +41,9 @@ export const HelpDropdown = observer(() => {
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">
-                        {theme === 'dark' && <Icons.Moon className="w-4 h-4 mr-2" />}
-                        {theme === 'light' && <Icons.Sun className="w-4 h-4 mr-2" />}
-                        {theme === 'system' && <Icons.Laptop className="w-4 h-4 mr-2" />}
+                        {theme === Theme.Dark && <Icons.Moon className="w-4 h-4 mr-2" />}
+                        {theme === Theme.Light && <Icons.Sun className="w-4 h-4 mr-2" />}
+                        {theme === Theme.System && <Icons.Laptop className="w-4 h-4 mr-2" />}
                         Theme
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-32 ml-2">
