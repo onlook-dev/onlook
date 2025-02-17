@@ -41,7 +41,8 @@ const SettingsModal = observer(() => {
                                     <h1 className="text-title3">Settings</h1>
                                     <Button
                                         variant="ghost"
-                                        className="ml-auto p-0 h-8 w-8"
+                                        size="icon"
+                                        className="ml-auto"
                                         onClick={() => (editorEngine.isSettingsOpen = false)}
                                     >
                                         <Icons.CrossS className="h-4 w-4" />
