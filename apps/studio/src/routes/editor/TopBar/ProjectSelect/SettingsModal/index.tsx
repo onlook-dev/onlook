@@ -26,7 +26,7 @@ const SettingsModal = observer(() => {
 
             {/* Modal */}
             <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
-                <div className="bg-background border rounded-lg shadow-lg max-w-4xl h-[600px] p-0">
+                <div className="bg-background border rounded-lg shadow-lg max-w-4xl h-[600px] w-[800px] p-0">
                     <div className="flex flex-col h-full overflow-hidden">
                         {/* Top bar - fixed height */}
                         <div className="shrink-0 flex items-center p-6 pb-4">
