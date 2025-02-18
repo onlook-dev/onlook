@@ -18,6 +18,8 @@ import { SuggestionManager } from './suggestions';
 
 const USE_MOCK = false;
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
+const PROMPT_TOO_LONG_ERROR =
+    'Your message is too long. Please start a new chat with a shorter message.';
 
 export class ChatManager {
     isWaiting = false;
@@ -190,7 +192,12 @@ export class ChatManager {
         }
         if (res.status === 'error') {
             console.error('Error found in chat response', res.content);
-            this.stream.errorMessage = res.content;
+            // Check for prompt too long error
+            if (res.content.includes('prompt is too long')) {
+                this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
+            } else {
+                this.stream.errorMessage = res.content;
+            }
             return;
         }
         const assistantMessage = this.conversation.addAssistantMessage(res);
