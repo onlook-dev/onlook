@@ -1,3 +1,4 @@
+import type { EditorEngine } from '@/lib/editor/engine';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
@@ -16,7 +17,10 @@ export class RunManager {
     isLoading: boolean = false;
     private cleanupLoadingTimer?: () => void;
 
-    constructor(project: Project) {
+    constructor(
+        project: Project,
+        private editorEngine: EditorEngine,
+    ) {
         makeAutoObservable(this);
         this.project = project;
         this.restoreState();
@@ -124,6 +128,9 @@ export class RunManager {
             const { state, message } = args as { state: RunState; message: string };
             this.state = state;
             this.message = message;
+            if (state === RunState.ERROR) {
+                this.editorEngine.errors.addTerminalError(message);
+            }
         });
     }
 

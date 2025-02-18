@@ -274,7 +274,7 @@ const Frame = observer(
                 return;
             }
             if (event.level === 3) {
-                editorEngine.errors.addError(settings.id, event);
+                // editorEngine.errors.addError(settings.id, event);
             }
         }
 

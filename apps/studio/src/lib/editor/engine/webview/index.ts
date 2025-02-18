@@ -115,7 +115,6 @@ export class WebviewManager {
     }
 
     computeState(body: Element) {
-        this.editorEngine.errors.shouldShowErrors = false;
         const running: boolean = this.projectsManager.runner?.state === RunState.RUNNING || false;
         if (!running) {
             return WebviewState.NOT_RUNNING;
@@ -181,7 +180,6 @@ export class WebviewManager {
 
         // Clean up AST mappings
         this.editorEngine?.ast?.mappings?.remove(id);
-        this.editorEngine?.errors.clearErrors(id);
     }
 
     reloadWebviews() {

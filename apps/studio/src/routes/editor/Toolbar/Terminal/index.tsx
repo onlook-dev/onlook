@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import type { RunManager, TerminalMessage } from '@/lib/projects/run';
 import { MainChannels } from '@onlook/models/constants';
@@ -41,11 +41,13 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
 };
 
 const Terminal = observer(({ hidden = false }: TerminalProps) => {
+    const projectsManager = useProjectsManager();
+    const editorEngine = useEditorEngine();
+    const { theme } = useTheme();
+    const runner = projectsManager.runner;
+
     const terminalRef = useRef<HTMLDivElement>(null);
     const [terminal, setTerminal] = useState<XTerm | null>(null);
-    const projectsManager = useProjectsManager();
-    const runner = projectsManager.runner;
-    const { theme } = useTheme();
 
     useEffect(() => {
         if (terminal) {
