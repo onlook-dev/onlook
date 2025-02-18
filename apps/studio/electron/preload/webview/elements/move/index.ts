@@ -2,14 +2,18 @@ import type { DomElement } from '@onlook/models/element';
 import { getDomElement } from '../helpers';
 import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 
-export function moveElement(domId: string, newIndex: number): DomElement | undefined {
+export function moveElement(
+    domId: string,
+    newIndex: number,
+    targetDomId: string,
+    oldParentDomId?: string,
+): DomElement | undefined {
     const el = elementFromDomId(domId) as HTMLElement | null;
     if (!el) {
         console.warn(`Move element not found: ${domId}`);
         return;
     }
-
-    const movedEl = moveElToIndex(el, newIndex);
+    const movedEl = moveElToIndex(el, newIndex, targetDomId, oldParentDomId);
     if (!movedEl) {
         console.warn(`Failed to move element: ${domId}`);
         return;
@@ -31,20 +35,34 @@ export function getElementIndex(domId: string): number {
     return index;
 }
 
-export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
-    const parent = el.parentElement;
-    if (!parent) {
-        console.warn('Parent not found');
+export function moveElToIndex(
+    el: HTMLElement,
+    newIndex: number,
+    targetDomId: string,
+    oldParentDomId?: string,
+): HTMLElement | undefined {
+    const targetEl = elementFromDomId(targetDomId) as HTMLElement | null;
+    if (!targetEl) {
+        console.warn(`Target element not found: ${targetDomId}`);
         return;
     }
 
-    parent.removeChild(el);
-    if (newIndex >= parent.children.length) {
-        parent.appendChild(el);
+    const oldParentEl = oldParentDomId
+        ? (elementFromDomId(oldParentDomId) as HTMLElement | null)
+        : null;
+
+    if (oldParentEl) {
+        oldParentEl.removeChild(el);
+    } else {
+        el.parentElement?.removeChild(el);
+    }
+
+    if (newIndex >= targetEl.children.length) {
+        targetEl.appendChild(el);
         return el;
     }
 
-    const referenceNode = parent.children[newIndex];
-    parent.insertBefore(el, referenceNode);
+    const referenceNode = targetEl.children[newIndex];
+    targetEl.insertBefore(el, referenceNode);
     return el;
 }
