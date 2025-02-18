@@ -1,3 +1,4 @@
+import { RunState } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import * as pty from 'node-pty';
 import os from 'os';
@@ -30,6 +31,7 @@ class TerminalManager {
             });
 
             ptyProcess.onData((data: string) => {
+                this.checkError(data);
                 this.addTerminalMessage(id, data);
             });
 
@@ -38,6 +40,26 @@ class TerminalManager {
         } catch (error) {
             console.error('Failed to create terminal.', error);
             return false;
+        }
+    }
+
+    checkError(data: string) {
+        // Check for common error patterns in the output
+        const errorPatterns = [
+            'command not found',
+            'error:',
+            'Error:',
+            'fatal:',
+            'Fatal:',
+            'exception',
+            'Exception',
+        ];
+
+        if (errorPatterns.some((pattern) => data.includes(pattern))) {
+            mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
+                state: RunState.ERROR,
+                message: `Command error detected: ${data.trim()}`,
+            });
         }
     }
 
