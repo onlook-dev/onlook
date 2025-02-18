@@ -33,6 +33,37 @@ const STYLE_CONSTRAINTS = {
 };
 
 export const PositionGroup = [
+    new CompoundStyleImpl(
+        CompoundStyleKey.Position,
+        new SingleStyleImpl('position', 'relative', 'Position', StyleType.Select, {
+            options: ['relative', 'absolute', 'fixed', 'static'],
+        }),
+        [
+            new SingleStyleImpl('top', '', 'Top', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: 0,
+                max: 100,
+            }),
+
+            new SingleStyleImpl('right', '', 'Right', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: 0,
+                max: 100,
+            }),
+
+            new SingleStyleImpl('bottom', '', 'Bottom', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: 0,
+                max: 100,
+            }),
+
+            new SingleStyleImpl('left', '', 'Left', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: 0,
+                max: 100,
+            }),
+        ],
+    ),
     new SingleStyleImpl('width', '', 'Width', StyleType.Dimensions, {
         units: Object.values(LayoutMode),
         min: STYLE_CONSTRAINTS.width.min,
