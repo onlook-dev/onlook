@@ -9,8 +9,11 @@ export const listFilesTool = tool({
         path: z.string().describe('The absolute path to the directory to get files from'),
     }),
     execute: async ({ path }) => {
-        const files = getAllFiles(path);
-        return files;
+        const res = await getAllFiles(path);
+        if (!res.success) {
+            return { error: res.error };
+        }
+        return res.files;
     },
 });
 
