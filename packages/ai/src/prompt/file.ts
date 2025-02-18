@@ -4,7 +4,7 @@ Any other messages in the chat may contain outdated versions of the files' conte
 
 const highlightPrefix = 'I am looking at this specific part of the file in the browser UI';
 
-const errorsContentPrefix = `You are helping me debug this Next.js React app. I'm getting these errors. Some are from the terminal, some are from the browser. Terminal errors may be related to the packages not being installed. In this case, give the install command.`;
+const errorsContentPrefix = `You are helping me debug this Next.js React app. I'm getting these errors. Some are from the terminal, some are from the browser. If next command not found, give the "npm install" command since users likely did not install their depdencies the first time. NEVER SUGGEST THE npm run dev command.`;
 
 const FILE_PROMPTS = {
     filesContentPrefix,
