@@ -94,9 +94,9 @@ const RunButton = observer(() => {
             case RunState.RUNNING:
                 return 'Stop Running your App & Clean Code';
             case RunState.ERROR:
-                return 'Stop your App';
+                return 'Restart your App';
             default:
-                return '';
+                return 'Run your App';
         }
     }
 
