@@ -1,19 +1,15 @@
 import type { DomElement } from '@onlook/models/element';
 import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
-import { MeasurementImpl } from './measurement';
 import type { RectDimensions } from './rect';
 import { OverlayState } from './state';
 import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
-    measureEle: MeasurementImpl;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
     state: OverlayState = new OverlayState();
 
     constructor(private editorEngine: EditorEngine) {
-        // TODO: Refactor measureEle to be React component similar to ClickRect
-        this.measureEle = new MeasurementImpl();
         this.listenToScaleChange();
     }
 
@@ -56,12 +52,12 @@ export class OverlayManager {
         }
     };
 
-    updateMeasurement = (fromRect: RectDimensions | DOMRect, toRect: RectDimensions | DOMRect) => {
-        this.measureEle.render(fromRect, toRect);
+    updateMeasurement = (fromRect: RectDimensions, toRect: RectDimensions) => {
+        this.state.updateMeasurement(fromRect, toRect);
     };
 
     removeMeasurement = () => {
-        this.measureEle.remove();
+        this.state.removeMeasurement();
     };
 
     clear = () => {
