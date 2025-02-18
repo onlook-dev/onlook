@@ -1,17 +1,15 @@
 import {
     ApiRoutes,
     BASE_API_ROUTE,
-    BASE_PROXY_ROUTE,
     CUSTOM_OUTPUT_DIR,
     FUNCTIONS_ROUTE,
     MainChannels,
-    ProxyRoutes,
 } from '@onlook/models/constants';
 import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
-import { FreestyleSandboxes, type FreestyleDeployWebConfiguration } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { getRefreshedAuthTokens } from '../auth';
+import { deployToFreestyle } from './freestyle';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
@@ -30,13 +28,6 @@ class HostingManager {
             HostingManager.instance = new HostingManager();
         }
         return HostingManager.instance;
-    }
-
-    getFreestyleClient(accessToken: string): FreestyleSandboxes {
-        return new FreestyleSandboxes({
-            apiKey: accessToken,
-            baseUrl: `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_PROXY_ROUTE}${ProxyRoutes.FREESTYLE}`,
-        });
     }
 
     async deploy(
@@ -79,7 +70,7 @@ class HostingManager {
             this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const id = await this.sendHostingPostRequest(files, urls);
+            const id = await deployToFreestyle(files, urls);
             timer.log('Deployment completed');
 
             this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
@@ -154,7 +145,7 @@ class HostingManager {
         message?: string;
     }> {
         try {
-            const id = await this.sendHostingPostRequest({}, urls);
+            const id = await deployToFreestyle({}, urls);
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
@@ -175,23 +166,6 @@ class HostingManager {
                 success: false,
                 message: 'Failed to delete deployment. ' + error,
             };
-        }
-    }
-
-    async sendHostingPostRequest(files: FileRecord, urls: string[]): Promise<string> {
-        try {
-            const authTokens = await getRefreshedAuthTokens();
-            const config: FreestyleDeployWebConfiguration = {
-                domains: urls,
-                entrypoint: 'server.js',
-            };
-
-            const freestyleClient = this.getFreestyleClient(authTokens.accessToken);
-            const response = await freestyleClient.deployWeb(files, config);
-            return response.deploymentId ?? '';
-        } catch (error) {
-            console.error('Failed to deploy to preview environment', error);
-            throw new Error(`Failed to deploy to preview environment, error: ${error}`);
         }
     }
 
