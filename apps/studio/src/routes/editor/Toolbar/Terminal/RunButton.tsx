@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 
 const RunButton = observer(() => {
     const projectsManager = useProjectsManager();
+    const editorEngine = useEditorEngine();
     const runner = projectsManager.runner;
 
     const handleClick = () => {
@@ -19,6 +20,7 @@ const RunButton = observer(() => {
         }
 
         if (runner?.state === RunState.ERROR) {
+            editorEngine.errors.clear();
             runner.restart();
             return;
         }
