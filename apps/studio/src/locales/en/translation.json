@@ -1,4 +1,60 @@
 {
+    "projects": {
+        "create": {
+            "success": "Project created successfully.",
+            "steps": {
+                "count": "{{current}} of {{total}}",
+                "error": "Project data is missing."
+            },
+            "methods": {
+                "new": "Create New Project",
+                "load": "Load Existing Project"
+            },
+            "loading": {
+                "title": "Setting up your new Onlook app...",
+                "description": "This may take a few seconds",
+                "cancel": "Cancel"
+            },
+            "error": {
+                "title": "Error creating your Onlook app",
+                "backToPrompt": "Back to Prompting"
+            }
+        },
+        "select": {
+            "empty": "No projects found",
+            "sort": {
+                "recent": "Recently Updated",
+                "name": "Project Name"
+            },
+            "lastEdited": "Last edited {{time}} ago"
+        },
+        "actions": {
+            "import": "Import",
+            "close": "Close",
+            "about": "About Onlook",
+            "signOut": "Sign out",
+            "editApp": "Edit App",
+            "projectSettings": "Project settings",
+            "showInExplorer": "Show in Explorer",
+            "renameProject": "Rename Project",
+            "deleteProject": "Delete Project",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "rename": "Rename"
+        },
+        "dialogs": {
+            "delete": {
+                "title": "Are you sure you want to delete this project?",
+                "description": "This action cannot be undone. This will permanently delete your project and remove all associated data.",
+                "moveToTrash": "Also move folder to trash"
+            },
+            "rename": {
+                "title": "Rename Project",
+                "label": "Project Name",
+                "error": "Project name can't be empty"
+            }
+        }
+    },
     "welcome": {
         "title": "Welcome to Onlook",
         "titleReturn": "Welcome back to Onlook",
