@@ -29,7 +29,10 @@ class RunManager {
     }
 
     async restart(id: string, folderPath: string, command: string): Promise<boolean> {
-        await this.stop(id, folderPath);
+        const stopped = await this.stop(id, folderPath);
+        if (!stopped) {
+            return false;
+        }
         const res = await this.start(id, folderPath, command);
         sendAnalytics('run restarted', {
             success: res,

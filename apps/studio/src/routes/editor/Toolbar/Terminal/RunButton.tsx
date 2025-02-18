@@ -14,7 +14,12 @@ const RunButton = observer(() => {
 
     const handleClick = () => {
         if (runner?.state === RunState.RUNNING || runner?.state === RunState.SETTING_UP) {
-            runner.stop();
+            runner?.stop();
+            return;
+        }
+
+        if (runner?.state === RunState.ERROR) {
+            runner.restart();
             return;
         }
         runner?.start();
@@ -86,11 +91,13 @@ const RunButton = observer(() => {
     function getTooltipText() {
         switch (runner?.state) {
             case RunState.STOPPED:
-                return 'Run your app';
+                return 'Run your App';
             case RunState.RUNNING:
                 return 'Stop Running your App & Clean Code';
+            case RunState.ERROR:
+                return 'Restart your App';
             default:
-                return '';
+                return 'Unknown app state';
         }
     }
 
