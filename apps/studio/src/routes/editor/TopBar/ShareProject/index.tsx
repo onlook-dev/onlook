@@ -209,7 +209,7 @@ const ShareProject = observer(() => {
                         Update
                     </Button>
                 </div>
-                <div className="flex items-center justify-center space-x-2 hidden">
+                <div className="flex items-center justify-center space-x-2 ">
                     <Checkbox
                         className="text-foreground-tertiary border-foreground-tertiary"
                         id="skip-build"

@@ -1,9 +1,11 @@
 import {
     ApiRoutes,
     BASE_API_ROUTE,
+    BASE_PROXY_ROUTE,
     CUSTOM_OUTPUT_DIR,
     FUNCTIONS_ROUTE,
     MainChannels,
+    ProxyRoutes,
 } from '@onlook/models/constants';
 import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebConfiguration } from 'freestyle-sandboxes';
@@ -33,7 +35,7 @@ class HostingManager {
     getFreestyleClient(accessToken: string): FreestyleSandboxes {
         return new FreestyleSandboxes({
             apiKey: accessToken,
-            baseUrl: 'https://api.freestyle.sh',
+            baseUrl: `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_PROXY_ROUTE}${ProxyRoutes.FREESTYLE}`,
         });
     }
 
