@@ -87,8 +87,8 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
         [toRect, webview],
     );
 
-    const fromRectPoint = useMemo(() => toRectPoint(fromRectAdjusted), [fromRectAdjusted]);
-    const toRectPointResult = useMemo(() => toRectPoint(toRectAdjusted), [toRectAdjusted]);
+    const fromRectPoint = useMemo(() => toRectPoint(fromRect), [fromRect]);
+    const toRectPointResult = useMemo(() => toRectPoint(toRect), [toRect]);
 
     type DistanceWithoutSupportLine = Omit<Distance, 'supportLine'>;
 
@@ -122,7 +122,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
         const result: Distance[] = [];
 
         // Scale values for display
-        const scaleValue = (value: number) => adaptValueToCanvas(Math.abs(value));
+        const scaleValue = (value: number) => adaptValueToCanvas(Math.abs(value), true);
 
         // Calculate horizontal distances
         let y = fromRectPoint.top + fromRectPoint.height / 2;
@@ -384,10 +384,10 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
     const svgContent = (
         <g transform={`translate(${-viewBox.minX},${-viewBox.minY})`}>
             <rect
-                x={fromRectAdjusted.left}
-                y={fromRectAdjusted.top}
-                width={fromRectAdjusted.width}
-                height={fromRectAdjusted.height}
+                x={fromRect.left}
+                y={fromRect.top}
+                width={fromRect.width}
+                height={fromRect.height}
                 fill="none"
                 stroke={colors.red[500]}
                 strokeWidth={1}
@@ -395,10 +395,10 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                 strokeLinejoin="round"
             />
             <rect
-                x={toRectAdjusted.left}
-                y={toRectAdjusted.top}
-                width={toRectAdjusted.width}
-                height={toRectAdjusted.height}
+                x={toRect.left}
+                y={toRect.top}
+                width={toRect.width}
+                height={toRect.height}
                 fill="none"
                 stroke={colors.red[500]}
                 strokeWidth={1}
