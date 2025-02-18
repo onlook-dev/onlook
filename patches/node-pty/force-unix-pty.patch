@@ -1,0 +1,14 @@
+diff --git a/lib/index.js b/lib/index.js
+index xxxx..xxxx 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -1,5 +1,7 @@
+ const os = require("os");
+-if (os.platform() === "win32") {
++
++// Force Unix implementation on all platforms for now
++if (false && os.platform() === "win32") {
+   module.exports = require("./win/conpty.js");
+ } else {
+   module.exports = require("./unix/pty.js");
+}

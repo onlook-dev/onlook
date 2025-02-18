@@ -9,7 +9,8 @@ export function checkPattern(
 ) {
     return css`
         background-color: ${color0};
-        background-image: linear-gradient(
+        background-image:
+            linear-gradient(
                 45deg,
                 ${color1} 25%,
                 transparent 25%,
