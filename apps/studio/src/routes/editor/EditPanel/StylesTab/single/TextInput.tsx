@@ -7,6 +7,7 @@ import {
     stringToParsedValue,
 } from '@/lib/editor/styles/numberUnit';
 import { toast } from '@onlook/ui/use-toast';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -15,9 +16,11 @@ const TextInput = observer(
     ({
         elementStyle,
         onValueChange,
+        className,
     }: {
         elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
+        className?: string;
     }) => {
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
@@ -79,11 +82,13 @@ const TextInput = observer(
             }
             editorEngine.history.commitTransaction();
         };
-
         return (
             <input
                 type="text"
-                className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 appearance-none`}
+                className={cn(
+                    'w-full p-[6px] text-xs px-2 rounded border-none text-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 appearance-none',
+                    className,
+                )}
                 placeholder="--"
                 value={value}
                 onChange={(e) => setValue(e.currentTarget.value)}
