@@ -6,10 +6,7 @@ import {
     MainChannels,
 } from '@onlook/models/constants';
 import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
-import {
-    type FreestyleDeployWebConfiguration,
-    type FreestyleDeployWebSuccessResponse,
-} from 'freestyle-sandboxes';
+import { FreestyleSandboxes, type FreestyleDeployWebConfiguration } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { getRefreshedAuthTokens } from '../auth';
@@ -31,6 +28,13 @@ class HostingManager {
             HostingManager.instance = new HostingManager();
         }
         return HostingManager.instance;
+    }
+
+    getFreestyleClient(accessToken: string): FreestyleSandboxes {
+        return new FreestyleSandboxes({
+            apiKey: accessToken,
+            baseUrl: 'https://api.freestyle.sh',
+        });
     }
 
     async deploy(
@@ -173,43 +177,20 @@ class HostingManager {
     }
 
     async sendHostingPostRequest(files: FileRecord, urls: string[]): Promise<string> {
-        const authTokens = await getRefreshedAuthTokens();
-        const config: FreestyleDeployWebConfiguration = {
-            domains: urls,
-            entrypoint: 'server.js',
-        };
+        try {
+            const authTokens = await getRefreshedAuthTokens();
+            const config: FreestyleDeployWebConfiguration = {
+                domains: urls,
+                entrypoint: 'server.js',
+            };
 
-        const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authTokens.accessToken}`,
-                },
-                body: JSON.stringify({
-                    files,
-                    config,
-                }),
-            },
-        );
-        if (!res.ok) {
-            throw new Error(`Failed to deploy to preview environment, error: ${res.statusText}`);
+            const freestyleClient = this.getFreestyleClient(authTokens.accessToken);
+            const response = await freestyleClient.deployWeb(files, config);
+            return response.deploymentId ?? '';
+        } catch (error) {
+            console.error('Failed to deploy to preview environment', error);
+            throw new Error(`Failed to deploy to preview environment, error: ${error}`);
         }
-        const freestyleResponse = (await res.json()) as {
-            success: boolean;
-            message?: string;
-            error?: string;
-            data?: FreestyleDeployWebSuccessResponse;
-        };
-
-        if (!freestyleResponse.success) {
-            throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error || freestyleResponse.message}`,
-            );
-        }
-
-        return freestyleResponse.data?.deploymentId ?? '';
     }
 
     async getCustomDomains(): Promise<CustomDomain[]> {

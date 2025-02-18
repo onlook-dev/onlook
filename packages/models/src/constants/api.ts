@@ -12,9 +12,15 @@ export enum ApiRoutes {
     CREATE_CUSTOMER_PORTAL_SESSION = '/create-customer-portal-session',
 }
 
+export const BASE_DOMAINS_ROUTE = '/domains';
+export enum DomainsRoutes {
+    CUSTOM = '/custom',
+}
+
 export const BASE_PROXY_ROUTE = '/proxy';
 export enum ProxyRoutes {
     ANTHROPIC = '/anthropic',
+    FREESTYLE = '/freestyle',
 }
 export const REDIRECT_APP_URL = 'https://onlook.dev/redirect-app';
 export const REQUEST_TYPE_HEADER = 'X-Onlook-Request-Type';
