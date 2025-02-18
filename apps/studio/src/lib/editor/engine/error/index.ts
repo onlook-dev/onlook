@@ -84,10 +84,6 @@ export class ErrorManager {
         };
     }
 
-    clearErrors(webviewId: string) {
-        delete this.webviewIdToError[webviewId];
-    }
-
     clear() {
         this.webviewIdToError = {};
         this.terminalErrors = [];

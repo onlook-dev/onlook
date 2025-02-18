@@ -33,6 +33,7 @@ class RunManager {
         if (!stopped) {
             return false;
         }
+        this.setState(RunState.STOPPED, 'Stopped.');
         const res = await this.start(id, folderPath, command);
         sendAnalytics('run restarted', {
             success: res,
