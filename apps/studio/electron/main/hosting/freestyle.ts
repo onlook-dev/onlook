@@ -44,7 +44,7 @@ export async function createDomainVerification(
         console.error('Failed to create domain verification', error);
         return {
             success: false,
-            message: 'Failed to create domain verification',
+            message: `${error}`,
         };
     }
 }

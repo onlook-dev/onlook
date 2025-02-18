@@ -19,7 +19,7 @@ import { useState } from 'react';
 
 enum VerificationStatus {
     NO_DOMAIN = 'no_domain',
-    PENDING = 'pending',
+    VERIFYING = 'verifying',
     VERIFIED = 'verified',
 }
 
@@ -34,6 +34,11 @@ export const Verification = observer(() => {
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
     const [error, setError] = useState<string | null>(null);
+
+    function editDomain() {
+        setStatus(VerificationStatus.NO_DOMAIN);
+        setRecords([]);
+    }
 
     function validateDomain(): string | false {
         if (!domain) {
@@ -79,8 +84,7 @@ export const Verification = observer(() => {
             return;
         }
 
-        setDomain(validDomain); // Update with sanitized domain
-        setStatus(VerificationStatus.PENDING);
+        setDomain(validDomain);
 
         // Send verification request to server
         const response: DomainVerificationResponse = await invokeMainChannel(
@@ -92,9 +96,11 @@ export const Verification = observer(() => {
 
         if (!response.success || !response.verificationCode) {
             setError(response.message ?? 'Failed to create domain verification');
+            setStatus(VerificationStatus.NO_DOMAIN);
             return;
         }
 
+        setStatus(VerificationStatus.VERIFYING);
         const verificationRecord = getVerificationRecord(validDomain, response.verificationCode);
         const aRecords = getARecords();
         setRecords([verificationRecord, ...aRecords]);
@@ -146,7 +152,7 @@ export const Verification = observer(() => {
         return aRecords;
     }
 
-    function renderDomainInput() {
+    function renderNoDomainInput() {
         return (
             <div className="space-y-2">
                 <div className="flex justify-between items-center gap-2">
@@ -161,13 +167,18 @@ export const Verification = observer(() => {
                         className="bg-background w-2/3"
                     />
                     <Button
-                        disabled={status !== VerificationStatus.NO_DOMAIN}
-                        onClick={setupDomain}
+                        onClick={() => {
+                            if (status === VerificationStatus.NO_DOMAIN) {
+                                setupDomain();
+                            } else {
+                                editDomain();
+                            }
+                        }}
                         variant="secondary"
                         size="sm"
                         className="h-8 text-sm"
                     >
-                        Setup
+                        {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
                     </Button>
                 </div>
             </div>
@@ -184,43 +195,55 @@ export const Verification = observer(() => {
                             Your DNS records must be set up with these values.
                         </p>
                     </div>
-                    {status === VerificationStatus.PENDING ? (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            className="h-8 px-3 text-sm"
-                            onClick={verifyDomain}
-                        >
-                            Verify Setup
-                        </Button>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                                <Icons.CheckCircled className="h-4 w-4 text-green-500" />
-                                <span className="text-xs text-muted-foreground">Verified</span>
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <Icons.DotsVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem className="hover:bg-muted focus:bg-muted cursor-pointer hidden">
-                                        <Icons.Reset className="mr-2 h-4 w-4" />
-                                        Reconfigure DNS
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={removeDomain}
-                                        className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive cursor-pointer"
-                                    >
-                                        <Icons.Trash className="mr-2 h-4 w-4" />
-                                        Remove Domain
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 px-3 text-sm"
+                        onClick={verifyDomain}
+                    >
+                        Verify Setup
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    function renderVerifiedHeader() {
+        return (
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <div className="space-y-2">
+                        <p className="text-regularPlus text-muted-foreground">Verified</p>
+                        <p className="text-small text-muted-foreground">
+                            Your domain is verified and ready to use.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                            <Icons.CheckCircled className="h-4 w-4 text-green-500" />
+                            <span className="text-xs text-muted-foreground">Verified</span>
                         </div>
-                    )}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Icons.DotsVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem className="hover:bg-muted focus:bg-muted cursor-pointer hidden">
+                                    <Icons.Reset className="mr-2 h-4 w-4" />
+                                    Reconfigure DNS
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={removeDomain}
+                                    className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive cursor-pointer"
+                                >
+                                    <Icons.Trash className="mr-2 h-4 w-4" />
+                                    Remove Domain
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
             </div>
         );
@@ -246,9 +269,11 @@ export const Verification = observer(() => {
 
     return (
         <div className="space-y-4">
-            {renderDomainInput()}
-            {status !== VerificationStatus.NO_DOMAIN && renderConfigureHeader()}
-            {status !== VerificationStatus.NO_DOMAIN && renderRecords()}
+            {renderNoDomainInput()}
+            {status === VerificationStatus.VERIFYING && renderConfigureHeader()}
+            {status === VerificationStatus.VERIFIED && renderVerifiedHeader()}
+            {(status === VerificationStatus.VERIFYING || status === VerificationStatus.VERIFIED) &&
+                renderRecords()}
             {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );
