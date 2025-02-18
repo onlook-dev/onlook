@@ -1,62 +1,61 @@
 {
     "pricing": {
-      "plans": {
-        "basic": {
-          "name": "Onlook Basique",
-          "price": "0 $/mois",
-          "description": "Prototypage et expérimentation en code en toute simplicité.",
-          "features": [
-            "Accès à l'éditeur de code visuel",
-            "Projets illimités",
-            "{{dailyMessages}} messages de chat IA par jour",
-            "{{monthlyMessages}} messages IA par mois",
-            "Limité à 1 capture d'écran par chat"
-          ]
+        "plans": {
+            "basic": {
+                "name": "Onlook Basique",
+                "price": "0 $/mois",
+                "description": "Prototypage et expérimentation en code en toute simplicité.",
+                "features": [
+                    "Accès à l'éditeur de code visuel",
+                    "Projets illimités",
+                    "{{dailyMessages}} messages de chat IA par jour",
+                    "{{monthlyMessages}} messages IA par mois",
+                    "Limité à 1 capture d'écran par chat"
+                ]
+            },
+            "pro": {
+                "name": "Onlook Pro",
+                "price": "20 $/mois",
+                "description": "Créativité — sans limites. Créez des sites époustouflants avec l’IA.",
+                "features": [
+                    "Accès à l'éditeur de code visuel",
+                    "Projets illimités",
+                    "Messages de chat IA illimités par jour",
+                    "Chats mensuels illimités",
+                    "Captures d'écran multiples par chat",
+                    "1 nom de domaine personnalisé gratuit hébergé avec Onlook",
+                    "Support prioritaire"
+                ]
+            }
         },
-        "pro": {
-          "name": "Onlook Pro",
-          "price": "20 $/mois",
-          "description": "Créativité — sans limites. Créez des sites époustouflants avec l’IA.",
-          "features": [
-            "Accès à l'éditeur de code visuel",
-            "Projets illimités",
-            "Messages de chat IA illimités par jour",
-            "Chats mensuels illimités",
-            "Captures d'écran multiples par chat",
-            "1 nom de domaine personnalisé gratuit hébergé avec Onlook",
-            "Support prioritaire"
-          ]
+        "titles": {
+            "choosePlan": "Choisissez votre formule",
+            "proMember": "Merci d’être membre Pro !"
+        },
+        "buttons": {
+            "currentPlan": "Formule actuelle",
+            "getPro": "Passer à Pro",
+            "manageSubscription": "Gérer l’abonnement"
+        },
+        "loading": {
+            "checkingPayment": "Vérification du paiement..."
+        },
+        "toasts": {
+            "checkingOut": {
+                "title": "Validation en cours",
+                "description": "Vous allez maintenant être redirigé vers Stripe pour finaliser le paiement."
+            },
+            "redirectingToStripe": {
+                "title": "Redirection vers Stripe",
+                "description": "Vous allez maintenant être redirigé vers Stripe pour gérer votre abonnement."
+            },
+            "error": {
+                "title": "Erreur",
+                "description": "Impossible de lancer le processus de paiement. Veuillez réessayer."
+            }
+        },
+        "footer": {
+            "unusedMessages": "Les messages de chat inutilisés ne sont pas reportés au mois suivant"
         }
-      },
-      "titles": {
-        "choosePlan": "Choisissez votre formule",
-        "proMember": "Merci d’être membre Pro !"
-      },
-      "buttons": {
-        "currentPlan": "Formule actuelle",
-        "getPro": "Passer à Pro",
-        "manageSubscription": "Gérer l’abonnement"
-      },
-      "loading": {
-        "checkingPayment": "Vérification du paiement..."
-      },
-      "toasts": {
-        "checkingOut": {
-          "title": "Validation en cours",
-          "description": "Vous allez maintenant être redirigé vers Stripe pour finaliser le paiement."
-        },
-        "redirectingToStripe": {
-          "title": "Redirection vers Stripe",
-          "description": "Vous allez maintenant être redirigé vers Stripe pour gérer votre abonnement."
-        },
-        "error": {
-          "title": "Erreur",
-          "description": "Impossible de lancer le processus de paiement. Veuillez réessayer."
-        }
-      },
-      "footer": {
-        "unusedMessages": "Les messages de chat inutilisés ne sont pas reportés au mois suivant"
-      }
     }
-  }
-  
+}

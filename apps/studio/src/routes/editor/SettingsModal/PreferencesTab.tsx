@@ -68,18 +68,19 @@ const PreferencesTab = observer(() => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="text-smallPlus min-w-[150px]">
-                            {LANGUAGE_DISPLAY_NAMES[i18n.language as keyof typeof LANGUAGE_DISPLAY_NAMES] || 'English'}
+                            {LANGUAGE_DISPLAY_NAMES[
+                                i18n.language as keyof typeof LANGUAGE_DISPLAY_NAMES
+                            ] || 'English'}
                             <Icons.ChevronDown className="ml-auto" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="min-w-[150px]">
                         {Object.entries(LANGUAGE_DISPLAY_NAMES).map(([code, name]) => (
-                            <DropdownMenuItem 
-                                key={code}
-                                onClick={() => i18n.changeLanguage(code)}
-                            >
+                            <DropdownMenuItem key={code} onClick={() => i18n.changeLanguage(code)}>
                                 <span>{name}</span>
-                                {i18n.language === code && <Icons.CheckCircled className="ml-auto" />}
+                                {i18n.language === code && (
+                                    <Icons.CheckCircled className="ml-auto" />
+                                )}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>

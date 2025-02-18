@@ -21,7 +21,7 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
         disabled: false,
         draggable: false,
         label: t('editor.toolbar.tools.select.name'),
-        tooltip: t('editor.toolbar.tools.select.tooltip')
+        tooltip: t('editor.toolbar.tools.select.tooltip'),
     },
     {
         mode: EditorMode.PAN,
@@ -30,7 +30,7 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
         disabled: false,
         draggable: false,
         label: t('editor.toolbar.tools.pan.name'),
-        tooltip: t('editor.toolbar.tools.pan.tooltip')
+        tooltip: t('editor.toolbar.tools.pan.tooltip'),
     },
     {
         mode: EditorMode.INSERT_DIV,
@@ -39,7 +39,7 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
         disabled: false,
         draggable: true,
         label: t('editor.toolbar.tools.insertDiv.name'),
-        tooltip: t('editor.toolbar.tools.insertDiv.tooltip')
+        tooltip: t('editor.toolbar.tools.insertDiv.tooltip'),
     },
     {
         mode: EditorMode.INSERT_TEXT,
@@ -48,8 +48,8 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
         disabled: false,
         draggable: true,
         label: t('editor.toolbar.tools.insertText.name'),
-        tooltip: t('editor.toolbar.tools.insertText.tooltip')
-    }
+        tooltip: t('editor.toolbar.tools.insertText.tooltip'),
+    },
 ];
 
 const Toolbar = observer(() => {

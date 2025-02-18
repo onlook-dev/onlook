@@ -1,62 +1,61 @@
 {
     "pricing": {
-      "plans": {
-        "basic": {
-          "name": "Onlook 基础版",
-          "price": "$0/月",
-          "description": "轻松进行原型设计和代码实验。",
-          "features": [
-            "可视化代码编辑器访问",
-            "无限项目",
-            "每天 {{dailyMessages}} 条 AI 聊天消息",
-            "每月 {{monthlyMessages}} 条 AI 消息",
-            "每次聊天仅限 1 个屏幕截图"
-          ]
+        "plans": {
+            "basic": {
+                "name": "Onlook 基础版",
+                "price": "$0/月",
+                "description": "轻松进行原型设计和代码实验。",
+                "features": [
+                    "可视化代码编辑器访问",
+                    "无限项目",
+                    "每天 {{dailyMessages}} 条 AI 聊天消息",
+                    "每月 {{monthlyMessages}} 条 AI 消息",
+                    "每次聊天仅限 1 个屏幕截图"
+                ]
+            },
+            "pro": {
+                "name": "Onlook 专业版",
+                "price": "$20/月",
+                "description": "创意无限。使用 AI 构建精彩网站。",
+                "features": [
+                    "可视化代码编辑器访问",
+                    "无限项目",
+                    "每天无限条 AI 聊天消息",
+                    "每月无限次聊天",
+                    "每次聊天可使用多个屏幕截图",
+                    "附赠一个由 Onlook 托管的自定义域名",
+                    "优先支持"
+                ]
+            }
         },
-        "pro": {
-          "name": "Onlook 专业版",
-          "price": "$20/月",
-          "description": "创意无限。使用 AI 构建精彩网站。",
-          "features": [
-            "可视化代码编辑器访问",
-            "无限项目",
-            "每天无限条 AI 聊天消息",
-            "每月无限次聊天",
-            "每次聊天可使用多个屏幕截图",
-            "附赠一个由 Onlook 托管的自定义域名",
-            "优先支持"
-          ]
+        "titles": {
+            "choosePlan": "选择您的方案",
+            "proMember": "感谢您成为专业版会员！"
+        },
+        "buttons": {
+            "currentPlan": "当前方案",
+            "getPro": "升级到专业版",
+            "manageSubscription": "管理订阅"
+        },
+        "loading": {
+            "checkingPayment": "正在检查付款..."
+        },
+        "toasts": {
+            "checkingOut": {
+                "title": "正在结账",
+                "description": "系统将转到 Stripe 完成付款。"
+            },
+            "redirectingToStripe": {
+                "title": "正在跳转至 Stripe",
+                "description": "系统将转到 Stripe 管理您的订阅。"
+            },
+            "error": {
+                "title": "错误",
+                "description": "无法启动结账流程。请重试。"
+            }
+        },
+        "footer": {
+            "unusedMessages": "未使用的聊天消息不会累积到下个月"
         }
-      },
-      "titles": {
-        "choosePlan": "选择您的方案",
-        "proMember": "感谢您成为专业版会员！"
-      },
-      "buttons": {
-        "currentPlan": "当前方案",
-        "getPro": "升级到专业版",
-        "manageSubscription": "管理订阅"
-      },
-      "loading": {
-        "checkingPayment": "正在检查付款..."
-      },
-      "toasts": {
-        "checkingOut": {
-          "title": "正在结账",
-          "description": "系统将转到 Stripe 完成付款。"
-        },
-        "redirectingToStripe": {
-          "title": "正在跳转至 Stripe",
-          "description": "系统将转到 Stripe 管理您的订阅。"
-        },
-        "error": {
-          "title": "错误",
-          "description": "无法启动结账流程。请重试。"
-        }
-      },
-      "footer": {
-        "unusedMessages": "未使用的聊天消息不会累积到下个月"
-      }
     }
-  }
-  
+}

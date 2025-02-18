@@ -18,7 +18,7 @@ const COMPONENT_DISCOVERY_ENABLED = false;
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
-    
+
     enum TabValue {
         PAGES = 'pages',
         LAYERS = 'layers',
@@ -97,7 +97,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.LAYERS)}
                 >
                     <Icons.Layers className="w-5 h-5" />
-                    <span className="text-xs leading-tight">{t('editor.panels.layers.tabs.layers')}</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.layers')}
+                    </span>
                 </button>
 
                 <button
@@ -111,7 +113,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
                 >
                     <Icons.File className="w-5 h-5" />
-                    <span className="text-xs leading-tight">{t('editor.panels.layers.tabs.pages')}</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.pages')}
+                    </span>
                 </button>
 
                 <button
@@ -125,7 +129,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.IMAGES)}
                 >
                     <Icons.Image className="w-5 h-5" />
-                    <span className="text-xs leading-tight">{t('editor.panels.layers.tabs.images')}</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.images')}
+                    </span>
                 </button>
 
                 <button

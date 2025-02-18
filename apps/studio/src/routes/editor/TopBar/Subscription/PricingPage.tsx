@@ -24,7 +24,7 @@ const LANGUAGE_DISPLAY_NAMES = {
     en: 'English',
     ja: '日本語',
     fr: 'Français',
-    zh: '中文'
+    zh: '中文',
 } as const;
 
 export const PricingPage = observer(() => {
@@ -183,19 +183,25 @@ export const PricingPage = observer(() => {
                                                             size="sm"
                                                             className="gap-2 text-foreground-secondary text-md"
                                                         >
-                                                            {LANGUAGE_DISPLAY_NAMES[i18n.language as keyof typeof LANGUAGE_DISPLAY_NAMES] || 'English'}
+                                                            {LANGUAGE_DISPLAY_NAMES[
+                                                                i18n.language as keyof typeof LANGUAGE_DISPLAY_NAMES
+                                                            ] || 'English'}
                                                             <Icons.ChevronDown className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        {Object.entries(LANGUAGE_DISPLAY_NAMES).map(([code, name]) => (
-                                                            <DropdownMenuItem
-                                                                key={code}
-                                                                onClick={() => i18n.changeLanguage(code)}
-                                                            >
-                                                                {name}
-                                                            </DropdownMenuItem>
-                                                        ))}
+                                                        {Object.entries(LANGUAGE_DISPLAY_NAMES).map(
+                                                            ([code, name]) => (
+                                                                <DropdownMenuItem
+                                                                    key={code}
+                                                                    onClick={() =>
+                                                                        i18n.changeLanguage(code)
+                                                                    }
+                                                                >
+                                                                    {name}
+                                                                </DropdownMenuItem>
+                                                            ),
+                                                        )}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>

@@ -1,4 +1,22 @@
 {
+    "welcome": {
+        "title": "Welcome to Onlook",
+        "titleReturn": "Welcome back to Onlook",
+        "description": "Onlook is an open-source visual editor for React apps. Design directly in your live product.",
+        "alpha": "Alpha",
+        "login": {
+            "github": "Login with GitHub",
+            "google": "Login with Google",
+            "lastUsed": "You used this last time"
+        },
+        "terms": {
+            "agreement": "By signing up, you agree to our",
+            "privacy": "Privacy Policy",
+            "and": "and",
+            "tos": "Terms of Service"
+        },
+        "version": "Version {{version}}"
+    },
     "pricing": {
         "plans": {
             "basic": {

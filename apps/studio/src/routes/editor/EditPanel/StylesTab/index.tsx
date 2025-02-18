@@ -134,7 +134,9 @@ const AccordionHeader = memo(({ groupKey }: { groupKey: string }) => {
                 </div>
             </TooltipTrigger>
             <TooltipPortal container={document.getElementById('style-tab-id')}>
-                <TooltipContent>{t('editor.panels.edit.tabs.styles.instanceClasses.tooltip')}</TooltipContent>
+                <TooltipContent>
+                    {t('editor.panels.edit.tabs.styles.instanceClasses.tooltip')}
+                </TooltipContent>
             </TooltipPortal>
         </Tooltip>
     );
