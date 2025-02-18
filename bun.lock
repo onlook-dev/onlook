@@ -10,7 +10,7 @@
     },
     "apps/studio": {
       "name": "@onlook/studio",
-      "version": "0.1.48",
+      "version": "0.2.0",
       "dependencies": {
         "@ai-sdk/anthropic": "^0.0.53",
         "@anthropic-ai/sdk": "^0.33.1",
@@ -34,7 +34,7 @@
         "embla-carousel-wheel-gestures": "^8.0.1",
         "fflate": "^0.8.2",
         "fix-path": "^4.0.0",
-        "freestyle-sandboxes": "^0.0.20",
+        "freestyle-sandboxes": "^0.0.22",
         "glob": "^11.0.1",
         "i18next": "^24.2.2",
         "istextorbinary": "^9.5.0",
@@ -1570,7 +1570,7 @@
 
     "framer-motion": ["framer-motion@11.18.2", "", { "dependencies": { "motion-dom": "^11.18.1", "motion-utils": "^11.18.1", "tslib": "^2.4.0" }, "peerDependencies": { "@emotion/is-prop-valid": "*", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@emotion/is-prop-valid", "react", "react-dom"] }, "sha512-5F5Och7wrvtLVElIpclDT0CBzMVg3dL22B64aZwHtsIY8RB4mXICLrkajK4G9R+ieSAGcgrLeae2SeUTg2pr6w=="],
 
-    "freestyle-sandboxes": ["freestyle-sandboxes@0.0.20", "", { "dependencies": { "@hey-api/client-fetch": "^0.5.7", "@langchain/core": "^0.3.38", "@langchain/langgraph": "^0.2.44", "@mastra/core": "^0.1.27-alpha.66", "ai": "^4.0.25", "humanlayer": "^0.7.0", "openai": "^4.77.3", "openapi": "^1.0.1", "zod": "^3.24.1" } }, "sha512-Xeqhhu5RIs0kpdyZZNrhJsGIonNyG7CWTox2ZSRfIns7fsyZVbQF0BZBMA6G7i69Y/WiwMYtePDZg1yCtf9kwA=="],
+    "freestyle-sandboxes": ["freestyle-sandboxes@0.0.22", "", { "dependencies": { "@hey-api/client-fetch": "^0.5.7", "@langchain/core": "^0.3.38", "@langchain/langgraph": "^0.2.44", "@mastra/core": "^0.1.27-alpha.66", "ai": "^4.0.25", "humanlayer": "^0.7.0", "openai": "^4.77.3", "openapi": "^1.0.1", "zod": "^3.24.1" } }, "sha512-sRr4Vp80h0EPcI7739y/wBQsj5wQ+TBwMH8NLYTdKvHlfjP0ULpT5c7RV1+AofwfiBIyOXK5TTUt8QlwTZxuDg=="],
 
     "fresh": ["fresh@0.5.2", "", {}, "sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q=="],
 

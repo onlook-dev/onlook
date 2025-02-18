@@ -1,11 +1,25 @@
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import hostingManager from '../hosting';
+import { createDomainVerification, verifyDomain } from '../hosting/freestyle';
 
 export function listenForHostingMessages() {
     ipcMain.handle(MainChannels.START_DEPLOYMENT, async (e: Electron.IpcMainInvokeEvent, args) => {
         const { folderPath, buildScript, urls, skipBuild } = args;
         return await hostingManager.deploy(folderPath, buildScript, urls, skipBuild);
+    });
+
+    ipcMain.handle(
+        MainChannels.CREATE_DOMAIN_VERIFICATION,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { domain } = args;
+            return await createDomainVerification(domain);
+        },
+    );
+
+    ipcMain.handle(MainChannels.VERIFY_DOMAIN, async (e: Electron.IpcMainInvokeEvent, args) => {
+        const { domain } = args;
+        return await verifyDomain(domain);
     });
 
     ipcMain.handle(

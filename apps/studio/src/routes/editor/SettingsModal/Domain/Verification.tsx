@@ -1,4 +1,10 @@
-import { useProjectsManager } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
+import {
+    FREESTYLE_IP_ADDRESS,
+    FRESTYLE_CUSTOM_HOSTNAME,
+    MainChannels,
+} from '@onlook/models/constants';
+import type { DomainVerificationResponse, VerifyDomainResponse } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -24,7 +30,6 @@ interface DNSRecord {
 }
 
 export const Verification = observer(() => {
-    const projectsManager = useProjectsManager();
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
@@ -68,7 +73,7 @@ export const Verification = observer(() => {
         }
     }
 
-    function setupDomain() {
+    async function setupDomain() {
         const validDomain = validateDomain();
         if (!validDomain) {
             return;
@@ -76,14 +81,35 @@ export const Verification = observer(() => {
 
         setDomain(validDomain); // Update with sanitized domain
         setStatus(VerificationStatus.PENDING);
-        // Send verification request to server
 
-        const verificationRecord = getVerificationRecord();
+        // Send verification request to server
+        const response: DomainVerificationResponse = await invokeMainChannel(
+            MainChannels.CREATE_DOMAIN_VERIFICATION,
+            {
+                domain: validDomain,
+            },
+        );
+
+        if (!response.success || !response.verificationCode) {
+            setError(response.message ?? 'Failed to create domain verification');
+            return;
+        }
+
+        const verificationRecord = getVerificationRecord(validDomain, response.verificationCode);
         const aRecords = getARecords();
         setRecords([verificationRecord, ...aRecords]);
     }
 
-    function verifyDomain() {
+    async function verifyDomain() {
+        const response: VerifyDomainResponse = await invokeMainChannel(MainChannels.VERIFY_DOMAIN, {
+            domain: domain,
+        });
+
+        if (!response.success) {
+            setError(response.message ?? 'Failed to verify domain');
+            return;
+        }
+
         setStatus(VerificationStatus.VERIFIED);
     }
 
@@ -93,12 +119,11 @@ export const Verification = observer(() => {
         setRecords([]);
     }
 
-    function getVerificationRecord() {
-        const value = 'example-code-value';
+    function getVerificationRecord(domain: string, verificationCode: string) {
         const verificationRecord: DNSRecord = {
             type: 'TXT',
-            host: `_freestyle_custom_hostname.${domain}`,
-            value: value,
+            host: `${FRESTYLE_CUSTOM_HOSTNAME}.${domain}`,
+            value: verificationCode,
         };
         return verificationRecord;
     }
@@ -108,13 +133,13 @@ export const Verification = observer(() => {
         const apexRecord: DNSRecord = {
             type: 'A',
             host: '@',
-            value: '35.235.84.134',
+            value: FREESTYLE_IP_ADDRESS,
         };
 
         const wwwRecord: DNSRecord = {
             type: 'A',
             host: 'www',
-            value: '35.235.84.134',
+            value: FREESTYLE_IP_ADDRESS,
         };
 
         aRecords.push(apexRecord, wwwRecord);
@@ -200,6 +225,7 @@ export const Verification = observer(() => {
             </div>
         );
     }
+
     function renderRecords() {
         return (
             <div className="grid grid-cols-7 gap-4 rounded-lg border p-4">

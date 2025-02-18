@@ -1,4 +1,5 @@
 import { BASE_PROXY_ROUTE, FUNCTIONS_ROUTE, ProxyRoutes } from '@onlook/models/constants';
+import type { DomainVerificationResponse, VerifyDomainResponse } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebConfiguration } from 'freestyle-sandboxes';
 import { getRefreshedAuthTokens } from '../auth';
 import type { FileRecord } from './helpers';
@@ -27,19 +28,28 @@ export async function deployToFreestyle(files: FileRecord, urls: string[]): Prom
     }
 }
 
-export async function createDomainVerification(domain: string): Promise<string> {
+export async function createDomainVerification(
+    domain: string,
+): Promise<DomainVerificationResponse> {
     try {
         const authTokens = await getRefreshedAuthTokens();
         const freestyleClient = getFreestyleClient(authTokens.accessToken);
         const response = await freestyleClient.createDomainVerificationRequest(domain);
-        return response.verificationCode;
+        return {
+            success: true,
+            message: 'Domain verification created',
+            verificationCode: response.verificationCode,
+        };
     } catch (error) {
         console.error('Failed to create domain verification', error);
-        throw new Error(`Failed to create domain verification, error: ${error}`);
+        return {
+            success: false,
+            message: 'Failed to create domain verification',
+        };
     }
 }
 
-export async function verifyDomain(domain: string): Promise<boolean> {
+export async function verifyDomain(domain: string): Promise<VerifyDomainResponse> {
     try {
         const authTokens = await getRefreshedAuthTokens();
         const freestyleClient = getFreestyleClient(authTokens.accessToken);
@@ -50,9 +60,15 @@ export async function verifyDomain(domain: string): Promise<boolean> {
             // @ts-expect-error message exists on HandleVerifyDomainError
             throw new Error(response.message);
         }
-        return true;
+        return {
+            success: true,
+            message: 'Domain verified',
+        };
     } catch (error) {
         console.error('Failed to verify domain', error);
-        return false;
+        return {
+            success: false,
+            message: 'Failed to verify domain',
+        };
     }
 }
