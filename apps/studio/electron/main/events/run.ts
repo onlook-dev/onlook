@@ -1,8 +1,9 @@
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
-import { runBunCommand } from '../bun';
+import { isPortTaken, runBunCommand } from '../bun';
 import run from '../run';
 import terminal from '../run/terminal';
+import type { DetectedPortResults } from '@onlook/models';
 
 export async function listenForRunMessages() {
     ipcMain.handle(MainChannels.RUN_START, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -61,4 +62,12 @@ export async function listenForRunMessages() {
         const { cwd, command } = args as { cwd: string; command: string };
         return await runBunCommand(command, { cwd });
     });
+
+    ipcMain.handle(
+        MainChannels.IS_PORT_TAKEN,
+        async (e: Electron.IpcMainInvokeEvent, args): Promise<DetectedPortResults> => {
+            const { port } = args as { port: string };
+            return await isPortTaken(parseInt(port));
+        },
+    );
 }

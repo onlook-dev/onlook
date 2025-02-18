@@ -15,6 +15,9 @@ export class RunManager {
     message: string | null = null;
     isLoading: boolean = false;
     private cleanupLoadingTimer?: () => void;
+    portConflict: boolean = false;
+    suggestedPort: number = 3000;
+    currentPort: number = 3000;
 
     constructor(project: Project) {
         makeAutoObservable(this);
@@ -153,5 +156,20 @@ export class RunManager {
             this.cleanupLoadingTimer();
         }
         await this.stop();
+    }
+
+    resolvePortConflict(newUrl: string) {
+        try {
+            const urlObj = new URL(newUrl);
+            this.suggestedPort = parseInt(urlObj.port, 10);
+            // Don't reset portConflict flag until we confirm the new port works
+            // this.portConflict = false;
+            
+            // Instead of directly calling start(), we should update the port
+            // and let the Frame component's port detection handle the rest
+            this.currentPort = this.suggestedPort;
+        } catch (error) {
+            console.error('Failed to resolve port conflict:', error);
+        }
     }
 }

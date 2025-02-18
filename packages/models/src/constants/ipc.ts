@@ -39,6 +39,7 @@ export enum MainChannels {
     SEND_WINDOW_COMMAND = 'send-window-command',
     DELETE_FOLDER = 'delete-folder',
     IS_CHILD_TEXT_EDITABLE = 'is-child-text-editable',
+    IS_PORT_TAKEN = 'is-port-taken',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
