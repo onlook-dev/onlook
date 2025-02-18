@@ -7,7 +7,7 @@ import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
 import { FILE_PROMPTS } from './file';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
-import { PLATFORM_SIGNATURE } from './platform';
+import { PLATFORM_SIGNATURE } from './signatures';
 
 export class PromptProvider {
     shouldWrapXml: boolean;

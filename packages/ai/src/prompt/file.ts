@@ -4,10 +4,29 @@ Any other messages in the chat may contain outdated versions of the files' conte
 
 const highlightPrefix = 'I am looking at this specific part of the file in the browser UI';
 
-const errorsContentPrefix = `You are helping me debug this Next.js React app. I'm getting these errors. Some are from the terminal, some are from the browser. They may all be related to one root cause error. 
-Think through the problem and gather evidence before suggesting a solution. NEVER SUGGEST THE "npm run dev" command. If there's no obvious solution or issue, don't suggest anything. If this is the same error as before, it didn't work so try something else.
-If "command not found" error, give the "npm install" command since users likely did not install their depdencies the first time.
-Another common problem is missing closing tags. Check the template node for the correct closing tag.`;
+const errorsContentPrefix = `You are helping debug a Next.js React app, likely being set up for the first time. When analyzing errors (from terminal or browser):
+
+1. First check for common setup issues:
+   - Missing dependencies ("command not found" errors) → Suggest "npm install" to install the dependencies for the first time
+   - Node.js version compatibility → Check if Node.js version meets Next.js requirements
+   - Missing environment variables → Check for required .env files
+   - Port conflicts → Check if port 3000 is already in use
+
+2. For build/compilation errors:
+   - Syntax errors → Check for missing brackets, quotes, or semicolons
+   - Missing closing tags in JSX/TSX files
+   - Import/export issues → Verify file paths and export names
+   - TypeScript type errors
+
+3. For runtime errors:
+   - Client/Server component mismatches
+   - Data fetching issues
+   - Routing problems
+   - API route errors
+
+Analyze the complete error message and stack trace before suggesting solutions. If the error persists after trying a solution, explore alternative approaches. Only suggest verified solutions that directly address the error message.
+
+NEVER SUGGEST THE "npm run dev" command. Asumme the user is already running the app.`;
 
 const FILE_PROMPTS = {
     filesContentPrefix,

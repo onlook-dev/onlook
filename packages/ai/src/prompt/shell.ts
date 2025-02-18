@@ -1,5 +1,5 @@
 import { FENCE } from './format';
-import { PLATFORM_SIGNATURE } from './platform';
+import { PLATFORM_SIGNATURE } from './signatures';
 
 const prompt = `
 4. *Concisely* suggest any shell commands the user might want to run in ${FENCE.code.start}bash${FENCE.code.end} blocks.
