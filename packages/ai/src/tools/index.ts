@@ -6,7 +6,11 @@ import { getAllFiles } from './helpers';
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
     parameters: z.object({
-        path: z.string().describe('The absolute path to the directory to get files from'),
+        path: z
+            .string()
+            .describe(
+                'The absolute path to the directory to get files from. This should be the root directory of the project.',
+            ),
     }),
     execute: async ({ path }) => {
         const res = await getAllFiles(path);
