@@ -11,6 +11,7 @@ import type { EditorEngine } from '..';
 import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
+import { isPromptTooLongError, PROMPT_TOO_LONG_ERROR } from './helpers';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
@@ -18,8 +19,6 @@ import { SuggestionManager } from './suggestions';
 
 const USE_MOCK = false;
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
-const PROMPT_TOO_LONG_ERROR =
-    'Your message is too long. Please start a new chat with a shorter message.';
 
 export class ChatManager {
     isWaiting = false;
@@ -127,7 +126,6 @@ export class ChatManager {
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
-
         this.stream.clear();
         this.isWaiting = false;
         this.handleChatResponse(res, requestType);
@@ -192,12 +190,14 @@ export class ChatManager {
         }
         if (res.status === 'error') {
             console.error('Error found in chat response', res.content);
-            // Check for prompt too long error
-            if (res.content.includes('prompt is too long')) {
+            if (isPromptTooLongError(res.content)) {
                 this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
             } else {
                 this.stream.errorMessage = res.content;
             }
+            sendAnalytics('chat error', {
+                content: res.content,
+            });
             return;
         }
         const assistantMessage = this.conversation.addAssistantMessage(res);
