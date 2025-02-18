@@ -17,6 +17,10 @@ const RunButton = observer(() => {
             runner.stop();
             return;
         }
+        if (runner?.state === RunState.ERROR) {
+            runner.restart();
+            return;
+        }
         runner?.start();
     };
 
@@ -89,6 +93,8 @@ const RunButton = observer(() => {
                 return 'Run your app';
             case RunState.RUNNING:
                 return 'Stop Running your App & Clean Code';
+            case RunState.ERROR:
+                return 'Stop your App';
             default:
                 return '';
         }
