@@ -55,7 +55,7 @@ class TerminalManager {
             'Exception',
         ];
 
-        if (errorPatterns.some((pattern) => data.includes(pattern))) {
+        if (errorPatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()))) {
             mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
                 state: RunState.ERROR,
                 message: `Command error detected: ${data.trim()}`,
