@@ -5,6 +5,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import type { ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ButtonMotion = motion.create(Button);
 
