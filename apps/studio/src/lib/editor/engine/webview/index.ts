@@ -128,7 +128,6 @@ export class WebviewManager {
 
         const hasOnlook = isOnlookInDoc(doc);
         if (hasOnlook) {
-            console.log('hasOnlook');
             this.editorEngine.errors.shouldShowErrors = false;
             return WebviewState.DOM_ONLOOK_ENABLED;
         }
