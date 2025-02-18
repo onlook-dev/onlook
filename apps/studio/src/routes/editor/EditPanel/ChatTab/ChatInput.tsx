@@ -16,10 +16,12 @@ import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
 import type { SuggestionsRef } from './Suggestions';
 import Suggestions from './Suggestions';
+import { useTranslation } from 'react-i18next';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
+    const { t } = useTranslation();
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
@@ -293,11 +295,8 @@ export const ChatInput = observer(() => {
                     disabled={disabled}
                     placeholder={
                         disabled
-                            ? projectsManager.runner?.isRunning ||
-                              projectsManager.runner?.isStarting
-                                ? 'Select an element to chat'
-                                : 'Start the project to chat'
-                            : 'Ask follow up questions or provide more context...'
+                            ? t('editor.panels.edit.tabs.chat.emptyState')
+                            : t('editor.panels.edit.tabs.chat.input.placeholder')
                     }
                     className={cn(
                         'mt-2 overflow-auto max-h-32 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',

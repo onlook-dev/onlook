@@ -19,10 +19,12 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import StylesTab from './StylesTab';
 import WindowSettings from './WindowSettings';
+import { useTranslation } from 'react-i18next';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
+    const { t } = useTranslation();
 
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
@@ -46,7 +48,7 @@ const EditPanel = observer(() => {
     function renderEmptyState() {
         return (
             <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
-                Select an element <br></br>to edit its style properties
+                {t('editor.panels.edit.tabs.styles.emptyState')}
             </div>
         );
     }
@@ -84,7 +86,7 @@ const EditPanel = observer(() => {
                                         value={EditorTabValue.CHAT}
                                     >
                                         <Icons.Sparkles className="mr-1.5 mb-0.5 h-4 w-4" />
-                                        Chat
+                                        {t('editor.panels.edit.tabs.chat.name')}
                                         <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
                                     </TabsTrigger>
                                 </div>
@@ -154,7 +156,7 @@ const EditPanel = observer(() => {
                             value={EditorTabValue.STYLES}
                         >
                             <Icons.Styles className="mr-1.5 h-4 w-4" />
-                            Styles
+                            {t('editor.panels.edit.tabs.styles.name')}
                         </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}

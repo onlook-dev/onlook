@@ -55,6 +55,20 @@ export enum Theme {
     System = 'system',
 }
 
+export enum Language {
+    English = 'en',
+    Japanese = 'ja',
+    French = 'fr',
+    Chinese = 'zh'
+}
+
+export const LANGUAGE_DISPLAY_NAMES: Record<Language, string> = {
+    [Language.English]: 'English',
+    [Language.Japanese]: '日本語',
+    [Language.French]: 'Français',
+    [Language.Chinese]: '中文'
+} as const;
+
 export const DefaultSettings = {
     SCALE: 0.7,
     PAN_POSITION: { x: 175, y: 100 },

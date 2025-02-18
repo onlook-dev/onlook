@@ -57,5 +57,113 @@
         "footer": {
             "unusedMessages": "Unused chat messages don't rollover to the next month"
         }
+    },
+    "editor": {
+        "modes": {
+            "design": {
+                "name": "Design",
+                "description": "Edit and modify your website's design",
+                "tooltip": "Switch to design mode"
+            },
+            "preview": {
+                "name": "Preview",
+                "description": "Preview and test your website's functionality",
+                "tooltip": "Switch to Preview mode"
+            }
+        },
+        "toolbar": {
+            "tools": {
+                "select": {
+                    "name": "Select",
+                    "tooltip": "Select and modify elements"
+                },
+                "pan": {
+                    "name": "Pan",
+                    "tooltip": "Pan and move around the canvas"
+                },
+                "insertDiv": {
+                    "name": "Insert Container",
+                    "tooltip": "Add a new container element"
+                },
+                "insertText": {
+                    "name": "Insert Text",
+                    "tooltip": "Add a new text element"
+                }
+            }
+        },
+        "panels": {
+            "edit": {
+                "tabs": {
+                    "chat": {
+                        "name": "Chat",
+                        "emptyState": "Select an element to chat with AI",
+                        "input": {
+                            "placeholder": "Type your message...",
+                            "tooltip": "Chat with AI about the selected element"
+                        },
+                        "controls": {
+                            "newChat": "New Chat",
+                            "history": "Chat History"
+                        },
+                        "settings": {
+                            "showSuggestions": "Show suggestions",
+                            "expandCodeBlocks": "Show code while rendering"
+                        }
+                    },
+                    "styles": {
+                        "name": "Styles",
+                        "emptyState": "Select an element to edit its style properties",
+                        "groups": {
+                            "position": "Position & Dimensions",
+                            "layout": "Flexbox & Layout",
+                            "style": "Styles",
+                            "text": "Text"
+                        },
+                        "tailwind": {
+                            "title": "Tailwind Classes",
+                            "placeholder": "Add tailwind classes here",
+                            "componentClasses": {
+                                "title": "Main Component Classes",
+                                "tooltip": "Changes apply to component code. This is the default."
+                            },
+                            "instanceClasses": {
+                                "title": "Instance Classes",
+                                "tooltip": "Changes apply to instance code."
+                            }
+                        }
+                    }
+                }
+            },
+            "layers": {
+                "name": "Layers",
+                "tabs": {
+                    "layers": "Layers",
+                    "pages": "Pages",
+                    "components": "Components",
+                    "images": "Images"
+                }
+            }
+        },
+        "settings": {
+            "preferences": {
+                "language": "Language",
+                "theme": "Theme",
+                "deleteWarning": "Delete Warning",
+                "analytics": "Analytics",
+                "editor": {
+                    "ide": "Editor",
+                    "shouldWarnDelete": "Warn when deleting elements",
+                    "enableAnalytics": "Enable analytics"
+                }
+            }
+        },
+        "frame": {
+            "startDesigning": {
+                "prefix": "Press ",
+                "action": "Play",
+                "suffix": " to start designing your App"
+            },
+            "playButton": "Play"
+        }
     }
 }

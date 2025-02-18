@@ -35,7 +35,7 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
         !editorEngine.text.isEditing && editorEngine.clearUI();
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
-    useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
+    useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.mode = EditorMode.PREVIEW));
     useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
     useHotkeys(Hotkey.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
 

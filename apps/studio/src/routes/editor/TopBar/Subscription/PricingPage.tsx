@@ -20,6 +20,13 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PricingCard } from './PricingCard';
 
+const LANGUAGE_DISPLAY_NAMES = {
+    en: 'English',
+    ja: '日本語',
+    fr: 'Français',
+    zh: '中文'
+} as const;
+
 export const PricingPage = observer(() => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
@@ -176,27 +183,19 @@ export const PricingPage = observer(() => {
                                                             size="sm"
                                                             className="gap-2 text-foreground-secondary text-md"
                                                         >
-                                                            {i18n.language === 'en'
-                                                                ? 'English'
-                                                                : '日本語'}
+                                                            {LANGUAGE_DISPLAY_NAMES[i18n.language as keyof typeof LANGUAGE_DISPLAY_NAMES] || 'English'}
                                                             <Icons.ChevronDown className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem
-                                                            onClick={() =>
-                                                                i18n.changeLanguage('en')
-                                                            }
-                                                        >
-                                                            English
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={() =>
-                                                                i18n.changeLanguage('ja')
-                                                            }
-                                                        >
-                                                            日本語
-                                                        </DropdownMenuItem>
+                                                        {Object.entries(LANGUAGE_DISPLAY_NAMES).map(([code, name]) => (
+                                                            <DropdownMenuItem
+                                                                key={code}
+                                                                onClick={() => i18n.changeLanguage(code)}
+                                                            >
+                                                                {name}
+                                                            </DropdownMenuItem>
+                                                        ))}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>

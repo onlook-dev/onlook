@@ -15,6 +15,8 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { IDE } from '/common/ide';
+import { LANGUAGE_DISPLAY_NAMES } from '@onlook/models/constants';
+import { useTranslation } from 'react-i18next';
 
 const PreferencesTab = observer(() => {
     const userManager = useUserManager();
@@ -23,6 +25,7 @@ const PreferencesTab = observer(() => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
+    const { i18n } = useTranslation();
 
     const IDEIcon = Icons[ide.icon];
 
@@ -54,6 +57,34 @@ const PreferencesTab = observer(() => {
 
     return (
         <div className="flex flex-col gap-8">
+            {/* Language Preference */}
+            <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-2">
+                    <p className="text-foreground-onlook text-largePlus">Language</p>
+                    <p className="text-foreground-onlook text-small">
+                        Choose your preferred language
+                    </p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="text-smallPlus min-w-[150px]">
+                            {LANGUAGE_DISPLAY_NAMES[i18n.language as keyof typeof LANGUAGE_DISPLAY_NAMES] || 'English'}
+                            <Icons.ChevronDown className="ml-auto" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="min-w-[150px]">
+                        {Object.entries(LANGUAGE_DISPLAY_NAMES).map(([code, name]) => (
+                            <DropdownMenuItem 
+                                key={code}
+                                onClick={() => i18n.changeLanguage(code)}
+                            >
+                                <span>{name}</span>
+                                {i18n.language === code && <Icons.CheckCircled className="ml-auto" />}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
                     <p className="text-foreground-onlook text-largePlus">Theme</p>

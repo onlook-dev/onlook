@@ -11,10 +11,14 @@ import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
 import ZoomControls from './ZoomControls/index.tsx';
 import OpenCodeMini from './OpenCodeMini/index.tsx';
+import { useTranslation } from 'react-i18next';
+
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
+    
     enum TabValue {
         PAGES = 'pages',
         LAYERS = 'layers',
@@ -76,7 +80,7 @@ const LayersPanel = observer(() => {
         <div
             className={cn(
                 'flex gap-0 h-[calc(100vh-5rem)] ',
-                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
             )}
             onMouseLeave={handleMouseLeave}
         >
@@ -93,7 +97,7 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.LAYERS)}
                 >
                     <Icons.Layers className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Layers</span>
+                    <span className="text-xs leading-tight">{t('editor.panels.layers.tabs.layers')}</span>
                 </button>
 
                 <button
@@ -107,7 +111,7 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
                 >
                     <Icons.File className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Pages</span>
+                    <span className="text-xs leading-tight">{t('editor.panels.layers.tabs.pages')}</span>
                 </button>
 
                 <button
@@ -121,7 +125,7 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.IMAGES)}
                 >
                     <Icons.Image className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Images</span>
+                    <span className="text-xs leading-tight">{t('editor.panels.layers.tabs.images')}</span>
                 </button>
 
                 <button
