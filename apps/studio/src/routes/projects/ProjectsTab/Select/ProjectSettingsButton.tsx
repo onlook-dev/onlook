@@ -30,6 +30,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [deleteProjectFolder, setDeleteProjectFolder] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
+    const [showPathDialog, setShowPathDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
     const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
@@ -48,6 +49,15 @@ export default function ProjectSettingsButton({ project }: { project: Project })
         setShowRenameDialog(false);
     };
 
+    const handleUpdatePath = async () => {
+        const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+            | string
+            | null;
+        if (path) {
+            projectsManager.updateProject({ ...project, folderPath: path });
+        }
+    };
+
     const handleOpenProjectFolder = () => {
         if (project.folderPath) {
             invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
@@ -64,6 +74,13 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
+                    <DropdownMenuItem
+                        onSelect={() => setShowPathDialog(true)}
+                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
+                    >
+                        <Icons.Directory className="w-4 h-4" />
+                        Update Project Path
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={handleOpenProjectFolder}
                         onMouseEnter={() => setIsDirectoryHovered(true)}
@@ -162,6 +179,32 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                             onClick={handleRenameProject}
                         >
                             Rename
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog open={showPathDialog} onOpenChange={setShowPathDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Update Project Path</AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <div className="flex flex-col w-full gap-2">
+                        <Label htmlFor="path">Project Path</Label>
+                        <div className="flex gap-2">
+                            <Input
+                                id="path"
+                                type="text"
+                                value={project.folderPath || ''}
+                                readOnly
+                            />
+                            <Button variant="outline" size="icon" onClick={handleUpdatePath}>
+                                <Icons.Directory className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                    <AlertDialogFooter>
+                        <Button variant="ghost" onClick={() => setShowPathDialog(false)}>
+                            Close
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
