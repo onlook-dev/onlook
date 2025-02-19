@@ -12,6 +12,7 @@ import type { DomElement } from '@onlook/models/element';
 const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyleImpl }) => {
     const editorEngine = useEditorEngine();
     const [showIndividualControls, setShowIndividualControls] = useState(false);
+
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
         if (!selectedStyle) {
@@ -24,41 +25,35 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
     const onMainValueChanged = (key: string, value: string) => {
         if (value === 'absolute') {
             setShowIndividualControls(true);
+            centerElement();
         } else {
+            editorEngine.style.updateStyleNoAction(
+                Object.fromEntries(
+                    compoundStyle.children.map((elementStyle) => [elementStyle.key, 'auto']),
+                ),
+            );
             setShowIndividualControls(false);
         }
-        overrideChildrenStyles(value);
-    };
-
-    const overrideChildrenStyles = (newValue: string) => {
-        // Remove all existing styles if not absolute
-        if (newValue !== 'absolute') {
-            compoundStyle.children.forEach((elementStyle) => {
-                editorEngine.style.update(elementStyle.key, 'auto');
-            });
-        } else {
-            compoundStyle.children.forEach((elementStyle) => {
-                editorEngine.style.update(elementStyle.key, newValue);
-            });
-        }
-        editorEngine.style.updateStyleNoAction(
-            Object.fromEntries(
-                compoundStyle.children.map((elementStyle) => [elementStyle.key, newValue]),
-            ),
-        );
     };
 
     const onValueChange = (key: string, value: string) => {
-        overrideChildrenStyles(value);
+        editorEngine.style.updateStyleNoAction(
+            Object.fromEntries([
+                [key, value],
+                ...compoundStyle.children.map((elementStyle) => [
+                    elementStyle.key,
+                    elementStyle.getValue(editorEngine.style.selectedStyle?.styles || {}),
+                ]),
+            ]),
+        );
     };
 
-    const handleCenterClick = async () => {
+    const centerElement = async () => {
         const selectedStyle = editorEngine.style.selectedStyle;
         if (!selectedStyle) {
             return;
         }
 
-        // Get the selected element and its parent
         const element = editorEngine.elements.selected[0];
         if (!element?.domId) {
             return;
@@ -88,19 +83,18 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
             return;
         }
 
-        // Update position values
         compoundStyle.children.forEach((elementStyle) => {
             const position = elementStyle.displayName.toLowerCase();
             switch (position) {
                 case 'left':
-                    editorEngine.style.update(elementStyle.key, `${centerX}px`);
+                    editorEngine.style.updateStyleNoAction({ [elementStyle.key]: `${centerX}px` });
                     break;
                 case 'top':
-                    editorEngine.style.update(elementStyle.key, `${centerY}px`);
+                    editorEngine.style.updateStyleNoAction({ [elementStyle.key]: `${centerY}px` });
                     break;
                 case 'right':
                 case 'bottom':
-                    editorEngine.style.update(elementStyle.key, 'auto');
+                    editorEngine.style.updateStyleNoAction({ [elementStyle.key]: 'auto' });
                     break;
             }
         });
@@ -116,9 +110,11 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
     );
 
     function renderVisualInput() {
+        const elementStyles = compoundStyle.children;
+
         return (
-            <div className="relative h-36 flex items-center justify-center mb-4">
-                {compoundStyle.children.map((elementStyle) => {
+            <div className="relative h-36 w-52 flex items-center justify-center mb-4 mx-auto">
+                {elementStyles.map((elementStyle) => {
                     const position = elementStyle.displayName.toLowerCase();
 
                     return (
@@ -138,7 +134,7 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
                 })}
 
                 <div className="w-16 h-16 bg-background-onlook rounded relative flex items-center justify-center px-4 py-4">
-                    {compoundStyle.children.map((elementStyle) => {
+                    {elementStyles.map((elementStyle) => {
                         const value = elementStyle.getValue(
                             editorEngine.style.selectedStyle?.styles || {},
                         );
@@ -164,7 +160,7 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
                         className={cn(
                             'flex items-center justify-center border border-foreground-onlook rounded-md w-full h-full cursor-pointer transition-colors bg-background-onlook/75',
                         )}
-                        onClick={handleCenterClick}
+                        onClick={centerElement}
                     >
                         <Icons.Plus className={cn('w-4 h-4')} />
                     </div>
