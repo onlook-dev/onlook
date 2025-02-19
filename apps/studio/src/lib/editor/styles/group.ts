@@ -4,6 +4,10 @@ import { CompoundStyleKey, StyleType } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
 
 const STYLE_CONSTRAINTS = {
+    position: {
+        min: -9999,
+        max: 9999,
+    },
     width: {
         min: 0,
         max: 9999,
@@ -41,26 +45,26 @@ export const PositionGroup = [
         [
             new SingleStyleImpl('top', '', 'Top', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                min: 0,
-                max: 100,
+                min: STYLE_CONSTRAINTS.position.min,
+                max: STYLE_CONSTRAINTS.position.max,
             }),
 
             new SingleStyleImpl('right', '', 'Right', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                min: 0,
-                max: 100,
+                min: STYLE_CONSTRAINTS.position.min,
+                max: STYLE_CONSTRAINTS.position.max,
             }),
 
             new SingleStyleImpl('bottom', '', 'Bottom', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                min: 0,
-                max: 100,
+                min: STYLE_CONSTRAINTS.position.min,
+                max: STYLE_CONSTRAINTS.position.max,
             }),
 
             new SingleStyleImpl('left', '', 'Left', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                min: 0,
-                max: 100,
+                min: STYLE_CONSTRAINTS.position.min,
+                max: STYLE_CONSTRAINTS.position.max,
             }),
         ],
     ),
