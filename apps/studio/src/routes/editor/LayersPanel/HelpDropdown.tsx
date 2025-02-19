@@ -15,11 +15,13 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const HelpDropdown = observer(() => {
     const editorEngine = useEditorEngine();
     const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -37,14 +39,14 @@ export const HelpDropdown = observer(() => {
             >
                 <DropdownMenuItem onClick={() => invokeMainChannel(MainChannels.RELOAD_APP)}>
                     <Icons.Reload className="w-4 h-4 mr-2" />
-                    Reload Onlook
+                    {t('help.menu.reloadOnlook')}
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">
                         {theme === Theme.Dark && <Icons.Moon className="w-4 h-4 mr-2" />}
                         {theme === Theme.Light && <Icons.Sun className="w-4 h-4 mr-2" />}
                         {theme === Theme.System && <Icons.Laptop className="w-4 h-4 mr-2" />}
-                        Theme
+                        {t('help.menu.theme.title')}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-32 ml-2">
                         <DropdownMenuItem
@@ -54,7 +56,7 @@ export const HelpDropdown = observer(() => {
                             }}
                         >
                             <Icons.Sun className="w-4 h-4 mr-2" />
-                            Light
+                            {t('help.menu.theme.light')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className="text-sm"
@@ -63,7 +65,7 @@ export const HelpDropdown = observer(() => {
                             }}
                         >
                             <Icons.Moon className="w-4 h-4 mr-2" />
-                            Dark
+                            {t('help.menu.theme.dark')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className="text-sm"
@@ -72,7 +74,7 @@ export const HelpDropdown = observer(() => {
                             }}
                         >
                             <Icons.Laptop className="w-4 h-4 mr-2" />
-                            System
+                            {t('help.menu.theme.system')}
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
@@ -83,28 +85,28 @@ export const HelpDropdown = observer(() => {
                     }}
                 >
                     <Icons.Gear className="w-4 h-4 mr-2" />
-                    Open Settings
+                    {t('help.menu.openSettings')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">
                         <Icons.EnvelopeClosed className="w-4 h-4 mr-2" />
-                        Contact Us
+                        {t('help.menu.contactUs.title')}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-48 ml-2">
                         <DropdownMenuItem
                             onClick={() => window.open('https://onlook.com', '_blank')}
                         >
                             <Icons.Globe className="w-4 h-4 mr-2" />
-                            Website
+                            {t('help.menu.contactUs.website')}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => window.open(Links.DISCORD, '_blank')}>
                             <Icons.DiscordLogo className="w-4 h-4 mr-2" />
-                            Discord
+                            {t('help.menu.contactUs.discord')}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => window.open(Links.GITHUB, '_blank')}>
                             <Icons.GitHubLogo className="w-4 h-4 mr-2" />
-                            GitHub
+                            {t('help.menu.contactUs.github')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() =>
@@ -115,13 +117,13 @@ export const HelpDropdown = observer(() => {
                             }
                         >
                             <Icons.EnvelopeClosed className="w-4 h-4 mr-2" />
-                            Email
+                            {t('help.menu.contactUs.email')}
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}>
                     <Icons.ExclamationTriangle className="w-4 h-4 mr-2" />
-                    Report Issue
+                    {t('help.menu.reportIssue')}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

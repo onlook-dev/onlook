@@ -7,8 +7,16 @@ import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from '@onlook/ui/toaster';
 import Routes from './routes';
 import '@fontsource-variable/inter';
+import { useEffect } from 'react';
 
 function App() {
+    useEffect(() => {
+        const savedLanguage = localStorage.getItem('app-language');
+        if (savedLanguage) {
+            i18n.changeLanguage(savedLanguage);
+        }
+    }, []);
+
     return (
         <I18nextProvider i18n={i18n}>
             <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">

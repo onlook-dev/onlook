@@ -7,10 +7,12 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import { useTranslation } from 'react-i18next';
 
 const ZoomControls = observer(() => {
     const editorEngine = useEditorEngine();
     const scale = editorEngine.canvas.scale;
+    const { t } = useTranslation();
 
     const [inputValue, setInputValue] = useState(`${Math.round(scale * 100)}%`);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -81,7 +83,7 @@ const ZoomControls = observer(() => {
                         </PopoverTrigger>
                     </TooltipTrigger>
                     <TooltipPortal>
-                        <TooltipContent side="right">Zoom Level</TooltipContent>
+                        <TooltipContent side="right">{t('editor.zoom.level')}</TooltipContent>
                     </TooltipPortal>
                 </Tooltip>
                 <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
@@ -127,13 +129,13 @@ const ZoomControls = observer(() => {
                         onClick={() => (editorEngine.canvas.scale = 1)}
                         className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
                     >
-                        <span className="flex-grow text-mini">Zoom 100%</span>
+                        <span className="flex-grow text-mini">{t('editor.zoom.reset')}</span>
                     </button>
                     <button
                         onClick={() => (editorEngine.canvas.scale = 2)}
                         className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
                     >
-                        <span className="flex-grow text-mini">Zoom 200%</span>
+                        <span className="flex-grow text-mini">{t('editor.zoom.double')}</span>
                     </button>
                 </PopoverContent>
             </Popover>

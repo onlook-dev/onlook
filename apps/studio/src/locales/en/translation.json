@@ -40,7 +40,13 @@
             "deleteProject": "Delete Project",
             "cancel": "Cancel",
             "delete": "Delete",
-            "rename": "Rename"
+            "rename": "Rename",
+            "goToAllProjects": "Go to all Projects",
+            "newProject": "New Project",
+            "startFromScratch": "Start from scratch",
+            "importProject": "Import a project",
+            "subscriptions": "Subscriptions",
+            "settings": "Settings"
         },
         "dialogs": {
             "delete": {
@@ -53,6 +59,17 @@
                 "label": "Project Name",
                 "error": "Project name can't be empty"
             }
+        },
+        "prompt": {
+            "title": "What kind of website do you want to make?",
+            "description": "Tell us a bit about your project. Be as detailed as possible.",
+            "input": {
+                "placeholder": "Paste a reference screenshot, write a novel, get creative...",
+                "imageUpload": "Upload Image Reference",
+                "fileReference": "File Reference",
+                "submit": "Start building your site"
+            },
+            "blankStart": "Start from a blank page"
         }
     },
     "welcome": {
@@ -238,6 +255,34 @@
                 "suffix": " to start designing your App"
             },
             "playButton": "Play"
+        },
+        "zoom": {
+            "level": "Zoom Level",
+            "in": "Zoom In",
+            "out": "Zoom Out",
+            "fit": "Zoom Fit",
+            "reset": "Zoom 100%",
+            "double": "Zoom 200%"
+        }
+    },
+    "help": {
+        "menu": {
+            "reloadOnlook": "Reload Onlook",
+            "theme": {
+                "title": "Theme",
+                "light": "Light",
+                "dark": "Dark",
+                "system": "System"
+            },
+            "openSettings": "Open Settings",
+            "contactUs": {
+                "title": "Contact Us",
+                "website": "Website",
+                "discord": "Discord",
+                "github": "GitHub",
+                "email": "Email"
+            },
+            "reportIssue": "Report Issue"
         }
     }
 }
