@@ -26,7 +26,6 @@ const TextInput = observer(
         const [value, setValue] = useState(elementStyle.defaultValue);
         const [isFocused, setIsFocused] = useState(false);
         const [prevValue, setPrevValue] = useState(elementStyle.defaultValue);
-
         useEffect(() => {
             if (isFocused || !editorEngine.style.selectedStyle) {
                 return;
