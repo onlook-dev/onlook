@@ -11,6 +11,7 @@ import type { EditorEngine } from '..';
 import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
+import { isPromptTooLongError, PROMPT_TOO_LONG_ERROR } from './helpers';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
@@ -125,7 +126,6 @@ export class ChatManager {
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
-
         this.stream.clear();
         this.isWaiting = false;
         this.handleChatResponse(res, requestType);
@@ -190,7 +190,14 @@ export class ChatManager {
         }
         if (res.status === 'error') {
             console.error('Error found in chat response', res.content);
-            this.stream.errorMessage = res.content;
+            if (isPromptTooLongError(res.content)) {
+                this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
+            } else {
+                this.stream.errorMessage = res.content;
+            }
+            sendAnalytics('chat error', {
+                content: res.content,
+            });
             return;
         }
         const assistantMessage = this.conversation.addAssistantMessage(res);
