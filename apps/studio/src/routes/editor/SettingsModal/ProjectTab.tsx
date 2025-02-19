@@ -28,7 +28,7 @@ const ProjectTab = observer(
             folderPath: projectToUpdate?.folderPath || '',
             commands: projectToUpdate?.commands || DefaultSettings.COMMANDS,
         });
-        const [isDirty, setIsDirty] = useState(false);
+        const [canSave, setCanSave] = useState(false);
 
         const handleUpdatePath = async () => {
             const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
@@ -36,7 +36,7 @@ const ProjectTab = observer(
                 | null;
             if (path) {
                 setFormValues((prev) => ({ ...prev, folderPath: path }));
-                setIsDirty(true);
+                setCanSave(true);
             }
         };
 
@@ -57,7 +57,7 @@ const ProjectTab = observer(
                     [id]: value,
                 };
             });
-            setIsDirty(true);
+            setCanSave(true);
         };
 
         const handleSave = () => {
@@ -66,7 +66,7 @@ const ProjectTab = observer(
                     ...projectToUpdate,
                     ...formValues,
                 });
-                setIsDirty(false);
+                setCanSave(false);
             }
         };
 
@@ -155,8 +155,8 @@ const ProjectTab = observer(
                 </div>
 
                 <div className="flex justify-end">
-                    <Button size={'sm'} onClick={handleSave} disabled={!isDirty}>
-                        {isDirty ? 'Save' : 'Saved'}
+                    <Button size={'sm'} onClick={handleSave} disabled={!canSave}>
+                        {canSave ? 'Save' : 'Saved'}
                     </Button>
                 </div>
             </div>
