@@ -5,6 +5,7 @@ export enum StreamRequestType {
     CREATE = 'create',
     ERROR_FIX = 'error-fix',
     SUGGESTIONS = 'suggestions',
+    SUMMARY = 'summary',
 }
 
 export type StreamRequest = {

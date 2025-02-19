@@ -199,6 +199,17 @@ export const ChatInput = observer(() => {
                 }
             }}
         >
+            {editorEngine.chat.conversation.current && (
+                <div className="px-4 py-2 bg-yellow-500/10 border-b text-xs font-mono">
+                    Token Usage:{' '}
+                    {JSON.stringify(editorEngine.chat.conversation.current.tokenUsage, null, 2)}
+                    <br />
+                    Threshold: {editorEngine.chat.conversation.current.SUMMARY_THRESHOLD}
+                    <br />
+                    Needs Summary:{' '}
+                    {editorEngine.chat.conversation.current.needsSummary() ? 'Yes' : 'No'}
+                </div>
+            )}
             <Suggestions
                 hideSuggestions={hideSuggestions}
                 disabled={disabled}

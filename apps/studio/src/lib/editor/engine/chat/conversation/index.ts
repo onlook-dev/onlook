@@ -160,6 +160,32 @@ export class ConversationManager {
         return newMessage;
     }
 
+    async generateSummaryIfNeeded(): Promise<void> {
+        if (!this.current || !this.current.needsSummary()) {
+            return;
+        }
+
+        const oldMessages = this.current.messages.slice(0, -this.current.RETAINED_MESSAGES);
+        if (oldMessages.length === 0) {
+            return;
+        }
+
+        const res: StreamResponse = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
+            messages: oldMessages.map((m) => m.toCoreMessage()),
+        });
+
+        console.log('summary response ===', res);
+
+        if (res && res.status === 'full') {
+            // Update summary and remove summarized messages
+            this.current.setSummaryMessage(res.content);
+            this.current.messages = [
+                ...this.current.messages.slice(-this.current.RETAINED_MESSAGES),
+            ];
+            this.saveConversationToStorage();
+        }
+    }
+
     addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
@@ -167,6 +193,7 @@ export class ConversationManager {
         }
         const newMessage = new AssistantChatMessageImpl(res.content);
         this.current.appendMessage(newMessage);
+        // this.generateSummaryIfNeeded();
         this.saveConversationToStorage();
         return newMessage;
     }

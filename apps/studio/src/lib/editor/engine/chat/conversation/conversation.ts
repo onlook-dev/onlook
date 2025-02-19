@@ -1,4 +1,9 @@
-import { ChatMessageType, type ChatConversation } from '@onlook/models/chat';
+import {
+    ChatMessageType,
+    MessageContextType,
+    type ChatConversation,
+    type TokenUsage,
+} from '@onlook/models/chat';
 import { MAX_NAME_LENGTH } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -13,6 +18,16 @@ export class ChatConversationImpl implements ChatConversation {
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
     createdAt: string;
     updatedAt: string;
+    private readonly TOKEN_LIMIT = 15000;
+    // Refactor back to private once we have a better way to test this
+    public readonly SUMMARY_THRESHOLD = this.TOKEN_LIMIT * 0.75; // Trigger at 75% of token limit
+    public readonly RETAINED_MESSAGES = 5;
+    summaryMessage: AssistantChatMessageImpl | null = null;
+    public tokenUsage: TokenUsage = {
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
+    };
 
     constructor(projectId: string, messages: (UserChatMessageImpl | AssistantChatMessageImpl)[]) {
         makeAutoObservable(this);
@@ -43,8 +58,36 @@ export class ChatConversationImpl implements ChatConversation {
         return conversation;
     }
 
+    needsSummary(): boolean {
+        return this.tokenUsage.totalTokens > this.SUMMARY_THRESHOLD && !this.summaryMessage;
+    }
+
+    updateTokenUsage(usage: TokenUsage) {
+        this.tokenUsage = usage;
+    }
+
     getMessagesForStream(): CoreMessage[] {
-        return this.messages.map((m) => m.toCoreMessage());
+        const messages: CoreMessage[] = [];
+
+        // Add summary if exists
+        if (this.summaryMessage) {
+            messages.push(this.summaryMessage.toCoreMessage());
+        }
+
+        // Add recent messages
+        const recentMessages = this.messages.slice(-this.RETAINED_MESSAGES);
+        messages.push(...recentMessages.map((m) => m.toCoreMessage()));
+
+        console.log('messages for stream ===', messages);
+
+        return messages;
+    }
+
+    setSummaryMessage(content: string) {
+        this.summaryMessage = new AssistantChatMessageImpl(
+            `Technical Summary of Previous Conversation:\n${content}`,
+            false,
+        );
     }
 
     appendMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {

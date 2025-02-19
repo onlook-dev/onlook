@@ -12,6 +12,7 @@ import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } 
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
+import Logger from 'electron-log';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -71,7 +72,7 @@ class LlmManager {
                 requestType,
             });
 
-            const { textStream } = await streamText({
+            const { textStream, usage } = await streamText({
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
@@ -90,10 +91,13 @@ class LlmManager {
                 fullText += partialText;
                 this.emitPartialMessage(fullText);
             }
-            return { content: fullText, status: 'full' };
+            const usageData = await usage;
+            return { content: fullText, status: 'full', usage: usageData };
         } catch (error: any) {
             try {
                 console.error('Error', error);
+
+                console.error('my Error here here ===', error);
                 if (error?.error?.statusCode) {
                     if (error?.error?.statusCode === 403) {
                         const rateLimitError = JSON.parse(
@@ -170,6 +174,55 @@ class LlmManager {
         } catch (error) {
             console.error(error);
             return [];
+        }
+    }
+
+    public async generateChatSummary(messages: CoreMessage[]): Promise<StreamResponse> {
+        try {
+            Logger.info('Generating summary for messages:', messages);
+
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
+                requestType: StreamRequestType.SUMMARY,
+            });
+
+            const systemMessage: CoreSystemMessage = {
+                role: 'system',
+                content: `Summarize this conversation history technically and concisely while preserving:
+            1. Key technical decisions and implementations
+            2. Complete file paths of any modified files
+            3. Core code changes and their purposes
+            4. Important user requirements and constraints
+            5. Sequential structure of the conversation
+            
+            Format the summary with:
+            - Technical context and setup
+            - Chronological progression of changes
+            - File modifications with paths
+            - Key decisions and outcomes
+            
+            Be specific but concise. Preserve technical accuracy while reducing token usage.`,
+                experimental_providerMetadata: {
+                    anthropic: { cacheControl: { type: 'ephemeral' } },
+                },
+            };
+
+            const { textStream } = await streamText({
+                model,
+                messages: [systemMessage, ...messages],
+                maxSteps: 1,
+            });
+
+            let fullText = '';
+            for await (const text of textStream) {
+                fullText += text;
+            }
+
+            Logger.info('Generated summary:', fullText);
+
+            return { content: fullText, status: 'full' };
+        } catch (error) {
+            console.error('Error generating summary:', error);
+            return { content: 'Failed to generate summary', status: 'error' };
         }
     }
 }

@@ -170,12 +170,23 @@ export class ChatManager {
         sendAnalytics('resubmit chat message');
     }
 
+    private async generateSummary(): Promise<void> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return;
+        }
+
+        await this.conversation.generateSummaryIfNeeded();
+
+        sendAnalytics('generate chat summary');
+    }
+
     async handleChatResponse(
         res: StreamResponse | null,
         requestType: StreamRequestType,
         autoApplyCode: boolean = true,
     ) {
-        if (!res) {
+        if (!res || !this.conversation.current) {
             console.error('No response found');
             return;
         }
@@ -194,6 +205,15 @@ export class ChatManager {
             this.stream.errorMessage = res.content;
             return;
         }
+
+        if (res.usage) {
+            this.conversation.current.updateTokenUsage(res.usage);
+        }
+
+        if (this.conversation.current.needsSummary()) {
+            await this.generateSummary();
+        }
+
         const assistantMessage = this.conversation.addAssistantMessage(res);
         if (!assistantMessage) {
             console.error('Failed to add assistant message');
