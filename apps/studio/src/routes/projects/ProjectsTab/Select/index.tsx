@@ -1,11 +1,13 @@
 import { useProjectsManager } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import EmblaCarousel from './Carousel';
 import ProjectInfo from './Info';
 import type { Project } from '@onlook/models/projects';
 
 const SelectProject = observer(() => {
+    const { t } = useTranslation();
     const projectsManager = useProjectsManager();
     const [projects, setProjects] = useState<Project[]>(projectsManager.projects);
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
