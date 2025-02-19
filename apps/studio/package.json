@@ -67,7 +67,7 @@
         "monaco-editor": "^0.52.0",
         "motion": "^11.17.0",
         "nanoid": "^5.0.7",
-        "node-pty": "^1.1.0-beta29",
+        "node-pty": "1.1.0-beta30",
         "prosemirror-commands": "^1.6.0",
         "prosemirror-history": "^1.4.1",
         "prosemirror-keymap": "^1.2.2",
