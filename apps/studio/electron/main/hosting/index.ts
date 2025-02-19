@@ -5,7 +5,8 @@ import {
     FUNCTIONS_ROUTE,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
+import { HostingStatus } from '@onlook/models/hosting';
+import { type Tables } from '@onlook/models/supabase';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { getRefreshedAuthTokens } from '../auth';
@@ -169,7 +170,7 @@ class HostingManager {
         }
     }
 
-    async getCustomDomains(): Promise<CustomDomain[]> {
+    async getCustomDomains(): Promise<Tables<'custom_domains'>[]> {
         const authTokens = await getRefreshedAuthTokens();
         const res: Response = await fetch(
             `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}${ApiRoutes.CUSTOM_DOMAINS}`,
@@ -180,7 +181,7 @@ class HostingManager {
             },
         );
         const customDomains = (await res.json()) as {
-            data: CustomDomain[];
+            data: Tables<'custom_domains'>[];
             error: string;
         };
         if (customDomains.error) {

@@ -1,5 +1,6 @@
 import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
-import { HostingStateMessages, HostingStatus, type CustomDomain } from '@onlook/models/hosting';
+import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
+import type { Tables } from '@onlook/models/supabase';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
@@ -23,7 +24,7 @@ const ShareProject = observer(() => {
     const [isCopied, setIsCopied] = useState(false);
     const [deployProgress, setDeployProgress] = useState(0);
     const [skipBuild, setSkipBuild] = useState(false);
-    const [customDomains, setCustomDomains] = useState<CustomDomain[]>([]);
+    const [customDomains, setCustomDomains] = useState<Tables<'custom_domains'>[]>([]);
     const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
 
     useEffect(() => {

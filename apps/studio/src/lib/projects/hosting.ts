@@ -1,6 +1,7 @@
 import { DefaultSettings, HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
-import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
+import { HostingStatus } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
+import type { Tables } from '@onlook/models/supabase';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '.';
 import { invokeMainChannel, sendAnalytics, sendAnalyticsError } from '../utils';
@@ -199,8 +200,10 @@ export class HostingManager {
         sendAnalytics('hosting unpublish success');
     }
 
-    async getCustomDomains(): Promise<CustomDomain[]> {
-        const res: CustomDomain[] = await invokeMainChannel(MainChannels.GET_CUSTOM_DOMAINS);
+    async getCustomDomains(): Promise<Tables<'custom_domains'>[]> {
+        const res: Tables<'custom_domains'>[] = await invokeMainChannel(
+            MainChannels.GET_CUSTOM_DOMAINS,
+        );
         return res;
     }
 

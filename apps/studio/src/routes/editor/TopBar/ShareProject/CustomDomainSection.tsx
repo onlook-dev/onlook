@@ -1,4 +1,4 @@
-import { type CustomDomain } from '@onlook/models/hosting';
+import { type Tables } from '@onlook/models/supabase';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 
@@ -7,7 +7,7 @@ const CustomDomainSection = ({
     selectedDomains,
     setSelectedDomains,
 }: {
-    customDomains: CustomDomain[];
+    customDomains: Tables<'custom_domains'>[];
     selectedDomains: string[];
     setSelectedDomains: React.Dispatch<React.SetStateAction<string[]>>;
 }) => {
@@ -16,7 +16,7 @@ const CustomDomainSection = ({
             if (checked) {
                 // When selecting a base domain, also select 'www' subdomain if it exists
                 const domainObj = customDomains.find((d) => d.domain === domain);
-                if (domainObj && domainObj.subdomains.includes('www')) {
+                if (domainObj && domainObj.subdomains?.includes('www')) {
                     return [...prev, domain, `www.${domain}`];
                 }
                 return [...prev, domain];
@@ -63,7 +63,7 @@ const CustomDomainSection = ({
                         </span>
                     </label>
                     <div className="flex flex-col items-start justify-start space-y-1">
-                        {domain.subdomains.map((subdomain, index) => (
+                        {domain.subdomains?.map((subdomain, index) => (
                             <label key={index} className="flex items-center space-x-2 ml-4">
                                 <Checkbox
                                     id={`${subdomain}.${domain.domain}`}
