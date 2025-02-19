@@ -1,10 +1,12 @@
 import { useProjectsManager } from '@/components/Context';
-import { DefaultSettings } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 const ProjectTab = observer(
     ({
@@ -18,7 +20,6 @@ const ProjectTab = observer(
         open?: boolean;
         onOpenChange?: (open: boolean) => void;
     }) => {
-        const INPUT_CLASS = 'w-20 text-foreground-secondary';
         const projectsManager = useProjectsManager();
         const projectToUpdate = project || projectsManager.project;
         const [formValues, setFormValues] = useState({
@@ -27,21 +28,16 @@ const ProjectTab = observer(
             folderPath: projectToUpdate?.folderPath || '',
             commands: projectToUpdate?.commands || DefaultSettings.COMMANDS,
         });
+        const [canSave, setCanSave] = useState(false);
 
-        const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
-        const [isCommandsOpen, setIsCommandsOpen] = useState(false);
-
-        // Use controlled props if provided, otherwise use internal state
-        const isOpen = controlledOpen ?? uncontrolledOpen;
-        const triggerRef = useRef<HTMLDivElement>(null);
-        const onOpenChange = (open: boolean) => {
-            if (!open) {
-                // Reset collapsible state when dialog closes
-                setIsCommandsOpen(false);
-                // Return focus to trigger
-                triggerRef.current?.focus();
+        const handleUpdatePath = async () => {
+            const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+                | string
+                | null;
+            if (path) {
+                setFormValues((prev) => ({ ...prev, folderPath: path }));
+                setCanSave(true);
             }
-            (controlledOnOpenChange ?? setUncontrolledOpen)(open);
         };
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +57,7 @@ const ProjectTab = observer(
                     [id]: value,
                 };
             });
+            setCanSave(true);
         };
 
         const handleSave = () => {
@@ -69,8 +66,8 @@ const ProjectTab = observer(
                     ...projectToUpdate,
                     ...formValues,
                 });
+                setCanSave(false);
             }
-            onOpenChange(false);
         };
 
         return (
@@ -98,12 +95,20 @@ const ProjectTab = observer(
                         </div>
                         <div className="flex justify-between items-center">
                             <p className="text-regularPlus text-muted-foreground">Path</p>
-                            <Input
-                                id="folderPath"
-                                value={formValues.folderPath}
-                                onChange={handleChange}
-                                className="w-2/3"
-                            />
+                            <div className="flex items-center gap-2 w-2/3">
+                                <Input
+                                    id="folderPath"
+                                    value={formValues.folderPath}
+                                    onChange={handleChange}
+                                />
+                                <Button
+                                    size={'icon'}
+                                    variant={'outline'}
+                                    onClick={handleUpdatePath}
+                                >
+                                    <Icons.Directory />
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -150,8 +155,8 @@ const ProjectTab = observer(
                 </div>
 
                 <div className="flex justify-end">
-                    <Button size={'sm'} onClick={handleSave}>
-                        Save
+                    <Button size={'sm'} onClick={handleSave} disabled={!canSave}>
+                        {canSave ? 'Save' : 'Saved'}
                     </Button>
                 </div>
             </div>
