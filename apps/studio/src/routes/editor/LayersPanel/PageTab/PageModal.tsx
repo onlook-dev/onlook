@@ -16,22 +16,45 @@ import {
     validateNextJsRoute,
 } from '@/lib/editor/engine/pages/helper';
 import { useEditorEngine } from '@/components/Context';
+import { toast } from '@onlook/ui/use-toast';
 
-interface CreatePageModalProps {
+interface PageModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    mode: 'create' | 'rename';
     baseRoute?: string;
+    initialName?: string;
 }
 
-export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreatePageModalProps) {
+export function PageModal({
+    open,
+    onOpenChange,
+    mode = 'create',
+    baseRoute = '/',
+    initialName = '',
+}: PageModalProps) {
     const editorEngine = useEditorEngine();
     const [pageName, setPageName] = useState('');
     const [warning, setWarning] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const fullPath = useMemo(
-        () => normalizeRoute(`${baseRoute}/${pageName}`),
-        [baseRoute, pageName],
-    );
+    const fullPath = useMemo(() => {
+        if (mode === 'rename') {
+            const parentPath = baseRoute.split('/').slice(0, -1).join('/');
+            return normalizeRoute(parentPath ? `${parentPath}/${pageName}` : pageName);
+        }
+        return normalizeRoute(`${baseRoute}/${pageName}`);
+    }, [baseRoute, pageName, mode]);
+
+    const title = mode === 'create' ? 'Create a New Page' : 'Rename Page';
+    const buttonText = mode === 'create' ? 'Create Page' : 'Rename Page';
+    const loadingText = mode === 'create' ? 'Creating...' : 'Renaming...';
+
+    // Reset page name when modal opens
+    useEffect(() => {
+        if (open) {
+            setPageName(initialName);
+        }
+    }, [open, initialName]);
 
     useEffect(() => {
         if (!pageName) {
@@ -53,15 +76,31 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
         setWarning('');
     }, [pageName, fullPath, editorEngine.pages.tree]);
 
-    const handleCreate = async () => {
+    const handleSubmit = async () => {
         try {
             setIsLoading(true);
-            await editorEngine.pages.createPage(baseRoute, pageName);
+
+            if (mode === 'create') {
+                await editorEngine.pages.createPage(baseRoute, pageName);
+                toast({
+                    title: 'Page created',
+                    description: 'Page has been successfully created.',
+                    variant: 'default',
+                });
+            } else {
+                await editorEngine.pages.renamePage(baseRoute, pageName);
+                toast({
+                    title: 'Page renamed',
+                    description: 'Page has been successfully renamed.',
+                    variant: 'default',
+                });
+            }
+
             setPageName('');
             onOpenChange(false);
         } catch (error) {
-            console.error('Failed to create page:', error);
-            setWarning('Failed to create page. Please try again.');
+            console.error(`Failed to ${mode} page:`, error);
+            setWarning(`Failed to ${mode} page. Please try again.`);
         } finally {
             setIsLoading(false);
         }
@@ -71,7 +110,7 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create a New Page</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
                         This page will be /{fullPath} on your site
                     </DialogDescription>
@@ -106,8 +145,8 @@ export function CreatePageModal({ open, onOpenChange, baseRoute = '/' }: CreateP
                     >
                         Cancel
                     </Button>
-                    <Button onClick={handleCreate} disabled={isLoading || !!warning || !pageName}>
-                        {isLoading ? <>Creating...</> : 'Create Page'}
+                    <Button onClick={handleSubmit} disabled={isLoading || !!warning || !pageName}>
+                        {isLoading ? <>{loadingText}</> : buttonText}
                     </Button>
                 </DialogFooter>
             </DialogContent>
