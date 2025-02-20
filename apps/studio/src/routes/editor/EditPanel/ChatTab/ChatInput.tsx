@@ -199,6 +199,7 @@ export const ChatInput = observer(() => {
                 }
             }}
         >
+            {/* TODO: Clean up this code */}
             {editorEngine.chat.conversation.current && (
                 <div className="px-4 py-2 bg-yellow-500/10 border-b text-xs font-mono">
                     Token Usage:{' '}
