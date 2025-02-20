@@ -66,6 +66,7 @@ export class StyleManager {
             };
             return target;
         });
+
         return {
             type: 'update-style',
             targets: targets,
