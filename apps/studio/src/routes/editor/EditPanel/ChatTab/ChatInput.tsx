@@ -96,7 +96,7 @@ export const ChatInput = observer(() => {
                 // Focus the textarea
                 textareaRef.current?.focus();
             }
-        } else if (e.key === 'Enter' && !e.shiftKey) {
+        } else if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
             e.stopPropagation();
 
