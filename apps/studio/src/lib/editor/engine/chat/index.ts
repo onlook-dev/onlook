@@ -170,17 +170,6 @@ export class ChatManager {
         sendAnalytics('resubmit chat message');
     }
 
-    private async generateSummary(): Promise<void> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-
-        await this.conversation.generateSummaryIfNeeded();
-
-        sendAnalytics('generate chat summary');
-    }
-
     async handleChatResponse(
         res: StreamResponse | null,
         requestType: StreamRequestType,
@@ -211,7 +200,7 @@ export class ChatManager {
         }
 
         if (this.conversation.current.needsSummary()) {
-            await this.generateSummary();
+            await this.conversation.generateConversationSummary();
         }
 
         const assistantMessage = this.conversation.addAssistantMessage(res);

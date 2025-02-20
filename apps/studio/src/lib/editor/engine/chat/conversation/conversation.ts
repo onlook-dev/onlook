@@ -18,10 +18,10 @@ export class ChatConversationImpl implements ChatConversation {
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
     createdAt: string;
     updatedAt: string;
-    private readonly TOKEN_LIMIT = 15000;
+    private readonly TOKEN_LIMIT = 150000;
     // Refactor back to private once we have a better way to test this
     public readonly SUMMARY_THRESHOLD = this.TOKEN_LIMIT * 0.75; // Trigger at 75% of token limit
-    public readonly RETAINED_MESSAGES = 5;
+    public readonly RETAINED_MESSAGES = 10;
     summaryMessage: AssistantChatMessageImpl | null = null;
     public tokenUsage: TokenUsage = {
         promptTokens: 0,
@@ -59,7 +59,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     needsSummary(): boolean {
-        return this.tokenUsage.totalTokens > this.SUMMARY_THRESHOLD && !this.summaryMessage;
+        return this.tokenUsage.totalTokens > this.SUMMARY_THRESHOLD;
     }
 
     updateTokenUsage(usage: TokenUsage) {
@@ -69,16 +69,14 @@ export class ChatConversationImpl implements ChatConversation {
     getMessagesForStream(): CoreMessage[] {
         const messages: CoreMessage[] = [];
 
-        // Add summary if exists
         if (this.summaryMessage) {
             messages.push(this.summaryMessage.toCoreMessage());
         }
 
-        // Add recent messages
-        const recentMessages = this.messages.slice(-this.RETAINED_MESSAGES);
-        messages.push(...recentMessages.map((m) => m.toCoreMessage()));
+        const retainedMessages = this.messages.slice(-this.RETAINED_MESSAGES);
 
-        console.log('messages for stream ===', messages);
+        messages.push(...retainedMessages.map((m) => m.toCoreMessage()));
+        12;
 
         return messages;
     }
