@@ -17,10 +17,12 @@ const TextInput = observer(
         elementStyle,
         onValueChange,
         className,
+        disabled,
     }: {
         elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
         className?: string;
+        disabled?: boolean;
     }) => {
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
@@ -96,6 +98,7 @@ const TextInput = observer(
                 onKeyDown={(e) =>
                     handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                 }
+                disabled={disabled}
             />
         );
     },
