@@ -289,7 +289,7 @@ export async function createNextJsPage(projectRoot: string, pagePath: string): P
         await fs.mkdir(fullPath, { recursive: true });
         await fs.writeFile(pageFilePath, DEFAULT_PAGE_CONTENT);
 
-        runManager.addFileToWatcher(pageFilePath);
+        // File will be automatically watched
         return true;
     } catch (error) {
         console.error('Error creating page:', error);

@@ -47,7 +47,7 @@ export async function writeFile(
 
         if (isNewFile) {
             console.log('New file created:', fullPath);
-            run.addFileToWatcher(fullPath);
+            // File will be automatically watched
         }
     } catch (error: any) {
         console.error('Error writing to file:', error);
