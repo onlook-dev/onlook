@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import type { LayerNode } from '@onlook/models/element';
 import { observer } from 'mobx-react-lite';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
@@ -123,18 +123,10 @@ const LayersTab = observer(() => {
         [editorEngine.ast.mappings],
     );
 
-    const dimensions = useMemo(
-        () => ({
-            height: (height ?? 8) - 16,
-            width: width ?? 365,
-        }),
-        [height, width],
-    );
-
     return (
         <div
             ref={ref}
-            className="flex h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full"
+            className="flex h-full w-full overflow-hidden text-xs text-active"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={handleMouseLeaveTree}
         >
@@ -145,15 +137,16 @@ const LayersTab = observer(() => {
                     ref={treeRef}
                     data={editorEngine.ast.mappings.layers}
                     openByDefault={true}
-                    overscanCount={1}
+                    overscanCount={0}
                     indent={8}
                     padding={0}
                     rowHeight={24}
-                    height={dimensions.height}
-                    width={dimensions.width}
+                    height={height ?? 300}
+                    width={width ?? 365}
                     renderRow={TreeRow as any}
                     onMove={handleDragEnd}
                     disableDrop={disableDrop}
+                    className="overflow-auto"
                 >
                     {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
                 </Tree>

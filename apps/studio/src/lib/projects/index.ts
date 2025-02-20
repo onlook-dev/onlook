@@ -139,7 +139,11 @@ export class ProjectsManager {
     }
 
     setManagers(project: Project) {
-        this.activeRunManager = new RunManager(project);
+        if (!this.editorEngine) {
+            console.error('Editor engine not found');
+            return;
+        }
+        this.activeRunManager = new RunManager(project, this.editorEngine);
         this.activeHostingManager = new HostingManager(this, project);
     }
 

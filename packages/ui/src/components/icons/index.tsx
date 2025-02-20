@@ -51,6 +51,7 @@ import {
     DownloadIcon,
     DragHandleDots2Icon,
     DropdownMenuIcon,
+    EnvelopeClosedIcon,
     ExclamationTriangleIcon,
     ExitIcon,
     ExternalLinkIcon,
@@ -73,8 +74,8 @@ import {
     ListBulletIcon,
     LockClosedIcon,
     LockOpen1Icon,
-    MagnifyingGlassIcon,
     MagicWandIcon,
+    MagnifyingGlassIcon,
     MinusCircledIcon,
     MinusIcon,
     MobileIcon,
@@ -1223,6 +1224,7 @@ export const Icons = {
     ExternalLink: ExternalLinkIcon,
     EyeOpen: EyeOpenIcon,
     EyeClosed: EyeClosedIcon,
+    EnvelopeClosed: EnvelopeClosedIcon,
 
     File: FileIcon,
     FilePlus: FilePlusIcon,
@@ -1290,4 +1292,130 @@ export const Icons = {
     ViewGrid: ViewGridIcon,
     ViewHorizontal: ViewHorizontalIcon,
     ViewVertical: ViewVerticalIcon,
+    EmptyState: ({ className, ...props }: IconProps) => (
+        <svg
+            width="130"
+            height="119"
+            viewBox="0 0 130 119"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <g filter="url(#filter0_d_4954_166260)">
+                <rect
+                    x="14.75"
+                    y="10.5"
+                    width="90"
+                    height="90"
+                    fill="url(#paint0_linear)"
+                    fillOpacity="0.2"
+                    shapeRendering="crispEdges"
+                />
+                <rect
+                    x="15"
+                    y="10.75"
+                    width="89.5"
+                    height="89.5"
+                    className="stroke-gray-300 dark:stroke-gray-600"
+                    strokeWidth="0.5"
+                    strokeDasharray="4 4"
+                    shapeRendering="crispEdges"
+                />
+            </g>
+            <g filter="url(#filter1_d_4954_166260)">
+                <path
+                    d="M112.018 81.4171L117.758 78.8025L111.789 65.6879L122.654 65.2087L98.5703 44.3438V76.1775L106.039 68.3025L112.018 81.4171Z"
+                    className="fill-gray-200 stroke-gray-400 dark:fill-gray-900 dark:stroke-gray-500"
+                    strokeLinejoin="round"
+                />
+            </g>
+            <defs>
+                <linearGradient
+                    id="paint0_linear"
+                    x1="59.75"
+                    y1="10.5"
+                    x2="59.75"
+                    y2="100.5"
+                    gradientUnits="userSpaceOnUse"
+                >
+                    <stop className="[stop-color:theme(colors.gray.50)] dark:[stop-color:theme(colors.gray.700)]" />
+                    <stop
+                        offset="1"
+                        className="[stop-color:theme(colors.gray.200)] dark:[stop-color:theme(colors.gray.900)]"
+                    />
+                </linearGradient>
+                <filter
+                    id="filter0_d_4954_166260"
+                    x="0.75"
+                    y="0.5"
+                    width="118"
+                    height="118"
+                    filterUnits="userSpaceOnUse"
+                    colorInterpolationFilters="sRGB"
+                >
+                    <feFlood floodOpacity="0" result="BackgroundImageFix" />
+                    <feColorMatrix
+                        in="SourceAlpha"
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                        result="hardAlpha"
+                    />
+                    <feOffset dy="4" />
+                    <feGaussianBlur stdDeviation="7" />
+                    <feComposite in2="hardAlpha" operator="out" />
+                    <feColorMatrix
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in2="BackgroundImageFix"
+                        result="effect1_dropShadow_4954_166260"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in="SourceGraphic"
+                        in2="effect1_dropShadow_4954_166260"
+                        result="shape"
+                    />
+                </filter>
+                <filter
+                    id="filter1_d_4954_166260"
+                    x="85.25"
+                    y="43"
+                    width="48"
+                    height="48"
+                    filterUnits="userSpaceOnUse"
+                    colorInterpolationFilters="sRGB"
+                >
+                    <feFlood floodOpacity="0" result="BackgroundImageFix" />
+                    <feColorMatrix
+                        in="SourceAlpha"
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                        result="hardAlpha"
+                    />
+                    <feOffset dy="4" />
+                    <feGaussianBlur stdDeviation="2" />
+                    <feComposite in2="hardAlpha" operator="out" />
+                    <feColorMatrix
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in2="BackgroundImageFix"
+                        result="effect1_dropShadow_4954_166260"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in="SourceGraphic"
+                        in2="effect1_dropShadow_4954_166260"
+                        result="shape"
+                    />
+                </filter>
+            </defs>
+        </svg>
+    ),
 } satisfies { [key: string]: React.FC<IconProps> };

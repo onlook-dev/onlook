@@ -97,10 +97,10 @@ export class CopyManager {
             location,
             editText: null,
             pasteParams: {
-                codeBlock: this.copied.codeBlock,
                 oid: newOid,
                 domId: newDomId,
             },
+            codeBlock: this.copied.codeBlock,
         };
 
         this.editorEngine.action.run(action);

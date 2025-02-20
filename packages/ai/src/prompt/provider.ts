@@ -3,11 +3,11 @@ import type {
     FileMessageContext,
     HighlightMessageContext,
 } from '@onlook/models/chat';
+import { CONTEXT_PROMPTS } from './context';
 import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
-import { FILE_PROMPTS } from './file';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
-import { PLATFORM_SIGNATURE } from './platform';
+import { PLATFORM_SIGNATURE } from './signatures';
 
 export class PromptProvider {
     shouldWrapXml: boolean;
@@ -83,7 +83,7 @@ export class PromptProvider {
             return '';
         }
         let prompt = '';
-        prompt += `${FILE_PROMPTS.filesContentPrefix}\n`;
+        prompt += `${CONTEXT_PROMPTS.filesContentPrefix}\n`;
         let index = 1;
         for (const file of files) {
             let filePrompt = `${file.path}\n`;
@@ -106,7 +106,7 @@ export class PromptProvider {
         if (errors.length === 0) {
             return '';
         }
-        let prompt = `${FILE_PROMPTS.errorsContentPrefix}\n`;
+        let prompt = `${CONTEXT_PROMPTS.errorsContentPrefix}\n`;
         for (const error of errors) {
             prompt += `${error.content}\n`;
         }
@@ -122,7 +122,7 @@ export class PromptProvider {
         if (fileHighlights.length === 0) {
             return '';
         }
-        let prompt = `${FILE_PROMPTS.highlightPrefix}\n`;
+        let prompt = `${CONTEXT_PROMPTS.highlightPrefix}\n`;
         let index = 1;
         for (const highlight of fileHighlights) {
             let highlightPrompt = `${filePath}#L${highlight.start}:L${highlight.end}\n`;

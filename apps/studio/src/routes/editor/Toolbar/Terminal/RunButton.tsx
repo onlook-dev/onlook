@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -10,11 +10,18 @@ import { useMemo } from 'react';
 
 const RunButton = observer(() => {
     const projectsManager = useProjectsManager();
+    const editorEngine = useEditorEngine();
     const runner = projectsManager.runner;
 
     const handleClick = () => {
         if (runner?.state === RunState.RUNNING || runner?.state === RunState.SETTING_UP) {
-            runner.stop();
+            runner?.stop();
+            return;
+        }
+
+        if (runner?.state === RunState.ERROR) {
+            editorEngine.errors.clear();
+            runner.restart();
             return;
         }
         runner?.start();
@@ -86,11 +93,13 @@ const RunButton = observer(() => {
     function getTooltipText() {
         switch (runner?.state) {
             case RunState.STOPPED:
-                return 'Run your app';
+                return 'Run your App';
             case RunState.RUNNING:
                 return 'Stop Running your App & Clean Code';
+            case RunState.ERROR:
+                return 'Restart your App';
             default:
-                return '';
+                return 'Unknown app state';
         }
     }
 

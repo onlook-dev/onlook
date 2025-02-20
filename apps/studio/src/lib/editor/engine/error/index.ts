@@ -7,6 +7,8 @@ import type { EditorEngine } from '..';
 
 export class ErrorManager {
     private webviewIdToError: Record<string, ParsedError[]> = {};
+    private terminalErrors: ParsedError[] = [];
+
     shouldShowErrors: boolean = false;
 
     constructor(
@@ -17,7 +19,8 @@ export class ErrorManager {
     }
 
     get errors() {
-        return Array.from(Object.values(this.webviewIdToError)).flat();
+        const webviewErrors = Array.from(Object.values(this.webviewIdToError)).flat();
+        return [...webviewErrors, ...this.terminalErrors];
     }
 
     async sendFixError() {
@@ -47,6 +50,7 @@ export class ErrorManager {
         }
         const error: ParsedError = {
             sourceId: event.sourceId,
+            type: 'webview',
             content: event.message,
         };
         const existingErrors = this.webviewIdToError[webviewId] || [];
@@ -55,8 +59,24 @@ export class ErrorManager {
         }
     }
 
+    addTerminalError(message: string) {
+        const error: ParsedError = {
+            sourceId: 'terminal',
+            type: 'terminal',
+            content: message,
+        };
+        const existingErrors = this.terminalErrors || [];
+        if (!existingErrors.some((e) => compareErrors(e, error))) {
+            this.terminalErrors = [...existingErrors, error];
+        }
+        this.shouldShowErrors = true;
+    }
+
     getMessageContext(errors: ParsedError[]): ErrorMessageContext {
-        const content = errors.map((e) => e.content).join('\n');
+        // TODO: Handle these better
+        const content = errors
+            .map((e) => `Source: ${e.sourceId}\nContent: ${e.content}`)
+            .join('\n');
         return {
             type: MessageContextType.ERROR,
             content,
@@ -64,11 +84,8 @@ export class ErrorManager {
         };
     }
 
-    clearErrors(webviewId: string) {
-        delete this.webviewIdToError[webviewId];
-    }
-
     clear() {
         this.webviewIdToError = {};
+        this.terminalErrors = [];
     }
 }

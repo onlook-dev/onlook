@@ -1,3 +1,4 @@
+import type { CreateProjectResponse } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
@@ -75,23 +76,24 @@ export class CreateManager {
         }
     }
 
-    async sendPrompt(prompt: string, images: ImageMessageContext[]) {
+    async sendPrompt(prompt: string, images: ImageMessageContext[], blank: boolean = false) {
         sendAnalytics('prompt create project', {
             prompt,
+            blank,
         });
+
         this.state = CreateState.CREATE_LOADING;
         this.error = null;
-        const result: {
-            success: boolean;
-            response?: {
-                projectPath?: string;
-                content?: string;
-            };
-            error?: string;
-        } = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
-            prompt: prompt,
-            images: images,
-        });
+        let result: CreateProjectResponse;
+
+        if (blank) {
+            result = await invokeMainChannel(MainChannels.CREATE_NEW_BLANK_PROJECT);
+        } else {
+            result = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
+                prompt,
+                images,
+            });
+        }
 
         if (result.success && result.response?.projectPath) {
             this.state = CreateState.PROMPT;
@@ -102,7 +104,7 @@ export class CreateManager {
             }, 100);
 
             // Generate suggestions
-            if (result.response?.content) {
+            if (!blank && result.response?.content) {
                 this.projectsManager.editorEngine?.chat.suggestions.generateCreatedSuggestions(
                     prompt,
                     result.response.content,

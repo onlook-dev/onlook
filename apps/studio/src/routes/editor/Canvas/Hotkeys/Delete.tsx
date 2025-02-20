@@ -18,7 +18,7 @@ const DeleteKey = () => {
     const userManager = useUserManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(
-        userManager.user?.shouldWarnDelete ?? true,
+        userManager.settings.settings?.editor?.shouldWarnDelete ?? true,
     );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
@@ -34,7 +34,7 @@ const DeleteKey = () => {
     });
 
     function disableWarning(disable: boolean) {
-        userManager.updateUserSettings({ shouldWarnDelete: disable });
+        userManager.settings.updateEditor({ shouldWarnDelete: disable });
         setShouldWarnDelete(disable);
     }
 

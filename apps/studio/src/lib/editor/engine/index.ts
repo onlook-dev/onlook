@@ -1,5 +1,6 @@
-import { EditorMode, EditorTabValue } from '@/lib/models';
+import { EditorMode, EditorTabValue, SettingsTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
+import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
@@ -27,9 +28,12 @@ import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
-    private plansOpen: boolean = false;
-    private editorMode: EditorMode = EditorMode.DESIGN;
-    private editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
+    private _editorMode: EditorMode = EditorMode.DESIGN;
+    private _plansOpen: boolean = false;
+    private _settingsOpen: boolean = false;
+    private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.PROJECT;
+
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
@@ -51,10 +55,13 @@ export class EditorEngine {
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
 
-    constructor(private projectsManager: ProjectsManager) {
+    constructor(
+        private projectsManager: ProjectsManager,
+        private userManager: UserManager,
+    ) {
         makeAutoObservable(this);
         this.canvasManager = new CanvasManager(this.projectsManager);
-        this.chatManager = new ChatManager(this, this.projectsManager);
+        this.chatManager = new ChatManager(this, this.projectsManager, this.userManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
         this.codeManager = new CodeManager(this, this.projectsManager);
@@ -85,7 +92,7 @@ export class EditorEngine {
         return this.actionManager;
     }
     get mode() {
-        return this.editorMode;
+        return this._editorMode;
     }
     get insert() {
         return this.insertManager;
@@ -118,32 +125,45 @@ export class EditorEngine {
         return this.imageManager;
     }
     get editPanelTab() {
-        return this.editorPanelTab;
+        return this._editorPanelTab;
+    }
+    get settingsTab() {
+        return this._settingsTab;
     }
     get isPlansOpen() {
-        return this.plansOpen;
+        return this._plansOpen;
+    }
+    get isSettingsOpen() {
+        return this._settingsOpen;
     }
     get errors() {
         return this.errorManager;
     }
-
     get isWindowSelected() {
         return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
     }
 
     set mode(mode: EditorMode) {
-        this.editorMode = mode;
+        this._editorMode = mode;
     }
 
     set editPanelTab(tab: EditorTabValue) {
-        this.editorPanelTab = tab;
+        this._editorPanelTab = tab;
+    }
+
+    set settingsTab(tab: SettingsTabValue) {
+        this._settingsTab = tab;
     }
 
     set isPlansOpen(open: boolean) {
-        this.plansOpen = open;
+        this._plansOpen = open;
         if (open) {
             sendAnalytics('open pro checkout');
         }
+    }
+
+    set isSettingsOpen(open: boolean) {
+        this._settingsOpen = open;
     }
 
     get pages() {
@@ -170,8 +190,11 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        this.editorMode = EditorMode.DESIGN;
-        this.editorPanelTab = EditorTabValue.STYLES;
+        this._editorMode = EditorMode.DESIGN;
+        this._editorPanelTab = EditorTabValue.STYLES;
+        this._settingsTab = SettingsTabValue.DOMAIN;
+        this._settingsOpen = false;
+        this._plansOpen = false;
     }
 
     clearUI() {

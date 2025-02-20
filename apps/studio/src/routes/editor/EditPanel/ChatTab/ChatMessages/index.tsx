@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
-import { GREETING_MSG } from '@/lib/editor/engine/chat/mockData';
 import { ChatMessageType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef } from 'react';
 import AssistantMessage from './AssistantMessage';
 import StreamMessage from './StreamMessage';
@@ -69,25 +69,43 @@ const ChatMessages = observer(() => {
     }
 
     // Render in reverse order to make the latest message appear at the bottom
-    return editorEngine.chat.conversation.current ? (
-        <div
-            className="flex flex-col-reverse gap-2 select-text overflow-auto"
-            ref={chatMessagesRef}
-        >
-            <StreamMessage />
-            {renderErrorMessage()}
-            {[...editorEngine.chat.conversation.current.messages]
-                .reverse()
-                .map((message) => renderMessage(message))}
-            {editorEngine.chat.conversation.current.messages.length === 0 && (
-                <AssistantMessage message={GREETING_MSG} />
+    return (
+        <AnimatePresence mode="wait">
+            {editorEngine.chat.conversation.current &&
+            editorEngine.chat.conversation.current?.messages.length !== 0 ? (
+                <motion.div
+                    className="flex flex-col-reverse gap-2 select-text overflow-auto"
+                    ref={chatMessagesRef}
+                    key="conversation"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                >
+                    <StreamMessage />
+                    {renderErrorMessage()}
+                    {[...editorEngine.chat.conversation.current.messages]
+                        .reverse()
+                        .map((message) => renderMessage(message))}
+                </motion.div>
+            ) : (
+                <motion.div
+                    key="empty-state"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80"
+                >
+                    <div className="w-32 h-32">
+                        <Icons.EmptyState className="w-full h-full" />
+                    </div>
+                    <p className="text-center text-regularPlus text-balance max-w-[300px]">
+                        Select an element <br /> to chat with AI
+                    </p>
+                </motion.div>
             )}
-        </div>
-    ) : (
-        <div className="flex h-[70vh] w-full items-center justify-center text-foreground-secondary gap-2 text-sm">
-            <Icons.Shadow className="h-6 w-6 animate-spin" />
-            <span>Loading conversations</span>
-        </div>
+        </AnimatePresence>
     );
 });
 
