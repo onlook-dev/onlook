@@ -5,14 +5,12 @@ import {
     FUNCTIONS_ROUTE,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
-import {
-    type FreestyleDeployWebConfiguration,
-    type FreestyleDeployWebSuccessResponse,
-} from 'freestyle-sandboxes';
+import { HostingStatus } from '@onlook/models/hosting';
+import { type Tables } from '@onlook/models/supabase';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { getRefreshedAuthTokens } from '../auth';
+import { deployToFreestyle } from './freestyle';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
@@ -73,7 +71,7 @@ class HostingManager {
             this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const id = await this.sendHostingPostRequest(files, urls);
+            const id = await deployToFreestyle(files, urls);
             timer.log('Deployment completed');
 
             this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
@@ -148,7 +146,7 @@ class HostingManager {
         message?: string;
     }> {
         try {
-            const id = await this.sendHostingPostRequest({}, urls);
+            const id = await deployToFreestyle({}, urls);
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
@@ -172,47 +170,7 @@ class HostingManager {
         }
     }
 
-    async sendHostingPostRequest(files: FileRecord, urls: string[]): Promise<string> {
-        const authTokens = await getRefreshedAuthTokens();
-        const config: FreestyleDeployWebConfiguration = {
-            domains: urls,
-            entrypoint: 'server.js',
-        };
-
-        const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authTokens.accessToken}`,
-                },
-                body: JSON.stringify({
-                    files,
-                    config,
-                }),
-            },
-        );
-        if (!res.ok) {
-            throw new Error(`Failed to deploy to preview environment, error: ${res.statusText}`);
-        }
-        const freestyleResponse = (await res.json()) as {
-            success: boolean;
-            message?: string;
-            error?: string;
-            data?: FreestyleDeployWebSuccessResponse;
-        };
-
-        if (!freestyleResponse.success) {
-            throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error || freestyleResponse.message}`,
-            );
-        }
-
-        return freestyleResponse.data?.deploymentId ?? '';
-    }
-
-    async getCustomDomains(): Promise<CustomDomain[]> {
+    async getCustomDomains(): Promise<Tables<'custom_domains'>[]> {
         const authTokens = await getRefreshedAuthTokens();
         const res: Response = await fetch(
             `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}${ApiRoutes.CUSTOM_DOMAINS}`,
@@ -223,7 +181,7 @@ class HostingManager {
             },
         );
         const customDomains = (await res.json()) as {
-            data: CustomDomain[];
+            data: Tables<'custom_domains'>[];
             error: string;
         };
         if (customDomains.error) {

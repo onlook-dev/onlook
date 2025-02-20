@@ -1,8 +1,8 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { execSync } from 'child_process';
+import fg from 'fast-glob';
 import * as fs from 'fs';
-import * as glob from 'glob';
 import * as path from 'path';
 import { FILE_EXTENSION, LOCK_FILE_NAME, PACKAGE_JSON, PACKAGE_MANAGER } from './constants';
 
@@ -17,7 +17,7 @@ export const exists = async (filePattern: string): Promise<boolean> => {
     }
 };
 
-export const getFileNamesByPattern = (pattern: string): string[] => glob.globSync(pattern);
+export const getFileNamesByPattern = (pattern: string): string[] => fg.sync(pattern);
 
 export const installPackages = async (packages: string[]): Promise<void> => {
     const packageManager = await getPackageManager();

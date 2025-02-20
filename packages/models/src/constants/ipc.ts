@@ -125,6 +125,8 @@ export enum MainChannels {
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
     UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
     GET_CUSTOM_DOMAINS = 'get-custom-domains',
+    CREATE_DOMAIN_VERIFICATION = 'create-domain-verification',
+    VERIFY_DOMAIN = 'verify-domain',
 
     // Payment
     CREATE_STRIPE_CHECKOUT = 'create-stripe-checkout',
