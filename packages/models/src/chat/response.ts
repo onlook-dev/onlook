@@ -1,3 +1,5 @@
+import { type LanguageModelUsage } from 'ai';
+
 export interface UsageCheckResult {
     exceeded: boolean;
     reason: 'none' | 'daily' | 'monthly';
@@ -7,8 +9,15 @@ export interface UsageCheckResult {
     monthly_requests_limit: number;
 }
 
+export interface TokenUsage {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+}
+
 export type StreamResponse = {
     content: string;
     status: 'partial' | 'full' | 'error' | 'rate-limited';
     rateLimitResult?: UsageCheckResult;
+    usage?: LanguageModelUsage;
 };

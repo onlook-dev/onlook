@@ -160,6 +160,21 @@ export class ConversationManager {
         return newMessage;
     }
 
+    async generateConversationSummary(): Promise<void> {
+        if (!this.current || !this.current.needsSummary()) {
+            return;
+        }
+
+        const res: StreamResponse = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
+            messages: this.current.messages.map((m) => m.toCoreMessage()),
+        });
+
+        if (res && res.status === 'full') {
+            this.current.setSummaryMessage(res.content);
+            this.saveConversationToStorage();
+        }
+    }
+
     addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
