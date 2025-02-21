@@ -5,12 +5,12 @@ import { PublishDropdown } from './Dropdown';
 import { PublishButton } from './TriggerButton';
 
 const Publish = observer(() => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <PublishButton />
-            <DropdownMenuContent align="end" className="w-96 p-0">
+            <DropdownMenuContent align="end" className="w-96 p-2 p-0 text-sm">
                 <PublishDropdown setIsOpen={setIsOpen} />
             </DropdownMenuContent>
         </DropdownMenu>
