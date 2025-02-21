@@ -30,9 +30,9 @@ import { WebviewManager } from './webview';
 export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _plansOpen: boolean = false;
-    private _settingsOpen: boolean = true;
+    private _settingsOpen: boolean = false;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.PROJECT;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -190,9 +190,6 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        this._editorMode = EditorMode.DESIGN;
-        this._editorPanelTab = EditorTabValue.STYLES;
-        this._settingsTab = SettingsTabValue.DOMAIN;
         this._settingsOpen = false;
         this._plansOpen = false;
     }
