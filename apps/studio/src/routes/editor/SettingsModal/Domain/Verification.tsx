@@ -1,4 +1,13 @@
-import { useProjectsManager } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
+import {
+    FREESTYLE_IP_ADDRESS,
+    FRESTYLE_CUSTOM_HOSTNAME,
+    MainChannels,
+} from '@onlook/models/constants';
+import type {
+    CreateDomainVerificationResponse,
+    VerifyDomainResponse,
+} from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -13,7 +22,7 @@ import { useState } from 'react';
 
 enum VerificationStatus {
     NO_DOMAIN = 'no_domain',
-    PENDING = 'pending',
+    VERIFYING = 'verifying',
     VERIFIED = 'verified',
 }
 
@@ -24,11 +33,15 @@ interface DNSRecord {
 }
 
 export const Verification = observer(() => {
-    const projectsManager = useProjectsManager();
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
     const [error, setError] = useState<string | null>(null);
+
+    function editDomain() {
+        setStatus(VerificationStatus.NO_DOMAIN);
+        setRecords([]);
+    }
 
     function validateDomain(): string | false {
         if (!domain) {
@@ -68,23 +81,47 @@ export const Verification = observer(() => {
         }
     }
 
-    function setupDomain() {
+    async function setupDomain() {
         const validDomain = validateDomain();
         if (!validDomain) {
             return;
         }
 
-        setDomain(validDomain); // Update with sanitized domain
-        setStatus(VerificationStatus.PENDING);
-        // Send verification request to server
+        setDomain(validDomain);
 
-        const verificationRecord = getVerificationRecord();
+        // Send verification request to server
+        const response: CreateDomainVerificationResponse = await invokeMainChannel(
+            MainChannels.CREATE_DOMAIN_VERIFICATION,
+            {
+                domain: validDomain,
+            },
+        );
+
+        if (!response.success || !response.verificationCode) {
+            setError(response.message ?? 'Failed to create domain verification');
+            setStatus(VerificationStatus.NO_DOMAIN);
+            return;
+        }
+
+        setStatus(VerificationStatus.VERIFYING);
+        const verificationRecord = getVerificationRecord(validDomain, response.verificationCode);
         const aRecords = getARecords();
         setRecords([verificationRecord, ...aRecords]);
+        setError(null);
     }
 
-    function verifyDomain() {
+    async function verifyDomain() {
+        const response: VerifyDomainResponse = await invokeMainChannel(MainChannels.VERIFY_DOMAIN, {
+            domain: domain,
+        });
+
+        if (!response.success) {
+            setError(response.message ?? 'Failed to verify domain');
+            return;
+        }
+
         setStatus(VerificationStatus.VERIFIED);
+        setError(null);
     }
 
     function removeDomain() {
@@ -93,12 +130,11 @@ export const Verification = observer(() => {
         setRecords([]);
     }
 
-    function getVerificationRecord() {
-        const value = 'example-code-value';
+    function getVerificationRecord(domain: string, verificationCode: string) {
         const verificationRecord: DNSRecord = {
             type: 'TXT',
-            host: `_freestyle_custom_hostname.${domain}`,
-            value: value,
+            host: `${FRESTYLE_CUSTOM_HOSTNAME}.${domain}`,
+            value: verificationCode,
         };
         return verificationRecord;
     }
@@ -108,20 +144,20 @@ export const Verification = observer(() => {
         const apexRecord: DNSRecord = {
             type: 'A',
             host: '@',
-            value: '35.235.84.134',
+            value: FREESTYLE_IP_ADDRESS,
         };
 
         const wwwRecord: DNSRecord = {
             type: 'A',
             host: 'www',
-            value: '35.235.84.134',
+            value: FREESTYLE_IP_ADDRESS,
         };
 
         aRecords.push(apexRecord, wwwRecord);
         return aRecords;
     }
 
-    function renderDomainInput() {
+    function renderNoDomainInput() {
         return (
             <div className="space-y-2">
                 <div className="flex justify-between items-center gap-2">
@@ -136,13 +172,18 @@ export const Verification = observer(() => {
                         className="bg-background w-2/3"
                     />
                     <Button
-                        disabled={status !== VerificationStatus.NO_DOMAIN}
-                        onClick={setupDomain}
+                        onClick={() => {
+                            if (status === VerificationStatus.NO_DOMAIN) {
+                                setupDomain();
+                            } else {
+                                editDomain();
+                            }
+                        }}
                         variant="secondary"
                         size="sm"
                         className="h-8 text-sm"
                     >
-                        Setup
+                        {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
                     </Button>
                 </div>
             </div>
@@ -159,47 +200,60 @@ export const Verification = observer(() => {
                             Your DNS records must be set up with these values.
                         </p>
                     </div>
-                    {status === VerificationStatus.PENDING ? (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            className="h-8 px-3 text-sm"
-                            onClick={verifyDomain}
-                        >
-                            Verify Setup
-                        </Button>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                                <Icons.CheckCircled className="h-4 w-4 text-green-500" />
-                                <span className="text-xs text-muted-foreground">Verified</span>
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <Icons.DotsVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem className="hover:bg-muted focus:bg-muted cursor-pointer hidden">
-                                        <Icons.Reset className="mr-2 h-4 w-4" />
-                                        Reconfigure DNS
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={removeDomain}
-                                        className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive cursor-pointer"
-                                    >
-                                        <Icons.Trash className="mr-2 h-4 w-4" />
-                                        Remove Domain
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    )}
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 px-3 text-sm"
+                        onClick={verifyDomain}
+                    >
+                        Verify Setup
+                    </Button>
                 </div>
             </div>
         );
     }
+
+    function renderVerifiedHeader() {
+        return (
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <div className="space-y-2">
+                        <p className="text-regularPlus text-muted-foreground">Verified</p>
+                        <p className="text-small text-muted-foreground">
+                            Your domain is verified and ready to use.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                            <Icons.CheckCircled className="h-4 w-4 text-green-500" />
+                            <span className="text-xs text-muted-foreground">Verified</span>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Icons.DotsVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem className="hover:bg-muted focus:bg-muted cursor-pointer hidden">
+                                    <Icons.Reset className="mr-2 h-4 w-4" />
+                                    Reconfigure DNS
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={removeDomain}
+                                    className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive cursor-pointer"
+                                >
+                                    <Icons.Trash className="mr-2 h-4 w-4" />
+                                    Remove Domain
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     function renderRecords() {
         return (
             <div className="grid grid-cols-7 gap-4 rounded-lg border p-4">
@@ -220,9 +274,11 @@ export const Verification = observer(() => {
 
     return (
         <div className="space-y-4">
-            {renderDomainInput()}
-            {status !== VerificationStatus.NO_DOMAIN && renderConfigureHeader()}
-            {status !== VerificationStatus.NO_DOMAIN && renderRecords()}
+            {renderNoDomainInput()}
+            {status === VerificationStatus.VERIFYING && renderConfigureHeader()}
+            {status === VerificationStatus.VERIFIED && renderVerifiedHeader()}
+            {(status === VerificationStatus.VERIFYING || status === VerificationStatus.VERIFIED) &&
+                renderRecords()}
             {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
     );

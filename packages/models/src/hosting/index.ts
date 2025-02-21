@@ -22,3 +22,14 @@ export interface CustomDomain {
     created_at: string;
     updated_at: string;
 }
+
+export interface CreateDomainVerificationResponse {
+    success: boolean;
+    message?: string;
+    verificationCode?: string;
+}
+
+export interface VerifyDomainResponse {
+    success: boolean;
+    message?: string;
+}

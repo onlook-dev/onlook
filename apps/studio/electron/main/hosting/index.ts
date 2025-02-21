@@ -5,7 +5,7 @@ import {
     FUNCTIONS_ROUTE,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
+import { HostingStatus } from '@onlook/models/hosting';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -210,26 +210,6 @@ class HostingManager {
         }
 
         return freestyleResponse.data?.deploymentId ?? '';
-    }
-
-    async getCustomDomains(): Promise<CustomDomain[]> {
-        const authTokens = await getRefreshedAuthTokens();
-        const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}${ApiRoutes.CUSTOM_DOMAINS}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${authTokens.accessToken}`,
-                },
-            },
-        );
-        const customDomains = (await res.json()) as {
-            data: CustomDomain[];
-            error: string;
-        };
-        if (customDomains.error) {
-            throw new Error(`Failed to get custom domains, error: ${customDomains.error}`);
-        }
-        return customDomains.data;
     }
 }
 
