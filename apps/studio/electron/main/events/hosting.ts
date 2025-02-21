@@ -1,7 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import hostingManager from '../hosting';
-import { createDomainVerification, verifyDomain } from '../hosting/freestyle';
+import { getCustomDomains, createDomainVerification, verifyDomain } from '../hosting/domains';
 
 export function listenForHostingMessages() {
     ipcMain.handle(MainChannels.START_DEPLOYMENT, async (e: Electron.IpcMainInvokeEvent, args) => {
@@ -25,7 +25,7 @@ export function listenForHostingMessages() {
     ipcMain.handle(
         MainChannels.GET_CUSTOM_DOMAINS,
         async (e: Electron.IpcMainInvokeEvent, args) => {
-            return await hostingManager.getCustomDomains();
+            return await getCustomDomains();
         },
     );
 
