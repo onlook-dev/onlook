@@ -30,26 +30,64 @@ export async function getCustomDomains(): Promise<CustomDomain[]> {
 export async function createDomainVerification(
     domain: string,
 ): Promise<DomainVerificationResponse> {
-    const authTokens = await getRefreshedAuthTokens();
-    const res: Response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.CREATE_DOMAIN_VERIFICATION}`,
-        {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${authTokens.accessToken}`,
+    try {
+        const authTokens = await getRefreshedAuthTokens();
+        const res: Response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.CREATE_DOMAIN_VERIFICATION}`,
+            {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${authTokens.accessToken}`,
+                },
+                body: JSON.stringify({ domain }),
             },
-            body: JSON.stringify({ domain }),
-        },
-    );
-    const domainVerification = (await res.json()) as {
-        data: DomainVerificationResponse;
-        error: string;
-    };
-    if (domainVerification.error) {
-        throw new Error(`Failed to create domain verification, error: ${domainVerification.error}`);
+        );
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(`Failed to create domain verification, error: ${error.error.message}`);
+        }
+        const domainVerification = (await res.json()) as {
+            data: DomainVerificationResponse;
+            error: string;
+        };
+        if (domainVerification.error) {
+            throw new Error(
+                `Failed to create domain verification, error: ${domainVerification.error}`,
+            );
+        }
+        return {
+            success: true,
+            message: 'Domain verification created',
+            verificationCode: domainVerification.data.verificationCode,
+        };
+    } catch (error) {
+        console.error('Failed to create domain verification', error);
+        return {
+            success: false,
+            message: `${error}`,
+        };
     }
-    return domainVerification.data;
 }
+// export async function createDomainVerification(
+//     domain: string,
+// ): Promise<DomainVerificationResponse> {
+//     try {
+//         const authTokens = await getRefreshedAuthTokens();
+//         const freestyleClient = getFreestyleClient(authTokens.accessToken);
+//         const response = await freestyleClient.createDomainVerificationRequest(domain);
+//         return {
+//             success: true,
+//             message: 'Domain verification created',
+//             verificationCode: response.verificationCode,
+//         };
+//     } catch (error) {
+//         console.error('Failed to create domain verification', error);
+//         return {
+//             success: false,
+//             message: `${error}`,
+//         };
+//     }
+// }
 
 export async function verifyDomain(domain: string): Promise<DomainVerificationResponse> {
     const authTokens = await getRefreshedAuthTokens();

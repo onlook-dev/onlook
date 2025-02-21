@@ -5,7 +5,7 @@ import {
     FUNCTIONS_ROUTE,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
+import { HostingStatus } from '@onlook/models/hosting';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
