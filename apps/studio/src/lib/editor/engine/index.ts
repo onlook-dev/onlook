@@ -30,7 +30,7 @@ import { WebviewManager } from './webview';
 export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _plansOpen: boolean = false;
-    private _settingsOpen: boolean = false;
+    private _settingsOpen: boolean = true;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
 
