@@ -4,6 +4,8 @@ const BaseActionLocationSchema = z.object({
     type: z.enum(['prepend', 'append']),
     targetDomId: z.string(),
     targetOid: z.string().nullable(),
+    oldParentDomId: z.string().optional(),
+    oldParentOid: z.string().optional(),
 });
 
 export const IndexActionLocationSchema = BaseActionLocationSchema.extend({

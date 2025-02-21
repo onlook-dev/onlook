@@ -2,6 +2,7 @@ import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
+    CodeInsert,
     CodeInsertImage,
     CodeRemoveImage,
     EditTextAction,
@@ -211,16 +212,51 @@ export class CodeManager {
                 continue;
             }
 
-            const movedEl: CodeMove = {
-                oid: target.oid,
-                type: CodeActionType.MOVE,
-                location,
-            };
+            if (!location.oldParentOid) {
+                const movedEl: CodeMove = {
+                    oid: target.oid,
+                    type: CodeActionType.MOVE,
+                    location,
+                };
 
-            const request = await getOrCreateCodeDiffRequest(location.targetOid, oidToCodeChange);
-            request.structureChanges.push(movedEl);
+                const request = await getOrCreateCodeDiffRequest(
+                    location.targetOid,
+                    oidToCodeChange,
+                );
+                request.structureChanges.push(movedEl);
+            } else {
+                // TODO: Handle moving from one parent to another
+                // 1. Remove from old parent
+                const removeRequest = await getOrCreateCodeDiffRequest(
+                    location.oldParentOid,
+                    oidToCodeChange,
+                );
+                removeRequest.structureChanges.push({
+                    oid: target.oid,
+                    type: CodeActionType.REMOVE,
+                });
+
+                // 2. Add to new parent
+                // This code still wrong since I can not get full element
+
+                const addRequest = await getOrCreateCodeDiffRequest(
+                    location.targetOid,
+                    oidToCodeChange,
+                );
+                addRequest.structureChanges.push({
+                    oid: target.oid,
+                    type: CodeActionType.INSERT,
+                    location,
+                    children: [], // This is wrong
+                    tagName: '', // This is wrong
+                    attributes: {}, // This is wrong
+                    textContent: '',
+                    pasteParams: null,
+                });
+            }
         }
 
+        console.log('oidToCodeChange', JSON.stringify(Array.from(oidToCodeChange.values())));
         await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 

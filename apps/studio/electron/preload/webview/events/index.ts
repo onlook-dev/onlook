@@ -5,6 +5,7 @@ import type {
     Change,
     GroupContainer,
     ImageContentData,
+    IndexActionLocation,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
 import { ipcRenderer } from 'electron';
@@ -67,13 +68,22 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.MOVE_ELEMENT, (_, data) => {
-        const { domId, newIndex } = data as {
+        const { domId, location } = data as {
             domId: string;
-            newIndex: number;
+            location: IndexActionLocation;
         };
-        const domEl = moveElement(domId, newIndex);
-        if (domEl) {
-            publishMoveElement(domEl);
+        const { index, targetDomId, oldParentDomId } = location;
+
+        if (oldParentDomId) {
+            const domEl = moveElement(domId, index, targetDomId, oldParentDomId);
+            if (domEl) {
+                publishMoveElement(domEl);
+            }
+        } else {
+            const domEl = moveElement(domId, index, targetDomId);
+            if (domEl) {
+                publishMoveElement(domEl);
+            }
         }
     });
 
