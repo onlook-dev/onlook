@@ -23,7 +23,7 @@ export interface CustomDomain {
     updated_at: string;
 }
 
-export interface DomainVerificationResponse {
+export interface CreateDomainVerificationResponse {
     success: boolean;
     message?: string;
     verificationCode?: string;

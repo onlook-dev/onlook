@@ -4,7 +4,10 @@ import {
     FRESTYLE_CUSTOM_HOSTNAME,
     MainChannels,
 } from '@onlook/models/constants';
-import type { DomainVerificationResponse, VerifyDomainResponse } from '@onlook/models/hosting';
+import type {
+    CreateDomainVerificationResponse,
+    VerifyDomainResponse,
+} from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -87,7 +90,7 @@ export const Verification = observer(() => {
         setDomain(validDomain);
 
         // Send verification request to server
-        const response: DomainVerificationResponse = await invokeMainChannel(
+        const response: CreateDomainVerificationResponse = await invokeMainChannel(
             MainChannels.CREATE_DOMAIN_VERIFICATION,
             {
                 domain: validDomain,
@@ -104,6 +107,7 @@ export const Verification = observer(() => {
         const verificationRecord = getVerificationRecord(validDomain, response.verificationCode);
         const aRecords = getARecords();
         setRecords([verificationRecord, ...aRecords]);
+        setError(null);
     }
 
     async function verifyDomain() {
@@ -117,6 +121,7 @@ export const Verification = observer(() => {
         }
 
         setStatus(VerificationStatus.VERIFIED);
+        setError(null);
     }
 
     function removeDomain() {
