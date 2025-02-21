@@ -86,14 +86,28 @@ export class MoveManager {
         );
 
         if (res) {
-            const { newIndex, child, parent } = res;
-            if (newIndex !== this.originalIndex) {
+            const { child, parent, newIndex } = res;
+            const position = child.styles?.computed?.position || 'static';
+
+            if (position === 'absolute') {
+                // Handle absolute positioning
+                const styleAction = this.editorEngine.style.getUpdateStyleAction(
+                    {
+                        position: 'absolute',
+                        left: child.styles?.computed?.left || '0px',
+                        top: child.styles?.computed?.top || '0px',
+                    },
+                    [child.domId],
+                );
+                this.editorEngine.action.run(styleAction);
+            } else {
+                // Handle normal flow positioning
                 const moveAction = this.createMoveAction(
                     webview.id,
                     child,
                     parent,
                     newIndex,
-                    this.originalIndex,
+                    this.originalIndex || 0,
                 );
                 this.editorEngine.action.run(moveAction);
             }

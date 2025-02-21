@@ -32,20 +32,26 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         console.warn('Dragging element not found');
         return;
     }
-    const styles = window.getComputedStyle(el);
-    const pos = JSON.parse(
-        el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
-    );
-    const left = pos.left + dx - window.scrollX;
-    const top = pos.top + dy - window.scrollY;
 
-    el.style.left = `${left}px`;
-    el.style.top = `${top}px`;
-    el.style.width = styles.width + 1;
-    el.style.height = styles.height + 1;
-    el.style.position = 'fixed';
+    const computedStyle = window.getComputedStyle(el);
+    const isAbsolute = computedStyle.position === 'absolute';
 
-    moveStub(el, x, y);
+    if (isAbsolute) {
+        const pos = JSON.parse(
+            el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
+        );
+        const left = pos.left + dx;
+        const top = pos.top + dy;
+
+        el.style.position = 'absolute';
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
+    } else {
+        el.style.width = computedStyle.width + 1;
+        el.style.height = computedStyle.height + 1;
+        el.style.position = 'fixed';
+        moveStub(el, x, y);
+    }
 }
 
 export function endDrag(domId: string): {
@@ -67,23 +73,44 @@ export function endDrag(domId: string): {
         return null;
     }
 
-    const stubIndex = getCurrentStubIndex(parent, el);
-    cleanUpElementAfterDragging(el);
-    removeStub();
+    const computedStyle = window.getComputedStyle(el);
+    const isAbsolute = computedStyle.position === 'absolute';
 
-    if (stubIndex === -1) {
-        return null;
-    }
+    const newChild = getDomElement(el, true);
+    const newParent = getDomElement(parent, false);
 
-    const elementIndex = Array.from(parent.children).indexOf(el);
-    if (stubIndex === elementIndex) {
-        return null;
+    if (isAbsolute) {
+        if (newChild.styles?.computed) {
+            newChild.styles.computed.position = 'absolute';
+            newChild.styles.computed.left = el.style.left;
+            newChild.styles.computed.top = el.style.top;
+        }
+        cleanUpElementAfterDragging(el);
+        return {
+            newIndex: -1,
+            child: newChild,
+            parent: newParent,
+        };
+    } else {
+        const stubIndex = getCurrentStubIndex(parent, el);
+        cleanUpElementAfterDragging(el);
+        removeStub();
+
+        if (stubIndex === -1) {
+            return null;
+        }
+
+        const elementIndex = Array.from(parent.children).indexOf(el);
+        if (stubIndex === elementIndex) {
+            return null;
+        }
+
+        return {
+            newIndex: stubIndex,
+            child: newChild,
+            parent: newParent,
+        };
     }
-    return {
-        newIndex: stubIndex,
-        child: getDomElement(el, false),
-        parent: getDomElement(parent, false),
-    };
 }
 
 function prepareElementForDragging(el: HTMLElement) {
