@@ -1,5 +1,12 @@
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
-import { CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import type { StepComponent } from '../withStepProps';
 
@@ -7,29 +14,36 @@ const LoadWarning: StepComponent = ({ props, variant }) => {
     const { prevStep, nextStep } = props;
 
     const renderHeader = () => (
-        <div className="flex flex-row items-center gap-2">
-            <Icons.InfoCircled className="w-5 h-5" />
-            <CardTitle>{'Before you proceed'}</CardTitle>
-        </div>
+        <AlertDialogHeader>
+            <div className="flex flex-row items-center gap-2">
+                <Icons.ExclamationTriangle className="w-5 h-5 text-yellow-500" />
+                <AlertDialogTitle>Important: Save Your Changes First</AlertDialogTitle>
+            </div>
+        </AlertDialogHeader>
     );
 
     const renderContent = () => (
-        <p>
-            Onlook works by making changes to your project.
+        <AlertDialogDescription>
+            Onlook will modify your project files during import.
             <br />
-            Be sure to save your progress before importing.
-        </p>
+            <br />
+            To prevent losing any work, please either:
+            <ul className="list-disc pl-6 mt-2">
+                <li>Commit your changes to git, or</li>
+                <li>Create a new branch for the import</li>
+            </ul>
+        </AlertDialogDescription>
     );
 
     const renderFooter = () => (
-        <>
+        <AlertDialogFooter>
             <Button type="button" onClick={prevStep} variant="ghost">
                 Back
             </Button>
             <Button type="button" onClick={nextStep} variant="outline">
-                I understand
+                I have saved my changes
             </Button>
-        </>
+        </AlertDialogFooter>
     );
 
     switch (variant) {
