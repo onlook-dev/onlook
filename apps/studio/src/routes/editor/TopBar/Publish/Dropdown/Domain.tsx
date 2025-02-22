@@ -127,7 +127,7 @@ export const DomainSection = observer(
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="text-green-300">Live</p>
                                 <p>•</p>
-                                <p>Updated {timeAgo(domain.publishedAt)}</p>
+                                <p>Updated {timeAgo(domain.publishedAt)} ago</p>
                             </div>
                         )}
                         {state.status === 'error' && (

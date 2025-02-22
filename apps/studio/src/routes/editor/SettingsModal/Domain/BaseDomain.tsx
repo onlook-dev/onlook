@@ -36,7 +36,9 @@ const BaseDomain = observer(() => {
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-2/3">
                         <p className="text-regularPlus text-muted-foreground">URL</p>
-                        <p className="text-small text-muted-foreground">Updated {lastUpdated}</p>
+                        <p className="text-small text-muted-foreground">
+                            Updated {lastUpdated} ago
+                        </p>
                     </div>
                     <Input value={baseDomain?.url ?? ''} disabled className="bg-muted" />
                     <Button onClick={openUrl} variant="ghost" size="icon" className="text-sm">
