@@ -103,7 +103,7 @@ export const DomainSection = observer(
 
                     <Button
                         onClick={openCustomDomain}
-                        className="w-full rounded-md p-3 bg-blue-400 hover:bg-blue-500"
+                        className="w-full rounded-md p-3 bg-blue-400 hover:bg-blue-500 text-white"
                     >
                         Link a Custom Domain
                     </Button>

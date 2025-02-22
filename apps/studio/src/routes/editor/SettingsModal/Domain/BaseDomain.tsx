@@ -34,16 +34,18 @@ const BaseDomain = observer(() => {
             <h2 className="text-lg font-medium">Base Domain</h2>
             <div className="space-y-2">
                 <div className="flex justify-between items-center gap-2">
-                    <div className="w-2/3">
+                    <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">URL</p>
                         <p className="text-small text-muted-foreground">
                             Updated {lastUpdated} ago
                         </p>
                     </div>
-                    <Input value={baseDomain?.url ?? ''} disabled className="bg-muted" />
-                    <Button onClick={openUrl} variant="ghost" size="icon" className="text-sm">
-                        <Icons.ExternalLink className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2 flex-1">
+                        <Input value={baseDomain?.url ?? ''} disabled className="bg-muted" />
+                        <Button onClick={openUrl} variant="ghost" size="icon" className="text-sm">
+                            <Icons.ExternalLink className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
