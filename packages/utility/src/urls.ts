@@ -1,8 +1,6 @@
 export function getValidUrl(url: string) {
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        return 'http://' + url;
-    }
-    return url;
+    // If the url is not https, convert it to https
+    return url.replace(/^http:\/\/|^(?!https:\/\/)/, 'https://');
 }
 
 export const getValidSubdomain = (subdomain: string) => {

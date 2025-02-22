@@ -3,11 +3,11 @@ import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
+import { getValidUrl } from '@onlook/utility';
 
 export const UrlSection = ({ url }: { url: string }) => {
     const openUrl = () => {
-        // Ensure URL starts with https://
-        const lintedUrl = url.replace(/^http:\/\/|^(?!https:\/\/)/, 'https://');
+        const lintedUrl = getValidUrl(url);
         invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, lintedUrl);
     };
 
