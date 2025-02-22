@@ -52,17 +52,10 @@ export function HotkeysModal({ open, onOpenChange }: HotkeysModalProps): ReactEl
                                         key={hotkey.command}
                                         className="flex justify-between items-center"
                                     >
-                                        <span className="text-sm text-foreground-secondary">
-                                            {hotkey.description}
-                                        </span>
+                                        <span className="text-sm">{hotkey.description}</span>
                                         <div className="flex gap-1">
                                             {hotkey.readableCommand.split(' ').map((key, i) => (
-                                                <Kbd
-                                                    key={i}
-                                                    className="bg-background-secondary border-border-primary text-xs px-1.5 py-0.5"
-                                                >
-                                                    {key}
-                                                </Kbd>
+                                                <Kbd key={i}>{key}</Kbd>
                                             ))}
                                         </div>
                                     </div>
