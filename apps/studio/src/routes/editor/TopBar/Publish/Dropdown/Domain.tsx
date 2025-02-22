@@ -143,7 +143,11 @@ export const DomainSection = observer(
                     {state.status === PublishStatus.ERROR && (
                         <div className="w-full flex flex-col gap-2">
                             <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
-                            <Button variant="outline" className="w-full rounded-md p-3">
+                            <Button
+                                variant="outline"
+                                className="w-full rounded-md p-3"
+                                onClick={retry}
+                            >
                                 Retry
                             </Button>
                         </div>

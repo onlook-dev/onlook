@@ -49,7 +49,8 @@ export const PublishButton = observer(() => {
     } else if (status === PublishStatus.UNPUBLISHED) {
         colorClasses = 'border-input bg-background hover:bg-background-onlook text-foreground';
     } else if (status === PublishStatus.ERROR) {
-        colorClasses = 'border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500';
+        colorClasses =
+            'border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-600 hover:border-red-500';
         icon = <Icons.ExclamationTriangle className="mr-2 h-4 w-4" />;
     }
 
