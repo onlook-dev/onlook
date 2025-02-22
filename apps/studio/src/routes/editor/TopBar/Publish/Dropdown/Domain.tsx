@@ -122,16 +122,16 @@ export const DomainSection = observer(
             return (
                 <div className="w-full flex flex-col gap-2">
                     <UrlSection url={domain.url} />
-                    {state.status === PublishStatus.PUBLISHED ||
-                        (state.status === PublishStatus.UNPUBLISHED && (
-                            <Button
-                                onClick={publishBaseDomain}
-                                variant="outline"
-                                className="w-full rounded-md p-3"
-                            >
-                                Update
-                            </Button>
-                        ))}
+                    {(state.status === PublishStatus.PUBLISHED ||
+                        state.status === PublishStatus.UNPUBLISHED) && (
+                        <Button
+                            onClick={publishBaseDomain}
+                            variant="outline"
+                            className="w-full rounded-md p-3"
+                        >
+                            Update
+                        </Button>
+                    )}
                     {state.status === PublishStatus.ERROR && (
                         <div className="w-full flex flex-col gap-2">
                             <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
@@ -142,8 +142,8 @@ export const DomainSection = observer(
                     )}
                     {state.status === PublishStatus.LOADING && (
                         <div className="w-full flex flex-col gap-2">
-                            <Progress className="w-full" />
                             <p>{state.message}</p>
+                            <Progress className="w-full" />
                         </div>
                     )}
                 </div>

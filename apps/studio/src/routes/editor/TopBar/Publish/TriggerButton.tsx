@@ -39,7 +39,7 @@ export const PublishButton = observer(() => {
 
     if (status === PublishStatus.PUBLISHED) {
         colorClasses =
-            'border-teal-300 bg-teal-400/90 hover:bg-teal-500 dark:border-teal-300 dark:bg-teal-700 dark:hover:bg-teal-500/20 dark:text-teal-100';
+            'border-teal-300 bg-teal-400/90 hover:bg-teal-400 dark:border-teal-300 dark:bg-teal-700 dark:hover:bg-teal-500/20 dark:text-teal-100 text-white hover:text-background';
         text = 'Live';
         icon = <Icons.Globe className="mr-2 h-4 w-4" />;
     } else if (status === PublishStatus.LOADING) {
