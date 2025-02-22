@@ -2,13 +2,27 @@ import { useProjectsManager } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { getValidSubdomain, getValidUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 
 const BaseDomain = observer(() => {
     const projectsManager = useProjectsManager();
-    const url = projectsManager.domains?.base?.state.url
-        ? `https://${projectsManager.domains?.base.state.url}`
-        : undefined;
+    if (!projectsManager.project) {
+        return null;
+    }
+
+    const baseDomain = projectsManager.project?.domains?.base;
+    const baseUrl = baseDomain?.url ? getValidSubdomain(projectsManager.project.id) : null;
+
+    const openUrl = () => {
+        if (!baseUrl) {
+            console.error('No URL found');
+            return;
+        }
+
+        const url = getValidUrl(baseUrl);
+        window.open(url, '_blank');
+    };
 
     return (
         <div className="space-y-4">
@@ -21,19 +35,8 @@ const BaseDomain = observer(() => {
                             Last updated 3 mins ago
                         </p>
                     </div>
-                    <Input
-                        value={projectsManager.domains?.base?.state.url ?? ''}
-                        disabled
-                        className="bg-muted"
-                    />
-                    <Button
-                        onClick={() => {
-                            window.open(url, '_blank');
-                        }}
-                        variant="ghost"
-                        size="icon"
-                        className="text-sm"
-                    >
+                    <Input value={baseDomain?.url ?? ''} disabled className="bg-muted" />
+                    <Button onClick={openUrl} variant="ghost" size="icon" className="text-sm">
                         <Icons.ExternalLink className="h-4 w-4" />
                     </Button>
                 </div>

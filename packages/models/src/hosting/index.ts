@@ -29,3 +29,19 @@ export interface VerifyDomainResponse {
     success: boolean;
     message?: string;
 }
+
+export interface PublishRequest {
+    folderPath: string;
+    buildScript: string;
+    urls: string[];
+    skipBuild: boolean;
+}
+
+export interface UnpublishRequest {
+    urls: string[];
+}
+
+export interface PublishResponse {
+    success: boolean;
+    message?: string;
+}

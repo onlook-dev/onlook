@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
 import { PublishStatus, type PublishState } from '@onlook/models/hosting';
 import { DomainType, type DomainSettings } from '@onlook/models/projects';
@@ -21,11 +21,28 @@ export const DomainSection = observer(
         state: PublishState;
     }) => {
         const editorEngine = useEditorEngine();
+        const projectsManager = useProjectsManager();
 
         const openCustomDomain = () => {
             setIsOpen(false);
             editorEngine.settingsTab = SettingsTabValue.DOMAIN;
             editorEngine.isSettingsOpen = true;
+        };
+
+        const createBaseDomain = () => {
+            if (!projectsManager.domains) {
+                console.error('No domains manager found');
+                return;
+            }
+            projectsManager.domains.createBaseDomain();
+        };
+
+        const publishBaseDomain = () => {
+            if (!projectsManager.domains?.base) {
+                console.error('No base domain hosting manager found');
+                return;
+            }
+            projectsManager.domains.base.publish();
         };
 
         const renderNoDomainBase = () => {
@@ -35,7 +52,9 @@ export const DomainSection = observer(
                         <h3 className="">Base Domain</h3>
                     </div>
 
-                    <Button className="w-full rounded-md p-3">Publish preview site</Button>
+                    <Button onClick={createBaseDomain} className="w-full rounded-md p-3">
+                        Publish preview site
+                    </Button>
                 </>
             );
         };
@@ -103,11 +122,16 @@ export const DomainSection = observer(
             return (
                 <div className="w-full flex flex-col gap-2">
                     <UrlSection url={domain.url} />
-                    {state.status === PublishStatus.PUBLISHED && (
-                        <Button variant="outline" className="w-full rounded-md p-3">
-                            Update
-                        </Button>
-                    )}
+                    {state.status === PublishStatus.PUBLISHED ||
+                        (state.status === PublishStatus.UNPUBLISHED && (
+                            <Button
+                                onClick={publishBaseDomain}
+                                variant="outline"
+                                className="w-full rounded-md p-3"
+                            >
+                                Update
+                            </Button>
+                        ))}
                     {state.status === PublishStatus.ERROR && (
                         <div className="w-full flex flex-col gap-2">
                             <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
@@ -131,8 +155,8 @@ export const DomainSection = observer(
                 {domain
                     ? renderDomain()
                     : type === DomainType.BASE
-                        ? renderNoDomainBase()
-                        : renderNoDomainCustom()}
+                      ? renderNoDomainBase()
+                      : renderNoDomainCustom()}
             </div>
         );
     },

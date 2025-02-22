@@ -1,6 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
 import { PublishStatus } from '@onlook/models/hosting';
-import { DomainType, } from '@onlook/models/projects';
+import { DomainType } from '@onlook/models/projects';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { AdvancedSettingsSection } from './AdvancedSettings';
@@ -16,8 +16,14 @@ export const PublishDropdown = observer(
         const baseDomain = projectsManager.project?.domains?.base || null;
         const customDomain = projectsManager.project?.domains?.custom || null;
 
-        const baseDomainState = projectsManager.domains?.base?.state || { status: PublishStatus.UNPUBLISHED, message: null };
-        const customDomainState = projectsManager.domains?.custom?.state || { status: PublishStatus.UNPUBLISHED, message: null };
+        const baseDomainState = projectsManager.domains?.base?.state || {
+            status: PublishStatus.UNPUBLISHED,
+            message: null,
+        };
+        const customDomainState = projectsManager.domains?.custom?.state || {
+            status: PublishStatus.UNPUBLISHED,
+            message: null,
+        };
 
         return (
             <div className="rounded-md flex flex-col text-foreground-secondary">
