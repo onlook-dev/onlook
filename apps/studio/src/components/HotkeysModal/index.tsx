@@ -54,8 +54,8 @@ export function HotkeysModal({ open, onOpenChange }: HotkeysModalProps): ReactEl
                                     >
                                         <span className="text-sm">{hotkey.description}</span>
                                         <div className="flex gap-1">
-                                            {hotkey.readableCommand.split(' ').map((key, i) => (
-                                                <Kbd key={i}>{key}</Kbd>
+                                            {hotkey.readableCommand.split(' ').map((key) => (
+                                                <Kbd key={`${hotkey.command}-${key}`}>{key}</Kbd>
                                             ))}
                                         </div>
                                     </div>
