@@ -133,18 +133,17 @@ export const Verification = observer(() => {
             setError(response.message ?? 'Failed to verify domain');
             return;
         }
-
-        setStatus(VerificationStatus.VERIFIED);
-        createCustomDomain(domain);
-        setError(null);
     }
 
-    const createCustomDomain = (url: string) => {
+    const addCustomDomain = (url: string) => {
         if (!domainsManager) {
             console.error('No domains manager found');
             return;
         }
-        domainsManager.createCustomDomain(url);
+        domainsManager.addCustomDomainToProject(url);
+        setStatus(VerificationStatus.VERIFIED);
+        setDomain(url);
+        setError(null);
     };
 
     function removeDomain() {
@@ -221,7 +220,14 @@ export const Verification = observer(() => {
                                     className="flex items-center text-small text-muted-foreground"
                                 >
                                     <p>{domain}</p>
-                                    <Button variant="outline" size="sm" className="ml-auto">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="ml-auto"
+                                        onClick={() => {
+                                            addCustomDomain(domain);
+                                        }}
+                                    >
                                         Use Domain
                                     </Button>
                                 </div>
@@ -298,6 +304,9 @@ export const Verification = observer(() => {
     }
 
     function renderRecords() {
+        if (records.length === 0) {
+            return null;
+        }
         return (
             <div className="grid grid-cols-7 gap-4 rounded-lg border p-4">
                 <div className="text-sm font-medium col-span-1">Type</div>

@@ -76,7 +76,7 @@ export class DomainsManager {
         return this._customHosting;
     }
 
-    createBaseDomain() {
+    addBaseDomainToProject() {
         const domains = {
             base: null,
             custom: null,
@@ -91,7 +91,7 @@ export class DomainsManager {
         this.projectsManager.updateProject({ ...this.project, domains });
     }
 
-    async createCustomDomain(url: string) {
+    async addCustomDomainToProject(url: string) {
         const domains = {
             base: null,
             custom: null,

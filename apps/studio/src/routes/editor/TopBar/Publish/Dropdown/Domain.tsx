@@ -58,7 +58,7 @@ export const DomainSection = observer(
                 console.error('No domains manager found');
                 return;
             }
-            projectsManager.domains.createBaseDomain();
+            projectsManager.domains.addBaseDomainToProject();
         };
 
         const publishBaseDomain = () => {
