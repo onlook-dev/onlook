@@ -76,7 +76,10 @@ export class ProjectsManager {
             commands,
             previewImg: null,
             settings: null,
-            hosting: null,
+            domains: {
+                base: null,
+                custom: null,
+            },
         };
 
         const updatedProjects = [...this.projectList, newProject];

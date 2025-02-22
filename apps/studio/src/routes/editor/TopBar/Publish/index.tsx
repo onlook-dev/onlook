@@ -10,7 +10,7 @@ const Publish = observer(() => {
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
             <PublishButton />
-            <DropdownMenuContent align="end" className="w-96 p-2 p-0 text-sm">
+            <DropdownMenuContent align="end" className="w-96 p-0 text-sm">
                 <PublishDropdown setIsOpen={setIsOpen} />
             </DropdownMenuContent>
         </DropdownMenu>
