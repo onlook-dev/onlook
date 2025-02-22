@@ -1,18 +1,14 @@
-export enum HostingStatus {
-    NO_ENV = 'no-env',
-    READY = 'ready',
-    DEPLOYING = 'deploying',
+export enum PublishStatus {
+    UNPUBLISHED = 'unpublished',
+    LOADING = 'loading',
+    PUBLISHED = 'published',
     ERROR = 'error',
-    DELETING = 'deleting',
 }
 
-export const HostingStateMessages = {
-    [HostingStatus.NO_ENV]: 'Share public link (beta)',
-    [HostingStatus.READY]: 'Public link',
-    [HostingStatus.DEPLOYING]: 'Deploying',
-    [HostingStatus.ERROR]: 'Error',
-    [HostingStatus.DELETING]: 'Deleting',
-};
+export interface PublishState {
+    status: PublishStatus;
+    message: string | null;
+}
 
 export interface CustomDomain {
     id: string;
@@ -30,6 +26,22 @@ export interface CreateDomainVerificationResponse {
 }
 
 export interface VerifyDomainResponse {
+    success: boolean;
+    message?: string;
+}
+
+export interface PublishRequest {
+    folderPath: string;
+    buildScript: string;
+    urls: string[];
+    skipBuild: boolean;
+}
+
+export interface UnpublishRequest {
+    urls: string[];
+}
+
+export interface PublishResponse {
     success: boolean;
     message?: string;
 }

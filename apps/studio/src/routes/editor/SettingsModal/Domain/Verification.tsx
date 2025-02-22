@@ -161,30 +161,33 @@ export const Verification = observer(() => {
         return (
             <div className="space-y-2">
                 <div className="flex justify-between items-center gap-2">
-                    <div>
+                    <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">Custom URL</p>
+                        <p className="text-small text-muted-foreground">Input your domain</p>
                     </div>
-                    <Input
-                        disabled={status !== VerificationStatus.NO_DOMAIN}
-                        value={domain}
-                        onChange={(e) => setDomain(e.target.value)}
-                        placeholder="Input your domain"
-                        className="bg-background w-2/3"
-                    />
-                    <Button
-                        onClick={() => {
-                            if (status === VerificationStatus.NO_DOMAIN) {
-                                setupDomain();
-                            } else {
-                                editDomain();
-                            }
-                        }}
-                        variant="secondary"
-                        size="sm"
-                        className="h-8 text-sm"
-                    >
-                        {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
-                    </Button>
+                    <div className="flex gap-2 flex-1">
+                        <Input
+                            disabled={status !== VerificationStatus.NO_DOMAIN}
+                            value={domain}
+                            onChange={(e) => setDomain(e.target.value)}
+                            placeholder="example.com"
+                            className="bg-background placeholder:text-muted-foreground"
+                        />
+                        <Button
+                            onClick={() => {
+                                if (status === VerificationStatus.NO_DOMAIN) {
+                                    setupDomain();
+                                } else {
+                                    editDomain();
+                                }
+                            }}
+                            variant="secondary"
+                            size="sm"
+                            className="h-8 text-sm"
+                        >
+                            {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
+                        </Button>
+                    </div>
                 </div>
             </div>
         );

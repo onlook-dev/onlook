@@ -13,6 +13,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
+import { getValidUrl } from '@onlook/utility';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
@@ -117,13 +118,6 @@ const BrowserControls = observer(
             if (webview.canGoBack()) {
                 webview.goBack();
             }
-        }
-
-        function getValidUrl(url: string) {
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                return 'http://' + url;
-            }
-            return url;
         }
 
         function handleKeydown(e: React.KeyboardEvent<HTMLInputElement>) {

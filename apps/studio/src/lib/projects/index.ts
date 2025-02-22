@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '../editor/engine';
 import { invokeMainChannel, sendAnalytics } from '../utils';
 import { CreateManager } from './create';
-import { HostingManager } from './hosting';
+import { DomainsManager } from './domains';
 import { RunManager } from './run';
 
 export enum ProjectTabs {
@@ -21,10 +21,10 @@ export class ProjectsManager {
     editorEngine: EditorEngine | null = null;
 
     private createManager: CreateManager;
-    private activeProject: Project | null = null;
-    private activeRunManager: RunManager | null = null;
-    private activeHostingManager: HostingManager | null = null;
-    private projectList: Project[] = [];
+    private _project: Project | null = null;
+    private _projects: Project[] = [];
+    private _run: RunManager | null = null;
+    private _domains: DomainsManager | null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -44,7 +44,7 @@ export class ProjectsManager {
             console.error('Failed to restore projects');
             return;
         }
-        this.projectList = cachedProjects.projects;
+        this._projects = cachedProjects.projects;
 
         const appState: AppState | null = await invokeMainChannel(MainChannels.GET_APP_STATE);
         if (!appState) {
@@ -52,7 +52,7 @@ export class ProjectsManager {
             return;
         }
         if (appState.activeProjectId) {
-            this.project = this.projectList.find((p) => p.id === appState.activeProjectId) || null;
+            this.project = this._projects.find((p) => p.id === appState.activeProjectId) || null;
         }
     }
 
@@ -76,16 +76,19 @@ export class ProjectsManager {
             commands,
             previewImg: null,
             settings: null,
-            hosting: null,
+            domains: {
+                base: null,
+                custom: null,
+            },
         };
 
-        const updatedProjects = [...this.projectList, newProject];
+        const updatedProjects = [...this._projects, newProject];
         this.projects = updatedProjects;
         return newProject;
     }
 
     updateProject(project: Project) {
-        const updatedProjects = this.projectList.map((p) => (p.id === project.id ? project : p));
+        const updatedProjects = this._projects.map((p) => (p.id === project.id ? project : p));
         if (project.id === this.project?.id) {
             this.project = project;
         }
@@ -97,14 +100,14 @@ export class ProjectsManager {
     }
 
     saveProjects() {
-        invokeMainChannel(MainChannels.UPDATE_PROJECTS, { projects: this.projectList });
+        invokeMainChannel(MainChannels.UPDATE_PROJECTS, { projects: this._projects });
     }
 
     deleteProject(project: Project, deleteProjectFolder: boolean = false) {
         if (this.project?.id === project.id) {
             this.project = null;
         }
-        this.projects = this.projectList.filter((p) => p.id !== project.id);
+        this.projects = this._projects.filter((p) => p.id !== project.id);
 
         if (deleteProjectFolder) {
             invokeMainChannel(MainChannels.DELETE_FOLDER, project.folderPath);
@@ -113,26 +116,26 @@ export class ProjectsManager {
     }
 
     get project() {
-        return this.activeProject;
+        return this._project;
     }
 
     get runner(): RunManager | null {
-        return this.activeRunManager;
+        return this._run;
     }
 
-    get hosting(): HostingManager | null {
-        return this.activeHostingManager;
+    get domains(): DomainsManager | null {
+        return this._domains;
     }
 
     set project(newProject: Project | null) {
         if (!newProject) {
             this.disposeManagers();
-        } else if (newProject.id !== this.activeProject?.id) {
+        } else if (newProject.id !== this._project?.id) {
             this.disposeManagers();
             this.setManagers(newProject);
         }
 
-        this.activeProject = newProject;
+        this._project = newProject;
         this.updateAppState({
             activeProjectId: this.project?.id ?? null,
         });
@@ -143,23 +146,23 @@ export class ProjectsManager {
             console.error('Editor engine not found');
             return;
         }
-        this.activeRunManager = new RunManager(project, this.editorEngine);
-        this.activeHostingManager = new HostingManager(this, project);
+        this._run = new RunManager(project, this.editorEngine);
+        this._domains = new DomainsManager(this, project);
     }
 
     disposeManagers() {
-        this.activeRunManager?.dispose();
-        this.activeHostingManager?.dispose();
-        this.activeRunManager = null;
-        this.activeHostingManager = null;
+        this._run?.dispose();
+        this._domains?.dispose();
+        this._run = null;
+        this._domains = null;
     }
 
     get projects() {
-        return this.projectList;
+        return this._projects;
     }
 
     set projects(newProjects: Project[]) {
-        this.projectList = newProjects;
+        this._projects = newProjects;
         this.saveProjects();
     }
 }

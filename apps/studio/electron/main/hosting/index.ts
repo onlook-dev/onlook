@@ -5,7 +5,7 @@ import {
     FUNCTIONS_ROUTE,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus } from '@onlook/models/hosting';
+import { PublishStatus, type PublishRequest, type PublishResponse } from '@onlook/models/hosting';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -33,26 +33,23 @@ class HostingManager {
         return HostingManager.instance;
     }
 
-    async deploy(
-        folderPath: string,
-        buildScript: string,
-        urls: string[],
-        skipBuild: boolean = false,
-    ): Promise<{
-        state: HostingStatus;
-        message?: string;
-    }> {
+    async publish({
+        folderPath,
+        buildScript,
+        urls,
+        skipBuild,
+    }: PublishRequest): Promise<PublishResponse> {
         try {
             const timer = new LogTimer('Deployment');
-            this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
+            this.emitState(PublishStatus.LOADING, 'Preparing project...');
 
             await this.runPrepareStep(folderPath);
-            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
+            this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
             timer.log('Prepare completed');
 
             // Run the build script
             await this.runBuildStep(folderPath, buildScript, skipBuild);
-            this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
+            this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
             timer.log('Build completed');
 
             // Postprocess the project for deployment
@@ -70,26 +67,26 @@ class HostingManager {
             const NEXT_BUILD_OUTPUT_PATH = `${folderPath}/${CUSTOM_OUTPUT_DIR}/standalone`;
             const files: FileRecord = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
 
-            this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
+            this.emitState(PublishStatus.LOADING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
             const id = await this.sendHostingPostRequest(files, urls);
             timer.log('Deployment completed');
 
-            this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
+            this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
             return {
-                state: HostingStatus.READY,
+                success: true,
                 message: 'Deployment successful, deployment ID: ' + id,
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + error);
+            this.emitState(PublishStatus.ERROR, 'Deployment failed with error: ' + error);
             analytics.trackError('Failed to deploy to preview environment', {
                 error,
             });
             return {
-                state: HostingStatus.ERROR,
+                success: false,
                 message: 'Deployment failed with error: ' + error,
             };
         }
@@ -124,16 +121,16 @@ class HostingManager {
         } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
 
         if (!buildSuccess) {
-            this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
+            this.emitState(PublishStatus.ERROR, `Build failed with error: ${buildError}`);
             throw new Error(`Build failed with error: ${buildError}`);
         } else {
             console.log('Build succeeded with output: ', buildOutput);
         }
     }
 
-    emitState(state: HostingStatus, message?: string) {
+    emitState(state: PublishStatus, message?: string) {
         console.log(`Deployment state: ${state} - ${message}`);
-        mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
+        mainWindow?.webContents.send(MainChannels.PUBLISH_STATE_CHANGED, {
             state,
             message,
         });
@@ -143,16 +140,13 @@ class HostingManager {
         });
     }
 
-    async unpublish(urls: string[]): Promise<{
-        success: boolean;
-        message?: string;
-    }> {
+    async unpublish(urls: string[]): Promise<PublishResponse> {
         try {
             const id = await this.sendHostingPostRequest({}, urls);
-            this.emitState(HostingStatus.NO_ENV, 'Deployment deleted with ID: ' + id);
+            this.emitState(PublishStatus.UNPUBLISHED, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
-                state: HostingStatus.NO_ENV,
+                state: PublishStatus.UNPUBLISHED,
                 message: 'Deployment deleted with ID: ' + id,
             });
             return {
@@ -161,7 +155,7 @@ class HostingManager {
             };
         } catch (error) {
             console.error('Failed to delete deployment', error);
-            this.emitState(HostingStatus.ERROR, 'Failed to delete deployment');
+            this.emitState(PublishStatus.ERROR, 'Failed to delete deployment');
             analytics.trackError('Failed to delete deployment', {
                 error,
             });

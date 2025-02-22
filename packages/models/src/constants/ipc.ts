@@ -121,9 +121,9 @@ export enum MainChannels {
     TERMINAL_GET_HISTORY = 'terminal-get-history',
 
     // Hosting
-    START_DEPLOYMENT = 'start-deployment',
-    DEPLOY_STATE_CHANGED = 'deploy-state-changed',
-    UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
+    PUBLISH_TO_DOMAIN = 'publish-to-domain',
+    UNPUBLISH_DOMAIN = 'unpublish-domain',
+    PUBLISH_STATE_CHANGED = 'publish-state-changed',
     GET_CUSTOM_DOMAINS = 'get-custom-domains',
     CREATE_DOMAIN_VERIFICATION = 'create-domain-verification',
     VERIFY_DOMAIN = 'verify-domain',
