@@ -1,6 +1,6 @@
 import { type ReactElement } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
-import { HotKeyLabel } from '@/components/ui/hotkeys-label';
+import { Kbd } from '@onlook/ui/kbd';
 import { Hotkey } from '../../../common/hotkeys';
 
 interface HotkeysModalProps {
@@ -46,13 +46,26 @@ export function HotkeysModal({ open, onOpenChange }: HotkeysModalProps): ReactEl
                     {Object.entries(categories).map(([category, hotkeys]) => (
                         <div key={category}>
                             <h3 className="font-medium mb-2">{category}</h3>
-                            <div className="grid gap-2">
+                            <div className="space-y-2">
                                 {hotkeys.map((hotkey) => (
-                                    <HotKeyLabel
+                                    <div
                                         key={hotkey.command}
-                                        hotkey={hotkey}
-                                        className="text-sm"
-                                    />
+                                        className="flex justify-between items-center"
+                                    >
+                                        <span className="text-sm text-foreground-secondary">
+                                            {hotkey.description}
+                                        </span>
+                                        <div className="flex gap-1">
+                                            {hotkey.readableCommand.split(' ').map((key, i) => (
+                                                <Kbd
+                                                    key={i}
+                                                    className="bg-background-secondary border-border-primary text-xs px-1.5 py-0.5"
+                                                >
+                                                    {key}
+                                                </Kbd>
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
