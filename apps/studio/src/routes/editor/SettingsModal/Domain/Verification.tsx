@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import {
     FREESTYLE_IP_ADDRESS,
@@ -19,7 +19,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 enum VerificationStatus {
     NO_DOMAIN = 'no_domain',
@@ -34,14 +34,23 @@ interface DNSRecord {
 }
 
 export const Verification = observer(() => {
+    const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const domainsManager = projectsManager.domains;
-    const customDomain = projectsManager.project?.domains?.custom;
 
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [ownedDomains, setOwnedDomains] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (domainsManager) {
+            domainsManager.getOwnedDomains().then((domains) => {
+                setOwnedDomains(domains);
+            });
+        }
+    }, [editorEngine.isSettingsOpen]);
 
     function editDomain() {
         setStatus(VerificationStatus.NO_DOMAIN);
@@ -174,33 +183,50 @@ export const Verification = observer(() => {
     function renderNoDomainInput() {
         return (
             <div className="space-y-2">
-                <div className="flex justify-between items-center gap-2">
+                <div className="flex justify-between items-start gap-2">
                     <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">Custom URL</p>
-                        <p className="text-small text-muted-foreground">Input your domain</p>
+                        <p className="text-small text-muted-foreground">
+                            Input your domain {ownedDomains.length > 0 ? 'or reuse previous' : ''}
+                        </p>
                     </div>
-                    <div className="flex gap-2 flex-1">
-                        <Input
-                            disabled={status !== VerificationStatus.NO_DOMAIN}
-                            value={domain}
-                            onChange={(e) => setDomain(e.target.value)}
-                            placeholder="example.com"
-                            className="bg-background placeholder:text-muted-foreground"
-                        />
-                        <Button
-                            onClick={() => {
-                                if (status === VerificationStatus.NO_DOMAIN) {
-                                    setupDomain();
-                                } else {
-                                    editDomain();
-                                }
-                            }}
-                            variant="secondary"
-                            size="sm"
-                            className="h-8 text-sm"
-                        >
-                            {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
-                        </Button>
+                    <div className="flex flex-col gap-4 flex-1">
+                        <div className="flex gap-2">
+                            <Input
+                                disabled={status !== VerificationStatus.NO_DOMAIN}
+                                value={domain}
+                                onChange={(e) => setDomain(e.target.value)}
+                                placeholder="example.com"
+                                className="bg-background placeholder:text-muted-foreground"
+                            />
+                            <Button
+                                onClick={() => {
+                                    if (status === VerificationStatus.NO_DOMAIN) {
+                                        setupDomain();
+                                    } else {
+                                        editDomain();
+                                    }
+                                }}
+                                variant="secondary"
+                                size="sm"
+                                className="h-8 text-sm"
+                            >
+                                {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
+                            </Button>
+                        </div>
+                        <div className="flex flex-col gap-2 flex-1">
+                            {ownedDomains.map((domain) => (
+                                <div
+                                    key={domain}
+                                    className="flex items-center text-small text-muted-foreground"
+                                >
+                                    <p>{domain}</p>
+                                    <Button variant="outline" size="sm" className="ml-auto">
+                                        Use Domain
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
