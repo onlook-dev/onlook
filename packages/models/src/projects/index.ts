@@ -31,9 +31,14 @@ export interface HostingSettings {
     url: string | null;
 }
 
+export enum DomainType {
+    BASE = 'base',
+    CUSTOM = 'custom',
+}
+
 export interface DomainSettings {
     url: string;
-    type: 'base' | 'custom';
+    type: DomainType;
     publishedAt: string;
 }
 
