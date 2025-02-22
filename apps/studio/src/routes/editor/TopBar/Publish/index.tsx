@@ -5,7 +5,7 @@ import { PublishDropdown } from './Dropdown';
 import { PublishButton } from './TriggerButton';
 
 const Publish = observer(() => {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>

@@ -45,3 +45,9 @@ export interface PublishResponse {
     success: boolean;
     message?: string;
 }
+
+export interface GetOwnedDomainsResponse {
+    success: boolean;
+    message?: string;
+    domains?: string[];
+}

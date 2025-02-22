@@ -1,3 +1,4 @@
+import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import {
     FREESTYLE_IP_ADDRESS,
@@ -33,6 +34,10 @@ interface DNSRecord {
 }
 
 export const Verification = observer(() => {
+    const projectsManager = useProjectsManager();
+    const domainsManager = projectsManager.domains;
+    const customDomain = projectsManager.project?.domains?.custom;
+
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
@@ -121,8 +126,17 @@ export const Verification = observer(() => {
         }
 
         setStatus(VerificationStatus.VERIFIED);
+        createCustomDomain(domain);
         setError(null);
     }
+
+    const createCustomDomain = (url: string) => {
+        if (!domainsManager) {
+            console.error('No domains manager found');
+            return;
+        }
+        domainsManager.createCustomDomain(url);
+    };
 
     function removeDomain() {
         setStatus(VerificationStatus.NO_DOMAIN);
