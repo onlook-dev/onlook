@@ -8,7 +8,6 @@ import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import ProjectBreadcrumb from './ProjectSelect';
 import Publish from './Publish';
-import ShareProject from './ShareProject';
 import { Hotkey } from '/common/hotkeys';
 
 const EditorTopBar = observer(() => {
@@ -104,7 +103,6 @@ const EditorTopBar = observer(() => {
                         ))}
                     </motion.div>
                 </div>
-                <ShareProject />
                 <Publish />
             </div>
         </div>

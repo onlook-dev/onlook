@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
+import { PublishStatus, type PublishState } from '@onlook/models/hosting';
 import { DomainType, type DomainSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Progress } from '@onlook/ui/progress';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import type { PublishState } from '.';
 import { UrlSection } from './Url';
 
 export const DomainSection = observer(
@@ -72,11 +72,11 @@ export const DomainSection = observer(
                             {type === DomainType.BASE ? 'Base Domain' : 'Custom Domain'}
                         </h3>
 
-                        {state.status === 'success' && (
+                        {state.status === PublishStatus.PUBLISHED && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="text-green-300">Live</p>
                                 <p>•</p>
-                                <p>Updated {timeAgo({ date: domain.publishedAt })}</p>
+                                <p>Updated {timeAgo(domain.publishedAt)}</p>
                             </div>
                         )}
                         {state.status === 'error' && (
@@ -103,20 +103,20 @@ export const DomainSection = observer(
             return (
                 <div className="w-full flex flex-col gap-2">
                     <UrlSection url={domain.url} />
-                    {state.status === 'success' && (
+                    {state.status === PublishStatus.PUBLISHED && (
                         <Button variant="outline" className="w-full rounded-md p-3">
                             Update
                         </Button>
                     )}
-                    {state.status === 'error' && (
+                    {state.status === PublishStatus.ERROR && (
                         <div className="w-full flex flex-col gap-2">
-                            <p className="text-red-500 max-h-20 overflow-y-auto">{state.error}</p>
+                            <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
                             <Button variant="outline" className="w-full rounded-md p-3">
                                 Retry
                             </Button>
                         </div>
                     )}
-                    {state.status === 'loading' && (
+                    {state.status === PublishStatus.LOADING && (
                         <div className="w-full flex flex-col gap-2">
                             <Progress className="w-full" />
                             <p>{state.message}</p>
@@ -131,8 +131,8 @@ export const DomainSection = observer(
                 {domain
                     ? renderDomain()
                     : type === DomainType.BASE
-                      ? renderNoDomainBase()
-                      : renderNoDomainCustom()}
+                        ? renderNoDomainBase()
+                        : renderNoDomainCustom()}
             </div>
         );
     },

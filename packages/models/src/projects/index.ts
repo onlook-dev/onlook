@@ -58,7 +58,7 @@ export interface Project {
     } | null;
 
     // deprecated
-    hosting?: HostingSettings | null;
+    // hosting?: HostingSettings | null;
 }
 
 export enum WindowCommand {

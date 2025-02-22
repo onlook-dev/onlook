@@ -1,4 +1,4 @@
-export const timeAgo = ({ date }: { date: string }): string => {
+export const timeAgo = (date: string): string => {
     const now = new Date();
     const then = new Date(date);
     const diff = now.getTime() - then.getTime();

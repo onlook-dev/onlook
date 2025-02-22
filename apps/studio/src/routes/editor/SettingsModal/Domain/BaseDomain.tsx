@@ -6,8 +6,8 @@ import { observer } from 'mobx-react-lite';
 
 const BaseDomain = observer(() => {
     const projectsManager = useProjectsManager();
-    const url = projectsManager.hosting?.state.url
-        ? `https://${projectsManager.hosting?.state.url}`
+    const url = projectsManager.domains?.base?.state.url
+        ? `https://${projectsManager.domains?.base.state.url}`
         : undefined;
 
     return (
@@ -22,7 +22,7 @@ const BaseDomain = observer(() => {
                         </p>
                     </div>
                     <Input
-                        value={projectsManager.hosting?.state.url ?? ''}
+                        value={projectsManager.domains?.base?.state.url ?? ''}
                         disabled
                         className="bg-muted"
                     />

@@ -19,7 +19,7 @@ export const AdvancedSettingsSection = ({
     return (
         <Button
             variant="ghost"
-            className="flex flex-row items-center gap-2 py-4 rounded-t-none"
+            className="flex flex-row items-center gap-2 py-4 rounded-t-none h-12"
             onClick={openAdvancedSettings}
         >
             <Icons.Gear className="h-4 w-4" />
