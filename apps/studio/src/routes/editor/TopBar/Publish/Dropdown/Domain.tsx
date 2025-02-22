@@ -45,6 +45,14 @@ export const DomainSection = observer(
             projectsManager.domains.base.publish();
         };
 
+        const retry = () => {
+            if (!projectsManager.domains?.base) {
+                console.error('No base domain hosting manager found');
+                return;
+            }
+            projectsManager.domains.base.refresh();
+        };
+
         const renderNoDomainBase = () => {
             return (
                 <>

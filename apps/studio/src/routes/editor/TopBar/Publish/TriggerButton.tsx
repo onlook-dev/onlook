@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { PublishStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
@@ -7,6 +7,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 export const PublishButton = observer(() => {
+    const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const baseStatus = projectsManager.domains?.base?.state.status;
     const customStatus = projectsManager.domains?.custom?.state.status;
@@ -40,12 +41,11 @@ export const PublishButton = observer(() => {
     if (status === PublishStatus.PUBLISHED) {
         colorClasses =
             'border-teal-300 bg-teal-400/90 hover:bg-teal-400 dark:border-teal-300 dark:bg-teal-700 dark:hover:bg-teal-500/20 dark:text-teal-100 text-white hover:text-background';
-        text = 'Live';
+        text = editorEngine.history.length > 0 ? 'Update' : 'Live';
         icon = <Icons.Globe className="mr-2 h-4 w-4" />;
     } else if (status === PublishStatus.LOADING) {
-        colorClasses =
-            'border-blue-300 bg-blue-400/90 hover:bg-blue-500 dark:border-blue-300 dark:bg-blue-700 dark:hover:bg-blue-500/20 dark:text-blue-100';
         icon = <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />;
+        text = 'Publishing';
     } else if (status === PublishStatus.UNPUBLISHED) {
         colorClasses = 'border-input bg-background hover:bg-background-onlook text-foreground';
     } else if (status === PublishStatus.ERROR) {

@@ -85,6 +85,8 @@ export class HostingManager {
             skipBuild,
         };
 
+        console.log('request', request);
+
         const res: PublishResponse | null = await invokeMainChannel(
             MainChannels.PUBLISH_TO_DOMAIN,
             request,
