@@ -1,8 +1,10 @@
 import { useProjectsManager } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
+import { HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { getValidSubdomain, getValidUrl } from '@onlook/utility';
+import { getValidSubdomain, getValidUrl, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 
 const BaseDomain = observer(() => {
@@ -12,7 +14,10 @@ const BaseDomain = observer(() => {
     }
 
     const baseDomain = projectsManager.project?.domains?.base;
-    const baseUrl = baseDomain?.url ? getValidSubdomain(projectsManager.project.id) : null;
+    const lastUpdated = baseDomain?.publishedAt ? timeAgo(baseDomain.publishedAt) : null;
+    const baseUrl = baseDomain?.url
+        ? `${getValidSubdomain(projectsManager.project.id)}.${HOSTING_DOMAIN}`
+        : null;
 
     const openUrl = () => {
         if (!baseUrl) {
@@ -21,7 +26,7 @@ const BaseDomain = observer(() => {
         }
 
         const url = getValidUrl(baseUrl);
-        window.open(url, '_blank');
+        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, url);
     };
 
     return (
@@ -29,11 +34,9 @@ const BaseDomain = observer(() => {
             <h2 className="text-lg font-medium">Base Domain</h2>
             <div className="space-y-2">
                 <div className="flex justify-between items-center gap-2">
-                    <div className="w-24">
+                    <div className="w-2/3">
                         <p className="text-regularPlus text-muted-foreground">URL</p>
-                        <p className="text-small text-muted-foreground hidden">
-                            Last updated 3 mins ago
-                        </p>
+                        <p className="text-small text-muted-foreground">Updated {lastUpdated}</p>
                     </div>
                     <Input value={baseDomain?.url ?? ''} disabled className="bg-muted" />
                     <Button onClick={openUrl} variant="ghost" size="icon" className="text-sm">

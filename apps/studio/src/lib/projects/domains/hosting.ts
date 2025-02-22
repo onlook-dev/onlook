@@ -75,11 +75,6 @@ export class HostingManager {
     }
 
     async publish(skipBuild: boolean = false): Promise<boolean> {
-        this.updateState({
-            status: PublishStatus.ERROR,
-            message: 'Failed to publish',
-        });
-        return false;
         sendAnalytics('hosting publish');
         this.updateState({ status: PublishStatus.LOADING, message: 'Creating deployment...' });
 
@@ -89,8 +84,6 @@ export class HostingManager {
             urls: getPublishUrls(this.domain.url),
             skipBuild,
         };
-
-        console.log('request', request);
 
         const res: PublishResponse | null = await invokeMainChannel(
             MainChannels.PUBLISH_TO_DOMAIN,

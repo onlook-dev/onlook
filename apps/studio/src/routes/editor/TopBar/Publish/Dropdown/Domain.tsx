@@ -6,6 +6,7 @@ import { Button } from '@onlook/ui/button';
 import { Progress } from '@onlook/ui/progress';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 import { UrlSection } from './Url';
 
 export const DomainSection = observer(
@@ -20,8 +21,31 @@ export const DomainSection = observer(
         type: DomainType;
         state: PublishState;
     }) => {
+        const [progress, setProgress] = useState(0);
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
+
+        useEffect(() => {
+            let progressInterval: Timer | null = null;
+
+            if (state.status === PublishStatus.LOADING) {
+                setProgress(0);
+                progressInterval = setInterval(() => {
+                    setProgress((prev) => Math.min(prev + 0.167, 100));
+                }, 100);
+            } else {
+                setProgress(0);
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                }
+            }
+
+            return () => {
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                }
+            };
+        }, [state.status]);
 
         const openCustomDomain = () => {
             setIsOpen(false);
@@ -148,14 +172,14 @@ export const DomainSection = observer(
                                 className="w-full rounded-md p-3"
                                 onClick={retry}
                             >
-                                Retry
+                                Try Updating Again
                             </Button>
                         </div>
                     )}
                     {state.status === PublishStatus.LOADING && (
                         <div className="w-full flex flex-col gap-2">
                             <p>{state.message}</p>
-                            <Progress className="w-full" />
+                            <Progress value={progress} className="w-full" />
                         </div>
                     )}
                 </div>
