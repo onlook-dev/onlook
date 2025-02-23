@@ -1,4 +1,6 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { FOCUS_CHAT_INPUT_EVENT } from '@/lib/editor/engine/chat';
+import { EditorTabValue } from '@/lib/models';
 import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
@@ -9,10 +11,11 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
-import { Suggestions } from './Suggestions';
+import type { SuggestionsRef } from './Suggestions';
+import Suggestions from './Suggestions';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -23,7 +26,52 @@ export const ChatInput = observer(() => {
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const [hideSuggestions, setHideSuggestions] = useState(false);
+
+    const focusInput = () => {
+        requestAnimationFrame(() => {
+            textareaRef.current?.focus();
+        });
+    };
+
+    useEffect(() => {
+        if (textareaRef.current && !editorEngine.chat.isWaiting) {
+            focusInput();
+        }
+    }, [editorEngine.chat.conversation.current?.messages.length]);
+
+    useEffect(() => {
+        if (editorEngine.editPanelTab === EditorTabValue.CHAT) {
+            focusInput();
+        }
+    }, [editorEngine.editPanelTab]);
+
+    useEffect(() => {
+        const focusHandler = () => {
+            if (textareaRef.current && !editorEngine.chat.isWaiting) {
+                focusInput();
+            }
+        };
+
+        window.addEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
+        return () => window.removeEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
+    }, []);
+
+    useEffect(() => {
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' && suggestionRef.current?.handleEnterSelection()) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Stop the event from bubbling to the canvas
+                e.stopImmediatePropagation();
+                // Handle the suggestion selection
+                suggestionRef.current.handleEnterSelection();
+            }
+        };
+
+        // Capture phase to intercept before it reaches the canvas
+        window.addEventListener('keydown', handleGlobalKeyDown, true);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
+    }, []);
 
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
@@ -36,12 +84,32 @@ export const ChatInput = observer(() => {
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
 
-    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (!isComposing && e.key === 'Enter' && !e.shiftKey) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Tab') {
+            // Always prevent default tab behavior
             e.preventDefault();
-            sendMessage();
+            e.stopPropagation();
+
+            // Only let natural tab order continue if handleTabNavigation returns false
+            const handled = suggestionRef.current?.handleTabNavigation();
+            if (!handled) {
+                // Focus the textarea
+                textareaRef.current?.focus();
+            }
+        } else if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (suggestionRef.current?.handleEnterSelection()) {
+                setTimeout(() => textareaRef.current?.focus(), 0);
+                return;
+            }
+
+            if (!inputEmpty) {
+                sendMessage();
+            }
         }
-    }
+    };
 
     function sendMessage() {
         if (inputEmpty) {
@@ -146,6 +214,8 @@ export const ChatInput = observer(() => {
         }
     };
 
+    const suggestionRef = useRef<SuggestionsRef>(null);
+
     return (
         <div
             className={cn(
@@ -169,7 +239,7 @@ export const ChatInput = observer(() => {
             }}
         >
             <Suggestions
-                hideSuggestions={hideSuggestions}
+                ref={suggestionRef}
                 disabled={disabled}
                 inputValue={inputValue}
                 setInput={(suggestion) => {
@@ -181,7 +251,13 @@ export const ChatInput = observer(() => {
                         }
                     }, 100);
                 }}
+                onSuggestionFocus={(isFocused) => {
+                    if (!isFocused) {
+                        textareaRef.current?.focus();
+                    }
+                }}
             />
+
             <div className="flex flex-col w-full p-4">
                 <div
                     className={cn(
@@ -219,12 +295,12 @@ export const ChatInput = observer(() => {
                         disabled
                             ? projectsManager.runner?.isRunning ||
                               projectsManager.runner?.isStarting
-                                ? 'Select an element to start'
+                                ? 'Select an element to chat'
                                 : 'Start the project to chat'
                             : 'Ask follow up questions or provide more context...'
                     }
                     className={cn(
-                        'mt-2 overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',
+                        'mt-2 overflow-auto max-h-32 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary',
                         'placeholder:text-foreground-primary/50',
                         'cursor-text',
@@ -342,44 +418,6 @@ export const ChatInput = observer(() => {
                                 {disabled
                                     ? 'Select an element to start'
                                     : 'Add screenshot of the current page'}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className={cn(
-                                    'w-9 h-9 text-foreground-tertiary group hover:bg-transparent',
-                                )}
-                                onClick={() => setHideSuggestions(!hideSuggestions)}
-                                disabled={disabled}
-                            >
-                                {!hideSuggestions ? (
-                                    <Icons.Lightbulb
-                                        className={cn(
-                                            'w-5 h-5',
-                                            disabled
-                                                ? 'text-foreground-tertiary'
-                                                : 'group-hover:text-foreground',
-                                        )}
-                                    />
-                                ) : (
-                                    <Icons.LightbulbSlash
-                                        className={cn(
-                                            'w-5 h-5',
-                                            disabled
-                                                ? 'text-foreground-tertiary'
-                                                : 'group-hover:text-foreground',
-                                        )}
-                                    />
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipPortal>
-                            <TooltipContent side="top" sideOffset={5}>
-                                {disabled ? 'Select an element to start' : 'Toggle Suggestions'}
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>

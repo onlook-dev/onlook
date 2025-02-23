@@ -12,7 +12,7 @@ export function groupElements(
 ): DomElement | null {
     const parentEl = elementFromDomId(parent.domId);
     if (!parentEl) {
-        console.error('Failed to find parent element', parent.domId);
+        console.warn('Failed to find parent element', parent.domId);
         return null;
     }
 
@@ -29,7 +29,7 @@ export function groupElements(
         .filter(({ domId }) => childrenMap.has(domId));
 
     if (childrenWithIndices.length === 0) {
-        console.error('No valid children found to group');
+        console.warn('No valid children found to group');
         return null;
     }
 
@@ -39,8 +39,12 @@ export function groupElements(
 
     // Move children into container
     childrenWithIndices.forEach(({ element }) => {
-        containerEl.appendChild(element.cloneNode(true));
+        const newElement = element.cloneNode(true) as HTMLElement;
+
+        newElement.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+        containerEl.appendChild(newElement);
         element.style.display = 'none';
+        removeIdsFromChildElement(element);
     });
 
     return getDomElement(containerEl, true);
@@ -53,7 +57,7 @@ export function ungroupElements(
 ): DomElement | null {
     const parentEl = elementFromDomId(parent.domId);
     if (!parentEl) {
-        console.error('Failed to find parent element', parent.domId);
+        console.warn('Failed to find parent element', parent.domId);
         return null;
     }
 
@@ -61,7 +65,7 @@ export function ungroupElements(
         (child) => child.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) === container.domId,
     ) as HTMLElement | undefined;
     if (!containerEl) {
-        console.error('Failed to find container element', parent.domId);
+        console.warn('Failed to find container element', parent.domId);
         return null;
     }
 
@@ -83,4 +87,19 @@ function createContainerElement(target: GroupContainer): HTMLElement {
     containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, target.domId);
     containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_ID, target.oid);
     return containerEl;
+}
+
+function removeIdsFromChildElement(el: HTMLElement) {
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
+
+    const children = Array.from(el.children);
+    if (children.length === 0) {
+        return;
+    }
+
+    children.forEach((child) => {
+        removeIdsFromChildElement(child as HTMLElement);
+    });
 }

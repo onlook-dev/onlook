@@ -13,6 +13,10 @@ body {
     user-select: none;
 }
 
+p {
+    user-select: text;
+}
+
 *:focus-visible {
     outline: none !important;
     box-shadow: unset !important;

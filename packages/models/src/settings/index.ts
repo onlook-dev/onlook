@@ -4,9 +4,20 @@ import { type Project } from '../projects';
 export interface UserSettings {
     id?: string;
     enableAnalytics?: boolean;
-    ideType?: IdeType;
     signInMethod?: string;
+    editor?: EditorSettings;
+    chat?: ChatSettings;
+}
+
+export interface EditorSettings {
     shouldWarnDelete?: boolean;
+    ideType?: IdeType;
+}
+
+export interface ChatSettings {
+    showSuggestions: boolean;
+    autoApplyCode: boolean;
+    expandCodeBlocks: boolean;
 }
 
 export interface ProjectsCache {

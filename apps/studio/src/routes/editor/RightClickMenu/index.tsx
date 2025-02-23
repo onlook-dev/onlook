@@ -1,9 +1,7 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
-import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
+import { DEFAULT_IDE } from '@onlook/models/ide';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -36,17 +34,8 @@ interface MenuItem {
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
-    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
-
-    useEffect(() => {
-        async function getIdeType() {
-            const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
-            const ideType = (settings as { ideType?: IdeType })?.ideType || DEFAULT_IDE;
-            setIde(IDE.fromType(ideType));
-        }
-        getIdeType();
-    }, [userManager.user]);
+    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE);
 
     useEffect(() => {
         updateMenuItems();
@@ -67,7 +56,10 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         OPEN_DEV_TOOL_ITEM,
         {
             label: 'Add to AI Chat',
-            action: () => (editorEngine.editPanelTab = EditorTabValue.CHAT),
+            action: () => {
+                editorEngine.editPanelTab = EditorTabValue.CHAT;
+                editorEngine.chat.focusChatInput();
+            },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ADD_AI_CHAT,
             disabled: !editorEngine.elements.selected.length,
@@ -77,6 +69,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.editPanelTab = EditorTabValue.CHAT;
                 editorEngine.chat.conversation.startNewConversation();
+                editorEngine.chat.focusChatInput();
             },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.NEW_AI_CHAT,

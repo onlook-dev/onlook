@@ -67,7 +67,7 @@ export function restoreElementStyle(el: HTMLElement) {
             }
         }
     } catch (e) {
-        console.error('Error restoring style', e);
+        console.warn('Error restoring style', e);
     }
 }
 

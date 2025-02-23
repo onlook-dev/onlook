@@ -97,10 +97,10 @@ export class CopyManager {
             location,
             editText: null,
             pasteParams: {
-                codeBlock: this.copied.codeBlock,
                 oid: newOid,
                 domId: newDomId,
             },
+            codeBlock: this.copied.codeBlock,
         };
 
         this.editorEngine.action.run(action);
@@ -136,9 +136,17 @@ export class CopyManager {
             [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
         };
 
+        // Process children recursively
+        const processedChildren = copiedEl.children?.map((child) => {
+            const newChildDomId = createDomId();
+            const newChildOid = createOid();
+            return this.getCleanedCopyEl(child, newChildDomId, newChildOid);
+        });
+
         return {
             ...copiedEl,
             attributes: filteredAttr,
+            children: processedChildren || [],
         };
     }
 

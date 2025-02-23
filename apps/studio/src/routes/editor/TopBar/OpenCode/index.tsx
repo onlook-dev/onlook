@@ -1,9 +1,6 @@
 import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
-import type { UserSettings } from '@onlook/models/settings';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,7 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipPortal } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion, useAnimate } from 'motion/react';
@@ -26,10 +23,13 @@ const OpenCode = observer(() => {
     const [folderPath, setFolder] = useState<string | null>(null);
     const [instance, setInstance] = useState<string | null>(null);
     const [root, setRoot] = useState<string | null>(null);
-    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
+    const [ide, setIde] = useState<IDE>(
+        IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE),
+    );
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFolderHovered, setIsFolderHovered] = useState(false);
     const [scopeDropdownIcon, animateDropdownIcon] = useAnimate();
+    const [showTooltip, setShowTooltip] = useState<boolean | undefined>(undefined);
 
     const IDEIcon = Icons[ide.icon];
 
@@ -38,13 +38,6 @@ const OpenCode = observer(() => {
             const folder = projectsManager.project.folderPath;
             setFolder(folder);
         }
-    }, []);
-
-    useEffect(() => {
-        invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
-            const settings: UserSettings = res as UserSettings;
-            setIde(IDE.fromType(settings.ideType || DEFAULT_IDE));
-        });
     }, []);
 
     useEffect(() => {
@@ -71,7 +64,7 @@ const OpenCode = observer(() => {
     }
 
     function updateIde(newIde: IDE) {
-        userManager.updateUserSettings({ ideType: newIde.type });
+        userManager.settings.updateEditor({ ideType: newIde.type });
         setIde(newIde);
     }
 
@@ -96,17 +89,20 @@ const OpenCode = observer(() => {
         return [...prefixChars, ...characters];
     }, [`${ide}`]);
 
-    function handleIDEDropdownOpenChange(isOpen: boolean) {
-        setIsDropdownOpen(isOpen);
+    const handleIDEDropdownOpenChange = (open: boolean) => {
+        setIsDropdownOpen(open);
+        if (open) {
+            setShowTooltip(false);
+        }
         animateDropdownIcon(
             scopeDropdownIcon.current,
-            { rotate: isOpen ? 30 : 0 },
+            { rotate: open ? 30 : 0 },
             { duration: 0.4 },
         );
-    }
+    };
 
     return (
-        <div className="inline-flex items-center justify-center whitespace-nowrap overflow-hidden rounded-md transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground hover:text-foreground-active/90 hover:border-foreground-active/30 text-xs space-x-0 p-0 mr-1">
+        <div className="inline-flex items-center justify-center whitespace-nowrap overflow-hidden rounded-md transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-foreground-active/90 hover:border-foreground-active/30 text-xs space-x-0 p-0 mr-1">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
@@ -210,7 +206,7 @@ const OpenCode = observer(() => {
                 </TooltipContent>
             </Tooltip>
 
-            <Tooltip>
+            <Tooltip open={isDropdownOpen ? false : showTooltip} onOpenChange={setShowTooltip}>
                 <TooltipTrigger asChild>
                     <div>
                         <DropdownMenu onOpenChange={handleIDEDropdownOpenChange}>
@@ -245,9 +241,11 @@ const OpenCode = observer(() => {
                         </DropdownMenu>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className={cn('mt-0', isDropdownOpen && 'invisible')}>
-                    <p>Change which IDE you use</p>
-                </TooltipContent>
+                <TooltipPortal>
+                    <TooltipContent side="bottom" className="mt-0">
+                        <p>Change which IDE you use</p>
+                    </TooltipContent>
+                </TooltipPortal>
             </Tooltip>
         </div>
     );

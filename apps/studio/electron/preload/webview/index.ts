@@ -27,7 +27,7 @@ function keepDomUpdated() {
         } catch (err) {
             clearInterval(interval);
             domUpdateInterval = null;
-            console.error('Error in keepDomUpdated:', err);
+            console.warn('Error in keepDomUpdated:', err);
         }
     }, 5000);
 

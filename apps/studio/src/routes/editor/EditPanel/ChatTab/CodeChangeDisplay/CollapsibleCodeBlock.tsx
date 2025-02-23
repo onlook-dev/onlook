@@ -1,3 +1,4 @@
+import { useUserManager } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
@@ -29,6 +30,7 @@ export function CollapsibleCodeBlock({
     onApply,
     onRevert,
 }: CollapsibleCodeBlockProps) {
+    const userManager = useUserManager();
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -36,6 +38,13 @@ export function CollapsibleCodeBlock({
         navigator.clipboard.writeText(replaceContent);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const getAnimation = () => {
+        if (isStream && userManager.settings.settings?.chat?.expandCodeBlocks) {
+            return { height: 'auto', opacity: 1 };
+        }
+        return isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 };
     };
 
     return (
@@ -76,34 +85,34 @@ export function CollapsibleCodeBlock({
                     </CollapsibleTrigger>
 
                     <div className="flex items-center gap-1 pr-1 py-1">
-                        {applied ? (
-                            <Button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onRevert();
-                                }}
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-3 text-foreground-secondary hover:text-foreground font-sans select-none"
-                            >
-                                <Icons.Return className="h-4 w-4 mr-2" />
-                                Revert
-                            </Button>
-                        ) : (
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-3 dark:text-teal-200 dark:bg-teal-900/80 dark:border-teal-600 text-teal-700 bg-teal-50 border-teal-300 border-[0.5px] dark:hover:border-teal-400 dark:hover:text-teal-100 dark:hover:bg-teal-700 hover:bg-teal-100 hover:border-teal-400 hover:text-teal-800 transition-all font-sans select-none"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onApply();
-                                }}
-                                disabled={isStream}
-                            >
-                                <Icons.Sparkles className="h-4 w-4 mr-2" />
-                                Apply
-                            </Button>
-                        )}
+                        {!isStream &&
+                            (applied ? (
+                                <Button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRevert();
+                                    }}
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 px-3 text-foreground-secondary hover:text-foreground font-sans select-none"
+                                >
+                                    <Icons.Return className="h-4 w-4 mr-2" />
+                                    Revert
+                                </Button>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 px-3 dark:text-teal-200 dark:bg-teal-900/80 dark:border-teal-600 text-teal-700 bg-teal-50 border-teal-300 border-[0.5px] dark:hover:border-teal-400 dark:hover:text-teal-100 dark:hover:bg-teal-700 hover:bg-teal-100 hover:border-teal-400 hover:text-teal-800 transition-all font-sans select-none"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onApply();
+                                    }}
+                                >
+                                    <Icons.Sparkles className="h-4 w-4 mr-2" />
+                                    Apply
+                                </Button>
+                            ))}
                     </div>
                 </div>
 
@@ -111,16 +120,14 @@ export function CollapsibleCodeBlock({
                     <AnimatePresence mode="wait">
                         <motion.div
                             key="content"
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={
-                                isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 }
-                            }
+                            initial={getAnimation()}
+                            animate={getAnimation()}
                             transition={{ duration: 0.2, ease: 'easeInOut' }}
                             style={{ overflow: 'hidden' }}
                         >
                             <div className="border-t">
                                 {isStream ? (
-                                    <code className="p-4 text-xs w-full overflow-x-auto block">
+                                    <code className="p-4 text-xs w-full overflow-x-auto block text-foreground-secondary">
                                         {content}
                                     </code>
                                 ) : (

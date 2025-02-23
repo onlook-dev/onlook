@@ -3,12 +3,14 @@ import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
 import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
+import SettingsModal from './SettingsModal';
+import PricingPage from './TopBar/Subscription/PricingPage';
 import WebviewArea from './WebviewArea';
 
 function ProjectEditor() {
     return (
         <>
-            <div className="relative flex flex-row h-[calc(100vh-2.75rem)] select-none">
+            <div className="relative flex flex-row h-[calc(100vh-2.60rem)] select-none">
                 <Canvas>
                     <WebviewArea />
                 </Canvas>
@@ -29,6 +31,8 @@ function ProjectEditor() {
                     <EditorTopBar />
                 </div>
             </div>
+            <PricingPage />
+            <SettingsModal />
         </>
     );
 }

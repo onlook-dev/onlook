@@ -11,8 +11,8 @@ const routeManager = new RouteManager();
 const projectsManager = new ProjectsManager();
 const updateManager = new UpdateManager();
 const userManager = new UserManager();
-const editorEngine = new EditorEngine(projectsManager);
-// Pass editorEngine to projectsManager for usages
+const editorEngine = new EditorEngine(projectsManager, userManager);
+
 projectsManager.editorEngine = editorEngine;
 
 const AuthContext = createContext(authManager);

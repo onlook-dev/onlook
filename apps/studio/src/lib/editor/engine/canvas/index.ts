@@ -14,7 +14,7 @@ type SettingsObserver = (settings: FrameSettings) => void;
 
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
-    private panPosition: RectPosition = DefaultSettings.POSITION;
+    private panPosition: RectPosition = DefaultSettings.PAN_POSITION;
     private webFrames: FrameSettings[] = [];
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
@@ -26,13 +26,21 @@ export class CanvasManager {
 
     getDefaultPanPosition(): RectPosition {
         if (!window) {
-            return DefaultSettings.POSITION;
+            return DefaultSettings.PAN_POSITION;
         }
 
-        const x =
-            window.innerWidth / 2 - (DefaultSettings.FRAME_DIMENSION.width * this.zoomScale) / 2;
-        const y =
-            window.innerHeight / 2 - (DefaultSettings.FRAME_DIMENSION.height * this.zoomScale) / 2;
+        let x = 200;
+        let y = 100;
+        const center = false;
+        if (center) {
+            x =
+                window.innerWidth / 2 -
+                (DefaultSettings.FRAME_DIMENSION.width * this.zoomScale) / 2;
+            y =
+                window.innerHeight / 2 -
+                (DefaultSettings.FRAME_DIMENSION.height * this.zoomScale) / 2;
+        }
+
         return { x, y };
     }
 
@@ -102,7 +110,7 @@ export class CanvasManager {
     clear() {
         this.webFrames = [];
         this.zoomScale = DefaultSettings.SCALE;
-        this.panPosition = DefaultSettings.POSITION;
+        this.panPosition = DefaultSettings.PAN_POSITION;
     }
 
     getFrameMap(frames: FrameSettings[]): Map<string, FrameSettings> {

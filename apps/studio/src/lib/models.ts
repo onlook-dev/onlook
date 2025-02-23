@@ -18,3 +18,9 @@ export enum EditorTabValue {
     CHAT = 'chat',
     PROPS = 'properties',
 }
+
+export enum SettingsTabValue {
+    DOMAIN = 'domain',
+    PROJECT = 'project',
+    PREFERENCES = 'preferences',
+}
