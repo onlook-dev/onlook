@@ -105,6 +105,15 @@ export class DomainsManager {
         this.projectsManager.updateProject({ ...this.project, domains });
     }
 
+    async removeCustomDomainFromProject() {
+        const domains = {
+            base: null,
+            ...this.project.domains,
+            custom: null,
+        };
+        this.projectsManager.updateProject({ ...this.project, domains });
+    }
+
     async getOwnedDomains(): Promise<string[]> {
         const response: GetOwnedDomainsResponse = await invokeMainChannel(
             MainChannels.GET_OWNED_DOMAINS,
