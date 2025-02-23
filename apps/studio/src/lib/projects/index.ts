@@ -145,7 +145,7 @@ export class ProjectsManager {
             return;
         }
         if (!this._run) {
-            this._run = new RunManager(project, this.editorEngine);
+            this._run = new RunManager(this.editorEngine, project);
         } else {
             this._run.updateProject(project);
         }
