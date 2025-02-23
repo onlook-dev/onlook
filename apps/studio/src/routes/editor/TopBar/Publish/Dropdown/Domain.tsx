@@ -1,7 +1,8 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
 import { PublishStatus, type PublishState } from '@onlook/models/hosting';
 import { DomainType, type DomainSettings } from '@onlook/models/projects';
+import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import { Progress } from '@onlook/ui/progress';
 import { timeAgo } from '@onlook/utility';
@@ -24,7 +25,8 @@ export const DomainSection = observer(
         const [progress, setProgress] = useState(0);
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
-
+        const userManager = useUserManager();
+        const plan = userManager.subscription.plan;
         const isAnyDomainLoading =
             projectsManager.domains?.base?.state.status === PublishStatus.LOADING ||
             projectsManager.domains?.custom?.state.status === PublishStatus.LOADING;
@@ -126,6 +128,13 @@ export const DomainSection = observer(
         const renderDomain = () => {
             if (!domain) {
                 return 'Something went wrong';
+            }
+
+            // If the domain is custom, check if the user has a PRO plan
+            if (type === DomainType.CUSTOM) {
+                if (plan !== UsagePlanType.PRO) {
+                    return renderNoDomainCustom();
+                }
             }
 
             return (
