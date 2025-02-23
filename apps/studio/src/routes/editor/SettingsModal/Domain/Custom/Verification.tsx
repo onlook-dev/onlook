@@ -128,6 +128,10 @@ export const Verification = observer(() => {
             setError(response.message ?? 'Failed to verify domain');
             return;
         }
+
+        setStatus(VerificationStatus.VERIFIED);
+        setError(null);
+        addCustomDomain(domain);
     }
 
     const addCustomDomain = (url: string) => {

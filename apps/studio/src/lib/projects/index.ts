@@ -128,10 +128,9 @@ export class ProjectsManager {
     }
 
     set project(newProject: Project | null) {
-        if (!newProject) {
-            this.disposeManagers();
-        } else if (newProject.id !== this._project?.id) {
-            this.setOrUpdateManagers(newProject);
+        this.disposeManagers();
+        if (newProject) {
+            this.setManagers(newProject);
         }
         this._project = newProject;
         this.updateAppState({
@@ -139,22 +138,13 @@ export class ProjectsManager {
         });
     }
 
-    setOrUpdateManagers(project: Project) {
+    setManagers(project: Project) {
         if (!this.editorEngine) {
             console.error('Editor engine not found');
             return;
         }
-        if (!this._run) {
-            this._run = new RunManager(project, this.editorEngine);
-        } else {
-            this._run.updateProject(project);
-        }
-
-        if (!this._domains) {
-            this._domains = new DomainsManager(this, project);
-        } else {
-            this._domains.updateProject(project);
-        }
+        this._run = new RunManager(project, this.editorEngine);
+        this._domains = new DomainsManager(this, project);
     }
 
     disposeManagers() {
