@@ -27,6 +27,10 @@ export class RunManager {
         this.listenForStateChanges();
     }
 
+    updateProject(project: Project) {
+        this.project = project;
+    }
+
     get isRunning() {
         return this.state === RunState.RUNNING;
     }

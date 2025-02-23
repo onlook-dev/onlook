@@ -47,6 +47,10 @@ export class DomainsManager {
         );
     }
 
+    updateProject(project: Project) {
+        this.project = project;
+    }
+
     restore() {
         if (!this.project.domains?.base) {
             this._baseHosting = null;
