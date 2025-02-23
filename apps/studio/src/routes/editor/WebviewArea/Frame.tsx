@@ -50,9 +50,6 @@ const Frame = observer(
         const [aspectRatioLocked, setAspectRatioLocked] = useState(
             settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
         );
-        const [isOpenModal, setIsModalOpen] = useState<boolean>(false);
-        const [availablePort, setAvailablePort] = useState<number>(3000);
-        const [currentPort, setCurrentPort] = useState<number>(3000);
 
         const clampedDimensions = useMemo(
             () => ({

@@ -36,7 +36,6 @@ const RunButton = observer(() => {
     };
 
     function renderIcon() {
-        // Prioritize port conflict icon
         if (!isPortAvailable) {
             return <Icons.ExclamationTriangle className="text-amber-100" />;
         }
@@ -61,7 +60,6 @@ const RunButton = observer(() => {
     }
 
     function getExtraButtonClasses() {
-        // Prioritize port conflict styling
         if (!isPortAvailable) {
             return 'text-amber-700 dark:text-amber-100 border-amber-500 before:absolute before:inset-0 before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.amber.200/80)_0%,theme(colors.amber.300/80)_100%)] dark:before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.amber.800/80)_0%,theme(colors.amber.500/80)_100%)] after:absolute after:inset-0 after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.amber.300/50)_0%,theme(colors.amber.200/50)_100%)] dark:after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.amber.500/50)_0%,theme(colors.amber.400/50)_100%)] after:opacity-0 hover:after:opacity-100 before:transition-all after:transition-all before:duration-300 after:duration-300 before:z-0 after:z-0';
         }
@@ -158,7 +156,7 @@ const RunButton = observer(() => {
                         <Button
                             variant="ghost"
                             className={cn(
-                                'border-transparent rounded-none px-3 py-6 gap-x-1.5 absolute top-[0.5px] transition-colors duration-300 z-8 relative',
+                                'border-transparent rounded-none px-3 py-6 gap-x-1.5 top-[0.5px] transition-colors duration-300 z-8 relative',
                                 getExtraButtonClasses(),
                                 runner?.isLoading ? 'cursor-wait' : '',
                             )}
