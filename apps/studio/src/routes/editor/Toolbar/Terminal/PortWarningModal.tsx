@@ -130,7 +130,11 @@ const PortWarningModal = observer(
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="ghost" className="mr-auto" onClick={handleChangePort}>
+                        <Button
+                            variant="ghost"
+                            className="mr-auto hidden"
+                            onClick={handleChangePort}
+                        >
                             Update port
                         </Button>
                         <Button variant="outline" onClick={() => onOpenChange(false)}>
