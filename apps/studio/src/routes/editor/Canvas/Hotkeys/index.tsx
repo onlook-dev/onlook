@@ -79,6 +79,11 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
     useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => editorEngine.move.moveSelected('down'));
 
+    // Add this new hotkey handler
+    useHotkeys(Hotkey.SHOW_HOTKEYS.command, () => {
+        editorEngine.isHotkeysOpen = true;
+    });
+
     return (
         <>
             <DeleteKey />
