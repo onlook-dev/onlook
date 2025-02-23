@@ -41,10 +41,6 @@ export function listenForHostingMessages() {
         return await verifyDomain(domain);
     });
 
-    ipcMain.handle(MainChannels.GET_CUSTOM_DOMAINS, async (_e: Electron.IpcMainInvokeEvent) => {
-        return await getCustomDomains();
-    });
-
     ipcMain.handle(MainChannels.GET_OWNED_DOMAINS, async (_e: Electron.IpcMainInvokeEvent) => {
         return await getOwnedDomains();
     });

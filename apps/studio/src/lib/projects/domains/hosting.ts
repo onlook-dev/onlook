@@ -1,7 +1,6 @@
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import {
     PublishStatus,
-    type CustomDomain,
     type PublishRequest,
     type PublishResponse,
     type PublishState,
@@ -136,11 +135,6 @@ export class HostingManager {
         this.removeDomain(this.domain.type);
         this.updateState({ status: PublishStatus.UNPUBLISHED, message: null });
         sendAnalytics('hosting unpublish success');
-    }
-
-    async getCustomDomains(): Promise<CustomDomain[]> {
-        const res: CustomDomain[] = await invokeMainChannel(MainChannels.GET_CUSTOM_DOMAINS);
-        return res;
     }
 
     async dispose() {

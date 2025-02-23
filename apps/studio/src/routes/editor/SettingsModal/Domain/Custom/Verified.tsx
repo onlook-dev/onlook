@@ -1,6 +1,4 @@
 import { useProjectsManager } from '@/components/Context';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -10,25 +8,14 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { getValidUrl, timeAgo } from '@onlook/utility';
+import { timeAgo } from '@onlook/utility';
 
 export const Verified = () => {
     const projectsManager = useProjectsManager();
     const domainsManager = projectsManager.domains;
-
     const customDomain = projectsManager.project?.domains?.custom;
     const lastUpdated = customDomain?.publishedAt ? timeAgo(customDomain.publishedAt) : null;
     const baseUrl = customDomain?.url;
-
-    const openUrl = () => {
-        if (!baseUrl) {
-            console.error('No URL found');
-            return;
-        }
-
-        const url = getValidUrl(baseUrl);
-        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, url);
-    };
 
     function removeDomain() {
         if (!domainsManager) {

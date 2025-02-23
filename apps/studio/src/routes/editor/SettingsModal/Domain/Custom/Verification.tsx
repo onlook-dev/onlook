@@ -137,7 +137,7 @@ export const Verification = observer(() => {
 
     const addCustomDomain = (url: string) => {
         if (!domainsManager) {
-            console.error('No domains manager found');
+            setError('Failed to add custom domain');
             return;
         }
         domainsManager.addCustomDomainToProject(url);
