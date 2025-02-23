@@ -4,6 +4,7 @@ import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../editor/engine';
 import { invokeMainChannel } from '../utils';
+import { PortManager } from './port';
 
 export type TerminalMessage = {
     id: string;
@@ -12,26 +13,26 @@ export type TerminalMessage = {
 
 export class RunManager {
     private project: Project;
+    private portManager: PortManager;
     state: RunState = RunState.STOPPED;
     message: string | null = null;
     isLoading: boolean = false;
     private cleanupLoadingTimer?: () => void;
-    portConflict: boolean = false;
-    suggestedPort: number = 3000;
-    currentPort: number = 3000;
 
     constructor(
-        project: Project,
         private editorEngine: EditorEngine,
+        project: Project,
     ) {
         makeAutoObservable(this);
         this.project = project;
+        this.portManager = new PortManager(this, project);
         this.restoreState();
         this.listenForStateChanges();
     }
 
     updateProject(project: Project) {
         this.project = project;
+        this.portManager.updateProject(project);
     }
 
     get isRunning() {
@@ -48,6 +49,10 @@ export class RunManager {
 
     get isError() {
         return this.state === RunState.ERROR;
+    }
+
+    get port() {
+        return this.portManager;
     }
 
     async start() {
@@ -167,20 +172,5 @@ export class RunManager {
             this.cleanupLoadingTimer();
         }
         await this.stop();
-    }
-
-    resolvePortConflict(newUrl: string) {
-        try {
-            const urlObj = new URL(newUrl);
-            this.suggestedPort = parseInt(urlObj.port, 10);
-            // Don't reset portConflict flag until we confirm the new port works
-            // this.portConflict = false;
-
-            // Instead of directly calling start(), we should update the port
-            // and let the Frame component's port detection handle the rest
-            this.currentPort = this.suggestedPort;
-        } catch (error) {
-            console.error('Failed to resolve port conflict:', error);
-        }
     }
 }

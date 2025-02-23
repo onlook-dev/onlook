@@ -10,6 +10,6 @@ export interface RunBunCommandResult {
 }
 
 export interface DetectedPortResults {
-    isPortTaken: boolean;
+    isPortAvailable: boolean;
     availablePort: number;
 }

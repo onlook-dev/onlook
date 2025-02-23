@@ -7,28 +7,17 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState } from 'react';
-import { PortWarningModal } from '../../WebviewArea/PortWarningModal';
+import PortWarningModal from './PortWarningModal';
 
 const RunButton = observer(() => {
     const projectsManager = useProjectsManager();
     const editorEngine = useEditorEngine();
     const runner = projectsManager.runner;
+    const isPortAvailable = runner?.port?.isPortAvailable;
     const [isPortModalOpen, setIsPortModalOpen] = useState(false);
 
-    // Prioritize port conflict state
-    const isPortConflict = runner?.portConflict;
-
-    console.log('Port conflict state:', isPortConflict);
-
-    console.log('Debug states:', {
-        isPortConflict,
-        runnerState: runner?.state,
-        portConflict: runner?.portConflict,
-        buttonTitle: getButtonTitle(),
-    });
-
     const handleClick = () => {
-        if (isPortConflict) {
+        if (!isPortAvailable) {
             setIsPortModalOpen(true);
             return;
         }
@@ -48,7 +37,7 @@ const RunButton = observer(() => {
 
     function renderIcon() {
         // Prioritize port conflict icon
-        if (isPortConflict) {
+        if (!isPortAvailable) {
             return <Icons.ExclamationTriangle className="text-amber-100" />;
         }
 
@@ -73,7 +62,7 @@ const RunButton = observer(() => {
 
     function getExtraButtonClasses() {
         // Prioritize port conflict styling
-        if (isPortConflict) {
+        if (!isPortAvailable) {
             return 'text-amber-700 dark:text-amber-100 border-amber-500 before:absolute before:inset-0 before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.amber.200/80)_0%,theme(colors.amber.300/80)_100%)] dark:before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.amber.800/80)_0%,theme(colors.amber.500/80)_100%)] after:absolute after:inset-0 after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.amber.300/50)_0%,theme(colors.amber.200/50)_100%)] dark:after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.amber.500/50)_0%,theme(colors.amber.400/50)_100%)] after:opacity-0 hover:after:opacity-100 before:transition-all after:transition-all before:duration-300 after:duration-300 before:z-0 after:z-0';
         }
 
@@ -94,7 +83,7 @@ const RunButton = observer(() => {
 
     function getButtonTitle() {
         // Prioritize port conflict message
-        if (isPortConflict) {
+        if (!isPortAvailable) {
             return 'Port in Use';
         }
 
@@ -123,7 +112,7 @@ const RunButton = observer(() => {
             label: index === 0 ? ch.toUpperCase() : ch,
         }));
         return characters;
-    }, [runner?.state, runner?.isLoading, isPortConflict]);
+    }, [runner?.state, runner?.isLoading, isPortAvailable]);
 
     const buttonWidth = useMemo(() => {
         const baseWidth = 50;
@@ -140,7 +129,7 @@ const RunButton = observer(() => {
             case RunState.ERROR:
                 return 'Restart your App';
             default:
-                if (runner?.portConflict) {
+                if (!isPortAvailable) {
                     return 'Click to resolve port conflict';
                 }
                 return 'Unknown app state';
@@ -214,22 +203,7 @@ const RunButton = observer(() => {
                 </Tooltip>
             </motion.div>
 
-            <PortWarningModal
-                open={isPortModalOpen}
-                onOpenChange={setIsPortModalOpen}
-                setWebviewSrc={(url) => runner?.resolvePortConflict(url)}
-                availablePort={runner?.suggestedPort ?? 3000}
-                currentPort={runner?.currentPort ?? 3000}
-                checkPortStatus={async (port: number) => {
-                    const response = await editorEngine.webviews.isPortTaken(
-                        `http://localhost:${port}`,
-                    );
-                    if (!response.isPortTaken && runner) {
-                        runner.portConflict = false;
-                    }
-                    return response.isPortTaken;
-                }}
-            />
+            <PortWarningModal open={isPortModalOpen} onOpenChange={setIsPortModalOpen} />
         </>
     );
 });

@@ -17,7 +17,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } fr
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { PortWarningModal } from './PortWarningModal';
 
 const Frame = observer(
     ({
@@ -132,8 +131,6 @@ const Frame = observer(
                 }
             };
 
-            detectPort();
-
             editorEngine.canvas.observeSettings(settings.id, observer);
 
             return editorEngine.canvas.unobserveSettings(settings.id, observer);
@@ -209,29 +206,6 @@ const Frame = observer(
                 domState = editorEngine.webviews.getState(settings.id);
             }
         }, [settings.id]);
-
-        async function detectPort() {
-            const webViewUrl = editorEngine.webviews.validUrl(webviewSrc);
-            const urlObj = new URL(webViewUrl);
-            const port = parseInt(urlObj.port, 10);
-
-            if (isNaN(port) || port <= 0) {
-                throw new Error('Invalid port detected');
-            }
-
-            setCurrentPort(port);
-
-            const response = await editorEngine.webviews.isPortTaken(webviewSrc);
-            if (response) {
-                setIsModalOpen(response.isPortTaken);
-                setAvailablePort(response.availablePort);
-                if (projectsManager.runner) {
-                    projectsManager.runner.portConflict = response.isPortTaken;
-                }
-            } else if (projectsManager.runner) {
-                projectsManager.runner.portConflict = false;
-            }
-        }
 
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
@@ -472,22 +446,6 @@ const Frame = observer(
                     />
                     {domFailed && shouldShowDomFailed && renderNotRunning()}
                 </div>
-                <PortWarningModal
-                    open={isOpenModal}
-                    onOpenChange={setIsModalOpen}
-                    setWebviewSrc={setWebviewSrc}
-                    currentPort={currentPort}
-                    availablePort={availablePort}
-                    checkPortStatus={async (port: number) => {
-                        const response = await editorEngine.webviews.isPortTaken(
-                            `http://localhost:${port}`,
-                        );
-                        if (!response.isPortTaken && projectsManager.runner) {
-                            projectsManager.runner.portConflict = false;
-                        }
-                        return response.isPortTaken;
-                    }}
-                />
             </div>
         );
     },

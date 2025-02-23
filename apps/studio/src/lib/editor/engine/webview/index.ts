@@ -3,9 +3,6 @@ import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { isOnlookInDoc } from '/common/helpers';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
-import type { DetectedPortResults } from '@onlook/models';
 
 export enum WebviewState {
     NOT_RUNNING,
@@ -191,22 +188,5 @@ export class WebviewManager {
         for (const webview of this.selected) {
             webview.reload();
         }
-    }
-
-    async isPortTaken(webViewUrl: string): Promise<DetectedPortResults> {
-        const validUrlString = this.validUrl(webViewUrl);
-        const splitUrl = validUrlString.split(':');
-        const port = splitUrl[splitUrl.length - 1];
-        const response: DetectedPortResults = await invokeMainChannel(MainChannels.IS_PORT_TAKEN, {
-            port,
-        });
-        return response;
-    }
-
-    validUrl(url: string): string {
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            return 'http://' + url;
-        }
-        return url;
     }
 }
