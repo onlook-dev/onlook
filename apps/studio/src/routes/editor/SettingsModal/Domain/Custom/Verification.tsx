@@ -26,6 +26,7 @@ enum VerificationStatus {
     NO_DOMAIN = 'no_domain',
     VERIFYING = 'verifying',
     VERIFIED = 'verified',
+    LOADING = 'loading',
 }
 
 interface DNSRecord {
@@ -97,6 +98,7 @@ export const Verification = observer(() => {
         }
 
         setDomain(validDomain);
+        setStatus(VerificationStatus.LOADING);
 
         // Send verification request to server
         const response: CreateDomainVerificationResponse = await invokeMainChannel(
@@ -120,6 +122,7 @@ export const Verification = observer(() => {
     }
 
     async function verifyDomain() {
+        setStatus(VerificationStatus.LOADING);
         const response: VerifyDomainResponse = await invokeMainChannel(MainChannels.VERIFY_DOMAIN, {
             domain: domain,
         });
@@ -128,6 +131,10 @@ export const Verification = observer(() => {
             setError(response.message ?? 'Failed to verify domain');
             return;
         }
+
+        setStatus(VerificationStatus.VERIFIED);
+        setError(null);
+        addCustomDomain(domain);
     }
 
     const addCustomDomain = (url: string) => {
@@ -174,6 +181,34 @@ export const Verification = observer(() => {
         return aRecords;
     }
 
+    function renderExistingDomains() {
+        if (ownedDomains.length === 0 || status !== VerificationStatus.NO_DOMAIN) {
+            return null;
+        }
+        return (
+            <div className="flex flex-col gap-2 flex-1">
+                {ownedDomains.map((domain) => (
+                    <div
+                        key={domain}
+                        className="flex items-center text-small text-muted-foreground"
+                    >
+                        <p>{domain}</p>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-auto"
+                            onClick={() => {
+                                addCustomDomain(domain);
+                            }}
+                        >
+                            Use Domain
+                        </Button>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     function renderNoDomainInput() {
         return (
             <div className="space-y-2">
@@ -181,7 +216,10 @@ export const Verification = observer(() => {
                     <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">Custom URL</p>
                         <p className="text-small text-muted-foreground">
-                            Input your domain {ownedDomains.length > 0 ? 'or reuse previous' : ''}
+                            Input your domain{' '}
+                            {status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
+                                ? 'or reuse previous'
+                                : ''}
                         </p>
                     </div>
                     <div className="flex flex-col gap-4 flex-1">
@@ -204,30 +242,15 @@ export const Verification = observer(() => {
                                 variant="secondary"
                                 size="sm"
                                 className="h-8 text-sm"
+                                disabled={status === VerificationStatus.LOADING}
                             >
+                                {status === VerificationStatus.LOADING && (
+                                    <Icons.Shadow className="h-4 w-4 animate-spin mr-2" />
+                                )}
                                 {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
                             </Button>
                         </div>
-                        <div className="flex flex-col gap-2 flex-1">
-                            {ownedDomains.map((domain) => (
-                                <div
-                                    key={domain}
-                                    className="flex items-center text-small text-muted-foreground"
-                                >
-                                    <p>{domain}</p>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="ml-auto"
-                                        onClick={() => {
-                                            addCustomDomain(domain);
-                                        }}
-                                    >
-                                        Use Domain
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
+                        {renderExistingDomains()}
                     </div>
                 </div>
             </div>
@@ -249,7 +272,11 @@ export const Verification = observer(() => {
                         size="sm"
                         className="h-8 px-3 text-sm"
                         onClick={verifyDomain}
+                        disabled={status === VerificationStatus.LOADING}
                     >
+                        {status === VerificationStatus.LOADING && (
+                            <Icons.Shadow className="h-4 w-4 animate-spin mr-2" />
+                        )}
                         Verify Setup
                     </Button>
                 </div>
