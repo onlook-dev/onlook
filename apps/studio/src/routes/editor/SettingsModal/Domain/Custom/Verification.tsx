@@ -18,6 +18,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { getValidUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
@@ -64,13 +65,7 @@ export const Verification = observer(() => {
         }
 
         try {
-            // Add protocol if missing to make URL parsing work
-            let urlString = domain.trim();
-            if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
-                urlString = 'https://' + urlString;
-            }
-
-            const url = new URL(urlString);
+            const url = new URL(getValidUrl(domain.trim()));
             const hostname = url.hostname.toLowerCase();
 
             // Split hostname into parts and ensure only two parts (domain + TLD)
