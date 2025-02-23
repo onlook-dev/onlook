@@ -17,21 +17,6 @@ export class DomainsManager {
         makeAutoObservable(this);
         this.restore();
         reaction(
-            () => this.projectsManager.domains?.custom,
-            () => {
-                if (!this.project.domains?.custom) {
-                    this._customHosting = null;
-                } else {
-                    this._customHosting = new HostingManager(
-                        this.projectsManager,
-                        this.project,
-                        this.project.domains.custom,
-                    );
-                }
-            },
-        );
-
-        reaction(
             () => this.project.domains?.base,
             () => {
                 if (!this.project.domains?.base) {
@@ -41,6 +26,20 @@ export class DomainsManager {
                         this.projectsManager,
                         this.project,
                         this.project.domains.base,
+                    );
+                }
+            },
+        );
+        reaction(
+            () => this.project.domains?.custom,
+            () => {
+                if (!this.project.domains?.custom) {
+                    this._customHosting = null;
+                } else {
+                    this._customHosting = new HostingManager(
+                        this.projectsManager,
+                        this.project,
+                        this.project.domains.custom,
                     );
                 }
             },
