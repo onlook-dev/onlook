@@ -9,12 +9,14 @@ import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
 import { InsertRect } from './InsertRect';
 import { TextEditor } from './TextEditor';
+import { MeasurementOverlay } from './MeasurementOverlay';
 
 // Memoize child components
 const MemoizedInsertRect = memo(InsertRect);
 const MemoizedClickRect = memo(ClickRect);
 const MemoizedTextEditor = memo(TextEditor);
 const MemoizedChat = memo(OverlayChat);
+const MemoizedMeasurementOverlay = memo(MeasurementOverlay);
 
 const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -79,6 +81,12 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         onChange={overlayState.textEditor.onChange}
                         onStop={overlayState.textEditor.onStop}
                         isComponent={overlayState.textEditor.isComponent}
+                    />
+                )}
+                {overlayState.measurement && (
+                    <MemoizedMeasurementOverlay
+                        fromRect={overlayState.measurement.fromRect}
+                        toRect={overlayState.measurement.toRect}
                     />
                 )}
                 {

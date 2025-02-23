@@ -87,7 +87,6 @@ const Frame = observer(
             if (!webview) {
                 return;
             }
-
             await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
             setDomReady(true);
             webview.setZoomLevel(0);
@@ -480,7 +479,9 @@ const Frame = observer(
                     currentPort={currentPort}
                     availablePort={availablePort}
                     checkPortStatus={async (port: number) => {
-                        const response = await editorEngine.webviews.isPortTaken(`http://localhost:${port}`);
+                        const response = await editorEngine.webviews.isPortTaken(
+                            `http://localhost:${port}`,
+                        );
                         if (!response.isPortTaken && projectsManager.runner) {
                             projectsManager.runner.portConflict = false;
                         }

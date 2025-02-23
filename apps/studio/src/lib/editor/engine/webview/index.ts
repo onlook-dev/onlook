@@ -131,6 +131,7 @@ export class WebviewManager {
 
         const hasOnlook = isOnlookInDoc(doc);
         if (hasOnlook) {
+            this.editorEngine.errors.shouldShowErrors = false;
             return WebviewState.DOM_ONLOOK_ENABLED;
         }
         this.editorEngine.errors.shouldShowErrors = true;
@@ -183,7 +184,7 @@ export class WebviewManager {
 
         // Clean up AST mappings
         this.editorEngine?.ast?.mappings?.remove(id);
-        this.editorEngine?.errors.clearErrors(id);
+        this.editorEngine?.errors.clear();
     }
 
     reloadWebviews() {

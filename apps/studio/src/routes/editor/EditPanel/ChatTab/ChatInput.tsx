@@ -96,7 +96,7 @@ export const ChatInput = observer(() => {
                 // Focus the textarea
                 textareaRef.current?.focus();
             }
-        } else if (e.key === 'Enter' && !e.shiftKey) {
+        } else if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
             e.stopPropagation();
 
@@ -295,7 +295,7 @@ export const ChatInput = observer(() => {
                         disabled
                             ? projectsManager.runner?.isRunning ||
                               projectsManager.runner?.isStarting
-                                ? 'Select an element to start'
+                                ? 'Select an element to chat'
                                 : 'Start the project to chat'
                             : 'Ask follow up questions or provide more context...'
                     }

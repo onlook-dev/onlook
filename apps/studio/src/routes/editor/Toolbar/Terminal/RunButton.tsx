@@ -1,4 +1,4 @@
-import { useProjectsManager, useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -32,9 +32,15 @@ const RunButton = observer(() => {
             setIsPortModalOpen(true);
             return;
         }
-        
+
         if (runner?.state === RunState.RUNNING || runner?.state === RunState.SETTING_UP) {
-            runner.stop();
+            runner?.stop();
+            return;
+        }
+
+        if (runner?.state === RunState.ERROR) {
+            editorEngine.errors.clear();
+            runner.restart();
             return;
         }
         runner?.start();
@@ -45,11 +51,11 @@ const RunButton = observer(() => {
         if (isPortConflict) {
             return <Icons.ExclamationTriangle className="text-amber-100" />;
         }
-        
+
         if (runner?.isLoading) {
             return <Icons.Shadow className="animate-spin" />;
         }
-        
+
         switch (runner?.state) {
             case RunState.SETTING_UP:
             case RunState.STOPPING:
@@ -70,7 +76,7 @@ const RunButton = observer(() => {
         if (isPortConflict) {
             return 'text-amber-700 dark:text-amber-100 border-amber-500 before:absolute before:inset-0 before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.amber.200/80)_0%,theme(colors.amber.300/80)_100%)] dark:before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.amber.800/80)_0%,theme(colors.amber.500/80)_100%)] after:absolute after:inset-0 after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.amber.300/50)_0%,theme(colors.amber.200/50)_100%)] dark:after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.amber.500/50)_0%,theme(colors.amber.400/50)_100%)] after:opacity-0 hover:after:opacity-100 before:transition-all after:transition-all before:duration-300 after:duration-300 before:z-0 after:z-0';
         }
-        
+
         if (runner?.isLoading) {
             return 'cursor-wait text-gray-700 dark:text-foreground-secondary before:absolute before:inset-0 before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.gray.200/80)_0%,theme(colors.gray.100/20)_100%)] dark:before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.background.onlook/80)_0%,theme(colors.background.onlook/20)_100%)] before:transition-opacity before:duration-300 before:z-0';
         }
@@ -91,11 +97,11 @@ const RunButton = observer(() => {
         if (isPortConflict) {
             return 'Port in Use';
         }
-        
+
         if (runner?.isLoading) {
             return 'Loading';
         }
-        
+
         switch (runner?.state) {
             case RunState.STOPPED:
                 return 'Play';
@@ -128,14 +134,16 @@ const RunButton = observer(() => {
     function getTooltipText() {
         switch (runner?.state) {
             case RunState.STOPPED:
-                return 'Run your app';
+                return 'Run your App';
             case RunState.RUNNING:
                 return 'Stop Running your App & Clean Code';
+            case RunState.ERROR:
+                return 'Restart your App';
             default:
                 if (runner?.portConflict) {
                     return 'Click to resolve port conflict';
                 }
-                return '';
+                return 'Unknown app state';
         }
     }
 
@@ -144,7 +152,10 @@ const RunButton = observer(() => {
             <motion.div
                 layout="preserve-aspect"
                 animate={{ width: buttonWidth }}
-                className={cn('overflow-hidden', runner?.isLoading ? 'max-w-[100px] cursor-wait' : '')}
+                className={cn(
+                    'overflow-hidden',
+                    runner?.isLoading ? 'max-w-[100px] cursor-wait' : '',
+                )}
                 transition={{
                     type: 'spring',
                     bounce: 0.2,
@@ -178,8 +189,8 @@ const RunButton = observer(() => {
                                             layoutId={character.id}
                                             layout="position"
                                             className={cn(
-                                                "inline-block",
-                                                character.label === ' ' && "w-[0.4em]"
+                                                'inline-block',
+                                                character.label === ' ' && 'w-[0.4em]',
                                             )}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
@@ -202,7 +213,7 @@ const RunButton = observer(() => {
                     </TooltipContent>
                 </Tooltip>
             </motion.div>
-            
+
             <PortWarningModal
                 open={isPortModalOpen}
                 onOpenChange={setIsPortModalOpen}
@@ -210,7 +221,9 @@ const RunButton = observer(() => {
                 availablePort={runner?.suggestedPort ?? 3000}
                 currentPort={runner?.currentPort ?? 3000}
                 checkPortStatus={async (port: number) => {
-                    const response = await editorEngine.webviews.isPortTaken(`http://localhost:${port}`);
+                    const response = await editorEngine.webviews.isPortTaken(
+                        `http://localhost:${port}`,
+                    );
                     if (!response.isPortTaken && runner) {
                         runner.portConflict = false;
                     }

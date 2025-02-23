@@ -2,6 +2,7 @@ import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../editor/engine';
 import { invokeMainChannel } from '../utils';
 
 export type TerminalMessage = {
@@ -19,11 +20,18 @@ export class RunManager {
     suggestedPort: number = 3000;
     currentPort: number = 3000;
 
-    constructor(project: Project) {
+    constructor(
+        project: Project,
+        private editorEngine: EditorEngine,
+    ) {
         makeAutoObservable(this);
         this.project = project;
         this.restoreState();
         this.listenForStateChanges();
+    }
+
+    updateProject(project: Project) {
+        this.project = project;
     }
 
     get isRunning() {
@@ -127,6 +135,9 @@ export class RunManager {
             const { state, message } = args as { state: RunState; message: string };
             this.state = state;
             this.message = message;
+            if (state === RunState.ERROR) {
+                this.editorEngine.errors.addTerminalError(message);
+            }
         });
     }
 
@@ -164,7 +175,7 @@ export class RunManager {
             this.suggestedPort = parseInt(urlObj.port, 10);
             // Don't reset portConflict flag until we confirm the new port works
             // this.portConflict = false;
-            
+
             // Instead of directly calling start(), we should update the port
             // and let the Frame component's port detection handle the rest
             this.currentPort = this.suggestedPort;

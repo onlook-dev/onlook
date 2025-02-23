@@ -3,7 +3,7 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
@@ -72,13 +72,19 @@ const ZoomControls = observer(() => {
     };
 
     return (
-        <div className="mx-2 flex flex-row items-center text-mini text-foreground-onlook hover:text-foreground-active transition-all duration-300 ease-in-out h-full p-1">
+        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-foreground hover:text-muted-foreground">
             <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                <PopoverTrigger className="group flex items-center px-2 py-1 rounded hover:bg-accent data-[state=open]:text-foreground-active">
-                    <span>{Math.round(scale * 100)}%</span>
-                    <ChevronDownIcon className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
-                </PopoverTrigger>
-                <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger className="w-full h-full flex items-center justify-center">
+                            <span>{Math.round(scale * 100)}%</span>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent side="right">Zoom Level</TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
+                <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
                     <Input
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
@@ -131,7 +137,7 @@ const ZoomControls = observer(() => {
                     </button>
                 </PopoverContent>
             </Popover>
-        </div>
+        </button>
     );
 });
 export default ZoomControls;

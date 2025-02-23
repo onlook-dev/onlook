@@ -47,15 +47,16 @@ export function PortWarningModal({
         setTimeout(() => setIsFlashing(false), 200);
     };
 
-    const getMessage = () => showStillTaken 
-        ? "Port is still occupied. Check your other IDE." 
-        : "Port is currently in use.";
-    
+    const getMessage = () =>
+        showStillTaken
+            ? 'Port is still occupied. Check your other IDE.'
+            : 'Port is currently in use.';
+
     const messageCharacters = useMemo(() => {
         const message = getMessage();
         return message.split('').map((label, index) => ({
             label,
-            id: `port-message-${message.length}-${index}-${label}`
+            id: `port-message-${message.length}-${index}-${label}`,
         }));
     }, [getMessage, showStillTaken]);
 
@@ -63,18 +64,18 @@ export function PortWarningModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="text-title3">
-                        Port Conflict Detected
-                    </DialogTitle>
+                    <DialogTitle className="text-title3">Port Conflict Detected</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="col-span-3 space-y-3">
-                        <div className={cn(
-                            "flex items-center justify-between gap-2 p-1 px-3 rounded-md border-[0.5px] transition-all duration-200",
-                            showStillTaken 
-                                ? "bg-amber-500/20 border-amber-400" 
-                                : "bg-amber-500/10 border-amber-500"
-                        )}>
+                        <div
+                            className={cn(
+                                'flex items-center justify-between gap-2 p-1 px-3 rounded-md border-[0.5px] transition-all duration-200',
+                                showStillTaken
+                                    ? 'bg-amber-500/20 border-amber-400'
+                                    : 'bg-amber-500/10 border-amber-500',
+                            )}
+                        >
                             <div className="flex items-center gap-2 justify-between w-full">
                                 <div className="flex items-center gap-2">
                                     <Icons.ExclamationTriangle className="w-4 h-4 text-amber-500" />
@@ -86,9 +87,11 @@ export function PortWarningModal({
                                                     layoutId={character.id}
                                                     layout="position"
                                                     className={cn(
-                                                        "inline-block",
-                                                        character.label === ' ' && "w-[0.4em]",
-                                                        showStillTaken ? "text-amber-200" : "text-amber-400"
+                                                        'inline-block',
+                                                        character.label === ' ' && 'w-[0.4em]',
+                                                        showStillTaken
+                                                            ? 'text-amber-200'
+                                                            : 'text-amber-400',
                                                     )}
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
@@ -99,7 +102,9 @@ export function PortWarningModal({
                                                         duration: 0.4,
                                                     }}
                                                 >
-                                                    {character.label === ' ' ? '\u00A0' : character.label}
+                                                    {character.label === ' '
+                                                        ? '\u00A0'
+                                                        : character.label}
                                                 </motion.span>
                                             ))}
                                         </AnimatePresence>

@@ -8,6 +8,7 @@ export function getInsertedElement(
     actionElement: ActionElement,
     location: ActionLocation,
     pasteParams: PasteParams | null,
+    codeBlock: string | null,
 ): CodeInsert {
     // Generate Tailwind className from style as an attribute
     const newClasses = getTailwindClasses(actionElement.oid, actionElement.styles);
@@ -26,7 +27,9 @@ export function getInsertedElement(
 
     let children: CodeInsert[] = [];
     if (actionElement.children) {
-        children = actionElement.children.map((child) => getInsertedElement(child, location, null));
+        children = actionElement.children.map((child) =>
+            getInsertedElement(child, location, null, null),
+        );
     }
 
     const insertedElement: CodeInsert = {
@@ -38,6 +41,7 @@ export function getInsertedElement(
         textContent: actionElement.textContent,
         location,
         pasteParams,
+        codeBlock: codeBlock || null,
     };
 
     return insertedElement;
