@@ -128,13 +128,10 @@ export class ProjectsManager {
     }
 
     set project(newProject: Project | null) {
-        if (!newProject) {
-            this.disposeManagers();
-        } else if (newProject.id !== this._project?.id) {
-            this.disposeManagers();
+        this.disposeManagers();
+        if (newProject) {
             this.setManagers(newProject);
         }
-
         this._project = newProject;
         this.updateAppState({
             activeProjectId: this.project?.id ?? null,

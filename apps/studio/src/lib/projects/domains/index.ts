@@ -17,7 +17,7 @@ export class DomainsManager {
         makeAutoObservable(this);
         this.restore();
         reaction(
-            () => this.project.domains?.custom,
+            () => this.projectsManager.domains?.custom,
             () => {
                 if (!this.project.domains?.custom) {
                     this._customHosting = null;
