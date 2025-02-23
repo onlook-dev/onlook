@@ -7,6 +7,7 @@ import {
 import type {
     CreateDomainVerificationResponse,
     CustomDomain,
+    GetOwnedDomainsResponse,
     VerifyDomainResponse,
 } from '@onlook/models/hosting';
 import { getRefreshedAuthTokens } from '../auth';
@@ -29,6 +30,35 @@ export async function getCustomDomains(): Promise<CustomDomain[]> {
         throw new Error(`Failed to get custom domains, error: ${customDomains.error}`);
     }
     return customDomains.data;
+}
+
+export async function getOwnedDomains(): Promise<GetOwnedDomainsResponse> {
+    try {
+        const authTokens = await getRefreshedAuthTokens();
+        const res: Response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.OWNED_DOMAINS}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${authTokens.accessToken}`,
+                },
+            },
+        );
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(`Failed to get owned domains, error: ${error.error.message}`);
+        }
+        const ownedDomains = (await res.json()) as GetOwnedDomainsResponse;
+        if (!ownedDomains.success) {
+            throw new Error(`Failed to get owned domains, error: ${ownedDomains.message}`);
+        }
+        return ownedDomains;
+    } catch (error) {
+        console.error('Failed to get owned domains', error);
+        return {
+            success: false,
+            message: `${error}`,
+        };
+    }
 }
 
 export async function createDomainVerification(

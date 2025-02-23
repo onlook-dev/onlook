@@ -2,7 +2,12 @@ import { MainChannels } from '@onlook/models/constants';
 import type { PublishRequest, PublishResponse, UnpublishRequest } from '@onlook/models/hosting';
 import { ipcMain } from 'electron';
 import hostingManager from '../hosting';
-import { createDomainVerification, getCustomDomains, verifyDomain } from '../hosting/domains';
+import {
+    createDomainVerification,
+    getCustomDomains,
+    getOwnedDomains,
+    verifyDomain,
+} from '../hosting/domains';
 
 export function listenForHostingMessages() {
     ipcMain.handle(
@@ -36,7 +41,7 @@ export function listenForHostingMessages() {
         return await verifyDomain(domain);
     });
 
-    ipcMain.handle(MainChannels.GET_CUSTOM_DOMAINS, async (_e: Electron.IpcMainInvokeEvent) => {
-        return await getCustomDomains();
+    ipcMain.handle(MainChannels.GET_OWNED_DOMAINS, async (_e: Electron.IpcMainInvokeEvent) => {
+        return await getOwnedDomains();
     });
 }

@@ -1,10 +1,11 @@
-import { HOSTING_DOMAIN } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
+import { HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
+import type { GetOwnedDomainsResponse } from '@onlook/models/hosting';
 import { DomainType, type Project } from '@onlook/models/projects';
 import { getValidSubdomain } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { ProjectsManager } from '../index';
 import { HostingManager } from './hosting';
-
 export class DomainsManager {
     private _baseHosting: HostingManager | null = null;
     private _customHosting: HostingManager | null = null;
@@ -16,7 +17,7 @@ export class DomainsManager {
         makeAutoObservable(this);
         this.restore();
         reaction(
-            () => this.project.domains?.custom,
+            () => this.projectsManager.domains?.custom,
             () => {
                 if (!this.project.domains?.custom) {
                     this._customHosting = null;
@@ -44,6 +45,10 @@ export class DomainsManager {
                 }
             },
         );
+    }
+
+    updateProject(project: Project) {
+        this.project = project;
     }
 
     restore() {
@@ -75,7 +80,7 @@ export class DomainsManager {
         return this._customHosting;
     }
 
-    createBaseDomain() {
+    addBaseDomainToProject() {
         const domains = {
             base: null,
             custom: null,
@@ -88,6 +93,40 @@ export class DomainsManager {
             publishedAt: new Date().toISOString(),
         };
         this.projectsManager.updateProject({ ...this.project, domains });
+    }
+
+    async addCustomDomainToProject(url: string) {
+        const domains = {
+            base: null,
+            custom: null,
+            ...this.project.domains,
+        };
+        domains.custom = {
+            type: DomainType.CUSTOM,
+            url,
+            publishedAt: new Date().toISOString(),
+        };
+        this.projectsManager.updateProject({ ...this.project, domains });
+    }
+
+    async removeCustomDomainFromProject() {
+        const domains = {
+            base: null,
+            ...this.project.domains,
+            custom: null,
+        };
+        this.projectsManager.updateProject({ ...this.project, domains });
+    }
+
+    async getOwnedDomains(): Promise<string[]> {
+        const response: GetOwnedDomainsResponse = await invokeMainChannel(
+            MainChannels.GET_OWNED_DOMAINS,
+        );
+        if (!response.success) {
+            console.error(response.message ?? 'Failed to get owned domains');
+            return [];
+        }
+        return response.domains ?? [];
     }
 
     dispose() {

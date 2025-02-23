@@ -124,7 +124,7 @@ export enum MainChannels {
     PUBLISH_TO_DOMAIN = 'publish-to-domain',
     UNPUBLISH_DOMAIN = 'unpublish-domain',
     PUBLISH_STATE_CHANGED = 'publish-state-changed',
-    GET_CUSTOM_DOMAINS = 'get-custom-domains',
+    GET_OWNED_DOMAINS = 'get-owned-domains',
     CREATE_DOMAIN_VERIFICATION = 'create-domain-verification',
     VERIFY_DOMAIN = 'verify-domain',
 

@@ -3,6 +3,7 @@ import {
     BASE_API_ROUTE,
     CUSTOM_OUTPUT_DIR,
     FUNCTIONS_ROUTE,
+    HostingRoutes,
     MainChannels,
 } from '@onlook/models/constants';
 import { PublishStatus, type PublishRequest, type PublishResponse } from '@onlook/models/hosting';
@@ -174,7 +175,7 @@ class HostingManager {
         };
 
         const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}`,
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.DEPLOY_WEB}`,
             {
                 method: 'POST',
                 headers: {

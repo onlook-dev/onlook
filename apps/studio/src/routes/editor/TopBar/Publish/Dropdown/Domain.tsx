@@ -1,7 +1,8 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
 import { PublishStatus, type PublishState } from '@onlook/models/hosting';
 import { DomainType, type DomainSettings } from '@onlook/models/projects';
+import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import { Progress } from '@onlook/ui/progress';
 import { timeAgo } from '@onlook/utility';
@@ -24,6 +25,11 @@ export const DomainSection = observer(
         const [progress, setProgress] = useState(0);
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
+        const userManager = useUserManager();
+        const plan = userManager.subscription.plan;
+        const isAnyDomainLoading =
+            projectsManager.domains?.base?.state.status === PublishStatus.LOADING ||
+            projectsManager.domains?.custom?.state.status === PublishStatus.LOADING;
 
         useEffect(() => {
             let progressInterval: Timer | null = null;
@@ -58,23 +64,31 @@ export const DomainSection = observer(
                 console.error('No domains manager found');
                 return;
             }
-            projectsManager.domains.createBaseDomain();
+            projectsManager.domains.addBaseDomainToProject();
         };
 
-        const publishBaseDomain = () => {
-            if (!projectsManager.domains?.base) {
-                console.error('No base domain hosting manager found');
+        const publish = () => {
+            const domainManager =
+                type === DomainType.BASE
+                    ? projectsManager.domains?.base
+                    : projectsManager.domains?.custom;
+            if (!domainManager) {
+                console.error(`No ${type} domain hosting manager found`);
                 return;
             }
-            projectsManager.domains.base.publish();
+            domainManager.publish();
         };
 
         const retry = () => {
-            if (!projectsManager.domains?.base) {
-                console.error('No base domain hosting manager found');
+            const domainManager =
+                type === DomainType.BASE
+                    ? projectsManager.domains?.base
+                    : projectsManager.domains?.custom;
+            if (!domainManager) {
+                console.error(`No ${type} domain hosting manager found`);
                 return;
             }
-            projectsManager.domains.base.refresh();
+            domainManager.refresh();
         };
 
         const renderNoDomainBase = () => {
@@ -114,6 +128,13 @@ export const DomainSection = observer(
         const renderDomain = () => {
             if (!domain) {
                 return 'Something went wrong';
+            }
+
+            // If the domain is custom, check if the user has a PRO plan
+            if (type === DomainType.CUSTOM) {
+                if (plan !== UsagePlanType.PRO) {
+                    return renderNoDomainCustom();
+                }
             }
 
             return (
@@ -157,9 +178,10 @@ export const DomainSection = observer(
                     {(state.status === PublishStatus.PUBLISHED ||
                         state.status === PublishStatus.UNPUBLISHED) && (
                         <Button
-                            onClick={publishBaseDomain}
+                            onClick={publish}
                             variant="outline"
                             className="w-full rounded-md p-3"
+                            disabled={isAnyDomainLoading}
                         >
                             Update
                         </Button>
