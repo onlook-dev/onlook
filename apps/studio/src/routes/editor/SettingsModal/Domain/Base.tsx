@@ -37,7 +37,7 @@ const BaseDomain = observer(() => {
                     <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">URL</p>
                         <p className="text-small text-muted-foreground">
-                            Updated {lastUpdated} ago
+                            {lastUpdated ? `Updated ${lastUpdated} ago` : 'Not published'}
                         </p>
                     </div>
                     <div className="flex gap-2 flex-1">
