@@ -36,17 +36,24 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
     const computedStyle = window.getComputedStyle(el);
     const isAbsolute = computedStyle.position === 'absolute';
 
+    const pos = JSON.parse(
+        el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
+    );
+
     if (isAbsolute) {
-        const pos = JSON.parse(
-            el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
-        );
         const left = pos.left + dx;
         const top = pos.top + dy;
 
         el.style.position = 'absolute';
         el.style.left = `${Math.round(left)}px`;
         el.style.top = `${Math.round(top)}px`;
+        el.style.width = computedStyle.width + 1;
+        el.style.height = computedStyle.height + 1;
     } else {
+        const left = pos.left + dx - window.scrollX;
+        const top = pos.top + dy - window.scrollY;
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
         el.style.width = computedStyle.width + 1;
         el.style.height = computedStyle.height + 1;
         el.style.position = 'fixed';
@@ -80,6 +87,10 @@ export function endDrag(domId: string): {
     const newParent = getDomElement(parent, false);
 
     if (isAbsolute) {
+        if (!el.style.left || !el.style.top) {
+            console.warn('End drag element has no left or top style');
+            return null;
+        }
         if (newChild.styles?.computed) {
             newChild.styles.computed.position = 'absolute';
             newChild.styles.computed.left = el.style.left;
