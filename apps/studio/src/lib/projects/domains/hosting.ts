@@ -27,9 +27,6 @@ export class HostingManager {
     ) {
         makeAutoObservable(this);
         this.listenForStateChanges();
-        if (domain.publishedAt) {
-            this.updateState({ status: PublishStatus.PUBLISHED, message: null });
-        }
     }
 
     async listenForStateChanges() {

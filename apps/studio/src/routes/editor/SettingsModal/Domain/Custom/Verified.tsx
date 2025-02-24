@@ -51,7 +51,7 @@ export const Verified = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={removeDomain}
-                                className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive cursor-pointer"
+                                className="hover:bg-destructive/10 focus:bg-destructive/10 text-red-500 cursor-pointer"
                             >
                                 <Icons.Trash className="mr-2 h-4 w-4" />
                                 Remove Domain
