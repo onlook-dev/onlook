@@ -158,7 +158,7 @@ const EditPanel = observer(() => {
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={EditorTabValue.PROPS}
                         >
                             <Icons.MixerHorizontal className="mr-1.5 mb-0.5" />
