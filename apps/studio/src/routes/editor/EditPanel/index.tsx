@@ -161,7 +161,7 @@ const EditPanel = observer(() => {
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.PROPS}
                         >
-                            <Icons.Sparkles className="mr-1.5 mb-0.5" />
+                            <Icons.MixerHorizontal className="mr-1.5 mb-0.5" />
                             Properties
                         </TabsTrigger>
                     </div>

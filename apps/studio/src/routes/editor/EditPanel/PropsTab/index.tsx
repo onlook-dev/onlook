@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEditorEngine } from '@/components/Context';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import type { CodeDiffRequest } from '@onlook/models';
+import { MainChannels } from '@onlook/models/constants';
+import type { DomElement, PropsParsingResult } from '@onlook/models/element';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
-import { useEditorEngine } from '@/components/Context';
-import type { DomElement, PropsParsingResult } from '@onlook/models/element';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
-import CodeProp from './CodeProp';
+import { useEffect, useState } from 'react';
 import BooleanProp from './BooleanProp';
+import CodeProp from './CodeProp';
 import TextProp from './TextProp';
-import type { CodeDiffRequest } from '@onlook/models';
 
 export interface Prop {
     type: string;
@@ -20,7 +20,6 @@ export interface Prop {
 const PropsTab = () => {
     const [props, setProps] = useState<{ [key: string]: Prop } | null>({});
     const [selectedEl, setSelectedEl] = useState<DomElement | undefined>();
-    const [propCount, setPropCount] = useState<number>(4);
 
     const editorEngine = useEditorEngine();
 
@@ -28,7 +27,6 @@ const PropsTab = () => {
         if (editorEngine.elements.selected.length > 0) {
             const selectedEl = editorEngine.elements.selected[0];
             setSelectedEl(selectedEl);
-            setPropCount(4);
             getRootProps(selectedEl);
         }
     }, [editorEngine.elements.selected]);
@@ -100,28 +98,50 @@ const PropsTab = () => {
             </div>
             <div className="flex flex-col gap-4 mb-5">
                 {props !== null &&
-                    Object.keys(props)
-                        .slice(0, propCount)
-                        .map((key) => {
-                            const prop = props[key];
-                            return (
-                                <div className="flex flex-row items-center" key={key}>
-                                    <div className="flex flex-row gap-2 items-center">
-                                        <Icons.CheckCircled />
-                                        <div className="flex flex-col">
-                                            <span className="text-sm">{key}</span>
-                                            <span className="text-xs text-foreground-secondary">
-                                                {prop.displayType ? prop.displayType : prop.type}
-                                            </span>
-                                        </div>
+                    Object.keys(props).map((key) => {
+                        const prop = props[key];
+                        return (
+                            <div className="flex flex-row items-center" key={key}>
+                                <div className="flex flex-row gap-2 items-center">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm">{key}</span>
+                                        <span className="text-xs text-foreground-secondary">
+                                            {prop.displayType ? prop.displayType : prop.type}
+                                        </span>
                                     </div>
-                                    <div className="text-end ml-auto">
-                                        {prop.type === 'code' ? (
-                                            <CodeProp onClick={viewSource} />
-                                        ) : prop.type === 'boolean' ? (
-                                            <BooleanProp
-                                                value={prop.value as boolean}
-                                                change={(value) => {
+                                </div>
+                                <div className="text-end ml-auto">
+                                    {prop.type === 'code' ? (
+                                        <CodeProp onClick={viewSource} />
+                                    ) : prop.type === 'boolean' ? (
+                                        <BooleanProp
+                                            value={prop.value as boolean}
+                                            change={(value) => {
+                                                setProps((prev) =>
+                                                    prev !== null
+                                                        ? {
+                                                              ...prev,
+                                                              [key]: {
+                                                                  ...prev[key],
+                                                                  value,
+                                                              },
+                                                          }
+                                                        : null,
+                                                );
+                                                selectedEl?.oid &&
+                                                    createCodeDiffRequest(
+                                                        selectedEl?.oid,
+                                                        value,
+                                                        key,
+                                                    );
+                                            }}
+                                        />
+                                    ) : (
+                                        (prop.type === 'text' || prop.type === 'number') && (
+                                            <TextProp
+                                                prop={prop}
+                                                type={prop.type}
+                                                onChange={(value) => {
                                                     setProps((prev) =>
                                                         prev !== null
                                                             ? {
@@ -133,57 +153,24 @@ const PropsTab = () => {
                                                               }
                                                             : null,
                                                     );
+                                                }}
+                                                onBlur={(val) => {
                                                     selectedEl?.oid &&
                                                         createCodeDiffRequest(
                                                             selectedEl?.oid,
-                                                            value,
+                                                            prop.type === 'number'
+                                                                ? parseInt(val)
+                                                                : val,
                                                             key,
                                                         );
                                                 }}
                                             />
-                                        ) : (
-                                            (prop.type === 'text' || prop.type === 'number') && (
-                                                <TextProp
-                                                    prop={prop}
-                                                    type={prop.type}
-                                                    onChange={(value) => {
-                                                        setProps((prev) =>
-                                                            prev !== null
-                                                                ? {
-                                                                      ...prev,
-                                                                      [key]: {
-                                                                          ...prev[key],
-                                                                          value,
-                                                                      },
-                                                                  }
-                                                                : null,
-                                                        );
-                                                    }}
-                                                    onBlur={(val) => {
-                                                        selectedEl?.oid &&
-                                                            createCodeDiffRequest(
-                                                                selectedEl?.oid,
-                                                                prop.type === 'number'
-                                                                    ? parseInt(val)
-                                                                    : val,
-                                                                key,
-                                                            );
-                                                    }}
-                                                />
-                                            )
-                                        )}
-                                    </div>
+                                        )
+                                    )}
                                 </div>
-                            );
-                        })}
-                {props !== null && Object.keys(props).length > 4 && propCount === 4 && (
-                    <div
-                        onClick={() => setPropCount(Object.keys(props).length)}
-                        className="text-sm flex pt-5 items-center justify-center text-center opacity-70 cursor-pointer"
-                    >
-                        See all properties {`(${Object.keys(props).length})`}
-                    </div>
-                )}
+                            </div>
+                        );
+                    })}
             </div>
         </div>
     );
