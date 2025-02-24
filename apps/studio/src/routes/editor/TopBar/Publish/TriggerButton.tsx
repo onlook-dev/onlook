@@ -35,7 +35,7 @@ export const PublishButton = observer(() => {
     const status: PublishStatus = computeStatus();
 
     let colorClasses = 'border-input bg-background hover:bg-background-onlook text-foreground';
-    let icon: React.ReactNode | null = null;
+    let icon: React.ReactNode | null = <Icons.Globe className="mr-2 h-4 w-4" />;
     let text = 'Publish';
 
     if (status === PublishStatus.PUBLISHED) {

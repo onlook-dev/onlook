@@ -129,6 +129,7 @@ export const Verification = observer(() => {
 
         if (!response.success) {
             setError(response.message ?? 'Failed to verify domain');
+            setStatus(VerificationStatus.VERIFYING);
             return;
         }
 

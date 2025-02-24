@@ -3,7 +3,7 @@ import { HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
 import type { GetOwnedDomainsResponse } from '@onlook/models/hosting';
 import { DomainType, type Project } from '@onlook/models/projects';
 import { getValidSubdomain } from '@onlook/utility';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '../index';
 import { HostingManager } from './hosting';
 export class DomainsManager {
@@ -15,58 +15,30 @@ export class DomainsManager {
         private project: Project,
     ) {
         makeAutoObservable(this);
-        this.restore();
-        reaction(
-            () => this.project.domains?.base,
-            () => {
-                if (!this.project.domains?.base) {
-                    this._baseHosting = null;
-                } else {
-                    this._baseHosting = new HostingManager(
-                        this.projectsManager,
-                        this.project,
-                        this.project.domains.base,
-                    );
-                }
-            },
-        );
-        reaction(
-            () => this.project.domains?.custom,
-            () => {
-                if (!this.project.domains?.custom) {
-                    this._customHosting = null;
-                } else {
-                    this._customHosting = new HostingManager(
-                        this.projectsManager,
-                        this.project,
-                        this.project.domains.custom,
-                    );
-                }
-            },
-        );
+        this.restore(project);
     }
 
     updateProject(project: Project) {
         this.project = project;
     }
 
-    restore() {
-        if (!this.project.domains?.base) {
+    restore(project: Project) {
+        if (!project.domains?.base) {
             this._baseHosting = null;
         } else {
             this._baseHosting = new HostingManager(
                 this.projectsManager,
                 this.project,
-                this.project.domains.base,
+                project.domains.base,
             );
         }
-        if (!this.project.domains?.custom) {
+        if (!project.domains?.custom) {
             this._customHosting = null;
         } else {
             this._customHosting = new HostingManager(
                 this.projectsManager,
                 this.project,
-                this.project.domains.custom,
+                project.domains.custom,
             );
         }
     }
