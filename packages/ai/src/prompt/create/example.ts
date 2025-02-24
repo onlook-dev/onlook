@@ -1,5 +1,8 @@
+import { FENCE } from '../format';
+
 const user1 = 'Create beautiful landing page with minimalist UI';
-export const assistant1 = `'use client';
+export const assistant1 = `${FENCE.code.start}
+'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -220,13 +223,16 @@ export default function Page() {
         </div>
     );
 }
-
-`;
+${FENCE.code.end}`;
 
 export const EXAMPLE_CONVERSATION = [
     {
         role: 'user',
         content: user1,
+    },
+    {
+        role: 'assistant',
+        content: 'Here is the code for the page:',
     },
     {
         role: 'assistant',

@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT, PromptProvider } from '@onlook/ai/src/prompt';
+import { PAGE_SYSTEM_PROMPT, PromptProvider } from '@onlook/ai/src/prompt';
 import { CreateStage, type CreateCallback, type CreateProjectResponse } from '@onlook/models';
 import {
     StreamRequestType,
@@ -94,7 +94,7 @@ export class ProjectCreator {
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
         const systemPrompt = new PromptProvider().getCreatePageSystemPrompt();
-
+        console.log(systemPrompt);
         const systemMessage: CoreSystemMessage = {
             role: 'system',
             content: systemPrompt,
@@ -166,7 +166,7 @@ export class ProjectCreator {
     private getMessages(prompt: string, images: ImageMessageContext[]): CoreMessage[] {
         const promptContent = `${images.length > 0 ? 'Refer to the images above. ' : ''}Create a landing page that matches this description: ${prompt}
 Use this as the starting template:
-${DEFAULT_PAGE_CONTENT}`;
+${PAGE_SYSTEM_PROMPT.defaultContent}`;
 
         // For text-only messages
         if (images.length === 0) {
@@ -174,6 +174,10 @@ ${DEFAULT_PAGE_CONTENT}`;
                 {
                     role: 'user',
                     content: promptContent,
+                },
+                {
+                    role: 'assistant',
+                    content: 'Here is the code for the page:',
                 },
             ];
         }
@@ -193,6 +197,10 @@ ${DEFAULT_PAGE_CONTENT}`;
                         text: promptContent,
                     },
                 ],
+            },
+            {
+                role: 'assistant',
+                content: 'Here is the code for the page:',
             },
         ];
     }

@@ -11,6 +11,7 @@ describe('Prompt', () => {
     const SHOULD_WRITE_USER_MESSAGE = false;
     const SHOULD_WRITE_FILE_CONTENT = false;
     const SHOULD_WRITE_HIGHLIGHTS = false;
+    const SHOULD_WRITE_CREATE_PAGE_SYSTEM = true;
 
     test('System prompt should be the same', async () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
@@ -154,6 +155,18 @@ describe('Prompt', () => {
         }
 
         const existing = await Bun.file(highlightsPath).text();
+        expect(prompt).toEqual(existing);
+    });
+
+    test('Create page system prompt should be the same', async () => {
+        const createPageSystemPath = path.resolve(__dirname, './data/create-page-system.txt');
+
+        const prompt = new PromptProvider().getCreatePageSystemPrompt();
+        if (SHOULD_WRITE_CREATE_PAGE_SYSTEM) {
+            await Bun.write(createPageSystemPath, prompt);
+        }
+
+        const existing = await Bun.file(createPageSystemPath).text();
         expect(prompt).toEqual(existing);
     });
 });
