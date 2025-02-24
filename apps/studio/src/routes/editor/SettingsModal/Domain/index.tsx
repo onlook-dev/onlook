@@ -1,4 +1,5 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
+import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import BaseDomain from './Base';
@@ -15,7 +16,7 @@ export const DomainTab = observer(() => {
     return (
         <div className="space-y-8">
             <BaseDomain />
-            {/* <Separator /> */}
+            <Separator />
             {/* <CustomDomain /> */}
             <Teaser />
         </div>
