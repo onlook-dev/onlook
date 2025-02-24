@@ -3,10 +3,19 @@ interface ParsedProps {
     props: NodeProps[];
 }
 
+export enum PropsType {
+    String = 'string',
+    Number = 'number',
+    Boolean = 'boolean',
+    Object = 'object',
+    Array = 'array',
+    Code = 'code',
+}
+
 export interface NodeProps {
     key: any;
     value: any;
-    type: any;
+    type: PropsType;
 }
 
 interface PropsParsingError {

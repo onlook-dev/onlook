@@ -162,7 +162,7 @@ const EditPanel = observer(() => {
                             value={EditorTabValue.PROPS}
                         >
                             <Icons.MixerHorizontal className="mr-1.5 mb-0.5" />
-                            Properties
+                            Props
                         </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
@@ -173,11 +173,7 @@ const EditPanel = observer(() => {
                         <ChatTab />
                     </TabsContent>
                     <TabsContent value={EditorTabValue.PROPS}>
-                        {editorEngine.elements.selected.length > 0 ? (
-                            <PropsTab />
-                        ) : (
-                            renderEmptyState()
-                        )}
+                        <PropsTab />
                     </TabsContent>
                     <TabsContent value={EditorTabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
@@ -191,12 +187,22 @@ const EditPanel = observer(() => {
         );
     }
 
+    function getDefaultWidth() {
+        if (selectedTab === EditorTabValue.CHAT) {
+            return 352;
+        }
+        if (selectedTab === EditorTabValue.PROPS) {
+            return 295;
+        }
+        return 240;
+    }
+
     return (
         <ResizablePanel
             side="right"
-            defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 295}
-            forceWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 295}
-            minWidth={295}
+            defaultWidth={getDefaultWidth()}
+            forceWidth={getDefaultWidth()}
+            minWidth={240}
             maxWidth={500}
         >
             <div

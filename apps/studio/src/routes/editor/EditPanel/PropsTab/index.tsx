@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
-import type { DomElement, PropsParsingResult } from '@onlook/models/element';
+import { PropsType, type DomElement, type PropsParsingResult } from '@onlook/models/element';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { useEffect, useState } from 'react';
@@ -11,7 +11,7 @@ import CodeProp from './CodeProp';
 import TextProp from './TextProp';
 
 export interface Prop {
-    type: string;
+    type: PropsType;
     displayType?: string;
     value: string | boolean;
     icon?: React.ReactNode;
@@ -40,7 +40,7 @@ const PropsTab = () => {
             );
 
             if (rootProps.type === 'props' && rootProps.props.length > 0) {
-                const elementProps: any = {};
+                const elementProps: Record<string, Prop> = {};
                 rootProps.props.forEach((prop) => {
                     const newProp: Prop = {
                         type: prop.type,
@@ -55,7 +55,11 @@ const PropsTab = () => {
         }
     }
 
-    const createCodeDiffRequest = async (oid: string | undefined, value: any, name: string) => {
+    const createCodeDiffRequest = async (
+        oid: string | undefined,
+        value: string | number | boolean,
+        name: string,
+    ) => {
         if (!oid) {
             console.error('No oid found for createCodeDiffRequest');
             return;
@@ -89,7 +93,7 @@ const PropsTab = () => {
     }
 
     return (
-        <div className="flex flex-col gap-2 px-3 w-[300px]">
+        <div className="flex flex-col gap-2 px-3 w-full">
             <div className="flex flex-row justify-between items-center">
                 <span className="text-xs">Detected Properties</span>
                 <Button size={'icon'} variant={'ghost'}>
@@ -137,7 +141,8 @@ const PropsTab = () => {
                                             }}
                                         />
                                     ) : (
-                                        (prop.type === 'text' || prop.type === 'number') && (
+                                        (prop.type === PropsType.String ||
+                                            prop.type === PropsType.Number) && (
                                             <TextProp
                                                 prop={prop}
                                                 type={prop.type}
@@ -158,7 +163,7 @@ const PropsTab = () => {
                                                     selectedEl?.oid &&
                                                         createCodeDiffRequest(
                                                             selectedEl?.oid,
-                                                            prop.type === 'number'
+                                                            prop.type === PropsType.Number
                                                                 ? parseInt(val)
                                                                 : val,
                                                             key,

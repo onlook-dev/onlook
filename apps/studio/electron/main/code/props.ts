@@ -1,5 +1,10 @@
 import * as t from '@babel/types';
-import type { PropsParsingResult, TemplateNode, NodeProps } from '@onlook/models/element';
+import {
+    type NodeProps,
+    type PropsParsingResult,
+    PropsType,
+    type TemplateNode,
+} from '@onlook/models/element';
 import { readCodeBlock } from '.';
 import { parseJsxCodeBlock } from './helpers';
 
@@ -36,33 +41,33 @@ function getNodeAttributes(node: t.JSXElement): PropsParsingResult {
 
             const attrName = attr.name.name;
             let attrValue: boolean | string | number = true;
-            let attrType: 'boolean' | 'text' | 'code' | 'number' = 'code';
+            let attrType: PropsType = PropsType.Code;
 
             if (attr.value) {
                 if (t.isStringLiteral(attr.value)) {
                     attrValue = attr.value.value;
-                    attrType = 'text';
+                    attrType = PropsType.String;
                 } else if (t.isJSXExpressionContainer(attr.value)) {
                     const expr = attr.value.expression;
                     if (t.isBooleanLiteral(expr)) {
                         attrValue = expr.value;
-                        attrType = 'boolean';
+                        attrType = PropsType.Boolean;
                     } else if (t.isStringLiteral(expr)) {
                         attrValue = expr.value;
-                        attrType = 'text';
+                        attrType = PropsType.String;
                     } else if (t.isNumericLiteral(expr)) {
                         attrValue = expr.value;
-                        attrType = 'number';
+                        attrType = PropsType.Number;
                     } else {
                         attrValue = `{${expr.type}}`;
-                        attrType = 'code';
+                        attrType = PropsType.Code;
                     }
                 } else {
                     attrValue = `Unsupported type: ${attr.value.type}`;
-                    attrType = 'code';
+                    attrType = PropsType.Code;
                 }
             } else {
-                attrType = 'boolean';
+                attrType = PropsType.Boolean;
             }
 
             props.push({ key: attrName, value: attrValue, type: attrType });
