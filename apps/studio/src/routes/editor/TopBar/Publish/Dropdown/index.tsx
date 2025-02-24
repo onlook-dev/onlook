@@ -33,13 +33,15 @@ export const PublishDropdown = observer(
                     type={DomainType.BASE}
                     state={baseDomainState}
                 />
-                <Separator />
+
+                {/* TODO: Uncomment after freestyle bug is fixed */}
+                {/* <Separator />
                 <DomainSection
                     setIsOpen={setIsOpen}
                     domain={customDomain}
                     type={DomainType.CUSTOM}
                     state={customDomainState}
-                />
+                /> */}
                 <Separator />
                 <AdvancedSettingsSection setIsOpen={setIsOpen} />
             </div>

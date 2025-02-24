@@ -43,7 +43,7 @@ export const Verification = observer(() => {
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>();
     const [ownedDomains, setOwnedDomains] = useState<string[]>([]);
 
     useEffect(() => {
@@ -129,6 +129,7 @@ export const Verification = observer(() => {
 
         if (!response.success) {
             setError(response.message ?? 'Failed to verify domain');
+            setStatus(VerificationStatus.VERIFYING);
             return;
         }
 
@@ -230,6 +231,11 @@ export const Verification = observer(() => {
                                 onChange={(e) => setDomain(e.target.value)}
                                 placeholder="example.com"
                                 className="bg-background placeholder:text-muted-foreground"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        setupDomain();
+                                    }
+                                }}
                             />
                             <Button
                                 onClick={() => {
@@ -312,7 +318,7 @@ export const Verification = observer(() => {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={removeDomain}
-                                    className="hover:bg-destructive/10 focus:bg-destructive/10 text-destructive cursor-pointer"
+                                    className="hover:bg-destructive/10 focus:bg-destructive/10 text-red-500 cursor-pointer"
                                 >
                                     <Icons.Trash className="mr-2 h-4 w-4" />
                                     Remove Domain
@@ -353,7 +359,7 @@ export const Verification = observer(() => {
             {status === VerificationStatus.VERIFIED && renderVerifiedHeader()}
             {(status === VerificationStatus.VERIFYING || status === VerificationStatus.VERIFIED) &&
                 renderRecords()}
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
     );
 });
