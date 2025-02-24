@@ -87,11 +87,11 @@ export class ProjectsManager {
         return newProject;
     }
 
-    updateProject(project: Project) {
-        const updatedProjects = this._projects.map((p) => (p.id === project.id ? project : p));
-        if (project.id === this.project?.id) {
-            this.project = project;
-        }
+    updateProject(newProject: Project) {
+        const updatedProjects = this._projects.map((p) =>
+            p.id === newProject.id ? newProject : p,
+        );
+        this.project = newProject;
         this.projects = updatedProjects;
     }
 
@@ -130,7 +130,7 @@ export class ProjectsManager {
     set project(newProject: Project | null) {
         if (!newProject) {
             this.disposeManagers();
-        } else if (newProject.id !== this._project?.id) {
+        } else {
             this.setOrUpdateManagers(newProject);
         }
         this._project = newProject;
