@@ -15,30 +15,31 @@ export class DomainsManager {
         private project: Project,
     ) {
         makeAutoObservable(this);
-        this.restore(project);
+        this.setupHostingManagers();
     }
 
     updateProject(project: Project) {
         this.project = project;
+        this.setupHostingManagers();
     }
 
-    restore(project: Project) {
-        if (!project.domains?.base) {
+    setupHostingManagers() {
+        if (!this.project.domains?.base) {
             this._baseHosting = null;
         } else {
             this._baseHosting = new HostingManager(
                 this.projectsManager,
                 this.project,
-                project.domains.base,
+                this.project.domains.base,
             );
         }
-        if (!project.domains?.custom) {
+        if (!this.project.domains?.custom) {
             this._customHosting = null;
         } else {
             this._customHosting = new HostingManager(
                 this.projectsManager,
                 this.project,
-                project.domains.custom,
+                this.project.domains.custom,
             );
         }
     }
