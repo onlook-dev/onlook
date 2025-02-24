@@ -22,7 +22,7 @@ export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffReq
             }
             const codeDiffRequest = oidToCodeDiff.get(currentOid);
             if (codeDiffRequest) {
-                const { attributes } = codeDiffRequest;
+                const { attributes, textContent, structureChanges } = codeDiffRequest;
 
                 if (attributes) {
                     Object.entries(attributes).forEach(([key, value]) => {
@@ -38,14 +38,11 @@ export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffReq
                     });
                 }
 
-                if (
-                    codeDiffRequest.textContent !== undefined &&
-                    codeDiffRequest.textContent !== null
-                ) {
-                    updateNodeTextContent(path.node, codeDiffRequest.textContent);
+                if (textContent !== undefined && textContent !== null) {
+                    updateNodeTextContent(path.node, textContent);
                 }
 
-                applyStructureChanges(path, codeDiffRequest.structureChanges);
+                applyStructureChanges(path, structureChanges);
             }
         },
     });
