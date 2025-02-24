@@ -389,7 +389,7 @@ const Frame = observer(
 
         return (
             <div
-                className="flex flex-col"
+                className="flex flex-col fixed"
                 style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
             >
                 <BrowserControls

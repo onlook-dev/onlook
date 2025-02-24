@@ -339,7 +339,10 @@ export class EditorEngine {
                 width: currentFrame.dimension.width,
                 height: currentFrame.dimension.height,
             },
-            position: currentFrame.position,
+            position: {
+                x: currentFrame.position.x + currentFrame.dimension.width + 100,
+                y: currentFrame.position.y,
+            },
             aspectRatioLocked: currentFrame.aspectRatioLocked,
             orientation: currentFrame.orientation,
             device: currentFrame.device,
