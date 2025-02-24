@@ -21,6 +21,12 @@ import PropsTab from './PropsTab';
 import StylesTab from './StylesTab';
 import WindowSettings from './WindowSettings';
 
+const EDIT_PANEL_WIDTHS = {
+    [EditorTabValue.CHAT]: 352,
+    [EditorTabValue.PROPS]: 295,
+    [EditorTabValue.STYLES]: 240,
+};
+
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
@@ -30,6 +36,7 @@ const EditPanel = observer(() => {
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
     const [frameSettings, setFrameSettings] = useState<FrameSettings>();
+    const defaultWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     useEffect(() => {
         if (editorEngine.isWindowSelected) {
@@ -187,21 +194,11 @@ const EditPanel = observer(() => {
         );
     }
 
-    function getDefaultWidth() {
-        if (selectedTab === EditorTabValue.CHAT) {
-            return 352;
-        }
-        if (selectedTab === EditorTabValue.PROPS) {
-            return 295;
-        }
-        return 240;
-    }
-
     return (
         <ResizablePanel
             side="right"
-            defaultWidth={getDefaultWidth()}
-            forceWidth={getDefaultWidth()}
+            defaultWidth={defaultWidth}
+            forceWidth={defaultWidth}
             minWidth={240}
             maxWidth={500}
         >
