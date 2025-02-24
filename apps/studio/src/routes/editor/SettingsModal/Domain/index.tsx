@@ -3,6 +3,7 @@ import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import BaseDomain from './Base';
+import DangerZone from './DangerZone';
 // import { CustomDomain } from './Custom';
 
 export const DomainTab = observer(() => {
@@ -20,6 +21,8 @@ export const DomainTab = observer(() => {
             {/* TODO: Uncomment after freestyle bug is fixed */}
             {/* <CustomDomain /> */}
             <Teaser />
+            <Separator />
+            <DangerZone />
         </div>
     );
 });

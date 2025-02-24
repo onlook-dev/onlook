@@ -107,7 +107,7 @@ export class HostingManager {
         return true;
     }
 
-    async unpublish() {
+    async unpublish(): Promise<boolean> {
         this.updateState({ status: PublishStatus.LOADING, message: 'Deleting deployment...' });
         sendAnalytics('hosting unpublish');
 
@@ -126,12 +126,13 @@ export class HostingManager {
             sendAnalyticsError('Failed to unpublish', {
                 message: error,
             });
-            return;
+            return false;
         }
 
         this.removeDomain(this.domain.type);
         this.updateState({ status: PublishStatus.UNPUBLISHED, message: null });
         sendAnalytics('hosting unpublish success');
+        return true;
     }
 
     async dispose() {
