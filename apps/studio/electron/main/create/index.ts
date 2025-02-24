@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
+import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT, PromptProvider } from '@onlook/ai/src/prompt';
 import { CreateStage, type CreateCallback, type CreateProjectResponse } from '@onlook/models';
 import {
     StreamRequestType,
@@ -91,14 +91,13 @@ export class ProjectCreator {
             throw new Error('No active creation process');
         }
 
-        const defaultPagePath = 'app/page.tsx';
-
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
+        const systemPrompt = new PromptProvider().getCreatePageSystemPrompt();
 
         const systemMessage: CoreSystemMessage = {
             role: 'system',
-            content: PAGE_SYSTEM_PROMPT,
+            content: systemPrompt,
             experimental_providerMetadata: {
                 anthropic: { cacheControl: { type: 'ephemeral' } },
             },
@@ -114,7 +113,7 @@ export class ProjectCreator {
         }
 
         return {
-            path: defaultPagePath,
+            path: PAGE_SYSTEM_PROMPT.defaultPath,
             content: response.content,
         };
     }

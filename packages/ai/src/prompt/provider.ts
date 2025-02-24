@@ -4,6 +4,7 @@ import type {
     HighlightMessageContext,
 } from '@onlook/models/chat';
 import { CONTEXT_PROMPTS } from './context';
+import { PAGE_SYSTEM_PROMPT } from './create';
 import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
@@ -28,6 +29,14 @@ export class PromptProvider {
             prompt += this.getExampleConversation();
         }
         prompt = prompt.replace(PLATFORM_SIGNATURE, platform);
+        return prompt;
+    }
+
+    getCreatePageSystemPrompt() {
+        let prompt = '';
+        prompt += wrapXml('role', PAGE_SYSTEM_PROMPT.role);
+        prompt += wrapXml('rules', PAGE_SYSTEM_PROMPT.rules);
+        prompt += wrapXml('example-conversation', this.getExampleConversation());
         return prompt;
     }
 
