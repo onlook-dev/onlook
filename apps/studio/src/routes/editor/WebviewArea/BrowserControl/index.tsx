@@ -220,8 +220,7 @@ const BrowserControls = observer(
         return (
             <div
                 className={clsx(
-                    'm-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative max-w-96 px-3 border-[0.5px] shadow-sm rounded-md border-input text-foreground',
-
+                    'm-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm rounded-md border-input text-foreground',
                     selected ? ' bg-active/60 ' : '',
                     hovered ? ' bg-hover/20 ' : '',
                     selected
@@ -235,7 +234,8 @@ const BrowserControls = observer(
                 onClick={handleSelect}
                 style={{
                     transform: `scale(${1 / editorEngine.canvas.scale})`,
-                    marginBottom: `${40 / editorEngine.canvas.scale}px`,
+                    width: `${settings.dimension.width * editorEngine.canvas.scale}px`,
+                    marginBottom: `${10 / editorEngine.canvas.scale}px`,
                 }}
             >
                 {/* Making sure the dropdown arrow is visible */}
@@ -258,7 +258,7 @@ const BrowserControls = observer(
                         onClick={goBack}
                         disabled={!canGoBack()}
                     >
-                        <Icons.ArrowLeft className="text-inherit h-5 w-5 transition-none" />
+                        <Icons.ArrowLeft className="text-inherit h-4 w-4 transition-none" />
                     </Button>
 
                     <Button
@@ -270,13 +270,13 @@ const BrowserControls = observer(
                             display: canGoForward() ? 'flex' : 'none',
                         }}
                     >
-                        <Icons.ArrowRight className="text-inherit h-5 w-5" />
+                        <Icons.ArrowRight className="text-inherit h-4 w-4" />
                     </Button>
                     <Button size={'icon'} variant={'ghost'} onClick={reload}>
                         {webviewRef?.current?.isLoading() ? (
                             <Icons.CrossL className="text-inherit" />
                         ) : (
-                            <Icons.Reload className="text-inherit h-5 w-5" />
+                            <Icons.Reload className="text-inherit h-4 w-4" />
                         )}
                     </Button>
                 </div>
@@ -317,39 +317,34 @@ const BrowserControls = observer(
                         setEditingURL(true);
                     }}
                 >
-                    <>
-                        <Input
-                            ref={inputRef}
-                            className={cn(
-                                'text-regular text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none',
-                            )}
-                            value={urlInputValue}
-                            onChange={(e) => setUrlInputValue(e.target.value)}
-                            onKeyDown={handleKeydown}
-                            onBlur={handleBlur}
-                            style={{
-                                transition: 'display 0.5s',
-                                display: editingURL ? 'flex' : 'none',
-                            }}
-                        />
-                        <Button
-                            className="absolute right-0.5 px-1 group"
-                            size={'icon'}
-                            variant={'ghost'}
-                            onClick={() => setEditingURL(false)}
-                            style={{
-                                transition: 'transform 0.5s, visibility 0.5s, opacity 0.5s',
-                                transform: editingURL ? 'translateX(0)' : 'translateX(-5.625rem)',
-                                visibility: editingURL ? 'visible' : 'hidden',
-                                opacity: editingURL ? 1 : 0,
-                            }}
-                        >
-                            <Icons.ArrowRight className="text-foreground-secondary group-hover:text-foreground-active h-5 w-5" />
-                        </Button>
-                    </>
-
+                    <Input
+                        ref={inputRef}
+                        className="text-small text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none"
+                        value={urlInputValue}
+                        onChange={(e) => setUrlInputValue(e.target.value)}
+                        onKeyDown={handleKeydown}
+                        onBlur={handleBlur}
+                        style={{
+                            transition: 'display 0.5s',
+                            display: editingURL ? 'flex' : 'none',
+                        }}
+                    />
+                    <Button
+                        className="absolute right-0.5 px-1 group"
+                        size={'icon'}
+                        variant={'ghost'}
+                        onClick={() => setEditingURL(false)}
+                        style={{
+                            transition: 'transform 0.5s, visibility 0.5s, opacity 0.5s',
+                            transform: editingURL ? 'translateX(0)' : 'translateX(-5.625rem)',
+                            visibility: editingURL ? 'visible' : 'hidden',
+                            opacity: editingURL ? 1 : 0,
+                        }}
+                    >
+                        <Icons.ArrowRight className="text-foreground-secondary group-hover:text-foreground-active h-4 w-4" />
+                    </Button>
                     <p
-                        className="text-regular text-inherit hover:text-opacity-80 transition-colors px-0 h-auto leading-none py-0"
+                        className="text-small text-inherit hover:text-opacity-80 transition-colors px-0 h-auto leading-none py-0"
                         style={{
                             transition: 'display 0.5s',
                             display: editingURL ? 'none' : 'flex',
@@ -382,7 +377,7 @@ const BrowserControls = observer(
                                 size={'icon'}
                                 variant={'ghost'}
                             >
-                                <Icons.ChevronDown className="text-inherit h-5 w-5 rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
+                                <Icons.ChevronDown className="text-inherit h-4 w-4 rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="rounded-md bg-background">
