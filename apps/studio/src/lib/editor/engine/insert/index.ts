@@ -208,6 +208,7 @@ export class InsertManager {
             element: actionElement,
             editText: mode === EditorMode.INSERT_TEXT,
             pasteParams: null,
+            codeBlock: null,
         };
     }
 
@@ -274,6 +275,7 @@ export class InsertManager {
             location,
             editText: false,
             pasteParams: null,
+            codeBlock: null,
         };
         this.editorEngine.action.run(action);
     }
@@ -349,6 +351,7 @@ export class InsertManager {
             location,
             editText: properties.tagName === 'p',
             pasteParams: null,
+            codeBlock: null,
         };
 
         this.editorEngine.action.run(action);

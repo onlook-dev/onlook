@@ -83,7 +83,6 @@ const Frame = observer(
             if (!webview) {
                 return;
             }
-
             await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
             setDomReady(true);
             webview.setZoomLevel(0);
@@ -390,7 +389,7 @@ const Frame = observer(
 
         return (
             <div
-                className="flex flex-col"
+                className="flex flex-col fixed"
                 style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
             >
                 <BrowserControls

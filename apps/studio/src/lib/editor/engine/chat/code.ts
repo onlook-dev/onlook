@@ -63,6 +63,8 @@ export class ChatCodeManager {
         }
 
         this.chat.suggestions.shouldHide = false;
+        this.editorEngine.errors.clear();
+
         setTimeout(() => {
             this.editorEngine.webviews.reloadWebviews();
         }, 500);

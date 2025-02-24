@@ -1,5 +1,6 @@
 export interface ParsedError {
     sourceId: string;
+    type: 'webview' | 'terminal';
     content: string;
 }
 

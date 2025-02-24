@@ -80,10 +80,10 @@ const EditPanel = observer(() => {
                             >
                                 <div className="flex items-center">
                                     <TabsTrigger
-                                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                                        className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover"
                                         value={EditorTabValue.CHAT}
                                     >
-                                        <Icons.Sparkles className="mr-1.5 mb-0.5" />
+                                        <Icons.Sparkles className="mr-1.5 mb-0.5 h-4 w-4" />
                                         Chat
                                         <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
                                     </TabsTrigger>
@@ -150,10 +150,10 @@ const EditPanel = observer(() => {
                             </DropdownMenuContent>
                         </DropdownMenu>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover"
                             value={EditorTabValue.STYLES}
                         >
-                            <Icons.Styles className="mr-1.5" />
+                            <Icons.Styles className="mr-1.5 h-4 w-4" />
                             Styles
                         </TabsTrigger>
                     </div>

@@ -1,7 +1,8 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
+import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
+import { MainChannels, Theme } from '@onlook/models/constants';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import { Button } from '@onlook/ui/button';
 import {
@@ -15,9 +16,10 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { IDE } from '/common/ide';
 
-const EditorTab = observer(() => {
+const PreferencesTab = observer(() => {
     const userManager = useUserManager();
     const projectsManager = useProjectsManager();
+    const { theme, nextTheme, setTheme } = useTheme();
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
@@ -52,6 +54,42 @@ const EditorTab = observer(() => {
 
     return (
         <div className="flex flex-col gap-8">
+            <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-2">
+                    <p className="text-foreground-onlook text-largePlus">Theme</p>
+                    <p className="text-foreground-onlook text-small">
+                        Choose your preferred appearance
+                    </p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="text-smallPlus min-w-[150px]">
+                            {theme === Theme.Dark && <Icons.Moon className="mr-2 h-4 w-4" />}
+                            {theme === Theme.Light && <Icons.Sun className="mr-2 h-4 w-4" />}
+                            {theme === Theme.System && <Icons.Laptop className="mr-2 h-4 w-4" />}
+                            <span className="capitalize">{theme}</span>
+                            <Icons.ChevronDown className="ml-auto" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="min-w-[150px]">
+                        <DropdownMenuItem onClick={() => setTheme(Theme.Light)}>
+                            <Icons.Sun className="mr-2 h-4 w-4" />
+                            <span>Light</span>
+                            {theme === Theme.Light && <Icons.CheckCircled className="ml-auto" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme(Theme.Dark)}>
+                            <Icons.Moon className="mr-2 h-4 w-4" />
+                            <span>Dark</span>
+                            {theme === Theme.Dark && <Icons.CheckCircled className="ml-auto" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setTheme(Theme.System)}>
+                            <Icons.Laptop className="mr-2 h-4 w-4" />
+                            <span>System</span>
+                            {theme === Theme.System && <Icons.CheckCircled className="ml-auto" />}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
             <div className="flex justify-between items-center">
                 <p className="text-foreground-onlook text-largePlus">Default Code Editor</p>
                 <DropdownMenu>
@@ -135,4 +173,4 @@ const EditorTab = observer(() => {
     );
 });
 
-export default EditorTab;
+export default PreferencesTab;
