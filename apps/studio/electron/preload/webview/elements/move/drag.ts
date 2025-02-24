@@ -44,8 +44,8 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         const top = pos.top + dy;
 
         el.style.position = 'absolute';
-        el.style.left = `${left}px`;
-        el.style.top = `${top}px`;
+        el.style.left = `${Math.round(left)}px`;
+        el.style.top = `${Math.round(top)}px`;
     } else {
         el.style.width = computedStyle.width + 1;
         el.style.height = computedStyle.height + 1;
@@ -85,7 +85,8 @@ export function endDrag(domId: string): {
             newChild.styles.computed.left = el.style.left;
             newChild.styles.computed.top = el.style.top;
         }
-        cleanUpElementAfterDragging(el);
+        removeDragAttributes(el);
+        getOrAssignDomId(el);
         return {
             newIndex: -1,
             child: newChild,

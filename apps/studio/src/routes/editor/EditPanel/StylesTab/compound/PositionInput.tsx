@@ -19,21 +19,37 @@ interface LineProps {
 
 const PositionLine = ({ position, isActive, onClick }: LineProps) => {
     const positionStyles = {
-        top: 'w-1 h-3 top-0.5',
-        right: 'h-1 w-3 right-0.5',
-        bottom: 'w-1 h-3 bottom-0.5',
-        left: 'h-1 w-3 left-0.5',
+        top: 'top-0.5 w-full ',
+        right: 'right-0.5 h-full',
+        bottom: 'bottom-0.5 w-full',
+        left: 'left-0.5 h-full',
+    };
+
+    const lineStyles = {
+        top: 'w-1 h-3',
+        right: 'h-1 w-3',
+        bottom: 'w-1 h-3',
+        left: 'h-1 w-3 ',
     };
 
     return (
         <div
             className={cn(
-                'absolute rounded-full cursor-pointer transition-colors',
-                isActive ? 'bg-red-500 hover:bg-red-600' : 'bg-background-active hover:bg-primary',
+                'absolute cursor-pointer transition-colors flex items-center justify-center',
                 positionStyles[position],
             )}
             onClick={() => onClick(position)}
-        />
+        >
+            <div
+                className={cn(
+                    'rounded-full',
+                    lineStyles[position],
+                    isActive
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-background-active hover:bg-primary',
+                )}
+            />
+        </div>
     );
 };
 
