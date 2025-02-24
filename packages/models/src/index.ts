@@ -7,6 +7,7 @@ export * from './create/';
 export * from './editor/';
 export * from './element/';
 export * from './ide/';
+export * from './llm/';
 export * from './pages/';
 export * from './projects/';
 export * from './run/';
