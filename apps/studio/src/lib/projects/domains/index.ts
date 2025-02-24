@@ -65,6 +65,10 @@ export class DomainsManager {
             publishedAt: new Date().toISOString(),
         };
         this.projectsManager.updateProject({ ...this.project, domains });
+
+        setTimeout(() => {
+            this.base?.publish();
+        }, 100);
     }
 
     async addCustomDomainToProject(url: string) {
