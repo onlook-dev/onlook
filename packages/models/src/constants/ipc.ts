@@ -39,6 +39,7 @@ export enum MainChannels {
     SEND_WINDOW_COMMAND = 'send-window-command',
     DELETE_FOLDER = 'delete-folder',
     IS_CHILD_TEXT_EDITABLE = 'is-child-text-editable',
+    IS_PORT_AVAILABLE = 'is-port-available',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
@@ -121,10 +122,12 @@ export enum MainChannels {
     TERMINAL_GET_HISTORY = 'terminal-get-history',
 
     // Hosting
-    START_DEPLOYMENT = 'start-deployment',
-    DEPLOY_STATE_CHANGED = 'deploy-state-changed',
-    UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
-    GET_CUSTOM_DOMAINS = 'get-custom-domains',
+    PUBLISH_TO_DOMAIN = 'publish-to-domain',
+    UNPUBLISH_DOMAIN = 'unpublish-domain',
+    PUBLISH_STATE_CHANGED = 'publish-state-changed',
+    GET_OWNED_DOMAINS = 'get-owned-domains',
+    CREATE_DOMAIN_VERIFICATION = 'create-domain-verification',
+    VERIFY_DOMAIN = 'verify-domain',
 
     // Payment
     CREATE_STRIPE_CHECKOUT = 'create-stripe-checkout',
