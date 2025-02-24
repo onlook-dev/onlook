@@ -23,12 +23,12 @@ export class LayersManager {
 
     get filteredLayers(): LayerNode[] {
         const selectedWebviews = this.editorEngine.webviews.selected;
-        if (selectedWebviews.length === 0 || !this.editorEngine.isWindowSelected) {
+        if (selectedWebviews.length === 0) {
             return this.layers;
         }
-        const selectedWebviewId = selectedWebviews[0].id;
-        const metadata = this.webviewIdToLayerMetadata.get(selectedWebviewId);
-        return metadata ? [metadata.rootNode] : [];
+        return this.layers.filter((layer) =>
+            selectedWebviews.some((webview) => webview.id === layer.webviewId),
+        );
     }
 
     getRootLayer(webviewId: string): LayerNode | undefined {
