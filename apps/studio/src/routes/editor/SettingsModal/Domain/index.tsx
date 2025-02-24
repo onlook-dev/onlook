@@ -17,6 +17,7 @@ export const DomainTab = observer(() => {
         <div className="space-y-8">
             <BaseDomain />
             <Separator />
+            {/* TODO: Uncomment after freestyle bug is fixed */}
             {/* <CustomDomain /> */}
             <Teaser />
         </div>
