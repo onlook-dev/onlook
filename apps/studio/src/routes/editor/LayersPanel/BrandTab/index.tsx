@@ -94,11 +94,79 @@ const BrandPalletGroup = ({ onRename, onDelete }: BrandPalletGroupProps) => (
                     '#F5F9FF',
                     '#FAFCFF',
                 ].map((color, index) => (
-                    <div
-                        key={`brand-color-${index}`}
-                        className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary"
-                        style={{ backgroundColor: color }}
-                    />
+                    <div key={`brand-color-${index}`} className="relative group">
+                        <div
+                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary"
+                            style={{ backgroundColor: color }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-[85%] w-[85%] p-0 bg-black hover:bg-black rounded-md flex items-center justify-center"
+                                    >
+                                        <Icons.DotsHorizontal className="h-4 w-4 text-white" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    className="rounded-md bg-background p-1 min-w-[140px]"
+                                    align="start"
+                                    side="bottom"
+                                >
+                                    <div className="flex items-start gap-2 px-2 py-1 border-b border-border mb-0.5">
+                                        <div
+                                            className="w-4 h-4 rounded-sm mt-[2px]"
+                                            style={{ backgroundColor: color }}
+                                        />
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-foreground">
+                                                Soft Blue
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {color}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <DropdownMenuItem asChild>
+                                        <Button
+                                            variant="ghost"
+                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                        >
+                                            <span className="flex w-full text-sm items-center">
+                                                <Icons.Pencil className="mr-2 h-4 w-4" />
+                                                <span>Edit color</span>
+                                            </span>
+                                        </Button>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Button
+                                            variant="ghost"
+                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                        >
+                                            <span className="flex w-full text-sm items-center">
+                                                <Icons.Copy className="mr-2 h-4 w-4" />
+                                                <span>Duplicate</span>
+                                            </span>
+                                        </Button>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild>
+                                        <Button
+                                            variant="ghost"
+                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                            onClick={onDelete}
+                                        >
+                                            <span className="flex w-full text-sm items-center">
+                                                <Icons.Trash className="mr-2 h-4 w-4" />
+                                                <span>Delete</span>
+                                            </span>
+                                        </Button>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
                 ))}
                 <Button
                     variant="outline"
@@ -130,7 +198,7 @@ const BrandTab = observer(() => {
                 </div>
                 <Button
                     variant="ghost"
-                    className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary/50 hover:bg-background-secondary/70 rounded-lg"
+                    className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
                 >
                     Add a new group
                 </Button>
