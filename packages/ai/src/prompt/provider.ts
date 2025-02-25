@@ -2,6 +2,7 @@ import type {
     ErrorMessageContext,
     FileMessageContext,
     HighlightMessageContext,
+    ProjectMessageContext,
 } from '@onlook/models/chat';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
@@ -72,6 +73,7 @@ export class PromptProvider {
             files: FileMessageContext[];
             highlights: HighlightMessageContext[];
             errors: ErrorMessageContext[];
+            project?: ProjectMessageContext;
         },
     ) {
         if (message.length === 0) {
@@ -89,12 +91,11 @@ export class PromptProvider {
 
         if (context.errors.length > 0) {
             let errorPrompt = this.getErrorsContent(context.errors);
-            if (errorPrompt) {
-                if (this.shouldWrapXml) {
-                    errorPrompt = wrapXml('errors', errorPrompt);
-                }
-                prompt += errorPrompt;
-            }
+            prompt += errorPrompt;
+        }
+
+        if (context.project) {
+            prompt += this.getProjectContext(context.project);
         }
 
         if (this.shouldWrapXml) {
@@ -137,6 +138,10 @@ export class PromptProvider {
         for (const error of errors) {
             prompt += `${error.content}\n`;
         }
+
+        if (prompt.trim().length > 0 && this.shouldWrapXml) {
+            prompt = wrapXml('errors', prompt);
+        }
         return prompt;
     }
 
@@ -166,5 +171,13 @@ export class PromptProvider {
             index++;
         }
         return prompt;
+    }
+
+    getProjectContext(project: ProjectMessageContext) {
+        const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}.`;
+        if (this.shouldWrapXml) {
+            return wrapXml('project-info', content);
+        }
+        return content;
     }
 }

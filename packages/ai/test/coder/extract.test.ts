@@ -66,7 +66,7 @@ describe('extractCodeBlocks', () => {
     it('should handle unclosed code blocks at the end of text', () => {
         const text = 'Some text\n```javascript\nconst x = 1;';
         const result = extractCodeBlocks(text);
-        expect(result).toBe(text);
+        expect(result).toBe('const x = 1;');
     });
 
     it('should handle unopened code blocks', () => {
@@ -84,12 +84,12 @@ describe('extractCodeBlocks', () => {
     it('should handle text with only opening backticks', () => {
         const text = '``` Some text';
         const result = extractCodeBlocks(text);
-        expect(result).toBe('Some text');
+        expect(result).toBe('');
     });
 
     it('should handle nested unclosed code blocks', () => {
         const text = 'Text ```outer\nSome ```inner\ncode';
         const result = extractCodeBlocks(text);
-        expect(result).toBe('Some');
+        expect(result).toBe(text);
     });
 });

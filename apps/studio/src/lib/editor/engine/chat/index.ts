@@ -1,7 +1,8 @@
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
+import type { ProjectMessageContext } from '@onlook/models/chat';
+import { MessageContextType, StreamRequestType, type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
@@ -103,7 +104,8 @@ export class ChatManager {
 
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const context = this.editorEngine.errors.getMessageContext(errors);
-        const userMessage = this.conversation.addUserMessage(prompt, [context]);
+        const projectContexts = this.getProjectContexts();
+        const userMessage = this.conversation.addUserMessage(prompt, [context, ...projectContexts]);
         this.conversation.current.updateName(errors[0].content);
         if (!userMessage) {
             console.error('Failed to add user message');
@@ -114,6 +116,22 @@ export class ChatManager {
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
+    }
+
+    getProjectContexts(): ProjectMessageContext[] {
+        const folderPath = this.projectsManager.project?.folderPath;
+        if (!folderPath) {
+            return [];
+        }
+
+        return [
+            {
+                type: MessageContextType.PROJECT,
+                content: '',
+                displayName: 'Project',
+                path: folderPath,
+            },
+        ];
     }
 
     async sendChatToAi(requestType: StreamRequestType): Promise<void> {

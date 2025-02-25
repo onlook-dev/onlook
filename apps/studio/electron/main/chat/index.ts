@@ -72,6 +72,8 @@ class LlmManager {
                 requestType,
             });
 
+            console.log('messages', JSON.stringify(messages, null, 2));
+
             const { textStream } = await streamText({
                 model,
                 messages,

@@ -10,5 +10,5 @@ export function extractCodeBlocks(text: string): string {
     const codeBlocks = tokens
         .filter((token: any) => token.type === 'code')
         .map((token: any) => token.text);
-    return codeBlocks.length ? codeBlocks.join('\n') : text;
+    return codeBlocks.length ? codeBlocks.join('\n\n') : text;
 }

@@ -63,10 +63,10 @@ export class ChatCodeManager {
         }
 
         this.chat.suggestions.shouldHide = false;
-        this.editorEngine.errors.clear();
 
         setTimeout(() => {
             this.editorEngine.webviews.reloadWebviews();
+            this.editorEngine.errors.clear();
         }, 500);
         sendAnalytics('apply code change');
     }

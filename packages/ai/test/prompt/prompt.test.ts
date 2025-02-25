@@ -69,6 +69,12 @@ describe('Prompt', () => {
                     displayName: 'test',
                 },
             ],
+            project: {
+                path: 'test',
+                type: MessageContextType.PROJECT,
+                displayName: 'test',
+                content: '',
+            },
         });
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
