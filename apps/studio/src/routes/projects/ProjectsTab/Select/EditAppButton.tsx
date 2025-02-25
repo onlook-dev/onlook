@@ -5,6 +5,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import type { ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ButtonMotion = motion.create(Button);
 
@@ -13,6 +14,7 @@ interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
 }
 
 export default function EditAppButton({ project, ...props }: EditAppButtonProps) {
+    const { t } = useTranslation();
     const projectsManager = useProjectsManager();
 
     const selectProject = (project: Project) => {
@@ -29,7 +31,7 @@ export default function EditAppButton({ project, ...props }: EditAppButtonProps)
             {...props}
         >
             <Icons.PencilPaper />
-            <p> Edit App </p>
+            <p>{t('projects.actions.editApp')}</p>
         </ButtonMotion>
     );
 }
