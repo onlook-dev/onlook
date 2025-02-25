@@ -1,8 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import type { ProjectMessageContext } from '@onlook/models/chat';
-import { MessageContextType, StreamRequestType, type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
@@ -40,7 +39,7 @@ export class ChatManager {
         private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        this.context = new ChatContext(this.editorEngine);
+        this.context = new ChatContext(this.editorEngine, this.projectsManager);
         this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
@@ -103,9 +102,12 @@ export class ChatManager {
         }
 
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
-        const context = this.editorEngine.errors.getMessageContext(errors);
-        const projectContexts = this.getProjectContexts();
-        const userMessage = this.conversation.addUserMessage(prompt, [context, ...projectContexts]);
+        const errorContexts = this.context.getMessageContext(errors);
+        const projectContexts = this.context.getProjectContext();
+        const userMessage = this.conversation.addUserMessage(prompt, [
+            ...errorContexts,
+            ...projectContexts,
+        ]);
         this.conversation.current.updateName(errors[0].content);
         if (!userMessage) {
             console.error('Failed to add user message');
@@ -116,22 +118,6 @@ export class ChatManager {
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
-    }
-
-    getProjectContexts(): ProjectMessageContext[] {
-        const folderPath = this.projectsManager.project?.folderPath;
-        if (!folderPath) {
-            return [];
-        }
-
-        return [
-            {
-                type: MessageContextType.PROJECT,
-                content: '',
-                displayName: 'Project',
-                path: folderPath,
-            },
-        ];
     }
 
     async sendChatToAi(requestType: StreamRequestType): Promise<void> {
