@@ -224,7 +224,7 @@ const ImagesTab = observer(() => {
     };
 
     return (
-        <div className="w-[248px] h-full flex flex-col gap-2 p-0.5 overflow-x-hidden">
+        <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
             <input
                 type="file"
                 accept="image/*"

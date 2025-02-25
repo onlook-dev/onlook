@@ -126,7 +126,7 @@ const LayersTab = observer(() => {
     return (
         <div
             ref={ref}
-            className="flex h-full w-full overflow-hidden text-xs text-active"
+            className="flex h-full w-full overflow-hidden text-xs text-active p-3"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={handleMouseLeaveTree}
         >
