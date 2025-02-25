@@ -6,26 +6,9 @@ import { marked } from 'marked';
  * @returns The extracted code or original text if no code blocks found
  */
 export function extractCodeBlocks(text: string): string {
-    let codeBlocks: string[] = [];
-
-    // Create custom tokenizer to capture code blocks
-    const tokenizer = new marked.Tokenizer();
-
-    // Parse the markdown
     const tokens = marked.lexer(text);
-
-    // Extract code from code blocks
-    tokens.forEach((token) => {
-        if (token.type === 'code') {
-            codeBlocks.push(token.text);
-        }
-    });
-
-    // If no code blocks found, return original text
-    if (codeBlocks.length === 0) {
-        return text;
-    }
-
-    // Join all code blocks with newlines
-    return codeBlocks.join('\n\n');
+    const codeBlocks = tokens
+        .filter((token: any) => token.type === 'code')
+        .map((token: any) => token.text);
+    return codeBlocks.length ? codeBlocks.join('\n') : text;
 }

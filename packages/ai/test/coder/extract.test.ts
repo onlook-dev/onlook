@@ -62,4 +62,34 @@ describe('extractCodeBlocks', () => {
         const result = extractCodeBlocks(text);
         expect(result).toBe('Inline code: `const x = 1;`');
     });
+
+    it('should handle unclosed code blocks at the end of text', () => {
+        const text = 'Some text\n```javascript\nconst x = 1;';
+        const result = extractCodeBlocks(text);
+        expect(result).toBe(text);
+    });
+
+    it('should handle unopened code blocks', () => {
+        const text = 'Some text\nconst x = 1;\n```';
+        const result = extractCodeBlocks(text);
+        expect(result).toBe(text);
+    });
+
+    it('should handle text with only closing backticks', () => {
+        const text = 'Some text ```';
+        const result = extractCodeBlocks(text);
+        expect(result).toBe(text);
+    });
+
+    it('should handle text with only opening backticks', () => {
+        const text = '``` Some text';
+        const result = extractCodeBlocks(text);
+        expect(result).toBe('Some text');
+    });
+
+    it('should handle nested unclosed code blocks', () => {
+        const text = 'Text ```outer\nSome ```inner\ncode';
+        const result = extractCodeBlocks(text);
+        expect(result).toBe('Some');
+    });
 });
