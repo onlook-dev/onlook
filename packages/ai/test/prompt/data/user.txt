@@ -19,4 +19,4 @@ If the same error is being reported multiple times, the previous fix did not wor
 
 NEVER SUGGEST THE "npm run dev" command. Asumme the user is already running the app.
 test
-</errors><project-info>The project is located in the folder: test.</project-info><instruction>test</instruction>
+</errors><project-info>The project is located in the folder: test</project-info><instruction>test</instruction>

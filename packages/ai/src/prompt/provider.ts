@@ -174,7 +174,7 @@ export class PromptProvider {
     }
 
     getProjectContext(project: ProjectMessageContext) {
-        const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}.`;
+        const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}`;
         if (this.shouldWrapXml) {
             return wrapXml('project-info', content);
         }
