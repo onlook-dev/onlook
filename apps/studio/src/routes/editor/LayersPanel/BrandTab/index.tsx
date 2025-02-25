@@ -20,7 +20,7 @@ const ColorRow = ({ label, colors }: ColorRowProps) => (
             {colors.map((color, index) => (
                 <div
                     key={`${label}-${index}`}
-                    className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary"
+                    className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
                     style={{ backgroundColor: color }}
                 />
             ))}
@@ -96,7 +96,7 @@ const BrandPalletGroup = ({ onRename, onDelete }: BrandPalletGroupProps) => (
                 ].map((color, index) => (
                     <div key={`brand-color-${index}`} className="relative group">
                         <div
-                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary"
+                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
                             style={{ backgroundColor: color }}
                         />
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
