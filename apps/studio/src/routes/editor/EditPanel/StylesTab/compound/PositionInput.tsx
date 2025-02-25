@@ -142,12 +142,10 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
         const centerX = (parent.rect.width - element.rect.width) / 2;
         const centerY = (parent.rect.height - element.rect.height) / 2;
 
-        editorEngine.history.startTransaction();
         editorEngine.style.updateMultiple({
             left: `${Math.round(centerX)}px`,
             top: `${Math.round(centerY)}px`,
         });
-        editorEngine.history.commitTransaction();
     };
 
     const checkIfCentered = useCallback(async () => {
