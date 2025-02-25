@@ -1,3 +1,4 @@
+import { extractCodeBlocks } from '@onlook/ai/src/coder';
 import { PAGE_SYSTEM_PROMPT, PromptProvider } from '@onlook/ai/src/prompt';
 import { CreateStage, type CreateCallback, type CreateProjectResponse } from '@onlook/models';
 import {
@@ -94,7 +95,6 @@ export class ProjectCreator {
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
         const systemPrompt = new PromptProvider().getCreatePageSystemPrompt();
-        console.log(systemPrompt);
         const systemMessage: CoreSystemMessage = {
             role: 'system',
             content: systemPrompt,
@@ -112,9 +112,15 @@ export class ProjectCreator {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
         }
 
+        let content = '';
+        const codeBlocks = extractCodeBlocks(response.content);
+        for (const block of codeBlocks) {
+            content += block.code;
+        }
+
         return {
             path: PAGE_SYSTEM_PROMPT.defaultPath,
-            content: response.content,
+            content,
         };
     }
 
