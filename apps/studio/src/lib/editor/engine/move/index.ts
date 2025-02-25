@@ -98,15 +98,10 @@ export class MoveManager {
             if (!newChild) {
                 return;
             }
-            const styleAction = this.editorEngine.style.getUpdateStyleAction(
-                {
-                    position: 'absolute',
-                    left: newChild.styles?.computed?.left || '0px',
-                    top: newChild.styles?.computed?.top || '0px',
-                },
-                [newChild.domId],
-            );
-            this.editorEngine.action.run(styleAction);
+            this.editorEngine.style.updateMultiple({
+                left: newChild.styles?.computed?.left || '0px',
+                top: newChild.styles?.computed?.top || '0px',
+            });
         } else {
             const res: {
                 newIndex: number;

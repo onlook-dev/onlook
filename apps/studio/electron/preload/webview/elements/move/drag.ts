@@ -36,11 +36,13 @@ export function endDragAbsoluteElement(domId: string) {
     const el = elementFromDomId(domId);
     if (!el) {
         console.warn(`End drag element not found: ${domId}`);
+        endAllDrag();
         return;
     }
     const parent = el.parentElement;
     if (!parent) {
         console.warn('End drag parent not found');
+        cleanUpElementAfterDragging(el);
         return;
     }
 
@@ -134,49 +136,27 @@ export function endDrag(domId: string): {
         return null;
     }
 
-    const computedStyle = window.getComputedStyle(el);
-    const isAbsolute = computedStyle.position === 'absolute';
-
-    const newChild = getDomElement(el, true);
+    const newChild = getDomElement(el, false);
     const newParent = getDomElement(parent, false);
 
-    if (isAbsolute) {
-        if (!el.style.left || !el.style.top) {
-            console.warn('End drag element has no left or top style');
-            return null;
-        }
-        if (newChild.styles?.computed) {
-            newChild.styles.computed.position = 'absolute';
-            newChild.styles.computed.left = el.style.left;
-            newChild.styles.computed.top = el.style.top;
-        }
-        removeDragAttributes(el);
-        getOrAssignDomId(el);
-        return {
-            newIndex: -1,
-            child: newChild,
-            parent: newParent,
-        };
-    } else {
-        const stubIndex = getCurrentStubIndex(parent, el);
-        cleanUpElementAfterDragging(el);
-        removeStub();
+    const stubIndex = getCurrentStubIndex(parent, el);
+    cleanUpElementAfterDragging(el);
+    removeStub();
 
-        if (stubIndex === -1) {
-            return null;
-        }
-
-        const elementIndex = Array.from(parent.children).indexOf(el);
-        if (stubIndex === elementIndex) {
-            return null;
-        }
-
-        return {
-            newIndex: stubIndex,
-            child: newChild,
-            parent: newParent,
-        };
+    if (stubIndex === -1) {
+        return null;
     }
+
+    const elementIndex = Array.from(parent.children).indexOf(el);
+    if (stubIndex === elementIndex) {
+        return null;
+    }
+
+    return {
+        newIndex: stubIndex,
+        child: newChild,
+        parent: newParent,
+    };
 }
 
 function prepareElementForDragging(el: HTMLElement) {

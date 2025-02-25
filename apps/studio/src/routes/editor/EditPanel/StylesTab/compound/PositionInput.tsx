@@ -19,23 +19,23 @@ interface LineProps {
 
 const PositionLine = ({ position, isActive, onClick }: LineProps) => {
     const positionStyles = {
-        top: 'top-0.5 w-full ',
-        right: 'right-0.5 h-full',
-        bottom: 'bottom-0.5 w-full',
-        left: 'left-0.5 h-full',
+        top: 'top-0.5 w-[calc(100%-16px)] left-[8px]',
+        right: 'right-0.5 h-[calc(100%-16px)] top-[8px]',
+        bottom: 'bottom-0.5 w-[calc(100%-16px)] left-[8px]',
+        left: 'left-0.5 h-[calc(100%-16px)] top-[8px]',
     };
 
     const lineStyles = {
         top: 'w-1 h-3',
         right: 'h-1 w-3',
         bottom: 'w-1 h-3',
-        left: 'h-1 w-3 ',
+        left: 'h-1 w-3',
     };
 
     return (
         <div
             className={cn(
-                'absolute cursor-pointer transition-colors flex items-center justify-center',
+                'absolute cursor-pointer transition-colors flex items-center justify-center ',
                 positionStyles[position],
             )}
             onClick={() => onClick(position)}
