@@ -12,7 +12,6 @@ import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } 
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
-import Logger from 'electron-log';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -96,8 +95,6 @@ class LlmManager {
         } catch (error: any) {
             try {
                 console.error('Error', error);
-
-                console.error('my Error here here ===', error);
                 if (error?.error?.statusCode) {
                     if (error?.error?.statusCode === 403) {
                         const rateLimitError = JSON.parse(

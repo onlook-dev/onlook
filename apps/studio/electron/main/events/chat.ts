@@ -1,7 +1,7 @@
 import type { ChatConversation, ProjectSuggestions } from '@onlook/models/chat';
 import { StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage, CoreSystemMessage } from 'ai';
+import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
 import Chat from '../chat';
 import { PersistentStorage } from '../storage';

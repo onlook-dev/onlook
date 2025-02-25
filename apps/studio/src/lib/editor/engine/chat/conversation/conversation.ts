@@ -1,9 +1,4 @@
-import {
-    ChatMessageType,
-    MessageContextType,
-    type ChatConversation,
-    type TokenUsage,
-} from '@onlook/models/chat';
+import { ChatMessageType, type ChatConversation, type TokenUsage } from '@onlook/models/chat';
 import { MAX_NAME_LENGTH } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -19,8 +14,7 @@ export class ChatConversationImpl implements ChatConversation {
     createdAt: string;
     updatedAt: string;
     private readonly TOKEN_LIMIT = 150000;
-    // Refactor back to private once we have a better way to test this
-    public readonly SUMMARY_THRESHOLD = this.TOKEN_LIMIT * 0.75; // Trigger at 75% of token limit
+    private readonly SUMMARY_THRESHOLD = this.TOKEN_LIMIT * 0.75; // Trigger at 75% of token limit
     public readonly RETAINED_MESSAGES = 10;
     summaryMessage: AssistantChatMessageImpl | null = null;
     public tokenUsage: TokenUsage = {
