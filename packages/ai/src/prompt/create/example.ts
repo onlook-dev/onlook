@@ -225,14 +225,10 @@ export default function Page() {
 }
 ${FENCE.code.end}`;
 
-export const EXAMPLE_CONVERSATION = [
+export const CREATE_PAGE_EXAMPLE_CONVERSATION = [
     {
         role: 'user',
         content: user1,
-    },
-    {
-        role: 'assistant',
-        content: 'Here is the code for the page:',
     },
     {
         role: 'assistant',

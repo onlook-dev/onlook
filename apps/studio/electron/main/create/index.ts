@@ -181,10 +181,6 @@ ${PAGE_SYSTEM_PROMPT.defaultContent}`;
                     role: 'user',
                     content: promptContent,
                 },
-                {
-                    role: 'assistant',
-                    content: 'Here is the code for the page:',
-                },
             ];
         }
 
@@ -203,10 +199,6 @@ ${PAGE_SYSTEM_PROMPT.defaultContent}`;
                         text: promptContent,
                     },
                 ],
-            },
-            {
-                role: 'assistant',
-                content: 'Here is the code for the page:',
             },
         ];
     }

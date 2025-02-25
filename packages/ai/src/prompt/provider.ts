@@ -4,8 +4,8 @@ import type {
     HighlightMessageContext,
 } from '@onlook/models/chat';
 import { CONTEXT_PROMPTS } from './context';
-import { PAGE_SYSTEM_PROMPT } from './create';
-import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
+import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
+import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
 import { PLATFORM_SIGNATURE } from './signatures';
@@ -22,11 +22,14 @@ export class PromptProvider {
         if (this.shouldWrapXml) {
             prompt += wrapXml('role', EDIT_PROMPTS.system);
             prompt += wrapXml('search-replace-rules', EDIT_PROMPTS.searchReplaceRules);
-            prompt += wrapXml('example-conversation', this.getExampleConversation());
+            prompt += wrapXml(
+                'example-conversation',
+                this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
+            );
         } else {
             prompt += EDIT_PROMPTS.system;
             prompt += EDIT_PROMPTS.searchReplaceRules;
-            prompt += this.getExampleConversation();
+            prompt += this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
         }
         prompt = prompt.replace(PLATFORM_SIGNATURE, platform);
         return prompt;
@@ -34,15 +37,30 @@ export class PromptProvider {
 
     getCreatePageSystemPrompt() {
         let prompt = '';
-        prompt += wrapXml('role', PAGE_SYSTEM_PROMPT.role);
-        prompt += wrapXml('rules', PAGE_SYSTEM_PROMPT.rules);
-        prompt += wrapXml('example-conversation', this.getExampleConversation());
+
+        if (this.shouldWrapXml) {
+            prompt += wrapXml('role', PAGE_SYSTEM_PROMPT.role);
+            prompt += wrapXml('rules', PAGE_SYSTEM_PROMPT.rules);
+            prompt += wrapXml(
+                'example-conversation',
+                this.getExampleConversation(CREATE_PAGE_EXAMPLE_CONVERSATION),
+            );
+        } else {
+            prompt += PAGE_SYSTEM_PROMPT.role;
+            prompt += PAGE_SYSTEM_PROMPT.rules;
+            prompt += this.getExampleConversation(CREATE_PAGE_EXAMPLE_CONVERSATION);
+        }
         return prompt;
     }
 
-    getExampleConversation() {
+    getExampleConversation(
+        conversation: {
+            role: string;
+            content: string;
+        }[],
+    ) {
         let prompt = '';
-        for (const message of EXAMPLE_CONVERSATION) {
+        for (const message of conversation) {
             prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
         }
         return prompt;

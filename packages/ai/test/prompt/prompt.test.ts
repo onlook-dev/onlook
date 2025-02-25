@@ -1,6 +1,7 @@
 import { MessageContextType } from '@onlook/models/chat';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
+import { SEARCH_REPLACE_EXAMPLE_CONVERSATION } from 'src/prompt/edit';
 import { PromptProvider } from '../../src/prompt/provider';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -11,7 +12,7 @@ describe('Prompt', () => {
     const SHOULD_WRITE_USER_MESSAGE = false;
     const SHOULD_WRITE_FILE_CONTENT = false;
     const SHOULD_WRITE_HIGHLIGHTS = false;
-    const SHOULD_WRITE_CREATE_PAGE_SYSTEM = true;
+    const SHOULD_WRITE_CREATE_PAGE_SYSTEM = false;
 
     test('System prompt should be the same', async () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
@@ -28,7 +29,9 @@ describe('Prompt', () => {
     test('Examples should be the same', async () => {
         const examplesPath = path.resolve(__dirname, './data/examples.txt');
 
-        const prompt = new PromptProvider().getExampleConversation();
+        const prompt = new PromptProvider().getExampleConversation(
+            SEARCH_REPLACE_EXAMPLE_CONVERSATION,
+        );
         if (SHOULD_WRITE_EXAMPLES) {
             await Bun.write(examplesPath, prompt);
         }
