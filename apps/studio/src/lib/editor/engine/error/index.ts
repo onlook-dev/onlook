@@ -1,6 +1,4 @@
 import type { ProjectsManager } from '@/lib/projects';
-import type { ErrorMessageContext } from '@onlook/models/chat';
-import { MessageContextType } from '@onlook/models/chat';
 import { type ParsedError, compareErrors } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -70,18 +68,6 @@ export class ErrorManager {
             this.terminalErrors = [...existingErrors, error];
         }
         this.shouldShowErrors = true;
-    }
-
-    getMessageContext(errors: ParsedError[]): ErrorMessageContext {
-        // TODO: Handle these better
-        const content = errors
-            .map((e) => `Source: ${e.sourceId}\nContent: ${e.content}`)
-            .join('\n');
-        return {
-            type: MessageContextType.ERROR,
-            content,
-            displayName: 'Error',
-        };
     }
 
     clear() {

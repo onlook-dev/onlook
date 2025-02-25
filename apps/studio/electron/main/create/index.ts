@@ -1,4 +1,5 @@
-import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
+import { extractCodeBlocks } from '@onlook/ai/src/coder';
+import { PAGE_SYSTEM_PROMPT, PromptProvider } from '@onlook/ai/src/prompt';
 import { CreateStage, type CreateCallback, type CreateProjectResponse } from '@onlook/models';
 import {
     StreamRequestType,
@@ -91,14 +92,12 @@ export class ProjectCreator {
             throw new Error('No active creation process');
         }
 
-        const defaultPagePath = 'app/page.tsx';
-
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
-
+        const systemPrompt = new PromptProvider().getCreatePageSystemPrompt();
         const systemMessage: CoreSystemMessage = {
             role: 'system',
-            content: PAGE_SYSTEM_PROMPT,
+            content: systemPrompt,
             experimental_providerMetadata: {
                 anthropic: { cacheControl: { type: 'ephemeral' } },
             },
@@ -113,9 +112,11 @@ export class ProjectCreator {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
         }
 
+        const content = extractCodeBlocks(response.content);
+
         return {
-            path: defaultPagePath,
-            content: response.content,
+            path: PAGE_SYSTEM_PROMPT.defaultPath,
+            content,
         };
     }
 
@@ -167,7 +168,7 @@ export class ProjectCreator {
     private getMessages(prompt: string, images: ImageMessageContext[]): CoreMessage[] {
         const promptContent = `${images.length > 0 ? 'Refer to the images above. ' : ''}Create a landing page that matches this description: ${prompt}
 Use this as the starting template:
-${DEFAULT_PAGE_CONTENT}`;
+${PAGE_SYSTEM_PROMPT.defaultContent}`;
 
         // For text-only messages
         if (images.length === 0) {

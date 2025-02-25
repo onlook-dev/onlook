@@ -33,6 +33,7 @@
     "dependencies": {
         "diff-match-patch": "^1.0.5",
         "fg": "^0.0.3",
+        "marked": "^15.0.7",
         "simple-git": "^3.27.0"
     }
 }
