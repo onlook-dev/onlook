@@ -17,14 +17,7 @@ import {
 import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromDomId } from './elements/dom/remove';
 import { getElementIndex } from './elements/move';
-import {
-    drag,
-    endAllDrag,
-    endDrag,
-    endDragAbsoluteElement,
-    startDrag,
-    startDragAbsoluteElement,
-} from './elements/move/drag';
+import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { setWebviewId } from './state';
@@ -59,10 +52,8 @@ export function setApi() {
 
         // Drag
         startDrag,
-        startDragAbsoluteElement,
         drag,
         endDrag,
-        endDragAbsoluteElement,
         getElementIndex,
         endAllDrag,
 
