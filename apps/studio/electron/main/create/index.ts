@@ -112,11 +112,10 @@ export class ProjectCreator {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
         }
 
-        let content = '';
-        const codeBlocks = extractCodeBlocks(response.content);
-        for (const block of codeBlocks) {
-            content += block.code;
-        }
+        const content = extractCodeBlocks(response.content);
+
+        console.log(response);
+        console.log(content);
 
         return {
             path: PAGE_SYSTEM_PROMPT.defaultPath,
