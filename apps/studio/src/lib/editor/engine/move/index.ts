@@ -24,12 +24,6 @@ export class MoveManager {
             return;
         }
 
-        const computedStyle: Record<string, string> = await webview.executeJavaScript(
-            `window.api?.getComputedStyleByDomId('${el.domId}')`,
-        );
-
-        const isAbsolute = computedStyle?.position === 'absolute';
-
         this.dragOrigin = position;
         this.dragTarget = el;
         this.originalIndex = await webview.executeJavaScript(

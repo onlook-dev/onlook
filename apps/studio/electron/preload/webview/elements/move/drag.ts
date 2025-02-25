@@ -97,7 +97,6 @@ export function endDrag(domId: string): {
             newChild.styles.computed.top = el.style.top;
         }
         removeDragAttributes(el);
-        getOrAssignDomId(el);
         return {
             newIndex: -1,
             child: newChild,
