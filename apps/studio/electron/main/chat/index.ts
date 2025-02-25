@@ -84,6 +84,7 @@ class LlmManager {
                     listAllFiles: listFilesTool,
                     readFile: readFileTool,
                 },
+                maxTokens: 64000,
             });
 
             let fullText = '';
