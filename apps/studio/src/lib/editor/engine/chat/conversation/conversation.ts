@@ -71,19 +71,18 @@ export class ChatConversationImpl implements ChatConversation {
 
         if (this.summaryMessage) {
             messages.push(this.summaryMessage.toCoreMessage());
+            const retainedMessages = this.messages.slice(-this.RETAINED_MESSAGES);
+            messages.push(...retainedMessages.map((m) => m.toCoreMessage()));
+        } else {
+            messages.push(...this.messages.map((m) => m.toCoreMessage()));
         }
-
-        const retainedMessages = this.messages.slice(-this.RETAINED_MESSAGES);
-
-        messages.push(...retainedMessages.map((m) => m.toCoreMessage()));
-        12;
 
         return messages;
     }
 
     setSummaryMessage(content: string) {
         this.summaryMessage = new AssistantChatMessageImpl(
-            `Technical Summary of Previous Conversation:\n${content}`,
+            `Technical Summary of Previous Conversations:\n${content}`,
             false,
         );
     }
