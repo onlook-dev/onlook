@@ -29,16 +29,22 @@ export class MoveManager {
         );
 
         const isAbsolute = computedStyle?.position === 'absolute';
-
         this.dragOrigin = position;
         this.dragTarget = el;
-        this.originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${el.domId}')`,
-        );
-        if (this.originalIndex === null || this.originalIndex === -1) {
-            this.clear();
-            console.warn('Start drag failed, original index is null or -1');
-            return;
+
+        if (isAbsolute) {
+            this.originalIndex = await webview.executeJavaScript(
+                `window.api?.startDragAbsoluteElement('${el.domId}')`,
+            );
+        } else {
+            this.originalIndex = await webview.executeJavaScript(
+                `window.api?.startDrag('${el.domId}')`,
+            );
+            if (this.originalIndex === null || this.originalIndex === -1) {
+                this.clear();
+                console.warn('Start drag failed, original index is null or -1');
+                return;
+            }
         }
     }
 
@@ -83,41 +89,48 @@ export class MoveManager {
             return;
         }
 
-        const res: {
-            newIndex: number;
-            child: DomElement;
-            parent: DomElement;
-        } | null = await webview.executeJavaScript(
-            `window.api?.endDrag('${this.dragTarget.domId}')`,
-        );
+        const isAbsolute = this.dragTarget.styles?.computed?.position === 'absolute';
 
-        if (res) {
-            const { child, parent, newIndex } = res;
-            const position = child.styles?.computed?.position || 'static';
+        if (isAbsolute) {
+            const newChild: DomElement | null = await webview.executeJavaScript(
+                `window.api?.endDragAbsoluteElement('${this.dragTarget.domId}')`,
+            );
+            if (!newChild) {
+                return;
+            }
+            const styleAction = this.editorEngine.style.getUpdateStyleAction(
+                {
+                    position: 'absolute',
+                    left: newChild.styles?.computed?.left || '0px',
+                    top: newChild.styles?.computed?.top || '0px',
+                },
+                [newChild.domId],
+            );
+            this.editorEngine.action.run(styleAction);
+        } else {
+            const res: {
+                newIndex: number;
+                child: DomElement;
+                parent: DomElement;
+            } | null = await webview.executeJavaScript(
+                `window.api?.endDrag('${this.dragTarget.domId}')`,
+            );
 
-            if (position === 'absolute') {
-                // Handle absolute positioning
-                const styleAction = this.editorEngine.style.getUpdateStyleAction(
-                    {
-                        position: 'absolute',
-                        left: child.styles?.computed?.left || '0px',
-                        top: child.styles?.computed?.top || '0px',
-                    },
-                    [child.domId],
-                );
-                this.editorEngine.action.run(styleAction);
-            } else {
-                // Handle normal flow positioning
-                const moveAction = this.createMoveAction(
-                    webview.id,
-                    child,
-                    parent,
-                    newIndex,
-                    this.originalIndex || 0,
-                );
-                this.editorEngine.action.run(moveAction);
+            if (res) {
+                const { child, parent, newIndex } = res;
+                if (newIndex !== this.originalIndex) {
+                    const moveAction = this.createMoveAction(
+                        webview.id,
+                        child,
+                        parent,
+                        newIndex,
+                        this.originalIndex,
+                    );
+                    this.editorEngine.action.run(moveAction);
+                }
             }
         }
+
         this.clear();
     }
 

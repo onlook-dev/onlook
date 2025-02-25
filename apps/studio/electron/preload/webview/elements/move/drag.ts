@@ -6,6 +6,60 @@ import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 
+export function startDragAbsoluteElement(domId: string) {
+    const el = elementFromDomId(domId);
+    if (!el) {
+        console.warn(`Start drag element not found: ${domId}`);
+        return null;
+    }
+    const parent = el.parentElement;
+    if (!parent) {
+        console.warn('Start drag parent not found');
+        return null;
+    }
+
+    const computedStyle = window.getComputedStyle(el);
+    const isAbsolute = computedStyle.position === 'absolute';
+
+    if (!isAbsolute) {
+        console.warn('Element is not absolute');
+        return null;
+    }
+
+    const pos = getAbsolutePosition(el);
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION, JSON.stringify(pos));
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
+    return pos;
+}
+
+export function endDragAbsoluteElement(domId: string) {
+    const el = elementFromDomId(domId);
+    if (!el) {
+        console.warn(`End drag element not found: ${domId}`);
+        return;
+    }
+    const parent = el.parentElement;
+    if (!parent) {
+        console.warn('End drag parent not found');
+        return;
+    }
+
+    const newChild = getDomElement(el, true);
+
+    if (!el.style.left || !el.style.top) {
+        console.warn('End drag element has no left or top style');
+        return null;
+    }
+    if (newChild.styles?.computed) {
+        newChild.styles.computed.position = 'absolute';
+        newChild.styles.computed.left = el.style.left;
+        newChild.styles.computed.top = el.style.top;
+    }
+    removeDragAttributes(el);
+    getOrAssignDomId(el);
+    return newChild;
+}
+
 export function startDrag(domId: string): number | null {
     const el = elementFromDomId(domId);
     if (!el) {
