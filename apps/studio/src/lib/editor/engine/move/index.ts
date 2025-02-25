@@ -2,12 +2,14 @@ import type { MoveElementAction } from '@onlook/models/actions';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type React from 'react';
 import type { EditorEngine } from '..';
+import { stringToParsedValue } from '../../styles/numberUnit';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
     dragTarget: DomElement | undefined;
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 5;
+    isDraggingAbsolute = false;
 
     constructor(private editorEngine: EditorEngine) {}
 
@@ -33,9 +35,13 @@ export class MoveManager {
         this.dragTarget = el;
 
         if (isAbsolute) {
-            this.originalIndex = await webview.executeJavaScript(
-                `window.api?.startDragAbsoluteElement('${el.domId}')`,
-            );
+            // this.originalIndex = await webview.executeJavaScript(
+            //     `window.api?.startDragAbsoluteElement('${el.domId}')`,
+            // );
+            console.log('start drag absolute');
+            this.editorEngine.history.startTransaction();
+            this.isDraggingAbsolute = true;
+            return;
         } else {
             this.originalIndex = await webview.executeJavaScript(
                 `window.api?.startDrag('${el.domId}')`,
@@ -67,6 +73,27 @@ export class MoveManager {
         const dx = x - this.dragOrigin.x;
         const dy = y - this.dragOrigin.y;
 
+        const isAbsolute = this.dragTarget.styles?.computed?.position === 'absolute';
+        if (isAbsolute) {
+            console.log('drag absolute');
+            this.editorEngine.style.updateMultiple({
+                left:
+                    parseFloat(
+                        stringToParsedValue(this.dragTarget.styles?.computed?.left || '0px')
+                            .numberVal,
+                    ) +
+                    dx +
+                    'px',
+                top:
+                    parseFloat(
+                        stringToParsedValue(this.dragTarget.styles?.computed?.top || '0px')
+                            .numberVal,
+                    ) +
+                    dy +
+                    'px',
+            });
+            return;
+        }
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
             webview.executeJavaScript(
@@ -76,7 +103,8 @@ export class MoveManager {
     }
 
     async end(e: React.MouseEvent<HTMLDivElement>) {
-        if (this.originalIndex === undefined || !this.dragTarget) {
+        console.log('end drag');
+        if (this.originalIndex === undefined || !this.dragTarget || !this.isDraggingAbsolute) {
             this.clear();
             this.endAllDrag();
             return;
@@ -89,19 +117,11 @@ export class MoveManager {
             return;
         }
 
-        const isAbsolute = this.dragTarget.styles?.computed?.position === 'absolute';
-
-        if (isAbsolute) {
-            const newChild: DomElement | null = await webview.executeJavaScript(
-                `window.api?.endDragAbsoluteElement('${this.dragTarget.domId}')`,
-            );
-            if (!newChild) {
-                return;
-            }
-            this.editorEngine.style.updateMultiple({
-                left: newChild.styles?.computed?.left || '0px',
-                top: newChild.styles?.computed?.top || '0px',
-            });
+        if (this.isDraggingAbsolute) {
+            console.log('end drag absolute');
+            this.editorEngine.history.commitTransaction();
+            this.isDraggingAbsolute = false;
+            return;
         } else {
             const res: {
                 newIndex: number;
