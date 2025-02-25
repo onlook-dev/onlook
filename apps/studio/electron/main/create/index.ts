@@ -114,9 +114,6 @@ export class ProjectCreator {
 
         const content = extractCodeBlocks(response.content);
 
-        console.log(response);
-        console.log(content);
-
         return {
             path: PAGE_SYSTEM_PROMPT.defaultPath,
             content,
