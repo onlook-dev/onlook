@@ -41,7 +41,6 @@ export class InsertManager {
                         width: '100px',
                         height: '100px',
                         backgroundColor: colors.blue[100],
-                        position: 'absolute',
                     },
                     textContent: null,
                 };

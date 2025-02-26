@@ -38,6 +38,7 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
     );
     const left = pos.left + dx - window.scrollX;
     const top = pos.top + dy - window.scrollY;
+
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
     el.style.width = styles.width + 1;
