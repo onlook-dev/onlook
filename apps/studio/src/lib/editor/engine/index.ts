@@ -31,7 +31,7 @@ export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _plansOpen: boolean = false;
     private _settingsOpen: boolean = false;
-    private _hotkeysOpen: boolean = false;
+    private _hotkeysOpen: boolean = true;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
 

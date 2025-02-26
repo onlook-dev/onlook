@@ -1,10 +1,11 @@
 import Canvas from './Canvas';
 import EditPanel from './EditPanel';
+import HotkeysModal from './HotkeysModal';
 import LayersPanel from './LayersPanel';
+import SettingsModal from './SettingsModal';
 import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
-import SettingsModal from './SettingsModal';
-import PricingPage from './TopBar/Subscription/PricingPage';
+import PricingModal from './TopBar/Subscription/PricingPage';
 import WebviewArea from './WebviewArea';
 
 function ProjectEditor() {
@@ -31,8 +32,9 @@ function ProjectEditor() {
                     <EditorTopBar />
                 </div>
             </div>
-            <PricingPage />
+            <PricingModal />
             <SettingsModal />
+            <HotkeysModal />
         </>
     );
 }

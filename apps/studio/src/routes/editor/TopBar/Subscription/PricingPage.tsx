@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PricingCard } from './PricingCard';
 
-export const PricingPage = observer(() => {
+export const PricingModal = observer(() => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
     const { t, i18n } = useTranslation();
@@ -277,4 +277,4 @@ export const PricingPage = observer(() => {
     );
 });
 
-export default PricingPage;
+export default PricingModal;
