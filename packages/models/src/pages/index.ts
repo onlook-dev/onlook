@@ -4,4 +4,5 @@ export interface PageNode {
     name: string;
     children?: PageNode[];
     isActive: boolean;
+    isRoot?: boolean;
 }

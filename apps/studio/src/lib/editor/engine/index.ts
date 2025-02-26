@@ -33,7 +33,7 @@ export class EditorEngine {
     private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.PROJECT;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -198,9 +198,6 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        this._editorMode = EditorMode.DESIGN;
-        this._editorPanelTab = EditorTabValue.STYLES;
-        this._settingsTab = SettingsTabValue.DOMAIN;
         this._settingsOpen = false;
         this._plansOpen = false;
     }
@@ -350,7 +347,10 @@ export class EditorEngine {
                 width: currentFrame.dimension.width,
                 height: currentFrame.dimension.height,
             },
-            position: currentFrame.position,
+            position: {
+                x: currentFrame.position.x + currentFrame.dimension.width + 100,
+                y: currentFrame.position.y,
+            },
             aspectRatioLocked: currentFrame.aspectRatioLocked,
             orientation: currentFrame.orientation,
             device: currentFrame.device,

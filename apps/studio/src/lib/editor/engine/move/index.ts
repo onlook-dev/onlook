@@ -8,6 +8,7 @@ export class MoveManager {
     dragTarget: DomElement | undefined;
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 5;
+    isDraggingAbsolute = false;
 
     constructor(private editorEngine: EditorEngine) {}
 
@@ -23,11 +24,18 @@ export class MoveManager {
             console.warn('Element not selected, cannot start drag');
             return;
         }
+
         this.dragOrigin = position;
         this.dragTarget = el;
-        this.originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${el.domId}')`,
-        );
+        if (el.styles?.computed?.position === 'absolute') {
+            this.isDraggingAbsolute = true;
+            this.editorEngine.history.startTransaction();
+            return;
+        } else {
+            this.originalIndex = await webview.executeJavaScript(
+                `window.api?.startDrag('${el.domId}')`,
+            );
+        }
 
         if (this.originalIndex === null || this.originalIndex === -1) {
             this.clear();
@@ -55,6 +63,11 @@ export class MoveManager {
         const dx = x - this.dragOrigin.x;
         const dy = y - this.dragOrigin.y;
 
+        if (this.isDraggingAbsolute) {
+            this.handleDragAbsolute(this.dragOrigin, this.dragTarget, x, y);
+            return;
+        }
+
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
             webview.executeJavaScript(
@@ -63,7 +76,34 @@ export class MoveManager {
         }
     }
 
+    handleDragAbsolute(dragOrigin: ElementPosition, dragTarget: DomElement, x: number, y: number) {
+        const initialOffset = {
+            x: dragOrigin.x - dragTarget.rect.x,
+            y: dragOrigin.y - dragTarget.rect.y,
+        };
+
+        const parentRect = dragTarget.parent?.rect;
+        if (!parentRect) {
+            return;
+        }
+
+        const newX = Math.round(x - parentRect.x - initialOffset.x);
+        const newY = Math.round(y - parentRect.y - initialOffset.y);
+
+        this.editorEngine.overlay.clear();
+        this.editorEngine.style.updateMultiple({
+            left: `${newX}px`,
+            top: `${newY}px`,
+        });
+    }
+
     async end(e: React.MouseEvent<HTMLDivElement>) {
+        if (this.isDraggingAbsolute) {
+            this.editorEngine.history.commitTransaction();
+            this.isDraggingAbsolute = false;
+            this.clear();
+        }
+
         if (this.originalIndex === undefined || !this.dragTarget) {
             this.clear();
             this.endAllDrag();
@@ -86,7 +126,7 @@ export class MoveManager {
         );
 
         if (res) {
-            const { newIndex, child, parent } = res;
+            const { child, parent, newIndex } = res;
             if (newIndex !== this.originalIndex) {
                 const moveAction = this.createMoveAction(
                     webview.id,

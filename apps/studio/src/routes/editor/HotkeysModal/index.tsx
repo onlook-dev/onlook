@@ -12,22 +12,9 @@ const HotkeysModal = observer(() => {
     const editorEngine = useEditorEngine();
 
     const categories = {
-        Tools: [
-            Hotkey.SELECT,
-            Hotkey.PAN,
-            Hotkey.INTERACT,
-            Hotkey.INSERT_DIV,
-            Hotkey.INSERT_TEXT,
-        ],
-        AI: [
-            Hotkey.ADD_AI_CHAT,
-            Hotkey.NEW_AI_CHAT,
-        ],
-        View: [
-            Hotkey.ZOOM_FIT,
-            Hotkey.ZOOM_IN,
-            Hotkey.ZOOM_OUT,
-        ],
+        Tools: [Hotkey.SELECT, Hotkey.PAN, Hotkey.INTERACT, Hotkey.INSERT_DIV, Hotkey.INSERT_TEXT],
+        AI: [Hotkey.ADD_AI_CHAT, Hotkey.NEW_AI_CHAT],
+        View: [Hotkey.ZOOM_FIT, Hotkey.ZOOM_IN, Hotkey.ZOOM_OUT],
         Edit: [
             Hotkey.UNDO,
             Hotkey.REDO,
@@ -41,12 +28,7 @@ const HotkeysModal = observer(() => {
             Hotkey.MOVE_LAYER_UP,
             Hotkey.MOVE_LAYER_DOWN,
         ],
-        System: [
-            Hotkey.ESCAPE,
-            Hotkey.BACKSPACE,
-            Hotkey.RELOAD_APP,
-            Hotkey.OPEN_DEV_TOOL,
-        ],
+        System: [Hotkey.ESCAPE, Hotkey.BACKSPACE, Hotkey.RELOAD_APP, Hotkey.OPEN_DEV_TOOL],
     };
 
     return (
@@ -91,20 +73,29 @@ const HotkeysModal = observer(() => {
                                     <div className="grid grid-cols-3 gap-10">
                                         {/* Modes Column */}
                                         <div>
-                                            <h3 className="text-sm font-medium text-muted-foreground mb-4">Actions</h3>
+                                            <h3 className="text-sm font-medium text-muted-foreground mb-4">
+                                                Actions
+                                            </h3>
                                             <div className="space-y-3">
                                                 {categories.Edit.map((hotkey) => (
-                                                    <div key={hotkey.command} className="flex justify-between items-center">
-                                                        <span className="text-sm text-popover-foreground">{hotkey.description}</span>
+                                                    <div
+                                                        key={hotkey.command}
+                                                        className="flex justify-between items-center"
+                                                    >
+                                                        <span className="text-sm text-popover-foreground">
+                                                            {hotkey.description}
+                                                        </span>
                                                         <div className="flex items-center gap-1">
-                                                            {hotkey.readableCommand.split(' ').map((key) => (
-                                                                <Kbd 
-                                                                    key={`${hotkey.command}-${key}`} 
-                                                                    className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
-                                                                >
-                                                                    {key}
-                                                                </Kbd>
-                                                            ))}
+                                                            {hotkey.readableCommand
+                                                                .split(' ')
+                                                                .map((key) => (
+                                                                    <Kbd
+                                                                        key={`${hotkey.command}-${key}`}
+                                                                        className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
+                                                                    >
+                                                                        {key}
+                                                                    </Kbd>
+                                                                ))}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -115,20 +106,31 @@ const HotkeysModal = observer(() => {
                                         <div className="space-y-8">
                                             {['View', 'System'].map((category) => (
                                                 <div key={category}>
-                                                    <h3 className="text-sm font-medium text-muted-foreground mb-4">{category}</h3>
+                                                    <h3 className="text-sm font-medium text-muted-foreground mb-4">
+                                                        {category}
+                                                    </h3>
                                                     <div className="space-y-3">
-                                                        {categories[category as keyof typeof categories].map((hotkey) => (
-                                                            <div key={hotkey.command} className="flex justify-between items-center">
-                                                                <span className="text-sm text-popover-foreground">{hotkey.description}</span>
+                                                        {categories[
+                                                            category as keyof typeof categories
+                                                        ].map((hotkey) => (
+                                                            <div
+                                                                key={hotkey.command}
+                                                                className="flex justify-between items-center"
+                                                            >
+                                                                <span className="text-sm text-popover-foreground">
+                                                                    {hotkey.description}
+                                                                </span>
                                                                 <div className="flex items-center gap-1">
-                                                                    {hotkey.readableCommand.split(' ').map((key) => (
-                                                                        <Kbd 
-                                                                            key={`${hotkey.command}-${key}`} 
-                                                                            className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
-                                                                        >
-                                                                            {key}
-                                                                        </Kbd>
-                                                                    ))}
+                                                                    {hotkey.readableCommand
+                                                                        .split(' ')
+                                                                        .map((key) => (
+                                                                            <Kbd
+                                                                                key={`${hotkey.command}-${key}`}
+                                                                                className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
+                                                                            >
+                                                                                {key}
+                                                                            </Kbd>
+                                                                        ))}
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -141,20 +143,31 @@ const HotkeysModal = observer(() => {
                                         <div className="space-y-8">
                                             {['Tools', 'AI'].map((category) => (
                                                 <div key={category}>
-                                                    <h3 className="text-sm font-medium text-muted-foreground mb-4">{category}</h3>
+                                                    <h3 className="text-sm font-medium text-muted-foreground mb-4">
+                                                        {category}
+                                                    </h3>
                                                     <div className="space-y-3">
-                                                        {categories[category as keyof typeof categories].map((hotkey) => (
-                                                            <div key={hotkey.command} className="flex justify-between items-center">
-                                                                <span className="text-sm text-popover-foreground">{hotkey.description}</span>
+                                                        {categories[
+                                                            category as keyof typeof categories
+                                                        ].map((hotkey) => (
+                                                            <div
+                                                                key={hotkey.command}
+                                                                className="flex justify-between items-center"
+                                                            >
+                                                                <span className="text-sm text-popover-foreground">
+                                                                    {hotkey.description}
+                                                                </span>
                                                                 <div className="flex items-center gap-1">
-                                                                    {hotkey.readableCommand.split(' ').map((key) => (
-                                                                        <Kbd 
-                                                                            key={`${hotkey.command}-${key}`} 
-                                                                            className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
-                                                                        >
-                                                                            {key}
-                                                                        </Kbd>
-                                                                    ))}
+                                                                    {hotkey.readableCommand
+                                                                        .split(' ')
+                                                                        .map((key) => (
+                                                                            <Kbd
+                                                                                key={`${hotkey.command}-${key}`}
+                                                                                className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
+                                                                            >
+                                                                                {key}
+                                                                            </Kbd>
+                                                                        ))}
                                                                 </div>
                                                             </div>
                                                         ))}
