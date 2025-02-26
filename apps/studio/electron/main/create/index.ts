@@ -151,7 +151,7 @@ export class ProjectCreator {
                 progress = 40;
                 break;
             case CreateStage.COMPLETE:
-                progress = 80;
+                progress = 50;
                 this.emitPromptProgress('Project created! Generating page...', progress);
                 return;
         }
