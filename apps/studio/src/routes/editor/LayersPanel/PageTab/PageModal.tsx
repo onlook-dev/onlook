@@ -1,22 +1,22 @@
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from '@onlook/ui/dialog';
-import { Button } from '@onlook/ui/button';
-import { Input } from '@onlook/ui/input';
-import { cn } from '@onlook/ui/utils';
-import { useEffect, useMemo, useState } from 'react';
+import { useEditorEngine } from '@/components/Context';
 import {
     doesRouteExist,
     normalizeRoute,
     validateNextJsRoute,
 } from '@/lib/editor/engine/pages/helper';
-import { useEditorEngine } from '@/components/Context';
+import { Button } from '@onlook/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@onlook/ui/dialog';
+import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/use-toast';
+import { cn } from '@onlook/ui/utils';
+import { useEffect, useMemo, useState } from 'react';
 
 interface PageModalProps {
     open: boolean;
@@ -44,6 +44,7 @@ export function PageModal({
         }
         return normalizeRoute(`${baseRoute}/${pageName}`);
     }, [baseRoute, pageName, mode]);
+    const [isComposing, setIsComposing] = useState(false);
 
     const title = mode === 'create' ? 'Create a New Page' : 'Rename Page';
     const buttonText = mode === 'create' ? 'Create Page' : 'Rename Page';
@@ -128,6 +129,13 @@ export function PageModal({
                             )}
                             placeholder="about-us or [blog] for a dynamic page"
                             disabled={isLoading}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !isComposing) {
+                                    handleSubmit();
+                                }
+                            }}
+                            onCompositionStart={() => setIsComposing(true)}
+                            onCompositionEnd={() => setIsComposing(false)}
                         />
                         {warning && (
                             <p className="text-sm text-yellow-300 flex items-center gap-2">
@@ -145,7 +153,11 @@ export function PageModal({
                     >
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit} disabled={isLoading || !!warning || !pageName}>
+                    <Button
+                        variant="outline"
+                        onClick={handleSubmit}
+                        disabled={isLoading || !!warning || !pageName}
+                    >
                         {isLoading ? <>{loadingText}</> : buttonText}
                     </Button>
                 </DialogFooter>
