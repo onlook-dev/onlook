@@ -68,11 +68,13 @@ export class MoveManager {
                 x: this.dragOrigin.x - this.dragTarget.rect.x,
                 y: this.dragOrigin.y - this.dragTarget.rect.y,
             };
+            this.editorEngine.overlay.clear();
 
             this.editorEngine.style.updateMultiple({
                 left: `${Math.round(x - initialOffset.x)}px`,
                 top: `${Math.round(y - initialOffset.y)}px`,
             });
+
             return;
         }
 
@@ -85,7 +87,13 @@ export class MoveManager {
     }
 
     async end(e: React.MouseEvent<HTMLDivElement>) {
-        if (!this.dragTarget || !this.isDraggingAbsolute) {
+        if (this.isDraggingAbsolute) {
+            this.editorEngine.history.commitTransaction();
+            this.isDraggingAbsolute = false;
+            this.clear();
+        }
+
+        if (this.originalIndex === undefined || !this.dragTarget) {
             this.clear();
             this.endAllDrag();
             return;
@@ -98,33 +106,27 @@ export class MoveManager {
             return;
         }
 
-        if (this.isDraggingAbsolute) {
-            this.editorEngine.history.commitTransaction();
-            this.isDraggingAbsolute = false;
-            this.clear();
-        } else {
-            const res: {
-                newIndex: number;
-                child: DomElement;
-                parent: DomElement;
-            } | null = await webview.executeJavaScript(
-                `window.api?.endDrag('${this.dragTarget.domId}')`,
+        const res: {
+            newIndex: number;
+            child: DomElement;
+            parent: DomElement;
+        } | null = await webview.executeJavaScript(
+            `window.api?.endDrag('${this.dragTarget.domId}')`,
+        );
+
+        if (res) {
+            const { child, parent, newIndex } = res;
+
+            const moveAction = this.createMoveAction(
+                webview.id,
+                child,
+                parent,
+                newIndex,
+                this.originalIndex || 0,
             );
-
-            if (res) {
-                const { child, parent, newIndex } = res;
-
-                const moveAction = this.createMoveAction(
-                    webview.id,
-                    child,
-                    parent,
-                    newIndex,
-                    this.originalIndex || 0,
-                );
-                this.editorEngine.action.run(moveAction);
-            }
-            this.clear();
+            this.editorEngine.action.run(moveAction);
         }
+        this.clear();
     }
 
     endAllDrag() {

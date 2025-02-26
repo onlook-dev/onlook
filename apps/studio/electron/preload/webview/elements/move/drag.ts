@@ -33,11 +33,9 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         return;
     }
     const styles = window.getComputedStyle(el);
-
     const pos = JSON.parse(
         el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
     );
-
     const left = pos.left + dx - window.scrollX;
     const top = pos.top + dy - window.scrollY;
     el.style.left = `${left}px`;
@@ -45,6 +43,7 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
     el.style.width = styles.width + 1;
     el.style.height = styles.height + 1;
     el.style.position = 'fixed';
+
     moveStub(el, x, y);
 }
 
@@ -79,7 +78,6 @@ export function endDrag(domId: string): {
     if (stubIndex === elementIndex) {
         return null;
     }
-
     return {
         newIndex: stubIndex,
         child: getDomElement(el, false),

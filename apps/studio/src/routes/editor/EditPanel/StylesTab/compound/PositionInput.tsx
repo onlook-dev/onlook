@@ -110,61 +110,73 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
     };
 
     const getElementAndParent = async () => {
-        const element = editorEngine.elements.selected[0];
-        if (!element?.domId) {
+        const elements = editorEngine.elements.selected;
+        if (elements.length === 0) {
             return null;
         }
 
-        const webview = editorEngine.webviews.getWebview(element.webviewId);
-        if (!webview) {
-            return null;
+        const results = [];
+        for (const element of elements) {
+            if (!element?.domId) {
+                continue;
+            }
+
+            const webview = editorEngine.webviews.getWebview(element.webviewId);
+            if (!webview) {
+                continue;
+            }
+
+            const parent: DomElement | null = await webview.executeJavaScript(
+                `window.api?.getParentElement('${element.domId}')`,
+            );
+            if (!parent) {
+                continue;
+            }
+
+            results.push({ element, parent });
         }
 
-        const parent: DomElement | null = await webview.executeJavaScript(
-            `window.api?.getParentElement('${element.domId}')`,
-        );
-        if (!parent) {
-            return null;
-        }
-
-        return { element, parent };
+        return results.length > 0 ? results : null;
     };
 
     const centerElement = async () => {
-        const elements = await getElementAndParent();
-        if (!elements) {
+        const elementPairs = await getElementAndParent();
+        if (!elementPairs) {
             return;
         }
         if (isCentered) {
             return;
         }
-        const { element, parent } = elements;
-        const centerX = (parent.rect.width - element.rect.width) / 2;
-        const centerY = (parent.rect.height - element.rect.height) / 2;
 
-        editorEngine.style.updateMultiple({
-            left: `${Math.round(centerX)}px`,
-            top: `${Math.round(centerY)}px`,
-        });
+        const updates: Record<string, string> = {};
+        for (const { element, parent } of elementPairs) {
+            const centerX = (parent.rect.width - element.rect.width) / 2;
+            const centerY = (parent.rect.height - element.rect.height) / 2;
+
+            updates.left = `${Math.round(centerX)}px`;
+            updates.top = `${Math.round(centerY)}px`;
+        }
+
+        editorEngine.style.updateMultiple(updates);
     };
 
     const checkIfCentered = useCallback(async () => {
-        const elements = await getElementAndParent();
-        if (!elements) {
+        const elementPairs = await getElementAndParent();
+        if (!elementPairs) {
             return false;
         }
 
-        const { element, parent } = elements;
-        const centerX = (parent.rect.width - element.rect.width) / 2;
-        const centerY = (parent.rect.height - element.rect.height) / 2;
-        const currentLeft = element.rect.x - parent.rect.x;
-        const currentTop = element.rect.y - parent.rect.y;
+        const allCentered = elementPairs.every(({ element, parent }) => {
+            const centerX = (parent.rect.width - element.rect.width) / 2;
+            const centerY = (parent.rect.height - element.rect.height) / 2;
+            const currentLeft = element.rect.x - parent.rect.x;
+            const currentTop = element.rect.y - parent.rect.y;
 
-        const isCentered =
-            Math.abs(currentLeft - centerX) < 1 && Math.abs(currentTop - centerY) < 1;
+            return Math.abs(currentLeft - centerX) < 1 && Math.abs(currentTop - centerY) < 1;
+        });
 
-        setIsCentered(isCentered);
-        return isCentered;
+        setIsCentered(allCentered);
+        return allCentered;
     }, [editorEngine.style.selectedStyle]);
 
     const renderMainControl = () => (
