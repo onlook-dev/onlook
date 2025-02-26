@@ -26,7 +26,7 @@ const Suggestions = forwardRef<
     const suggestions = editorEngine.chat.suggestions.suggestions;
     const shouldHideSuggestions =
         editorEngine.chat.suggestions.shouldHide ||
-        !userManager.settings?.chatSettings?.showSuggestions ||
+        !userManager.settings.settings?.chat?.showSuggestions ||
         disabled ||
         inputValue.trim().length > 0 ||
         editorEngine.errors.errors.length > 0;

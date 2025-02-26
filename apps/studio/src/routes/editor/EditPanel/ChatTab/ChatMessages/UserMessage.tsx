@@ -17,6 +17,8 @@ const UserMessage = ({ message }: UserMessageProps) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
+    const [isComposing, setIsComposing] = useState(false);
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
@@ -42,7 +44,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
             handleSubmit();
         } else if (e.key === 'Escape') {
@@ -72,6 +74,8 @@ const UserMessage = ({ message }: UserMessageProps) => {
                     className="text-small border-none resize-none px-0 mt-[-8px]"
                     rows={2}
                     onKeyDown={handleKeyDown}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={() => setIsComposing(false)}
                 />
                 <div className="flex justify-end gap-2">
                     <Button size="sm" variant={'ghost'} onClick={handleCancel}>

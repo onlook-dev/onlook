@@ -9,7 +9,8 @@ import { HelpDropdown } from './HelpDropdown.tsx';
 import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
-
+import ZoomControls from './ZoomControls/index.tsx';
+import OpenCodeMini from './OpenCodeMini/index.tsx';
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
@@ -111,7 +112,7 @@ const LayersPanel = observer(() => {
 
                 <button
                     className={cn(
-                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
                         selectedTab === TabValue.IMAGES && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
@@ -137,7 +138,9 @@ const LayersPanel = observer(() => {
                     <span className="text-xs leading-tight">Elements</span>
                 </button>
 
-                <div className="mt-auto">
+                <div className="mt-auto flex flex-col gap-0 items-center mb-4">
+                    <OpenCodeMini />
+                    <ZoomControls />
                     <HelpDropdown />
                 </div>
             </div>

@@ -29,6 +29,14 @@ export async function isChildTextEditable(oid: string): Promise<boolean | null> 
         return null;
     }
 
+    // Check if element is an img tag
+    if (
+        jsxElement.openingElement.name.type === 'JSXIdentifier' &&
+        jsxElement.openingElement.name?.name?.toLowerCase() === 'img'
+    ) {
+        return false;
+    }
+
     const children = jsxElement.children;
 
     // If no children, element is empty and can be edited

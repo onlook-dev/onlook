@@ -8,3 +8,8 @@ export interface RunBunCommandResult {
     error?: string;
     output?: string;
 }
+
+export interface DetectedPortResults {
+    isPortAvailable: boolean;
+    availablePort: number;
+}

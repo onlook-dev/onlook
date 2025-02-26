@@ -32,7 +32,7 @@ const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
         }
 
         const themeValue =
-            theme === Theme.Device ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
+            theme === Theme.System ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
 
         webview.executeJavaScript(`window.api?.setTheme("${themeValue}")`).then((res) => {
             setDeviceTheme(theme);
@@ -52,12 +52,12 @@ const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === Theme.Device
+                            deviceTheme === Theme.System
                                 ? 'bg-background-tertiary hover:bg-background-tertiary'
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() => changeTheme(Theme.Device)}
+                        onClick={() => changeTheme(Theme.System)}
                     >
                         <Icons.Laptop />
                     </Button>

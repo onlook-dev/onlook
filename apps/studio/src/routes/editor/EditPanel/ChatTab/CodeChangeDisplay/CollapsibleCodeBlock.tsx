@@ -41,7 +41,7 @@ export function CollapsibleCodeBlock({
     };
 
     const getAnimation = () => {
-        if (isStream && userManager.settings?.chatSettings?.expandCodeBlocks) {
+        if (isStream && userManager.settings.settings?.chat?.expandCodeBlocks) {
             return { height: 'auto', opacity: 1 };
         }
         return isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 };
@@ -127,7 +127,7 @@ export function CollapsibleCodeBlock({
                         >
                             <div className="border-t">
                                 {isStream ? (
-                                    <code className="p-4 text-xs w-full overflow-x-auto block">
+                                    <code className="p-4 text-xs w-full overflow-x-auto block text-foreground-secondary">
                                         {content}
                                     </code>
                                 ) : (

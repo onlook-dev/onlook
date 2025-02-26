@@ -1,9 +1,7 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorTabValue } from '@/lib/models';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
-import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
+import { DEFAULT_IDE } from '@onlook/models/ide';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -36,17 +34,8 @@ interface MenuItem {
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
-    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
-
-    useEffect(() => {
-        async function getIdeType() {
-            const settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
-            const ideType = (settings as { ideType?: IdeType })?.ideType || DEFAULT_IDE;
-            setIde(IDE.fromType(ideType));
-        }
-        getIdeType();
-    }, [userManager.settings]);
+    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE);
 
     useEffect(() => {
         updateMenuItems();

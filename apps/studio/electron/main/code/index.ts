@@ -1,6 +1,6 @@
 import type { CodeDiff } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
-import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
+import { DEFAULT_IDE } from '@onlook/models/ide';
 import { dialog, shell } from 'electron';
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
@@ -79,7 +79,7 @@ export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
 
 function getIdeFromUserSettings(): IDE {
     const userSettings = PersistentStorage.USER_SETTINGS.read() || {};
-    return IDE.fromType(userSettings.ideType || DEFAULT_IDE);
+    return IDE.fromType(userSettings.editor?.ideType || DEFAULT_IDE);
 }
 
 export function openInIde(templateNode: TemplateNode) {

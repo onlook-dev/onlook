@@ -11,6 +11,7 @@ import type { EditorEngine } from '..';
 import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
+import { isPromptTooLongError, PROMPT_TOO_LONG_ERROR } from './helpers';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
@@ -38,7 +39,7 @@ export class ChatManager {
         private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        this.context = new ChatContext(this.editorEngine);
+        this.context = new ChatContext(this.editorEngine, this.projectsManager);
         this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
@@ -101,8 +102,12 @@ export class ChatManager {
         }
 
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
-        const context = this.editorEngine.errors.getMessageContext(errors);
-        const userMessage = this.conversation.addUserMessage(prompt, [context]);
+        const errorContexts = this.context.getMessageContext(errors);
+        const projectContexts = this.context.getProjectContext();
+        const userMessage = this.conversation.addUserMessage(prompt, [
+            ...errorContexts,
+            ...projectContexts,
+        ]);
         this.conversation.current.updateName(errors[0].content);
         if (!userMessage) {
             console.error('Failed to add user message');
@@ -125,7 +130,6 @@ export class ChatManager {
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
-
         this.stream.clear();
         this.isWaiting = false;
         this.handleChatResponse(res, requestType);
@@ -190,7 +194,14 @@ export class ChatManager {
         }
         if (res.status === 'error') {
             console.error('Error found in chat response', res.content);
-            this.stream.errorMessage = res.content;
+            if (isPromptTooLongError(res.content)) {
+                this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
+            } else {
+                this.stream.errorMessage = res.content;
+            }
+            sendAnalytics('chat error', {
+                content: res.content,
+            });
             return;
         }
         const assistantMessage = this.conversation.addAssistantMessage(res);
@@ -210,7 +221,7 @@ export class ChatManager {
 
         this.context.clearAttachments();
 
-        if (this.userManager.settings?.chatSettings?.autoApplyCode) {
+        if (this.userManager.settings.settings?.chat?.autoApplyCode) {
             setTimeout(() => {
                 this.code.applyCode(assistantMessage.id);
             }, 100);
