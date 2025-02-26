@@ -402,8 +402,8 @@ const Frame = observer(
                     setDarkmode={setDarkmode}
                     settings={settings}
                     startMove={startMove}
-                    deregisterWebview={deregisterWebview}
                     domState={domState}
+                    webviewSize={webviewSize}
                 />
                 <div className="relative">
                     <ResizeHandles
@@ -432,8 +432,6 @@ const Frame = observer(
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
-                            minWidth: DefaultSettings.MIN_DIMENSIONS.width,
-                            minHeight: DefaultSettings.MIN_DIMENSIONS.height,
                         }}
                     ></webview>
                     <GestureScreen

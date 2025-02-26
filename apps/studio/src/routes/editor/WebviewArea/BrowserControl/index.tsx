@@ -29,8 +29,11 @@ interface BrowserControlsProps {
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
     settings: FrameSettings;
     startMove: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-    deregisterWebview: () => void;
     domState: WebviewState;
+    webviewSize: {
+        width: number;
+        height: number;
+    };
 }
 
 const BrowserControls = observer(
@@ -44,8 +47,8 @@ const BrowserControls = observer(
         setDarkmode,
         settings,
         startMove,
-        deregisterWebview,
         domState,
+        webviewSize,
     }: BrowserControlsProps) => {
         const editorEngine = useEditorEngine();
         const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
@@ -213,7 +216,7 @@ const BrowserControls = observer(
         return (
             <div
                 className={clsx(
-                    'flex flex-row items-center backdrop-blur-sm pb-1.5 overflow-hidden',
+                    'm-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm rounded-md border-input text-foreground',
                     selected ? ' bg-active/60 ' : '',
                     hovered ? ' bg-hover/20 ' : '',
                     selected
@@ -225,9 +228,16 @@ const BrowserControls = observer(
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
                 onClick={handleSelect}
+                style={{
+                    transform: `scale(${1 / editorEngine.canvas.scale})`,
+                    width: `${webviewSize.width * editorEngine.canvas.scale}px`,
+                    marginBottom: `${10 / editorEngine.canvas.scale}px`,
+                }}
             >
+                {/* Making sure the dropdown arrow is visible */}
+                <div className="absolute right-0 bottom-0 top-0 bg-gradient-to-r from-transparent via-background-primary to-background-primary w-20 z-50"></div>
                 <div
-                    className={`absolute left-0 flex flex-row z-50 `}
+                    className={`absolute left-0 flex flex-row z-50`}
                     style={{
                         transition: 'opacity 0.5s, transform 0.5s',
                         transform: editingURL
@@ -244,7 +254,7 @@ const BrowserControls = observer(
                         onClick={goBack}
                         disabled={!canGoBack()}
                     >
-                        <Icons.ArrowLeft className="text-inherit h-5 w-5 transition-none" />
+                        <Icons.ArrowLeft className="text-inherit h-4 w-4 transition-none" />
                     </Button>
 
                     <Button
@@ -256,13 +266,13 @@ const BrowserControls = observer(
                             display: canGoForward() ? 'flex' : 'none',
                         }}
                     >
-                        <Icons.ArrowRight className="text-inherit h-5 w-5" />
+                        <Icons.ArrowRight className="text-inherit h-4 w-4" />
                     </Button>
                     <Button size={'icon'} variant={'ghost'} onClick={reload}>
                         {webviewRef?.current?.isLoading() ? (
                             <Icons.CrossL className="text-inherit" />
                         ) : (
-                            <Icons.Reload className="text-inherit h-5 w-5" />
+                            <Icons.Reload className="text-inherit h-4 w-4" />
                         )}
                     </Button>
                 </div>
@@ -303,39 +313,34 @@ const BrowserControls = observer(
                         setEditingURL(true);
                     }}
                 >
-                    <>
-                        <Input
-                            ref={inputRef}
-                            className={cn(
-                                'text-regular text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none',
-                            )}
-                            value={urlInputValue}
-                            onChange={(e) => setUrlInputValue(e.target.value)}
-                            onKeyDown={handleKeydown}
-                            onBlur={handleBlur}
-                            style={{
-                                transition: 'display 0.5s',
-                                display: editingURL ? 'flex' : 'none',
-                            }}
-                        />
-                        <Button
-                            className="absolute right-0.5 px-1 group"
-                            size={'icon'}
-                            variant={'ghost'}
-                            onClick={() => setEditingURL(false)}
-                            style={{
-                                transition: 'transform 0.5s, visibility 0.5s, opacity 0.5s',
-                                transform: editingURL ? 'translateX(0)' : 'translateX(-5.625rem)',
-                                visibility: editingURL ? 'visible' : 'hidden',
-                                opacity: editingURL ? 1 : 0,
-                            }}
-                        >
-                            <Icons.ArrowRight className="text-foreground-secondary group-hover:text-foreground-active h-5 w-5" />
-                        </Button>
-                    </>
-
+                    <Input
+                        ref={inputRef}
+                        className="text-small text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none"
+                        value={urlInputValue}
+                        onChange={(e) => setUrlInputValue(e.target.value)}
+                        onKeyDown={handleKeydown}
+                        onBlur={handleBlur}
+                        style={{
+                            transition: 'display 0.5s',
+                            display: editingURL ? 'flex' : 'none',
+                        }}
+                    />
+                    <Button
+                        className="absolute right-0.5 px-1 group"
+                        size={'icon'}
+                        variant={'ghost'}
+                        onClick={() => setEditingURL(false)}
+                        style={{
+                            transition: 'transform 0.5s, visibility 0.5s, opacity 0.5s',
+                            transform: editingURL ? 'translateX(0)' : 'translateX(-5.625rem)',
+                            visibility: editingURL ? 'visible' : 'hidden',
+                            opacity: editingURL ? 1 : 0,
+                        }}
+                    >
+                        <Icons.ArrowRight className="text-foreground-secondary group-hover:text-foreground-active h-4 w-4" />
+                    </Button>
                     <p
-                        className="text-regular text-inherit hover:text-opacity-80 transition-colors px-0 h-auto leading-none py-0"
+                        className="text-small text-inherit hover:text-opacity-80 transition-colors px-0 h-auto leading-none py-0"
                         style={{
                             transition: 'display 0.5s',
                             display: editingURL ? 'none' : 'flex',
@@ -368,7 +373,7 @@ const BrowserControls = observer(
                                 size={'icon'}
                                 variant={'ghost'}
                             >
-                                <Icons.ChevronDown className="text-inherit h-5 w-5 rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
+                                <Icons.ChevronDown className="text-inherit h-4 w-4 rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="rounded-md bg-background">
