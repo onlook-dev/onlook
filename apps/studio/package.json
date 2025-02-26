@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/studio",
-    "version": "0.2.3",
+    "version": "0.2.5",
     "homepage": "https://onlook.com",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -50,6 +50,7 @@
         "ai": "^4.1.26",
         "browser-image-compression": "^2.0.2",
         "chokidar": "^4.0.1",
+        "detect-port": "^2.1.0",
         "download": "^8.0.0",
         "electron-log": "^5.2.0",
         "electron-updater": "^6.3.4",
