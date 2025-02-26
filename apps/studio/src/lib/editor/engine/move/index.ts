@@ -68,11 +68,19 @@ export class MoveManager {
                 x: this.dragOrigin.x - this.dragTarget.rect.x,
                 y: this.dragOrigin.y - this.dragTarget.rect.y,
             };
-            this.editorEngine.overlay.clear();
 
+            const parentRect = this.dragTarget.parent?.rect;
+            if (!parentRect) {
+                return;
+            }
+
+            const newX = Math.round(x - parentRect.x - initialOffset.x);
+            const newY = Math.round(y - parentRect.y - initialOffset.y);
+
+            this.editorEngine.overlay.clear();
             this.editorEngine.style.updateMultiple({
-                left: `${Math.round(x - initialOffset.x)}px`,
-                top: `${Math.round(y - initialOffset.y)}px`,
+                left: `${newX}px`,
+                top: `${newY}px`,
             });
 
             return;
