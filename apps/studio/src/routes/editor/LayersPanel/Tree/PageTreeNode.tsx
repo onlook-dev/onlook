@@ -13,8 +13,7 @@ import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import type { NodeApi } from 'react-arborist';
-import { CreatePageModal } from '../PageTab/CreatePageModal';
-
+import { PageModal } from '../PageTab/PageModal';
 interface PageTreeNodeProps {
     node: NodeApi<PageNode>;
     style: React.CSSProperties;
@@ -24,8 +23,12 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
     const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
-    const isRootPage = node.data.path === '/' || node.data.path === '' || node.data.path === '';
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState<'create' | 'rename'>('create');
+
+    const getBaseName = (fullPath: string) => {
+        return fullPath.split('/').pop() || '';
+    };
 
     const handleClick = async (e: React.MouseEvent) => {
         if (hasChildren) {
@@ -44,6 +47,16 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
         await editorEngine.pages.navigateTo(node.data.path);
     };
 
+    const handleRename = () => {
+        setModalMode('rename');
+        setShowModal(true);
+    };
+
+    const handleCreate = () => {
+        setModalMode('create');
+        setShowModal(true);
+    };
+
     const handleDelete = async () => {
         try {
             await editorEngine.pages.deletePage(
@@ -60,20 +73,51 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
         }
     };
 
+    const handleDuplicate = async () => {
+        try {
+            await editorEngine.pages.duplicatePage(node.data.path, node.data.path);
+
+            toast({
+                title: 'Page duplicated',
+                description: 'Page has been successfully duplicated.',
+                variant: 'default',
+            });
+        } catch (error) {
+            console.error('Failed to duplicate page:', error);
+            toast({
+                title: 'Failed to duplicate page',
+                description: error instanceof Error ? error.message : String(error),
+                variant: 'destructive',
+            });
+        }
+    };
+
     const menuItems = [
         {
             label: 'Create New Page',
-            action: () => {
-                setShowCreateModal(true);
-            },
+            action: handleCreate,
             icon: <Icons.File className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Duplicate Page',
+            action: () => {
+                handleDuplicate();
+            },
+            icon: <Icons.Copy className="mr-2 h-4 w-4" />,
+            disabled: node.data.isRoot,
+        },
+        {
+            label: 'Rename',
+            action: handleRename,
+            icon: <Icons.Pencil className="mr-2 h-4 w-4" />,
+            disabled: node.data.isRoot,
         },
         {
             label: 'Delete',
             action: handleDelete,
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             destructive: true,
-            disabled: isRootPage,
+            disabled: node.data.isRoot,
         },
     ];
 
@@ -102,11 +146,12 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                                 </div>
                             )}
                         </span>
-                        {hasChildren ? (
-                            <Icons.Directory className="w-4 h-4 mr-2" />
-                        ) : (
-                            <Icons.File className="w-4 h-4 mr-2" />
-                        )}
+                        {!node.data.isRoot &&
+                            (hasChildren ? (
+                                <Icons.Directory className="w-4 h-4 mr-2" />
+                            ) : (
+                                <Icons.File className="w-4 h-4 mr-2" />
+                            ))}
                         <span>{node.data.name}</span>
                     </div>
                 </ContextMenuTrigger>
@@ -133,10 +178,12 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
                 </ContextMenuContent>
             </ContextMenu>
 
-            <CreatePageModal
-                open={showCreateModal}
-                onOpenChange={setShowCreateModal}
+            <PageModal
+                open={showModal}
+                onOpenChange={setShowModal}
+                mode={modalMode}
                 baseRoute={node.data.path}
+                initialName={modalMode === 'rename' ? getBaseName(node.data.path) : ''}
             />
         </>
     );

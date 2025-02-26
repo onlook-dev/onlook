@@ -129,14 +129,7 @@ const BrowserControls = observer(
         }
 
         function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) {
-                return;
-            }
-
             const validUrl = getValidUrl(e.currentTarget.value);
-            webview.src = validUrl;
-            webview.loadURL(validUrl);
             setWebviewSrc(validUrl);
             setEditingURL(false);
         }

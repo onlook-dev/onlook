@@ -34,7 +34,7 @@ const SettingsModal = observer(() => {
                         transition={{ duration: 0.15 }}
                         className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
                     >
-                        <div className="bg-background border rounded-lg shadow-lg max-w-4xl h-[600px] w-[800px] p-0 pointer-events-auto">
+                        <div className="bg-background border rounded-lg shadow-lg max-w-4xl max-h-screen h-[700px] w-[900px] p-0 pointer-events-auto">
                             <div className="flex flex-col h-full overflow-hidden">
                                 {/* Top bar - fixed height */}
                                 <div className="shrink-0 flex items-center p-6 pb-4">

@@ -17,10 +17,7 @@ export class PortManager {
         reaction(
             () => this.runManager.state,
             () => {
-                if (
-                    this.runManager.state === RunState.RUNNING ||
-                    this.runManager.state === RunState.SETTING_UP
-                ) {
+                if (this.runManager.state !== RunState.STOPPED) {
                     this.isPortAvailable = true;
                 }
             },
@@ -44,10 +41,7 @@ export class PortManager {
     }
 
     async checkPort(): Promise<void> {
-        if (
-            this.runManager.state === RunState.RUNNING ||
-            this.runManager.state === RunState.SETTING_UP
-        ) {
+        if (this.runManager.state !== RunState.STOPPED) {
             this.isPortAvailable = true;
             return;
         }

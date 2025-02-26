@@ -28,8 +28,8 @@ const RunButton = observer(() => {
         }
 
         if (runner?.state === RunState.ERROR) {
-            editorEngine.errors.clear();
             runner.restart();
+            editorEngine.errors.clear();
             return;
         }
         runner?.start();

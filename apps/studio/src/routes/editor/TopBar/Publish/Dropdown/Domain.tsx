@@ -199,7 +199,7 @@ export const DomainSection = observer(
                         </div>
                     )}
                     {state.status === PublishStatus.LOADING && (
-                        <div className="w-full flex flex-col gap-2">
+                        <div className="w-full flex flex-col gap-2 py-1">
                             <p>{state.message}</p>
                             <Progress value={progress} className="w-full" />
                         </div>
