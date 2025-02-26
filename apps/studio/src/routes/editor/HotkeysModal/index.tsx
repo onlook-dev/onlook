@@ -5,7 +5,7 @@ import { Kbd } from '@onlook/ui/kbd';
 import { Separator } from '@onlook/ui/separator';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { Hotkey } from '../../../../common/hotkeys';
+import { Hotkey } from '/common/hotkeys';
 
 const HotkeysModal = observer(() => {
     const editorEngine = useEditorEngine();
