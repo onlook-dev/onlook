@@ -133,7 +133,7 @@ export class MoveManager {
                     child,
                     parent,
                     newIndex,
-                    this.originalIndex || 0,
+                    this.originalIndex,
                 );
                 this.editorEngine.action.run(moveAction);
             }
