@@ -1,6 +1,29 @@
+import normalizeUrl from 'normalize-url';
+
 export function getValidUrl(url: string) {
     // If the url is not https, convert it to https
-    return url.replace(/^http:\/\/|^(?!https:\/\/)/, 'https://');
+    const prependedUrl = prependHttp(url);
+    const normalizedUrl = normalizeUrl(prependedUrl);
+    return normalizedUrl;
+}
+
+export function prependHttp(url: string, { https = true } = {}) {
+    if (typeof url !== 'string') {
+        throw new TypeError(`Expected \`url\` to be of type \`string\`, got \`${typeof url}\``);
+    }
+
+    url = url.trim();
+
+    if (/^\.*\/|^(?!localhost)(\w+?:)/.test(url)) {
+        return url;
+    }
+
+    // Special case for localhost - use http:// instead of https://
+    if (url.startsWith('localhost')) {
+        return `http://${url}`;
+    }
+
+    return url.replace(/^(?!(?:\w+?:)?\/\/)/, https ? 'https://' : 'http://');
 }
 
 export const getValidSubdomain = (subdomain: string) => {
