@@ -29,8 +29,11 @@ interface BrowserControlsProps {
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
     settings: FrameSettings;
     startMove: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-    deregisterWebview: () => void;
     domState: WebviewState;
+    webviewSize: {
+        width: number;
+        height: number;
+    };
 }
 
 const BrowserControls = observer(
@@ -44,8 +47,8 @@ const BrowserControls = observer(
         setDarkmode,
         settings,
         startMove,
-        deregisterWebview,
         domState,
+        webviewSize,
     }: BrowserControlsProps) => {
         const editorEngine = useEditorEngine();
         const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
@@ -227,7 +230,7 @@ const BrowserControls = observer(
                 onClick={handleSelect}
                 style={{
                     transform: `scale(${1 / editorEngine.canvas.scale})`,
-                    width: `${settings.dimension.width * editorEngine.canvas.scale}px`,
+                    width: `${webviewSize.width * editorEngine.canvas.scale}px`,
                     marginBottom: `${10 / editorEngine.canvas.scale}px`,
                 }}
             >
