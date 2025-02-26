@@ -31,6 +31,7 @@ export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _plansOpen: boolean = false;
     private _settingsOpen: boolean = false;
+    private _hotkeysOpen: boolean = false;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
 
@@ -136,6 +137,9 @@ export class EditorEngine {
     get isSettingsOpen() {
         return this._settingsOpen;
     }
+    get isHotkeysOpen() {
+        return this._hotkeysOpen;
+    }
     get errors() {
         return this.errorManager;
     }
@@ -164,6 +168,10 @@ export class EditorEngine {
 
     set isSettingsOpen(open: boolean) {
         this._settingsOpen = open;
+    }
+
+    set isHotkeysOpen(value: boolean) {
+        this._hotkeysOpen = value;
     }
 
     get pages() {

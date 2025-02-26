@@ -78,9 +78,14 @@ export const HelpDropdown = observer(() => {
                 </DropdownMenuSub>
                 <DropdownMenuItem
                     className="text-sm"
-                    onClick={() => {
-                        editorEngine.isSettingsOpen = true;
-                    }}
+                    onClick={() => (editorEngine.isHotkeysOpen = true)}
+                >
+                    <Icons.Keyboard className="w-4 h-4 mr-2" />
+                    Shortcuts
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                    className="text-sm"
+                    onClick={() => (editorEngine.isSettingsOpen = true)}
                 >
                     <Icons.Gear className="w-4 h-4 mr-2" />
                     Open Settings
