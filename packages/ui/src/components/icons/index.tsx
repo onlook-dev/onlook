@@ -68,6 +68,7 @@ import {
     ImageIcon,
     InfoCircledIcon,
     InputIcon,
+    KeyboardIcon,
     LaptopIcon,
     Link2Icon,
     LinkNone1Icon,
@@ -1241,6 +1242,8 @@ export const Icons = {
     Image: ImageIcon,
     Input: InputIcon,
     InfoCircled: InfoCircledIcon,
+
+    Keyboard: KeyboardIcon,
 
     Laptop: LaptopIcon,
     Link: Link2Icon,

@@ -1,12 +1,11 @@
-import { type ReactElement } from 'react';
-import { Kbd } from '@onlook/ui/kbd';
-import { Separator } from '@onlook/ui/separator';
+import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { Kbd } from '@onlook/ui/kbd';
+import { Separator } from '@onlook/ui/separator';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Hotkey } from '../../../../common/hotkeys';
-import { useEditorEngine } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
+import { Hotkey } from '../../../../common/hotkeys';
 
 const HotkeysModal = observer(() => {
     const editorEngine = useEditorEngine();
@@ -52,7 +51,7 @@ const HotkeysModal = observer(() => {
                         transition={{ duration: 0.15 }}
                         className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
                     >
-                        <div className="bg-background border rounded-lg shadow-lg w-[800px] p-0 pointer-events-auto">
+                        <div className="bg-background border rounded-lg shadow-lg w-[900px] p-0 pointer-events-auto">
                             <div className="flex flex-col">
                                 {/* Header */}
                                 <div className="flex items-center p-6 pb-2">
