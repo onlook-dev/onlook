@@ -37,7 +37,6 @@ export class StyleManager {
 
     updateMultiple(styles: Record<string, string>) {
         this.updateStyleNoAction(styles);
-        this.editorEngine.overlay.refreshOverlay();
         const action = this.getUpdateStyleAction(styles);
         this.editorEngine.action.run(action);
     }
@@ -89,65 +88,6 @@ export class StyleManager {
             ...this.selectedStyle,
             styles: { ...this.selectedStyle.styles, ...styles },
         };
-    }
-
-    private calculateNewRects(
-        styles: Record<string, string>,
-    ): Map<string, { rect: DOMRect; parentRect: DOMRect }> {
-        const updates = new Map();
-
-        for (const [domId, selectedStyle] of this.domIdToStyle.entries()) {
-            const rect = { ...selectedStyle.rect };
-            const parentRect = { ...selectedStyle.parentRect };
-
-            // Update rect dimensions based on style changes
-            if (styles.width) {
-                rect.width = parseFloat(styles.width) || rect.width;
-            }
-            if (styles.height) {
-                rect.height = parseFloat(styles.height) || rect.height;
-            }
-            if (styles.left) {
-                rect.x = parentRect.x + (parseFloat(styles.left) || 0);
-            }
-            if (styles.top) {
-                rect.y = parentRect.y + (parseFloat(styles.top) || 0);
-            }
-
-            updates.set(domId, { rect, parentRect });
-        }
-
-        return updates;
-    }
-
-    private updateStyleAndRectNoAction(
-        styles: Record<string, string>,
-        rects: Map<string, { rect: DOMRect; parentRect: DOMRect }>,
-    ) {
-        for (const [domId, selectedStyle] of this.domIdToStyle.entries()) {
-            const updatedRects = rects.get(domId);
-            this.domIdToStyle.set(domId, {
-                ...selectedStyle,
-                styles: { ...selectedStyle.styles, ...styles },
-                rect: updatedRects?.rect || selectedStyle.rect,
-                parentRect: updatedRects?.parentRect || selectedStyle.parentRect,
-            });
-        }
-
-        if (this.selectedStyle && this.editorEngine.elements.selected[0]) {
-            const firstSelectedId = this.editorEngine.elements.selected[0].domId;
-            const updatedRects = rects.get(firstSelectedId);
-
-            this.selectedStyle = {
-                ...this.selectedStyle,
-                styles: { ...this.selectedStyle.styles, ...styles },
-                rect: updatedRects?.rect || this.selectedStyle.rect,
-                parentRect: updatedRects?.parentRect || this.selectedStyle.parentRect,
-            };
-        }
-
-        // Trigger overlay refresh with new rects
-        this.editorEngine.overlay.refreshOverlay();
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {

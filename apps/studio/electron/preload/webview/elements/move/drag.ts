@@ -32,8 +32,7 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         console.warn('Dragging element not found');
         return;
     }
-
-    const computedStyle = window.getComputedStyle(el);
+    const styles = window.getComputedStyle(el);
 
     const pos = JSON.parse(
         el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
@@ -43,8 +42,8 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
     const top = pos.top + dy - window.scrollY;
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
-    el.style.width = computedStyle.width + 1;
-    el.style.height = computedStyle.height + 1;
+    el.style.width = styles.width + 1;
+    el.style.height = styles.height + 1;
     el.style.position = 'fixed';
     moveStub(el, x, y);
 }
@@ -68,9 +67,6 @@ export function endDrag(domId: string): {
         return null;
     }
 
-    const newChild = getDomElement(el, true);
-    const newParent = getDomElement(parent, false);
-
     const stubIndex = getCurrentStubIndex(parent, el);
     cleanUpElementAfterDragging(el);
     removeStub();
@@ -86,8 +82,8 @@ export function endDrag(domId: string): {
 
     return {
         newIndex: stubIndex,
-        child: newChild,
-        parent: newParent,
+        child: getDomElement(el, false),
+        parent: getDomElement(parent, false),
     };
 }
 
