@@ -28,7 +28,7 @@ const WindowsTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col gap-3 px-3 py-2 w-[245px]">
+        <div className="flex flex-col gap-3 p-4 w-[275px]">
             <div className="flex flex-row gap-1">
                 <Button
                     variant={'outline'}
