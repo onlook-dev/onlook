@@ -1,6 +1,6 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
-import { invokeMainChannel, platformSlash } from '@/lib/utils';
+import { invokeMainChannel, platformSlash, sendAnalytics } from '@/lib/utils';
 import type { ImageContentData } from '@onlook/models';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
@@ -57,6 +57,7 @@ const ImagesTab = observer(() => {
         }
         try {
             await editorEngine.image.upload(file);
+            sendAnalytics('image_upload', { fileName: file.name, fileSize: file.size });
         } catch (error) {
             setUploadError('Failed to upload image. Please try again.');
             console.error('Image upload error:', error);
@@ -142,6 +143,7 @@ const ImagesTab = observer(() => {
     const onDeleteImage = () => {
         if (imageToDelete) {
             editorEngine.image.delete(imageToDelete);
+            sendAnalytics('image_delete', { fileName: imageToDelete });
             setImageToDelete(null);
         }
     };
@@ -173,6 +175,7 @@ const ImagesTab = observer(() => {
         try {
             if (imageToRename && newName && newName !== imageToRename) {
                 await editorEngine.image.rename(imageToRename, newName);
+                sendAnalytics('image_rename', { oldName: imageToRename, newName });
             }
         } catch (error) {
             setRenameError(
@@ -214,6 +217,7 @@ const ImagesTab = observer(() => {
         }
 
         editorEngine.mode = EditorMode.INSERT_IMAGE;
+        sendAnalytics('image_drag_start', { fileName: image.fileName });
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

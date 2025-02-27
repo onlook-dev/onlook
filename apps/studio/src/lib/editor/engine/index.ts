@@ -323,6 +323,7 @@ export class EditorEngine {
         if (webview) {
             this.webviews.deregister(webview);
         }
+        sendAnalytics('window_delete', { id: settings.id });
     }
 
     duplicateWindow(id?: string) {
@@ -358,5 +359,10 @@ export class EditorEngine {
         };
 
         this.canvas.frames = [...this.canvas.frames, newFrame];
+        sendAnalytics('window_create', {
+            id: newFrame.id,
+            width: newFrame.dimension.width,
+            height: newFrame.dimension.height,
+        });
     }
 }

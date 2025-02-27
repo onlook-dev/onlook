@@ -4,6 +4,7 @@ import {
     normalizeRoute,
     validateNextJsRoute,
 } from '@/lib/editor/engine/pages/helper';
+import { sendAnalytics } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -83,6 +84,7 @@ export function PageModal({
 
             if (mode === 'create') {
                 await editorEngine.pages.createPage(baseRoute, pageName);
+                sendAnalytics('page_create', { path: fullPath });
                 toast({
                     title: 'Page created',
                     description: 'Page has been successfully created.',
@@ -90,6 +92,7 @@ export function PageModal({
                 });
             } else {
                 await editorEngine.pages.renamePage(baseRoute, pageName);
+                sendAnalytics('page_rename', { oldPath: baseRoute, newPath: fullPath });
                 toast({
                     title: 'Page renamed',
                     description: 'Page has been successfully renamed.',
