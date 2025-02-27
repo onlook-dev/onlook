@@ -162,11 +162,6 @@ class RunManager {
                     this.processFileForMapping(filePath);
                 }
             })
-            .on('add', (filePath) => {
-                if (ALLOWED_EXTENSIONS.some((ext) => filePath.endsWith(ext))) {
-                    this.processFileForMapping(filePath);
-                }
-            })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error}`);
             });
