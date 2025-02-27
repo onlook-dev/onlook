@@ -39,7 +39,7 @@ export class ChatManager {
         private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        this.context = new ChatContext(this.editorEngine);
+        this.context = new ChatContext(this.editorEngine, this.projectsManager);
         this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
@@ -102,8 +102,12 @@ export class ChatManager {
         }
 
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
-        const context = this.editorEngine.errors.getMessageContext(errors);
-        const userMessage = this.conversation.addUserMessage(prompt, [context]);
+        const errorContexts = this.context.getMessageContext(errors);
+        const projectContexts = this.context.getProjectContext();
+        const userMessage = this.conversation.addUserMessage(prompt, [
+            ...errorContexts,
+            ...projectContexts,
+        ]);
         this.conversation.current.updateName(errors[0].content);
         if (!userMessage) {
             console.error('Failed to add user message');

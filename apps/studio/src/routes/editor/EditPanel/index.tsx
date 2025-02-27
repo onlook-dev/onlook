@@ -17,8 +17,15 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
+import PropsTab from './PropsTab';
 import StylesTab from './StylesTab';
 import WindowSettings from './WindowSettings';
+
+const EDIT_PANEL_WIDTHS = {
+    [EditorTabValue.CHAT]: 352,
+    [EditorTabValue.PROPS]: 295,
+    [EditorTabValue.STYLES]: 240,
+};
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -29,6 +36,7 @@ const EditPanel = observer(() => {
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
     const [frameSettings, setFrameSettings] = useState<FrameSettings>();
+    const defaultWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     useEffect(() => {
         if (editorEngine.isWindowSelected) {
@@ -156,6 +164,13 @@ const EditPanel = observer(() => {
                             <Icons.Styles className="mr-1.5 h-4 w-4" />
                             Styles
                         </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            value={EditorTabValue.PROPS}
+                        >
+                            <Icons.MixerHorizontal className="mr-1.5 mb-0.5" />
+                            Props
+                        </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
@@ -163,6 +178,9 @@ const EditPanel = observer(() => {
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
+                    </TabsContent>
+                    <TabsContent value={EditorTabValue.PROPS}>
+                        <PropsTab />
                     </TabsContent>
                     <TabsContent value={EditorTabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
@@ -179,8 +197,8 @@ const EditPanel = observer(() => {
     return (
         <ResizablePanel
             side="right"
-            defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
-            forceWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
+            defaultWidth={defaultWidth}
+            forceWidth={defaultWidth}
             minWidth={240}
             maxWidth={500}
         >

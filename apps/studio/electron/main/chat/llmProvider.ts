@@ -1,18 +1,9 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import type { StreamRequestType } from '@onlook/models/chat';
 import { BASE_PROXY_ROUTE, FUNCTIONS_ROUTE, ProxyRoutes } from '@onlook/models/constants';
+import { CLAUDE_MODELS, LLMProvider } from '@onlook/models/llm';
 import { type LanguageModelV1 } from 'ai';
 import { getRefreshedAuthTokens } from '../auth';
-
-export enum LLMProvider {
-    ANTHROPIC = 'anthropic',
-}
-
-export enum CLAUDE_MODELS {
-    SONNET = 'claude-3-5-sonnet-20241022',
-    HAIKU = 'claude-3-5-haiku-20241022',
-}
-
 export interface OnlookPayload {
     requestType: StreamRequestType;
 }

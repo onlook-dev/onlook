@@ -11,6 +11,7 @@ import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
+import { getTemplateNodeProps } from '../code/props';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -112,4 +113,9 @@ export function listenForCodeMessages() {
             return isChildTextEditable(oid);
         },
     );
+
+    ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_PROPS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const templateNode = args as TemplateNode;
+        return getTemplateNodeProps(templateNode);
+    });
 }

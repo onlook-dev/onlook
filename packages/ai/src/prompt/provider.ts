@@ -2,9 +2,11 @@ import type {
     ErrorMessageContext,
     FileMessageContext,
     HighlightMessageContext,
+    ProjectMessageContext,
 } from '@onlook/models/chat';
 import { CONTEXT_PROMPTS } from './context';
-import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
+import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
+import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
 import { PLATFORM_SIGNATURE } from './signatures';
@@ -21,19 +23,45 @@ export class PromptProvider {
         if (this.shouldWrapXml) {
             prompt += wrapXml('role', EDIT_PROMPTS.system);
             prompt += wrapXml('search-replace-rules', EDIT_PROMPTS.searchReplaceRules);
-            prompt += wrapXml('example-conversation', this.getExampleConversation());
+            prompt += wrapXml(
+                'example-conversation',
+                this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
+            );
         } else {
             prompt += EDIT_PROMPTS.system;
             prompt += EDIT_PROMPTS.searchReplaceRules;
-            prompt += this.getExampleConversation();
+            prompt += this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
         }
         prompt = prompt.replace(PLATFORM_SIGNATURE, platform);
         return prompt;
     }
 
-    getExampleConversation() {
+    getCreatePageSystemPrompt() {
         let prompt = '';
-        for (const message of EXAMPLE_CONVERSATION) {
+
+        if (this.shouldWrapXml) {
+            prompt += wrapXml('role', PAGE_SYSTEM_PROMPT.role);
+            prompt += wrapXml('rules', PAGE_SYSTEM_PROMPT.rules);
+            prompt += wrapXml(
+                'example-conversation',
+                this.getExampleConversation(CREATE_PAGE_EXAMPLE_CONVERSATION),
+            );
+        } else {
+            prompt += PAGE_SYSTEM_PROMPT.role;
+            prompt += PAGE_SYSTEM_PROMPT.rules;
+            prompt += this.getExampleConversation(CREATE_PAGE_EXAMPLE_CONVERSATION);
+        }
+        return prompt;
+    }
+
+    getExampleConversation(
+        conversation: {
+            role: string;
+            content: string;
+        }[],
+    ) {
+        let prompt = '';
+        for (const message of conversation) {
             prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
         }
         return prompt;
@@ -45,6 +73,7 @@ export class PromptProvider {
             files: FileMessageContext[];
             highlights: HighlightMessageContext[];
             errors: ErrorMessageContext[];
+            project?: ProjectMessageContext;
         },
     ) {
         if (message.length === 0) {
@@ -62,12 +91,11 @@ export class PromptProvider {
 
         if (context.errors.length > 0) {
             let errorPrompt = this.getErrorsContent(context.errors);
-            if (errorPrompt) {
-                if (this.shouldWrapXml) {
-                    errorPrompt = wrapXml('errors', errorPrompt);
-                }
-                prompt += errorPrompt;
-            }
+            prompt += errorPrompt;
+        }
+
+        if (context.project) {
+            prompt += this.getProjectContext(context.project);
         }
 
         if (this.shouldWrapXml) {
@@ -110,6 +138,10 @@ export class PromptProvider {
         for (const error of errors) {
             prompt += `${error.content}\n`;
         }
+
+        if (prompt.trim().length > 0 && this.shouldWrapXml) {
+            prompt = wrapXml('errors', prompt);
+        }
         return prompt;
     }
 
@@ -139,5 +171,13 @@ export class PromptProvider {
             index++;
         }
         return prompt;
+    }
+
+    getProjectContext(project: ProjectMessageContext) {
+        const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}`;
+        if (this.shouldWrapXml) {
+            return wrapXml('project-info', content);
+        }
+        return content;
     }
 }

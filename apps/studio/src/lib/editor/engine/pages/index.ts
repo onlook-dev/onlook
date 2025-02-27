@@ -161,6 +161,83 @@ export class PagesManager {
         }
     }
 
+    public async renamePage(oldPath: string, newName: string): Promise<void> {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            throw new Error('No project root found');
+        }
+
+        const { valid, error } = validateNextJsRoute(newName);
+        if (!valid) {
+            throw new Error(error);
+        }
+
+        if (doesRouteExist(this.pages, `/${newName}`)) {
+            throw new Error('A page with this name already exists');
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.RENAME_PAGE, {
+                projectRoot,
+                oldPath,
+                newName,
+            });
+
+            await this.scanPages();
+        } catch (error) {
+            console.error('Failed to rename page:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(errorMessage);
+        }
+    }
+
+    public async duplicatePage(sourcePath: string, targetPath: string): Promise<void> {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            throw new Error('No project root found');
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.DUPLICATE_PAGE, {
+                projectRoot,
+                sourcePath: normalizeRoute(sourcePath),
+                targetPath: normalizeRoute(targetPath),
+            });
+
+            await this.scanPages();
+        } catch (error) {
+            console.error('Failed to duplicate page:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(errorMessage);
+        }
+    }
+
+    public async deletePage(pageName: string, isDir: boolean): Promise<void> {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            throw new Error('No project root found');
+        }
+
+        const normalizedPath = normalizeRoute(`${pageName}`);
+        if (normalizedPath === '' || normalizedPath === '/') {
+            throw new Error('Cannot delete root page');
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.DELETE_PAGE, {
+                projectRoot,
+                pagePath: normalizedPath,
+                isDir,
+            });
+
+            await this.scanPages();
+        } catch (error) {
+            console.error('Failed to delete page:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(errorMessage);
+        }
+    }
+
     async navigateTo(path: string) {
         const webview = this.getActiveWebview();
 
@@ -225,32 +302,6 @@ export class PagesManager {
             this.setActivePath(webviewId, activePath);
         } catch (error) {
             console.error('Failed to parse URL:', error);
-        }
-    }
-
-    public async deletePage(pageName: string, isDir: boolean): Promise<void> {
-        const projectRoot = this.projectsManager.project?.folderPath;
-        if (!projectRoot) {
-            throw new Error('No project root found');
-        }
-
-        const normalizedPath = normalizeRoute(`${pageName}`);
-        if (normalizedPath === '' || normalizedPath === '/') {
-            throw new Error('Cannot delete root page');
-        }
-
-        try {
-            await invokeMainChannel(MainChannels.DELETE_PAGE, {
-                projectRoot,
-                pagePath: normalizedPath,
-                isDir,
-            });
-
-            await this.scanPages();
-        } catch (error) {
-            console.error('Failed to delete page:', error);
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(errorMessage);
         }
     }
 

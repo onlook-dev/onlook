@@ -16,7 +16,7 @@ const LayersTab = observer(() => {
 
     useEffect(handleSelectChange, [
         editorEngine.elements.selected,
-        editorEngine.ast.mappings.layers,
+        editorEngine.ast.mappings.filteredLayers,
     ]);
 
     const handleMouseLeaveTree = useCallback(() => {
@@ -135,7 +135,7 @@ const LayersTab = observer(() => {
                     idAccessor={(node) => node.domId}
                     childrenAccessor={childrenAccessor}
                     ref={treeRef}
-                    data={editorEngine.ast.mappings.layers}
+                    data={editorEngine.ast.mappings.filteredLayers}
                     openByDefault={true}
                     overscanCount={0}
                     indent={8}
