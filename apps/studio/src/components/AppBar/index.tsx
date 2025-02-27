@@ -9,12 +9,6 @@ const AppBar = observer(() => {
     const routeManager = useRouteManager();
     const updateManager = useUpdateManager();
 
-    const className = cn(
-        'opacity-50 hover:opacity-100',
-        updateManager.updateAvailable &&
-            'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
-    );
-
     return (
         <div
             className={cn(
