@@ -1,7 +1,6 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import { DefaultSettings } from '@onlook/models/constants';
-import type { FrameSettings } from '@onlook/models/projects';
 import {
     DropdownMenu,
     DropdownMenuContent,
