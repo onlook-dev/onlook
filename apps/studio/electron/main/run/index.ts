@@ -6,7 +6,7 @@ import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { ALLOWED_EXTENSIONS, getValidFiles } from './helpers';
+import { ALLOWED_EXTENSIONS, getValidFiles, IGNORED_DIRECTORIES } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
@@ -135,20 +135,24 @@ class RunManager {
             persistent: true,
             ignoreInitial: true,
             ignored: [
-                '**/node_modules/**',
-                '**/.git/**',
-                '**/dist/**',
-                '**/build/**',
-                '**/.next/**',
-                '**/coverage/**',
-                '**/*.lock',
-                '**/*.log',
+                ...IGNORED_DIRECTORIES,
+                'coverage/**',
+                '*.lock',
+                '*.log',
+                '.*', // Ignore all hidden files/folders
+                'package-lock.json',
+                'yarn.lock',
+                '*.min.*', // Ignore minified files
+                'public/**', // Ignore static assets
+                '__tests__/**', // Ignore test files
             ],
             awaitWriteFinish: {
                 stabilityThreshold: 300,
                 pollInterval: 100,
             },
             followSymlinks: false,
+            usePolling: false, // Disable polling
+            atomic: true, // Better handle atomic writes
         });
 
         this.watcher
