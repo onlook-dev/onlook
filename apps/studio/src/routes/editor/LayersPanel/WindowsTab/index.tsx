@@ -28,32 +28,30 @@ const WindowsTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col w-[245px]">
-            <div className="flex flex-col gap-3 px-3 py-2">
-                <div className="flex flex-row gap-1">
-                    <Button
-                        variant={'outline'}
-                        className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
-                        onClick={() => editorEngine.duplicateWindow(settings.id)}
-                    >
-                        <Icons.Copy className="mr-2" />
-                        <span className="text-xs">Duplicate</span>
-                    </Button>
-                    <Button
-                        variant={'outline'}
-                        className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
-                        disabled={!editorEngine.canDeleteWindow()}
-                        onClick={() => editorEngine.deleteWindow(settings.id)}
-                    >
-                        <Icons.Trash className="mr-2" />
-                        <span className="text-xs">Delete</span>
-                    </Button>
-                </div>
-
-                <FrameDimensions settings={settings} />
-                <Separator />
-                <DeviceSettings settings={settings} />
+        <div className="flex flex-col gap-3 px-3 py-2 w-[245px]">
+            <div className="flex flex-row gap-1">
+                <Button
+                    variant={'outline'}
+                    className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
+                    onClick={() => editorEngine.duplicateWindow(settings.id)}
+                >
+                    <Icons.Copy className="mr-2" />
+                    <span className="text-xs">Duplicate</span>
+                </Button>
+                <Button
+                    variant={'outline'}
+                    className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
+                    disabled={!editorEngine.canDeleteWindow()}
+                    onClick={() => editorEngine.deleteWindow(settings.id)}
+                >
+                    <Icons.Trash className="mr-2" />
+                    <span className="text-xs">Delete</span>
+                </Button>
             </div>
+
+            <FrameDimensions settings={settings} />
+            <Separator />
+            <DeviceSettings settings={settings} />
         </div>
     );
 });
