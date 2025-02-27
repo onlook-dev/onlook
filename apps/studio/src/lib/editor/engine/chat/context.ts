@@ -7,6 +7,7 @@ import {
     type HighlightMessageContext,
     type ImageMessageContext,
     type ProjectMessageContext,
+    type RelatedFileMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
 import type { ParsedError } from '@onlook/utility';
@@ -142,7 +143,7 @@ export class ChatContext {
         }
     }
 
-    async getProjectContext(): Promise<ProjectMessageContext[]> {
+    async getProjectContext(): Promise<(ProjectMessageContext | RelatedFileMessageContext)[]> {
         const folderPath = this.projectsManager.project?.folderPath;
         if (!folderPath) {
             return [];
@@ -205,7 +206,7 @@ export class ChatContext {
         }
 
         // Create project context with related files
-        const projectContext: ProjectMessageContext[] = [
+        const projectContext: (ProjectMessageContext | RelatedFileMessageContext)[] = [
             {
                 type: MessageContextType.PROJECT,
                 content: '',
@@ -222,7 +223,7 @@ export class ChatContext {
             }
 
             projectContext.push({
-                type: MessageContextType.PROJECT,
+                type: MessageContextType.RELATED_FILE,
                 content: fileContent,
                 displayName: `Related: ${filePath}`,
                 path: filePath,
