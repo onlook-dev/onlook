@@ -9,6 +9,7 @@ import { HelpDropdown } from './HelpDropdown.tsx';
 import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
 import PagesTab from './PageTab';
+import WindowsTab from './WindowsTab';
 import ZoomControls from './ZoomControls/index.tsx';
 import OpenCodeMini from './OpenCodeMini/index.tsx';
 const COMPONENT_DISCOVERY_ENABLED = false;
@@ -20,6 +21,7 @@ const LayersPanel = observer(() => {
         LAYERS = 'layers',
         COMPONENTS = 'components',
         IMAGES = 'images',
+        WINDOWS = 'windows',
     }
     const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.LAYERS);
     const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
@@ -126,6 +128,20 @@ const LayersPanel = observer(() => {
 
                 <button
                     className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.WINDOWS && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => handleClick(TabValue.WINDOWS)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.WINDOWS)}
+                >
+                    <Icons.Desktop className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Windows</span>
+                </button>
+
+                <button
+                    className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
                         selectedTab === TabValue.COMPONENTS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
@@ -166,6 +182,7 @@ const LayersPanel = observer(() => {
                                 ))}
                             {selectedTab === TabValue.PAGES && <PagesTab />}
                             {selectedTab === TabValue.IMAGES && <ImagesTab />}
+                            {selectedTab === TabValue.WINDOWS && <WindowsTab />}
                         </div>
                     </div>
                     {/* Invisible padding area that maintains hover state */}

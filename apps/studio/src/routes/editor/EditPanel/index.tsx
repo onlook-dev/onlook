@@ -19,7 +19,6 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import PropsTab from './PropsTab';
 import StylesTab from './StylesTab';
-import WindowSettings from './WindowSettings';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
@@ -34,18 +33,7 @@ const EditPanel = observer(() => {
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
-    const [frameSettings, setFrameSettings] = useState<FrameSettings>();
     const defaultWidth = EDIT_PANEL_WIDTHS[selectedTab];
-
-    useEffect(() => {
-        if (editorEngine.isWindowSelected) {
-            setFrameSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
-            setWindowSettingsOpen(true);
-        } else {
-            setWindowSettingsOpen(false);
-        }
-    }, [editorEngine.isWindowSelected]);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -226,11 +214,7 @@ const EditPanel = observer(() => {
                         isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                     )}
                 >
-                    {windowSettingsOpen && frameSettings ? (
-                        <WindowSettings setIsOpen={setIsOpen} settings={frameSettings} />
-                    ) : (
-                        renderTabs()
-                    )}
+                    {renderTabs()}
                 </div>
             </div>
         </ResizablePanel>
