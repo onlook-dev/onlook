@@ -1,21 +1,25 @@
 import { useEditorEngine } from '@/components/Context';
-import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
-import DeviceSettings from '../../EditPanel/WindowSettings/DeviceSettings';
-import FrameDimensions from '../../EditPanel/WindowSettings/FrameDimensions';
-import React from 'react';
+import { observer } from 'mobx-react-lite';
+import DeviceSettings from './DeviceSettings';
+import FrameDimensions from './FrameDimensions';
 
-const WindowsTab = () => {
+const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const settings = editorEngine.isWindowSelected
-        ? editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id)
-        : null;
+    let settings = null;
+
+    // If there is a selected element, get the settings from the element
+    if (editorEngine.elements.selected.length > 0) {
+        settings = editorEngine.canvas.getFrame(editorEngine.elements.selected[0].webviewId);
+    } else if (editorEngine.webviews.selected.length > 0) {
+        settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
+    }
 
     if (!settings) {
         return (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-[245px] h-full flex items-center justify-center p-2 text-center">
                 <p className="text-sm text-foreground-secondary">
                     Select a window to edit its settings
                 </p>
@@ -24,7 +28,7 @@ const WindowsTab = () => {
     }
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col w-[245px]">
             <div className="flex flex-col gap-3 px-3 py-2">
                 <div className="flex flex-row gap-1">
                     <Button
@@ -52,6 +56,6 @@ const WindowsTab = () => {
             </div>
         </div>
     );
-};
+});
 
 export default WindowsTab;

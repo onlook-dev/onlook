@@ -8,10 +8,10 @@ import ComponentsTab from './ComponentsTab';
 import { HelpDropdown } from './HelpDropdown.tsx';
 import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
+import OpenCodeMini from './OpenCodeMini/index.tsx';
 import PagesTab from './PageTab';
 import WindowsTab from './WindowsTab';
 import ZoomControls from './ZoomControls/index.tsx';
-import OpenCodeMini from './OpenCodeMini/index.tsx';
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
