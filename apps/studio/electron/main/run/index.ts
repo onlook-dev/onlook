@@ -51,6 +51,7 @@ class RunManager {
             this.setState(RunState.SETTING_UP, 'Setting up...');
             this.mapping.clear();
             await this.addIdsToDirectoryAndCreateMapping(folderPath);
+            await this.listen(folderPath);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -142,17 +143,17 @@ class RunManager {
                 '.*', // Ignore all hidden files/folders
                 'package-lock.json',
                 'yarn.lock',
-                '*.min.*', // Ignore minified files
-                'public/**', // Ignore static assets
-                '__tests__/**', // Ignore test files
+                '*.min.*',
+                'public/**',
+                '__tests__/**',
             ],
             awaitWriteFinish: {
                 stabilityThreshold: 300,
                 pollInterval: 100,
             },
             followSymlinks: false,
-            usePolling: false, // Disable polling
-            atomic: true, // Better handle atomic writes
+            usePolling: false,
+            atomic: true,
         });
 
         this.watcher
@@ -176,7 +177,6 @@ class RunManager {
         for (const filePath of filePaths) {
             await this.processFileForMapping(filePath);
         }
-        await this.listen(dirPath);
     }
 
     async processFileForMapping(filePath: string) {
