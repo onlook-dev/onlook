@@ -50,8 +50,7 @@ class RunManager {
 
             this.setState(RunState.SETTING_UP, 'Setting up...');
             this.mapping.clear();
-            const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(filePaths);
+            await this.addIdsToDirectoryAndCreateMapping(folderPath);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -126,41 +125,54 @@ class RunManager {
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(filePaths: string[]) {
+    async listen(projectDir: string) {
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        this.watcher = watch(filePaths, {
+        this.watcher = watch(projectDir, {
             persistent: true,
+            ignoreInitial: true,
+            ignored: [
+                '**/node_modules/**',
+                '**/.git/**',
+                '**/dist/**',
+                '**/build/**',
+                '**/.next/**',
+                '**/coverage/**',
+                '**/*.lock',
+                '**/*.log',
+            ],
+            awaitWriteFinish: {
+                stabilityThreshold: 300,
+                pollInterval: 100,
+            },
+            followSymlinks: false,
         });
 
         this.watcher
             .on('change', (filePath) => {
-                this.processFileForMapping(filePath);
+                if (ALLOWED_EXTENSIONS.some((ext) => filePath.endsWith(ext))) {
+                    this.processFileForMapping(filePath);
+                }
+            })
+            .on('add', (filePath) => {
+                if (ALLOWED_EXTENSIONS.some((ext) => filePath.endsWith(ext))) {
+                    this.processFileForMapping(filePath);
+                }
             })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error}`);
             });
     }
 
-    addFileToWatcher(filePath: string) {
-        for (const allowedExtension of ALLOWED_EXTENSIONS) {
-            if (filePath.endsWith(allowedExtension)) {
-                this.watcher?.add(filePath);
-                this.processFileForMapping(filePath);
-                break;
-            }
-        }
-    }
-
-    async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
+    async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<void> {
         const filePaths = await getValidFiles(dirPath);
         for (const filePath of filePaths) {
             await this.processFileForMapping(filePath);
         }
-        return filePaths;
+        await this.listen(dirPath);
     }
 
     async processFileForMapping(filePath: string) {
