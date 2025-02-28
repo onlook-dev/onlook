@@ -272,7 +272,7 @@ const BrowserControls = observer(
                         {webviewRef?.current?.isLoading() ? (
                             <Icons.CrossL className="text-inherit" />
                         ) : (
-                            <Icons.Reload className="text-inherit h-4 w-4" />
+                            <Icons.Reload className="text-inherit" />
                         )}
                     </Button>
                 </div>
