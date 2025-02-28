@@ -18,6 +18,19 @@ enum TabValue {
     ELEMENTS = 'elements',
 }
 
+interface FileTabProps {
+    filename: string;
+}
+
+const FileTab: React.FC<FileTabProps> = ({ filename }) => {
+    return (
+        <div className="h-full px-4 relative">
+            <div className="absolute right-0 h-[50%] w-[0.5px] bg-foreground/10 top-1/2 -translate-y-1/2"></div>
+            <div className="text-foreground text-sm h-full flex items-center">{filename}</div>
+        </div>
+    );
+};
+
 const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
     const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.CONSOLE);
@@ -30,31 +43,29 @@ const DevTab = observer(() => {
         <div className="h-full flex flex-col w-full border-l-[0.5px] border-t-[0.5px] border-b-[0.5px] backdrop-blur shadow rounded-tl-xl">
             {/* Top Bar with Edit Code and Files dropdowns */}
             <div className="flex items-center justify-between h-11 px-4 rounded-tl-xl border-b-[0.5px]">
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-5 h-full">
                     <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover">
+                        <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full">
+                            <Icons.Sparkles className="mr-1.5 h-4 w-4" />
                             <span className="mr-1">Edit Code</span>
                             <Icons.ChevronDown className="h-3 w-3" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem>Undo</DropdownMenuItem>
-                            <DropdownMenuItem>Redo</DropdownMenuItem>
-                            <DropdownMenuItem>Cut</DropdownMenuItem>
-                            <DropdownMenuItem>Copy</DropdownMenuItem>
-                            <DropdownMenuItem>Paste</DropdownMenuItem>
+                        <DropdownMenuContent align="start" className="-mt-1">
+                            <DropdownMenuItem>Jump to code from canvas</DropdownMenuItem>
+                            <DropdownMenuItem>Editor setting here</DropdownMenuItem>
+                            <DropdownMenuItem>Editor setting here</DropdownMenuItem>
+                            <DropdownMenuItem>Editor setting here</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
 
                     <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover">
+                        <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full">
+                            <Icons.Directory className="mr-1.5 h-4 w-4" />
                             <span className="mr-1">Files</span>
                             <Icons.ChevronDown className="h-3 w-3" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem>New File</DropdownMenuItem>
-                            <DropdownMenuItem>Open File</DropdownMenuItem>
-                            <DropdownMenuItem>Save</DropdownMenuItem>
-                            <DropdownMenuItem>Save As</DropdownMenuItem>
+                        <DropdownMenuContent align="start" className="-mt-1">
+                            <div className="h-[250px] w-[200px] overflow-auto p-1"></div>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -66,8 +77,8 @@ const DevTab = observer(() => {
 
             {/* Second Bar with index.tsx and three dots menu */}
             <div className="flex items-center justify-between h-10 border-b-[0.5px]">
-                <div className="flex items-center">
-                    <div className="text-foreground text-sm border-r-[0.5px] px-4">Index.tsx</div>
+                <div className="flex items-center h-full">
+                    <FileTab filename="Index.tsx" />
                 </div>
 
                 <div className="border-l-[0.5px] h-full flex items-center p-1">
@@ -75,10 +86,12 @@ const DevTab = observer(() => {
                         <DropdownMenuTrigger className="text-foreground hover:text-foreground-hover hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-3">
                             <Icons.DotsHorizontal className="h-4 w-4" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem>Close Tab</DropdownMenuItem>
-                            <DropdownMenuItem>Close Other Tabs</DropdownMenuItem>
-                            <DropdownMenuItem>Close All Tabs</DropdownMenuItem>
+                        <DropdownMenuContent align="end" className="-mt-1">
+                            <DropdownMenuItem>index.tsx</DropdownMenuItem>
+                            <DropdownMenuItem>ChatInput.tsx</DropdownMenuItem>
+                            <DropdownMenuItem>PageTree.tsx</DropdownMenuItem>
+                            <DropdownMenuItem>ComponentModal.tsx</DropdownMenuItem>
+                            <DropdownMenuItem>PageNode.tsx</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
