@@ -6,7 +6,7 @@ import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { ALLOWED_EXTENSIONS, getValidFiles, IGNORED_DIRECTORIES } from './helpers';
+import { ALLOWED_EXTENSIONS, getValidFiles } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
@@ -50,8 +50,8 @@ class RunManager {
 
             this.setState(RunState.SETTING_UP, 'Setting up...');
             this.mapping.clear();
-            await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(folderPath);
+            const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
+            await this.listen(filePaths);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -126,52 +126,41 @@ class RunManager {
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(projectDir: string) {
+    async listen(filePaths: string[]) {
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        this.watcher = watch(projectDir, {
+        this.watcher = watch(filePaths, {
             persistent: true,
-            ignoreInitial: true,
-            ignored: [
-                ...IGNORED_DIRECTORIES,
-                'coverage/**',
-                '*.lock',
-                '*.log',
-                '.*', // Ignore all hidden files/folders
-                'package-lock.json',
-                'yarn.lock',
-                '*.min.*',
-                'public/**',
-                '__tests__/**',
-            ],
-            awaitWriteFinish: {
-                stabilityThreshold: 300,
-                pollInterval: 100,
-            },
-            followSymlinks: false,
-            usePolling: false,
-            atomic: true,
         });
 
         this.watcher
             .on('change', (filePath) => {
-                if (ALLOWED_EXTENSIONS.some((ext) => filePath.endsWith(ext))) {
-                    this.processFileForMapping(filePath);
-                }
+                this.processFileForMapping(filePath);
             })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error}`);
             });
     }
 
-    async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<void> {
+    addFileToWatcher(filePath: string) {
+        for (const allowedExtension of ALLOWED_EXTENSIONS) {
+            if (filePath.endsWith(allowedExtension)) {
+                this.watcher?.add(filePath);
+                this.processFileForMapping(filePath);
+                break;
+            }
+        }
+    }
+
+    async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
         const filePaths = await getValidFiles(dirPath);
         for (const filePath of filePaths) {
             await this.processFileForMapping(filePath);
         }
+        return filePaths;
     }
 
     async processFileForMapping(filePath: string) {
