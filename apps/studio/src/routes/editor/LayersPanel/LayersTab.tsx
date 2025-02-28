@@ -26,7 +26,7 @@ const LayersTab = observer(() => {
 
     function handleSelectChange() {
         if (editorEngine.elements.selected.length > 0) {
-            treeRef.current?.scrollTo(editorEngine.elements.selected[0].domId);
+            treeRef.current?.scrollTo(editorEngine.elements.selected?.[0].domId);
         }
     }
 

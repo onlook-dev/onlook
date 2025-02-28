@@ -33,7 +33,7 @@ export class WebviewEventHandler {
                 console.error('No args found for dom ready event');
                 return;
             }
-            const { layerMap, rootNode } = e.args[0] as {
+            const { layerMap, rootNode } = e.args?.[0] as {
                 layerMap: Record<string, LayerNode>;
                 rootNode: LayerNode;
             };
@@ -57,7 +57,7 @@ export class WebviewEventHandler {
                 console.error('No args found for window mutated event');
                 return;
             }
-            const { added, removed } = e.args[0] as {
+            const { added, removed } = e.args?.[0] as {
                 added: Record<string, LayerNode>;
                 removed: Record<string, LayerNode>;
             };
@@ -77,7 +77,7 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
-            const { domEl, layerMap, editText } = e.args[0] as {
+            const { domEl, layerMap, editText } = e.args?.[0] as {
                 domEl: DomElement;
                 layerMap: Map<string, LayerNode>;
                 editText: boolean;
@@ -103,7 +103,7 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { parentDomEl, layerMap } = e.args[0] as {
+            const { parentDomEl, layerMap } = e.args?.[0] as {
                 parentDomEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
@@ -118,7 +118,7 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { domEl, layerMap } = e.args[0] as {
+            const { domEl, layerMap } = e.args?.[0] as {
                 domEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
@@ -133,7 +133,7 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { domEl, layerMap } = e.args[0] as {
+            const { domEl, layerMap } = e.args?.[0] as {
                 domEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
@@ -148,7 +148,7 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { domEl, layerMap } = e.args[0] as {
+            const { domEl, layerMap } = e.args?.[0] as {
                 domEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
@@ -163,7 +163,7 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { parentEl, layerMap } = e.args[0] as {
+            const { parentEl, layerMap } = e.args?.[0] as {
                 parentEl: DomElement;
                 layerMap: Map<string, LayerNode>;
             };
@@ -190,7 +190,7 @@ export class WebviewEventHandler {
                 return;
             }
 
-            const { domEl } = e.args[0] as { domEl: DomElement };
+            const { domEl } = e.args?.[0] as { domEl: DomElement };
             const webview = e.target as Electron.WebviewTag;
             this.editorEngine.elements.click([domEl], webview);
         };
@@ -209,7 +209,7 @@ export class WebviewEventHandler {
     }
 
     handleIpcMessage(e: Electron.IpcMessageEvent) {
-        const eventHandler = this.eventCallbacks[e.channel];
+        const eventHandler = this.eventCallbacks?.[e.channel];
         if (!eventHandler) {
             console.error(`No event handler found for ${e.channel}`);
             return;
@@ -229,7 +229,7 @@ export class WebviewEventHandler {
         // Clean up event callbacks
         Object.keys(this.eventCallbacks).forEach((channel) => {
             // Remove the callback from any event listeners
-            delete this.eventCallbacks[channel];
+            delete this.eventCallbacks?.[channel];
         });
 
         // Clear references

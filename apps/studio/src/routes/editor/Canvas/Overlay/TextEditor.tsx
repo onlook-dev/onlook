@@ -117,7 +117,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({
                 pointerEvents: isDisabled ? 'none' : 'auto',
                 overflow: 'visible',
                 transformOrigin: 'top left',
-                outline: `2px solid ${isComponent ? colors.purple[500] : colors.red[500]}`,
+                outline: `2px solid ${isComponent ? colors.purple?.[500] : colors.red?.[500]}`,
                 outlineOffset: '-1px',
                 borderRadius: '1px',
             }}

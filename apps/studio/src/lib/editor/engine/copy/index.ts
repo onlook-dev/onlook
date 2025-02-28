@@ -25,7 +25,7 @@ export class CopyManager {
         if (selected.length === 0) {
             return;
         }
-        const selectedEl = this.editorEngine.elements.selected[0];
+        const selectedEl = this.editorEngine.elements.selected?.[0];
         const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
@@ -68,7 +68,7 @@ export class CopyManager {
             return;
         }
 
-        const selectedEl = this.editorEngine.elements.selected[0];
+        const selectedEl = this.editorEngine.elements.selected?.[0];
 
         const targets: Array<ActionTarget> = this.editorEngine.elements.selected.map(
             (selectedEl) => {
@@ -130,7 +130,7 @@ export class CopyManager {
 
     getCleanedCopyEl(copiedEl: ActionElement, domId: string, oid: string): ActionElement {
         const filteredAttr: Record<string, string> = {
-            class: copiedEl.attributes['class'] || '',
+            class: copiedEl.attributes?.['class'] || '',
             [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
             [EditorAttributes.DATA_ONLOOK_ID]: oid,
             [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',

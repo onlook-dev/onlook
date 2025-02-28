@@ -48,7 +48,7 @@ export const ErrorView = observer(() => {
                                 </div>
                                 <div className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
                                     {errorCount === 1
-                                        ? editorEngine.errors.errors[0].content
+                                        ? editorEngine.errors.errors?.[0].content
                                         : `You have ${errorCount} errors`}
                                 </div>
                             </div>

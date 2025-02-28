@@ -12,9 +12,9 @@ const WindowsTab = observer(() => {
 
     // Get settings from the selected element or webview
     if (editorEngine.elements.selected.length > 0) {
-        settings = editorEngine.canvas.getFrame(editorEngine.elements.selected[0].webviewId);
+        settings = editorEngine.canvas.getFrame(editorEngine.elements.selected?.[0].webviewId);
     } else if (editorEngine.webviews.selected.length > 0) {
-        settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
+        settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected?.[0].id);
     }
 
     if (!settings) {

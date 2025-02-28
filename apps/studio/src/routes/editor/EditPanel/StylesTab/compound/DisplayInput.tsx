@@ -60,7 +60,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         if (!selectedStyle) {
             return 'row';
         }
-        return selectedStyle.styles['flexDirection'] ?? 'row';
+        return selectedStyle.styles?.['flexDirection'] ?? 'row';
     }
 
     function getLabelValue(elementStyle: SingleStyle) {

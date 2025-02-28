@@ -142,7 +142,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         },
         {
             label: 'Delete',
-            action: () => editorEngine.deleteWindow(editorEngine.webviews.selected[0].id),
+            action: () => editorEngine.deleteWindow(editorEngine.webviews.selected?.[0].id),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
@@ -155,7 +155,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         let root: string | null = null;
 
         if (editorEngine.elements.selected.length > 0) {
-            const element: DomElement = editorEngine.elements.selected[0];
+            const element: DomElement = editorEngine.elements.selected?.[0];
             instance = element.instanceId;
             root = element.oid;
         }

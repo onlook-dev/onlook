@@ -53,15 +53,15 @@ function getStylesheetStyles(element: HTMLElement) {
     for (let i = 0; i < sheets.length; i++) {
         let rules: CSSStyleRule[];
         try {
-            rules = (Array.from(sheets[i].cssRules) as CSSStyleRule[]) || sheets[i].rules;
+            rules = (Array.from(sheets?.[i]?.cssRules) as CSSStyleRule[]) || sheets?.[i]?.rules;
         } catch (e) {
-            console.warn("Can't read the css rules of: " + sheets[i].href, e);
+            console.warn("Can't read the css rules of: " + sheets?.[i]?.href, e);
             continue;
         }
         for (let j = 0; j < rules.length; j++) {
             try {
-                if (element.matches(rules[j].selectorText)) {
-                    const ruleStyles = parseCssText(rules[j].style.cssText);
+                if (element.matches(rules?.[j]?.selectorText)) {
+                    const ruleStyles = parseCssText(rules?.[j]?.style.cssText);
                     Object.entries(ruleStyles).forEach(([prop, value]) => (styles[prop] = value));
                 }
             } catch (e) {

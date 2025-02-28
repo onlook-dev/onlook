@@ -30,9 +30,13 @@ const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange, onCha
                             <div
                                 key={level}
                                 className="w-6 h-6 content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
-                                style={{ backgroundColor: palette.colors[Number.parseInt(level)] }}
+                                style={{
+                                    backgroundColor: palette.colors?.[Number.parseInt(level)],
+                                }}
                                 onClick={() =>
-                                    onChangeEnd(Color.from(palette.colors[Number.parseInt(level)]))
+                                    onChangeEnd(
+                                        Color.from(palette.colors?.[Number.parseInt(level)]),
+                                    )
                                 }
                             >
                                 {/* Commenting out so that we can use this for tooltips over these grid elements */}
@@ -52,14 +56,16 @@ const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange, onCha
                                 className="gap-2 hover:bg-background-secondary p-1 flex align-center cursor-pointer rounded-md group"
                                 key={level}
                                 onClick={() =>
-                                    onChangeEnd(Color.from(palette.colors[Number.parseInt(level)]))
+                                    onChangeEnd(
+                                        Color.from(palette.colors?.[Number.parseInt(level)]),
+                                    )
                                 }
                             >
                                 <div
                                     key={level}
                                     className="w-5 h-5 content-center rounded border-[0.5px] border-foreground-tertiary/50"
                                     style={{
-                                        backgroundColor: palette.colors[Number.parseInt(level)],
+                                        backgroundColor: palette.colors?.[Number.parseInt(level)],
                                     }}
                                 />
                                 <div className="text-small text-foreground-secondary group-hover:text-foreground-primary">

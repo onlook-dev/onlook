@@ -45,7 +45,7 @@ export class ConversationManager {
         if (this.conversations.length === 0) {
             this.current = new ChatConversationImpl(project.id, []);
         } else {
-            this.current = this.conversations[0];
+            this.current = this.conversations?.[0];
         }
 
         if (USE_MOCK) {
@@ -121,7 +121,7 @@ export class ConversationManager {
         this.deleteConversationInStorage(id);
         if (this.current.id === id) {
             if (this.conversations.length > 0) {
-                this.current = this.conversations[0];
+                this.current = this.conversations?.[0];
             } else {
                 this.current = new ChatConversationImpl(this.projectId, []);
                 this.conversations.push(this.current);

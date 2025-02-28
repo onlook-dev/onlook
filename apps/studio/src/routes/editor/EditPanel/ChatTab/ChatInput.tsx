@@ -139,7 +139,7 @@ export const ChatInput = observer(() => {
         inputElement.accept = 'image/*';
         inputElement.onchange = () => {
             if (inputElement.files && inputElement.files.length > 0) {
-                const file = inputElement.files[0];
+                const file = inputElement.files?.[0];
                 const fileName = file.name;
                 handleImageEvent(file, fileName);
             }

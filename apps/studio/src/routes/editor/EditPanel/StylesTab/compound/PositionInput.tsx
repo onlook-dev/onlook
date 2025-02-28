@@ -252,14 +252,14 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
                 return;
             }
 
-            const position = selectedStyle.styles['position'];
+            const position = selectedStyle.styles?.['position'];
 
             if (position === 'absolute') {
                 setLines({
-                    top: selectedStyle.styles['top'] !== 'auto',
-                    bottom: selectedStyle.styles['bottom'] !== 'auto',
-                    left: selectedStyle.styles['left'] !== 'auto',
-                    right: selectedStyle.styles['right'] !== 'auto',
+                    top: selectedStyle.styles?.['top'] !== 'auto',
+                    bottom: selectedStyle.styles?.['bottom'] !== 'auto',
+                    left: selectedStyle.styles?.['left'] !== 'auto',
+                    right: selectedStyle.styles?.['right'] !== 'auto',
                 });
             }
         };

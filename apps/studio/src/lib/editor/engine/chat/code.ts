@@ -48,7 +48,7 @@ export class ChatCodeManager {
             }
 
             message.applied = true;
-            message.snapshots[file] = {
+            message.snapshots?.[file] = {
                 path: file,
                 original: originalContent,
                 generated: content,

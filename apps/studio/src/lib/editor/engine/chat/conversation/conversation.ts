@@ -70,7 +70,7 @@ export class ChatConversationImpl implements ChatConversation {
 
     updateMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
         const index = this.messages.findIndex((m) => m.id === message.id);
-        this.messages[index] = message;
+        this.messages?.[index] = message;
         this.updatedAt = new Date().toISOString();
         this.messages = [...this.messages];
     }

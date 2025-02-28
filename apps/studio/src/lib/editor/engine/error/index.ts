@@ -32,14 +32,14 @@ export class ErrorManager {
 
     removeErrorsFromMap(errors: ParsedError[]) {
         for (const [webviewId, existingErrors] of Object.entries(this.webviewIdToError)) {
-            this.webviewIdToError[webviewId] = existingErrors.filter(
+            this.webviewIdToError?.[webviewId] = existingErrors.filter(
                 (existing) => !errors.some((error) => compareErrors(existing, error)),
             );
         }
     }
 
     errorByWebviewId(webviewId: string) {
-        return this.webviewIdToError[webviewId];
+        return this.webviewIdToError?.[webviewId];
     }
 
     addError(webviewId: string, event: Electron.ConsoleMessageEvent) {
@@ -51,9 +51,9 @@ export class ErrorManager {
             type: 'webview',
             content: event.message,
         };
-        const existingErrors = this.webviewIdToError[webviewId] || [];
+        const existingErrors = this.webviewIdToError?.[webviewId] || [];
         if (!existingErrors.some((e) => compareErrors(e, error))) {
-            this.webviewIdToError[webviewId] = [...existingErrors, error];
+            this.webviewIdToError?.[webviewId] = [...existingErrors, error];
         }
     }
 

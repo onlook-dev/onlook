@@ -14,14 +14,14 @@ export function getInsertedElement(
     const newClasses = getTailwindClasses(actionElement.oid, actionElement.styles);
     const attributes = {
         className: twMerge(
-            actionElement.attributes['className'],
-            actionElement.attributes['class'],
+            actionElement.attributes?.['className'],
+            actionElement.attributes?.['class'],
             newClasses,
         ),
         [EditorAttributes.DATA_ONLOOK_ID]: actionElement.oid,
         ...(actionElement.tagName.toLowerCase() === 'img' && {
-            src: actionElement.attributes['src'],
-            alt: actionElement.attributes['alt'],
+            src: actionElement.attributes?.['src'],
+            alt: actionElement.attributes?.['alt'],
         }),
     };
 

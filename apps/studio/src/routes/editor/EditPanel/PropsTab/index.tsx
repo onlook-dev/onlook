@@ -25,7 +25,7 @@ const PropsTab = () => {
 
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
-            const selectedEl = editorEngine.elements.selected[0];
+            const selectedEl = editorEngine.elements.selected?.[0];
             setSelectedEl(selectedEl);
             getRootProps(selectedEl);
         }

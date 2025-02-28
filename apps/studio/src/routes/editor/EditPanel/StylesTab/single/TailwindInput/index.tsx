@@ -58,7 +58,7 @@ const TailwindInput = observer(() => {
         if (history.past.length === 0) {
             return false;
         }
-        return history.past[0] !== value;
+        return history.past?.[0] !== value;
     };
 
     const undo = (history: History, setHistory: React.Dispatch<React.SetStateAction<History>>) => {
@@ -121,7 +121,7 @@ const TailwindInput = observer(() => {
 
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
-            const selectedEl = editorEngine.elements.selected[0];
+            const selectedEl = editorEngine.elements.selected?.[0];
             setSelectedEl(selectedEl);
             if (!isInstanceFocused) {
                 getInstanceClasses(selectedEl);

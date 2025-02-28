@@ -227,7 +227,7 @@ export class EditorEngine {
         if (webviews.size === 0) {
             return;
         }
-        const webview = Array.from(webviews.values())[0].webview;
+        const webview = Array.from(webviews.values())?.[0]?.webview;
         webview.executeJavaScript('window.api?.processDom()');
     }
 
@@ -244,7 +244,7 @@ export class EditorEngine {
             console.error('No webviews found');
             return null;
         }
-        const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;
+        const webviewId = Array.from(this.webviews.webviews.values())?.[0]?.webview.id;
         return this.takeWebviewScreenshot(name, webviewId, options);
     }
 
@@ -311,7 +311,7 @@ export class EditorEngine {
             console.error('No window selected');
             return;
         } else {
-            settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
+            settings = this.canvas.getFrame(this.webviews.selected?.[0].id) || null;
         }
         if (!settings) {
             console.error('Window not found');
@@ -334,7 +334,7 @@ export class EditorEngine {
             console.error('No window selected');
             return;
         } else {
-            settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
+            settings = this.canvas.getFrame(this.webviews.selected?.[0].id) || null;
         }
         if (!settings) {
             console.error('Window not found');

@@ -26,11 +26,11 @@ export class PagesManager {
 
     get activeRoute(): string | undefined {
         const webview = this.getActiveWebview();
-        return webview ? this.activeRoutesByWebviewId[webview.id] : undefined;
+        return webview ? this.activeRoutesByWebviewId?.[webview.id] : undefined;
     }
 
     private getActiveWebview(): Electron.WebviewTag | undefined {
-        return this.editorEngine.webviews.selected[0] || this.editorEngine.webviews.getAll()[0];
+        return this.editorEngine.webviews.selected?.[0] || this.editorEngine.webviews.getAll()[0];
     }
 
     public isNodeActive(node: PageNode): boolean {
@@ -82,7 +82,7 @@ export class PagesManager {
     }
 
     public setActivePath(webviewId: string, path: string) {
-        this.activeRoutesByWebviewId[webviewId] = path;
+        this.activeRoutesByWebviewId?.[webviewId] = path;
         if (webviewId === this.getActiveWebview()?.id) {
             this.currentPath = path;
         }

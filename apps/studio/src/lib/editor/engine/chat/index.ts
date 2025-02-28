@@ -108,7 +108,7 @@ export class ChatManager {
             ...errorContexts,
             ...projectContexts,
         ]);
-        this.conversation.current.updateName(errors[0].content);
+        this.conversation.current.updateName(errors?.[0]?.content);
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;

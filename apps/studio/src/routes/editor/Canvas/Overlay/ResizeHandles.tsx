@@ -257,7 +257,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
     styles,
 }) => {
     const editorEngine = useEditorEngine();
-    const color = isComponent ? colors.purple[500] : colors.red[500];
+    const color = isComponent ? colors.purple?.[500] : colors.red?.[500];
 
     // Calculate radius handle position (20px or 25% of width/height, whichever is smaller)
     const radiusOffset = Math.min(20, width * 0.25, height * 0.25);
