@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import { sendAnalytics } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
@@ -34,10 +33,7 @@ const WindowsTab = observer(() => {
                 <Button
                     variant={'outline'}
                     className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
-                    onClick={() => {
-                        editorEngine.duplicateWindow(settings.id);
-                        sendAnalytics('window_duplicate', { id: settings.id });
-                    }}
+                    onClick={() => editorEngine.duplicateWindow(settings.id)}
                 >
                     <Icons.Copy className="mr-2" />
                     <span className="text-xs">Duplicate</span>
@@ -46,10 +42,7 @@ const WindowsTab = observer(() => {
                     variant={'outline'}
                     className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
                     disabled={!editorEngine.canDeleteWindow()}
-                    onClick={() => {
-                        editorEngine.deleteWindow(settings.id);
-                        sendAnalytics('window_delete', { id: settings.id });
-                    }}
+                    onClick={() => editorEngine.deleteWindow(settings.id)}
                 >
                     <Icons.Trash className="mr-2" />
                     <span className="text-xs">Delete</span>

@@ -99,7 +99,6 @@ const PagesTab = observer(() => {
             if (selectedNode && !selectedNode.isInternal) {
                 try {
                     await editorEngine.pages.navigateTo(selectedNode.data.path);
-                    sendAnalytics('page_navigate', { path: selectedNode.data.path });
                     setHighlightedIndex(null);
                 } catch (error) {
                     console.error('Failed to navigate to page:', error);
@@ -188,10 +187,7 @@ const PagesTab = observer(() => {
                             variant={'default'}
                             size={'icon'}
                             className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                            onClick={() => {
-                                setShowCreateModal(true);
-                                sendAnalytics('page_create_modal_open');
-                            }}
+                            onClick={() => setShowCreateModal(true)}
                         >
                             <Icons.Plus />
                         </Button>

@@ -57,7 +57,6 @@ const ImagesTab = observer(() => {
         }
         try {
             await editorEngine.image.upload(file);
-            sendAnalytics('image_upload', { fileName: file.name, fileSize: file.size });
         } catch (error) {
             setUploadError('Failed to upload image. Please try again.');
             console.error('Image upload error:', error);
@@ -175,7 +174,6 @@ const ImagesTab = observer(() => {
         try {
             if (imageToRename && newName && newName !== imageToRename) {
                 await editorEngine.image.rename(imageToRename, newName);
-                sendAnalytics('image_rename', { oldName: imageToRename, newName });
             }
         } catch (error) {
             setRenameError(
@@ -217,7 +215,7 @@ const ImagesTab = observer(() => {
         }
 
         editorEngine.mode = EditorMode.INSERT_IMAGE;
-        sendAnalytics('image_drag_start', { fileName: image.fileName });
+        sendAnalytics('image drag');
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

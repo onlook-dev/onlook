@@ -84,7 +84,6 @@ export function PageModal({
 
             if (mode === 'create') {
                 await editorEngine.pages.createPage(baseRoute, pageName);
-                sendAnalytics('page_create', { path: fullPath });
                 toast({
                     title: 'Page created',
                     description: 'Page has been successfully created.',
