@@ -1,13 +1,19 @@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
-
+import { useProjectsManager } from '@/components/Context';
+import { MainChannels } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
+import { ColorPicker } from '@onlook/ui/color-picker/ColorPicker';
+import { Color } from '@onlook/utility';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 interface ColorRowProps {
     label: string;
     colors: string[];
@@ -28,159 +34,423 @@ const ColorRow = ({ label, colors }: ColorRowProps) => (
     </div>
 );
 
+const ColorPopover = ({
+    color,
+    brandColor,
+    onClose,
+    onColorChange,
+}: {
+    color: Color;
+    brandColor: string;
+    onClose?: () => void;
+    onColorChange?: (newColor: Color, newName: string) => void;
+}) => {
+    const [editedColor, setEditedColor] = useState<Color>(color);
+    const [editedName, setEditedName] = useState<string>(brandColor);
+
+    const handleColorChange = (newColor: Color) => {
+        setEditedColor(newColor);
+    };
+
+    const handleSave = () => {
+        if (onColorChange) {
+            onColorChange(editedColor, editedName);
+        }
+        if (onClose) {
+            onClose();
+        }
+    };
+
+    return (
+        <Popover onOpenChange={(open) => !open && handleSave()} open={true}>
+            <PopoverTrigger asChild>
+                <div
+                    className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
+                    style={{ backgroundColor: editedColor.toHex() }}
+                />
+            </PopoverTrigger>
+            <PopoverContent className="w-64">
+                <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs text-muted-foreground">Color Name</label>
+                        <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            className="w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1 text-sm"
+                        />
+                    </div>
+                    <ColorPicker color={editedColor} onChange={handleColorChange} />
+                    <div className="flex justify-end gap-2 mt-2">
+                        <Button variant="outline" size="sm" onClick={onClose} className="text-xs">
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="default"
+                            size="sm"
+                            onClick={handleSave}
+                            className="text-xs"
+                        >
+                            Apply
+                        </Button>
+                    </div>
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+};
+
 interface BrandPalletGroupProps {
+    title: string;
+    colors?: ColorItem[];
     onRename: () => void;
     onDelete: () => void;
+    onColorChange?: (
+        groupName: string,
+        colorIndex: number,
+        newColor: Color,
+        newName: string,
+    ) => void;
 }
 
-const BrandPalletGroup = ({ onRename, onDelete }: BrandPalletGroupProps) => (
-    <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center">
-            <span className="text-sm font-normal">Group name</span>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-4 w-4 p-0 hover:bg-transparent"
-                    >
-                        <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                    className="rounded-md bg-background"
-                    align="start"
-                    side="bottom"
-                >
-                    <DropdownMenuItem asChild>
-                        <Button
-                            variant="ghost"
-                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                            onClick={onRename}
-                        >
-                            <span className="flex w-full text-smallPlus items-center">
-                                <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
-                                <span>Rename</span>
-                            </span>
-                        </Button>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                        <Button
-                            variant="ghost"
-                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                            onClick={onDelete}
-                        >
-                            <span className="flex w-full text-smallPlus items-center">
-                                <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
-                                <span>Delete</span>
-                            </span>
-                        </Button>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
+const BrandPalletGroup = ({
+    title,
+    colors,
+    onRename,
+    onDelete,
+    onColorChange,
+}: BrandPalletGroupProps) => {
+    const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
+
+    const handleColorChange = (index: number, newColor: Color, newName: string) => {
+        if (onColorChange) {
+            onColorChange(title.toLowerCase(), index, newColor, newName);
+        }
+        setEditingColorIndex(null);
+    };
+
+    return (
         <div className="flex flex-col gap-2">
-            {/* Color Row */}
-            <div className="grid grid-cols-6 gap-1">
-                {[
-                    '#1E40AF',
-                    '#2563EB',
-                    '#3B82F6',
-                    '#60A5FA',
-                    '#93C5FD',
-                    '#BFDBFE',
-                    '#DBEAFE',
-                    '#EFF6FF',
-                    '#F5F9FF',
-                    '#FAFCFF',
-                ].map((color, index) => (
-                    <div key={`brand-color-${index}`} className="relative group">
-                        <div
-                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
-                            style={{ backgroundColor: color }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-[85%] w-[85%] p-0 bg-black hover:bg-black rounded-md flex items-center justify-center"
-                                    >
-                                        <Icons.DotsHorizontal className="h-4 w-4 text-white" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    className="rounded-md bg-background p-1 min-w-[140px]"
-                                    align="start"
-                                    side="bottom"
-                                >
-                                    <div className="flex items-start gap-2 px-2 py-1 border-b border-border mb-0.5">
+            <div className="flex justify-between items-center">
+                <span className="text-sm font-normal">{title}</span>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
+                        >
+                            <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        className="rounded-md bg-background"
+                        align="start"
+                        side="bottom"
+                    >
+                        <DropdownMenuItem asChild>
+                            <Button
+                                variant="ghost"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                onClick={onRename}
+                            >
+                                <span className="flex w-full text-smallPlus items-center">
+                                    <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                    <span>Rename</span>
+                                </span>
+                            </Button>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Button
+                                variant="ghost"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                onClick={onDelete}
+                            >
+                                <span className="flex w-full text-smallPlus items-center">
+                                    <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                    <span>Delete</span>
+                                </span>
+                            </Button>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <div className="flex flex-col gap-2">
+                {/* Color Row */}
+                <div className="grid grid-cols-6 gap-1">
+                    {colors ? (
+                        // Display colors from props with tooltips
+                        colors.map((color, index) => (
+                            <div key={`${title}-${index}`} className="relative group">
+                                {editingColorIndex === index ? (
+                                    <ColorPopover
+                                        color={Color.from(color.lightColor)}
+                                        brandColor={color.name}
+                                        onClose={() => setEditingColorIndex(null)}
+                                        onColorChange={(newColor, newName) =>
+                                            handleColorChange(index, newColor, newName)
+                                        }
+                                    />
+                                ) : (
+                                    <>
                                         <div
-                                            className="w-4 h-4 rounded-sm mt-[2px]"
-                                            style={{ backgroundColor: color }}
+                                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
+                                            style={{ backgroundColor: color.lightColor }}
                                         />
-                                        <div className="flex flex-col">
-                                            <span className="text-sm text-foreground">
-                                                Soft Blue
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {color}
-                                            </span>
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-[85%] w-[85%] p-0 bg-black hover:bg-black rounded-md flex items-center justify-center"
+                                                    >
+                                                        <Icons.DotsHorizontal className="h-4 w-4 text-white" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent
+                                                    className="rounded-md bg-background p-1 min-w-[140px]"
+                                                    align="start"
+                                                    side="bottom"
+                                                >
+                                                    <div className="flex items-start gap-2 px-2 py-1 border-b border-border mb-0.5">
+                                                        <div
+                                                            className="w-4 h-4 rounded-sm mt-[2px]"
+                                                            style={{
+                                                                backgroundColor: color.lightColor,
+                                                            }}
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm text-foreground">
+                                                                {color.name}
+                                                            </span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {color.lightColor}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <DropdownMenuItem asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                            onClick={() =>
+                                                                setEditingColorIndex(index)
+                                                            }
+                                                        >
+                                                            <span className="flex w-full text-sm items-center">
+                                                                <Icons.Pencil className="mr-2 h-4 w-4" />
+                                                                <span>Edit color</span>
+                                                            </span>
+                                                        </Button>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                        >
+                                                            <span className="flex w-full text-sm items-center">
+                                                                <Icons.Copy className="mr-2 h-4 w-4" />
+                                                                <span>Duplicate</span>
+                                                            </span>
+                                                        </Button>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                            onClick={onDelete}
+                                                        >
+                                                            <span className="flex w-full text-sm items-center">
+                                                                <Icons.Trash className="mr-2 h-4 w-4" />
+                                                                <span>Delete</span>
+                                                            </span>
+                                                        </Button>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
-                                    </div>
-                                    <DropdownMenuItem asChild>
-                                        <Button
-                                            variant="ghost"
-                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
-                                        >
-                                            <span className="flex w-full text-sm items-center">
-                                                <Icons.Pencil className="mr-2 h-4 w-4" />
-                                                <span>Edit color</span>
-                                            </span>
-                                        </Button>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Button
-                                            variant="ghost"
-                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
-                                        >
-                                            <span className="flex w-full text-sm items-center">
-                                                <Icons.Copy className="mr-2 h-4 w-4" />
-                                                <span>Duplicate</span>
-                                            </span>
-                                        </Button>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Button
-                                            variant="ghost"
-                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
-                                            onClick={onDelete}
-                                        >
-                                            <span className="flex w-full text-sm items-center">
-                                                <Icons.Trash className="mr-2 h-4 w-4" />
-                                                <span>Delete</span>
-                                            </span>
-                                        </Button>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </div>
-                ))}
-                <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-full aspect-square rounded-lg border border-dashed flex items-center justify-center bg-transparent hover:bg-transparent"
-                >
-                    <Icons.Plus className="h-4 w-4" />
-                </Button>
+                                    </>
+                                )}
+                            </div>
+                        ))
+                    ) : (
+                        <></>
+                    )}
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="w-full aspect-square rounded-lg border border-dashed flex items-center justify-center bg-transparent hover:bg-transparent"
+                    >
+                        <Icons.Plus className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
+
+interface ThemeColors {
+    [key: string]: string;
+}
+
+interface ColorValue {
+    name: string;
+    lightMode: string;
+    darkMode: string;
+}
+
+interface ParsedColors {
+    [key: string]: ColorValue;
+}
+
+interface ConfigResult {
+    cssContent: string;
+    cssPath: string;
+    configPath: string;
+    configContent: any;
+}
+
+interface ColorItem {
+    name: string;
+    originalKey: string;
+    lightColor: string;
+    darkColor?: string;
+}
 
 const BrandTab = observer(() => {
+    const [colorGroups, setColorGroups] = useState<{ [key: string]: ColorItem[] }>({});
+    const projectsManager = useProjectsManager();
+
+    useEffect(() => {
+        const loadColors = async () => {
+            const projectRoot = projectsManager.project?.folderPath;
+            if (!projectRoot) {
+                return;
+            }
+
+            try {
+                const configResult = (await invokeMainChannel(MainChannels.SCAN_TAILWIND_CONFIG, {
+                    projectRoot,
+                })) as ConfigResult;
+
+                if (!configResult) {
+                    return;
+                }
+
+                const { cssContent, configContent } = configResult;
+
+                const cssConfig =
+                    typeof cssContent === 'string' ? JSON.parse(cssContent) : cssContent;
+                const config =
+                    typeof configContent === 'string' ? JSON.parse(configContent) : configContent;
+
+                const lightModeColors: ThemeColors = cssConfig.root || {};
+                const darkModeColors: ThemeColors = cssConfig.dark || {};
+
+                const parsed: ParsedColors = {};
+                const groups: { [key: string]: Set<string> } = {};
+
+                const processConfigObject = (obj: any, prefix = '', parentKey = '') => {
+                    Object.entries(obj).forEach(([key, value]) => {
+                        const fullKey = prefix ? `${prefix}-${key}` : key;
+
+                        if (parentKey) {
+                            if (!groups[parentKey]) {
+                                groups[parentKey] = new Set();
+                            }
+                            groups[parentKey].add(fullKey);
+                        }
+
+                        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                            processConfigObject(value, prefix ? `${prefix}-${key}` : key, key);
+
+                            if ('DEFAULT' in value) {
+                                const varName = extractVarName(value.DEFAULT as string);
+                                if (varName) {
+                                    parsed[key] = {
+                                        name: key,
+                                        lightMode: lightModeColors[varName] || '',
+                                        darkMode: darkModeColors[varName] || '',
+                                    };
+                                }
+                            }
+                        } else if (typeof value === 'string') {
+                            const varName = extractVarName(value);
+                            if (varName) {
+                                parsed[fullKey] = {
+                                    name: fullKey,
+                                    lightMode: lightModeColors[varName] || '',
+                                    darkMode: darkModeColors[varName] || '',
+                                };
+                            }
+                        }
+                    });
+                };
+
+                const extractVarName = (value: string): string | null => {
+                    if (typeof value !== 'string') {
+                        return null;
+                    }
+                    const match = value.match(/var\(--([^)]+)\)/);
+                    return match ? match[1] : null;
+                };
+
+                processConfigObject(config);
+
+                // Add chart colors which might be defined directly in CSS
+                Object.entries(lightModeColors)
+                    .filter(([key]) => key.startsWith('chart-'))
+                    .forEach(([key]) => {
+                        if (!parsed[key]) {
+                            parsed[key] = {
+                                name: key,
+                                lightMode: lightModeColors[key] || '',
+                                darkMode: darkModeColors[key] || '',
+                            };
+                        }
+                    });
+
+                // Convert groups to color items for UI
+                const colorGroupsObj: { [key: string]: ColorItem[] } = {};
+
+                Object.entries(groups).forEach(([groupName, colorKeys]) => {
+                    if (colorKeys.size > 0) {
+                        colorGroupsObj[groupName] = Array.from(colorKeys).map((key) => {
+                            const color = parsed[key];
+                            return {
+                                name: key.includes('-') ? key.split('-').pop() || key : key,
+                                originalKey: key,
+                                lightColor: color?.lightMode || '',
+                                darkColor: color?.darkMode || '',
+                            };
+                        });
+                    }
+                });
+
+                // Handle any top-level colors that aren't part of a group
+                const ungroupedKeys = Object.keys(parsed).filter(
+                    (key) => !Object.values(groups).some((set) => set.has(key)),
+                );
+
+                if (ungroupedKeys.length > 0) {
+                    colorGroupsObj['base'] = ungroupedKeys.map((key) => ({
+                        name: key,
+                        originalKey: key,
+                        lightColor: parsed[key].lightMode,
+                        darkColor: parsed[key].darkMode,
+                    }));
+                }
+
+                console.log('Color groups:', colorGroupsObj);
+                setColorGroups(colorGroupsObj);
+            } catch (error) {
+                console.error('Error loading colors:', error);
+            }
+        };
+
+        loadColors();
+    }, [projectsManager.project?.folderPath]);
+
     const handleRename = () => {
         // Implement rename logic
     };
@@ -189,12 +459,79 @@ const BrandTab = observer(() => {
         // Implement delete logic
     };
 
+    // Add handler for color changes
+    const handleColorChange = (
+        groupName: string,
+        colorIndex: number,
+        newColor: Color,
+        newName: string,
+    ) => {
+        console.log('handleColorChange', groupName, colorIndex, newColor, newName);
+
+        setColorGroups((prevGroups) => {
+            const updatedGroups = { ...prevGroups };
+            console.log('groupName', groupName);
+            console.log('updatedGroups', updatedGroups);
+            console.log('updatedGroups[groupName]', updatedGroups[groupName]);
+            console.log(
+                'updatedGroups[groupName][colorIndex]',
+                updatedGroups[groupName][colorIndex],
+            );
+            if (updatedGroups[groupName] && updatedGroups[groupName][colorIndex]) {
+                const updatedColors = [...updatedGroups[groupName]];
+                updatedColors[colorIndex] = {
+                    ...updatedColors[colorIndex],
+                    name: newName,
+                    lightColor: newColor.toHex(),
+                };
+                updatedGroups[groupName] = updatedColors;
+
+                // Save the changes inside the callback where updatedColors is defined
+                const item = updatedColors[colorIndex];
+                saveColorChange(item.originalKey, item.lightColor, newName);
+            }
+            return updatedGroups;
+        });
+
+        console.log(
+            `Color updated: ${groupName} - ${colorGroups[groupName]?.[colorIndex]?.originalKey}`,
+        );
+
+        const saveColorChange = async (originalKey: string, newColor: string, newName: string) => {
+            const projectRoot = projectsManager.project?.folderPath;
+            if (!projectRoot) {
+                return;
+            }
+
+            try {
+                await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
+                    projectRoot,
+                    originalKey,
+                    newColor: newColor,
+                    newName,
+                });
+            } catch (error) {
+                console.error('Error saving color change:', error);
+            }
+        };
+    };
+
     return (
-        <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0">
+        <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0 overflow-y-auto">
+            {/* Brand Palette Groups section */}
             <div className="flex flex-col gap-4 px-4 py-[18px] border-b border-border">
                 <div className="flex flex-col gap-4">
-                    <BrandPalletGroup onRename={handleRename} onDelete={handleDelete} />
-                    <BrandPalletGroup onRename={handleRename} onDelete={handleDelete} />
+                    {/* Theme color groups */}
+                    {Object.entries(colorGroups).map(([groupName, colors]) => (
+                        <BrandPalletGroup
+                            key={groupName}
+                            title={groupName.charAt(0).toUpperCase() + groupName.slice(1)}
+                            colors={colors}
+                            onRename={handleRename}
+                            onDelete={handleDelete}
+                            onColorChange={handleColorChange}
+                        />
+                    ))}
                 </div>
                 <Button
                     variant="ghost"
