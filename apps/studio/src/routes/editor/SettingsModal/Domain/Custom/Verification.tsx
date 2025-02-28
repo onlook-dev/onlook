@@ -160,7 +160,7 @@ export const Verification = observer(() => {
     function getVerificationRecord(domain: string, verificationCode: string) {
         const verificationRecord: DNSRecord = {
             type: 'TXT',
-            host: `${FRESTYLE_CUSTOM_HOSTNAME}.${domain}`,
+            host: FRESTYLE_CUSTOM_HOSTNAME,
             value: verificationCode,
         };
         return verificationRecord;
