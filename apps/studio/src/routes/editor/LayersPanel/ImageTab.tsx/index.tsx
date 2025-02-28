@@ -142,7 +142,6 @@ const ImagesTab = observer(() => {
     const onDeleteImage = () => {
         if (imageToDelete) {
             editorEngine.image.delete(imageToDelete);
-            sendAnalytics('image_delete', { fileName: imageToDelete });
             setImageToDelete(null);
         }
     };

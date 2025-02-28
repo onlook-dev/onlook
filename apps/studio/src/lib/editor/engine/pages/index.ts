@@ -279,6 +279,7 @@ export class PagesManager {
             await webview.loadURL(`${baseUrl}${path}`);
             this.setActivePath(webview.id, originalPath);
             await webview.executeJavaScript('window.api?.processDom()');
+
             sendAnalytics('page navigate');
         } catch (error) {
             console.error('Navigation failed:', error);

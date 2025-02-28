@@ -91,7 +91,6 @@ export function PageModal({
                 });
             } else {
                 await editorEngine.pages.renamePage(baseRoute, pageName);
-                sendAnalytics('page_rename', { oldPath: baseRoute, newPath: fullPath });
                 toast({
                     title: 'Page renamed',
                     description: 'Page has been successfully renamed.',

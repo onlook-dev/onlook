@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import { sendAnalytics } from '@/lib/utils';
 import type { PageNode } from '@onlook/models/pages';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -125,7 +124,6 @@ const PagesTab = observer(() => {
                 if (nodes.length > 0) {
                     try {
                         await editorEngine.pages.navigateTo(nodes[0].data.path);
-                        sendAnalytics('page_navigate', { path: nodes[0].data.path });
                         setHighlightedIndex(null);
                     } catch (error) {
                         console.error('Failed to navigate to page:', error);
