@@ -99,6 +99,7 @@ export const Verification = observer(() => {
 
         setDomain(validDomain);
         setStatus(VerificationStatus.LOADING);
+        setError(null);
 
         // Send verification request to server
         const response: CreateDomainVerificationResponse = await invokeMainChannel(
@@ -123,6 +124,7 @@ export const Verification = observer(() => {
 
     async function verifyDomain() {
         setStatus(VerificationStatus.LOADING);
+        setError(null);
         const response: VerifyDomainResponse = await invokeMainChannel(MainChannels.VERIFY_DOMAIN, {
             domain: domain,
         });
@@ -158,7 +160,7 @@ export const Verification = observer(() => {
     function getVerificationRecord(domain: string, verificationCode: string) {
         const verificationRecord: DNSRecord = {
             type: 'TXT',
-            host: `${FRESTYLE_CUSTOM_HOSTNAME}.${domain}`,
+            host: FRESTYLE_CUSTOM_HOSTNAME,
             value: verificationCode,
         };
         return verificationRecord;
