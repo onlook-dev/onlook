@@ -119,12 +119,21 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
 
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
+
         if (deviceName === 'Custom') {
             editorEngine.canvas.saveFrame(settings.id, {
                 device: device,
             });
             return;
         }
+
+        // Check if the category and device name exist in deviceOptions
+        if (!deviceOptions[deviceCategory] || !deviceOptions[deviceCategory][deviceName]) {
+            console.warn(`Invalid device: ${device}. Category or device name not found.`);
+            setDevice('Custom:Custom');
+            return;
+        }
+
         const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
         if (width === parseInt(deviceHeight) && height === parseInt(deviceWidth)) {
             return;
@@ -143,6 +152,13 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
 
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
+
+        // Check if the category and device name exist in deviceOptions
+        if (!deviceOptions[deviceCategory] || !deviceOptions[deviceCategory][deviceName]) {
+            console.warn(`Invalid device: ${device}. Category or device name not found.`);
+            return;
+        }
+
         const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
 
         if (
