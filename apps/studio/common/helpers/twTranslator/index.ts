@@ -2592,6 +2592,12 @@ const parsingCode = (code: string): CssCodeParse[] => {
                 if (bracketsCount++ === 0) {
                     isSelectorName = false;
                 } else {
+                    if (!tmpCodes[index]) {
+                        tmpCodes[index] = {
+                            selectorName: '',
+                            cssCode: '',
+                        };
+                    }
                     tmpCodes[index][isSelectorName ? 'selectorName' : 'cssCode'] += char;
                 }
             } else {
@@ -2603,6 +2609,12 @@ const parsingCode = (code: string): CssCodeParse[] => {
                     index++;
                     isSelectorName = true;
                 } else {
+                    if (!tmpCodes[index]) {
+                        tmpCodes[index] = {
+                            selectorName: '',
+                            cssCode: '',
+                        };
+                    }
                     tmpCodes[index][isSelectorName ? 'selectorName' : 'cssCode'] += char;
                 }
             }
