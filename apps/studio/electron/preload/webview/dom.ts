@@ -79,7 +79,7 @@ export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null
 
                 // Add this node's domId to parent's children array
                 const parentNode = layerMap.get(parentDomId);
-                if (parentNode && parentNode.children) {
+                if (parentNode?.children) {
                     parentNode.children.push(layerNode.domId);
                 }
             }

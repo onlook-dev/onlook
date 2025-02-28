@@ -33,6 +33,8 @@ export default [
             '@typescript-eslint/no-unused-vars': 'warn',
             '@typescript-eslint/no-unused-expressions': 'warn',
             '@typescript-eslint/ban-ts-comment': 'warn',
+            // Add rules to error on unsafe accessors
+            'no-unsafe-optional-chaining': 'error',
         },
     },
 ];

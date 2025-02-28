@@ -4,7 +4,7 @@ export enum DisplayDirection {
 }
 
 export function getDisplayDirection(element: HTMLElement): DisplayDirection {
-    if (!element || !element.children || element.children.length < 2) {
+    if (!element?.children || element.children.length < 2) {
         return DisplayDirection.VERTICAL;
     }
 

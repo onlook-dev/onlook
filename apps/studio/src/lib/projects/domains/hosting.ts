@@ -86,7 +86,7 @@ export class HostingManager {
             request,
         );
 
-        if (!res || !res.success) {
+        if (!res?.success) {
             const error = `Failed to publish hosting environment: ${res?.message || 'client error'}`;
             console.error(error);
             this.updateState({

@@ -124,7 +124,7 @@ export class ChatContext {
 
         try {
             const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
-            if (!result || !result.image) {
+            if (!result?.image) {
                 console.error('Failed to capture screenshot');
                 return null;
             }
