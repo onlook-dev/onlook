@@ -76,7 +76,9 @@ const getInsideRect = (rectA: RectPoint, rectB: RectPoint): RectPoint | null => 
 
 export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, toRect }) => {
     const editorEngine = useEditorEngine();
-    const webview = editorEngine.webviews.getWebview(editorEngine.elements.selected[0]?.webviewId);
+    const webview = editorEngine.webviews.getWebview(
+        editorEngine.elements.selected?.[0]?.webviewId,
+    );
 
     const fromRectAdjusted = useMemo(
         () => (webview ? adaptRectToCanvas(fromRect, webview) : fromRect),
@@ -389,7 +391,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                 width={fromRect.width}
                 height={fromRect.height}
                 fill="none"
-                stroke={colors.red[500]}
+                stroke={colors.red?.[500]}
                 strokeWidth={1}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -400,7 +402,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                 width={toRect.width}
                 height={toRect.height}
                 fill="none"
-                stroke={colors.red[500]}
+                stroke={colors.red?.[500]}
                 strokeWidth={1}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -420,7 +422,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                             y1={distance.start.y}
                             x2={distance.end.x}
                             y2={distance.end.y}
-                            stroke={colors.red[500]}
+                            stroke={colors.red?.[500]}
                             strokeWidth={1}
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -431,7 +433,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                                 y1={distance.supportLine.start.y}
                                 x2={distance.supportLine.end.x}
                                 y2={distance.supportLine.end.y}
-                                stroke={colors.red[500]}
+                                stroke={colors.red?.[500]}
                                 strokeWidth={1}
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -444,7 +446,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                                 y={-10}
                                 width={40}
                                 height={20}
-                                fill={colors.red[500]}
+                                fill={colors.red?.[500]}
                                 rx={2}
                             />
                             <text

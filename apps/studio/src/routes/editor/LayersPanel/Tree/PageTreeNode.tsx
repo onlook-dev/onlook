@@ -36,7 +36,7 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
             return;
         }
 
-        const webviewId = editorEngine.webviews.selected[0]?.id;
+        const webviewId = editorEngine.webviews.selected?.[0]?.id;
         if (webviewId) {
             editorEngine.pages.setActivePath(webviewId, node.data.path);
         }

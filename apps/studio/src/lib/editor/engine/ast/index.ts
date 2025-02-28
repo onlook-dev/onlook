@@ -54,7 +54,10 @@ export class AstManager {
             callback(node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i]);
+                    const childLayerNode = this.mappings.getLayerNode(
+                        webviewId,
+                        node.children?.[i],
+                    );
                     if (childLayerNode) {
                         stack.push(childLayerNode);
                     }

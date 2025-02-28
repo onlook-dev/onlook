@@ -49,7 +49,7 @@ const configurePlatformSpecifics = () => {
 const setupProtocol = () => {
     if (process.defaultApp && process.argv.length >= 2) {
         app.setAsDefaultProtocolClient(APP_SCHEMA, process.execPath, [
-            path.resolve(process.argv[1]),
+            path.resolve(process.argv?.[1]),
         ]);
     } else {
         app.setAsDefaultProtocolClient(APP_SCHEMA);
@@ -121,7 +121,7 @@ const setupAppEventListeners = () => {
 
     app.on('activate', () => {
         BrowserWindow.getAllWindows().length
-            ? BrowserWindow.getAllWindows()[0].focus()
+            ? BrowserWindow.getAllWindows()?.[0]?.focus()
             : initMainWindow();
     });
 

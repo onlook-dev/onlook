@@ -50,10 +50,10 @@ function addIdsToAst(ast: t.File) {
             );
 
             if (existingAttrIndex !== -1) {
-                const existingId = (attributes[existingAttrIndex] as any).value.value;
+                const existingId = (attributes?.[existingAttrIndex] as any).value.value;
                 if (ids.has(existingId)) {
                     const newId = generateId();
-                    (attributes[existingAttrIndex] as any).value.value = newId;
+                    (attributes?.[existingAttrIndex] as any).value.value = newId;
                     ids.add(newId);
                 } else {
                     ids.add(existingId);
@@ -104,7 +104,7 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
         },
         VariableDeclaration: {
             enter(path: any) {
-                componentStack.push(path.node.declarations[0].id.name);
+                componentStack.push(path.node.declarations?.[0].id.name);
             },
             exit() {
                 componentStack.pop();

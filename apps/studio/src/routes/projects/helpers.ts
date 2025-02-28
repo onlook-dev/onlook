@@ -62,7 +62,7 @@ export function getStepName(method: CreateMethod | null, step: number): string {
             return 'Unknown Method';
         }
 
-        return STEP_MAP[method][step];
+        return STEP_MAP?.[method]?.[step];
     } catch (e) {
         return 'Unknown Step';
     }

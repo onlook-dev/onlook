@@ -488,7 +488,7 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
                 .replace(/\(.+?\)/g, (v) => v.replace(/_/g, ''))
                 .split(')_')
                 .map((v) => `${v})`);
-            vals[vals.length - 1] = vals[vals.length - 1].slice(0, -1);
+            vals[vals.length - 1] = vals?.[vals.length - 1]?.slice(0, -1);
 
             let canUse = true;
             const res = vals.map((v) => {
@@ -1089,7 +1089,7 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
                 .replace(/\(.+?\)/g, (v) => v.replace(/_/g, ''))
                 .split(')_')
                 .map((v) => `${v})`);
-            vals[vals.length - 1] = vals[vals.length - 1].slice(0, -1);
+            vals[vals.length - 1] = vals?.[vals.length - 1]?.slice(0, -1);
 
             let canUse = true;
             const res = vals.map((v) => {
@@ -2327,7 +2327,7 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
                         .map((v, idx) => {
                             const t = hasNegative(v);
                             if (/^\d+\.[1-9]{2,}%$/.test(t[1])) {
-                                t[1] = `${Number(t[1].slice(0, -1))
+                                t[1] = `${Number(t?.[1]?.slice(0, -1))
                                     .toFixed(6)
                                     .replace(/(\.[1-9]{2})\d+/, '$1')}%`;
                             }
@@ -2338,7 +2338,7 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
                 translateX: (v: string) => {
                     const t = hasNegative(v);
                     if (/^\d+\.[1-9]{2,}%$/.test(t[1])) {
-                        t[1] = `${Number(t[1].slice(0, -1))
+                        t[1] = `${Number(t?.[1]?.slice(0, -1))
                             .toFixed(6)
                             .replace(/(\.[1-9]{2})\d+/, '$1')}%`;
                     }
@@ -2347,7 +2347,7 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
                 translateY: (v: string) => {
                     const t = hasNegative(v);
                     if (/^\d+\.[1-9]{2,}%$/.test(t[1])) {
-                        t[1] = `${Number(t[1].slice(0, -1))
+                        t[1] = `${Number(t?.[1]?.slice(0, -1))
                             .toFixed(6)
                             .replace(/(\.[1-9]{2})\d+/, '$1')}%`;
                     }
@@ -2378,7 +2378,7 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
                 .replace(/\(.+?\)/g, (v) => v.replace(/_/g, ''))
                 .split(')_')
                 .map((v) => `${v})`);
-            vals[vals.length - 1] = vals[vals.length - 1].slice(0, -1);
+            vals[vals.length - 1] = vals?.[vals.length - 1]?.slice(0, -1);
 
             let canUse = true;
             const res = vals.map((v) => {
@@ -2592,18 +2592,18 @@ const parsingCode = (code: string): CssCodeParse[] => {
                 if (bracketsCount++ === 0) {
                     isSelectorName = false;
                 } else {
-                    tmpCodes[index][isSelectorName ? 'selectorName' : 'cssCode'] += char;
+                    tmpCodes?.[index]?.[isSelectorName ? 'selectorName' : 'cssCode'] += char;
                 }
             } else {
                 if (--bracketsCount === 0) {
-                    const cssCode = tmpCodes[index].cssCode;
+                    const cssCode = tmpCodes?.[index]?.cssCode;
                     if (typeof cssCode === 'string' && cssCode.includes('{')) {
-                        tmpCodes[index].cssCode = parsingCode(cssCode);
+                        tmpCodes?.[index]?.cssCode = parsingCode(cssCode);
                     }
                     index++;
                     isSelectorName = true;
                 } else {
-                    tmpCodes[index][isSelectorName ? 'selectorName' : 'cssCode'] += char;
+                    tmpCodes?.[index]?.[isSelectorName ? 'selectorName' : 'cssCode'] += char;
                 }
             }
         } else {
@@ -2613,7 +2613,7 @@ const parsingCode = (code: string): CssCodeParse[] => {
                     cssCode: '',
                 };
             }
-            tmpCodes[index][isSelectorName ? 'selectorName' : 'cssCode'] += char;
+            tmpCodes?.[index]?.[isSelectorName ? 'selectorName' : 'cssCode'] += char;
         }
     }
     return tmpCodes.map((v) => ({
@@ -3252,10 +3252,10 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
                 config.customTheme = config.customTheme ?? {};
                 pipeVal =
                     typeof pipe === 'function'
-                        ? config.customTheme[key.trim()]?.[val] ||
+                        ? config.customTheme?.[key.trim()]?.[val] ||
                           (config.useAllDefaultValues && moreDefaultValuesMap[key.trim()]?.[val]) ||
                           pipe(val)
-                        : config.customTheme[key.trim()]?.[val] ||
+                        : config.customTheme?.[key.trim()]?.[val] ||
                           (config.useAllDefaultValues && moreDefaultValuesMap[key.trim()]?.[val]) ||
                           (pipe?.[val] ?? '');
             }

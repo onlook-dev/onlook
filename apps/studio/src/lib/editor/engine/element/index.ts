@@ -51,7 +51,7 @@ export class ElementManager {
             return;
         }
 
-        const selectedEl = this.selected[0];
+        const selectedEl = this.selected?.[0];
         const hoverEl = this.hovered;
 
         const webViewId = selectedEl.webviewId;

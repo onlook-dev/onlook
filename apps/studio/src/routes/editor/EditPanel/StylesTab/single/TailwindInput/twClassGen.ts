@@ -279,7 +279,7 @@ export function getAllTailwindClasses(): string[] {
     function addClassesFromObject(obj: any) {
         for (const key in obj) {
             if (Array.isArray(obj[key])) {
-                obj[key].forEach((cls: string) => allClasses.add(cls));
+                obj?.[key]?.forEach((cls: string) => allClasses.add(cls));
             } else if (typeof obj[key] === 'object') {
                 addClassesFromObject(obj[key]);
             }

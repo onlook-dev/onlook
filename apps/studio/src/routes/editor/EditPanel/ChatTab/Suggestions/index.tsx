@@ -41,7 +41,7 @@ const Suggestions = forwardRef<
 
         // If we would exceed the suggestions, return false to move to chat input
         if (nextIndex >= suggestions.length) {
-            buttonRefs.current[focusedIndex]?.blur();
+            buttonRefs.current?.[focusedIndex]?.blur();
             setFocusedIndex(-1);
             onSuggestionFocus?.(false);
             return false;
@@ -49,10 +49,10 @@ const Suggestions = forwardRef<
 
         // Force blur current button before focusing next
         if (focusedIndex !== -1) {
-            buttonRefs.current[focusedIndex]?.blur();
+            buttonRefs.current?.[focusedIndex]?.blur();
         }
         // Force focus next button
-        buttonRefs.current[nextIndex]?.focus();
+        buttonRefs.current?.[nextIndex]?.focus();
         setFocusedIndex(nextIndex);
         onSuggestionFocus?.(true);
         return true;
@@ -62,7 +62,7 @@ const Suggestions = forwardRef<
         if (focusedIndex === -1 || shouldHideSuggestions) {
             return false;
         }
-        setInput(suggestions[focusedIndex].prompt);
+        setInput(suggestions?.[focusedIndex]?.prompt);
         setFocusedIndex(-1);
         onSuggestionFocus?.(false);
         return true;
@@ -90,7 +90,7 @@ const Suggestions = forwardRef<
             >
                 {suggestions.map((suggestion, index) => (
                     <motion.button
-                        ref={(el) => (buttonRefs.current[index] = el)}
+                        ref={(el) => (buttonRefs.current?.[index] = el)}
                         initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
                         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                         transition={{

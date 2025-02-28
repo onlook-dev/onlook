@@ -38,11 +38,11 @@ export function findInsertionIndex(
 
     for (let i = 0; i < midPoints.length; i++) {
         if (displayDirection === DisplayDirection.VERTICAL) {
-            if (y < midPoints[i].y) {
+            if (y < midPoints?.[i]?.y) {
                 return i;
             }
         } else {
-            if (x < midPoints[i].x) {
+            if (x < midPoints?.[i]?.x) {
                 return i;
             }
         }

@@ -115,13 +115,13 @@ export const ClickRect = ({
             <>
                 <defs>
                     <pattern id={patternId} patternUnits="userSpaceOnUse" width="20" height="20">
-                        <rect width="20" height="20" fill={colors.blue[500]} fillOpacity="0.1" />
+                        <rect width="20" height="20" fill={colors.blue?.[500]} fillOpacity="0.1" />
                         <line
                             x1="0"
                             y1="20"
                             x2="20"
                             y2="0"
-                            stroke={colors.blue[500]}
+                            stroke={colors.blue?.[500]}
                             strokeWidth="0.3"
                             strokeLinecap="square"
                         />
@@ -151,7 +151,7 @@ export const ClickRect = ({
                     <text
                         x={width / 2}
                         y={-adjusted.top / 2}
-                        fill={colors.blue[700]}
+                        fill={colors.blue?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -163,7 +163,7 @@ export const ClickRect = ({
                     <text
                         x={width / 2}
                         y={height + adjusted.bottom / 2}
-                        fill={colors.blue[700]}
+                        fill={colors.blue?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -175,7 +175,7 @@ export const ClickRect = ({
                     <text
                         x={-adjusted.left / 2}
                         y={height / 2}
-                        fill={colors.blue[700]}
+                        fill={colors.blue?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -187,7 +187,7 @@ export const ClickRect = ({
                     <text
                         x={width + adjusted.right / 2}
                         y={height / 2}
-                        fill={colors.blue[700]}
+                        fill={colors.blue?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -214,13 +214,13 @@ export const ClickRect = ({
             <>
                 <defs>
                     <pattern id={patternId} patternUnits="userSpaceOnUse" width="20" height="20">
-                        <rect width="20" height="20" fill={colors.green[500]} fillOpacity="0.1" />
+                        <rect width="20" height="20" fill={colors.green?.[500]} fillOpacity="0.1" />
                         <line
                             x1="0"
                             y1="20"
                             x2="20"
                             y2="0"
-                            stroke={colors.green[500]}
+                            stroke={colors.green?.[500]}
                             strokeWidth="0.3"
                             strokeLinecap="square"
                         />
@@ -250,7 +250,7 @@ export const ClickRect = ({
                     <text
                         x={width / 2}
                         y={adjusted.top / 2}
-                        fill={colors.green[700]}
+                        fill={colors.green?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -262,7 +262,7 @@ export const ClickRect = ({
                     <text
                         x={width / 2}
                         y={height - adjusted.bottom / 2}
-                        fill={colors.green[700]}
+                        fill={colors.green?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -274,7 +274,7 @@ export const ClickRect = ({
                     <text
                         x={adjusted.left / 2}
                         y={height / 2}
-                        fill={colors.green[700]}
+                        fill={colors.green?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -286,7 +286,7 @@ export const ClickRect = ({
                     <text
                         x={width - adjusted.right / 2}
                         y={height / 2}
-                        fill={colors.green[700]}
+                        fill={colors.green?.[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -299,7 +299,7 @@ export const ClickRect = ({
     };
 
     const renderDimensionLabels = () => {
-        const rectColor = isComponent ? colors.purple[500] : colors.red[500];
+        const rectColor = isComponent ? colors.purple?.[500] : colors.red?.[500];
         const displayWidth = parseFloat(styles?.width || '0').toFixed(0);
         const displayHeight = parseFloat(styles?.height || '0').toFixed(0);
         const text = `${displayWidth} × ${displayHeight}`;

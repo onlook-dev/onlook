@@ -98,9 +98,9 @@ const HotkeysModal = observer(() => {
                                                             {category}
                                                         </h3>
                                                         <div className="space-y-3">
-                                                            {categories[
+                                                            {categories?.[
                                                                 category as keyof typeof categories
-                                                            ].map((hotkey) => (
+                                                            ]?.map((hotkey) => (
                                                                 <div
                                                                     key={hotkey.command}
                                                                     className="flex justify-between items-center"
@@ -137,9 +137,9 @@ const HotkeysModal = observer(() => {
                                                             {category}
                                                         </h3>
                                                         <div className="space-y-3">
-                                                            {categories[
+                                                            {categories?.[
                                                                 category as keyof typeof categories
-                                                            ].map((hotkey) => (
+                                                            ]?.map((hotkey) => (
                                                                 <div
                                                                     key={hotkey.command}
                                                                     className="flex justify-between items-center"
@@ -176,9 +176,9 @@ const HotkeysModal = observer(() => {
                                                             {category}
                                                         </h3>
                                                         <div className="space-y-3">
-                                                            {categories[
+                                                            {categories?.[
                                                                 category as keyof typeof categories
-                                                            ].map((hotkey) => (
+                                                            ]?.map((hotkey) => (
                                                                 <div
                                                                     key={hotkey.command}
                                                                     className="flex justify-between items-center"

@@ -182,7 +182,7 @@ export class HistoryManager {
             case 'update-style':
                 sendAnalytics('style action', {
                     style: jsonClone(
-                        action.targets.length > 0 ? action.targets[0].change.updated : {},
+                        action.targets.length > 0 ? action.targets?.[0].change.updated : {},
                     ),
                 });
                 break;

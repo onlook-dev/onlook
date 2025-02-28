@@ -36,7 +36,7 @@ export class GroupManager {
             return;
         }
 
-        const selectedEl = this.editorEngine.elements.selected[0];
+        const selectedEl = this.editorEngine.elements.selected?.[0];
         const ungroupAction = await this.getUngroupAction(selectedEl);
         if (!ungroupAction) {
             console.error('Failed to get ungroup action');
@@ -57,7 +57,7 @@ export class GroupManager {
             return null;
         }
 
-        const webviewId = elements[0].webviewId;
+        const webviewId = elements?.[0]?.webviewId;
         const sameWebview = elements.every((el) => el.webviewId === webviewId);
 
         if (!sameWebview) {
@@ -67,7 +67,7 @@ export class GroupManager {
             return null;
         }
 
-        const parentDomId = elements[0].parent?.domId;
+        const parentDomId = elements?.[0]?.parent?.domId;
         if (!parentDomId) {
             if (log) {
                 console.error('No parent found');

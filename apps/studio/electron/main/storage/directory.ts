@@ -75,7 +75,7 @@ export class DirectoryPersistentStorage<
 
     getCollection(collectionKey: string): T[] {
         const index = this.readIndex();
-        const itemIds = index.collections[collectionKey] || [];
+        const itemIds = index.collections?.[collectionKey] || [];
         return itemIds.map((id) => this.readItem(id)).filter((item): item is T => item !== null);
     }
 
@@ -126,12 +126,12 @@ export class DirectoryPersistentStorage<
         const collectionKey = this.getCollectionKey(item);
         const index = this.readIndex();
 
-        if (!index.collections[collectionKey]) {
-            index.collections[collectionKey] = [];
+        if (!index.collections?.[collectionKey]) {
+            index.collections?.[collectionKey] = [];
         }
 
-        if (!index.collections[collectionKey].includes(item.id)) {
-            index.collections[collectionKey].push(item.id);
+        if (!index.collections?.[collectionKey].includes(item.id)) {
+            index.collections?.[collectionKey].push(item.id);
             this.writeIndex(index);
         }
     }
@@ -139,13 +139,13 @@ export class DirectoryPersistentStorage<
     private removeFromIndex(id: K, collectionKey: string) {
         const index = this.readIndex();
 
-        if (index.collections[collectionKey]) {
-            index.collections[collectionKey] = index.collections[collectionKey].filter(
+        if (index.collections?.[collectionKey]) {
+            index.collections?.[collectionKey] = index.collections?.[collectionKey].filter(
                 (itemId) => itemId !== id,
             );
 
-            if (index.collections[collectionKey].length === 0) {
-                delete index.collections[collectionKey];
+            if (index.collections?.[collectionKey].length === 0) {
+                delete index.collections?.[collectionKey];
             }
 
             this.writeIndex(index);

@@ -25,7 +25,10 @@ export function addTailwindToRequest(
     styles: Record<string, string>,
 ): void {
     const newClasses = getTailwindClasses(request.oid, styles);
-    request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
+    request.attributes?.['className'] = twMerge(
+        request.attributes?.['className'] || '',
+        newClasses,
+    );
 }
 
 export function getTailwindClasses(oid: string, styles: Record<string, string>) {

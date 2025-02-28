@@ -11,7 +11,7 @@ type TagInfo = {
 
 const TagDetails = observer(() => {
     const editorEngine = useEditorEngine();
-    const tagName = editorEngine.elements.selected[0].tagName;
+    const tagName = editorEngine.elements.selected?.[0].tagName;
     const [showMore, setShowMore] = useState<boolean>(false);
     const [tagInfo, setTagInfo] = useState<TagInfo>({
         title: '',

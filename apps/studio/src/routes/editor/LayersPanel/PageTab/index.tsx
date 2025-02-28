@@ -123,7 +123,7 @@ const PagesTab = observer(() => {
             onSelect: async (nodes: NodeApi<PageNode>[]) => {
                 if (nodes.length > 0) {
                     try {
-                        await editorEngine.pages.navigateTo(nodes[0].data.path);
+                        await editorEngine.pages.navigateTo(nodes?.[0]?.data.path);
                         setHighlightedIndex(null);
                     } catch (error) {
                         console.error('Failed to navigate to page:', error);

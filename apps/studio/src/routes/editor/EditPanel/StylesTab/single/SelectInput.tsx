@@ -85,7 +85,7 @@ const SelectInput = observer(
             if (!selectedStyle) {
                 return 'row'; // default to row
             }
-            return selectedStyle.styles['flexDirection'] ?? 'row'; // fallback to row if undefined
+            return selectedStyle.styles?.['flexDirection'] ?? 'row'; // fallback to row if undefined
         };
 
         const getIcon = (option: string) => {
