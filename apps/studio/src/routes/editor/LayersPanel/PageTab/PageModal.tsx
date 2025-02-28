@@ -4,7 +4,6 @@ import {
     normalizeRoute,
     validateNextJsRoute,
 } from '@/lib/editor/engine/pages/helper';
-import { sendAnalytics } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
