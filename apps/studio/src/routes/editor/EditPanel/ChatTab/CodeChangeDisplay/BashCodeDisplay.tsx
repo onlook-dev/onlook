@@ -28,7 +28,7 @@ const BashCodeDisplay = observer(
                     command: content,
                 },
             );
-            if (!res || !res.success) {
+            if (!res?.success) {
                 setStdErr(res?.error || 'Failed to run command');
             } else {
                 setStdOut(res.output || '');

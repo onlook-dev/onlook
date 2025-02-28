@@ -125,7 +125,9 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
             });
             return;
         }
-        const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
+        const [deviceWidth, deviceHeight] = deviceOptions?.[deviceCategory]?.[deviceName]?.split(
+            'x',
+        ) ?? ['0', '0'];
         if (width === parseInt(deviceHeight) && height === parseInt(deviceWidth)) {
             return;
         } else {
@@ -143,7 +145,9 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
 
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
-        const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
+        const [deviceWidth, deviceHeight] = deviceOptions?.[deviceCategory]?.[deviceName]?.split(
+            'x',
+        ) ?? ['0', '0'];
 
         if (
             deviceName !== 'Custom' &&

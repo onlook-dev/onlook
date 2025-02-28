@@ -9,7 +9,7 @@ export function getOidFromJsxElement(element: t.JSXOpeningElement): string | nul
             t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
     );
 
-    if (!attribute || !attribute.value) {
+    if (!attribute?.value) {
         return null;
     }
 

@@ -101,10 +101,9 @@ export class CanvasManager {
     async applySettings(project: Project) {
         this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
         this.panPosition = project.settings?.position || this.getDefaultPanPosition();
-        this.webFrames =
-            project.settings?.frames && project.settings.frames.length
-                ? project.settings.frames
-                : [this.getDefaultFrame({ url: project.url })];
+        this.webFrames = project.settings?.frames?.length
+            ? project.settings.frames
+            : [this.getDefaultFrame({ url: project.url })];
     }
 
     clear() {

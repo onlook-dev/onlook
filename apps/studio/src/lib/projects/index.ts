@@ -40,7 +40,7 @@ export class ProjectsManager {
         const cachedProjects: ProjectsCache | null = await invokeMainChannel(
             MainChannels.GET_PROJECTS,
         );
-        if (!cachedProjects || !cachedProjects.projects) {
+        if (!cachedProjects?.projects) {
             console.error('Failed to restore projects');
             return;
         }

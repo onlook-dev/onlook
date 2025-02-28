@@ -63,7 +63,7 @@ const ProjectBreadcrumb = observer(() => {
         const result = await editorEngine.takeActiveWebviewScreenshot(projectId, {
             save: true,
         });
-        if (!result || !result.name) {
+        if (!result?.name) {
             console.error('Failed to take screenshot');
             return;
         }

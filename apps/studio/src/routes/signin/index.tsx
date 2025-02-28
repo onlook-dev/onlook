@@ -18,7 +18,7 @@ const SignIn = observer(() => {
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        if (userManager.settings && userManager.settings.settings?.signInMethod) {
+        if (userManager.settings?.settings?.signInMethod) {
             setLastSignInMethod(userManager.settings.settings.signInMethod as SignInMethod);
         }
     }, [authManager.authenticated]);
