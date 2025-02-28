@@ -3,8 +3,8 @@ import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import BaseDomain from './Base';
+import { CustomDomain } from './Custom';
 import DangerZone from './DangerZone';
-// import { CustomDomain } from './Custom';
 
 export const DomainTab = observer(() => {
     const userManager = useUserManager();
@@ -18,9 +18,7 @@ export const DomainTab = observer(() => {
         <div className="space-y-8">
             <BaseDomain />
             <Separator />
-            {/* TODO: Uncomment after freestyle bug is fixed */}
-            {/* <CustomDomain /> */}
-            <Teaser />
+            <CustomDomain />
             <Separator />
             <DangerZone />
         </div>
