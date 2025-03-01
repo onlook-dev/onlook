@@ -342,7 +342,9 @@ export const PromptingCard = () => {
                                             className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary hidden"
                                         >
                                             <Icons.FilePlus className="mr-2" />
-                                            <span className="text-smallPlus">{t('projects.prompt.input.fileReference')}</span>
+                                            <span className="text-smallPlus">
+                                                {t('projects.prompt.input.fileReference')}
+                                            </span>
                                         </Button>
                                     </div>
                                     <Tooltip>

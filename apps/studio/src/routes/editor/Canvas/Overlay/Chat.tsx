@@ -48,7 +48,7 @@ const DEFAULT_INPUT_STATE = {
 export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
-        const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
+        const isPreviewMode = editorEngine.mode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -100,7 +100,7 @@ export const OverlayChat = observer(
 
         if (
             !selectedEl ||
-            isInteractMode ||
+            isPreviewMode ||
             editorEngine.chat.isWaiting ||
             editorEngine.chat.streamingMessage
         ) {

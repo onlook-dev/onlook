@@ -190,7 +190,7 @@ const EditPanel = observer(() => {
                 id="style-panel"
                 className={cn(
                     'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
                     isOpen
                         ? 'w-full h-[calc(100vh-5rem)]'
                         : 'w-10 h-10 rounded-l-xl cursor-pointer',

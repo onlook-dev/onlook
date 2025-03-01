@@ -76,8 +76,8 @@ const PreferencesTab = observer(() => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="min-w-[150px]">
                         {Object.entries(LANGUAGE_DISPLAY_NAMES).map(([code, name]) => (
-                            <DropdownMenuItem 
-                                key={code} 
+                            <DropdownMenuItem
+                                key={code}
                                 onClick={() => {
                                     i18n.changeLanguage(code);
                                     localStorage.setItem('app-language', code);

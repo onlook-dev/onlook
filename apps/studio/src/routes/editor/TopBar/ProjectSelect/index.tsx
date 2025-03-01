@@ -111,7 +111,9 @@ const ProjectBreadcrumb = observer(() => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>{t('projects.actions.newProject')}</DropdownMenuSubTrigger>
+                        <DropdownMenuSubTrigger>
+                            {t('projects.actions.newProject')}
+                        </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                             <DropdownMenuItem
                                 onClick={() => handleNavigateToProject(ProjectTabs.PROMPT_CREATE)}
