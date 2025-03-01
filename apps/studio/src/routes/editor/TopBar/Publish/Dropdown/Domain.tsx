@@ -21,10 +21,11 @@ export const DomainSection = observer(
         type: DomainType;
         state: PublishState;
     }) => {
-        const [progress, setProgress] = useState(0);
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
         const userManager = useUserManager();
+
+        const [progress, setProgress] = useState(0);
         const plan = userManager.subscription.plan;
         const isAnyDomainLoading =
             projectsManager.domains?.base?.state.status === PublishStatus.LOADING ||
@@ -142,7 +143,7 @@ export const DomainSection = observer(
                         <h3 className="">
                             {type === DomainType.BASE ? 'Base Domain' : 'Custom Domain'}
                         </h3>
-                        {domain.publishedAt && (
+                        {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="text-green-300">Live</p>
                                 <p>•</p>

@@ -27,6 +27,12 @@ export class HostingManager {
     ) {
         makeAutoObservable(this);
         this.listenForStateChanges();
+        if (this.domain.publishedAt) {
+            this.updateState({
+                status: PublishStatus.PUBLISHED,
+                message: null,
+            });
+        }
     }
 
     async listenForStateChanges() {
@@ -104,6 +110,7 @@ export class HostingManager {
 
         this.updateState({ status: PublishStatus.PUBLISHED, message: res.message });
         this.updateDomain({ ...this.domain, publishedAt: new Date().toISOString() });
+
         sendAnalytics('hosting publish success', {
             urls: request.urls,
         });
