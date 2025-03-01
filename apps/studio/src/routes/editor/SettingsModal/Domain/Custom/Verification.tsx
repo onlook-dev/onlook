@@ -18,10 +18,11 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { toast } from '@onlook/ui/use-toast';
 import { getValidUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { RecordField } from './DnsRecordField';
+import { RecordField } from './RecordField';
 
 enum VerificationStatus {
     NO_DOMAIN = 'no_domain',
@@ -139,7 +140,19 @@ export const Verification = observer(() => {
         setStatus(VerificationStatus.VERIFIED);
         setError(null);
         addCustomDomain(domain);
+        handleDomainVerified();
     }
+
+    const handleDomainVerified = () => {
+        toast({
+            title: 'Domain verified!',
+            description: 'Your domain is verified and ready to publish.',
+        });
+        setTimeout(() => {
+            editorEngine.isSettingsOpen = false;
+            editorEngine.isPublishOpen = true;
+        }, 1000);
+    };
 
     const addCustomDomain = (url: string) => {
         if (!domainsManager) {
@@ -150,6 +163,7 @@ export const Verification = observer(() => {
         setStatus(VerificationStatus.VERIFIED);
         setDomain(url);
         setError(null);
+        handleDomainVerified();
     };
 
     function removeDomain() {
@@ -220,10 +234,11 @@ export const Verification = observer(() => {
                     <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">Custom URL</p>
                         <p className="text-small text-muted-foreground">
-                            Input your domain{' '}
-                            {status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
-                                ? 'or reuse previous'
-                                : ''}
+                            {`Input your domain  ${
+                                status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
+                                    ? 'or use previous'
+                                    : ''
+                            }`}
                         </p>
                     </div>
                     <div className="flex flex-col gap-4 flex-1">
