@@ -46,7 +46,15 @@ const DEFAULT_INPUT_STATE = {
 };
 
 export const OverlayChat = observer(
-    ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
+    ({
+        selectedEl,
+        elementId,
+        showFloatingButton,
+    }: {
+        selectedEl: ClickRectState | null;
+        elementId: string;
+        showFloatingButton?: boolean;
+    }) => {
         const editorEngine = useEditorEngine();
         const userManager = useUserManager();
         const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
@@ -104,7 +112,7 @@ export const OverlayChat = observer(
             isInteractMode ||
             editorEngine.chat.isWaiting ||
             editorEngine.chat.streamingMessage ||
-            !userManager.settings.settings?.chat?.showFloatingButton
+            !(showFloatingButton ?? userManager.settings.settings?.chat?.showFloatingButton)
         ) {
             return null;
         }
