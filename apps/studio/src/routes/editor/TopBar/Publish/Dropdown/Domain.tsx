@@ -142,20 +142,19 @@ export const DomainSection = observer(
                         <h3 className="">
                             {type === DomainType.BASE ? 'Base Domain' : 'Custom Domain'}
                         </h3>
-
-                        {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
+                        {domain.publishedAt && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="text-green-300">Live</p>
                                 <p>•</p>
                                 <p>Updated {timeAgo(domain.publishedAt)} ago</p>
                             </div>
                         )}
-                        {state.status === 'error' && (
+                        {state.status === PublishStatus.ERROR && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="text-red-500">Error</p>
                             </div>
                         )}
-                        {state.status === 'loading' && (
+                        {state.status === PublishStatus.LOADING && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="">Updating • In progress</p>
                             </div>
@@ -181,11 +180,15 @@ export const DomainSection = observer(
                             variant="outline"
                             className={cn(
                                 'w-full rounded-md p-3',
-                                !domain.publishedAt && 'bg-blue-400 hover:bg-blue-500 text-white',
+                                domain.type === DomainType.CUSTOM &&
+                                    !domain.publishedAt &&
+                                    'bg-blue-400 hover:bg-blue-500 text-white',
                             )}
                             disabled={isAnyDomainLoading}
                         >
-                            {domain.publishedAt ? 'Update' : `Publish to ${domain.url}`}
+                            {domain.type === DomainType.BASE && 'Update'}
+                            {domain.type === DomainType.CUSTOM &&
+                                (domain.publishedAt ? 'Update' : `Publish to ${domain.url}`)}
                         </Button>
                     )}
                     {state.status === PublishStatus.ERROR && (
