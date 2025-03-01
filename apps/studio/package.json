@@ -44,7 +44,7 @@
         "@onlook/foundation": "*",
         "@onlook/supabase": "*",
         "@onlook/ui": "*",
-        "@shikijs/monaco": "^1.22.0",
+        "@shikijs/monaco": "^3.1.0",
         "@supabase/supabase-js": "^2.45.6",
         "@xterm/xterm": "^5.6.0-beta.98",
         "ai": "^4.1.26",
