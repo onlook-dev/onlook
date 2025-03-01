@@ -34,6 +34,7 @@ export class EditorEngine {
     private _hotkeysOpen: boolean = false;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
+    private _publishOpen: boolean = false;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -137,6 +138,9 @@ export class EditorEngine {
     get isSettingsOpen() {
         return this._settingsOpen;
     }
+    get isPublishOpen() {
+        return this._publishOpen;
+    }
     get isHotkeysOpen() {
         return this._hotkeysOpen;
     }
@@ -145,6 +149,9 @@ export class EditorEngine {
     }
     get isWindowSelected() {
         return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+    }
+    get pages() {
+        return this.pagesManager;
     }
 
     set mode(mode: EditorMode) {
@@ -174,8 +181,8 @@ export class EditorEngine {
         this._hotkeysOpen = value;
     }
 
-    get pages() {
-        return this.pagesManager;
+    set isPublishOpen(open: boolean) {
+        this._publishOpen = open;
     }
 
     dispose() {

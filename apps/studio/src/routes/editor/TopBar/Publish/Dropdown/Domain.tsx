@@ -5,6 +5,7 @@ import { DomainType, type DomainSettings } from '@onlook/models/projects';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import { Progress } from '@onlook/ui/progress';
+import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -12,20 +13,19 @@ import { UrlSection } from './Url';
 
 export const DomainSection = observer(
     ({
-        setIsOpen,
         domain,
         type,
         state,
     }: {
-        setIsOpen: (isOpen: boolean) => void;
         domain: DomainSettings | null;
         type: DomainType;
         state: PublishState;
     }) => {
-        const [progress, setProgress] = useState(0);
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
         const userManager = useUserManager();
+
+        const [progress, setProgress] = useState(0);
         const plan = userManager.subscription.plan;
         const isAnyDomainLoading =
             projectsManager.domains?.base?.state.status === PublishStatus.LOADING ||
@@ -54,7 +54,7 @@ export const DomainSection = observer(
         }, [state.status]);
 
         const openCustomDomain = () => {
-            setIsOpen(false);
+            editorEngine.isPublishOpen = false;
             editorEngine.settingsTab = SettingsTabValue.DOMAIN;
             editorEngine.isSettingsOpen = true;
         };
@@ -143,20 +143,19 @@ export const DomainSection = observer(
                         <h3 className="">
                             {type === DomainType.BASE ? 'Base Domain' : 'Custom Domain'}
                         </h3>
-
-                        {state.status === PublishStatus.PUBLISHED && (
+                        {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="text-green-300">Live</p>
                                 <p>•</p>
                                 <p>Updated {timeAgo(domain.publishedAt)} ago</p>
                             </div>
                         )}
-                        {state.status === 'error' && (
+                        {state.status === PublishStatus.ERROR && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="text-red-500">Error</p>
                             </div>
                         )}
-                        {state.status === 'loading' && (
+                        {state.status === PublishStatus.LOADING && (
                             <div className="ml-auto flex items-center gap-2">
                                 <p className="">Updating • In progress</p>
                             </div>
@@ -180,10 +179,17 @@ export const DomainSection = observer(
                         <Button
                             onClick={publish}
                             variant="outline"
-                            className="w-full rounded-md p-3"
+                            className={cn(
+                                'w-full rounded-md p-3',
+                                domain.type === DomainType.CUSTOM &&
+                                    !domain.publishedAt &&
+                                    'bg-blue-400 hover:bg-blue-500 text-white',
+                            )}
                             disabled={isAnyDomainLoading}
                         >
-                            Update
+                            {domain.type === DomainType.BASE && 'Update'}
+                            {domain.type === DomainType.CUSTOM &&
+                                (domain.publishedAt ? 'Update' : `Publish to ${domain.url}`)}
                         </Button>
                     )}
                     {state.status === PublishStatus.ERROR && (

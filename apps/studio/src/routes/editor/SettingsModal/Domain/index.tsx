@@ -25,21 +25,4 @@ export const DomainTab = observer(() => {
     );
 });
 
-const Teaser = () => {
-    return (
-        <div className="flex flex-col gap-4">
-            <div className="text-sm flex items-center gap-2">
-                <h2 className="text-lg font-medium">Custom Domain</h2>
-                <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-xs">
-                    Coming Soon
-                </span>
-            </div>
-
-            <div className="text-sm text-muted-foreground flex items-center gap-2">
-                <span>Set up your own custom domain for your Onlook apps.</span>
-            </div>
-        </div>
-    );
-};
-
 export default DomainTab;
