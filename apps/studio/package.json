@@ -113,7 +113,7 @@
         "electron": "34.2.0",
         "electron-builder": "^25.1.8",
         "eslint": "9.x",
-        "eslint-config-prettier": "^9.1.0",
+        "eslint-config-prettier": "^10.0.2",
         "eslint-plugin-react": "^7.34.3",
         "globals": "^15.8.0",
         "glob": "^11.0.1",
