@@ -18,6 +18,7 @@ export interface ChatSettings {
     showSuggestions: boolean;
     autoApplyCode: boolean;
     expandCodeBlocks: boolean;
+    showFloatingButton: boolean;
 }
 
 export interface ProjectsCache {

@@ -77,6 +77,7 @@ export const DefaultSettings = {
         showSuggestions: true,
         autoApplyCode: true,
         expandCodeBlocks: false,
+        showFloatingButton: true,
     },
     EDITOR_SETTINGS: {
         shouldWarnDelete: true,

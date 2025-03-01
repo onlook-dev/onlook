@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
@@ -48,6 +48,7 @@ const DEFAULT_INPUT_STATE = {
 export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
+        const userManager = useUserManager();
         const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
@@ -102,7 +103,8 @@ export const OverlayChat = observer(
             !selectedEl ||
             isInteractMode ||
             editorEngine.chat.isWaiting ||
-            editorEngine.chat.streamingMessage
+            editorEngine.chat.streamingMessage ||
+            !userManager.settings.settings?.chat?.showFloatingButton
         ) {
             return null;
         }
