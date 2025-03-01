@@ -21,6 +21,7 @@ import { Input } from '@onlook/ui/input';
 import { getValidUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { RecordField } from './DnsRecordField';
 
 enum VerificationStatus {
     NO_DOMAIN = 'no_domain',
@@ -345,9 +346,9 @@ export const Verification = observer(() => {
 
                 {records.map((record) => (
                     <>
-                        <p className="text-sm col-span-1 overflow-auto">{record.type}</p>
-                        <p className="text-sm col-span-3 overflow-auto">{record.host}</p>
-                        <p className="text-sm col-span-3 overflow-auto">{record.value}</p>
+                        <RecordField value={record.type} className="col-span-1" copyable={false} />
+                        <RecordField value={record.host} className="col-span-3" />
+                        <RecordField value={record.value} className="col-span-3" />
                     </>
                 ))}
             </div>
