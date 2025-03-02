@@ -6,7 +6,7 @@ import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { ALLOWED_EXTENSIONS, getValidFiles } from './helpers';
+import { getValidFiles } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
@@ -50,8 +50,8 @@ class RunManager {
 
             this.setState(RunState.SETTING_UP, 'Setting up...');
             this.mapping.clear();
-            const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(filePaths);
+            await this.addIdsToDirectoryAndCreateMapping(folderPath);
+            await this.listen(folderPath);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -126,33 +126,48 @@ class RunManager {
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(filePaths: string[]) {
+    async listen(folderPath: string) {
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        this.watcher = watch(filePaths, {
+        this.watcher = watch(folderPath, {
             persistent: true,
+            ignoreInitial: true,
+            ignored: [
+                /(^|[/\\])\..*~$/,
+                /(^|[/\\])node_modules([/\\]|$)/,
+                /(^|[/\\])dist([/\\]|$)/,
+                /(^|[/\\])build([/\\]|$)/,
+                /(^|[/\\])coverage([/\\]|$)/,
+                /(^|[/\\])*.lock/,
+                /(^|[/\\])*.log/,
+                /(^|[/\\])\.[^/\\]/,
+            ],
+            awaitWriteFinish: {
+                stabilityThreshold: 300,
+                pollInterval: 100,
+            },
+            followSymlinks: false,
+            usePolling: false,
+            atomic: true,
         });
 
         this.watcher
-            .on('change', (filePath) => {
-                this.processFileForMapping(filePath);
+            .on('change', async (filePath) => {
+                this.watcher?.unwatch(filePath);
+                await this.processFileForMapping(filePath);
+                setTimeout(() => this.watcher?.add(filePath), 500);
+            })
+            .on('add', async (filePath) => {
+                this.watcher?.unwatch(filePath);
+                await this.processFileForMapping(filePath);
+                setTimeout(() => this.watcher?.add(filePath), 500);
             })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error}`);
             });
-    }
-
-    addFileToWatcher(filePath: string) {
-        for (const allowedExtension of ALLOWED_EXTENSIONS) {
-            if (filePath.endsWith(allowedExtension)) {
-                this.watcher?.add(filePath);
-                this.processFileForMapping(filePath);
-                break;
-            }
-        }
     }
 
     async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
