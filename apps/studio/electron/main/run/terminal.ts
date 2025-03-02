@@ -1,4 +1,5 @@
 import { MainChannels } from '@onlook/models/constants';
+import { RunState } from '@onlook/models/run';
 import * as pty from 'node-pty';
 import os from 'os';
 import { mainWindow } from '..';
@@ -30,6 +31,7 @@ class TerminalManager {
             });
 
             ptyProcess.onData((data: string) => {
+                this.checkError(data);
                 this.addTerminalMessage(id, data);
             });
 
@@ -38,6 +40,46 @@ class TerminalManager {
         } catch (error) {
             console.error('Failed to create terminal.', error);
             return false;
+        }
+    }
+
+    checkError(data: string) {
+        // Critical CLI errors
+        const errorPatterns = [
+            'command not found',
+            'ENOENT:',
+            'fatal:',
+            'error:',
+
+            // Critical Node.js errors
+            'TypeError:',
+            'ReferenceError:',
+            'SyntaxError:',
+            'Cannot find module',
+            'Module not found',
+
+            // Critical React/Next.js errors
+            'Failed to compile',
+            'Build failed',
+            'Invalid hook call',
+            'Invalid configuration',
+
+            // Critical Package errors
+            'npm ERR!',
+            'yarn error',
+            'pnpm ERR!',
+            'Missing dependencies',
+
+            // Critical TypeScript errors
+            'TS2304:', // Cannot find name
+            'TS2307:', // Cannot find module
+        ];
+
+        if (errorPatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()))) {
+            mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
+                state: RunState.ERROR,
+                message: `Command error detected: ${data.trim()}`,
+            });
         }
     }
 

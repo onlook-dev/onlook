@@ -1,5 +1,6 @@
 import type { LayerNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
 
 interface LayerMetadata {
     document: Document;
@@ -10,13 +11,23 @@ interface LayerMetadata {
 export class LayersManager {
     webviewIdToLayerMetadata: Map<string, LayerMetadata> = new Map();
 
-    constructor() {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
     get layers(): LayerNode[] {
         return Array.from(this.webviewIdToLayerMetadata.values()).map(
             (metadata) => metadata.rootNode,
+        );
+    }
+
+    get filteredLayers(): LayerNode[] {
+        const selectedWebviews = this.editorEngine.webviews.selected;
+        if (selectedWebviews.length === 0) {
+            return this.layers;
+        }
+        return this.layers.filter((layer) =>
+            selectedWebviews.some((webview) => webview.id === layer.webviewId),
         );
     }
 

@@ -2,7 +2,9 @@ import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../editor/engine';
 import { invokeMainChannel } from '../utils';
+import { PortManager } from './port';
 
 export type TerminalMessage = {
     id: string;
@@ -11,16 +13,26 @@ export type TerminalMessage = {
 
 export class RunManager {
     private project: Project;
+    private portManager: PortManager;
     state: RunState = RunState.STOPPED;
     message: string | null = null;
     isLoading: boolean = false;
     private cleanupLoadingTimer?: () => void;
 
-    constructor(project: Project) {
+    constructor(
+        private editorEngine: EditorEngine,
+        project: Project,
+    ) {
         makeAutoObservable(this);
         this.project = project;
+        this.portManager = new PortManager(this, project);
         this.restoreState();
         this.listenForStateChanges();
+    }
+
+    updateProject(project: Project) {
+        this.project = project;
+        this.portManager.updateProject(project);
     }
 
     get isRunning() {
@@ -37,6 +49,10 @@ export class RunManager {
 
     get isError() {
         return this.state === RunState.ERROR;
+    }
+
+    get port() {
+        return this.portManager;
     }
 
     async start() {
@@ -124,6 +140,9 @@ export class RunManager {
             const { state, message } = args as { state: RunState; message: string };
             this.state = state;
             this.message = message;
+            if (state === RunState.ERROR) {
+                this.editorEngine.errors.addTerminalError(message);
+            }
         });
     }
 

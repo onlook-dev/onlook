@@ -10,7 +10,7 @@ import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import PageTreeNode from '../Tree/PageTreeNode';
 import PageTreeRow from '../Tree/PageTreeRow';
-import { CreatePageModal } from './CreatePageModal';
+import { PageModal } from './PageModal';
 
 const PagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -158,7 +158,7 @@ const PagesTab = observer(() => {
     return (
         <div
             ref={ref}
-            className="flex flex-col gap-2 h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0.5"
+            className="flex flex-col gap-2 h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-3"
         >
             <div className="flex flex-row justify-between items-center gap-2 m-0">
                 <div className="relative flex-grow">
@@ -210,7 +210,7 @@ const PagesTab = observer(() => {
                     {(props) => <PageTreeNode {...props} />}
                 </Tree>
             )}
-            <CreatePageModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+            <PageModal mode="create" open={showCreateModal} onOpenChange={setShowCreateModal} />
         </div>
     );
 });

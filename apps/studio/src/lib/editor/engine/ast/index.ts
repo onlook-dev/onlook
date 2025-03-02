@@ -7,9 +7,10 @@ import type { EditorEngine } from '..';
 import { LayersManager } from './layers';
 
 export class AstManager {
-    private layersManager: LayersManager = new LayersManager();
+    private layersManager: LayersManager;
 
     constructor(private editorEngine: EditorEngine) {
+        this.layersManager = new LayersManager(editorEngine);
         makeAutoObservable(this);
     }
 

@@ -1,20 +1,14 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { HotKeyLabel } from '../ui/hotkeys-label';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
-import { Hotkey } from '/common/hotkeys';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
     const updateManager = useUpdateManager();
+
     const className = cn(
         'opacity-50 hover:opacity-100',
         updateManager.updateAvailable &&

@@ -12,6 +12,14 @@ export enum CreateState {
     ERROR = 'error',
 }
 
+const SLOW_CREATE_MESSAGES: { time: number; message: string }[] = [
+    { time: 15000, message: 'Finalizing layout...' },
+    { time: 30000, message: 'Drafting copy...' },
+    { time: 45000, message: 'Finalizing design...' },
+    { time: 60000, message: 'Completing setup...' },
+    { time: 75000, message: 'Starting project...' },
+];
+
 export class CreateManager {
     createState: CreateState = CreateState.PROMPT;
     progress: number = 0;
@@ -26,18 +34,23 @@ export class CreateManager {
     }
 
     private startSlowConnectionTimer() {
-        // Clear any existing timer
         if (this.slowConnectionTimer) {
             clearTimeout(this.slowConnectionTimer);
         }
 
-        // Set a new timer for 10 seconds
-        this.slowConnectionTimer = setTimeout(() => {
-            if (this.state === CreateState.CREATE_LOADING) {
-                this.message =
-                    'This is taking longer than usual. This could be due to a slow internet connection...';
-            }
-        }, 30000);
+        SLOW_CREATE_MESSAGES.forEach(({ time, message }) => {
+            setTimeout(() => {
+                if (this.state === CreateState.CREATE_LOADING) {
+                    this.message = message;
+                    this.progress += 10;
+                }
+            }, time);
+        });
+
+        this.slowConnectionTimer = setTimeout(
+            () => {},
+            Math.max(...SLOW_CREATE_MESSAGES.map((m) => m.time)),
+        );
     }
 
     private clearSlowConnectionTimer() {

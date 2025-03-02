@@ -36,9 +36,9 @@ export class StyleManager {
     }
 
     updateMultiple(styles: Record<string, string>) {
+        this.updateStyleNoAction(styles);
         const action = this.getUpdateStyleAction(styles);
         this.editorEngine.action.run(action);
-        this.updateStyleNoAction(styles);
     }
 
     getUpdateStyleAction(styles: Record<string, string>, domIds: string[] = []): UpdateStyleAction {
@@ -66,6 +66,7 @@ export class StyleManager {
             };
             return target;
         });
+
         return {
             type: 'update-style',
             targets: targets,

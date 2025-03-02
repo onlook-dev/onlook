@@ -8,7 +8,7 @@ import { insertImageToNode, removeImageFromNode } from './image';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
-import { addClassToNode, replaceNodeClasses } from './style';
+import { addClassToNode, replaceNodeClasses, updateNodeProp } from './style';
 import { updateNodeTextContent } from './text';
 import { assertNever } from '/common/helpers';
 
@@ -22,24 +22,27 @@ export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffReq
             }
             const codeDiffRequest = oidToCodeDiff.get(currentOid);
             if (codeDiffRequest) {
-                if (
-                    codeDiffRequest.attributes &&
-                    codeDiffRequest.attributes.className !== null &&
-                    codeDiffRequest.attributes.className !== undefined
-                ) {
-                    if (codeDiffRequest.overrideClasses) {
-                        replaceNodeClasses(path.node, codeDiffRequest.attributes.className);
-                    } else {
-                        addClassToNode(path.node, codeDiffRequest.attributes.className);
-                    }
+                const { attributes, textContent, structureChanges } = codeDiffRequest;
+
+                if (attributes) {
+                    Object.entries(attributes).forEach(([key, value]) => {
+                        if (key === 'className') {
+                            if (codeDiffRequest.overrideClasses) {
+                                replaceNodeClasses(path.node, value as string);
+                            } else {
+                                addClassToNode(path.node, value as string);
+                            }
+                        } else {
+                            updateNodeProp(path.node, key, value);
+                        }
+                    });
                 }
-                if (
-                    codeDiffRequest.textContent !== undefined &&
-                    codeDiffRequest.textContent !== null
-                ) {
-                    updateNodeTextContent(path.node, codeDiffRequest.textContent);
+
+                if (textContent !== undefined && textContent !== null) {
+                    updateNodeTextContent(path.node, textContent);
                 }
-                applyStructureChanges(path, codeDiffRequest.structureChanges);
+
+                applyStructureChanges(path, structureChanges);
             }
         },
     });

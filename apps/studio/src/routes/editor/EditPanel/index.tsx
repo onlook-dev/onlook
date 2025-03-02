@@ -1,7 +1,6 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import { DefaultSettings } from '@onlook/models/constants';
-import type { FrameSettings } from '@onlook/models/projects';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,11 +14,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
+import PropsTab from './PropsTab';
 import StylesTab from './StylesTab';
-import WindowSettings from './WindowSettings';
-import { useTranslation } from 'react-i18next';
+
+const EDIT_PANEL_WIDTHS = {
+    [EditorTabValue.CHAT]: 352,
+    [EditorTabValue.PROPS]: 295,
+    [EditorTabValue.STYLES]: 240,
+};
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -29,17 +34,7 @@ const EditPanel = observer(() => {
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
-    const [frameSettings, setFrameSettings] = useState<FrameSettings>();
-
-    useEffect(() => {
-        if (editorEngine.isWindowSelected) {
-            setFrameSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
-            setWindowSettingsOpen(true);
-        } else {
-            setWindowSettingsOpen(false);
-        }
-    }, [editorEngine.isWindowSelected]);
+    const defaultWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -158,6 +153,13 @@ const EditPanel = observer(() => {
                             <Icons.Styles className="mr-1.5 h-4 w-4" />
                             {t('editor.panels.edit.tabs.styles.name')}
                         </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            value={EditorTabValue.PROPS}
+                        >
+                            <Icons.MixerHorizontal className="mr-1.5 mb-0.5" />
+                            Props
+                        </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
@@ -165,6 +167,9 @@ const EditPanel = observer(() => {
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
+                    </TabsContent>
+                    <TabsContent value={EditorTabValue.PROPS}>
+                        <PropsTab />
                     </TabsContent>
                     <TabsContent value={EditorTabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
@@ -181,8 +186,8 @@ const EditPanel = observer(() => {
     return (
         <ResizablePanel
             side="right"
-            defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
-            forceWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
+            defaultWidth={defaultWidth}
+            forceWidth={defaultWidth}
             minWidth={240}
             maxWidth={500}
         >
@@ -210,11 +215,7 @@ const EditPanel = observer(() => {
                         isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                     )}
                 >
-                    {windowSettingsOpen && frameSettings ? (
-                        <WindowSettings setIsOpen={setIsOpen} settings={frameSettings} />
-                    ) : (
-                        renderTabs()
-                    )}
+                    {renderTabs()}
                 </div>
             </div>
         </ResizablePanel>

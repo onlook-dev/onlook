@@ -1,18 +1,24 @@
+import type { ProjectsManager } from '@/lib/projects';
 import {
     MessageContextType,
     type ChatMessageContext,
+    type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
     type ImageMessageContext,
+    type ProjectMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
+import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
-
 export class ChatContext {
     context: ChatMessageContext[] = [];
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this);
         reaction(
             () => this.editorEngine.elements.selected,
@@ -29,7 +35,8 @@ export class ChatContext {
         const highlightedContext = await this.getHighlightedContext(selected, fileNames);
         const fileContext = await this.getFileContext(fileNames);
         const imageContext = await this.getImageContext();
-        const context = [...fileContext, ...highlightedContext, ...imageContext];
+        const projectContext = await this.getProjectContext();
+        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
         return context;
     }
 
@@ -133,6 +140,36 @@ export class ChatContext {
             console.error('Failed to capture screenshot:', error);
             return null;
         }
+    }
+
+    getProjectContext(): ProjectMessageContext[] {
+        const folderPath = this.projectsManager.project?.folderPath;
+        if (!folderPath) {
+            return [];
+        }
+
+        return [
+            {
+                type: MessageContextType.PROJECT,
+                content: '',
+                displayName: 'Project',
+                path: folderPath,
+            },
+        ];
+    }
+
+    getMessageContext(errors: ParsedError[]): ErrorMessageContext[] {
+        const content = errors
+            .map((e) => `Source: ${e.sourceId}\nContent: ${e.content}\n`)
+            .join('\n');
+
+        return [
+            {
+                type: MessageContextType.ERROR,
+                content,
+                displayName: 'Error',
+            },
+        ];
     }
 
     async clearAttachments() {

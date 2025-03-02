@@ -49,6 +49,7 @@ export class UserChatMessageImpl implements UserChatMessage {
             files: this.context.filter((c) => c.type === MessageContextType.FILE),
             highlights: this.context.filter((c) => c.type === MessageContextType.HIGHLIGHT),
             errors: this.context.filter((c) => c.type === MessageContextType.ERROR),
+            project: this.context.find((c) => c.type === MessageContextType.PROJECT),
         });
     }
 

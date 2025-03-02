@@ -27,7 +27,7 @@ const LANGUAGE_DISPLAY_NAMES = {
     zh: '中文',
 } as const;
 
-export const PricingPage = observer(() => {
+export const PricingModal = observer(() => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
     const { t, i18n } = useTranslation();
@@ -282,4 +282,4 @@ export const PricingPage = observer(() => {
     );
 });
 
-export default PricingPage;
+export default PricingModal;

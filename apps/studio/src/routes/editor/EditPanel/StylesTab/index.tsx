@@ -15,10 +15,12 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
 import FillInput from './compound/FillInput';
 import NestedInputs from './compound/NestedInputs';
+import PositionInput from './compound/PositionInput';
 import AutoLayoutInput from './single/AutoLayoutInput';
 import ColorInput from './single/ColorInput';
 import NumberUnitInput from './single/NumberUnitInput';
@@ -26,7 +28,6 @@ import SelectInput from './single/SelectInput';
 import TagDetails from './single/TagDetails';
 import TailwindInput from './single/TailwindInput';
 import TextInput from './single/TextInput';
-import { useTranslation } from 'react-i18next';
 
 const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
@@ -83,6 +84,8 @@ const CompoundStyle = memo(({ style }: { style: CompoundStyleImpl }) => {
         return <BorderInput compoundStyle={style} />;
     } else if (style.key === CompoundStyleKey.Fill) {
         return <FillInput compoundStyle={style} />;
+    } else if (style.key === CompoundStyleKey.Position) {
+        return <PositionInput compoundStyle={style} />;
     } else {
         return (
             <div className="flex flex-row items-center">
