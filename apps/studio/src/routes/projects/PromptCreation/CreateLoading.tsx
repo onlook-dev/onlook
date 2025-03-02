@@ -6,10 +6,12 @@ import { MotionCard } from '@onlook/ui/motion-card';
 import { Progress } from '@onlook/ui/progress';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { motion, MotionConfig } from 'motion/react';
 import useResizeObserver from 'use-resize-observer';
 
 export const CreateLoadingCard = observer(() => {
+    const { t } = useTranslation();
     const projectsManager = useProjectsManager();
     const { ref: diffRef, height: diffHeight } = useResizeObserver();
 
@@ -28,7 +30,7 @@ export const CreateLoadingCard = observer(() => {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-2xl text-foreground-primary"
                         >
-                            Setting up your new Onlook app...
+                            {t('projects.create.loading.title')}
                         </motion.h2>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
@@ -36,7 +38,8 @@ export const CreateLoadingCard = observer(() => {
                             transition={{ delay: 0.1 }}
                             className="text-sm text-foreground-secondary"
                         >
-                            {projectsManager.create.message || 'This may take a few seconds'}
+                            {projectsManager.create.message ||
+                                t('projects.create.loading.description')}
                         </motion.p>
                     </CardHeader>
                     <CardContent>
@@ -49,7 +52,7 @@ export const CreateLoadingCard = observer(() => {
                                     onClick={() => projectsManager.create.cancel()}
                                 >
                                     <Icons.CircleBackslash className="w-4 h-4 mr-2" />
-                                    Cancel
+                                    {t('projects.create.loading.cancel')}
                                 </Button>
                             </div>
                         </div>

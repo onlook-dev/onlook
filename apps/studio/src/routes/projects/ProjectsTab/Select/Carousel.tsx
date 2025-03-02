@@ -6,7 +6,7 @@ import { motion, type Variants } from 'motion/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
-import EditAppButton from './EditAppButton';
+import { EditAppButton } from './EditAppButton';
 
 interface EmblaCarouselProps {
     slides: Project[];

@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import PropsTab from './PropsTab';
@@ -28,6 +29,7 @@ const EDIT_PANEL_WIDTHS = {
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
+    const { t } = useTranslation();
 
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
@@ -40,8 +42,8 @@ const EditPanel = observer(() => {
 
     function renderEmptyState() {
         return (
-            <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
-                Select an element <br></br>to edit its style properties
+            <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70 px-4">
+                {t('editor.panels.edit.tabs.styles.emptyState')}
             </div>
         );
     }
@@ -79,7 +81,7 @@ const EditPanel = observer(() => {
                                         value={EditorTabValue.CHAT}
                                     >
                                         <Icons.Sparkles className="mr-1.5 mb-0.5 h-4 w-4" />
-                                        Chat
+                                        {t('editor.panels.edit.tabs.chat.name')}
                                         <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
                                     </TabsTrigger>
                                 </div>
@@ -149,7 +151,7 @@ const EditPanel = observer(() => {
                             value={EditorTabValue.STYLES}
                         >
                             <Icons.Styles className="mr-1.5 h-4 w-4" />
-                            Styles
+                            {t('editor.panels.edit.tabs.styles.name')}
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
@@ -193,7 +195,7 @@ const EditPanel = observer(() => {
                 id="style-panel"
                 className={cn(
                     'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
                     isOpen
                         ? 'w-full h-[calc(100vh-5rem)]'
                         : 'w-10 h-10 rounded-l-xl cursor-pointer',

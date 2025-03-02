@@ -6,6 +6,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 enum SignInMethod {
     GITHUB = 'github',
@@ -13,6 +14,7 @@ enum SignInMethod {
 }
 
 const SignIn = observer(() => {
+    const { t } = useTranslation();
     const authManager = useAuthManager();
     const userManager = useUserManager();
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
@@ -40,16 +42,14 @@ const SignIn = observer(() => {
                 </div>
                 <div className="space-y-8">
                     <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400">
-                        <p>{'Alpha'}</p>
+                        <p>{t('welcome.alpha')}</p>
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-title1 leading-tight">
-                            {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
+                            {lastSignInMethod ? t('welcome.titleReturn') : t('welcome.title')}
                         </h1>
                         <p className="text-foreground-onlook text-regular">
-                            {
-                                ' Onlook is an open-source visual editor for React apps. Design directly in your live product.'
-                            }
+                            {t('welcome.description')}
                         </p>
                     </div>
                     <div className="space-x-2 flex flex-row">
@@ -59,11 +59,12 @@ const SignIn = observer(() => {
                                 className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
-                                <Icons.GitHubLogo className="w-4 h-4 mr-2" /> {'Login with GitHub'}
+                                <Icons.GitHubLogo className="w-4 h-4 mr-2" />{' '}
+                                {t('welcome.login.github')}
                             </Button>
                             {lastSignInMethod === SignInMethod.GITHUB && (
                                 <p className="text-teal-500 text-small mt-1">
-                                    {'You used this last time'}
+                                    {t('welcome.login.lastUsed')}
                                 </p>
                             )}
                         </div>
@@ -74,34 +75,34 @@ const SignIn = observer(() => {
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />
-                                {'Login with Google'}
+                                {t('welcome.login.google')}
                             </Button>
                             {lastSignInMethod === SignInMethod.GOOGLE && (
                                 <p className="text-teal-500 text-small mt-1">
-                                    {'You used this last time'}
+                                    {t('welcome.login.lastUsed')}
                                 </p>
                             )}
                         </div>
                     </div>
                     <p className="text-small text-foreground-onlook">
-                        {'By signing up, you agree to our '}
+                        {t('welcome.terms.agreement')}{' '}
                         <button
                             onClick={() => openExternalLink('https://onlook.com/privacy-policy')}
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
-                            {'Privacy Policy'}
-                        </button>
-                        {' and '}
+                            {t('welcome.terms.privacy')}
+                        </button>{' '}
+                        {t('welcome.terms.and')}{' '}
                         <button
                             onClick={() => openExternalLink('https://onlook.com/terms-of-service')}
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
-                            {'Terms of Service'}
+                            {t('welcome.terms.tos')}
                         </button>
                     </p>
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-600">
-                    <p> {`Version ${window.env.APP_VERSION}`}</p>
+                    <p>{t('welcome.version', { version: window.env.APP_VERSION })}</p>
                 </div>
             </div>
             <Dunes />

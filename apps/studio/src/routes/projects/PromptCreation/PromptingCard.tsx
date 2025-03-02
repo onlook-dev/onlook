@@ -13,6 +13,7 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import { DraftImagePill } from '../../editor/EditPanel/ChatTab/ContextPills/DraftingImagePill';
+import { useTranslation } from 'react-i18next';
 
 export const PromptingCard = () => {
     const projectsManager = useProjectsManager();
@@ -26,6 +27,7 @@ export const PromptingCard = () => {
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
     const imageRef = useRef<HTMLInputElement>(null);
+    const { t } = useTranslation();
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -196,7 +198,7 @@ export const PromptingCard = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="text-2xl text-foreground-primary"
                             >
-                                What kind of website do you want to make?
+                                {t('projects.prompt.title')}
                             </motion.h2>
                             <motion.p
                                 initial={{ opacity: 0, y: 20 }}
@@ -204,7 +206,7 @@ export const PromptingCard = () => {
                                 transition={{ delay: 0.1 }}
                                 className="text-sm text-foreground-secondary"
                             >
-                                Tell us a bit about your project. Be as detailed as possible.
+                                {t('projects.prompt.description')}
                             </motion.p>
                         </CardHeader>
                         <CardContent>
@@ -248,7 +250,7 @@ export const PromptingCard = () => {
                                             'cursor-text',
                                             'transition-[height] duration-300 ease-in-out',
                                         )}
-                                        placeholder="Paste a reference screenshot, write a novel, get creative..."
+                                        placeholder={t('projects.prompt.input.placeholder')}
                                         value={inputValue}
                                         onChange={(e) => {
                                             setInputValue(e.target.value);
@@ -331,7 +333,7 @@ export const PromptingCard = () => {
                                             </TooltipTrigger>
                                             <TooltipPortal>
                                                 <TooltipContent side="top" sideOffset={5}>
-                                                    Upload Image Reference
+                                                    {t('projects.prompt.input.imageUpload')}
                                                 </TooltipContent>
                                             </TooltipPortal>
                                         </Tooltip>
@@ -340,7 +342,9 @@ export const PromptingCard = () => {
                                             className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary hidden"
                                         >
                                             <Icons.FilePlus className="mr-2" />
-                                            <span className="text-smallPlus">File Reference</span>
+                                            <span className="text-smallPlus">
+                                                {t('projects.prompt.input.fileReference')}
+                                            </span>
                                         </Button>
                                     </div>
                                     <Tooltip>
@@ -369,7 +373,7 @@ export const PromptingCard = () => {
                                         </TooltipTrigger>
                                         <TooltipPortal>
                                             <TooltipContent>
-                                                Start building your site
+                                                {t('projects.prompt.input.submit')}
                                             </TooltipContent>
                                         </TooltipPortal>
                                     </Tooltip>
@@ -383,7 +387,7 @@ export const PromptingCard = () => {
                     className="w-fit mx-auto bg-background-secondary/90 text-sm border text-foreground-secondary"
                     onClick={handleBlankSubmit}
                 >
-                    <Icons.File className="w-4 h-4 mr-2" /> Start from a blank page
+                    <Icons.File className="w-4 h-4 mr-2" /> {t('projects.prompt.blankStart')}
                 </Button>
             </div>
         </MotionConfig>
