@@ -92,6 +92,7 @@ export class ChatContext {
                 content: codeBlock,
                 start: templateNode.startTag.start.line,
                 end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+                instanceId: node.instanceId,
             });
             fileNames.add(templateNode.path);
         }
