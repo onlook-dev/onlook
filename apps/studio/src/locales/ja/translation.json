@@ -140,7 +140,9 @@
                     "layers": "レイヤー",
                     "pages": "ページ",
                     "components": "コンポーネント",
-                    "images": "画像"
+                    "images": "画像",
+                    "windows": "ウィンドウ",
+                    "brand": "ブランド"
                 }
             }
         },
@@ -154,7 +156,8 @@
                     "ide": "エディタ",
                     "shouldWarnDelete": "要素を削除する時に警告する",
                     "enableAnalytics": "アナリティクスを有効にする"
-                }
+                },
+                "shortcuts": "ショートカット"
             }
         },
         "frame": {
@@ -174,7 +177,6 @@
             "double": "200%表示"
         }
     },
-
     "projects": {
         "create": {
             "success": "プロジェクトが正常に作成されました。",
@@ -248,7 +250,6 @@
             "blankStart": "空白のページから始める"
         }
     },
-
     "welcome": {
         "title": "Onlookへようこそ",
         "titleReturn": "Onlookにお帰りなさい",

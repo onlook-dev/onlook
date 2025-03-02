@@ -231,7 +231,9 @@
                     "layers": "图层",
                     "pages": "页面",
                     "components": "组件",
-                    "images": "图像"
+                    "images": "图像",
+                    "windows": "窗口",
+                    "brand": "品牌"
                 }
             }
         },
@@ -245,7 +247,8 @@
                     "ide": "编辑器",
                     "shouldWarnDelete": "删除元素时警告",
                     "enableAnalytics": "启用分析"
-                }
+                },
+                "shortcuts": "快捷键"
             }
         },
         "frame": {

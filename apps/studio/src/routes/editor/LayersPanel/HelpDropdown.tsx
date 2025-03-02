@@ -83,7 +83,7 @@ export const HelpDropdown = observer(() => {
                     onClick={() => (editorEngine.isHotkeysOpen = true)}
                 >
                     <Icons.Keyboard className="w-4 h-4 mr-2" />
-                    Shortcuts
+                    {t('help.menu.shortcuts')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     className="text-sm"

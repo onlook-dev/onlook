@@ -231,7 +231,9 @@
                     "layers": "Layers",
                     "pages": "Pages",
                     "components": "Components",
-                    "images": "Images"
+                    "images": "Images",
+                    "windows": "Windows",
+                    "brand": "Brand"
                 }
             }
         },
@@ -245,7 +247,8 @@
                     "ide": "Editor",
                     "shouldWarnDelete": "Warn when deleting elements",
                     "enableAnalytics": "Enable analytics"
-                }
+                },
+                "shortcuts": "Shortcuts"
             }
         },
         "frame": {
