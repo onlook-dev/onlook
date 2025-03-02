@@ -285,7 +285,8 @@
                 "github": "GitHub",
                 "email": "Email"
             },
-            "reportIssue": "Report Issue"
+            "reportIssue": "Report Issue",
+            "shortcuts": "Shortcuts"
         }
     }
 }

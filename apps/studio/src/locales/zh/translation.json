@@ -285,7 +285,8 @@
                 "github": "GitHub",
                 "email": "邮箱"
             },
-            "reportIssue": "报告问题"
+            "reportIssue": "报告问题",
+            "shortcuts": "快捷键"
         }
     }
 }

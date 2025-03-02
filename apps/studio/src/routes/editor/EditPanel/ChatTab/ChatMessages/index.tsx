@@ -4,6 +4,7 @@ import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user'
 import { ChatMessageType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { t } from 'i18next';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef } from 'react';
@@ -101,7 +102,7 @@ const ChatMessages = observer(() => {
                         <Icons.EmptyState className="w-full h-full" />
                     </div>
                     <p className="text-center text-regularPlus text-balance max-w-[300px]">
-                        Select an element <br /> to chat with AI
+                        {t('editor.panels.edit.tabs.chat.emptyState')}
                     </p>
                 </motion.div>
             )}

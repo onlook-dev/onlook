@@ -285,7 +285,8 @@
                 "github": "GitHub",
                 "email": "メール"
             },
-            "reportIssue": "問題を報告"
+            "reportIssue": "問題を報告",
+            "shortcuts": "ショートカット"
         }
     }
 }
