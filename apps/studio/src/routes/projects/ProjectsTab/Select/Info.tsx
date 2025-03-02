@@ -1,8 +1,8 @@
 import type { Project } from '@onlook/models/projects';
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
-import EditAppButton from './EditAppButton';
+import { useTranslation } from 'react-i18next';
+import { EditAppButton } from './EditAppButton';
 import ProjectSettingsButton from './ProjectSettingsButton';
 import { timeSince } from '/common/helpers';
 
