@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import path from 'path';
 import { PromptProvider } from '../../src/prompt/provider';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = import.meta.dir;
 
 describe('Prompt', () => {
     const SHOULD_WRITE_SYSTEM = false;
@@ -11,6 +11,7 @@ describe('Prompt', () => {
     const SHOULD_WRITE_USER_MESSAGE = false;
     const SHOULD_WRITE_FILE_CONTENT = false;
     const SHOULD_WRITE_HIGHLIGHTS = false;
+    const SHOULD_WRITE_SUMMARY = true;
 
     test('System prompt should be the same', async () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
@@ -154,6 +155,18 @@ describe('Prompt', () => {
         }
 
         const existing = await Bun.file(highlightsPath).text();
+        expect(prompt).toEqual(existing);
+    });
+
+    test('Summary prompt should be the same', async () => {
+        const summaryPath = path.resolve(__dirname, './data/summary.txt');
+
+        const prompt = new PromptProvider().getSummaryPrompt();
+        if (SHOULD_WRITE_SUMMARY) {
+            await Bun.write(summaryPath, prompt);
+        }
+
+        const existing = await Bun.file(summaryPath).text();
         expect(prompt).toEqual(existing);
     });
 });
