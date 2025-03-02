@@ -116,7 +116,7 @@
                         "emptyState": "スタイルを編集する要素を選択してください",
                         "groups": {
                             "position": "位置 & 寸法",
-                            "layout": "Flexbox & レイアウト",
+                            "layout": "フレックスボックス & レイアウト",
                             "style": "スタイル",
                             "text": "テキスト"
                         },

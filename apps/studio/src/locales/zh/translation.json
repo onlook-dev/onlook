@@ -207,7 +207,7 @@
                         "emptyState": "选择一个元素以编辑其样式属性",
                         "groups": {
                             "position": "位置 & 尺寸",
-                            "layout": "Flexbox & 布局",
+                            "layout": "弹性布局",
                             "style": "样式",
                             "text": "文本"
                         },

@@ -106,13 +106,12 @@ const RunButton = observer(() => {
 
     const buttonText = getButtonTitle();
     const buttonCharacters = useMemo(() => {
-        const text = getButtonTitle();
-        const characters = text.split('').map((ch, index) => ({
+        const characters = buttonText.split('').map((ch, index) => ({
             id: `runbutton_${ch === ' ' ? 'space' : ch}${index}`,
             label: index === 0 ? ch.toUpperCase() : ch,
         }));
         return characters;
-    }, [runner?.state, runner?.isLoading, isPortAvailable]);
+    }, [buttonText]);
 
     const buttonWidth = useMemo(() => {
         const baseWidth = 50;
