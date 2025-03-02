@@ -97,6 +97,7 @@
                     "chat": {
                         "name": "チャット",
                         "emptyState": "AIとやり取りする要素を選択してください",
+                        "emptyStateStart": "チャットを始めるにはプロジェクトを開始してください",
                         "input": {
                             "placeholder": "メッセージを入力...",
                             "tooltip": "選択した要素についてAIとチャット"

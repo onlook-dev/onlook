@@ -188,6 +188,7 @@
                     "chat": {
                         "name": "Chat",
                         "emptyState": "Select an element to chat with AI",
+                        "emptyStateStart": "Start the project to chat",
                         "input": {
                             "placeholder": "Type your message...",
                             "tooltip": "Chat with AI about the selected element"

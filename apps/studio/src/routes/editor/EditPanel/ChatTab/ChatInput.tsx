@@ -12,11 +12,11 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
 import type { SuggestionsRef } from './Suggestions';
 import Suggestions from './Suggestions';
-import { useTranslation } from 'react-i18next';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -295,7 +295,10 @@ export const ChatInput = observer(() => {
                     disabled={disabled}
                     placeholder={
                         disabled
-                            ? t('editor.panels.edit.tabs.chat.emptyState')
+                            ? projectsManager.runner?.isRunning ||
+                              projectsManager.runner?.isStarting
+                                ? t('editor.panels.edit.tabs.chat.emptyState')
+                                : t('editor.panels.edit.tabs.chat.emptyStateStart')
                             : t('editor.panels.edit.tabs.chat.input.placeholder')
                     }
                     className={cn(

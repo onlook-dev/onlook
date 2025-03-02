@@ -188,6 +188,7 @@
                     "chat": {
                         "name": "聊天",
                         "emptyState": "选择一个元素与 AI 聊天",
+                        "emptyStateStart": "启动项目以便开始聊天",
                         "input": {
                             "placeholder": "输入您的消息…",
                             "tooltip": "就所选元素与 AI 进行讨论"
