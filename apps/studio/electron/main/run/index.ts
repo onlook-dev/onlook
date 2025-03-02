@@ -155,14 +155,14 @@ class RunManager {
         });
 
         this.watcher
-            .on('change', (filePath) => {
+            .on('change', async (filePath) => {
                 this.watcher?.unwatch(filePath);
-                this.processFileForMapping(filePath);
+                await this.processFileForMapping(filePath);
                 setTimeout(() => this.watcher?.add(filePath), 500);
             })
-            .on('add', (filePath) => {
+            .on('add', async (filePath) => {
                 this.watcher?.unwatch(filePath);
-                this.processFileForMapping(filePath);
+                await this.processFileForMapping(filePath);
                 setTimeout(() => this.watcher?.add(filePath), 500);
             })
             .on('error', (error) => {
