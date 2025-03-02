@@ -113,7 +113,7 @@ const StyleGroupComponent = memo(({ baseElementStyles }: { baseElementStyles: Ba
 });
 StyleGroupComponent.displayName = 'StyleGroupComponent';
 
-const AccordionHeader = memo(({ groupKey }: { groupKey: string }) => {
+const AccordionHeader = observer(({ groupKey }: { groupKey: string }) => {
     const { t } = useTranslation();
     const editorEngine = useEditorEngine();
 
@@ -138,13 +138,16 @@ const AccordionHeader = memo(({ groupKey }: { groupKey: string }) => {
                 </div>
             </TooltipTrigger>
             <TooltipPortal container={document.getElementById('style-tab-id')}>
-                <TooltipContent>
+                <TooltipContent
+                    className={`${editorEngine.style.mode !== StyleMode.Instance ? 'hidden' : ''}`}
+                >
                     {t('editor.panels.edit.tabs.styles.tailwind.instanceClasses.tooltip')}
                 </TooltipContent>
             </TooltipPortal>
         </Tooltip>
     );
 });
+
 AccordionHeader.displayName = 'AccordionHeader';
 
 const TailwindSection = memo(() => {
