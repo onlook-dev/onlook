@@ -118,7 +118,7 @@ export const OverlayChat = observer(
 
         const containerStyle: React.CSSProperties = {
             position: 'fixed',
-            top: selectedEl.top - 8,
+            top: Math.max(74 + 8, selectedEl.top - 8),
             left: selectedEl.left + selectedEl.width / 2,
             transform: 'translate(-50%, 0)',
             transformOrigin: 'center center',
