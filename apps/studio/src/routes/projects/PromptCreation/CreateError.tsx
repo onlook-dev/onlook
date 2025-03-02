@@ -6,10 +6,12 @@ import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { motion, MotionConfig } from 'motion/react';
 import useResizeObserver from 'use-resize-observer';
 
 export const CreateErrorCard = observer(() => {
+    const { t } = useTranslation();
     const projectsManager = useProjectsManager();
     const { ref: diffRef, height: diffHeight } = useResizeObserver();
 
@@ -28,7 +30,7 @@ export const CreateErrorCard = observer(() => {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-2xl text-foreground-primary"
                         >
-                            Error creating your Onlook app
+                            {t('projects.create.error.title')}
                         </motion.h2>
                     </CardHeader>
                     <CardContent>
@@ -39,7 +41,8 @@ export const CreateErrorCard = observer(() => {
                                 transition={{ delay: 0.1 }}
                                 className="text-sm text-red-500 max-h-96 overflow-y-auto"
                             >
-                                {projectsManager.create.error || 'This may take a few seconds'}
+                                {projectsManager.create.error ||
+                                    t('projects.create.loading.description')}
                             </motion.p>
                             <div className="flex flex-row w-full justify-between mt-4">
                                 <Button
@@ -50,7 +53,7 @@ export const CreateErrorCard = observer(() => {
                                     }
                                 >
                                     <Icons.Return className="w-4 h-4 mr-2" />
-                                    Back to Prompting
+                                    {t('projects.create.error.backToPrompt')}
                                 </Button>
                             </div>
                         </div>

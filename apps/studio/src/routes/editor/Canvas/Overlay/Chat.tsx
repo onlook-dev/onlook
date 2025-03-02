@@ -7,6 +7,7 @@ import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const SPACING = {
     base: 8,
@@ -48,11 +49,12 @@ const DEFAULT_INPUT_STATE = {
 export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
-        const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
+        const isPreviewMode = editorEngine.mode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
+        const { t } = useTranslation();
 
         // Add effect to reset input state when elementId changes
         useEffect(() => {
@@ -100,7 +102,7 @@ export const OverlayChat = observer(
 
         if (
             !selectedEl ||
-            isInteractMode ||
+            isPreviewMode ||
             editorEngine.chat.isWaiting ||
             editorEngine.chat.streamingMessage
         ) {
@@ -148,7 +150,9 @@ export const OverlayChat = observer(
                             className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
                         >
                             <Icons.Sparkles className="w-4 h-4" />
-                            <span className="text-miniPlus whitespace-nowrap">Chat with AI</span>
+                            <span className="text-miniPlus whitespace-nowrap">
+                                {t('editor.panels.edit.tabs.chat.miniChat.button')}
+                            </span>
                         </button>
                     ) : (
                         // Input Field

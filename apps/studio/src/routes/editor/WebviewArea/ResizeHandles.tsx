@@ -145,11 +145,9 @@ const ResizeHandles = observer(
 
         return (
             <div
-                className={cn(
-                    'absolute inset-0 opacity-40 transition min-w-0',
-                    editorEngine.mode === EditorMode.INTERACT ? 'visible' : 'visible',
-                    { 'hover:opacity-60': !lockedPreset },
-                )}
+                className={cn('absolute inset-0 opacity-40 transition min-w-0 visible', {
+                    'hover:opacity-60': !lockedPreset,
+                })}
             >
                 <div
                     ref={resizeHandleRef}

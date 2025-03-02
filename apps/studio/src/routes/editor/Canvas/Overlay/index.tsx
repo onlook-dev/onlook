@@ -23,7 +23,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
 
     // Memoize overlay state values
     const overlayState = editorEngine.overlay.state;
-    const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
+    const isPreviewMode = editorEngine.mode === EditorMode.PREVIEW;
     const isSingleSelection = editorEngine.elements.selected.length === 1;
 
     // Memoize the container style object
@@ -35,9 +35,9 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
             top: 0,
             left: 0,
             pointerEvents: 'none',
-            visibility: isInteractMode ? 'hidden' : 'visible',
+            visibility: isPreviewMode ? 'hidden' : 'visible',
         }),
-        [isInteractMode],
+        [isPreviewMode],
     );
 
     // Memoize the clickRects rendering

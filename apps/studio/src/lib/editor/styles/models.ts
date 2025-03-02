@@ -45,8 +45,8 @@ export enum CompoundStyleKey {
 }
 
 export enum StyleGroupKey {
-    Position = 'Position & Dimensions',
-    Layout = 'Flexbox & Layout',
-    Style = 'Styles',
-    Text = 'Text',
+    Position = 'position',
+    Layout = 'layout',
+    Style = 'style',
+    Text = 'text',
 }

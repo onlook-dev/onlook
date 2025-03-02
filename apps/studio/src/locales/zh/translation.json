@@ -1,0 +1,308 @@
+{
+    "projects": {
+        "create": {
+            "success": "项目创建成功。",
+            "steps": {
+                "count": "第 {{current}} 步，共 {{total}} 步",
+                "error": "缺少项目数据。"
+            },
+            "methods": {
+                "new": "创建新项目",
+                "load": "加载现有项目"
+            },
+            "loading": {
+                "title": "正在设置您的新 Onlook 应用...",
+                "description": "这可能需要几秒钟",
+                "cancel": "取消"
+            },
+            "error": {
+                "title": "创建 Onlook 应用时出错",
+                "backToPrompt": "返回提示"
+            }
+        },
+        "select": {
+            "empty": "未找到项目",
+            "sort": {
+                "recent": "最近更新",
+                "name": "项目名称"
+            },
+            "lastEdited": "上次编辑于 {{time}} 之前"
+        },
+        "actions": {
+            "import": "导入",
+            "close": "关闭",
+            "about": "关于 Onlook",
+            "signOut": "退出登录",
+            "editApp": "编辑应用",
+            "projectSettings": "项目设置",
+            "showInExplorer": "在资源管理器中显示",
+            "renameProject": "重命名项目",
+            "deleteProject": "删除项目",
+            "cancel": "取消",
+            "delete": "删除",
+            "rename": "重命名",
+            "goToAllProjects": "查看所有项目",
+            "newProject": "新建项目",
+            "startFromScratch": "从零开始",
+            "importProject": "导入项目",
+            "subscriptions": "订阅",
+            "settings": "设置"
+        },
+        "dialogs": {
+            "delete": {
+                "title": "确定要删除此项目吗？",
+                "description": "此操作无法撤销。这将永久删除您的项目并移除所有相关数据。",
+                "moveToTrash": "同时将文件夹移至回收站"
+            },
+            "rename": {
+                "title": "重命名项目",
+                "label": "项目名称",
+                "error": "项目名称不能为空"
+            }
+        },
+        "prompt": {
+            "title": "想要制作什么样的网站？",
+            "description": "请告诉我们一些关于您的项目的信息，越详细越好。",
+            "input": {
+                "placeholder": "粘贴参考截图、写一篇长文、发挥创造力……",
+                "imageUpload": "上传图像参考",
+                "fileReference": "文件参考",
+                "submit": "开始构建您的网站"
+            },
+            "blankStart": "从空白页面开始"
+        }
+    },
+    "welcome": {
+        "title": "欢迎使用 Onlook",
+        "titleReturn": "欢迎回到 Onlook",
+        "description": "Onlook 是一个开源的 React 应用可视化编辑器，可在您的实时产品中直接进行设计。",
+        "alpha": "Alpha",
+        "login": {
+            "github": "使用 GitHub 登录",
+            "google": "使用 Google 登录",
+            "lastUsed": "上次使用了此方式"
+        },
+        "terms": {
+            "agreement": "注册即表示您同意我们的",
+            "privacy": "隐私政策",
+            "and": "和",
+            "tos": "服务条款"
+        },
+        "version": "版本 {{version}}"
+    },
+    "pricing": {
+        "plans": {
+            "basic": {
+                "name": "Onlook Basic",
+                "price": "$0/月",
+                "description": "轻松在代码中进行原型设计和实验。",
+                "features": [
+                    "可视化代码编辑器访问",
+                    "无限制项目",
+                    "每天 {{dailyMessages}} 条 AI 聊天消息",
+                    "每月 {{monthlyMessages}} 条 AI 消息",
+                    "每次聊天限 1 张截图"
+                ]
+            },
+            "pro": {
+                "name": "Onlook Pro",
+                "price": "$20/月",
+                "description": "释放创意，不受限制。使用 AI 构建惊艳网站。",
+                "features": [
+                    "可视化代码编辑器访问",
+                    "无限制项目",
+                    "每日无限制 AI 聊天消息",
+                    "每月无限制聊天",
+                    "每次聊天可使用多张截图",
+                    "1 个免费使用 Onlook 托管的自定义域名",
+                    "优先支持"
+                ]
+            }
+        },
+        "titles": {
+            "choosePlan": "选择方案",
+            "proMember": "感谢您成为 Pro 会员！"
+        },
+        "buttons": {
+            "currentPlan": "当前方案",
+            "getPro": "升级到 Pro",
+            "manageSubscription": "管理订阅"
+        },
+        "loading": {
+            "checkingPayment": "正在检查付款..."
+        },
+        "toasts": {
+            "checkingOut": {
+                "title": "正在结账",
+                "description": "您将被重定向至 Stripe 完成付款。"
+            },
+            "redirectingToStripe": {
+                "title": "正在重定向至 Stripe",
+                "description": "您将被重定向至 Stripe 管理您的订阅。"
+            },
+            "error": {
+                "title": "错误",
+                "description": "无法启动结账流程，请重试。"
+            }
+        },
+        "footer": {
+            "unusedMessages": "未使用的聊天消息不会结转到下个月"
+        }
+    },
+    "editor": {
+        "modes": {
+            "design": {
+                "name": "设计",
+                "description": "编辑并修改网站的设计",
+                "tooltip": "切换到设计模式"
+            },
+            "preview": {
+                "name": "预览",
+                "description": "预览并测试网站功能",
+                "tooltip": "切换到预览模式"
+            }
+        },
+        "toolbar": {
+            "tools": {
+                "select": {
+                    "name": "选择",
+                    "tooltip": "选择并修改元素"
+                },
+                "pan": {
+                    "name": "平移",
+                    "tooltip": "在画布上平移并移动"
+                },
+                "insertDiv": {
+                    "name": "插入容器",
+                    "tooltip": "添加新容器元素"
+                },
+                "insertText": {
+                    "name": "插入文本",
+                    "tooltip": "添加新文本元素"
+                }
+            }
+        },
+        "panels": {
+            "edit": {
+                "tabs": {
+                    "chat": {
+                        "name": "聊天",
+                        "emptyState": "选择一个元素与 AI 聊天",
+                        "emptyStateStart": "启动项目以便开始聊天",
+                        "input": {
+                            "placeholder": "输入您的消息…",
+                            "tooltip": "就所选元素与 AI 进行讨论"
+                        },
+                        "controls": {
+                            "newChat": "新聊天",
+                            "history": "聊天记录"
+                        },
+                        "settings": {
+                            "showSuggestions": "显示建议",
+                            "expandCodeBlocks": "渲染时显示代码"
+                        },
+                        "miniChat": {
+                            "button": "与 AI 聊天"
+                        }
+                    },
+                    "styles": {
+                        "name": "样式",
+                        "emptyState": "选择一个元素以编辑其样式属性",
+                        "groups": {
+                            "position": "位置 & 尺寸",
+                            "layout": "弹性布局",
+                            "style": "样式",
+                            "text": "文本"
+                        },
+                        "tailwind": {
+                            "title": "Tailwind 类",
+                            "placeholder": "在此添加 Tailwind 类",
+                            "componentClasses": {
+                                "title": "主组件类",
+                                "tooltip": "更改会应用于组件代码（默认）。"
+                            },
+                            "instanceClasses": {
+                                "title": "实例类",
+                                "tooltip": "更改会应用于实例代码。"
+                            }
+                        }
+                    }
+                }
+            },
+            "layers": {
+                "name": "图层",
+                "tabs": {
+                    "layers": "图层",
+                    "pages": "页面",
+                    "components": "组件",
+                    "images": "图像",
+                    "windows": {
+                        "name": "窗口",
+                        "emptyState": "选择一个窗口以编辑其设置"
+                    },
+                    "brand": "品牌"
+                }
+            }
+        },
+        "settings": {
+            "preferences": {
+                "language": "语言",
+                "theme": "主题",
+                "deleteWarning": "删除警告",
+                "analytics": "分析",
+                "editor": {
+                    "ide": "编辑器",
+                    "shouldWarnDelete": "删除元素时警告",
+                    "enableAnalytics": "启用分析"
+                },
+                "shortcuts": "快捷键"
+            }
+        },
+        "frame": {
+            "startDesigning": {
+                "prefix": "按",
+                "action": "播放",
+                "suffix": "开始设计您的应用"
+            },
+            "playButton": "播放",
+            "waitingForApp": "正在等待应用启动..."
+        },
+        "zoom": {
+            "level": "缩放级别",
+            "in": "放大",
+            "out": "缩小",
+            "fit": "适应屏幕",
+            "reset": "100% 缩放",
+            "double": "200% 缩放"
+        },
+        "runButton": {
+            "portInUse": "端口占用",
+            "loading": "加载中",
+            "play": "播放",
+            "retry": "重试",
+            "stop": "停止"
+        }
+    },
+    "help": {
+        "menu": {
+            "reloadOnlook": "重新加载 Onlook",
+            "theme": {
+                "title": "主题",
+                "light": "浅色",
+                "dark": "深色",
+                "system": "系统"
+            },
+            "language": "语言",
+            "openSettings": "打开设置",
+            "contactUs": {
+                "title": "联系我们",
+                "website": "网站",
+                "discord": "Discord",
+                "github": "GitHub",
+                "email": "邮箱"
+            },
+            "reportIssue": "报告问题",
+            "shortcuts": "快捷键"
+        }
+    }
+}

@@ -6,12 +6,6 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels, Theme } from '@onlook/models/constants';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons/index';
 import { toast } from '@onlook/ui/use-toast';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
@@ -23,7 +17,7 @@ import { PricingCard } from './PricingCard';
 export const PricingModal = observer(() => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { theme } = useTheme();
 
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
@@ -168,38 +162,6 @@ export const PricingModal = observer(() => {
                                                     ? t('pricing.titles.proMember')
                                                     : t('pricing.titles.choosePlan')}
                                             </h1>
-                                            <div className="flex items-center gap-2">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="gap-2 text-foreground-secondary text-md"
-                                                        >
-                                                            {i18n.language === 'en'
-                                                                ? 'English'
-                                                                : '日本語'}
-                                                            <Icons.ChevronDown className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem
-                                                            onClick={() =>
-                                                                i18n.changeLanguage('en')
-                                                            }
-                                                        >
-                                                            English
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem
-                                                            onClick={() =>
-                                                                i18n.changeLanguage('ja')
-                                                            }
-                                                        >
-                                                            日本語
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
                                         </div>
                                     </motion.div>
                                     <div className="flex gap-4">

@@ -4,6 +4,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import BrandTab from './BrandTab';
 import ComponentsTab from './ComponentsTab';
 import { HelpDropdown } from './HelpDropdown.tsx';
@@ -13,10 +14,13 @@ import OpenCodeMini from './OpenCodeMini/index.tsx';
 import PagesTab from './PageTab';
 import WindowsTab from './WindowsTab';
 import ZoomControls from './ZoomControls/index.tsx';
+
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
+
     enum TabValue {
         PAGES = 'pages',
         LAYERS = 'layers',
@@ -80,7 +84,7 @@ const LayersPanel = observer(() => {
         <div
             className={cn(
                 'flex gap-0 h-[calc(100vh-5rem)] ',
-                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
             )}
             onMouseLeave={handleMouseLeave}
         >
@@ -97,7 +101,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.LAYERS)}
                 >
                     <Icons.Layers className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Layers</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.layers')}
+                    </span>
                 </button>
 
                 <button
@@ -111,7 +117,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
                 >
                     <Icons.File className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Pages</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.pages')}
+                    </span>
                 </button>
 
                 <button
@@ -125,7 +133,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.IMAGES)}
                 >
                     <Icons.Image className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Images</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.images')}
+                    </span>
                 </button>
 
                 <button
@@ -139,7 +149,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.WINDOWS)}
                 >
                     <Icons.Desktop className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Windows</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.windows.name')}
+                    </span>
                 </button>
 
                 <button

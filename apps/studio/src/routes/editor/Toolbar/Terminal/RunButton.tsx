@@ -7,6 +7,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import PortWarningModal from './PortWarningModal';
 
 const RunButton = observer(() => {
@@ -15,6 +16,7 @@ const RunButton = observer(() => {
     const runner = projectsManager.runner;
     const isPortAvailable = runner?.port?.isPortAvailable;
     const [isPortModalOpen, setIsPortModalOpen] = useState(false);
+    const { t } = useTranslation();
 
     const handleClick = () => {
         if (!isPortAvailable) {
@@ -82,39 +84,42 @@ const RunButton = observer(() => {
     function getButtonTitle() {
         // Prioritize port conflict message
         if (!isPortAvailable) {
-            return 'Port in Use';
+            return t('editor.runButton.portInUse');
         }
 
         if (runner?.isLoading) {
-            return 'Loading';
+            return t('editor.runButton.loading');
         }
 
         switch (runner?.state) {
             case RunState.STOPPED:
-                return 'Play';
+                return t('editor.runButton.play');
             case RunState.ERROR:
-                return 'Retry';
+                return t('editor.runButton.retry');
             case RunState.RUNNING:
             case RunState.SETTING_UP:
-                return 'Stop';
+                return t('editor.runButton.stop');
             default:
-                return 'Play';
+                return t('editor.runButton.play');
         }
     }
 
     const buttonText = getButtonTitle();
     const buttonCharacters = useMemo(() => {
-        const text = getButtonTitle();
-        const characters = text.split('').map((ch, index) => ({
+        const characters = buttonText.split('').map((ch, index) => ({
             id: `runbutton_${ch === ' ' ? 'space' : ch}${index}`,
             label: index === 0 ? ch.toUpperCase() : ch,
         }));
         return characters;
-    }, [runner?.state, runner?.isLoading, isPortAvailable]);
+    }, [buttonText]);
 
     const buttonWidth = useMemo(() => {
         const baseWidth = 50;
-        const textWidth = buttonText.length * 8;
+        // Different languages may have different character widths
+        // For languages with wider characters like Chinese/Japanese, use a larger multiplier
+        const isWideCharLanguage = /[\u3000-\u9fff]/.test(buttonText); // Checks for CJK characters
+        const charWidthMultiplier = isWideCharLanguage ? 15 : 8;
+        const textWidth = buttonText.length * charWidthMultiplier;
         return Math.min(baseWidth + textWidth, 112);
     }, [buttonText]);
 

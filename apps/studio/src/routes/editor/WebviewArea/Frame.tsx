@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
@@ -30,6 +31,7 @@ const Frame = observer(
         const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
+        const { t } = useTranslation();
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
         let domState = editorEngine.webviews.getState(settings.id);
         const [selected, setSelected] = useState<boolean>(
@@ -311,7 +313,7 @@ const Frame = observer(
         }
 
         function getSelectedOutlineColor() {
-            if (editorEngine.mode === EditorMode.INTERACT) {
+            if (editorEngine.mode === EditorMode.PREVIEW) {
                 return 'outline-blue-400';
             }
             if (domState === WebviewState.DOM_ONLOOK_ENABLED) {
@@ -345,15 +347,17 @@ const Frame = observer(
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.2 }}
                             >
-                                {'Waiting for the App to start...'}
+                                {t('editor.frame.waitingForApp')}
                             </motion.p>
                         </ShineBorder>
                     ) : (
                         <div className="w-full absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-10 rounded-xl">
                             <p className="text-active text-title1 text-center text-balance">
-                                {'Press '}
-                                <span className="text-teal-600 dark:text-teal-300">Play</span>
-                                {' to start designing your App'}
+                                {t('editor.frame.startDesigning.prefix')}
+                                <span className="text-teal-600 dark:text-teal-300">
+                                    {t('editor.frame.startDesigning.action')}
+                                </span>
+                                {t('editor.frame.startDesigning.suffix')}
                             </p>
                             <Button
                                 className={cn(
@@ -371,7 +375,9 @@ const Frame = observer(
                             >
                                 <span className="relative z-10 flex items-center gap-x-1.5 px-3 py-2.5">
                                     <Icons.Play className="w-8 h-8" />
-                                    <span className="text-title3">Play</span>
+                                    <span className="text-title3">
+                                        {t('editor.frame.playButton')}
+                                    </span>
                                 </span>
                             </Button>
                         </div>
