@@ -109,6 +109,9 @@
                         "settings": {
                             "showSuggestions": "提案を表示",
                             "expandCodeBlocks": "レンダリング時にコードを表示"
+                        },
+                        "miniChat": {
+                            "button": "AIとチャット"
                         }
                     },
                     "styles": {

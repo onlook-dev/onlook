@@ -200,6 +200,9 @@
                         "settings": {
                             "showSuggestions": "Show suggestions",
                             "expandCodeBlocks": "Show code while rendering"
+                        },
+                        "miniChat": {
+                            "button": "Chat with AI"
                         }
                     },
                     "styles": {
