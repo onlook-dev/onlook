@@ -116,6 +116,7 @@ StyleGroupComponent.displayName = 'StyleGroupComponent';
 const AccordionHeader = memo(({ groupKey }: { groupKey: string }) => {
     const { t } = useTranslation();
     const editorEngine = useEditorEngine();
+
     return (
         <Tooltip>
             <TooltipTrigger asChild disabled={editorEngine.style.mode !== StyleMode.Instance}>
@@ -138,7 +139,7 @@ const AccordionHeader = memo(({ groupKey }: { groupKey: string }) => {
             </TooltipTrigger>
             <TooltipPortal container={document.getElementById('style-tab-id')}>
                 <TooltipContent>
-                    {t('editor.panels.edit.tabs.styles.instanceClasses.tooltip')}
+                    {t('editor.panels.edit.tabs.styles.tailwind.instanceClasses.tooltip')}
                 </TooltipContent>
             </TooltipPortal>
         </Tooltip>
