@@ -1,20 +1,20 @@
-import './i18n';
-import { I18nextProvider } from 'react-i18next';
-import i18n from './i18n';
-import { TooltipProvider } from '@onlook/ui/tooltip';
-import AppBar from './components/AppBar';
-import { ThemeProvider } from './components/ThemeProvider';
-import { Toaster } from '@onlook/ui/toaster';
-import Routes from './routes';
 import '@fontsource-variable/inter';
+import { Toaster } from '@onlook/ui/toaster';
+import { TooltipProvider } from '@onlook/ui/tooltip';
 import { useEffect } from 'react';
+import { I18nextProvider } from 'react-i18next';
+import AppBar from './components/AppBar';
+import { useUserManager } from './components/Context';
+import { ThemeProvider } from './components/ThemeProvider';
+import './i18n';
+import i18n from './i18n';
+import Routes from './routes';
 
 function App() {
+    const userManager = useUserManager();
+
     useEffect(() => {
-        const savedLanguage = localStorage.getItem('app-language');
-        if (savedLanguage) {
-            i18n.changeLanguage(savedLanguage);
-        }
+        userManager.language.restore();
     }, []);
 
     return (

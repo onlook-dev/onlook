@@ -1,6 +1,5 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
-import i18n from '@/i18n';
 import { invokeMainChannel } from '@/lib/utils';
 import {
     Language,
@@ -26,6 +25,8 @@ import { useTranslation } from 'react-i18next';
 
 export const HelpDropdown = observer(() => {
     const editorEngine = useEditorEngine();
+    const userManager = useUserManager();
+
     const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { t } = useTranslation();
@@ -93,19 +94,19 @@ export const HelpDropdown = observer(() => {
                     <DropdownMenuSubContent className="w-32 ml-2">
                         <DropdownMenuItem
                             className="text-sm"
-                            onClick={() => i18n.changeLanguage(Language.English)}
+                            onClick={() => userManager.language.update(Language.English)}
                         >
                             {LANGUAGE_DISPLAY_NAMES[Language.English]}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className="text-sm"
-                            onClick={() => i18n.changeLanguage(Language.Japanese)}
+                            onClick={() => userManager.language.update(Language.Japanese)}
                         >
                             {LANGUAGE_DISPLAY_NAMES[Language.Japanese]}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             className="text-sm"
-                            onClick={() => i18n.changeLanguage(Language.Chinese)}
+                            onClick={() => userManager.language.update(Language.Chinese)}
                         >
                             {LANGUAGE_DISPLAY_NAMES[Language.Chinese]}
                         </DropdownMenuItem>

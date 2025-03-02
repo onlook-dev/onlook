@@ -2,7 +2,7 @@ import { useProjectsManager, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels, Theme } from '@onlook/models/constants';
+import { Language, LANGUAGE_DISPLAY_NAMES, MainChannels, Theme } from '@onlook/models/constants';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import { Button } from '@onlook/ui/button';
 import {
@@ -14,9 +14,8 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { IDE } from '/common/ide';
-import { LANGUAGE_DISPLAY_NAMES } from '@onlook/models/constants';
 import { useTranslation } from 'react-i18next';
+import { IDE } from '/common/ide';
 
 const PreferencesTab = observer(() => {
     const userManager = useUserManager();
@@ -78,10 +77,7 @@ const PreferencesTab = observer(() => {
                         {Object.entries(LANGUAGE_DISPLAY_NAMES).map(([code, name]) => (
                             <DropdownMenuItem
                                 key={code}
-                                onClick={() => {
-                                    i18n.changeLanguage(code);
-                                    localStorage.setItem('app-language', code);
-                                }}
+                                onClick={() => userManager.language.update(code as Language)}
                             >
                                 <span>{name}</span>
                                 {i18n.language === code && (
