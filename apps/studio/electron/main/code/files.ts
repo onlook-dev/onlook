@@ -32,6 +32,7 @@ export async function writeFile(
 
         // Ensure parent directory exists
         const parentDir = path.dirname(fullPath);
+
         await fs.mkdir(parentDir, { recursive: true });
 
         // Handle base64 encoded content
