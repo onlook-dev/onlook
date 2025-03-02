@@ -170,7 +170,8 @@
                 "action": "起動",
                 "suffix": "を押してアプリのデザインを開始"
             },
-            "playButton": "起動"
+            "playButton": "起動",
+            "waitingForApp": "アプリの起動を待っています..."
         },
         "zoom": {
             "level": "ズームレベル",
@@ -179,6 +180,13 @@
             "fit": "全体表示",
             "reset": "100%表示",
             "double": "200%表示"
+        },
+        "runButton": {
+            "portInUse": "ポートが使用中",
+            "loading": "読み込み中",
+            "play": "再生",
+            "retry": "再試行",
+            "stop": "停止"
         }
     },
     "projects": {

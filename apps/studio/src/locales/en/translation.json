@@ -261,7 +261,15 @@
                 "action": "Play",
                 "suffix": " to start designing your App"
             },
-            "playButton": "Play"
+            "playButton": "Play",
+            "waitingForApp": "Waiting for the App to start..."
+        },
+        "runButton": {
+            "portInUse": "Port in Use",
+            "loading": "Loading",
+            "play": "Play",
+            "retry": "Retry",
+            "stop": "Stop"
         },
         "zoom": {
             "level": "Zoom Level",

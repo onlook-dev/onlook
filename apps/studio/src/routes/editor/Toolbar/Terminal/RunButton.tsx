@@ -7,6 +7,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import PortWarningModal from './PortWarningModal';
 
 const RunButton = observer(() => {
@@ -15,6 +16,7 @@ const RunButton = observer(() => {
     const runner = projectsManager.runner;
     const isPortAvailable = runner?.port?.isPortAvailable;
     const [isPortModalOpen, setIsPortModalOpen] = useState(false);
+    const { t } = useTranslation();
 
     const handleClick = () => {
         if (!isPortAvailable) {
@@ -82,23 +84,23 @@ const RunButton = observer(() => {
     function getButtonTitle() {
         // Prioritize port conflict message
         if (!isPortAvailable) {
-            return 'Port in Use';
+            return t('editor.runButton.portInUse');
         }
 
         if (runner?.isLoading) {
-            return 'Loading';
+            return t('editor.runButton.loading');
         }
 
         switch (runner?.state) {
             case RunState.STOPPED:
-                return 'Play';
+                return t('editor.runButton.play');
             case RunState.ERROR:
-                return 'Retry';
+                return t('editor.runButton.retry');
             case RunState.RUNNING:
             case RunState.SETTING_UP:
-                return 'Stop';
+                return t('editor.runButton.stop');
             default:
-                return 'Play';
+                return t('editor.runButton.play');
         }
     }
 

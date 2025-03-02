@@ -261,7 +261,8 @@
                 "action": "播放",
                 "suffix": "开始设计您的应用"
             },
-            "playButton": "播放"
+            "playButton": "播放",
+            "waitingForApp": "正在等待应用启动..."
         },
         "zoom": {
             "level": "缩放级别",
@@ -270,6 +271,13 @@
             "fit": "适应屏幕",
             "reset": "100% 缩放",
             "double": "200% 缩放"
+        },
+        "runButton": {
+            "portInUse": "端口占用",
+            "loading": "加载中",
+            "play": "播放",
+            "retry": "重试",
+            "stop": "停止"
         }
     },
     "help": {

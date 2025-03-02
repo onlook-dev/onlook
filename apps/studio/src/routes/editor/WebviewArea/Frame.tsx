@@ -14,10 +14,10 @@ import { motion } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { useTranslation } from 'react-i18next';
 
 const Frame = observer(
     ({
@@ -347,7 +347,7 @@ const Frame = observer(
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.2 }}
                             >
-                                {'Waiting for the App to start...'}
+                                {t('editor.frame.waitingForApp')}
                             </motion.p>
                         </ShineBorder>
                     ) : (
