@@ -14,17 +14,10 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PricingCard } from './PricingCard';
 
-const LANGUAGE_DISPLAY_NAMES = {
-    en: 'English',
-    ja: '日本語',
-    fr: 'Français',
-    zh: '中文',
-} as const;
-
 export const PricingModal = observer(() => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { theme } = useTheme();
 
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
