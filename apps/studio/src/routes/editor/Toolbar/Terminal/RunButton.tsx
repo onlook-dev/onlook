@@ -115,7 +115,11 @@ const RunButton = observer(() => {
 
     const buttonWidth = useMemo(() => {
         const baseWidth = 50;
-        const textWidth = buttonText.length * 8;
+        // Different languages may have different character widths
+        // For languages with wider characters like Chinese/Japanese, use a larger multiplier
+        const isWideCharLanguage = /[\u3000-\u9fff]/.test(buttonText); // Checks for CJK characters
+        const charWidthMultiplier = isWideCharLanguage ? 15 : 8;
+        const textWidth = buttonText.length * charWidthMultiplier;
         return Math.min(baseWidth + textWidth, 112);
     }, [buttonText]);
 
