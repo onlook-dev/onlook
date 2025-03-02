@@ -3,11 +3,13 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import DeviceSettings from './DeviceSettings';
 import FrameDimensions from './FrameDimensions';
 
 const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
     let settings = null;
 
     // Get settings from the selected element or webview
@@ -21,7 +23,7 @@ const WindowsTab = observer(() => {
         return (
             <div className="w-[245px] h-full flex items-center justify-center p-2 text-center">
                 <p className="text-sm text-foreground-secondary">
-                    Select a window to edit its settings
+                    {t('editor.panels.layers.tabs.windows.emptyState')}
                 </p>
             </div>
         );

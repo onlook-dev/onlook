@@ -232,7 +232,10 @@
                     "pages": "Pages",
                     "components": "Components",
                     "images": "Images",
-                    "windows": "Windows",
+                    "windows": {
+                        "name": "Windows",
+                        "emptyState": "Select a window to edit its settings"
+                    },
                     "brand": "Brand"
                 }
             }

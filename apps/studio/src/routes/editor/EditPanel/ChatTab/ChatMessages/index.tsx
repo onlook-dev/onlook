@@ -4,16 +4,17 @@ import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user'
 import { ChatMessageType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { t } from 'i18next';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import AssistantMessage from './AssistantMessage';
 import StreamMessage from './StreamMessage';
 import UserMessage from './UserMessage';
 
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
     const chatMessagesRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {

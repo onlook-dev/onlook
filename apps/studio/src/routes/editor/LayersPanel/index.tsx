@@ -150,7 +150,7 @@ const LayersPanel = observer(() => {
                 >
                     <Icons.Desktop className="w-5 h-5" />
                     <span className="text-xs leading-tight">
-                        {t('editor.panels.layers.tabs.windows')}
+                        {t('editor.panels.layers.tabs.windows.name')}
                     </span>
                 </button>
 

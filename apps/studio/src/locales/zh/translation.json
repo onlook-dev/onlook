@@ -232,7 +232,10 @@
                     "pages": "页面",
                     "components": "组件",
                     "images": "图像",
-                    "windows": "窗口",
+                    "windows": {
+                        "name": "窗口",
+                        "emptyState": "选择一个窗口以编辑其设置"
+                    },
                     "brand": "品牌"
                 }
             }

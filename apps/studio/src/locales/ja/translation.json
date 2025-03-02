@@ -141,7 +141,10 @@
                     "pages": "ページ",
                     "components": "コンポーネント",
                     "images": "画像",
-                    "windows": "ウィンドウ",
+                    "windows": {
+                        "name": "ウィンドウ",
+                        "emptyState": "編集するウィンドウを選択してください"
+                    },
                     "brand": "ブランド"
                 }
             }
