@@ -1,7 +1,14 @@
 import { useEditorEngine } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
+import i18n from '@/i18n';
 import { invokeMainChannel } from '@/lib/utils';
-import { Links, MainChannels, Theme } from '@onlook/models/constants';
+import {
+    Language,
+    LANGUAGE_DISPLAY_NAMES,
+    Links,
+    MainChannels,
+    Theme,
+} from '@onlook/models/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -75,6 +82,32 @@ export const HelpDropdown = observer(() => {
                         >
                             <Icons.Laptop className="w-4 h-4 mr-2" />
                             {t('help.menu.theme.system')}
+                        </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="text-sm">
+                        <Icons.Globe className="w-4 h-4 mr-2" />
+                        {t('help.menu.language')}
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="w-32 ml-2">
+                        <DropdownMenuItem
+                            className="text-sm"
+                            onClick={() => i18n.changeLanguage(Language.English)}
+                        >
+                            {LANGUAGE_DISPLAY_NAMES[Language.English]}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="text-sm"
+                            onClick={() => i18n.changeLanguage(Language.Japanese)}
+                        >
+                            {LANGUAGE_DISPLAY_NAMES[Language.Japanese]}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            className="text-sm"
+                            onClick={() => i18n.changeLanguage(Language.Chinese)}
+                        >
+                            {LANGUAGE_DISPLAY_NAMES[Language.Chinese]}
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>

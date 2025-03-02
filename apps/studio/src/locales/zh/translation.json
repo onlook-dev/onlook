@@ -93,8 +93,8 @@
     "pricing": {
         "plans": {
             "basic": {
-                "name": "Onlook 基础版",
-                "price": "¥0/月",
+                "name": "Onlook Basic",
+                "price": "$0/月",
                 "description": "轻松在代码中进行原型设计和实验。",
                 "features": [
                     "可视化代码编辑器访问",
@@ -105,8 +105,8 @@
                 ]
             },
             "pro": {
-                "name": "Onlook 专业版",
-                "price": "¥20/月",
+                "name": "Onlook Pro",
+                "price": "$20/月",
                 "description": "释放创意，不受限制。使用 AI 构建惊艳网站。",
                 "features": [
                     "可视化代码编辑器访问",
@@ -277,6 +277,7 @@
                 "dark": "深色",
                 "system": "系统"
             },
+            "language": "语言",
             "openSettings": "打开设置",
             "contactUs": {
                 "title": "联系我们",

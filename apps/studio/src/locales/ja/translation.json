@@ -162,7 +162,7 @@
         },
         "frame": {
             "startDesigning": {
-                "prefix": "",
+                "prefix": "ボタン",
                 "action": "起動",
                 "suffix": "を押してアプリのデザインを開始"
             },
@@ -277,6 +277,7 @@
                 "dark": "ダーク",
                 "system": "システム"
             },
+            "language": "言語",
             "openSettings": "設定を開く",
             "contactUs": {
                 "title": "お問い合わせ",
