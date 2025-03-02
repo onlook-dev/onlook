@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import runManager from '../run';
 import { DEFAULT_PAGE_CONTENT, detectRouterType } from './helpers';
 
 export async function createNextJsPage(projectRoot: string, pagePath: string): Promise<boolean> {
@@ -32,6 +33,7 @@ export async function createNextJsPage(projectRoot: string, pagePath: string): P
         await fs.mkdir(fullPath, { recursive: true });
         await fs.writeFile(pageFilePath, DEFAULT_PAGE_CONTENT);
 
+        runManager.addFileToWatcher(pageFilePath);
         return true;
     } catch (error) {
         console.error('Error creating page:', error);
