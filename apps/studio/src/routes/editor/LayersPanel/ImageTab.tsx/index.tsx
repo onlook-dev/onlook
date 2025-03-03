@@ -1,6 +1,6 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
-import { invokeMainChannel, platformSlash } from '@/lib/utils';
+import { invokeMainChannel, platformSlash, sendAnalytics } from '@/lib/utils';
 import type { ImageContentData } from '@onlook/models';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
@@ -214,6 +214,7 @@ const ImagesTab = observer(() => {
         }
 
         editorEngine.mode = EditorMode.INSERT_IMAGE;
+        sendAnalytics('image drag');
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

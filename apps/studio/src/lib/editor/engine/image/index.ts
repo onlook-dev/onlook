@@ -39,6 +39,7 @@ export class ImageManager {
             setTimeout(() => {
                 this.scanImages();
             }, 100);
+            sendAnalytics('image upload');
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -57,6 +58,7 @@ export class ImageManager {
                 imageName,
             );
             this.scanImages();
+            sendAnalytics('image delete');
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -76,6 +78,7 @@ export class ImageManager {
                 newName,
             );
             this.scanImages();
+            sendAnalytics('image rename');
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
@@ -118,7 +121,7 @@ export class ImageManager {
         setTimeout(() => {
             this.scanImages();
         }, 2000);
-        sendAnalytics('image-inserted', { mimeType });
+        sendAnalytics('image insert', { mimeType });
     }
 
     get assets() {

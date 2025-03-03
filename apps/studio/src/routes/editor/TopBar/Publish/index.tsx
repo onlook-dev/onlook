@@ -1,23 +1,28 @@
-import { useUserManager } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import { DropdownMenu, DropdownMenuContent } from '@onlook/ui/dropdown-menu';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { PublishDropdown } from './Dropdown';
 import { PublishButton } from './TriggerButton';
 
 const Publish = observer(() => {
     const userManager = useUserManager();
-    const [isOpen, setIsOpen] = useState(false);
+    const editorEngine = useEditorEngine();
 
     useEffect(() => {
         userManager.subscription.getPlanFromServer();
-    }, [isOpen]);
+    }, [editorEngine.isPublishOpen]);
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenu
+            open={editorEngine.isPublishOpen}
+            onOpenChange={(open: boolean) => {
+                editorEngine.isPublishOpen = open;
+            }}
+        >
             <PublishButton />
             <DropdownMenuContent align="end" className="w-96 p-0 text-sm">
-                <PublishDropdown setIsOpen={setIsOpen} />
+                <PublishDropdown />
             </DropdownMenuContent>
         </DropdownMenu>
     );

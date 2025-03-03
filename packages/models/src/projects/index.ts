@@ -39,7 +39,7 @@ export enum DomainType {
 export interface DomainSettings {
     url: string;
     type: DomainType;
-    publishedAt: string;
+    publishedAt?: string;
 }
 
 export interface Project {

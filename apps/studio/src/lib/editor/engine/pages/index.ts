@@ -1,5 +1,5 @@
 import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
@@ -154,6 +154,7 @@ export class PagesManager {
             });
 
             await this.scanPages();
+            sendAnalytics('page create');
         } catch (error) {
             console.error('Failed to create page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -184,6 +185,7 @@ export class PagesManager {
             });
 
             await this.scanPages();
+            sendAnalytics('page rename');
         } catch (error) {
             console.error('Failed to rename page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -205,6 +207,7 @@ export class PagesManager {
             });
 
             await this.scanPages();
+            sendAnalytics('page duplicate');
         } catch (error) {
             console.error('Failed to duplicate page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -231,6 +234,7 @@ export class PagesManager {
             });
 
             await this.scanPages();
+            sendAnalytics('page delete');
         } catch (error) {
             console.error('Failed to delete page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -275,6 +279,8 @@ export class PagesManager {
             await webview.loadURL(`${baseUrl}${path}`);
             this.setActivePath(webview.id, originalPath);
             await webview.executeJavaScript('window.api?.processDom()');
+
+            sendAnalytics('page navigate');
         } catch (error) {
             console.error('Navigation failed:', error);
         }

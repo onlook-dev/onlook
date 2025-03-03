@@ -1,5 +1,6 @@
-import { useEditorEngine, useUserManager } from '@/components/Context';
+import { useRouteManager, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
+import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import {
     Language,
@@ -23,27 +24,31 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const HelpDropdown = observer(() => {
-    const editorEngine = useEditorEngine();
+export const HelpButton = observer(() => {
     const userManager = useUserManager();
+    const routeManager = useRouteManager();
 
     const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { t } = useTranslation();
 
+    if (routeManager.route === Route.EDITOR) {
+        return null;
+    }
+
     return (
         <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
-                <button className="w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 text-muted-foreground hover:text-foreground">
+                <button className="w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 px-4 text-muted-foreground hover:text-foreground">
                     <Icons.QuestionMarkCircled className="w-5 h-5" />
                 </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                align="end"
-                side="left"
-                alignOffset={55}
-                sideOffset={-55}
                 className="w-48"
+                align="start"
+                side="left"
+                alignOffset={30}
+                sideOffset={-10}
             >
                 <DropdownMenuItem onClick={() => invokeMainChannel(MainChannels.RELOAD_APP)}>
                     <Icons.Reload className="w-4 h-4 mr-2" />
@@ -56,7 +61,7 @@ export const HelpDropdown = observer(() => {
                         {theme === Theme.System && <Icons.Laptop className="w-4 h-4 mr-2" />}
                         {t('help.menu.theme.title')}
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-32 ml-2">
+                    <DropdownMenuSubContent className="w-32 mr-2">
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => {
@@ -91,7 +96,7 @@ export const HelpDropdown = observer(() => {
                         <Icons.Globe className="w-4 h-4 mr-2" />
                         {t('help.menu.language')}
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-32 ml-2">
+                    <DropdownMenuSubContent className="w-32 mr-2">
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => userManager.language.update(Language.English)}
@@ -112,27 +117,13 @@ export const HelpDropdown = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem
-                    className="text-sm"
-                    onClick={() => (editorEngine.isHotkeysOpen = true)}
-                >
-                    <Icons.Keyboard className="w-4 h-4 mr-2" />
-                    {t('help.menu.shortcuts')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                    className="text-sm"
-                    onClick={() => (editorEngine.isSettingsOpen = true)}
-                >
-                    <Icons.Gear className="w-4 h-4 mr-2" />
-                    {t('help.menu.openSettings')}
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">
                         <Icons.EnvelopeClosed className="w-4 h-4 mr-2" />
                         {t('help.menu.contactUs.title')}
                     </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent className="w-48 ml-2">
+                    <DropdownMenuSubContent className="mr-2">
                         <DropdownMenuItem
                             onClick={() => window.open('https://onlook.com', '_blank')}
                         >

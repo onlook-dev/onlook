@@ -62,7 +62,6 @@ export class DomainsManager {
         domains.base = {
             type: DomainType.BASE,
             url,
-            publishedAt: new Date().toISOString(),
         };
         this.projectsManager.updateProject({ ...this.project, domains });
 
@@ -80,7 +79,6 @@ export class DomainsManager {
         domains.custom = {
             type: DomainType.CUSTOM,
             url,
-            publishedAt: new Date().toISOString(),
         };
         this.projectsManager.updateProject({ ...this.project, domains });
     }
