@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const summarySchema = z.object({
+export const ChatSummarySchema = z.object({
     filesDiscussed: z
         .array(z.string())
         .describe('List of file paths mentioned in the conversation'),

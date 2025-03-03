@@ -179,6 +179,7 @@ describe('Prompt', () => {
         const existing = await Bun.file(summaryPath).text();
         expect(prompt).toEqual(existing);
     });
+
     test('Create page system prompt should be the same', async () => {
         const createPageSystemPath = path.resolve(__dirname, './data/create-page-system.txt');
 

@@ -2,8 +2,8 @@ import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import {
-    summarySchema,
     ChatSuggestionSchema,
+    ChatSummarySchema,
     StreamRequestType,
     type ChatSuggestion,
     type StreamResponse,
@@ -11,6 +11,7 @@ import {
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
+import type { z } from 'zod';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { initModel } from './llmProvider';
@@ -207,7 +208,7 @@ class LlmManager {
 
             const { object } = await generateObject({
                 model,
-                schema: summarySchema,
+                schema: ChatSummarySchema,
                 messages: [
                     { role: 'system', content: systemMessage.content as string },
                     ...conversationMessages.map((msg) => ({
@@ -217,21 +218,29 @@ class LlmManager {
                 ],
             });
 
+            const {
+                filesDiscussed,
+                projectContext,
+                implementationDetails,
+                userPreferences,
+                currentStatus,
+            } = object as z.infer<typeof ChatSummarySchema>;
+
             // Formats the structured object into the desired text format
             const summary = `# Files Discussed
-         ${(object as any).filesDiscussed.join('\n')}
+         ${filesDiscussed.join('\n')}
 
          # Project Context
-         ${(object as any).projectContext}
+         ${projectContext}
 
          # Implementation Details
-         ${(object as any).implementationDetails}
+         ${implementationDetails}
 
          # User Preferences
-        ${(object as any).userPreferences}
+         ${userPreferences}
 
-        # Current Status
-        ${(object as any).currentStatus}`;
+         # Current Status
+         ${currentStatus}`;
 
             return { content: summary, status: 'full' };
         } catch (error) {
