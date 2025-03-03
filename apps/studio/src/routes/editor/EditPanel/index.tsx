@@ -191,32 +191,32 @@ const EditPanel = observer(() => {
 
     return (
         <div className="flex flex-row h-full">
-            <ResizablePanel
-                side="right"
-                defaultWidth={DEV_PANEL_WIDTH}
-                forceWidth={DEV_PANEL_WIDTH}
-                minWidth={DEV_PANEL_MIN_WIDTH}
-                maxWidth={DEV_PANEL_MAX_WIDTH}
-            >
-                <div
-                    id="dev-panel"
-                    className={cn(
-                        'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/80 overflow-hidden h-full',
-                        editorEngine.mode === EditorMode.PREVIEW || !isDevPanelOpen
-                            ? 'hidden'
-                            : 'visible',
-                    )}
+            {isDevPanelOpen && (
+                <ResizablePanel
+                    side="right"
+                    defaultWidth={DEV_PANEL_WIDTH}
+                    forceWidth={DEV_PANEL_WIDTH}
+                    minWidth={DEV_PANEL_MIN_WIDTH}
+                    maxWidth={DEV_PANEL_MAX_WIDTH}
                 >
                     <div
+                        id="dev-panel"
                         className={cn(
-                            'backdrop-blur shadow h-full relative transition-opacity duration-300',
-                            isOpen ? '' : 'rounded-tr-xl',
+                            'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/80 overflow-hidden h-full',
+                            editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
                         )}
                     >
-                        <DevTab />
+                        <div
+                            className={cn(
+                                'backdrop-blur shadow h-full relative transition-opacity duration-300',
+                                isOpen ? '' : 'rounded-tr-xl',
+                            )}
+                        >
+                            <DevTab />
+                        </div>
                     </div>
-                </div>
-            </ResizablePanel>
+                </ResizablePanel>
+            )}
             <ResizablePanel
                 side="right"
                 defaultWidth={editPanelWidth}
