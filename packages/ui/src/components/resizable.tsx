@@ -1,3 +1,4 @@
+import { cn } from '@onlook/ui/utils';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 export function useResizable({
@@ -80,6 +81,7 @@ interface ResizablePanelProps {
     minWidth?: number;
     maxWidth?: number;
     forceWidth?: number;
+    className?: string;
 }
 
 const ResizablePanel: React.FC<ResizablePanelProps> = ({
@@ -89,6 +91,7 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
     minWidth = 200,
     maxWidth = 600,
     forceWidth,
+    className,
 }) => {
     const { width, handleMouseDown, isAnimating } = useResizable({
         defaultWidth,
@@ -101,15 +104,19 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
     return (
         <div
             style={{ width: `${width}px` }}
-            className={`h-full relative ${isAnimating ? 'transition-[width] duration-300 ease-in-out' : ''} ${
-                side === 'left' ? 'left-0' : 'right-0'
-            }`}
+            className={cn(
+                'h-full relative',
+                isAnimating && 'transition-[width] duration-300 ease-in-out',
+                side === 'left' ? 'left-0' : 'right-0',
+                className,
+            )}
         >
             <div className="h-full">{children}</div>
             <div
-                className={`absolute top-0 ${
-                    side === 'left' ? 'right-0' : 'left-0'
-                } h-full w-1 cursor-col-resize transition-all`}
+                className={cn(
+                    'absolute top-0 h-full w-1 cursor-col-resize transition-all',
+                    side === 'left' ? 'right-0' : 'left-0',
+                )}
                 onMouseDown={handleMouseDown}
             />
         </div>

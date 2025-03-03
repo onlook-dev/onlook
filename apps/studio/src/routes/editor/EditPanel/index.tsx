@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
+import DevTab from './DevTab';
 import PropsTab from './PropsTab';
 import StylesTab from './StylesTab';
 
@@ -26,6 +27,11 @@ const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.STYLES]: 240,
 };
 
+const DEV_PANEL_WIDTH = 500;
+const DEV_PANEL_MIN_WIDTH = 300;
+const DEV_PANEL_MAX_WIDTH = 1000;
+const isDevPanelOpen = false;
+
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
@@ -34,7 +40,7 @@ const EditPanel = observer(() => {
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const defaultWidth = EDIT_PANEL_WIDTHS[selectedTab];
+    const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -184,41 +190,59 @@ const EditPanel = observer(() => {
     }
 
     return (
-        <ResizablePanel
-            side="right"
-            defaultWidth={defaultWidth}
-            forceWidth={defaultWidth}
-            minWidth={240}
-            maxWidth={500}
-        >
-            <div
-                id="style-panel"
-                className={cn(
-                    'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
-                    editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
-                    isOpen
-                        ? 'w-full h-[calc(100vh-5rem)]'
-                        : 'w-10 h-10 rounded-l-xl cursor-pointer',
-                )}
+        <div className="flex flex-row h-full">
+            <ResizablePanel
+                side="right"
+                defaultWidth={DEV_PANEL_WIDTH}
+                forceWidth={DEV_PANEL_WIDTH}
+                minWidth={DEV_PANEL_MIN_WIDTH}
+                maxWidth={DEV_PANEL_MAX_WIDTH}
             >
-                {!isOpen && (
-                    <button
-                        className="absolute right-0 border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook "
-                        onClick={() => setIsOpen(true)}
-                    >
-                        <Icons.PinLeft className="z-51" />
-                    </button>
-                )}
                 <div
+                    id="dev-panel"
                     className={cn(
-                        'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tl-xl',
-                        isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                        'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/80 overflow-hidden h-full',
+                        editorEngine.mode === EditorMode.PREVIEW || !isDevPanelOpen
+                            ? 'hidden'
+                            : 'visible',
                     )}
                 >
-                    {renderTabs()}
+                    <div
+                        className={cn(
+                            'backdrop-blur shadow h-full relative transition-opacity duration-300',
+                            isOpen ? '' : 'rounded-tr-xl',
+                        )}
+                    >
+                        <DevTab />
+                    </div>
                 </div>
-            </div>
-        </ResizablePanel>
+            </ResizablePanel>
+            <ResizablePanel
+                side="right"
+                defaultWidth={editPanelWidth}
+                forceWidth={editPanelWidth}
+                minWidth={240}
+                maxWidth={700}
+            >
+                <div
+                    id="style-panel"
+                    className={cn(
+                        'w-full transition-width duration-300 opacity-100 bg-background/80 overflow-hidden',
+                        editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
+                        !isDevPanelOpen && 'rounded-tl-xl',
+                    )}
+                >
+                    <div
+                        className={cn(
+                            'border-[0.5px] backdrop-blur shadow h-full relative transition-opacity duration-300',
+                            isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                        )}
+                    >
+                        {renderTabs()}
+                    </div>
+                </div>
+            </ResizablePanel>
+        </div>
     );
 });
 
