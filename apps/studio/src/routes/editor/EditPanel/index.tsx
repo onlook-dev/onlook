@@ -222,7 +222,7 @@ const EditPanel = observer(() => {
                 defaultWidth={editPanelWidth}
                 forceWidth={editPanelWidth}
                 minWidth={240}
-                maxWidth={500}
+                maxWidth={700}
             >
                 <div
                     id="style-panel"
