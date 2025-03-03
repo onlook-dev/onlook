@@ -8,9 +8,9 @@ describe('GitManager Integration Tests', () => {
     let testRepoPath: string;
 
     beforeEach(async () => {
-        // Create a temporary directory for testing
-        testRepoPath = path.join(process.cwd(), 'test-repo-' + Date.now());
-        fs.mkdirSync(testRepoPath);
+        // Create a temporary directory for testing with a shorter path
+        testRepoPath = path.join('/tmp', 'git-test-' + Date.now());
+        fs.mkdirSync(testRepoPath, { recursive: true });
 
         // Create package.json (required by isomorphic-git)
         fs.writeFileSync(
