@@ -1,16 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
-import { Separator } from '@onlook/ui/separator';
-import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 
 enum TabValue {
     CONSOLE = 'console',

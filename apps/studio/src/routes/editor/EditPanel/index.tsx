@@ -15,9 +15,9 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import DevTab from '../DevTab';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
+import DevTab from './DevTab';
 import PropsTab from './PropsTab';
 import StylesTab from './StylesTab';
 
@@ -28,6 +28,9 @@ const EDIT_PANEL_WIDTHS = {
 };
 
 const DEV_PANEL_WIDTH = 500;
+const DEV_PANEL_MIN_WIDTH = 300;
+const DEV_PANEL_MAX_WIDTH = 1000;
+const isDevPanelOpen = false;
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -36,9 +39,8 @@ const EditPanel = observer(() => {
 
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
-    const [isDevPanelOpen, setIsDevPanelOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const defaultWidth = EDIT_PANEL_WIDTHS[selectedTab];
+    const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -188,37 +190,26 @@ const EditPanel = observer(() => {
     }
 
     return (
-        <div className="flex w-full">
-            {/* Dev Panel on the left */}
+        <div className="flex flex-row h-full">
             <ResizablePanel
                 side="right"
                 defaultWidth={DEV_PANEL_WIDTH}
                 forceWidth={DEV_PANEL_WIDTH}
-                minWidth={400}
-                maxWidth={1200}
+                minWidth={DEV_PANEL_MIN_WIDTH}
+                maxWidth={DEV_PANEL_MAX_WIDTH}
             >
                 <div
                     id="dev-panel"
                     className={cn(
-                        'rounded-tl-xl left-0 absolute transition-width duration-300 opacity-100 bg-background/80 overflow-hidden',
-                        editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
-                        isDevPanelOpen
-                            ? 'w-full h-[calc(100vh-5rem)]'
-                            : 'w-10 h-10 rounded-r-xl cursor-pointer',
+                        'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/80 overflow-hidden h-full',
+                        editorEngine.mode === EditorMode.PREVIEW || !isDevPanelOpen
+                            ? 'hidden'
+                            : 'visible',
                     )}
                 >
-                    {!isDevPanelOpen && (
-                        <button
-                            className="absolute left-0 border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
-                            onClick={() => setIsDevPanelOpen(true)}
-                        >
-                            <Icons.PinRight className="z-51" />
-                        </button>
-                    )}
                     <div
                         className={cn(
                             'backdrop-blur shadow h-full relative transition-opacity duration-300',
-                            isDevPanelOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                             isOpen ? '' : 'rounded-tr-xl',
                         )}
                     >
@@ -226,39 +217,25 @@ const EditPanel = observer(() => {
                     </div>
                 </div>
             </ResizablePanel>
-
-            {/* Edit Panel on the right */}
             <ResizablePanel
                 side="right"
-                defaultWidth={defaultWidth}
-                forceWidth={defaultWidth}
+                defaultWidth={editPanelWidth}
+                forceWidth={editPanelWidth}
                 minWidth={240}
-                maxWidth={350}
+                maxWidth={500}
             >
                 <div
                     id="style-panel"
                     className={cn(
-                        'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 overflow-hidden',
+                        'w-full transition-width duration-300 opacity-100 bg-background/80 overflow-hidden',
                         editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
-                        isOpen
-                            ? 'w-full h-[calc(100vh-5rem)]'
-                            : 'w-10 h-10 rounded-l-xl cursor-pointer',
-                        isDevPanelOpen ? '' : 'rounded-tl-xl',
+                        !isDevPanelOpen && 'rounded-tl-xl',
                     )}
                 >
-                    {!isOpen && (
-                        <button
-                            className="absolute right-0 border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook "
-                            onClick={() => setIsOpen(true)}
-                        >
-                            <Icons.PinLeft className="z-51" />
-                        </button>
-                    )}
                     <div
                         className={cn(
                             'border-[0.5px] backdrop-blur shadow h-full relative transition-opacity duration-300',
                             isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
-                            isDevPanelOpen ? '' : 'rounded-tl-xl',
                         )}
                     >
                         {renderTabs()}
