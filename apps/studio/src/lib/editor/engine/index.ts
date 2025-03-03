@@ -31,8 +31,10 @@ export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _plansOpen: boolean = false;
     private _settingsOpen: boolean = false;
+    private _hotkeysOpen: boolean = false;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.PROJECT;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
+    private _publishOpen: boolean = false;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -136,11 +138,20 @@ export class EditorEngine {
     get isSettingsOpen() {
         return this._settingsOpen;
     }
+    get isPublishOpen() {
+        return this._publishOpen;
+    }
+    get isHotkeysOpen() {
+        return this._hotkeysOpen;
+    }
     get errors() {
         return this.errorManager;
     }
     get isWindowSelected() {
         return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+    }
+    get pages() {
+        return this.pagesManager;
     }
 
     set mode(mode: EditorMode) {
@@ -166,8 +177,12 @@ export class EditorEngine {
         this._settingsOpen = open;
     }
 
-    get pages() {
-        return this.pagesManager;
+    set isHotkeysOpen(value: boolean) {
+        this._hotkeysOpen = value;
+    }
+
+    set isPublishOpen(open: boolean) {
+        this._publishOpen = open;
     }
 
     dispose() {
@@ -190,9 +205,6 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        this._editorMode = EditorMode.DESIGN;
-        this._editorPanelTab = EditorTabValue.STYLES;
-        this._settingsTab = SettingsTabValue.DOMAIN;
         this._settingsOpen = false;
         this._plansOpen = false;
     }
@@ -318,6 +330,7 @@ export class EditorEngine {
         if (webview) {
             this.webviews.deregister(webview);
         }
+        sendAnalytics('window delete');
     }
 
     duplicateWindow(id?: string) {
@@ -342,7 +355,10 @@ export class EditorEngine {
                 width: currentFrame.dimension.width,
                 height: currentFrame.dimension.height,
             },
-            position: currentFrame.position,
+            position: {
+                x: currentFrame.position.x + currentFrame.dimension.width + 100,
+                y: currentFrame.position.y,
+            },
             aspectRatioLocked: currentFrame.aspectRatioLocked,
             orientation: currentFrame.orientation,
             device: currentFrame.device,
@@ -350,5 +366,6 @@ export class EditorEngine {
         };
 
         this.canvas.frames = [...this.canvas.frames, newFrame];
+        sendAnalytics('window duplicate');
     }
 }

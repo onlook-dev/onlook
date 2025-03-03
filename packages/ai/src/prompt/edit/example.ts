@@ -135,7 +135,7 @@ ${FENCE.searchReplace.middle}
 ${FENCE.searchReplace.end}
 ${FENCE.code.end}`;
 
-const EXAMPLE_CONVERSATION = [
+export const SEARCH_REPLACE_EXAMPLE_CONVERSATION = [
     {
         role: 'user',
         content: user1,
@@ -153,5 +153,3 @@ const EXAMPLE_CONVERSATION = [
         content: assistant2,
     },
 ];
-
-export { EXAMPLE_CONVERSATION };

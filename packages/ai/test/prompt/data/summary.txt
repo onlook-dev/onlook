@@ -12,15 +12,15 @@ CRITICAL RULES:
 - Retain important file paths and component relationships
 - Summarize progressive changes to the codebase
 - Highlight unresolved questions or pending issues
-- Note specific user preferences about code style or implementation</summary-guidelines><summary-format>Required Format (USE EXACTLY):
+- Note specific user preferences about code style or implementation</summary-guidelines><summary-format>Required Format:
 Files Discussed:
-[file paths only]
+[list all file paths in conversation]
     
 Project Context:
-[Summarize what the user is building and their overall goals]
+[Summarize in a list what the user is building and their overall goals]
     
 Implementation Details:
-[Summarize key code decisions, patterns, and important implementation details]
+[Summarize in a list key code decisions, patterns, and important implementation details]
     
 User Preferences:
 [Note specific preferences the user has expressed about implementation, design, etc.]

@@ -8,16 +8,16 @@ const LoadWarning: StepComponent = ({ props, variant }) => {
 
     const renderHeader = () => (
         <div className="flex flex-row items-center gap-2">
-            <Icons.InfoCircled className="w-5 h-5" />
-            <CardTitle>{'Before you proceed'}</CardTitle>
+            <Icons.ExclamationTriangle className="w-5 h-5" />
+            <CardTitle>{'Warning: Save your progress'}</CardTitle>
         </div>
     );
 
     const renderContent = () => (
         <p>
-            Onlook works by making changes to your project.
+            Onlook will make code changes to your project.
             <br />
-            Be sure to save your progress before importing.
+            Please save your progress before importing.
         </p>
     );
 

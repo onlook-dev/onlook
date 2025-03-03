@@ -1,5 +1,6 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
+import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import {
     summarySchema,
     ChatSuggestionSchema,
@@ -12,7 +13,7 @@ import { MainChannels } from '@onlook/models/constants';
 import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
-import { CLAUDE_MODELS, initModel, LLMProvider } from './llmProvider';
+import { initModel } from './llmProvider';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -84,6 +85,7 @@ class LlmManager {
                     listAllFiles: listFilesTool,
                     readFile: readFileTool,
                 },
+                maxTokens: 64000,
             });
 
             let fullText = '';

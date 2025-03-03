@@ -68,6 +68,7 @@ import {
     ImageIcon,
     InfoCircledIcon,
     InputIcon,
+    KeyboardIcon,
     LaptopIcon,
     Link2Icon,
     LinkNone1Icon,
@@ -78,6 +79,7 @@ import {
     MagnifyingGlassIcon,
     MinusCircledIcon,
     MinusIcon,
+    MixerHorizontalIcon,
     MobileIcon,
     MoonIcon,
     Pencil1Icon,
@@ -1241,6 +1243,8 @@ export const Icons = {
     Input: InputIcon,
     InfoCircled: InfoCircledIcon,
 
+    Keyboard: KeyboardIcon,
+
     Laptop: LaptopIcon,
     Link: Link2Icon,
     LinkNone: LinkNone1Icon,
@@ -1254,6 +1258,7 @@ export const Icons = {
     MinusCircled: MinusCircledIcon,
     Mobile: MobileIcon,
     Moon: MoonIcon,
+    MixerHorizontal: MixerHorizontalIcon,
 
     Pencil: Pencil1Icon,
     PencilPaper: Pencil2Icon,

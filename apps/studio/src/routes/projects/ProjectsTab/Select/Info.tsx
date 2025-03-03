@@ -1,11 +1,13 @@
 import type { Project } from '@onlook/models/projects';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import EditAppButton from './EditAppButton';
+import { useTranslation } from 'react-i18next';
+import { EditAppButton } from './EditAppButton';
 import ProjectSettingsButton from './ProjectSettingsButton';
 import { timeSince } from '/common/helpers';
 
 const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
+    const { t } = useTranslation();
     const variants = {
         enter: (direction: number) => ({
             y: direction > 0 ? 20 : -20,
@@ -39,7 +41,11 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                     </motion.p>
                 </AnimatePresence>
                 <div className="text-foreground-onlook flex flex-col md:flex-row gap-2 md:gap-7 text-small">
-                    <p>Last edited {timeSince(new Date(project.updatedAt))} ago </p>
+                    <p>
+                        {t('projects.select.lastEdited', {
+                            time: timeSince(new Date(project.updatedAt)),
+                        })}
+                    </p>
                     <p>{project.url}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">

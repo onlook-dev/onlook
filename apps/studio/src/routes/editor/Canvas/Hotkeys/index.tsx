@@ -35,7 +35,7 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
         !editorEngine.text.isEditing && editorEngine.clearUI();
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
-    useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
+    useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.mode = EditorMode.PREVIEW));
     useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
     useHotkeys(Hotkey.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
 
@@ -78,6 +78,10 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     // Move
     useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
     useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => editorEngine.move.moveSelected('down'));
+
+    useHotkeys(Hotkey.SHOW_HOTKEYS.command, () => {
+        editorEngine.isHotkeysOpen = !editorEngine.isHotkeysOpen;
+    });
 
     return (
         <>

@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import ProjectBreadcrumb from './ProjectSelect';
-import ShareProject from './ShareProject';
+import Publish from './Publish';
 import { Hotkey } from '/common/hotkeys';
 
 const EditorTopBar = observer(() => {
@@ -103,7 +103,7 @@ const EditorTopBar = observer(() => {
                         ))}
                     </motion.div>
                 </div>
-                <ShareProject />
+                <Publish />
             </div>
         </div>
     );

@@ -4,22 +4,30 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import BrandTab from './BrandTab';
 import ComponentsTab from './ComponentsTab';
 import { HelpDropdown } from './HelpDropdown.tsx';
 import ImagesTab from './ImageTab.tsx';
 import LayersTab from './LayersTab';
-import PagesTab from './PageTab';
-import ZoomControls from './ZoomControls/index.tsx';
 import OpenCodeMini from './OpenCodeMini/index.tsx';
+import PagesTab from './PageTab';
+import WindowsTab from './WindowsTab';
+import ZoomControls from './ZoomControls/index.tsx';
+
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
+
     enum TabValue {
         PAGES = 'pages',
         LAYERS = 'layers',
         COMPONENTS = 'components',
         IMAGES = 'images',
+        WINDOWS = 'windows',
+        BRAND = 'brand',
     }
     const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.LAYERS);
     const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
@@ -76,7 +84,7 @@ const LayersPanel = observer(() => {
         <div
             className={cn(
                 'flex gap-0 h-[calc(100vh-5rem)] ',
-                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
             )}
             onMouseLeave={handleMouseLeave}
         >
@@ -93,7 +101,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.LAYERS)}
                 >
                     <Icons.Layers className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Layers</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.layers')}
+                    </span>
                 </button>
 
                 <button
@@ -107,7 +117,9 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
                 >
                     <Icons.File className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Pages</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.pages')}
+                    </span>
                 </button>
 
                 <button
@@ -121,7 +133,39 @@ const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.IMAGES)}
                 >
                     <Icons.Image className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Images</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.images')}
+                    </span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.WINDOWS && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => handleClick(TabValue.WINDOWS)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.WINDOWS)}
+                >
+                    <Icons.Desktop className="w-5 h-5" />
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.windows.name')}
+                    </span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
+                        selectedTab === TabValue.BRAND && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    )}
+                    onClick={() => handleClick(TabValue.BRAND)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.BRAND)}
+                >
+                    <Icons.Layers className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Brand</span>
                 </button>
 
                 <button
@@ -149,10 +193,10 @@ const LayersPanel = observer(() => {
             {isContentPanelOpen && (
                 <>
                     <div
-                        className="flex-1 max-w-[280px] bg-background/80 rounded-xl"
+                        className="flex-1 w-[280px] bg-background/80 rounded-xl"
                         onMouseEnter={() => setIsContentPanelOpen(true)}
                     >
-                        <div className="border backdrop-blur h-full shadow overflow-auto p-2 rounded-xl">
+                        <div className="border backdrop-blur h-full shadow overflow-auto p-0 rounded-xl">
                             {selectedTab === TabValue.LAYERS && <LayersTab />}
                             {selectedTab === TabValue.COMPONENTS &&
                                 (COMPONENT_DISCOVERY_ENABLED ? (
@@ -166,6 +210,8 @@ const LayersPanel = observer(() => {
                                 ))}
                             {selectedTab === TabValue.PAGES && <PagesTab />}
                             {selectedTab === TabValue.IMAGES && <ImagesTab />}
+                            {selectedTab === TabValue.WINDOWS && <WindowsTab />}
+                            {selectedTab === TabValue.BRAND && <BrandTab />}
                         </div>
                     </div>
                     {/* Invisible padding area that maintains hover state */}

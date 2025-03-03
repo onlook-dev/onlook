@@ -5,7 +5,7 @@ export class Hotkey {
     static readonly SELECT = new Hotkey('v', 'Select');
     static readonly ESCAPE = new Hotkey('esc', 'Escape');
     static readonly PAN = new Hotkey('h', 'Pan');
-    static readonly INTERACT = new Hotkey('i', 'Interact');
+    static readonly PREVIEW = new Hotkey('p', 'Preview');
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
     static readonly RELOAD_APP = new Hotkey('mod+r', 'Reload App');
 
@@ -25,6 +25,7 @@ export class Hotkey {
     static readonly NEW_AI_CHAT = new Hotkey('mod+l', 'New AI Chat');
     static readonly MOVE_LAYER_UP = new Hotkey('shift+arrowup', 'Move Layer Up');
     static readonly MOVE_LAYER_DOWN = new Hotkey('shift+arrowdown', 'Move Layer Down');
+    static readonly SHOW_HOTKEYS = new Hotkey('mod+k', 'Show Shortcuts');
 
     // Text
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');
@@ -37,8 +38,8 @@ export class Hotkey {
     static readonly DUPLICATE = new Hotkey('mod+d', 'Duplicate');
 
     // Delete
-    static readonly BACKSPACE = new Hotkey('backspace', 'Delete Div');
-    static readonly DELETE = new Hotkey('delete', 'Delete Div');
+    static readonly BACKSPACE = new Hotkey('backspace', 'Delete');
+    static readonly DELETE = new Hotkey('delete', 'Delete');
 
     // private to disallow creating other instances of this type
     private constructor(
