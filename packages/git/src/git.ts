@@ -1,6 +1,15 @@
-import { add, checkout, commit, init, log, remove, status, statusMatrix } from 'isomorphic-git';
-import fsSync from 'node:fs';
-const { promises, ...isoGitFs } = fsSync;
+import fs from 'fs';
+import {
+    add,
+    branch,
+    checkout,
+    commit,
+    init,
+    log,
+    remove,
+    status,
+    statusMatrix,
+} from 'isomorphic-git';
 
 export class GitManager {
     constructor(private readonly repoPath: string) {
@@ -8,36 +17,36 @@ export class GitManager {
     }
 
     async init() {
-        await init({ fs: isoGitFs, dir: this.repoPath });
+        await init({ fs, dir: this.repoPath });
     }
 
     async log() {
-        return await log({ fs: isoGitFs, dir: this.repoPath });
+        return await log({ fs, dir: this.repoPath });
     }
 
     async add(filepath: string) {
-        await add({ fs: isoGitFs, dir: this.repoPath, filepath });
+        await add({ fs, dir: this.repoPath, filepath });
     }
 
     async addAll() {
-        await statusMatrix({ fs: isoGitFs, dir: this.repoPath }).then((status) =>
+        await statusMatrix({ fs, dir: this.repoPath }).then((status) =>
             Promise.all(
                 status.map(([filepath, , worktreeStatus]) =>
                     worktreeStatus
-                        ? add({ fs: isoGitFs, dir: this.repoPath, filepath })
-                        : remove({ fs: isoGitFs, dir: this.repoPath, filepath }),
+                        ? add({ fs, dir: this.repoPath, filepath })
+                        : remove({ fs, dir: this.repoPath, filepath }),
                 ),
             ),
         );
     }
 
     async status() {
-        return await status({ fs: isoGitFs, dir: this.repoPath, filepath: '.' });
+        return await status({ fs, dir: this.repoPath, filepath: '.' });
     }
 
     async commit(message: string, author = { name: 'Test User', email: 'test@example.com' }) {
         await commit({
-            fs: isoGitFs,
+            fs,
             dir: this.repoPath,
             message,
             author,
@@ -45,18 +54,17 @@ export class GitManager {
     }
 
     async checkout(commitHash: string) {
-        await checkout({ fs: isoGitFs, dir: this.repoPath, ref: commitHash });
+        await checkout({ fs, dir: this.repoPath, ref: commitHash });
     }
 
     async listCommits() {
-        const commits = await log({ fs: isoGitFs, dir: this.repoPath });
+        const commits = await log({ fs, dir: this.repoPath });
         return commits;
     }
 
     async branch(branchName: string) {
-        const { branch } = await import('isomorphic-git');
         await branch({
-            fs: isoGitFs,
+            fs,
             dir: this.repoPath,
             ref: branchName,
             checkout: true,
