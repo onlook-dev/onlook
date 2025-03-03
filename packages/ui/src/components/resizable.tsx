@@ -114,9 +114,8 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
             <div className="h-full">{children}</div>
             <div
                 className={cn(
-                    'absolute top-0',
+                    'absolute top-0 h-full w-1 cursor-col-resize transition-all',
                     side === 'left' ? 'right-0' : 'left-0',
-                    'h-full w-1 cursor-col-resize transition-all',
                 )}
                 onMouseDown={handleMouseDown}
             />
