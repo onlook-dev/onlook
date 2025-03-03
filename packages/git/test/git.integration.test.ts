@@ -34,11 +34,14 @@ describe('GitManager Integration Tests', () => {
 
     test('should initialize Git repository', async () => {
         expect(fs.existsSync(path.join(testRepoPath, '.git'))).toBe(true);
-        const log = await gitManager.log();
     });
 
     test('should add files', async () => {
         await gitManager.add('test1.txt');
+        // Verify file was added by committing and checking if it appears in the commit
+        await gitManager.commit('Add test1.txt');
+        const commits = await gitManager.listCommits();
+        expect(commits).toHaveLength(1);
     });
 
     test('should add and commit files', async () => {
@@ -52,6 +55,60 @@ describe('GitManager Integration Tests', () => {
         // Verify the commit was created
         const commits = await gitManager.listCommits();
         expect(commits).toHaveLength(1);
-        expect(commits[0].commit.message).toBe(commitMessage);
+        expect(commits[0].commit.message.trim()).toBe(commitMessage);
+    });
+
+    test('should create and switch branches', async () => {
+        // First commit to master branch
+        await gitManager.addAll();
+        await gitManager.commit('Initial commit');
+
+        // Create a new branch
+        const branchName = 'feature-branch';
+        await gitManager.branch(branchName);
+
+        // Modify a file in the new branch
+        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified in feature branch');
+        await gitManager.add('test1.txt');
+        await gitManager.commit('Feature branch commit');
+
+        // Switch back to master
+        await gitManager.checkout('master');
+
+        // Verify file content is from master branch
+        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe('Hello World');
+
+        // Switch to feature branch again
+        await gitManager.checkout(branchName);
+
+        // Verify file content is from feature branch
+        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe(
+            'Modified in feature branch',
+        );
+    });
+
+    test('should revert changes', async () => {
+        // First commit
+        await gitManager.addAll();
+        await gitManager.commit('Initial commit');
+
+        // Modify a file
+        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified content');
+        await gitManager.add('test1.txt');
+        await gitManager.commit('Modification commit');
+
+        // Verify file is modified
+        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe(
+            'Modified content',
+        );
+
+        // Get the commit history
+        const commits = await gitManager.listCommits();
+
+        // Revert to the initial commit
+        await gitManager.checkout(commits[1].oid);
+
+        // Verify file is reverted
+        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe('Hello World');
     });
 });

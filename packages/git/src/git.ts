@@ -35,8 +35,13 @@ export class GitManager {
         return await status({ fs: isoGitFs, dir: this.repoPath, filepath: '.' });
     }
 
-    async commit(message: string) {
-        await commit({ fs: isoGitFs, dir: this.repoPath, message });
+    async commit(message: string, author = { name: 'Test User', email: 'test@example.com' }) {
+        await commit({
+            fs: isoGitFs,
+            dir: this.repoPath,
+            message,
+            author,
+        });
     }
 
     async checkout(commitHash: string) {
@@ -46,5 +51,15 @@ export class GitManager {
     async listCommits() {
         const commits = await log({ fs: isoGitFs, dir: this.repoPath });
         return commits;
+    }
+
+    async branch(branchName: string) {
+        const { branch } = await import('isomorphic-git');
+        await branch({
+            fs: isoGitFs,
+            dir: this.repoPath,
+            ref: branchName,
+            checkout: true,
+        });
     }
 }
