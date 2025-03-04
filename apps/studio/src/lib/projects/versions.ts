@@ -7,7 +7,7 @@ import type { ProjectsManager } from './index';
 
 export class VersionsManager {
     commits: ReadCommitResult[] | null = null;
-    currentCommit: string | null = null;
+    savedCommits: ReadCommitResult[] | null = null;
 
     constructor(
         private projectsManager: ProjectsManager,
@@ -16,17 +16,22 @@ export class VersionsManager {
         makeAutoObservable(this);
     }
 
-    saveCommit = async () => {
-        await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: 'test' });
-        await invokeMainChannel(GitChannels.COMMIT, { repoPath: 'test', message: 'New backup' });
+    initializeRepo = async () => {
+        await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
+        await this.saveCommit('Initial commit');
         await this.listCommits();
-        await this.getCurrentCommit();
+    };
+
+    saveCommit = async (message: string = 'New backup') => {
+        await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
+        await invokeMainChannel(GitChannels.COMMIT, { repoPath: this.project.folderPath, message });
+        await this.listCommits();
     };
 
     listCommits = async () => {
         const commits: ReadCommitResult[] | null = await invokeMainChannel(
             GitChannels.LIST_COMMITS,
-            { repoPath: 'test' },
+            { repoPath: this.project.folderPath },
         );
 
         if (!commits) {
@@ -35,22 +40,21 @@ export class VersionsManager {
         this.commits = commits;
     };
 
-    getCurrentCommit = async () => {
-        const commit: string | null = await invokeMainChannel(GitChannels.GET_CURRENT_COMMIT, {
-            repoPath: 'test',
-        });
-        this.currentCommit = commit;
-    };
-
     checkoutCommit = async (commit: string) => {
-        await invokeMainChannel(GitChannels.CHECKOUT, { repoPath: 'test', commit: commit });
+        await invokeMainChannel(GitChannels.CHECKOUT, {
+            repoPath: this.project.folderPath,
+            commit,
+        });
         await this.listCommits();
-        this.currentCommit = commit;
     };
 
     renameCommit = async (commit: string, newName: string) => {
-        // await invokeMainChannel(GitChannels.RENAME_COMMIT, { repoPath: 'test', commit: commit, newName: newName });
-        // await this.listCommits();
+        await invokeMainChannel(GitChannels.RENAME_COMMIT, {
+            repoPath: this.project.folderPath,
+            commit,
+            newName,
+        });
+        await this.listCommits();
     };
 
     updateProject(project: Project) {

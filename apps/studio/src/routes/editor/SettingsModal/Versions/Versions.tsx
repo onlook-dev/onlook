@@ -1,4 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
+import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { VersionRow } from './VersionRow';
 
@@ -7,10 +8,11 @@ export const Versions = observer(() => {
     const commits = projectsManager.versions?.commits;
 
     return (
-        <div className="flex-1 space-y-4">
-            <h2 className="text-lg font-semibold">Versions</h2>
+        <div className="flex flex-col space-y-4">
+            <h2 className="">Versions</h2>
+            <Separator />
             <div className="space-y-1">
-                <div className="font-medium">Today</div>
+                <div className="">Today</div>
                 {commits?.map((commit) => <VersionRow key={commit.oid} commit={commit} />)}
             </div>
         </div>

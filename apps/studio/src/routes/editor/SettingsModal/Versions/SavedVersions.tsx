@@ -4,7 +4,7 @@ import { VersionRow } from './VersionRow';
 
 export const SavedVersions = observer(() => {
     const projectsManager = useProjectsManager();
-    const commits = projectsManager.versions?.commits;
+    const commits = projectsManager.versions?.savedCommits;
 
     return (
         <div className="space-y-4">

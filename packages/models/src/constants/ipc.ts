@@ -160,6 +160,7 @@ export enum GitChannels {
     LOG = 'log',
     BRANCH = 'branch',
     GET_CURRENT_COMMIT = 'get-current-commit',
+    RENAME_COMMIT = 'rename-commit',
 }
 
 export type Channels = MainChannels | GitChannels;
