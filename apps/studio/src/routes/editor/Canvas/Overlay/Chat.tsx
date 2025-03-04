@@ -50,11 +50,17 @@ export const OverlayChat = observer(
         const editorEngine = useEditorEngine();
         const userManager = useUserManager();
         const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
-        const shouldHideButton = !userManager.settings.settings?.chat?.showMiniChat;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
+
+        const shouldHideButton =
+            !selectedEl ||
+            isInteractMode ||
+            editorEngine.chat.isWaiting ||
+            editorEngine.chat.streamingMessage ||
+            !userManager.settings.settings?.chat?.showMiniChat;
 
         // Add effect to reset input state when elementId changes
         useEffect(() => {
@@ -100,13 +106,7 @@ export const OverlayChat = observer(
             }
         }, [elementId]);
 
-        if (
-            shouldHideButton ||
-            !selectedEl ||
-            isInteractMode ||
-            editorEngine.chat.isWaiting ||
-            editorEngine.chat.streamingMessage
-        ) {
+        if (shouldHideButton) {
             return null;
         }
 
