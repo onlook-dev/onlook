@@ -7,9 +7,11 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { timeAgo } from '@onlook/utility';
+import { cn } from '@onlook/ui/utils';
+import { formatCommitDate, timeAgo } from '@onlook/utility';
 import type { ReadCommitResult } from 'isomorphic-git';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 
 export enum VersionRowType {
     SAVED = 'saved',
@@ -20,52 +22,58 @@ export enum VersionRowType {
 export const VersionRow = observer(
     ({ commit, type }: { commit: ReadCommitResult; type: VersionRowType }) => {
         const projectsManager = useProjectsManager();
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-        const formatDate = (timestamp: number) => {
-            const date = new Date(timestamp * 1000);
-
+        const renderDate = () => {
             if (type === VersionRowType.TODAY) {
-                return `${timeAgo(date.toISOString())} ago`;
+                return `${timeAgo(new Date(commit.commit.author.timestamp * 1000).toISOString())} ago`;
             }
-
-            if (type === VersionRowType.PREVIOUS_DAYS) {
-                return date.toLocaleString('en-US', {
-                    hour: 'numeric',
-                    minute: 'numeric',
-                });
-            }
-
-            return date.toLocaleString('en-US', {
-                hour: 'numeric',
-                minute: 'numeric',
-                month: 'numeric',
-                day: 'numeric',
-                year: '2-digit',
+            return formatCommitDate(commit.commit.author.timestamp, {
+                includeDate: type === VersionRowType.PREVIOUS_DAYS,
             });
         };
 
         return (
             <div
                 key={commit.oid}
-                className="p-1 grid grid-cols-6 items-center justify-between hover:bg-background-secondary transition-colors rounded"
+                className="p-2 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors rounded group"
             >
-                <div className="col-span-4 flex items-center">
-                    <Button variant="ghost" size="icon">
-                        {type === VersionRowType.SAVED ? (
-                            <Icons.BookmarkFilled />
-                        ) : (
-                            <Icons.Bookmark />
-                        )}
-                    </Button>
+                <span className="col-span-4 flex flex-col gap-1">
                     <span>{commit.commit.message || 'Backup'}</span>
-                </div>
-                <span className="col-span-1 text-muted-foreground">
-                    {formatDate(commit.commit.author.timestamp)}
+                    <span className="text-muted-foreground">
+                        {commit.commit.author.name} • {renderDate()}
+                    </span>
                 </span>
-                <div className="col-span-1 flex justify-end">
-                    <DropdownMenu>
+                <span className="col-span-1 text-muted-foreground"></span>
+                <div
+                    className={cn(
+                        'col-span-1 gap-2 flex justify-end group-hover:opacity-100 opacity-0 transition-opacity',
+                        isDropdownOpen && 'opacity-100',
+                    )}
+                >
+                    {type === VersionRowType.SAVED ? (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 bg-background-secondary"
+                        >
+                            <Icons.BookmarkFilled />
+                            <span className="text-muted-foreground">Remove</span>
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 bg-background-secondary"
+                        >
+                            <Icons.Bookmark />
+                            <span className="text-muted-foreground">Save</span>
+                        </Button>
+                    )}
+
+                    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="bg-background-secondary">
                                 <Icons.DotsHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>

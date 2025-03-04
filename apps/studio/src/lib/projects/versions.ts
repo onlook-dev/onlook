@@ -38,6 +38,8 @@ export class VersionsManager {
             return (this.commits = []);
         }
         this.commits = commits;
+        // TODO: Remove after testing
+        this.savedCommits = commits;
     };
 
     checkoutCommit = async (commit: string) => {

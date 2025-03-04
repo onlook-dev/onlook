@@ -1,6 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
-import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { Language, LANGUAGE_DISPLAY_NAMES, MainChannels, Theme } from '@onlook/models/constants';
 import { DEFAULT_IDE } from '@onlook/models/ide';
@@ -50,16 +49,12 @@ const PreferencesTab = observer(() => {
         setShouldWarnDelete(enabled);
     }
 
-    function handleBackButtonClick() {
-        projectsManager.projectsTab = ProjectTabs.PROJECTS;
-    }
-
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8 p-4">
             {/* Language Preference */}
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
-                    <p className="text-foreground-onlook text-largePlus">Language</p>
+                    <p className="text-largePlus">Language</p>
                     <p className="text-foreground-onlook text-small">
                         Choose your preferred language
                     </p>
@@ -90,7 +85,7 @@ const PreferencesTab = observer(() => {
             </div>
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
-                    <p className="text-foreground-onlook text-largePlus">Theme</p>
+                    <p className="text-largePlus">Theme</p>
                     <p className="text-foreground-onlook text-small">
                         Choose your preferred appearance
                     </p>
@@ -125,7 +120,7 @@ const PreferencesTab = observer(() => {
                 </DropdownMenu>
             </div>
             <div className="flex justify-between items-center">
-                <p className="text-foreground-onlook text-largePlus">Default Code Editor</p>
+                <p className="text-largePlus">Default Code Editor</p>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="min-w-[150px]">
@@ -156,7 +151,7 @@ const PreferencesTab = observer(() => {
             </div>
             <div className=" flex justify-between items-center gap-4">
                 <div className=" flex flex-col gap-2">
-                    <p className="text-foreground-onlook text-largePlus">{'Warn before delete'}</p>
+                    <p className="text-largePlus">{'Warn before delete'}</p>
                     <p className="text-foreground-onlook text-small">
                         {'This adds a warning before deleting elements in the editor'}
                     </p>
@@ -180,7 +175,7 @@ const PreferencesTab = observer(() => {
             </div>
             <div className="flex justify-between items-center gap-4">
                 <div className="flex flex-col gap-2">
-                    <p className="text-foreground-onlook text-largePlus">Analytics</p>
+                    <p className="text-largePlus">Analytics</p>
                     <p className="text-foreground-onlook text-small">
                         This helps our small team of two know what we need to improve with the
                         product.

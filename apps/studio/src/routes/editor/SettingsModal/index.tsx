@@ -7,8 +7,8 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { DomainTab } from './Domain';
-import PreferencesTab from './PreferencesTab';
-import ProjectTab from './ProjectTab';
+import PreferencesTab from './Preferences';
+import ProjectTab from './Project';
 import { VersionsTab } from './Versions';
 
 const SettingsModal = observer(() => {
@@ -124,7 +124,7 @@ const SettingsModal = observer(() => {
                                     </div>
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
-                                    <div className="flex-1 overflow-y-auto p-6">
+                                    <div className="flex-1 overflow-y-auto">
                                         {editorEngine.settingsTab === SettingsTabValue.DOMAIN && (
                                             <DomainTab />
                                         )}
