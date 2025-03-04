@@ -11,6 +11,7 @@ import {
     statusMatrix,
 } from 'isomorphic-git';
 
+const GIT_AUTHOR = { name: 'Onlook', email: 'git@onlook.com' };
 export class GitManager {
     constructor(private readonly repoPath: string) {
         this.repoPath = repoPath;
@@ -44,7 +45,7 @@ export class GitManager {
         return await status({ fs, dir: this.repoPath, filepath: '.' });
     }
 
-    async commit(message: string, author = { name: 'Test User', email: 'test@example.com' }) {
+    async commit(message: string, author = GIT_AUTHOR) {
         await commit({
             fs,
             dir: this.repoPath,
