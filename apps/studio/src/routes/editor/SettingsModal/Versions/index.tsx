@@ -22,7 +22,7 @@ export const VersionsTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col h-full space-y-6 relative">
+        <div className="flex flex-col h-full relative">
             <Button
                 variant="outline"
                 className="ml-auto w-fit bg-background-secondary absolute top-0 right-0"
