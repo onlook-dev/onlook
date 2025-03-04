@@ -38,8 +38,8 @@ export class GitManager {
         );
     }
 
-    async status() {
-        return await status({ fs, dir: this.repoPath, filepath: '.' });
+    async status(filepath: string = '.') {
+        return await status({ fs, dir: this.repoPath, filepath });
     }
 
     async commit(message: string, author = GIT_AUTHOR) {

@@ -44,6 +44,16 @@ describe('GitManager Integration Tests', () => {
         expect(commits).toHaveLength(1);
     });
 
+    test('should add files', async () => {
+        const status = await gitManager.status('test1.txt');
+        expect(status).toBe('*added');
+
+        await gitManager.add('test1.txt');
+        // Verify file was added by committing and checking if it appears in the commit
+        const status1 = await gitManager.status('test1.txt');
+        expect(status1).toBe('added');
+    });
+
     test('should add and commit files', async () => {
         // Add all files
         await gitManager.addAll();
@@ -56,6 +66,26 @@ describe('GitManager Integration Tests', () => {
         const commits = await gitManager.listCommits();
         expect(commits).toHaveLength(1);
         expect(commits[0].commit.message.trim()).toBe(commitMessage);
+    });
+
+    test('should include deleted files in addAll', async () => {
+        // First commit all files
+        await gitManager.addAll();
+        await gitManager.commit('Initial commit');
+
+        // Delete a file
+        fs.unlinkSync(path.join(testRepoPath, 'test1.txt'));
+
+        // Check status before addAll
+        const statusBeforeAdd = await gitManager.status('test1.txt');
+        expect(statusBeforeAdd).toBe('*deleted');
+
+        // Add all changes including deleted file
+        await gitManager.addAll();
+
+        // Check status after addAll
+        const statusAfterAdd = await gitManager.status('test1.txt');
+        expect(statusAfterAdd).toBe('deleted');
     });
 
     test('should create and switch branches', async () => {
