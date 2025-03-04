@@ -77,7 +77,7 @@ export const DefaultSettings = {
         showSuggestions: true,
         autoApplyCode: true,
         expandCodeBlocks: false,
-        showFloatingButton: true,
+        showMiniChat: true,
     },
     EDITOR_SETTINGS: {
         shouldWarnDelete: true,

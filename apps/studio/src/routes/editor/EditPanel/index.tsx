@@ -147,19 +147,17 @@ const EditPanel = observer(() => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         userManager.settings.updateChat({
-                                            showFloatingButton: !chatSettings.showFloatingButton,
+                                            showMiniChat: !chatSettings.showMiniChat,
                                         });
                                     }}
                                 >
                                     <Icons.Check
                                         className={cn(
                                             'mr-2 h-4 w-4',
-                                            chatSettings.showFloatingButton
-                                                ? 'opacity-100'
-                                                : 'opacity-0',
+                                            chatSettings.showMiniChat ? 'opacity-100' : 'opacity-0',
                                         )}
                                     />
-                                    Show floating chat button
+                                    Show mini chat
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
