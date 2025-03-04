@@ -52,9 +52,9 @@ const SettingsModal = observer(() => {
                                 <Separator orientation="horizontal" className="shrink-0" />
 
                                 {/* Main content */}
-                                <div className="flex gap-4 flex-1 min-h-0 overflow-hidden">
+                                <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
-                                    <div className="shrink-0 w-40 space-y-2 p-6 text-regularPlus">
+                                    <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
                                         <Button
                                             variant="ghost"
                                             className={cn(
@@ -92,17 +92,17 @@ const SettingsModal = observer(() => {
                                             className={cn(
                                                 'w-full justify-start px-0 hover:bg-transparent',
                                                 editorEngine.settingsTab ===
-                                                    SettingsTabValue.PREFERENCES
+                                                    SettingsTabValue.VERSIONS
                                                     ? 'text-foreground-active'
                                                     : 'text-muted-foreground',
                                             )}
                                             onClick={() =>
                                                 (editorEngine.settingsTab =
-                                                    SettingsTabValue.PREFERENCES)
+                                                    SettingsTabValue.VERSIONS)
                                             }
                                         >
-                                            <Icons.Person className="mr-2 h-4 w-4" />
-                                            Preferences
+                                            <Icons.Code className="mr-2 h-4 w-4" />
+                                            Versions
                                         </Button>
                                         <Button
                                             variant="ghost"
@@ -115,27 +115,27 @@ const SettingsModal = observer(() => {
                                             )}
                                             onClick={() =>
                                                 (editorEngine.settingsTab =
-                                                    SettingsTabValue.VERSIONS)
+                                                    SettingsTabValue.PREFERENCES)
                                             }
                                         >
-                                            <Icons.Code className="mr-2 h-4 w-4" />
-                                            Versions
+                                            <Icons.Person className="mr-2 h-4 w-4" />
+                                            Preferences
                                         </Button>
                                     </div>
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
-                                    <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
+                                    <div className="flex-1 overflow-y-auto p-6">
                                         {editorEngine.settingsTab === SettingsTabValue.DOMAIN && (
                                             <DomainTab />
                                         )}
                                         {editorEngine.settingsTab === SettingsTabValue.PROJECT && (
                                             <ProjectTab />
                                         )}
-                                        {editorEngine.settingsTab ===
-                                            SettingsTabValue.PREFERENCES && <PreferencesTab />}
                                         {editorEngine.settingsTab === SettingsTabValue.VERSIONS && (
                                             <VersionsTab />
                                         )}
+                                        {editorEngine.settingsTab ===
+                                            SettingsTabValue.PREFERENCES && <PreferencesTab />}
                                     </div>
                                 </div>
                             </div>
