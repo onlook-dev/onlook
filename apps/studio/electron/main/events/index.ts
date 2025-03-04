@@ -15,6 +15,7 @@ import { listenForPageMessages } from './page';
 import { listenForPaymentMessages } from './payments';
 import { listenForRunMessages } from './run';
 import { listenForStorageMessages } from './storage';
+import { listenForVersionsMessages } from './versions';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -29,6 +30,7 @@ export function listenForIpcMessages() {
     listenForPaymentMessages();
     listenForPageMessages();
     listenForAssetMessages();
+    listenForVersionsMessages();
 }
 
 export function removeIpcListeners() {

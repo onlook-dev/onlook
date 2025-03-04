@@ -8,6 +8,7 @@ import { invokeMainChannel, sendAnalytics } from '../utils';
 import { CreateManager } from './create';
 import { DomainsManager } from './domains';
 import { RunManager } from './run';
+import { VersionsManager } from './versions';
 
 export enum ProjectTabs {
     PROJECTS = 'projects',
@@ -25,6 +26,7 @@ export class ProjectsManager {
     private _projects: Project[] = [];
     private _run: RunManager | null = null;
     private _domains: DomainsManager | null = null;
+    private _versions: VersionsManager | null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -127,6 +129,10 @@ export class ProjectsManager {
         return this._domains;
     }
 
+    get versions(): VersionsManager | null {
+        return this._versions;
+    }
+
     set project(newProject: Project | null) {
         if (!newProject) {
             this.disposeManagers();
@@ -155,13 +161,21 @@ export class ProjectsManager {
         } else {
             this._domains.updateProject(project);
         }
+
+        if (!this._versions) {
+            this._versions = new VersionsManager(this, project);
+        } else {
+            this._versions.updateProject(project);
+        }
     }
 
     disposeManagers() {
         this._run?.dispose();
         this._domains?.dispose();
+        this._versions?.dispose();
         this._run = null;
         this._domains = null;
+        this._versions = null;
     }
 
     get projects() {
