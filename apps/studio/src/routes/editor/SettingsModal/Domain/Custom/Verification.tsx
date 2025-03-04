@@ -251,6 +251,18 @@ export const Verification = observer(() => {
         );
     }
 
+    function getInputButtonText() {
+        if (status === VerificationStatus.NO_DOMAIN) {
+            return 'Setup';
+        }
+
+        if (status === VerificationStatus.LOADING) {
+            return 'Loading...';
+        }
+
+        return 'Edit';
+    }
+
     function renderNoDomainInput() {
         return (
             <div className="space-y-2">
@@ -295,7 +307,7 @@ export const Verification = observer(() => {
                                 {status === VerificationStatus.LOADING && (
                                     <Icons.Shadow className="h-4 w-4 animate-spin mr-2" />
                                 )}
-                                {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
+                                {getInputButtonText()}
                             </Button>
                         </div>
                         {renderExistingDomains()}
