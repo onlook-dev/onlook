@@ -1,10 +1,19 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
-import { GitManager } from '../src/git';
+import {
+    add,
+    addAll,
+    branch,
+    checkout,
+    commit,
+    getCurrentCommit,
+    init,
+    log,
+    status,
+} from '../src/git';
 
 describe('GitManager Integration Tests', () => {
-    let gitManager: GitManager;
     let testRepoPath: string;
 
     beforeEach(async () => {
@@ -19,8 +28,7 @@ describe('GitManager Integration Tests', () => {
         );
 
         // Initialize Git repository
-        gitManager = new GitManager(testRepoPath);
-        await gitManager.init();
+        await init(testRepoPath);
 
         // Create some test files
         fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Hello World');
@@ -37,79 +45,79 @@ describe('GitManager Integration Tests', () => {
     });
 
     test('should add files', async () => {
-        await gitManager.add('test1.txt');
+        await add(testRepoPath, 'test1.txt');
         // Verify file was added by committing and checking if it appears in the commit
-        await gitManager.commit('Add test1.txt');
-        const commits = await gitManager.listCommits();
+        await commit(testRepoPath, 'Add test1.txt');
+        const commits = await log(testRepoPath);
         expect(commits).toHaveLength(1);
     });
 
     test('should add files', async () => {
-        const status = await gitManager.status('test1.txt');
-        expect(status).toBe('*added');
+        const res = await status(testRepoPath, 'test1.txt');
+        expect(res).toBe('*added');
 
-        await gitManager.add('test1.txt');
+        await add(testRepoPath, 'test1.txt');
         // Verify file was added by committing and checking if it appears in the commit
-        const status1 = await gitManager.status('test1.txt');
-        expect(status1).toBe('added');
+        const res1 = await status(testRepoPath, 'test1.txt');
+        expect(res1).toBe('added');
     });
 
     test('should add and commit files', async () => {
         // Add all files
-        await gitManager.addAll();
+        await addAll(testRepoPath);
 
         // Commit the files
         const commitMessage = 'Initial commit';
-        await gitManager.commit(commitMessage);
+        await commit(testRepoPath, commitMessage);
 
         // Verify the commit was created
-        const commits = await gitManager.listCommits();
+        const commits = await log(testRepoPath);
         expect(commits).toHaveLength(1);
         expect(commits[0].commit.message.trim()).toBe(commitMessage);
     });
 
     test('should include deleted files in addAll', async () => {
         // First commit all files
-        await gitManager.addAll();
-        await gitManager.commit('Initial commit');
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
 
         // Delete a file
         fs.unlinkSync(path.join(testRepoPath, 'test1.txt'));
 
         // Check status before addAll
-        const statusBeforeAdd = await gitManager.status('test1.txt');
+        const statusBeforeAdd = await status(testRepoPath, 'test1.txt');
         expect(statusBeforeAdd).toBe('*deleted');
 
         // Add all changes including deleted file
-        await gitManager.addAll();
+        await addAll(testRepoPath);
 
         // Check status after addAll
-        const statusAfterAdd = await gitManager.status('test1.txt');
+        const statusAfterAdd = await status(testRepoPath, 'test1.txt');
         expect(statusAfterAdd).toBe('deleted');
     });
 
     test('should create and switch branches', async () => {
         // First commit to master branch
-        await gitManager.addAll();
-        await gitManager.commit('Initial commit');
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
 
         // Create a new branch
         const branchName = 'feature-branch';
-        await gitManager.branch(branchName);
+        await branch(testRepoPath, branchName);
 
         // Modify a file in the new branch
         fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified in feature branch');
-        await gitManager.add('test1.txt');
-        await gitManager.commit('Feature branch commit');
+        await add(testRepoPath, 'test1.txt');
+        await commit(testRepoPath, 'Feature branch commit');
 
         // Switch back to master
-        await gitManager.checkout('master');
+        await checkout(testRepoPath, 'master');
 
         // Verify file content is from master branch
         expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe('Hello World');
 
         // Switch to feature branch again
-        await gitManager.checkout(branchName);
+        await checkout(testRepoPath, branchName);
 
         // Verify file content is from feature branch
         expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe(
@@ -119,13 +127,13 @@ describe('GitManager Integration Tests', () => {
 
     test('should revert changes', async () => {
         // First commit
-        await gitManager.addAll();
-        await gitManager.commit('Initial commit');
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
 
         // Modify a file
         fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified content');
-        await gitManager.add('test1.txt');
-        await gitManager.commit('Modification commit');
+        await add(testRepoPath, 'test1.txt');
+        await commit(testRepoPath, 'Modification commit');
 
         // Verify file is modified
         expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe(
@@ -133,12 +141,40 @@ describe('GitManager Integration Tests', () => {
         );
 
         // Get the commit history
-        const commits = await gitManager.listCommits();
+        const commits = await log(testRepoPath);
 
         // Revert to the initial commit
-        await gitManager.checkout(commits[1].oid);
+        await checkout(testRepoPath, commits[1].oid);
 
         // Verify file is reverted
         expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe('Hello World');
+    });
+
+    test('should get current commit hash', async () => {
+        // First commit to get a valid commit hash
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
+
+        // Get the current commit hash
+        const currentCommit = await getCurrentCommit(testRepoPath);
+
+        // Get the commit history to verify the hash
+        const commits = await log(testRepoPath);
+        expect(currentCommit).toBe(commits[0].oid);
+    });
+
+    test('should throw error when in detached HEAD state', async () => {
+        // First commit to get a valid commit hash
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
+
+        // Get the commit history
+        const commits = await log(testRepoPath);
+
+        // Checkout a specific commit to enter detached HEAD state
+        await checkout(testRepoPath, commits[0].oid);
+
+        // Attempt to get current commit should throw
+        await expect(getCurrentCommit(testRepoPath)).rejects.toThrow('Not on any branch');
     });
 });
