@@ -9,6 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { DomainTab } from './Domain';
 import PreferencesTab from './PreferencesTab';
 import ProjectTab from './ProjectTab';
+import { VersionsTab } from './Versions';
 
 const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
@@ -103,6 +104,23 @@ const SettingsModal = observer(() => {
                                             <Icons.Person className="mr-2 h-4 w-4" />
                                             Preferences
                                         </Button>
+                                        <Button
+                                            variant="ghost"
+                                            className={cn(
+                                                'w-full justify-start px-0 hover:bg-transparent',
+                                                editorEngine.settingsTab ===
+                                                    SettingsTabValue.PREFERENCES
+                                                    ? 'text-foreground-active'
+                                                    : 'text-muted-foreground',
+                                            )}
+                                            onClick={() =>
+                                                (editorEngine.settingsTab =
+                                                    SettingsTabValue.VERSIONS)
+                                            }
+                                        >
+                                            <Icons.Code className="mr-2 h-4 w-4" />
+                                            Versions
+                                        </Button>
                                     </div>
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
@@ -115,6 +133,9 @@ const SettingsModal = observer(() => {
                                         )}
                                         {editorEngine.settingsTab ===
                                             SettingsTabValue.PREFERENCES && <PreferencesTab />}
+                                        {editorEngine.settingsTab === SettingsTabValue.VERSIONS && (
+                                            <VersionsTab />
+                                        )}
                                     </div>
                                 </div>
                             </div>
