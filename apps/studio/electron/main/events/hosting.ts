@@ -2,12 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { PublishRequest, PublishResponse, UnpublishRequest } from '@onlook/models/hosting';
 import { ipcMain } from 'electron';
 import hostingManager from '../hosting';
-import {
-    createDomainVerification,
-    getCustomDomains,
-    getOwnedDomains,
-    verifyDomain,
-} from '../hosting/domains';
+import { createDomainVerification, getOwnedDomains, verifyDomain } from '../hosting/domains';
 
 export function listenForHostingMessages() {
     ipcMain.handle(

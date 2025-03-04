@@ -1,5 +1,5 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import {
     FREESTYLE_IP_ADDRESS,
     FRESTYLE_CUSTOM_HOSTNAME,
@@ -118,13 +118,16 @@ export const Verification = observer(() => {
         }
 
         setStatus(VerificationStatus.VERIFYING);
-        const verificationRecord = getVerificationRecord(validDomain, response.verificationCode);
+        const verificationRecord = getVerificationRecord(response.verificationCode);
         const aRecords = getARecords();
         setRecords([verificationRecord, ...aRecords]);
         setError(null);
     }
 
     async function verifyDomain() {
+        sendAnalytics('verify domain', {
+            domain: domain,
+        });
         setStatus(VerificationStatus.LOADING);
         setError(null);
         const response: VerifyDomainResponse = await invokeMainChannel(MainChannels.VERIFY_DOMAIN, {
@@ -134,6 +137,10 @@ export const Verification = observer(() => {
         if (!response.success) {
             setError(response.message ?? 'Failed to verify domain');
             setStatus(VerificationStatus.VERIFYING);
+            sendAnalytics('verify domain failed', {
+                domain: domain,
+                error: response.message ?? 'Failed to verify domain',
+            });
             return;
         }
 
@@ -141,6 +148,10 @@ export const Verification = observer(() => {
         setError(null);
         addCustomDomain(domain);
         handleDomainVerified();
+
+        sendAnalytics('verify domain success', {
+            domain: domain,
+        });
     }
 
     const handleDomainVerified = () => {
@@ -155,8 +166,15 @@ export const Verification = observer(() => {
     };
 
     const addCustomDomain = (url: string) => {
+        sendAnalytics('add custom domain', {
+            domain: url,
+        });
         if (!domainsManager) {
             setError('Failed to add custom domain');
+            sendAnalytics('add custom domain failed', {
+                domain: url,
+                error: 'domains manager not found',
+            });
             return;
         }
         domainsManager.addCustomDomainToProject(url);
@@ -164,15 +182,21 @@ export const Verification = observer(() => {
         setDomain(url);
         setError(null);
         handleDomainVerified();
+        sendAnalytics('add custom domain success', {
+            domain: url,
+        });
     };
 
     function removeDomain() {
+        sendAnalytics('remove custom domain', {
+            domain: domain,
+        });
         setStatus(VerificationStatus.NO_DOMAIN);
         setDomain('');
         setRecords([]);
     }
 
-    function getVerificationRecord(domain: string, verificationCode: string) {
+    function getVerificationRecord(verificationCode: string) {
         const verificationRecord: DNSRecord = {
             type: 'TXT',
             host: FRESTYLE_CUSTOM_HOSTNAME,
