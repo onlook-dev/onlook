@@ -6,7 +6,7 @@ export interface WebviewMetadata {
 
 export enum EditorMode {
     DESIGN = 'design',
-    INTERACT = 'interact',
+    PREVIEW = 'preview',
     PAN = 'pan',
     INSERT_TEXT = 'insert-text',
     INSERT_DIV = 'insert-div',

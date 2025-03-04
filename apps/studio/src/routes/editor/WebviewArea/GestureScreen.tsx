@@ -178,7 +178,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
     const gestureScreenClassName = useMemo(() => {
         return cn(
             'absolute inset-0 bg-transparent',
-            editorEngine.mode === EditorMode.INTERACT && !isResizing ? 'hidden' : 'visible',
+            editorEngine.mode === EditorMode.PREVIEW && !isResizing ? 'hidden' : 'visible',
             editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
             editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
         );

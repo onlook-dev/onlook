@@ -15,12 +15,14 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { CreateErrorCard } from './CreateError';
 import { CreateLoadingCard } from './CreateLoading';
 import { PromptingCard } from './PromptingCard';
 
 export const PromptCreation = observer(({ initialScreen = false }: { initialScreen?: boolean }) => {
+    const { t } = useTranslation();
     const authManager = useAuthManager();
     const projectsManager = useProjectsManager();
     const { theme } = useTheme();
@@ -95,7 +97,7 @@ export const PromptCreation = observer(({ initialScreen = false }: { initialScre
                                         (projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT)
                                     }
                                 >
-                                    <p className="text-microPlus">Import</p>
+                                    <p className="text-microPlus">{t('projects.actions.import')}</p>
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -113,10 +115,10 @@ export const PromptCreation = observer(({ initialScreen = false }: { initialScre
                                                 window.open('https://onlook.com/', '_blank')
                                             }
                                         >
-                                            About Onlook
+                                            {t('projects.actions.about')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => authManager.signOut()}>
-                                            Sign out
+                                            {t('projects.actions.signOut')}
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -131,7 +133,7 @@ export const PromptCreation = observer(({ initialScreen = false }: { initialScre
                                 onClick={returnToProjects}
                             >
                                 <Icons.CrossL className="w-4 h-4 cursor-pointer" />
-                                <p className="text-microPlus">Close</p>
+                                <p className="text-microPlus">{t('projects.actions.close')}</p>
                             </Button>
                         )}
                     </div>

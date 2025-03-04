@@ -18,6 +18,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -26,6 +27,7 @@ const ProjectBreadcrumb = observer(() => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer>();
+    const { t } = useTranslation();
 
     async function handleNavigateToProject(tab?: ProjectTabs) {
         try {
@@ -104,12 +106,14 @@ const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuItem onClick={handleReturn}>
                         <div className="flex row center items-center group">
                             <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
-                            {'Go to all Projects'}
+                            {t('projects.actions.goToAllProjects')}
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>New Project</DropdownMenuSubTrigger>
+                        <DropdownMenuSubTrigger>
+                            {t('projects.actions.newProject')}
+                        </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                             <DropdownMenuItem
                                 onClick={() => handleNavigateToProject(ProjectTabs.PROMPT_CREATE)}
@@ -121,7 +125,7 @@ const ProjectBreadcrumb = observer(() => {
                                 )}
                             >
                                 <Icons.FilePlus className="mr-2 h-4 w-4" />
-                                Start from scratch
+                                {t('projects.actions.startFromScratch')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => handleNavigateToProject(ProjectTabs.IMPORT_PROJECT)}
@@ -133,27 +137,27 @@ const ProjectBreadcrumb = observer(() => {
                                 )}
                             >
                                 <Icons.Download className="mr-2 h-4 w-4" />
-                                Import a project
+                                {t('projects.actions.importProject')}
                             </DropdownMenuItem>
                         </DropdownMenuSubContent>
                     </DropdownMenuSub>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                        {'Show in Explorer'}
+                        {t('projects.actions.showInExplorer')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
                             editorEngine.isPlansOpen = true;
                         }}
                     >
-                        Subscriptions
+                        {t('projects.actions.subscriptions')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
                             editorEngine.isSettingsOpen = true;
                         }}
                     >
-                        Settings
+                        {t('projects.actions.settings')}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

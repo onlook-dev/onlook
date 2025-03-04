@@ -3,11 +3,13 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import DeviceSettings from './DeviceSettings';
 import FrameDimensions from './FrameDimensions';
 
 const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
     let settings = null;
 
     // Get settings from the selected element or webview
@@ -17,18 +19,20 @@ const WindowsTab = observer(() => {
         settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
     }
 
+    const WIDTH = 'w-[275px]';
+
     if (!settings) {
         return (
-            <div className="w-[245px] h-full flex items-center justify-center p-2 text-center">
-                <p className="text-sm text-foreground-secondary">
-                    Select a window to edit its settings
-                </p>
-            </div>
+            <p
+                className={`${WIDTH} h-full flex items-center justify-center p-2 text-center text-sm text-foreground-secondary`}
+            >
+                {t('editor.panels.layers.tabs.windows.emptyState')}
+            </p>
         );
     }
 
     return (
-        <div className="flex flex-col gap-3 p-4 w-[275px]">
+        <div className={`${WIDTH} flex flex-col gap-3 p-4`}>
             <div className="flex flex-row gap-1">
                 <Button
                     variant={'outline'}

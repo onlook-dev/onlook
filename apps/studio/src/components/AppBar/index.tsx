@@ -2,18 +2,13 @@ import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { HelpButton } from './HelpButton';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
     const updateManager = useUpdateManager();
-
-    const className = cn(
-        'opacity-50 hover:opacity-100',
-        updateManager.updateAvailable &&
-            'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
-    );
 
     return (
         <div
@@ -28,6 +23,7 @@ const AppBar = observer(() => {
             <div className="flex mr-2 gap-2">
                 <UpdateButton />
             </div>
+            <HelpButton />
             <WindowsControls />
         </div>
     );

@@ -57,5 +57,252 @@
         "footer": {
             "unusedMessages": "未使用のチャットメッセージは翌月に繰り越されません。"
         }
+    },
+    "editor": {
+        "modes": {
+            "design": {
+                "name": "デザイン",
+                "description": "ウェブサイトのデザインを編集・変更します",
+                "tooltip": "デザインモードに切り替え"
+            },
+            "preview": {
+                "name": "プレビュー",
+                "description": "ウェブサイトの機能をプレビュー＆テストします",
+                "tooltip": "プレビューモードに切り替え"
+            }
+        },
+        "toolbar": {
+            "tools": {
+                "select": {
+                    "name": "選択",
+                    "tooltip": "要素を選択して変更"
+                },
+                "pan": {
+                    "name": "画面移動",
+                    "tooltip": "キャンバスをパンして移動"
+                },
+                "insertDiv": {
+                    "name": "コンテナ挿入",
+                    "tooltip": "新しいコンテナ要素を追加"
+                },
+                "insertText": {
+                    "name": "テキスト挿入",
+                    "tooltip": "新しいテキスト要素を追加"
+                }
+            }
+        },
+        "panels": {
+            "edit": {
+                "tabs": {
+                    "chat": {
+                        "name": "チャット",
+                        "emptyState": "AIとやり取りする要素を選択してください",
+                        "emptyStateStart": "チャットを始めるにはプロジェクトを開始してください",
+                        "input": {
+                            "placeholder": "メッセージを入力...",
+                            "tooltip": "選択した要素についてAIとチャット"
+                        },
+                        "controls": {
+                            "newChat": "新規チャット",
+                            "history": "チャット履歴"
+                        },
+                        "settings": {
+                            "showSuggestions": "提案を表示",
+                            "expandCodeBlocks": "レンダリング時にコードを表示"
+                        },
+                        "miniChat": {
+                            "button": "AIとチャット"
+                        }
+                    },
+                    "styles": {
+                        "name": "スタイル",
+                        "emptyState": "スタイルを編集する要素を選択してください",
+                        "groups": {
+                            "position": "位置 & 寸法",
+                            "layout": "フレックスボックス & レイアウト",
+                            "style": "スタイル",
+                            "text": "テキスト"
+                        },
+                        "tailwind": {
+                            "title": "Tailwindクラス",
+                            "placeholder": "ここにTailwindクラスを追加",
+                            "componentClasses": {
+                                "title": "メインコンポーネントクラス",
+                                "tooltip": "変更はコンポーネントのコードに適用されます。これがデフォルトです。"
+                            },
+                            "instanceClasses": {
+                                "title": "インスタンスクラス",
+                                "tooltip": "変更はインスタンスのコードに適用されます。"
+                            }
+                        }
+                    }
+                }
+            },
+            "layers": {
+                "name": "レイヤー",
+                "tabs": {
+                    "layers": "レイヤー",
+                    "pages": "ページ",
+                    "components": "コンポーネント",
+                    "images": "画像",
+                    "windows": {
+                        "name": "ウィンドウ",
+                        "emptyState": "編集するウィンドウを選択してください"
+                    },
+                    "brand": "ブランド"
+                }
+            }
+        },
+        "settings": {
+            "preferences": {
+                "language": "言語",
+                "theme": "テーマ",
+                "deleteWarning": "削除警告",
+                "analytics": "アナリティクス",
+                "editor": {
+                    "ide": "エディタ",
+                    "shouldWarnDelete": "要素を削除する時に警告する",
+                    "enableAnalytics": "アナリティクスを有効にする"
+                },
+                "shortcuts": "ショートカット"
+            }
+        },
+        "frame": {
+            "startDesigning": {
+                "prefix": "ボタン",
+                "action": "起動",
+                "suffix": "を押してアプリのデザインを開始"
+            },
+            "playButton": "起動",
+            "waitingForApp": "アプリの起動を待っています..."
+        },
+        "zoom": {
+            "level": "ズームレベル",
+            "in": "拡大",
+            "out": "縮小",
+            "fit": "全体表示",
+            "reset": "100%表示",
+            "double": "200%表示"
+        },
+        "runButton": {
+            "portInUse": "ポートが使用中",
+            "loading": "読み込み中",
+            "play": "再生",
+            "retry": "再試行",
+            "stop": "停止"
+        }
+    },
+    "projects": {
+        "create": {
+            "success": "プロジェクトが正常に作成されました。",
+            "steps": {
+                "count": "{{total}}のうち{{current}}",
+                "error": "プロジェクトデータが不足しています。"
+            },
+            "methods": {
+                "new": "新規プロジェクトを作成",
+                "load": "既存のプロジェクトを読み込む"
+            },
+            "loading": {
+                "title": "新しいOnlookアプリをセットアップしています...",
+                "description": "数秒かかる場合があります",
+                "cancel": "キャンセル"
+            },
+            "error": {
+                "title": "Onlookアプリの作成中にエラーが発生しました",
+                "backToPrompt": "プロンプトに戻る"
+            }
+        },
+        "select": {
+            "empty": "プロジェクトがありません",
+            "sort": {
+                "recent": "最新更新順",
+                "name": "プロジェクト名"
+            },
+            "lastEdited": "{{time}}前に最後に編集"
+        },
+        "actions": {
+            "import": "インポート",
+            "close": "閉じる",
+            "about": "Onlookについて",
+            "signOut": "サインアウト",
+            "editApp": "アプリを編集",
+            "projectSettings": "プロジェクト設定",
+            "showInExplorer": "エクスプローラーで表示",
+            "renameProject": "プロジェクトの名前変更",
+            "deleteProject": "プロジェクトを削除",
+            "cancel": "キャンセル",
+            "delete": "削除",
+            "rename": "名前変更",
+            "goToAllProjects": "すべてのプロジェクトへ",
+            "newProject": "新規プロジェクト",
+            "startFromScratch": "新規作成",
+            "importProject": "プロジェクトをインポート",
+            "subscriptions": "サブスクリプション",
+            "settings": "設定"
+        },
+        "dialogs": {
+            "delete": {
+                "title": "このプロジェクトを本当に削除しますか？",
+                "description": "この操作は取り消せません。プロジェクトを完全に削除し、関連データをすべて削除します。",
+                "moveToTrash": "フォルダもゴミ箱に移動"
+            },
+            "rename": {
+                "title": "プロジェクトの名前変更",
+                "label": "プロジェクト名",
+                "error": "プロジェクト名は空にできません"
+            }
+        },
+        "prompt": {
+            "title": "どんなウェブサイトを作りたいですか？",
+            "description": "プロジェクトについて教えてください。できるだけ詳しく説明してください。",
+            "input": {
+                "placeholder": "参考スクリーンショットを貼り付けたり、アイデアを書いたり、自由に表現してください...",
+                "imageUpload": "画像参照をアップロード",
+                "fileReference": "ファイル参照",
+                "submit": "サイトの構築を開始"
+            },
+            "blankStart": "空白のページから始める"
+        }
+    },
+    "welcome": {
+        "title": "Onlookへようこそ",
+        "titleReturn": "Onlookにお帰りなさい",
+        "description": "Onlookは、Reactアプリ向けのオープンソースビジュアルエディタです。実際に稼働する製品上で直接デザインできます。",
+        "alpha": "アルファ版",
+        "login": {
+            "github": "GitHubでログイン",
+            "google": "Googleでログイン",
+            "lastUsed": "最後に使用したアカウント"
+        },
+        "terms": {
+            "agreement": "サインアップすることで、以下に同意したとみなされます",
+            "privacy": "プライバシーポリシー",
+            "and": "および",
+            "tos": "利用規約"
+        },
+        "version": "バージョン{{version}}"
+    },
+    "help": {
+        "menu": {
+            "reloadOnlook": "Onlookを再読み込み",
+            "theme": {
+                "title": "テーマ",
+                "light": "ライト",
+                "dark": "ダーク",
+                "system": "システム"
+            },
+            "language": "言語",
+            "openSettings": "設定を開く",
+            "contactUs": {
+                "title": "お問い合わせ",
+                "website": "ウェブサイト",
+                "discord": "Discord",
+                "github": "GitHub",
+                "email": "メール"
+            },
+            "reportIssue": "問題を報告",
+            "shortcuts": "ショートカット"
+        }
     }
 }

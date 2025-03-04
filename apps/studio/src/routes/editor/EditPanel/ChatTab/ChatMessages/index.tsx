@@ -7,12 +7,14 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import AssistantMessage from './AssistantMessage';
 import StreamMessage from './StreamMessage';
 import UserMessage from './UserMessage';
 
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
     const chatMessagesRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -101,7 +103,7 @@ const ChatMessages = observer(() => {
                         <Icons.EmptyState className="w-full h-full" />
                     </div>
                     <p className="text-center text-regularPlus text-balance max-w-[300px]">
-                        Select an element <br /> to chat with AI
+                        {t('editor.panels.edit.tabs.chat.emptyState')}
                     </p>
                 </motion.div>
             )}

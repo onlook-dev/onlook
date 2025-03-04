@@ -23,7 +23,7 @@ const HotkeysModal = observer(() => {
         [HotkeyCategory.Tools]: [
             Hotkey.SELECT,
             Hotkey.PAN,
-            Hotkey.INTERACT,
+            Hotkey.PREVIEW,
             Hotkey.INSERT_DIV,
             Hotkey.INSERT_TEXT,
         ],
@@ -111,7 +111,7 @@ const HotkeysModal = observer(() => {
                                                                     <div className="flex items-center gap-1">
                                                                         {hotkey.readableCommand
                                                                             .split(' ')
-                                                                            .map((key) => (
+                                                                            .map((key: string) => (
                                                                                 <Kbd
                                                                                     key={`${hotkey.command}-${key}`}
                                                                                     className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
@@ -150,7 +150,7 @@ const HotkeysModal = observer(() => {
                                                                     <div className="flex items-center gap-1">
                                                                         {hotkey.readableCommand
                                                                             .split(' ')
-                                                                            .map((key) => (
+                                                                            .map((key: string) => (
                                                                                 <Kbd
                                                                                     key={`${hotkey.command}-${key}`}
                                                                                     className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
@@ -189,7 +189,7 @@ const HotkeysModal = observer(() => {
                                                                     <div className="flex items-center gap-1">
                                                                         {hotkey.readableCommand
                                                                             .split(' ')
-                                                                            .map((key) => (
+                                                                            .map((key: string) => (
                                                                                 <Kbd
                                                                                     key={`${hotkey.command}-${key}`}
                                                                                     className="h-6 px-2 text-[12px] bg-muted/50 text-popover-foreground border-border"
