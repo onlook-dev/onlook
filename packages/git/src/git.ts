@@ -9,6 +9,7 @@ import {
     remove,
     status,
     statusMatrix,
+    type ReadCommitResult,
 } from 'isomorphic-git';
 
 const GIT_AUTHOR = { name: 'Onlook', email: 'git@onlook.com' };
@@ -19,10 +20,6 @@ export class GitManager {
 
     async init() {
         await init({ fs, dir: this.repoPath });
-    }
-
-    async log() {
-        return await log({ fs, dir: this.repoPath });
     }
 
     async add(filepath: string) {
@@ -58,7 +55,7 @@ export class GitManager {
         await checkout({ fs, dir: this.repoPath, ref: commitHash });
     }
 
-    async listCommits() {
+    async listCommits(): Promise<ReadCommitResult[]> {
         const commits = await log({ fs, dir: this.repoPath });
         return commits;
     }
