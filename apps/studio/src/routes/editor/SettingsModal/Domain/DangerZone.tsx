@@ -8,13 +8,14 @@ import { observer } from 'mobx-react-lite';
 const DangerZone = observer(() => {
     const projectsManager = useProjectsManager();
 
-    const baseDomainManager = projectsManager.domains?.base;
     const baseDomain = projectsManager.project?.domains?.base;
+    const baseDomainManager = projectsManager.domains?.base;
     const isBaseDomainUnpublishing = baseDomainManager?.state.status === PublishStatus.LOADING;
 
-    const customDomainManager = projectsManager.domains?.custom;
     const customDomain = projectsManager.project?.domains?.custom;
+    const customDomainManager = projectsManager.domains?.custom;
     const isCustomDomainUnpublishing = customDomainManager?.state.status === PublishStatus.LOADING;
+
     const unpublish = async (type: DomainType) => {
         const manager = type === DomainType.BASE ? baseDomainManager : customDomainManager;
         if (!manager) {
