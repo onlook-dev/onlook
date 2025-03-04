@@ -1,6 +1,6 @@
 {
-    "name": "@onlook/ai",
-    "description": "A AI library for Onlook",
+    "name": "@onlook/git",
+    "description": "A git library for Onlook",
     "main": "./src/index.ts",
     "type": "module",
     "module": "src/index.ts",
@@ -19,7 +19,7 @@
     },
     "keywords": [
         "onlook",
-        "AI"
+        "git"
     ],
     "author": {
         "name": "Onlook",
@@ -31,8 +31,7 @@
         "@onlook/typescript": "*"
     },
     "dependencies": {
-        "diff-match-patch": "^1.0.5",
-        "fg": "^0.0.3",
-        "marked": "^15.0.7"
+        "globby": "^14.1.0",
+        "isomorphic-git": "^1.29.0"
     }
 }
