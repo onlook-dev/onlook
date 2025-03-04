@@ -5,6 +5,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Separator } from '@onlook/ui/separator';
 import { formatCommitDate } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { NoVersions } from './EmptyState/Version';
 import { VersionRow, VersionRowType } from './VersionRow';
 
 export const Versions = observer(() => {
@@ -40,43 +41,52 @@ export const Versions = observer(() => {
     return (
         <div className="flex flex-col text-sm p-4">
             <div className="flex flex-row items-center justify-between gap-2 pb-4">
-                <h2 className="">Versions</h2>
-                <Button
-                    variant="outline"
-                    className="ml-auto bg-background-secondary rounded"
-                    size="sm"
-                    onClick={() => projectsManager.versions?.saveCommit()}
-                >
-                    <Icons.Plus className="h-4 w-4 mr-2" />
-                    New backup
-                </Button>
+                <h2 className="pl-2">Versions</h2>
+                {commits && commits.length > 0 ? (
+                    <Button
+                        variant="outline"
+                        className="ml-auto bg-background-secondary rounded"
+                        size="sm"
+                        onClick={() => projectsManager.versions?.createCommit()}
+                    >
+                        <Icons.Plus className="h-4 w-4 mr-2" />
+                        New backup
+                    </Button>
+                ) : null}
             </div>
             <Separator />
-            <div className="flex flex-col gap-2">
-                <Accordion type="multiple" defaultValue={Object.keys(groupedCommits || {})}>
-                    {groupedCommits &&
-                        Object.entries(groupedCommits).map(([date, dateCommits]) => (
-                            <AccordionItem key={date} value={date}>
-                                <AccordionTrigger className="text-sm">{date}</AccordionTrigger>
-                                <AccordionContent>
-                                    <div className="flex flex-col gap-2">
-                                        {dateCommits.map((commit) => (
-                                            <VersionRow
-                                                key={commit.oid}
-                                                commit={commit}
-                                                type={
-                                                    date === 'Today'
-                                                        ? VersionRowType.TODAY
-                                                        : VersionRowType.PREVIOUS_DAYS
-                                                }
-                                            />
-                                        ))}
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                </Accordion>
-            </div>
+
+            {commits && commits.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                    <Accordion type="multiple" defaultValue={Object.keys(groupedCommits || {})}>
+                        {groupedCommits &&
+                            Object.entries(groupedCommits).map(([date, dateCommits]) => (
+                                <AccordionItem key={date} value={date}>
+                                    <AccordionTrigger className="text-sm pl-2">
+                                        {date}
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="flex flex-col gap-2">
+                                            {dateCommits.map((commit) => (
+                                                <VersionRow
+                                                    key={commit.oid}
+                                                    commit={commit}
+                                                    type={
+                                                        date === 'Today'
+                                                            ? VersionRowType.TODAY
+                                                            : VersionRowType.PREVIOUS_DAYS
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                    </Accordion>
+                </div>
+            ) : (
+                <NoVersions />
+            )}
         </div>
     );
 });

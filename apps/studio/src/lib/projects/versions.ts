@@ -1,5 +1,6 @@
 import { GitChannels } from '@onlook/models/constants';
 import { type Project } from '@onlook/models/projects';
+import { toast } from '@onlook/ui/use-toast';
 import type { ReadCommitResult } from 'isomorphic-git';
 import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
@@ -7,7 +8,7 @@ import type { ProjectsManager } from './index';
 
 export class VersionsManager {
     commits: ReadCommitResult[] | null = null;
-    savedCommits: ReadCommitResult[] | null = null;
+    savedCommits: ReadCommitResult[] = [];
 
     constructor(
         private projectsManager: ProjectsManager,
@@ -18,14 +19,18 @@ export class VersionsManager {
 
     initializeRepo = async () => {
         await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
-        await this.saveCommit('Initial commit');
+        await this.createCommit('Initial commit');
         await this.listCommits();
     };
 
-    saveCommit = async (message: string = 'New backup') => {
+    createCommit = async (message: string = 'New backup') => {
         await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
         await invokeMainChannel(GitChannels.COMMIT, { repoPath: this.project.folderPath, message });
         await this.listCommits();
+        toast({
+            title: 'Backup created!',
+            description: 'You can now restore to this version',
+        });
     };
 
     listCommits = async () => {
@@ -38,8 +43,6 @@ export class VersionsManager {
             return (this.commits = []);
         }
         this.commits = commits;
-        // TODO: Remove after testing
-        this.savedCommits = commits;
     };
 
     checkoutCommit = async (commit: string) => {
@@ -57,6 +60,41 @@ export class VersionsManager {
             newName,
         });
         await this.listCommits();
+    };
+
+    saveCommit = async (commit: ReadCommitResult) => {
+        if (this.savedCommits.some((c) => c.oid === commit.oid)) {
+            toast({
+                title: 'Backup already saved',
+            });
+            return;
+        }
+        this.savedCommits?.push(commit);
+        toast({
+            title: 'Backup bookmarked!',
+            description: 'You can now quickly restore to this version',
+        });
+    };
+
+    removeSavedCommit = async (commit: ReadCommitResult) => {
+        this.savedCommits = this.savedCommits.filter((c) => c.oid !== commit.oid);
+    };
+
+    saveLatestCommit = async (): Promise<void> => {
+        if (!this.commits || this.commits.length === 0) {
+            toast({
+                title: 'No backups found',
+                description: 'Please create a backup first',
+            });
+            return;
+        }
+        const latestCommit = this.commits[0];
+
+        await this.saveCommit(latestCommit);
+        toast({
+            title: 'Latest backup bookmarked!',
+            description: 'You can now quickly restore to this version',
+        });
     };
 
     updateProject(project: Project) {

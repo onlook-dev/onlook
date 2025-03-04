@@ -56,6 +56,7 @@ export const VersionRow = observer(
                             variant="outline"
                             size="sm"
                             className="gap-2 bg-background-secondary"
+                            onClick={() => projectsManager.versions?.removeSavedCommit(commit)}
                         >
                             <Icons.BookmarkFilled />
                             <span className="text-muted-foreground">Remove</span>
@@ -65,6 +66,7 @@ export const VersionRow = observer(
                             variant="outline"
                             size="sm"
                             className="gap-2 bg-background-secondary"
+                            onClick={() => projectsManager.versions?.saveCommit(commit)}
                         >
                             <Icons.Bookmark />
                             <span className="text-muted-foreground">Save</span>
