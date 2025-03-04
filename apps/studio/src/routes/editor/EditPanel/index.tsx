@@ -150,6 +150,23 @@ const EditPanel = observer(() => {
                                     />
                                     Show code while rendering
                                 </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="flex items-center py-1.5"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.settings.updateChat({
+                                            showMiniChat: !chatSettings.showMiniChat,
+                                        });
+                                    }}
+                                >
+                                    <Icons.Check
+                                        className={cn(
+                                            'mr-2 h-4 w-4',
+                                            chatSettings.showMiniChat ? 'opacity-100' : 'opacity-0',
+                                        )}
+                                    />
+                                    Show mini chat
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                         <TabsTrigger
