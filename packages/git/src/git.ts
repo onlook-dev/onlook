@@ -112,11 +112,11 @@ export async function getCurrentBranch(repoPath: string): Promise<string | null>
     return branch;
 }
 
-export async function updateCommitDisplayName(repoPath: string, commit: string, newName: string) {
+export async function updateCommitDisplayName(repoPath: string, oid: string, newName: string) {
     await gitAddNote({
         fs,
         dir: repoPath,
-        oid: commit,
+        oid: oid,
         note: newName,
         ref: `refs/notes/${DISPLAY_NAME_NAMESPACE}`,
         force: true,
@@ -124,15 +124,12 @@ export async function updateCommitDisplayName(repoPath: string, commit: string, 
     });
 }
 
-export async function getCommitDisplayName(
-    repoPath: string,
-    commit: string,
-): Promise<string | null> {
+export async function getCommitDisplayName(repoPath: string, oid: string): Promise<string | null> {
     try {
         const note = await gitReadNote({
             fs,
             dir: repoPath,
-            oid: commit,
+            oid: oid,
             ref: `refs/notes/${DISPLAY_NAME_NAMESPACE}`,
         });
         return Buffer.from(note).toString('utf8');

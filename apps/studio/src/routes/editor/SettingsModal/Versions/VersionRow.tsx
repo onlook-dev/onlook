@@ -8,10 +8,11 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 export enum VersionRowType {
     SAVED = 'saved',
@@ -22,7 +23,12 @@ export enum VersionRowType {
 export const VersionRow = observer(
     ({ commit, type }: { commit: GitCommit; type: VersionRowType }) => {
         const projectsManager = useProjectsManager();
+        const inputRef = useRef<HTMLInputElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const [isRenaming, setIsRenaming] = useState(false);
+        const [commitDisplayName, setCommitDisplayName] = useState(
+            commit.displayName || commit.message || 'Backup',
+        );
 
         const renderDate = () => {
             if (type === VersionRowType.TODAY) {
@@ -33,13 +39,46 @@ export const VersionRow = observer(
             });
         };
 
+        const updateCommitDisplayName = (name: string) => {
+            projectsManager.versions?.renameCommit(commit.oid, name);
+        };
+
+        const startRenaming = () => {
+            setIsRenaming(true);
+            setTimeout(() => {
+                inputRef.current?.focus();
+                inputRef.current?.select();
+                console.log('Focused');
+            }, 200);
+        };
+
+        const finishRenaming = () => {
+            updateCommitDisplayName(commitDisplayName);
+            setIsRenaming(false);
+        };
+
         return (
             <div
                 key={commit.oid}
                 className="p-2 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors rounded group"
             >
                 <span className="col-span-4 flex flex-col gap-1">
-                    <span>{commit.displayName || commit.message || 'Backup'}</span>
+                    {isRenaming ? (
+                        <Input
+                            ref={inputRef}
+                            value={commitDisplayName}
+                            onChange={(e) => setCommitDisplayName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    finishRenaming();
+                                }
+                            }}
+                            onBlur={finishRenaming}
+                            className="p-0 border-none background-none"
+                        />
+                    ) : (
+                        <span>{commit.displayName || commit.message || 'Backup'}</span>
+                    )}
                     <span className="text-muted-foreground">
                         {commit.author.name} • {renderDate()}
                     </span>
@@ -87,7 +126,7 @@ export const VersionRow = observer(
                                 <Icons.CounterClockwiseClock className="h-4 w-4 mr-2" />
                                 Restore backup
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="flex items-center" onClick={() => {}}>
+                            <DropdownMenuItem className="flex items-center" onClick={startRenaming}>
                                 <Icons.Pencil className="h-4 w-4 mr-2" />
                                 Rename backup
                             </DropdownMenuItem>
