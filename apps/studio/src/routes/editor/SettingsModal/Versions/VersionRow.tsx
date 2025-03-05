@@ -49,7 +49,7 @@ export const VersionRow = observer(
                 return `${timeAgo(new Date(commit.timestamp * 1000).toISOString())} ago`;
             }
             return formatCommitDate(commit.timestamp, {
-                includeDate: type === VersionRowType.PREVIOUS_DAYS,
+                includeDate: type === VersionRowType.SAVED,
             });
         };
 
