@@ -1,8 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
-import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { SavedVersions } from './SavedVersions';
 import { Versions } from './Versions';
 
 export const VersionsTab = observer(() => {
@@ -15,12 +13,12 @@ export const VersionsTab = observer(() => {
 
     return (
         <div className="flex flex-col h-full relative text-sm">
-            {commits && commits.length > 0 ? (
+            {/* {commits && commits.length > 0 ? (
                 <>
                     <SavedVersions />
                     <Separator />
                 </>
-            ) : null}
+            ) : null} */}
             <Versions />
         </div>
     );

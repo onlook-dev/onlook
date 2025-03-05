@@ -83,12 +83,12 @@ export const VersionRow = observer(
                             value={commitDisplayName}
                             onChange={(e) => setCommitDisplayName(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    finishRenaming();
+                                if (e.key === 'Enter' || e.key === 'Escape') {
+                                    e.currentTarget.blur();
                                 }
                             }}
                             onBlur={finishRenaming}
-                            className="p-0 border-none background-none"
+                            className="p-0 border-none bg-none"
                         />
                     ) : (
                         <span>{commit.displayName || commit.message || 'Backup'}</span>
@@ -118,7 +118,7 @@ export const VersionRow = observer(
                         <Button
                             variant="outline"
                             size="sm"
-                            className="gap-2 bg-background-secondary"
+                            className="gap-2 bg-background-secondary hidden"
                             onClick={() => projectsManager.versions?.saveCommit(commit)}
                         >
                             <Icons.Bookmark />
@@ -135,7 +135,7 @@ export const VersionRow = observer(
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem
                                 className="flex items-center"
-                                onClick={() => projectsManager.versions?.checkoutCommit(commit.oid)}
+                                onClick={() => projectsManager.versions?.checkoutCommit(commit)}
                             >
                                 <Icons.CounterClockwiseClock className="h-4 w-4 mr-2" />
                                 Restore backup

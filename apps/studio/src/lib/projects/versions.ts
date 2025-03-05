@@ -51,10 +51,14 @@ export class VersionsManager {
         this.commits = commits;
     };
 
-    checkoutCommit = async (commit: string) => {
+    checkoutCommit = async (commit: GitCommit) => {
         await invokeMainChannel(GitChannels.CHECKOUT, {
             repoPath: this.project.folderPath,
-            commit,
+            commit: commit.oid,
+        });
+        toast({
+            title: 'Restored to backup!',
+            description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
         });
         await this.listCommits();
     };
