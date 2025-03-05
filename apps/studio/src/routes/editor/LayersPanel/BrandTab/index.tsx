@@ -22,11 +22,7 @@ interface FontVariantProps {
 }
 
 const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
-    <div
-        className={`py-1 text-sm ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
-    >
-        {name}
-    </div>
+    <div className="py-1 text-sm text-muted-foreground">{name}</div>
 );
 
 interface FontFamilyProps {
@@ -37,7 +33,7 @@ interface FontFamilyProps {
 
 const FontFamily = ({ name, variants, isExpanded = false }: FontFamilyProps) => (
     <Collapsible defaultOpen={isExpanded} className="w-full">
-        <CollapsibleTrigger className="flex items-center w-full py-1">
+        <CollapsibleTrigger className="flex items-center w-full py-1.5">
             <Icons.ChevronRight
                 className={`h-4 w-4 mr-1 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
             />
@@ -61,22 +57,19 @@ const BrandTab = observer(() => {
     // Sample colors for the brand palette
     const brandColors = [
         // Primary colors
-        '#2D3250', // Deep Navy
-        '#424769', // Slate Blue
-        '#7077A1', // Periwinkle
-        '#F6B17A', // Peach
+        '#ff5a6a', // Coral Red
+        '#ff7a8a', // Salmon Pink
+        '#ff9aa8', // Light Coral
+        '#ffb9c3', // Light Pink
+        '#ffd8de', // Pale Pink
+        '#fff0f2', // Very Light Pink
 
         // Secondary colors
-        '#7C3E66', // Plum
-        '#A5678E', // Mauve
-        '#EBC7E6', // Lavender
-        '#CBA0AE', // Dusty Rose
-
-        // Neutrals
-        '#F2F2F2', // Off White
-        '#E0E0E0', // Light Gray
-        '#7D7C7C', // Medium Gray
-        '#2C2C2C', // Dark Gray
+        '#ff5a6a', // Coral Red
+        '#ff7a8a', // Salmon Pink
+        '#ff9aa8', // Light Coral
+        '#ffb9c3', // Light Pink
+        '#ffd8de', // Pale Pink
     ];
 
     // Toggle color panel visibility
@@ -92,10 +85,10 @@ const BrandTab = observer(() => {
     return (
         <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0">
             {/* Brand Palette Section */}
-            <div className="flex flex-col gap-3 px-4 py-[18px] border-b border-border">
-                <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-3 px-4 pt-4 pb-6 border-b border-border">
+                <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                        <span className="text-base font-medium">Brand Palette</span>
+                        <span className="text-base font-normal">Brand Palette</span>
                     </div>
 
                     <div className="grid grid-cols-6 gap-1">
@@ -107,7 +100,7 @@ const BrandTab = observer(() => {
 
                 <Button
                     variant="ghost"
-                    className="w-full h-10 text-sm bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
+                    className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
                     onClick={handleToggleColorPanel}
                 >
                     Manage brand palette
@@ -115,10 +108,10 @@ const BrandTab = observer(() => {
             </div>
 
             {/* Site Fonts Section */}
-            <div className="flex flex-col gap-3 px-4 py-[18px] border-b border-border">
-                <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-3 px-4 pt-5 pb-6">
+                <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                        <span className="text-base font-medium">Site fonts</span>
+                        <span className="text-base font-normal">Site fonts</span>
                     </div>
 
                     <div className="flex flex-col gap-1">
@@ -136,7 +129,7 @@ const BrandTab = observer(() => {
                 </div>
                 <Button
                     variant="ghost"
-                    className="w-full h-10 text-sm bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
+                    className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
                 >
                     Manage site fonts
                 </Button>
