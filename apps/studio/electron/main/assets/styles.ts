@@ -8,9 +8,10 @@ import { readFile } from '../code/files';
 
 export async function updateTailwindConfig(
     projectRoot: string,
-    originalKey: string,
+    originalName: string,
     newColor: string,
     newName: string,
+    parentName?: string,
 ) {
     try {
         const { configPath, cssPath } = getConfigPath(projectRoot);
@@ -28,19 +29,88 @@ export async function updateTailwindConfig(
             return { success: false, error: 'Failed to read CSS file' };
         }
 
-        const keyParts = originalKey.split('-');
+        // If not have an original key, it means we are adding a new color
+        if (!originalName) {
+            // Add new CSS variable
+            // We need to add the new color to the CSS file and the config file\
+            // If parentName is not provided, it means we are adding a new color to the root
+            // If parentName is provided, it means we are adding a new color to the parent
 
-        // Handle nested objects 2 levels deep - for "error-secondary", parent="error", key="secondary"
-        const parentName = keyParts[0];
+            let newCssVarName = newName.toLowerCase();
+
+            if (parentName?.length) {
+                newCssVarName = `${parentName}-${newName.toLowerCase()}`;
+            }
+
+            const cssVarAddition = `\n    --${newCssVarName}: ${newColor};`;
+
+            // Add to :root block
+            const updatedCssContent = cssContent.replace(
+                /(:root\s*{[^}]*)(})/,
+                `$1${cssVarAddition}$2`,
+            );
+
+            fs.writeFileSync(cssPath, updatedCssContent);
+
+            // Update config file
+            const updateAst = parse(configContent, {
+                sourceType: 'module',
+                plugins: ['typescript', 'jsx'],
+            });
+
+            traverse(updateAst, {
+                ObjectProperty(path) {
+                    if (
+                        path.parent.type === 'ObjectExpression' &&
+                        path.node.key.type === 'Identifier' &&
+                        path.node.key.name === 'colors' &&
+                        path.node.value.type === 'ObjectExpression'
+                    ) {
+                        const colorObj = path.node.value;
+                        // Add new color property
+                        colorObj.properties.push({
+                            type: 'ObjectProperty',
+                            key: {
+                                type: 'Identifier',
+                                name: newName.toLowerCase(),
+                            },
+                            value: {
+                                type: 'StringLiteral',
+                                value: `var(--${newCssVarName})`,
+                            },
+                            computed: false,
+                            shorthand: false,
+                        });
+                    }
+                },
+            });
+
+            const output = generate(
+                updateAst,
+                {
+                    retainLines: true,
+                    compact: false,
+                },
+                configContent,
+            );
+            fs.writeFileSync(configPath, output.code);
+
+            return { success: true };
+        }
+
+        // If have an original key, it means we are updating an existing color
+        const keyParts = originalName.split('-');
+
+        const parentKey = keyParts[0];
         const keyName = keyParts[1];
 
-        if (!parentName || !keyName) {
-            return { success: false, error: 'Invalid color key format: ' + originalKey };
+        if (!parentKey || !keyName) {
+            return { success: false, error: 'Invalid color key format: ' + originalName };
         }
-        const newCssVarName = newName !== keyName ? `${parentName}-${newName}` : originalKey;
+        const newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
 
         const lightVarRegex = new RegExp(
-            `(:root[^{]*{[^}]*)(--${originalKey}\\s*:\\s*[^;]*)(;|})`,
+            `(:root[^{]*{[^}]*)(--${originalName}\\s*:\\s*[^;]*)(;|})`,
             's',
         );
 
@@ -49,17 +119,17 @@ export async function updateTailwindConfig(
             // Keep the old one for backwards compatibility?
             updatedCssContent = cssContent.replace(
                 lightVarRegex,
-                `$1--${originalKey}: ${newColor};--${newCssVarName}: ${newColor}$3`,
+                `$1--${originalName}: ${newColor};--${newCssVarName}: ${newColor}$3`,
             );
         } else {
             updatedCssContent = cssContent.replace(
                 lightVarRegex,
-                `$1--${originalKey}: ${newColor}$3`,
+                `$1--${originalName}: ${newColor}$3`,
             );
         }
 
         if (updatedCssContent === cssContent) {
-            console.log(`Warning: CSS variable --${originalKey} not found in CSS file`);
+            console.log(`Warning: CSS variable --${originalName} not found in CSS file`);
         }
 
         fs.writeFileSync(cssPath, updatedCssContent);
@@ -85,7 +155,7 @@ export async function updateTailwindConfig(
                         if (
                             colorProp.type === 'ObjectProperty' &&
                             colorProp.key.type === 'Identifier' &&
-                            colorProp.key.name === parentName &&
+                            colorProp.key.name === parentKey &&
                             colorProp.value.type === 'ObjectExpression'
                         ) {
                             const nestedObj = colorProp.value;
@@ -144,7 +214,7 @@ export async function updateTailwindConfig(
             );
             fs.writeFileSync(configPath, output.code);
         } else {
-            console.log(`Warning: Could not update key: ${keyName} in ${parentName}`);
+            console.log(`Warning: Could not update key: ${keyName} in ${parentKey}`);
         }
 
         return { success: true };
