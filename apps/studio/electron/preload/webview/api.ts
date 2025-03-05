@@ -4,6 +4,7 @@ import {
     getChildrenCount,
     getDomElementByDomId,
     getElementAtLoc,
+    getOffsetParent,
     getParentElement,
     updateElementInstance,
 } from './elements';
@@ -39,6 +40,7 @@ export function setApi() {
         getElementType,
         getParentElement,
         getChildrenCount,
+        getOffsetParent,
 
         // Actions
         getActionLocation,

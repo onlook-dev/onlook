@@ -44,7 +44,7 @@ export class MoveManager {
         }
     }
 
-    drag(
+    async drag(
         e: React.MouseEvent<HTMLDivElement>,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
@@ -64,7 +64,7 @@ export class MoveManager {
         const dy = y - this.dragOrigin.y;
 
         if (this.isDraggingAbsolute) {
-            this.handleDragAbsolute(this.dragOrigin, this.dragTarget, x, y);
+            await this.handleDragAbsolute(this.dragOrigin, this.dragTarget, x, y);
             return;
         }
 
@@ -76,16 +76,31 @@ export class MoveManager {
         }
     }
 
-    handleDragAbsolute(dragOrigin: ElementPosition, dragTarget: DomElement, x: number, y: number) {
+    async handleDragAbsolute(
+        dragOrigin: ElementPosition,
+        dragTarget: DomElement,
+        x: number,
+        y: number,
+    ) {
         const initialOffset = {
             x: dragOrigin.x - dragTarget.rect.x,
             y: dragOrigin.y - dragTarget.rect.y,
         };
 
-        const parentRect = dragTarget.parent?.rect;
-        if (!parentRect) {
+        const webview = this.editorEngine.webviews.getWebview(dragTarget.webviewId);
+        if (!webview) {
+            console.error('No webview found for drag');
             return;
         }
+
+        const offsetParent = await webview.executeJavaScript(
+            `window.api?.getOffsetParent('${dragTarget.domId}')`,
+        );
+        if (!offsetParent) {
+            console.error('No offset parent found for drag');
+            return;
+        }
+        const parentRect = offsetParent.rect;
 
         const newX = Math.round(x - parentRect.x - initialOffset.x);
         const newY = Math.round(y - parentRect.y - initialOffset.y);
