@@ -84,7 +84,7 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
         <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
             <AlertDialogContent className="max-w-2xl bg-background-onlook/20 p-0 flex flex-col max-h-[80vh] gap-0">
                 <div className="flex items-center justify-between p-6 pt-4 pb-3">
-                    <AlertDialogTitle className="text-left font-medium">
+                    <AlertDialogTitle className="text-left text-base font-medium">
                         Upload a font
                     </AlertDialogTitle>
                     <Button variant="ghost" className="h-8 w-8 p-0" onClick={handleCancel}>

@@ -60,6 +60,8 @@ const extractFontName = (fileName: string): string => {
         'medium italic',
         'blackitalic',
         'black italic',
+        'extralightitalic',
+        'extrabolditalic',
     ];
 
     // Common style terms
@@ -108,7 +110,7 @@ const FontFiles = observer(
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col">
-                                <span className="text-sm font-medium">
+                                <span className="text-sm font-normal">
                                     {extractFontName(font.file.name)}
                                 </span>
                                 <span className="text-xs text-muted-foreground">
