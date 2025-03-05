@@ -204,8 +204,8 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
             {/* Upload Button - Fixed at bottom */}
             <div className="p-4 border-t border-border mt-auto">
                 <Button
-                    variant="secondary"
-                    className="w-full h-12 text-sm"
+                    variant="ghost"
+                    className="w-full h-11 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
                     onClick={handleUploadFont}
                 >
                     Upload a custom font
