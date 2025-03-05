@@ -30,7 +30,11 @@ export default defineConfig(({ command }) => {
             },
         },
         optimizeDeps: {
-            exclude: ['node_modules/.vite/deps'],
+            exclude: [
+                'node_modules/.vite/deps',
+                'node_modules/tailwindcss',
+                'node_modules/postcss',
+            ],
         },
         plugins: [
             react(),

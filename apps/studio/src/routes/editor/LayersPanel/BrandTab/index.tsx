@@ -399,6 +399,7 @@ const BrandTab = observer(() => {
                             }
                         }
                     } else if (typeof value === 'string') {
+                        // Try to extract the var name first
                         const varName = extractVarName(value);
                         if (varName) {
                             parsed[fullKey] = {
@@ -406,6 +407,15 @@ const BrandTab = observer(() => {
                                 lightMode: lightModeColors[varName] || '',
                                 darkMode: darkModeColors[varName] || '',
                             };
+                        } else {
+                            const color = Color.from(value);
+                            if (color) {
+                                parsed[fullKey] = {
+                                    name: fullKey,
+                                    lightMode: color.toHex(),
+                                    darkMode: color.toHex(),
+                                };
+                            }
                         }
                     }
                 });
@@ -420,19 +430,6 @@ const BrandTab = observer(() => {
             };
 
             processConfigObject(config);
-
-            // Add chart colors which might be defined directly in CSS
-            Object.entries(lightModeColors)
-                .filter(([key]) => key.startsWith('chart-'))
-                .forEach(([key]) => {
-                    if (!parsed[key]) {
-                        parsed[key] = {
-                            name: key,
-                            lightMode: lightModeColors[key] || '',
-                            darkMode: darkModeColors[key] || '',
-                        };
-                    }
-                });
 
             // Convert groups to color items for UI
             const colorGroupsObj: { [key: string]: ColorItem[] } = {};
@@ -498,7 +495,6 @@ const BrandTab = observer(() => {
         try {
             // For new colors, pass empty originalKey and parentName
             const originalKey = colorGroups[groupName]?.[index]?.originalKey || '';
-
             await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
                 projectRoot,
                 originalKey,
