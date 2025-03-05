@@ -11,9 +11,9 @@ import {
 import { useProjectsManager } from '@/components/Context';
 import { MainChannels } from '@onlook/models/constants';
 import { invokeMainChannel } from '@/lib/utils';
-import { ColorPicker } from '@onlook/ui/color-picker/ColorPicker';
 import { Color } from '@onlook/utility';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import ColorPickerContent from '../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
 interface ColorRowProps {
     label: string;
     colors: string[];
@@ -80,7 +80,11 @@ const ColorPopover = ({
                             className="w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1 text-sm"
                         />
                     </div>
-                    <ColorPicker color={editedColor} onChange={handleColorChange} />
+                    <ColorPickerContent
+                        color={editedColor}
+                        onChange={handleColorChange}
+                        onChangeEnd={handleColorChange}
+                    />
                     <div className="flex justify-end gap-2 mt-2">
                         <Button variant="outline" size="sm" onClick={onClose} className="text-xs">
                             Cancel
@@ -110,6 +114,7 @@ interface BrandPalletGroupProps {
         colorIndex: number,
         newColor: Color,
         newName: string,
+        parentName?: string,
     ) => void;
 }
 
@@ -121,12 +126,19 @@ const BrandPalletGroup = ({
     onColorChange,
 }: BrandPalletGroupProps) => {
     const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
+    const [isAddingNewColor, setIsAddingNewColor] = useState(false);
 
-    const handleColorChange = (index: number, newColor: Color, newName: string) => {
+    const handleColorChange = (
+        index: number,
+        newColor: Color,
+        newName: string,
+        parentName?: string,
+    ) => {
         if (onColorChange) {
-            onColorChange(title.toLowerCase(), index, newColor, newName);
+            onColorChange(title.toLowerCase(), index, newColor, newName, parentName);
         }
         setEditingColorIndex(null);
+        setIsAddingNewColor(false);
     };
 
     return (
@@ -176,10 +188,8 @@ const BrandPalletGroup = ({
                 </DropdownMenu>
             </div>
             <div className="flex flex-col gap-2">
-                {/* Color Row */}
                 <div className="grid grid-cols-6 gap-1">
                     {colors ? (
-                        // Display colors from props with tooltips
                         colors.map((color, index) => (
                             <div key={`${title}-${index}`} className="relative group">
                                 {editingColorIndex === index ? (
@@ -276,13 +286,30 @@ const BrandPalletGroup = ({
                     ) : (
                         <></>
                     )}
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="w-full aspect-square rounded-lg border border-dashed flex items-center justify-center bg-transparent hover:bg-transparent"
-                    >
-                        <Icons.Plus className="h-4 w-4" />
-                    </Button>
+                    {isAddingNewColor ? (
+                        <ColorPopover
+                            color={Color.from('#FFFFFF')}
+                            brandColor="New Color"
+                            onClose={() => setIsAddingNewColor(false)}
+                            onColorChange={(newColor, newName) =>
+                                handleColorChange(
+                                    colors?.length || 0,
+                                    newColor,
+                                    newName,
+                                    title.toLowerCase(),
+                                )
+                            }
+                        />
+                    ) : (
+                        <Button
+                            onClick={() => setIsAddingNewColor(true)}
+                            variant="outline"
+                            size="icon"
+                            className="w-full aspect-square rounded-lg border border-dashed flex items-center justify-center bg-transparent hover:bg-transparent"
+                        >
+                            <Icons.Plus className="h-4 w-4" />
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>
@@ -320,134 +347,131 @@ interface ColorItem {
 const BrandTab = observer(() => {
     const [colorGroups, setColorGroups] = useState<{ [key: string]: ColorItem[] }>({});
     const projectsManager = useProjectsManager();
+    const loadColors = async () => {
+        const projectRoot = projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
 
-    useEffect(() => {
-        const loadColors = async () => {
-            const projectRoot = projectsManager.project?.folderPath;
-            if (!projectRoot) {
+        try {
+            const configResult = (await invokeMainChannel(MainChannels.SCAN_TAILWIND_CONFIG, {
+                projectRoot,
+            })) as ConfigResult;
+
+            if (!configResult) {
                 return;
             }
 
-            try {
-                const configResult = (await invokeMainChannel(MainChannels.SCAN_TAILWIND_CONFIG, {
-                    projectRoot,
-                })) as ConfigResult;
+            const { cssContent, configContent } = configResult;
 
-                if (!configResult) {
-                    return;
-                }
+            const cssConfig = typeof cssContent === 'string' ? JSON.parse(cssContent) : cssContent;
+            const config =
+                typeof configContent === 'string' ? JSON.parse(configContent) : configContent;
 
-                const { cssContent, configContent } = configResult;
+            const lightModeColors: ThemeColors = cssConfig.root || {};
+            const darkModeColors: ThemeColors = cssConfig.dark || {};
 
-                const cssConfig =
-                    typeof cssContent === 'string' ? JSON.parse(cssContent) : cssContent;
-                const config =
-                    typeof configContent === 'string' ? JSON.parse(configContent) : configContent;
+            const parsed: ParsedColors = {};
+            const groups: { [key: string]: Set<string> } = {};
 
-                const lightModeColors: ThemeColors = cssConfig.root || {};
-                const darkModeColors: ThemeColors = cssConfig.dark || {};
+            const processConfigObject = (obj: any, prefix = '', parentKey = '') => {
+                Object.entries(obj).forEach(([key, value]) => {
+                    const fullKey = prefix ? `${prefix}-${key}` : key;
 
-                const parsed: ParsedColors = {};
-                const groups: { [key: string]: Set<string> } = {};
-
-                const processConfigObject = (obj: any, prefix = '', parentKey = '') => {
-                    Object.entries(obj).forEach(([key, value]) => {
-                        const fullKey = prefix ? `${prefix}-${key}` : key;
-
-                        if (parentKey) {
-                            if (!groups[parentKey]) {
-                                groups[parentKey] = new Set();
-                            }
-                            groups[parentKey].add(fullKey);
+                    if (parentKey) {
+                        if (!groups[parentKey]) {
+                            groups[parentKey] = new Set();
                         }
+                        groups[parentKey].add(fullKey);
+                    }
 
-                        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                            processConfigObject(value, prefix ? `${prefix}-${key}` : key, key);
+                    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                        processConfigObject(value, prefix ? `${prefix}-${key}` : key, key);
 
-                            if ('DEFAULT' in value) {
-                                const varName = extractVarName(value.DEFAULT as string);
-                                if (varName) {
-                                    parsed[key] = {
-                                        name: key,
-                                        lightMode: lightModeColors[varName] || '',
-                                        darkMode: darkModeColors[varName] || '',
-                                    };
-                                }
-                            }
-                        } else if (typeof value === 'string') {
-                            const varName = extractVarName(value);
+                        if ('DEFAULT' in value) {
+                            const varName = extractVarName(value.DEFAULT as string);
                             if (varName) {
-                                parsed[fullKey] = {
-                                    name: fullKey,
+                                parsed[key] = {
+                                    name: key,
                                     lightMode: lightModeColors[varName] || '',
                                     darkMode: darkModeColors[varName] || '',
                                 };
                             }
                         }
-                    });
-                };
-
-                const extractVarName = (value: string): string | null => {
-                    if (typeof value !== 'string') {
-                        return null;
-                    }
-                    const match = value.match(/var\(--([^)]+)\)/);
-                    return match ? match[1] : null;
-                };
-
-                processConfigObject(config);
-
-                // Add chart colors which might be defined directly in CSS
-                Object.entries(lightModeColors)
-                    .filter(([key]) => key.startsWith('chart-'))
-                    .forEach(([key]) => {
-                        if (!parsed[key]) {
-                            parsed[key] = {
-                                name: key,
-                                lightMode: lightModeColors[key] || '',
-                                darkMode: darkModeColors[key] || '',
+                    } else if (typeof value === 'string') {
+                        const varName = extractVarName(value);
+                        if (varName) {
+                            parsed[fullKey] = {
+                                name: fullKey,
+                                lightMode: lightModeColors[varName] || '',
+                                darkMode: darkModeColors[varName] || '',
                             };
                         }
-                    });
+                    }
+                });
+            };
 
-                // Convert groups to color items for UI
-                const colorGroupsObj: { [key: string]: ColorItem[] } = {};
+            const extractVarName = (value: string): string | null => {
+                if (typeof value !== 'string') {
+                    return null;
+                }
+                const match = value.match(/var\(--([^)]+)\)/);
+                return match ? match[1] : null;
+            };
 
-                Object.entries(groups).forEach(([groupName, colorKeys]) => {
-                    if (colorKeys.size > 0) {
-                        colorGroupsObj[groupName] = Array.from(colorKeys).map((key) => {
-                            const color = parsed[key];
-                            return {
-                                name: key.includes('-') ? key.split('-').pop() || key : key,
-                                originalKey: key,
-                                lightColor: color?.lightMode || '',
-                                darkColor: color?.darkMode || '',
-                            };
-                        });
+            processConfigObject(config);
+
+            // Add chart colors which might be defined directly in CSS
+            Object.entries(lightModeColors)
+                .filter(([key]) => key.startsWith('chart-'))
+                .forEach(([key]) => {
+                    if (!parsed[key]) {
+                        parsed[key] = {
+                            name: key,
+                            lightMode: lightModeColors[key] || '',
+                            darkMode: darkModeColors[key] || '',
+                        };
                     }
                 });
 
-                // Handle any top-level colors that aren't part of a group
-                const ungroupedKeys = Object.keys(parsed).filter(
-                    (key) => !Object.values(groups).some((set) => set.has(key)),
-                );
+            // Convert groups to color items for UI
+            const colorGroupsObj: { [key: string]: ColorItem[] } = {};
 
-                if (ungroupedKeys.length > 0) {
-                    colorGroupsObj['base'] = ungroupedKeys.map((key) => ({
-                        name: key,
-                        originalKey: key,
-                        lightColor: parsed[key].lightMode,
-                        darkColor: parsed[key].darkMode,
-                    }));
+            Object.entries(groups).forEach(([groupName, colorKeys]) => {
+                if (colorKeys.size > 0) {
+                    colorGroupsObj[groupName] = Array.from(colorKeys).map((key) => {
+                        const color = parsed[key];
+                        return {
+                            name: key.includes('-') ? key.split('-').pop() || key : key,
+                            originalKey: key,
+                            lightColor: color?.lightMode || '',
+                            darkColor: color?.darkMode || '',
+                        };
+                    });
                 }
+            });
 
-                console.log('Color groups:', colorGroupsObj);
-                setColorGroups(colorGroupsObj);
-            } catch (error) {
-                console.error('Error loading colors:', error);
+            // Handle any top-level colors that aren't part of a group
+            const ungroupedKeys = Object.keys(parsed).filter(
+                (key) => !Object.values(groups).some((set) => set.has(key)),
+            );
+
+            if (ungroupedKeys.length > 0) {
+                colorGroupsObj['base'] = ungroupedKeys.map((key) => ({
+                    name: key,
+                    originalKey: key,
+                    lightColor: parsed[key].lightMode,
+                    darkColor: parsed[key].darkMode,
+                }));
             }
-        };
 
+            console.log('Color groups:', colorGroupsObj);
+            setColorGroups(colorGroupsObj);
+        } catch (error) {
+            console.error('Error loading colors:', error);
+        }
+    };
+    useEffect(() => {
         loadColors();
     }, [projectsManager.project?.folderPath]);
 
@@ -459,61 +483,35 @@ const BrandTab = observer(() => {
         // Implement delete logic
     };
 
-    // Add handler for color changes
-    const handleColorChange = (
+    const handleColorChange = async (
         groupName: string,
-        colorIndex: number,
+        index: number,
         newColor: Color,
         newName: string,
+        parentName?: string,
     ) => {
-        console.log('handleColorChange', groupName, colorIndex, newColor, newName);
+        const projectRoot = projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
 
-        setColorGroups((prevGroups) => {
-            const updatedGroups = { ...prevGroups };
-            console.log('groupName', groupName);
-            console.log('updatedGroups', updatedGroups);
-            console.log('updatedGroups[groupName]', updatedGroups[groupName]);
-            console.log(
-                'updatedGroups[groupName][colorIndex]',
-                updatedGroups[groupName][colorIndex],
-            );
-            if (updatedGroups[groupName] && updatedGroups[groupName][colorIndex]) {
-                const updatedColors = [...updatedGroups[groupName]];
-                updatedColors[colorIndex] = {
-                    ...updatedColors[colorIndex],
-                    name: newName,
-                    lightColor: newColor.toHex(),
-                };
-                updatedGroups[groupName] = updatedColors;
+        try {
+            // For new colors, pass empty originalKey and parentName
+            const originalKey = colorGroups[groupName]?.[index]?.originalKey || '';
 
-                // Save the changes inside the callback where updatedColors is defined
-                const item = updatedColors[colorIndex];
-                saveColorChange(item.originalKey, item.lightColor, newName);
-            }
-            return updatedGroups;
-        });
+            await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
+                projectRoot,
+                originalKey,
+                newColor: newColor.toHex(),
+                newName,
+                parentName,
+            });
 
-        console.log(
-            `Color updated: ${groupName} - ${colorGroups[groupName]?.[colorIndex]?.originalKey}`,
-        );
-
-        const saveColorChange = async (originalKey: string, newColor: string, newName: string) => {
-            const projectRoot = projectsManager.project?.folderPath;
-            if (!projectRoot) {
-                return;
-            }
-
-            try {
-                await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
-                    projectRoot,
-                    originalKey,
-                    newColor: newColor,
-                    newName,
-                });
-            } catch (error) {
-                console.error('Error saving color change:', error);
-            }
-        };
+            // Refresh colors after update
+            loadColors();
+        } catch (error) {
+            console.error('Error updating color:', error);
+        }
     };
 
     return (
