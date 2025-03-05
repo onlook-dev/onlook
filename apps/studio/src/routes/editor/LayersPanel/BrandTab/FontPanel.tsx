@@ -74,10 +74,22 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
         { name: 'Merriweather', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
     ];
 
-    // Filter fonts based on search query
-    const filteredFonts = fontFamilies.filter(
+    // Separate system fonts and site fonts
+    const systemFonts = fontFamilies.slice(0, 4);
+    const siteFonts = fontFamilies.slice(4);
+
+    // Filter only site fonts based on search query
+    const filteredSiteFonts = siteFonts.filter(
         (font) => searchQuery === '' || font.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    // Deduplicate search results by font name
+    const uniqueSiteFonts = searchQuery
+        ? filteredSiteFonts.filter(
+              (font, index, self) =>
+                  index === self.findIndex((f) => f.name.toLowerCase() === font.name.toLowerCase()),
+          )
+        : filteredSiteFonts;
 
     return (
         <div className="flex flex-col h-full min-h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0">
@@ -95,13 +107,13 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
             </div>
 
             {/* Search Bar - Fixed below header */}
-            <div className="px-4 py-3 mb-2 border-b border-border">
+            <div className="px-4 py-3 border-b border-border">
                 <div className="relative">
                     <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                     <Input
                         ref={inputRef}
                         type="text"
-                        placeholder="Search fonts..."
+                        placeholder="Search for a new font..."
                         className="h-8 text-xs pl-7 pr-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -121,49 +133,53 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
             {/* Main Content Area - Scrollable */}
             <div className="flex flex-col flex-1 overflow-y-auto">
                 {/* System Fonts Section */}
-                <div className="flex flex-col gap-1 py-4 border-b border-border">
-                    {/* System Fonts Header */}
-                    <div className="px-4">
-                        <h3 className="text-sm font-normal">Added fonts</h3>
-                    </div>
+                {searchQuery === '' && (
+                    <div className="flex flex-col pt-6 pb-3 border-b border-border">
+                        {/* System Fonts Header */}
+                        <div className="px-4">
+                            <h3 className="text-sm font-normal">Added fonts</h3>
+                        </div>
 
-                    {/* System Font List */}
-                    <div className="px-4">
-                        <div className="flex flex-col divide-y divide-border">
-                            {filteredFonts.slice(0, 4).map((font, index) => (
-                                <div key={`system-${font.name}-${index}`}>
-                                    <div className="flex justify-between items-center">
-                                        <FontFamily
-                                            name={font.name}
-                                            variants={font.variants}
-                                            isLast={index === Math.min(3, filteredFonts.length - 1)}
-                                            showDropdown={true}
-                                            showAddButton={false}
-                                        />
+                        {/* System Font List */}
+                        <div className="px-4">
+                            <div className="flex flex-col divide-y divide-border">
+                                {systemFonts.map((font, index) => (
+                                    <div key={`system-${font.name}-${index}`}>
+                                        <div className="flex justify-between items-center">
+                                            <FontFamily
+                                                name={font.name}
+                                                variants={font.variants}
+                                                isLast={index === systemFonts.length - 1}
+                                                showDropdown={true}
+                                                showAddButton={false}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Site Fonts Section */}
-                <div className="flex flex-col gap-1 py-6">
+                <div className="flex flex-col pt-6 pb-4">
                     {/* Site Fonts Header */}
                     <div className="px-4">
-                        <h3 className="text-sm font-normal">Browse new fonts</h3>
+                        <h3 className="text-sm font-normal">
+                            {searchQuery ? 'Search results' : 'Browse new fonts'}
+                        </h3>
                     </div>
 
                     {/* Site Font List */}
                     <div className="px-4">
                         <div className="flex flex-col divide-y divide-border">
-                            {filteredFonts.map((font, index) => (
+                            {uniqueSiteFonts.map((font, index) => (
                                 <div key={`${font.name}-${index}`}>
                                     <div className="flex justify-between items-center">
                                         <FontFamily
                                             name={font.name}
                                             variants={font.variants}
-                                            isLast={index === filteredFonts.length - 1}
+                                            isLast={index === uniqueSiteFonts.length - 1}
                                             showDropdown={false}
                                             showAddButton={true}
                                         />
