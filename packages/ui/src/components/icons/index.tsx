@@ -9,6 +9,8 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     ArrowUpIcon,
+    BookmarkFilledIcon,
+    BookmarkIcon,
     BorderAllIcon,
     BorderBottomIcon,
     BorderDashedIcon,
@@ -1186,6 +1188,8 @@ export const Icons = {
     BorderTop: BorderTopIcon,
     Box: BoxIcon,
     Button: ButtonIcon,
+    Bookmark: BookmarkIcon,
+    BookmarkFilled: BookmarkFilledIcon,
 
     ChatBubble: ChatBubbleIcon,
     Check: CheckIcon,

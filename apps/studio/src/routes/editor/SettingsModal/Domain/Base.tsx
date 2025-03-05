@@ -31,7 +31,7 @@ const BaseDomain = observer(() => {
 
     return (
         <div className="space-y-4 flex flex-col">
-            <h2 className="text-lg font-medium">Base Domain</h2>
+            <h2 className="text-lg">Base Domain</h2>
             <div className="space-y-2">
                 <div className="flex justify-between items-center gap-2">
                     <div className="w-1/3">

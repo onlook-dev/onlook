@@ -7,8 +7,9 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { DomainTab } from './Domain';
-import PreferencesTab from './PreferencesTab';
-import ProjectTab from './ProjectTab';
+import PreferencesTab from './Preferences';
+import ProjectTab from './Project';
+import { VersionsTab } from './Versions';
 
 const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
@@ -51,9 +52,9 @@ const SettingsModal = observer(() => {
                                 <Separator orientation="horizontal" className="shrink-0" />
 
                                 {/* Main content */}
-                                <div className="flex gap-4 flex-1 min-h-0 overflow-hidden">
+                                <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
-                                    <div className="shrink-0 w-40 space-y-2 p-6 text-regularPlus">
+                                    <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
                                         <Button
                                             variant="ghost"
                                             className={cn(
@@ -91,6 +92,23 @@ const SettingsModal = observer(() => {
                                             className={cn(
                                                 'w-full justify-start px-0 hover:bg-transparent',
                                                 editorEngine.settingsTab ===
+                                                    SettingsTabValue.VERSIONS
+                                                    ? 'text-foreground-active'
+                                                    : 'text-muted-foreground',
+                                            )}
+                                            onClick={() =>
+                                                (editorEngine.settingsTab =
+                                                    SettingsTabValue.VERSIONS)
+                                            }
+                                        >
+                                            <Icons.Code className="mr-2 h-4 w-4" />
+                                            Versions
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            className={cn(
+                                                'w-full justify-start px-0 hover:bg-transparent',
+                                                editorEngine.settingsTab ===
                                                     SettingsTabValue.PREFERENCES
                                                     ? 'text-foreground-active'
                                                     : 'text-muted-foreground',
@@ -106,12 +124,15 @@ const SettingsModal = observer(() => {
                                     </div>
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
-                                    <div className="flex-1 min-w-0 overflow-y-auto p-6 pl-4">
+                                    <div className="flex-1 overflow-y-auto">
                                         {editorEngine.settingsTab === SettingsTabValue.DOMAIN && (
                                             <DomainTab />
                                         )}
                                         {editorEngine.settingsTab === SettingsTabValue.PROJECT && (
                                             <ProjectTab />
+                                        )}
+                                        {editorEngine.settingsTab === SettingsTabValue.VERSIONS && (
+                                            <VersionsTab />
                                         )}
                                         {editorEngine.settingsTab ===
                                             SettingsTabValue.PREFERENCES && <PreferencesTab />}
