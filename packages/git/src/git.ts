@@ -2,18 +2,29 @@ import fs from 'fs';
 import {
     currentBranch,
     add as gitAdd,
+    addNote as gitAddNote,
     branch as gitBranch,
     checkout as gitCheckout,
     commit as gitCommit,
     init as gitInit,
     log as gitLog,
+    readNote as gitReadNote,
     remove as gitRemove,
     status as gitStatus,
     statusMatrix as gitStatusMatrix,
     resolveRef,
 } from 'isomorphic-git';
 
+export interface GitCommit {
+    oid: string;
+    message: string;
+    displayName: string | null;
+    author: { name: string; email: string };
+    timestamp: number;
+}
+
 const GIT_AUTHOR = { name: 'Onlook', email: 'git@onlook.com' };
+const DISPLAY_NAME_NAMESPACE = 'onlook-display-name';
 
 export async function init(repoPath: string) {
     await gitInit({ fs, dir: repoPath, defaultBranch: 'main' });
@@ -71,13 +82,26 @@ export async function log(repoPath: string) {
     return await gitLog({ fs, dir: repoPath });
 }
 
+export async function getCommits(repoPath: string): Promise<GitCommit[]> {
+    const commits = await gitLog({ fs, dir: repoPath });
+    return Promise.all(
+        commits.map(async (commit) => ({
+            oid: commit.oid,
+            message: commit.commit.message,
+            author: commit.commit.author,
+            timestamp: commit.commit.author.timestamp,
+            displayName: await getCommitDisplayName(repoPath, commit.oid),
+        })),
+    );
+}
+
 export async function getCurrentCommit(repoPath: string): Promise<string> {
     const currentBranchName = await currentBranch({ fs, dir: repoPath });
-    if (currentBranchName) {
-        return await resolveRef({ fs, dir: repoPath, ref: currentBranchName });
+    if (!currentBranchName) {
+        throw new Error('Not on any branch');
     }
-    // If not on a branch, resolve HEAD directly
-    return await resolveRef({ fs, dir: repoPath, ref: 'HEAD' });
+    const commit = await resolveRef({ fs, dir: repoPath, ref: currentBranchName });
+    return commit;
 }
 
 export async function getCurrentBranch(repoPath: string): Promise<string | null> {
@@ -86,4 +110,33 @@ export async function getCurrentBranch(repoPath: string): Promise<string | null>
         return null;
     }
     return branch;
+}
+
+export async function updateCommitDisplayName(repoPath: string, commit: string, newName: string) {
+    await gitAddNote({
+        fs,
+        dir: repoPath,
+        oid: commit,
+        note: newName,
+        ref: `refs/notes/${DISPLAY_NAME_NAMESPACE}`,
+        force: true,
+        author: GIT_AUTHOR,
+    });
+}
+
+export async function getCommitDisplayName(
+    repoPath: string,
+    commit: string,
+): Promise<string | null> {
+    try {
+        const note = await gitReadNote({
+            fs,
+            dir: repoPath,
+            oid: commit,
+            ref: `refs/notes/${DISPLAY_NAME_NAMESPACE}`,
+        });
+        return Buffer.from(note).toString('utf8');
+    } catch (error) {
+        return null;
+    }
 }

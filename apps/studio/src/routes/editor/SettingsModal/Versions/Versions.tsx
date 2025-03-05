@@ -15,7 +15,7 @@ export const Versions = observer(() => {
     // Group commits by date
     const groupedCommits = commits?.reduce(
         (acc, commit) => {
-            const date = new Date(commit.commit.author.timestamp * 1000);
+            const date = new Date(commit.timestamp * 1000);
             const today = new Date();
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
@@ -26,7 +26,7 @@ export const Versions = observer(() => {
             } else if (date.toDateString() === yesterday.toDateString()) {
                 dateKey = 'Yesterday';
             } else {
-                dateKey = formatCommitDate(commit.commit.author.timestamp, { includeDate: true });
+                dateKey = formatCommitDate(commit.timestamp, { includeDate: true });
             }
 
             if (!acc[dateKey]) {

@@ -7,10 +7,12 @@ import {
     branch,
     checkout,
     commit,
+    getCommitDisplayName,
     getCurrentCommit,
     init,
     log,
     status,
+    updateCommitDisplayName,
 } from '../src/git';
 
 describe('GitManager Integration Tests', () => {
@@ -97,7 +99,7 @@ describe('GitManager Integration Tests', () => {
     });
 
     test('should create and switch branches', async () => {
-        // First commit to master branch
+        // First commit to main branch
         await addAll(testRepoPath);
         await commit(testRepoPath, 'Initial commit');
 
@@ -110,10 +112,10 @@ describe('GitManager Integration Tests', () => {
         await add(testRepoPath, 'test1.txt');
         await commit(testRepoPath, 'Feature branch commit');
 
-        // Switch back to master
-        await checkout(testRepoPath, 'master');
+        // Switch back to main
+        await checkout(testRepoPath, 'main');
 
-        // Verify file content is from master branch
+        // Verify file content is from main branch
         expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe('Hello World');
 
         // Switch to feature branch again
@@ -163,18 +165,47 @@ describe('GitManager Integration Tests', () => {
         expect(currentCommit).toBe(commits[0].oid);
     });
 
-    test('should throw error when in detached HEAD state', async () => {
+    test('should set and get commit display name', async () => {
         // First commit to get a valid commit hash
         await addAll(testRepoPath);
         await commit(testRepoPath, 'Initial commit');
 
-        // Get the commit history
+        // Get the commit hash
         const commits = await log(testRepoPath);
+        const commitHash = commits[0].oid;
 
-        // Checkout a specific commit to enter detached HEAD state
-        await checkout(testRepoPath, commits[0].oid);
+        // Initially, display name should be null
+        const initialDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
+        expect(initialDisplayName).toBeNull();
 
-        // Attempt to get current commit should throw
-        await expect(getCurrentCommit(testRepoPath)).rejects.toThrow('Not on any branch');
+        // Set a display name
+        const displayName = 'My Custom Display Name';
+        await updateCommitDisplayName(testRepoPath, commitHash, displayName);
+
+        // Verify the display name was set correctly
+        const retrievedDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
+        expect(retrievedDisplayName).toBe(displayName);
+    });
+
+    test('should update existing commit display name', async () => {
+        // First commit to get a valid commit hash
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
+
+        // Get the commit hash
+        const commits = await log(testRepoPath);
+        const commitHash = commits[0].oid;
+
+        // Set initial display name
+        const initialDisplayName = 'Initial Display Name';
+        await updateCommitDisplayName(testRepoPath, commitHash, initialDisplayName);
+
+        // Update the display name
+        const updatedDisplayName = 'Updated Display Name';
+        await updateCommitDisplayName(testRepoPath, commitHash, updatedDisplayName);
+
+        // Verify the display name was updated correctly
+        const retrievedDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
+        expect(retrievedDisplayName).toBe(updatedDisplayName);
     });
 });

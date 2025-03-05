@@ -157,7 +157,6 @@ export enum GitChannels {
     COMMIT = 'commit',
     CHECKOUT = 'checkout',
     LIST_COMMITS = 'list-commits',
-    LOG = 'log',
     BRANCH = 'branch',
     GET_CURRENT_COMMIT = 'get-current-commit',
     RENAME_COMMIT = 'rename-commit',

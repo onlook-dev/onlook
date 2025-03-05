@@ -1,4 +1,14 @@
-import { add, addAll, checkout, commit, getCurrentCommit, init, log, status } from '@onlook/git';
+import {
+    add,
+    addAll,
+    checkout,
+    commit,
+    getCommits,
+    getCurrentCommit,
+    init,
+    status,
+    updateCommitDisplayName,
+} from '@onlook/git';
 import { GitChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 
@@ -26,7 +36,7 @@ export function listenForVersionsMessages() {
     );
 
     ipcMain.handle(GitChannels.LIST_COMMITS, async (event, { repoPath }: { repoPath: string }) => {
-        return log(repoPath);
+        return getCommits(repoPath);
     });
 
     ipcMain.handle(GitChannels.STATUS, async (event, { repoPath }: { repoPath: string }) => {
@@ -44,6 +54,16 @@ export function listenForVersionsMessages() {
         GitChannels.GET_CURRENT_COMMIT,
         async (event, { repoPath }: { repoPath: string }) => {
             return getCurrentCommit(repoPath);
+        },
+    );
+
+    ipcMain.handle(
+        GitChannels.RENAME_COMMIT,
+        async (
+            event,
+            { repoPath, commit, newName }: { repoPath: string; commit: string; newName: string },
+        ) => {
+            return updateCommitDisplayName(repoPath, commit, newName);
         },
     );
 }

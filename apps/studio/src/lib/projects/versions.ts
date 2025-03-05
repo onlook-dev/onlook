@@ -1,14 +1,14 @@
+import type { GitCommit } from '@onlook/git';
 import { GitChannels } from '@onlook/models/constants';
 import { type Project } from '@onlook/models/projects';
 import { toast } from '@onlook/ui/use-toast';
-import type { ReadCommitResult } from 'isomorphic-git';
 import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
 import type { ProjectsManager } from './index';
 
 export class VersionsManager {
-    commits: ReadCommitResult[] | null = null;
-    savedCommits: ReadCommitResult[] = [];
+    commits: GitCommit[] | null = null;
+    savedCommits: GitCommit[] = [];
 
     constructor(
         private projectsManager: ProjectsManager,
@@ -34,10 +34,9 @@ export class VersionsManager {
     };
 
     listCommits = async () => {
-        const commits: ReadCommitResult[] | null = await invokeMainChannel(
-            GitChannels.LIST_COMMITS,
-            { repoPath: this.project.folderPath },
-        );
+        const commits: GitCommit[] | null = await invokeMainChannel(GitChannels.LIST_COMMITS, {
+            repoPath: this.project.folderPath,
+        });
 
         if (!commits) {
             return (this.commits = []);
@@ -62,7 +61,7 @@ export class VersionsManager {
         await this.listCommits();
     };
 
-    saveCommit = async (commit: ReadCommitResult) => {
+    saveCommit = async (commit: GitCommit) => {
         if (this.savedCommits.some((c) => c.oid === commit.oid)) {
             toast({
                 title: 'Backup already saved',
@@ -76,7 +75,7 @@ export class VersionsManager {
         });
     };
 
-    removeSavedCommit = async (commit: ReadCommitResult) => {
+    removeSavedCommit = async (commit: GitCommit) => {
         this.savedCommits = this.savedCommits.filter((c) => c.oid !== commit.oid);
     };
 

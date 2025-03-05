@@ -1,4 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
+import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,7 +10,6 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
-import type { ReadCommitResult } from 'isomorphic-git';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -20,15 +20,15 @@ export enum VersionRowType {
 }
 
 export const VersionRow = observer(
-    ({ commit, type }: { commit: ReadCommitResult; type: VersionRowType }) => {
+    ({ commit, type }: { commit: GitCommit; type: VersionRowType }) => {
         const projectsManager = useProjectsManager();
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
         const renderDate = () => {
             if (type === VersionRowType.TODAY) {
-                return `${timeAgo(new Date(commit.commit.author.timestamp * 1000).toISOString())} ago`;
+                return `${timeAgo(new Date(commit.timestamp * 1000).toISOString())} ago`;
             }
-            return formatCommitDate(commit.commit.author.timestamp, {
+            return formatCommitDate(commit.timestamp, {
                 includeDate: type === VersionRowType.PREVIOUS_DAYS,
             });
         };
@@ -39,9 +39,9 @@ export const VersionRow = observer(
                 className="p-2 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors rounded group"
             >
                 <span className="col-span-4 flex flex-col gap-1">
-                    <span>{commit.commit.message || 'Backup'}</span>
+                    <span>{commit.displayName || commit.message || 'Backup'}</span>
                     <span className="text-muted-foreground">
-                        {commit.commit.author.name} • {renderDate()}
+                        {commit.author.name} • {renderDate()}
                     </span>
                 </span>
                 <span className="col-span-1 text-muted-foreground"></span>
