@@ -47,7 +47,7 @@ export const FontFamily = ({
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full group">
             <div className="flex justify-between items-center py-3">
                 <div
                     className="flex items-center cursor-pointer"
@@ -61,9 +61,13 @@ export const FontFamily = ({
                         <span className="ml-2 text-xs text-muted-foreground">(Default)</span>
                     )}
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-100">
                     {showAddButton && (
-                        <Button variant="ghost" size="sm" className="h-7 px-2 rounded-md">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="h-7 pl-2 pr-1.5 rounded-md bg-background-secondary"
+                        >
                             Add <Icons.Plus className="ml-1 h-3 w-3" />
                         </Button>
                     )}
