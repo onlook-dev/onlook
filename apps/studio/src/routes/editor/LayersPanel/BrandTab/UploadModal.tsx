@@ -82,9 +82,11 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
 
     return (
         <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-            <AlertDialogContent className="max-w-3xl bg-background-onlook/20 p-0 flex flex-col max-h-[80vh] gap-0">
-                <div className="flex items-center justify-between p-6 pb-4">
-                    <AlertDialogTitle className="text-left">Upload a font</AlertDialogTitle>
+            <AlertDialogContent className="max-w-2xl bg-background-onlook/20 p-0 flex flex-col max-h-[80vh] gap-0">
+                <div className="flex items-center justify-between p-6 pt-4 pb-3">
+                    <AlertDialogTitle className="text-left font-medium">
+                        Upload a font
+                    </AlertDialogTitle>
                     <Button variant="ghost" className="h-8 w-8 p-0" onClick={handleCancel}>
                         <svg
                             width="15"
@@ -105,7 +107,7 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
 
                 <div className="flex flex-col px-6 pb-0 mb-0 flex-1 min-h-0">
                     <div
-                        className="flex flex-col items-center justify-center p-8 border border-dashed border-white/20 rounded-lg bg-black/20 cursor-pointer mb-4"
+                        className="flex flex-col items-center justify-center p-8 border border-dashed border-white/20 rounded-lg bg-black/20 cursor-pointer mb-6"
                         onClick={() => document.getElementById('font-upload')?.click()}
                         onDrop={handleDrop}
                         onDragOver={handleDragOver}
@@ -166,19 +168,21 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                     </div>
                 </div>
 
-                <AlertDialogFooter className="sm:justify-end border-t px-6 pb-6 pt-0 mt-0 space-x-2">
-                    <Button variant="ghost" onClick={handleCancel} className="text-sm">
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="default"
-                        onClick={handleSave}
-                        disabled={fontFiles.length === 0}
-                        className="rounded-md text-sm"
-                    >
-                        Save font files
-                    </Button>
-                </AlertDialogFooter>
+                {fontFiles.length > 0 && (
+                    <AlertDialogFooter className="sm:justify-end border-t px-6 pb-4 pt-4 mt-0 space-x-2">
+                        <Button variant="ghost" onClick={handleCancel} className="text-sm">
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={handleSave}
+                            disabled={fontFiles.length === 0}
+                            className="rounded-md text-sm"
+                        >
+                            Save font files
+                        </Button>
+                    </AlertDialogFooter>
+                )}
             </AlertDialogContent>
         </AlertDialog>
     );

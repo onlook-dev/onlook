@@ -145,7 +145,9 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                     <div className="flex flex-col gap-1 pt-6 pb-3 border-b border-border">
                         {/* System Fonts Header */}
                         <div className="px-4">
-                            <h3 className="text-sm font-normal">Added fonts</h3>
+                            <h3 className="text-sm font-normal text-muted-foreground">
+                                Added fonts
+                            </h3>
                         </div>
 
                         {/* System Font List */}
@@ -173,7 +175,7 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                 <div className="flex flex-col gap-1 pt-6 pb-4">
                     {/* Site Fonts Header */}
                     <div className="px-4">
-                        <h3 className="text-sm font-normal">
+                        <h3 className="text-sm text-muted-foreground font-normal">
                             {searchQuery ? 'Search results' : 'Browse new fonts'}
                         </h3>
                     </div>
