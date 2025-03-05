@@ -11,6 +11,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Input } from '@onlook/ui/input';
 import { FontFamily } from './FontFamily';
+import UploadModal from './UploadModal';
 
 interface FontVariantProps {
     name: string;
@@ -32,6 +33,7 @@ interface FontPanelProps {
 const FontPanel = observer(({ onClose }: FontPanelProps) => {
     const [searchQuery, setSearchQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
     const handleClose = () => {
         if (onClose) {
@@ -40,7 +42,15 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
     };
 
     const handleUploadFont = () => {
-        // Implement upload font logic
+        setIsUploadModalOpen(true);
+    };
+
+    const handleFontUpload = (
+        fonts: { name: string; file: File; weight: string; style: string }[],
+    ) => {
+        // Implement font upload logic
+        console.log('Uploaded fonts:', fonts);
+        // Here you would typically process the fonts and add them to your font system
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -199,6 +209,12 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                     Upload a custom font
                 </Button>
             </div>
+
+            <UploadModal
+                isOpen={isUploadModalOpen}
+                onOpenChange={setIsUploadModalOpen}
+                onUpload={handleFontUpload}
+            />
         </div>
     );
 });
