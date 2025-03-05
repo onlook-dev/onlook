@@ -29,13 +29,13 @@ import { WebviewManager } from './webview';
 
 export class EditorEngine {
     private _plansOpen: boolean = false;
-    private _settingsOpen: boolean = true;
+    private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
     private _publishOpen: boolean = false;
 
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.VERSIONS;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.PROJECT;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
