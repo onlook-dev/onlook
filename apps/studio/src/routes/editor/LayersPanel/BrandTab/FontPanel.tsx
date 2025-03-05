@@ -57,21 +57,19 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
         { name: 'Fahkwang', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
         { name: 'Roboto', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
         { name: 'Times New Roman', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        {
-            name: 'Poppins',
-            variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'],
-        },
+        { name: 'Poppins', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
         { name: 'Red Rose', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
         { name: 'Merriweather', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        {
-            name: 'Poppins',
-            variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'],
-            hasAddButton: true,
-        },
-        { name: 'Roboto', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Times New Roman', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Red Rose', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Merriweather', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Montserrat', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Open Sans', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Lato', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Playfair Display', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Raleway', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Source Sans Pro', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Nunito', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Oswald', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Quicksand', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
+        { name: 'Inter', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
     ];
 
     // Separate system fonts and site fonts
@@ -114,7 +112,7 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                         ref={inputRef}
                         type="text"
                         placeholder="Search for a new font..."
-                        className="h-8 text-xs pl-7 pr-8"
+                        className="h-9 text-xs pl-7 pr-8"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
@@ -134,7 +132,7 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
             <div className="flex flex-col flex-1 overflow-y-auto">
                 {/* System Fonts Section */}
                 {searchQuery === '' && (
-                    <div className="flex flex-col pt-6 pb-3 border-b border-border">
+                    <div className="flex flex-col gap-1 pt-6 pb-3 border-b border-border">
                         {/* System Fonts Header */}
                         <div className="px-4">
                             <h3 className="text-sm font-normal">Added fonts</h3>
@@ -162,7 +160,7 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                 )}
 
                 {/* Site Fonts Section */}
-                <div className="flex flex-col pt-6 pb-4">
+                <div className="flex flex-col gap-1 pt-6 pb-4">
                     {/* Site Fonts Header */}
                     <div className="px-4">
                         <h3 className="text-sm font-normal">

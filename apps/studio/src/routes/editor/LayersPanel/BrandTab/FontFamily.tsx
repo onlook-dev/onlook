@@ -82,11 +82,11 @@ export const FontFamily = ({
                                     <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuContent align="end" className="min-w-fit">
                                 <DropdownMenuCheckboxItem
                                     checked={isDefault}
                                     onCheckedChange={handleToggleDefault}
-                                    className="flex items-center"
+                                    className="flex items-center pr-2 cursor-pointer"
                                 >
                                     <span>Set as default font</span>
                                 </DropdownMenuCheckboxItem>

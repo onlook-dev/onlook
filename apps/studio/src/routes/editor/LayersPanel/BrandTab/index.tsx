@@ -97,7 +97,7 @@ const BrandTab = observer(() => {
             </div>
 
             {/* Site Fonts Section */}
-            <div className="flex flex-col gap-3 px-4 pt-5 pb-6">
+            <div className="flex flex-col gap-1.5 px-4 pt-5 pb-6">
                 <div className="flex flex-col">
                     <div className="flex justify-between items-center">
                         <span className="text-base font-normal">Site Fonts</span>
