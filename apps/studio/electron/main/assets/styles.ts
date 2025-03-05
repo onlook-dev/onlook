@@ -5,6 +5,7 @@ import traverse from '@babel/traverse';
 import generate from '@babel/generator';
 import { Color } from '@onlook/utility';
 import { readFile } from '../code/files';
+import type { ObjectProperty } from '@babel/types';
 
 export async function updateTailwindConfig(
     projectRoot: string,
@@ -44,9 +45,9 @@ export async function updateTailwindConfig(
 
             const cssVarAddition = `\n    --${newCssVarName}: ${newColor};`;
 
-            // Add to :root block
+            // Add to :root block inside @layer base block
             const updatedCssContent = cssContent.replace(
-                /(:root\s*{[^}]*)(})/,
+                /(@layer\s*base\s*{\s*:root\s*{[^}]*)(})/,
                 `$1${cssVarAddition}$2`,
             );
 
@@ -68,19 +69,51 @@ export async function updateTailwindConfig(
                     ) {
                         const colorObj = path.node.value;
                         // Add new color property
-                        colorObj.properties.push({
-                            type: 'ObjectProperty',
-                            key: {
-                                type: 'Identifier',
-                                name: newName.toLowerCase(),
-                            },
-                            value: {
-                                type: 'StringLiteral',
-                                value: `var(--${newCssVarName})`,
-                            },
-                            computed: false,
-                            shorthand: false,
-                        });
+                        // If parentName is not provided, add to the root
+
+                        if (!parentName) {
+                            colorObj.properties.push({
+                                type: 'ObjectProperty',
+                                key: {
+                                    type: 'Identifier',
+                                    name: newName.toLowerCase(),
+                                },
+                                value: {
+                                    type: 'StringLiteral',
+                                    value: `var(--${newCssVarName})`,
+                                },
+                                computed: false,
+                                shorthand: false,
+                            });
+                        } else {
+                            // If parentName is provided, add to the parent
+                            const parentColorObj = colorObj.properties.find(
+                                (prop): prop is ObjectProperty =>
+                                    prop.type === 'ObjectProperty' &&
+                                    'key' in prop &&
+                                    prop.key.type === 'Identifier' &&
+                                    prop.key.name === parentName,
+                            );
+
+                            if (
+                                parentColorObj &&
+                                parentColorObj.value.type === 'ObjectExpression'
+                            ) {
+                                parentColorObj.value.properties.push({
+                                    type: 'ObjectProperty',
+                                    key: {
+                                        type: 'Identifier',
+                                        name: newName.toLowerCase(),
+                                    },
+                                    value: {
+                                        type: 'StringLiteral',
+                                        value: `var(--${newCssVarName})`,
+                                    },
+                                    computed: false,
+                                    shorthand: false,
+                                });
+                            }
+                        }
                     }
                 },
             });
@@ -109,31 +142,50 @@ export async function updateTailwindConfig(
         }
         const newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
 
+        // As we moving toward to Tailwind 4.0, we should use variable instead of direct color
+        // So we need to update the CSS file and the config file
+        // If the color is not a variable, we need to add it to the CSS file and the config file
+        // If the color is a variable, we need to update the CSS file and the config file
+
         const lightVarRegex = new RegExp(
             `(:root[^{]*{[^}]*)(--${originalName}\\s*:\\s*[^;]*)(;|})`,
             's',
         );
-
         let updatedCssContent;
-        if (newName !== keyName) {
-            // Keep the old one for backwards compatibility?
-            updatedCssContent = cssContent.replace(
-                lightVarRegex,
-                `$1--${originalName}: ${newColor};--${newCssVarName}: ${newColor}$3`,
-            );
-        } else {
-            updatedCssContent = cssContent.replace(
-                lightVarRegex,
-                `$1--${originalName}: ${newColor}$3`,
-            );
-        }
 
-        if (updatedCssContent === cssContent) {
-            console.log(`Warning: CSS variable --${originalName} not found in CSS file`);
+        const isVar = lightVarRegex.test(cssContent);
+
+        if (isVar) {
+            // Update the CSS file
+            if (newName !== keyName) {
+                // Keep the old one for backwards compatibility?
+                updatedCssContent = cssContent.replace(
+                    lightVarRegex,
+                    `$1--${originalName}: ${newColor};--${newCssVarName}: ${newColor}$3`,
+                );
+            } else {
+                updatedCssContent = cssContent.replace(
+                    lightVarRegex,
+                    `$1--${originalName}: ${newColor}$3`,
+                );
+            }
+
+            if (updatedCssContent === cssContent) {
+                console.log(`Warning: CSS variable --${originalName} not found in CSS file`);
+            }
+        } else {
+            // Add the color to the CSS file
+            const cssVarAddition = `\n    --${newCssVarName}: ${newColor};`;
+
+            updatedCssContent = cssContent.replace(
+                /(@layer\s*base\s*{\s*:root\s*{[^}]*)(})/,
+                `$1${cssVarAddition}$2`,
+            );
         }
 
         fs.writeFileSync(cssPath, updatedCssContent);
 
+        // Update the config file
         const updateAst = parse(configContent, {
             sourceType: 'module',
             plugins: ['typescript', 'jsx'],
@@ -178,16 +230,17 @@ export async function updateTailwindConfig(
 
                                         let updatedValue = valueStr;
                                         const hslMatch = valueStr.match(hslRegex);
-                                        if (hslMatch) {
+                                        const varMatch = valueStr.match(varRegex);
+
+                                        // If value is not already using var() syntax, update it
+                                        if (!varMatch && !hslMatch) {
+                                            updatedValue = `var(--${newCssVarName})`;
+                                        } else if (hslMatch) {
                                             updatedValue = `var(${hslMatch[1]})`;
                                         }
 
                                         if (newName !== keyName) {
-                                            const varMatch =
-                                                updatedValue.match(varRegex) || hslMatch;
-                                            if (varMatch) {
-                                                updatedValue = `var(--${newCssVarName})`;
-                                            }
+                                            updatedValue = `var(--${newCssVarName})`;
                                         }
 
                                         nestedProp.value.value = updatedValue;
@@ -294,7 +347,8 @@ function extractCssConfig(content: string) {
                                 // Extract HSL values using more robust regex
                                 let h = 0,
                                     s = 0,
-                                    l = 0;
+                                    l = 0,
+                                    a = 1;
 
                                 if (value.includes('hsl')) {
                                     // Handle hsl() and hsla() formats
@@ -305,6 +359,7 @@ function extractCssConfig(content: string) {
                                         h = parseFloat(hslMatch[1].replace('deg', ''));
                                         s = parseFloat(hslMatch[2].replace('%', ''));
                                         l = parseFloat(hslMatch[3].replace('%', ''));
+                                        a = parseFloat(hslMatch[4].replace('%', ''));
                                     }
                                 } else {
                                     // Handle space-separated format
@@ -320,6 +375,7 @@ function extractCssConfig(content: string) {
                                     h: h / 360,
                                     s: s / 100,
                                     l: l / 100,
+                                    a,
                                 }).toHex();
                             } catch (err) {
                                 console.error(`Failed to convert HSL value: ${value}`, err);
