@@ -204,7 +204,7 @@ const BrandTab = observer(({ onClose }: BrandTabProps) => {
         <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0">
             {/* Header Section */}
             <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
-                <h2 className="text-sm font-normal text-foreground">Brand Palette</h2>
+                <h2 className="text-sm font-normal text-foreground">Brand Colors</h2>
                 <Button
                     variant="ghost"
                     size="icon"

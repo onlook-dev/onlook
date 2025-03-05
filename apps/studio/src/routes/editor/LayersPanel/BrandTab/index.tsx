@@ -4,6 +4,8 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import ColorPanel from './ColorPanel';
+import FontPanel from './FontPanel';
+import { FontFamily } from './FontFamily';
 
 interface ColorSquareProps {
     color: string;
@@ -22,37 +24,12 @@ interface FontVariantProps {
 }
 
 const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
-    <div className="py-1 text-sm text-muted-foreground">{name}</div>
-);
-
-interface FontFamilyProps {
-    name: string;
-    variants: string[];
-    isExpanded?: boolean;
-}
-
-const FontFamily = ({ name, variants, isExpanded = false }: FontFamilyProps) => (
-    <Collapsible defaultOpen={isExpanded} className="w-full">
-        <CollapsibleTrigger className="flex items-center w-full py-1.5">
-            <Icons.ChevronRight
-                className={`h-4 w-4 mr-1 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-            />
-            <span className="text-sm font-medium">{name}</span>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pl-5">
-            {variants.map((variant, index) => (
-                <FontVariant
-                    key={`${name}-${variant}`}
-                    name={variant}
-                    isActive={index === variants.length - 2 || index === variants.length - 1}
-                />
-            ))}
-        </CollapsibleContent>
-    </Collapsible>
+    <div className="text-base text-muted-foreground">{name}</div>
 );
 
 const BrandTab = observer(() => {
     const [showColorPanel, setShowColorPanel] = useState(false);
+    const [showFontPanel, setShowFontPanel] = useState(false);
 
     // Sample colors for the brand palette
     const brandColors = [
@@ -75,11 +52,23 @@ const BrandTab = observer(() => {
     // Toggle color panel visibility
     const handleToggleColorPanel = () => {
         setShowColorPanel(!showColorPanel);
+        setShowFontPanel(false);
+    };
+
+    // Toggle font panel visibility
+    const handleToggleFontPanel = () => {
+        setShowFontPanel(!showFontPanel);
+        setShowColorPanel(false);
     };
 
     // If color panel is visible, show it instead of the main content
     if (showColorPanel) {
         return <ColorPanel onClose={handleToggleColorPanel} />;
+    }
+
+    // If font panel is visible, show it instead of the main content
+    if (showFontPanel) {
+        return <FontPanel onClose={handleToggleFontPanel} />;
     }
 
     return (
@@ -88,7 +77,7 @@ const BrandTab = observer(() => {
             <div className="flex flex-col gap-3 px-4 pt-4 pb-6 border-b border-border">
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                        <span className="text-base font-normal">Brand Palette</span>
+                        <span className="text-base font-normal">Brand Colors</span>
                     </div>
 
                     <div className="grid grid-cols-6 gap-1">
@@ -103,33 +92,49 @@ const BrandTab = observer(() => {
                     className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
                     onClick={handleToggleColorPanel}
                 >
-                    Manage brand palette
+                    Manage brand colors
                 </Button>
             </div>
 
             {/* Site Fonts Section */}
             <div className="flex flex-col gap-3 px-4 pt-5 pb-6">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col">
                     <div className="flex justify-between items-center">
-                        <span className="text-base font-normal">Site fonts</span>
+                        <span className="text-base font-normal">Site Fonts</span>
                     </div>
 
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col divide-y divide-border">
                         <FontFamily
                             name="Poppins"
                             variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
-                            isExpanded={true}
+                            showDropdown={true}
+                            showAddButton={false}
                         />
                         <FontFamily
                             name="Switzer"
                             variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
-                            isExpanded={false}
+                            showDropdown={true}
+                            showAddButton={false}
+                        />
+                        <FontFamily
+                            name="DM Sans"
+                            variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
+                            showDropdown={true}
+                            showAddButton={false}
+                        />
+                        <FontFamily
+                            name="Roboto"
+                            variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
+                            isLast={true}
+                            showDropdown={true}
+                            showAddButton={false}
                         />
                     </div>
                 </div>
                 <Button
                     variant="ghost"
                     className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
+                    onClick={handleToggleFontPanel}
                 >
                     Manage site fonts
                 </Button>
