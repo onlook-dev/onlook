@@ -97,14 +97,20 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
     };
 
     const onMainValueChanged = (key: string, value: string) => {
+        editorEngine.history.startTransaction();
         if (value === 'absolute') {
+            editorEngine.style.update('position', value);
+            editorEngine.history.commitTransaction();
+
             centerElement();
         } else {
-            editorEngine.style.updateStyleNoAction(
-                Object.fromEntries(
-                    compoundStyle.children.map((elementStyle) => [elementStyle.key, 'auto']),
-                ),
+            editorEngine.style.update('position', value);
+            editorEngine.history.commitTransaction();
+
+            const updates = Object.fromEntries(
+                compoundStyle.children.map((elementStyle) => [elementStyle.key, 'auto']),
             );
+            editorEngine.style.updateMultiple(updates);
             resetPositionState();
         }
     };
