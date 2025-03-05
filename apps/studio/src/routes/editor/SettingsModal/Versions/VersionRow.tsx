@@ -12,7 +12,7 @@ import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export enum VersionRowType {
     SAVED = 'saved',
@@ -21,14 +21,28 @@ export enum VersionRowType {
 }
 
 export const VersionRow = observer(
-    ({ commit, type }: { commit: GitCommit; type: VersionRowType }) => {
+    ({
+        commit,
+        type,
+        autoRename = false,
+    }: {
+        commit: GitCommit;
+        type: VersionRowType;
+        autoRename?: boolean;
+    }) => {
         const projectsManager = useProjectsManager();
         const inputRef = useRef<HTMLInputElement>(null);
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-        const [isRenaming, setIsRenaming] = useState(false);
+        const [isRenaming, setIsRenaming] = useState(autoRename);
         const [commitDisplayName, setCommitDisplayName] = useState(
             commit.displayName || commit.message || 'Backup',
         );
+
+        useEffect(() => {
+            if (autoRename) {
+                startRenaming();
+            }
+        }, [autoRename]);
 
         const renderDate = () => {
             if (type === VersionRowType.TODAY) {

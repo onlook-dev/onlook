@@ -5,12 +5,14 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Separator } from '@onlook/ui/separator';
 import { formatCommitDate } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { NoVersions } from './EmptyState/Version';
 import { VersionRow, VersionRowType } from './VersionRow';
 
 export const Versions = observer(() => {
     const projectsManager = useProjectsManager();
     const commits = projectsManager.versions?.commits;
+    const [commitToRename, setCommitToRename] = useState<string | null>(null);
 
     // Group commits by date
     const groupedCommits = commits?.reduce(
@@ -38,6 +40,16 @@ export const Versions = observer(() => {
         {} as Record<string, typeof commits>,
     );
 
+    const handleNewBackup = async () => {
+        await projectsManager.versions?.createCommit();
+        const latestCommit = projectsManager.versions?.latestCommit;
+        if (!latestCommit) {
+            console.error('No latest commit found');
+            return;
+        }
+        setCommitToRename(latestCommit.oid);
+    };
+
     return (
         <div className="flex flex-col text-sm p-4">
             <div className="flex flex-row items-center justify-between gap-2 pb-4">
@@ -47,7 +59,7 @@ export const Versions = observer(() => {
                         variant="outline"
                         className="ml-auto bg-background-secondary rounded"
                         size="sm"
-                        onClick={() => projectsManager.versions?.createCommit()}
+                        onClick={handleNewBackup}
                     >
                         <Icons.Plus className="h-4 w-4 mr-2" />
                         New backup
@@ -76,6 +88,7 @@ export const Versions = observer(() => {
                                                             ? VersionRowType.TODAY
                                                             : VersionRowType.PREVIOUS_DAYS
                                                     }
+                                                    autoRename={commit.oid === commitToRename}
                                                 />
                                             ))}
                                         </div>

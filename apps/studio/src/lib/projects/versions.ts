@@ -23,6 +23,13 @@ export class VersionsManager {
         await this.listCommits();
     };
 
+    get latestCommit() {
+        if (!this.commits || this.commits.length === 0) {
+            return undefined;
+        }
+        return this.commits[0];
+    }
+
     createCommit = async (message: string = 'New backup') => {
         await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
         await invokeMainChannel(GitChannels.COMMIT, { repoPath: this.project.folderPath, message });
