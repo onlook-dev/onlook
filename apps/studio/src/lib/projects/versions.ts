@@ -84,8 +84,11 @@ export class VersionsManager {
         this.commits = commits;
     };
 
-    checkoutCommit = async (commit: GitCommit) => {
-        await this.createCommit('Save before restoring backup', false);
+    checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
+        const success = await this.createCommit('Save before restoring backup', false);
+        if (!success) {
+            return false;
+        }
 
         await invokeMainChannel(GitChannels.CHECKOUT, {
             repoPath: this.project.folderPath,
@@ -96,6 +99,7 @@ export class VersionsManager {
             description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
         });
         await this.listCommits();
+        return true;
     };
 
     renameCommit = async (commit: string, newName: string) => {
