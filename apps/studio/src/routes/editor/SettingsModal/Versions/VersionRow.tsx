@@ -88,7 +88,7 @@ export const VersionRow = observer(
                                 }
                             }}
                             onBlur={finishRenaming}
-                            className="p-0 pl-2 h-8 border border-transparent hover:border-border/50 focus-visible:border-primary/10 focus-visible:ring-0 focus-visible:outline-none focus-visible:bg-transparent bg-transparent hover:bg-transparent transition-all duration-200"
+                            className="p-0 pl-2 h-8 border border-transparent hover:border-border/50 focus-visible:border-primary/10 focus-visible:ring-0 focus-visible:outline-none focus-visible:bg-transparent bg-transparent hover:bg-transparent transition-all duration-100"
                         />
                     ) : (
                         <span>{commit.displayName || commit.message || 'Backup'}</span>
@@ -133,7 +133,7 @@ export const VersionRow = observer(
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="bg-background-tertiary/65 hover:bg-background-tertiary"
+                                className="bg-background-tertiary/70 hover:bg-background-tertiary"
                             >
                                 <Icons.DotsHorizontal className="h-4 w-4" />
                             </Button>
