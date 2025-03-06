@@ -19,7 +19,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/use-toast';
-import { getValidUrl } from '@onlook/utility';
+import { getValidUrl, isApexDomain } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { RecordField } from './RecordField';
@@ -61,6 +61,17 @@ export const Verification = observer(() => {
         setRecords([]);
     }
 
+    function onDomainInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const value = e.target.value;
+        setDomain(value);
+        const { isValid, error } = isApexDomain(value);
+        if (!isValid) {
+            setError(error);
+        } else {
+            setError(null);
+        }
+    }
+
     function validateDomain(): string | false {
         if (!domain) {
             setError('Domain is required');
@@ -68,24 +79,15 @@ export const Verification = observer(() => {
         }
 
         try {
-            const url = new URL(getValidUrl(domain.trim()));
-            const hostname = url.hostname.toLowerCase();
-
-            // Split hostname into parts and ensure only two parts (domain + TLD)
-            const parts = hostname.split('.');
-            if (parts.length !== 2) {
-                setError('Please enter a domain without subdomains (e.g., example.com)');
-                return false;
-            }
-
-            // Basic domain validation regex for the final format
-            const domainRegex = /^[a-z0-9]+(-[a-z0-9]+)*\.[a-z]{2,}$/;
-            if (!domainRegex.test(hostname)) {
-                setError('Please enter a valid domain name (e.g., example.com)');
+            const { isValid, error } = isApexDomain(domain);
+            if (!isValid) {
+                setError(error);
                 return false;
             }
 
             setError(null);
+            const url = new URL(getValidUrl(domain.trim()));
+            const hostname = url.hostname.toLowerCase();
             return hostname;
         } catch (err) {
             setError('Invalid domain format');
@@ -282,7 +284,7 @@ export const Verification = observer(() => {
                             <Input
                                 disabled={status !== VerificationStatus.NO_DOMAIN}
                                 value={domain}
-                                onChange={(e) => setDomain(e.target.value)}
+                                onChange={onDomainInputChange}
                                 placeholder="example.com"
                                 className="bg-background placeholder:text-muted-foreground"
                                 onKeyDown={(e) => {
