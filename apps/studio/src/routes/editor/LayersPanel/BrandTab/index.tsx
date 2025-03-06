@@ -14,6 +14,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import { Color } from '@onlook/utility';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import ColorPickerContent from '../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
+import { cn } from '@onlook/ui/utils';
 interface ColorRowProps {
     label: string;
     colors: string[];
@@ -94,6 +95,7 @@ const ColorPopover = ({
 interface BrandPalletGroupProps {
     title: string;
     colors?: ColorItem[];
+    theme: 'dark' | 'light';
     onRename: () => void;
     onDelete: () => void;
     onColorChange?: (
@@ -108,6 +110,7 @@ interface BrandPalletGroupProps {
 const BrandPalletGroup = ({
     title,
     colors,
+    theme,
     onRename,
     onDelete,
     onColorChange,
@@ -126,6 +129,10 @@ const BrandPalletGroup = ({
         }
         setEditingColorIndex(null);
         setIsAddingNewColor(false);
+    };
+
+    const getColorValue = (color: ColorItem) => {
+        return theme === 'dark' ? color.darkColor || color.lightColor : color.lightColor;
     };
 
     return (
@@ -181,7 +188,7 @@ const BrandPalletGroup = ({
                             <div key={`${title}-${index}`} className="relative group">
                                 {editingColorIndex === index ? (
                                     <ColorPopover
-                                        color={Color.from(color.lightColor)}
+                                        color={Color.from(getColorValue(color))}
                                         brandColor={color.name}
                                         onClose={() => setEditingColorIndex(null)}
                                         onColorChange={(newColor, newName) =>
@@ -192,7 +199,7 @@ const BrandPalletGroup = ({
                                     <>
                                         <div
                                             className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
-                                            style={{ backgroundColor: color.lightColor }}
+                                            style={{ backgroundColor: getColorValue(color) }}
                                         />
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
                                             <DropdownMenu>
@@ -214,7 +221,8 @@ const BrandPalletGroup = ({
                                                         <div
                                                             className="w-4 h-4 rounded-sm mt-[2px]"
                                                             style={{
-                                                                backgroundColor: color.lightColor,
+                                                                backgroundColor:
+                                                                    getColorValue(color),
                                                             }}
                                                         />
                                                         <div className="flex flex-col">
@@ -222,7 +230,7 @@ const BrandPalletGroup = ({
                                                                 {color.name}
                                                             </span>
                                                             <span className="text-xs text-muted-foreground">
-                                                                {color.lightColor}
+                                                                {getColorValue(color)}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -333,6 +341,8 @@ interface ColorItem {
 
 const BrandTab = observer(() => {
     const [colorGroups, setColorGroups] = useState<{ [key: string]: ColorItem[] }>({});
+    const [theme, setTheme] = useState<'dark' | 'light'>('light');
+
     const projectsManager = useProjectsManager();
     const loadColors = async () => {
         const projectRoot = projectsManager.project?.folderPath;
@@ -488,6 +498,7 @@ const BrandTab = observer(() => {
                 newColor: newColor.toHex(),
                 newName,
                 parentName,
+                theme,
             });
 
             // Refresh colors after update
@@ -499,6 +510,32 @@ const BrandTab = observer(() => {
 
     return (
         <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0 overflow-y-auto">
+            {/* Theme Toggle */}
+            <div className="flex gap-2 px-4 py-3 border-b border-border">
+                <Button
+                    variant={theme === 'light' ? 'default' : 'outline'}
+                    className={cn(
+                        'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
+                        theme === 'light' && 'bg-gray-900 text-white',
+                    )}
+                    onClick={() => setTheme('light')}
+                >
+                    <Icons.Sun className="h-4 w-4" />
+                    Light mode
+                </Button>
+                <Button
+                    variant={theme === 'dark' ? 'default' : 'outline'}
+                    className={cn(
+                        'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
+                        theme === 'dark' && 'bg-gray-900 text-white',
+                    )}
+                    onClick={() => setTheme('dark')}
+                >
+                    <Icons.Moon className="h-4 w-4" />
+                    Dark mode
+                </Button>
+            </div>
+
             {/* Brand Palette Groups section */}
             <div className="flex flex-col gap-4 px-4 py-[18px] border-b border-border">
                 <div className="flex flex-col gap-4">
@@ -506,6 +543,7 @@ const BrandTab = observer(() => {
                     {Object.entries(colorGroups).map(([groupName, colors]) => (
                         <BrandPalletGroup
                             key={groupName}
+                            theme={theme}
                             title={groupName.charAt(0).toUpperCase() + groupName.slice(1)}
                             colors={colors}
                             onRename={handleRename}
