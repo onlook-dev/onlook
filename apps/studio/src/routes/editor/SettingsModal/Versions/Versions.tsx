@@ -1,14 +1,14 @@
 import { useProjectsManager } from '@/components/Context';
+import { CreateCommitFailureReason } from '@/lib/projects/versions';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Separator } from '@onlook/ui/separator';
 import { formatCommitDate } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { NoVersions } from './EmptyState/Version';
 import { VersionRow, VersionRowType } from './VersionRow';
-import React from 'react';
 
 export const Versions = observer(() => {
     const projectsManager = useProjectsManager();
@@ -42,10 +42,16 @@ export const Versions = observer(() => {
     );
 
     const handleNewBackup = async () => {
-        const success = await projectsManager.versions?.createCommit();
-        if (!success) {
-            return;
+        const res = await projectsManager.versions?.createCommit();
+
+        // If failed to create commit, don't continue backing up
+        if (!res?.success) {
+            // If the commit was empty, continue
+            if (res?.errorReason !== CreateCommitFailureReason.COMMIT_EMPTY) {
+                return;
+            }
         }
+
         const latestCommit = projectsManager.versions?.latestCommit;
         if (!latestCommit) {
             console.error('No latest commit found');

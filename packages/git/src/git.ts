@@ -30,7 +30,7 @@ const DISPLAY_NAME_NAMESPACE = 'onlook-display-name';
 export async function isRepoInitialized(dir: string) {
     try {
         // Check if .git directory exists
-        const exists = await fs.promises.exists(path.join(dir, '.git'));
+        const exists = fs.existsSync(path.join(dir, '.git'));
         return exists;
     } catch (error) {
         console.error('Error checking if repository is initialized:', error);

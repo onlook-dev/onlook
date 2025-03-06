@@ -6,6 +6,12 @@ import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
 import type { ProjectsManager } from './index';
 
+export enum CreateCommitFailureReason {
+    NOT_INITIALIZED = 'NOT_INITIALIZED',
+    COMMIT_EMPTY = 'COMMIT_EMPTY',
+    FAILED_TO_SAVE = 'FAILED_TO_SAVE',
+}
+
 export class VersionsManager {
     commits: GitCommit[] | null = null;
     savedCommits: GitCommit[] = [];
@@ -38,10 +44,15 @@ export class VersionsManager {
     createCommit = async (
         message: string = 'New Onlook backup',
         showToast = true,
-    ): Promise<boolean> => {
+    ): Promise<{
+        success: boolean;
+        error?: string;
+        errorReason?: string;
+    }> => {
         const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
             repoPath: this.project.folderPath,
         });
+
         if (!isInitialized) {
             await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
         }
@@ -49,12 +60,19 @@ export class VersionsManager {
         const isEmpty = await invokeMainChannel(GitChannels.IS_EMPTY_COMMIT, {
             repoPath: this.project.folderPath,
         });
+
         if (!isEmpty) {
             await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
-            await invokeMainChannel(GitChannels.COMMIT, {
+            const commitResult = await invokeMainChannel(GitChannels.COMMIT, {
                 repoPath: this.project.folderPath,
                 message,
             });
+            if (!commitResult) {
+                return {
+                    success: false,
+                    errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+                };
+            }
             if (showToast) {
                 toast({
                     title: 'Backup created!',
@@ -62,14 +80,19 @@ export class VersionsManager {
                 });
             }
             await this.listCommits();
-            return true;
+            return {
+                success: true,
+            };
         } else {
             if (showToast) {
                 toast({
                     title: 'No changes to commit',
                 });
             }
-            return false;
+            return {
+                success: false,
+                errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+            };
         }
     };
 
@@ -87,6 +110,10 @@ export class VersionsManager {
     checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
         const success = await this.createCommit('Save before restoring backup', false);
         if (!success) {
+            console.error(
+                'Failed to save before restoring backup',
+                commit.displayName || commit.message,
+            );
             return false;
         }
 

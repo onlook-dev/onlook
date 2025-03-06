@@ -4,6 +4,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -81,12 +82,17 @@ export const VersionRow = observer(
         const handleCheckout = async () => {
             setIsCheckingOut(true);
             const success = await projectsManager.versions?.checkoutCommit(commit);
+            setIsCheckingOut(false);
+            setIsCheckoutSuccess(success ?? false);
+
             if (!success) {
-                console.error('Failed to checkout commit', commit);
+                console.error('Failed to checkout commit', commit.displayName || commit.message);
+                toast({
+                    title: 'Failed to restore',
+                    description: 'Please try again',
+                });
                 return;
             }
-            setIsCheckingOut(false);
-            setIsCheckoutSuccess(true);
             setTimeout(() => {
                 editorEngine.isSettingsOpen = false;
             }, 1000);
