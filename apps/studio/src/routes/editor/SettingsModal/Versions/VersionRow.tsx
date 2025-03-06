@@ -25,7 +25,7 @@ export const VersionRow = observer(
         commit: GitCommit;
         type: VersionRowType;
         autoRename?: boolean;
-        onRename: () => void;
+        onRename?: () => void;
     }) => {
         const projectsManager = useProjectsManager();
         const inputRef = useRef<HTMLInputElement>(null);
@@ -64,7 +64,7 @@ export const VersionRow = observer(
         const finishRenaming = () => {
             updateCommitDisplayName(commitDisplayName);
             setIsRenaming(false);
-            onRename();
+            onRename?.();
         };
 
         return (
