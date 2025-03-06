@@ -41,7 +41,10 @@ export const Versions = observer(() => {
     );
 
     const handleNewBackup = async () => {
-        await projectsManager.versions?.createCommit();
+        const success = await projectsManager.versions?.createCommit();
+        if (!success) {
+            return;
+        }
         const latestCommit = projectsManager.versions?.latestCommit;
         if (!latestCommit) {
             console.error('No latest commit found');
@@ -89,6 +92,7 @@ export const Versions = observer(() => {
                                                             : VersionRowType.PREVIOUS_DAYS
                                                     }
                                                     autoRename={commit.oid === commitToRename}
+                                                    onRename={() => setCommitToRename(null)}
                                                 />
                                             ))}
                                         </div>

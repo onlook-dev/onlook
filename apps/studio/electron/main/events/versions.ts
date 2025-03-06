@@ -6,6 +6,7 @@ import {
     getCommits,
     getCurrentCommit,
     init,
+    isEmptyCommit,
     isRepoInitialized,
     status,
     updateCommitDisplayName,
@@ -20,6 +21,10 @@ export function listenForVersionsMessages() {
 
     ipcMain.handle(GitChannels.INIT_REPO, (_, { repoPath }: { repoPath: string }) => {
         return init(repoPath);
+    });
+
+    ipcMain.handle(GitChannels.IS_EMPTY_COMMIT, (_, { repoPath }: { repoPath: string }) => {
+        return isEmptyCommit(repoPath);
     });
 
     ipcMain.handle(

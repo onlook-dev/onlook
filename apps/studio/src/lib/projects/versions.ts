@@ -35,7 +35,10 @@ export class VersionsManager {
         return this.commits[0];
     }
 
-    createCommit = async (message: string = 'New Onlook backup', showToast = true) => {
+    createCommit = async (
+        message: string = 'New Onlook backup',
+        showToast = true,
+    ): Promise<boolean> => {
         const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
             repoPath: this.project.folderPath,
         });
@@ -46,7 +49,7 @@ export class VersionsManager {
         const isEmpty = await invokeMainChannel(GitChannels.IS_EMPTY_COMMIT, {
             repoPath: this.project.folderPath,
         });
-        if (isEmpty) {
+        if (!isEmpty) {
             await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
             await invokeMainChannel(GitChannels.COMMIT, {
                 repoPath: this.project.folderPath,
@@ -58,14 +61,16 @@ export class VersionsManager {
                     description: 'You can now restore to this version',
                 });
             }
+            await this.listCommits();
+            return true;
         } else {
             if (showToast) {
                 toast({
                     title: 'No changes to commit',
                 });
             }
+            return false;
         }
-        await this.listCommits();
     };
 
     listCommits = async () => {
