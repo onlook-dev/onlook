@@ -1,14 +1,9 @@
 import { useProjectsManager } from '@/components/Context';
 import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -32,7 +27,6 @@ export const VersionRow = observer(
     }) => {
         const projectsManager = useProjectsManager();
         const inputRef = useRef<HTMLInputElement>(null);
-        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
         const [isRenaming, setIsRenaming] = useState(autoRename);
         const [commitDisplayName, setCommitDisplayName] = useState(
             commit.displayName || commit.message || 'Backup',
@@ -62,8 +56,7 @@ export const VersionRow = observer(
             setTimeout(() => {
                 inputRef.current?.focus();
                 inputRef.current?.select();
-                console.log('Focused');
-            }, 200);
+            }, 100);
         };
 
         const finishRenaming = () => {
@@ -103,7 +96,6 @@ export const VersionRow = observer(
                 <div
                     className={cn(
                         'col-span-1 gap-2 flex justify-end group-hover:opacity-100 opacity-0 transition-opacity',
-                        isDropdownOpen && 'opacity-100',
                     )}
                 >
                     {type === VersionRowType.SAVED ? (
@@ -127,31 +119,34 @@ export const VersionRow = observer(
                             <span className="text-muted-foreground">Save</span>
                         </Button>
                     )}
-
-                    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                        <DropdownMenuTrigger asChild>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 className="bg-background-tertiary/70 hover:bg-background-tertiary"
+                                onClick={startRenaming}
                             >
-                                <Icons.DotsHorizontal className="h-4 w-4" />
+                                <Icons.Pencil className="h-4 w-4 mr-2" />
+                                Rename
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                                className="flex items-center"
+                        </TooltipTrigger>
+                        <TooltipContent>Rename backup for easier identification</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="bg-background-tertiary/70 hover:bg-background-tertiary"
                                 onClick={() => projectsManager.versions?.checkoutCommit(commit)}
                             >
                                 <Icons.CounterClockwiseClock className="h-4 w-4 mr-2" />
-                                Restore backup
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="flex items-center" onClick={startRenaming}>
-                                <Icons.Pencil className="h-4 w-4 mr-2" />
-                                Rename backup
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                Restore
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Restore project to this version</TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
         );
