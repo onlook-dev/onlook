@@ -79,8 +79,12 @@ export async function status(repoPath: string, filepath: string = '.') {
     return await gitStatus({ fs, dir: repoPath, filepath });
 }
 
-export async function commit(repoPath: string, message: string, author = GIT_AUTHOR) {
-    await gitCommit({
+export async function commit(
+    repoPath: string,
+    message: string,
+    author = GIT_AUTHOR,
+): Promise<string> {
+    return await gitCommit({
         fs,
         dir: repoPath,
         message,
