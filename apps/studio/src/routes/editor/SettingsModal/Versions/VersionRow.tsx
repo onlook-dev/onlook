@@ -70,7 +70,7 @@ export const VersionRow = observer(
         return (
             <div
                 key={commit.oid}
-                className="p-2 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors rounded-md group"
+                className="py-4 px-6 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors group"
             >
                 <span className="col-span-4 flex flex-col gap-0.5">
                     {isRenaming ? (
