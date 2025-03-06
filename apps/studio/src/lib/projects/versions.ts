@@ -85,6 +85,8 @@ export class VersionsManager {
     };
 
     checkoutCommit = async (commit: GitCommit) => {
+        await this.createCommit('Save before restoring backup', false);
+
         await invokeMainChannel(GitChannels.CHECKOUT, {
             repoPath: this.project.folderPath,
             commit: commit.oid,
