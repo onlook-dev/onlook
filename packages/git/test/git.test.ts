@@ -10,6 +10,7 @@ import {
     getCommitDisplayName,
     getCurrentCommit,
     init,
+    isEmptyCommit,
     isRepoInitialized,
     log,
     status,
@@ -219,5 +220,30 @@ describe('GitManager Integration Tests', () => {
         // Verify the display name was updated correctly
         const retrievedDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
         expect(retrievedDisplayName).toBe(updatedDisplayName);
+    });
+
+    test('should detect changes in repository', async () => {
+        // Initially there should be changes (untracked files)
+        expect(await isEmptyCommit(testRepoPath)).toBe(false);
+
+        // Add and commit all files
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
+
+        // No changes after committing everything
+        expect(await isEmptyCommit(testRepoPath)).toBe(true);
+
+        // Make a change to a file
+        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified content');
+
+        // Should detect the change
+        expect(await isEmptyCommit(testRepoPath)).toBe(false);
+
+        // Add and commit the changes
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Modified content');
+
+        // No changes after committing everything
+        expect(await isEmptyCommit(testRepoPath)).toBe(true);
     });
 });
