@@ -129,7 +129,7 @@ export function listenForCodeMessages() {
     );
 
     ipcMain.handle(MainChannels.UPDATE_TAILWIND_CONFIG, async (e, args) => {
-        const { projectRoot, originalKey, newColor, newName, parentName } = args;
-        return updateTailwindConfig(projectRoot, originalKey, newColor, newName, parentName);
+        const { projectRoot, originalKey, newColor, newName, parentName, theme } = args;
+        return updateTailwindConfig(projectRoot, originalKey, newColor, newName, theme, parentName);
     });
 }

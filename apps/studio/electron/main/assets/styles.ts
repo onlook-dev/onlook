@@ -11,6 +11,7 @@ import type { CodeDiffRequest } from '@onlook/models/code';
 import { getOidFromJsxElement } from '../code/diff/helpers';
 import { getNodeClasses } from '../code/classes';
 import fg from 'fast-glob';
+
 interface UpdateResult {
     success: boolean;
     error?: string;
@@ -34,29 +35,20 @@ interface ClassReplacement {
     newClass: string;
 }
 
-// Add utility prefixes that can be combined with color classes
-const TAILWIND_COLOR_PREFIXES = [
-    'text-',
-    'bg-',
-    'border-',
-    'ring-',
-    'divide-',
-    'from-',
-    'to-',
-    'via-',
-    'placeholder-',
-    'caret-',
-    'accent-',
-    'outline-',
-    'decoration-',
-    'shadow-',
-];
+function toCamelCase(str: string): string {
+    return str
+        .toLowerCase()
+        .replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (letter, index) =>
+            index === 0 ? letter.toLowerCase() : letter.trim() ? letter.toUpperCase() : '',
+        );
+}
 
 export async function updateTailwindConfig(
     projectRoot: string,
     originalName: string,
     newColor: string,
     newName: string,
+    theme?: 'dark' | 'light',
     parentName?: string,
 ): Promise<UpdateResult> {
     try {
@@ -66,7 +58,7 @@ export async function updateTailwindConfig(
         }
 
         return originalName
-            ? updateExistingColor(colorUpdate, originalName, newColor, newName)
+            ? updateExistingColor(colorUpdate, originalName, newColor, newName, theme)
             : addNewColor(colorUpdate, newColor, newName, parentName);
     } catch (error) {
         console.error('Error updating Tailwind config:', error);
@@ -110,7 +102,7 @@ function addRootColorProperty(colorObj: ObjectExpression, newName: string, newCs
         type: 'ObjectProperty',
         key: {
             type: 'Identifier',
-            name: newName.toLowerCase(),
+            name: toCamelCase(newName),
         },
         value: {
             type: 'StringLiteral',
@@ -140,7 +132,7 @@ function addNestedColorProperty(
             type: 'ObjectProperty',
             key: {
                 type: 'Identifier',
-                name: newName.toLowerCase(),
+                name: toCamelCase(newName),
             },
             value: {
                 type: 'StringLiteral',
@@ -158,9 +150,9 @@ async function addNewColor(
     newName: string,
     parentName?: string,
 ): Promise<UpdateResult> {
-    const newCssVarName = parentName?.length
-        ? `${parentName}-${newName.toLowerCase()}`
-        : newName.toLowerCase();
+    const camelCaseName = toCamelCase(newName);
+
+    const newCssVarName = parentName?.length ? `${parentName}-${camelCaseName}` : camelCaseName;
 
     // Update CSS file
     const updatedCssContent = addNewCssVariable(cssContent, newCssVarName, newColor);
@@ -181,9 +173,9 @@ async function addNewColor(
                 }
 
                 if (!parentName) {
-                    addRootColorProperty(colorObj, newName, newCssVarName);
+                    addRootColorProperty(colorObj, camelCaseName, newCssVarName);
                 } else {
-                    addNestedColorProperty(colorObj, parentName, newName, newCssVarName);
+                    addNestedColorProperty(colorObj, parentName, camelCaseName, newCssVarName);
                 }
             }
         },
@@ -233,7 +225,7 @@ function updateConfigFile(
                                 nestedProp.key.name === keyName
                             ) {
                                 if (newName !== keyName) {
-                                    nestedProp.key.name = newName;
+                                    nestedProp.key.name = toCamelCase(newName);
                                     keyUpdated = true;
                                 }
 
@@ -258,6 +250,7 @@ async function updateExistingColor(
     originalName: string,
     newColor: string,
     newName: string,
+    theme?: 'dark' | 'light',
 ): Promise<UpdateResult> {
     const [parentKey, keyName] = originalName.split('-');
     if (!parentKey || !keyName) {
@@ -267,7 +260,13 @@ async function updateExistingColor(
     const newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
 
     // Update CSS file
-    const updatedCssContent = updateCssVariable(cssContent, originalName, newCssVarName, newColor);
+    const updatedCssContent = updateCssVariable(
+        cssContent,
+        originalName,
+        newCssVarName,
+        newColor,
+        theme,
+    );
     fs.writeFileSync(cssPath, updatedCssContent);
 
     // Update config file
@@ -304,7 +303,28 @@ async function updateExistingColor(
 
 function addNewCssVariable(cssContent: string, varName: string, color: string): string {
     const cssVarAddition = `\n    --${varName}: ${color};`;
-    return cssContent.replace(/(@layer\s*base\s*{\s*:root\s*{[^}]*)(})/, `$1${cssVarAddition}$2`);
+
+    let updatedContent = cssContent;
+
+    // Add to both light and dark themes
+    const baseLayerRegex =
+        /(@layer\s+base\s*{)([^}]*:root\s*{[^}]*})\s*([^}]*\.dark\s*{[^}]*})\s*}/s;
+
+    if (baseLayerRegex.test(cssContent)) {
+        updatedContent = cssContent.replace(
+            baseLayerRegex,
+            (match, layerStart, rootBlock, darkBlock) => {
+                // Add to root block
+                const updatedRootBlock = rootBlock.replace(/}$/, `${cssVarAddition}\n  }`);
+                // Add to dark block
+                const updatedDarkBlock = darkBlock.replace(/}$/, `${cssVarAddition}\n  }`);
+
+                return `${layerStart}${updatedRootBlock}\n  ${updatedDarkBlock}\n}`;
+            },
+        );
+    }
+
+    return updatedContent;
 }
 
 function updateCssVariable(
@@ -312,19 +332,23 @@ function updateCssVariable(
     originalName: string,
     newVarName: string,
     newColor: string,
+    theme?: 'dark' | 'light',
 ): string {
     const lightVarRegex = new RegExp(
         `(:root[^{]*{[^}]*)(--${originalName}\\s*:\\s*[^;]*)(;|})`,
         's',
     );
+    const darkVarRegex = new RegExp(`(@layer\\s+base\\s*{\\s*\\.dark\\s*{[^}]*)(})`, 's');
 
-    if (lightVarRegex.test(cssContent)) {
+    const regex = theme === 'dark' ? darkVarRegex : lightVarRegex;
+
+    if (regex.test(cssContent)) {
         return newVarName !== originalName
             ? cssContent.replace(
-                  lightVarRegex,
+                  regex,
                   `$1--${originalName}: ${newColor};--${newVarName}: ${newColor}$3`,
               )
-            : cssContent.replace(lightVarRegex, `$1--${originalName}: ${newColor}$3`);
+            : cssContent.replace(regex, `$1--${originalName}: ${newColor}$3`);
     }
 
     return addNewCssVariable(cssContent, newVarName, newColor);
