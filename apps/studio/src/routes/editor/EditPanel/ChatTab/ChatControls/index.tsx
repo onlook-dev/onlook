@@ -5,7 +5,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import ChatHistory from './ChatHistory';
 
 const ChatControls = observer(() => {
     const editorEngine = useEditorEngine();
@@ -29,21 +28,7 @@ const ChatControls = observer(() => {
     };
 
     return (
-        <div className="flex flex-row gap">
-            <Tooltip open={isHistoryOpen ? false : showTooltip}>
-                <TooltipTrigger asChild>
-                    <div>
-                        <ChatHistory
-                            isOpen={isHistoryOpen}
-                            onOpenChange={handleHistoryOpenChange}
-                        />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                    <p>Chat History</p>
-                    <TooltipArrow className="fill-foreground" />
-                </TooltipContent>
-            </Tooltip>
+        <div className="flex flex-row">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
