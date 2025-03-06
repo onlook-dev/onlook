@@ -18,8 +18,13 @@ export class VersionsManager {
     }
 
     initializeRepo = async () => {
-        await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
-        await this.createCommit('Initial commit');
+        const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
+            repoPath: this.project.folderPath,
+        });
+        if (!isInitialized) {
+            await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
+            await this.createCommit('Initial commit');
+        }
         await this.listCommits();
     };
 
@@ -30,7 +35,13 @@ export class VersionsManager {
         return this.commits[0];
     }
 
-    createCommit = async (message: string = 'New backup') => {
+    createCommit = async (message: string = 'New Onlook backup') => {
+        const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
+            repoPath: this.project.folderPath,
+        });
+        if (!isInitialized) {
+            await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
+        }
         await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
         await invokeMainChannel(GitChannels.COMMIT, { repoPath: this.project.folderPath, message });
         await this.listCommits();
