@@ -80,7 +80,6 @@ export class HostingManager {
         sendAnalytics('hosting publish');
         this.updateState({ status: PublishStatus.LOADING, message: 'Creating deployment...' });
 
-        // Save the project before publishing
         await this.projectsManager.versions?.createCommit(
             `Save before publishing to ${this.domain.url}`,
             false,
