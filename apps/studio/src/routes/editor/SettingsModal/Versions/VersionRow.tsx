@@ -74,9 +74,9 @@ export const VersionRow = observer(
         return (
             <div
                 key={commit.oid}
-                className="p-2 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors rounded group"
+                className="p-2 grid grid-cols-6 items-center justify-between hover:bg-background-secondary/80 transition-colors rounded-md group"
             >
-                <span className="col-span-4 flex flex-col gap-1">
+                <span className="col-span-4 flex flex-col gap-0.5">
                     {isRenaming ? (
                         <Input
                             ref={inputRef}
@@ -88,13 +88,15 @@ export const VersionRow = observer(
                                 }
                             }}
                             onBlur={finishRenaming}
-                            className="p-0 border-none bg-none"
+                            className="p-0 pl-2 h-8 border border-transparent hover:border-border/50 focus-visible:border-primary/10 focus-visible:ring-0 focus-visible:outline-none focus-visible:bg-transparent bg-transparent hover:bg-transparent transition-all duration-100"
                         />
                     ) : (
                         <span>{commit.displayName || commit.message || 'Backup'}</span>
                     )}
-                    <span className="text-muted-foreground">
-                        {commit.author.name} • {renderDate()}
+                    <span className="text-muted-foreground font-light">
+                        {commit.author.name}{' '}
+                        <span className="text-xs mx-0.45 inline-block scale-75">•</span>{' '}
+                        {renderDate()}
                     </span>
                 </span>
                 <span className="col-span-1 text-muted-foreground"></span>
@@ -128,7 +130,11 @@ export const VersionRow = observer(
 
                     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="bg-background-secondary">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="bg-background-tertiary/70 hover:bg-background-tertiary"
+                            >
                                 <Icons.DotsHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
