@@ -6,6 +6,7 @@ import {
     getCommits,
     getCurrentCommit,
     init,
+    isRepoInitialized,
     status,
     updateCommitDisplayName,
 } from '@onlook/git';
@@ -13,6 +14,10 @@ import { GitChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 
 export function listenForVersionsMessages() {
+    ipcMain.handle(GitChannels.IS_REPO_INITIALIZED, (_, { repoPath }: { repoPath: string }) => {
+        return isRepoInitialized(repoPath);
+    });
+
     ipcMain.handle(GitChannels.INIT_REPO, (_, { repoPath }: { repoPath: string }) => {
         return init(repoPath);
     });

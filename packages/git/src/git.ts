@@ -14,6 +14,7 @@ import {
     statusMatrix as gitStatusMatrix,
     resolveRef,
 } from 'isomorphic-git';
+import path from 'path';
 
 export interface GitCommit {
     oid: string;
@@ -25,6 +26,17 @@ export interface GitCommit {
 
 const GIT_AUTHOR = { name: 'Onlook', email: 'git@onlook.com' };
 const DISPLAY_NAME_NAMESPACE = 'onlook-display-name';
+
+export async function isRepoInitialized(dir: string) {
+    try {
+        // Check if .git directory exists
+        const exists = await fs.promises.exists(path.join(dir, '.git'));
+        return exists;
+    } catch (error) {
+        console.error('Error checking if repository is initialized:', error);
+        return false;
+    }
+}
 
 export async function init(repoPath: string) {
     await gitInit({ fs, dir: repoPath, defaultBranch: 'main' });

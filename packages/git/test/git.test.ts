@@ -10,6 +10,7 @@ import {
     getCommitDisplayName,
     getCurrentCommit,
     init,
+    isRepoInitialized,
     log,
     status,
     updateCommitDisplayName,
@@ -44,6 +45,17 @@ describe('GitManager Integration Tests', () => {
 
     test('should initialize Git repository', async () => {
         expect(fs.existsSync(path.join(testRepoPath, '.git'))).toBe(true);
+    });
+
+    test('should correctly detect if repository is initialized', async () => {
+        // Test initialized repo
+        expect(await isRepoInitialized(testRepoPath)).toBe(true);
+
+        // Delete the .git directory
+        fs.rmSync(path.join(testRepoPath, '.git'), { recursive: true, force: true });
+
+        // Test non-initialized repo
+        expect(await isRepoInitialized(testRepoPath)).toBe(false);
     });
 
     test('should add files', async () => {
