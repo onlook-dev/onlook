@@ -20,7 +20,7 @@ export async function getTemplateNodeClass(
     return getNodeClasses(ast);
 }
 
-function getNodeClasses(node: t.JSXElement): ClassParsingResult {
+export function getNodeClasses(node: t.JSXElement): ClassParsingResult {
     const openingElement = node.openingElement;
     const classNameAttr = openingElement.attributes.find(
         (attr): attr is t.JSXAttribute => t.isJSXAttribute(attr) && attr.name.name === 'className',

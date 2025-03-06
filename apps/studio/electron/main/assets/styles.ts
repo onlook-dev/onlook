@@ -6,7 +6,11 @@ import generate from '@babel/generator';
 import { Color } from '@onlook/utility';
 import { readFile } from '../code/files';
 import type { ObjectProperty, ObjectExpression, Node } from '@babel/types';
-
+import { transformAst } from '../code/diff/transform';
+import type { CodeDiffRequest } from '@onlook/models/code';
+import { getOidFromJsxElement } from '../code/diff/helpers';
+import { getNodeClasses } from '../code/classes';
+import fg from 'fast-glob';
 interface UpdateResult {
     success: boolean;
     error?: string;
@@ -24,6 +28,29 @@ interface ConfigUpdateResult {
     valueUpdated: boolean;
     output: string;
 }
+
+interface ClassReplacement {
+    oldClass: string;
+    newClass: string;
+}
+
+// Add utility prefixes that can be combined with color classes
+const TAILWIND_COLOR_PREFIXES = [
+    'text-',
+    'bg-',
+    'border-',
+    'ring-',
+    'divide-',
+    'from-',
+    'to-',
+    'via-',
+    'placeholder-',
+    'caret-',
+    'accent-',
+    'outline-',
+    'decoration-',
+    'shadow-',
+];
 
 export async function updateTailwindConfig(
     projectRoot: string,
@@ -254,6 +281,20 @@ async function updateExistingColor(
 
     if (keyUpdated || valueUpdated) {
         fs.writeFileSync(configPath, output);
+
+        // Update class references if the name changed
+        if (keyUpdated) {
+            const projectRoot = path.dirname(configPath);
+            const oldClass = `${parentKey}-${keyName}`;
+            const newClass = `${parentKey}-${newName}`;
+
+            await updateClassReferences(projectRoot, [
+                {
+                    oldClass,
+                    newClass,
+                },
+            ]);
+        }
     } else {
         console.log(`Warning: Could not update key: ${keyName} in ${parentKey}`);
     }
@@ -517,4 +558,85 @@ function extractObject(node: Node): Record<string, any> {
     });
 
     return result;
+}
+
+async function findSourceFiles(projectRoot: string): Promise<string[]> {
+    const pattern = path.join(projectRoot, '**/*.{ts,tsx,js,jsx}');
+    return fg
+        .sync(pattern)
+        .filter(
+            (file: string) =>
+                !file.includes('node_modules') &&
+                !file.includes('dist') &&
+                !file.includes('.next') &&
+                !file.includes('build'),
+        );
+}
+
+async function updateClassReferences(
+    projectRoot: string,
+    replacements: ClassReplacement[],
+): Promise<void> {
+    const sourceFiles = await findSourceFiles(projectRoot);
+
+    await Promise.all(
+        sourceFiles.map(async (file) => {
+            const content = await readFile(file);
+            if (!content) {
+                return;
+            }
+
+            const ast = parse(content, {
+                sourceType: 'module',
+                plugins: ['typescript', 'jsx'],
+            });
+
+            const updates = new Map<string, CodeDiffRequest>();
+
+            traverse(ast, {
+                JSXElement(path) {
+                    const classResult = getNodeClasses(path.node);
+                    if (classResult.type !== 'classes') {
+                        return;
+                    }
+
+                    const oldClasses = classResult.value;
+                    let hasChanges = false;
+                    const newClasses = oldClasses.map((currentClass) => {
+                        // For each replacement, check if the current class ends with the old class name
+                        // and replace only that part while preserving any prefix
+                        for (const { oldClass, newClass } of replacements) {
+                            if (
+                                currentClass === oldClass ||
+                                currentClass.endsWith(`-${oldClass}`)
+                            ) {
+                                hasChanges = true;
+                                return currentClass.replace(oldClass, newClass);
+                            }
+                        }
+                        return currentClass;
+                    });
+
+                    if (hasChanges) {
+                        const oid = getOidFromJsxElement(path.node.openingElement);
+                        if (oid) {
+                            updates.set(oid, {
+                                oid,
+                                attributes: { className: newClasses.join(' ') },
+                                overrideClasses: true,
+                                textContent: null,
+                                structureChanges: [],
+                            });
+                        }
+                    }
+                },
+            });
+
+            if (updates.size > 0) {
+                transformAst(ast, updates);
+                const output = generate(ast, { retainLines: true }, content);
+                await fs.promises.writeFile(file, output.code, 'utf8');
+            }
+        }),
+    );
 }
