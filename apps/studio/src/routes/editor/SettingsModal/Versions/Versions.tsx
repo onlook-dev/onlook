@@ -8,6 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { NoVersions } from './EmptyState/Version';
 import { VersionRow, VersionRowType } from './VersionRow';
+import React from 'react';
 
 export const Versions = observer(() => {
     const projectsManager = useProjectsManager();
@@ -54,9 +55,9 @@ export const Versions = observer(() => {
     };
 
     return (
-        <div className="flex flex-col text-sm p-4">
-            <div className="flex flex-row items-center justify-between gap-2 pb-4">
-                <h2 className="pl-2 text-lg">Versions</h2>
+        <div className="flex flex-col text-sm">
+            <div className="flex flex-row items-center justify-between gap-2 px-6 py-4">
+                <h2 className="text-lg">Versions</h2>
                 {commits && commits.length > 0 ? (
                     <Button
                         variant="outline"
@@ -77,23 +78,27 @@ export const Versions = observer(() => {
                         {groupedCommits &&
                             Object.entries(groupedCommits).map(([date, dateCommits]) => (
                                 <AccordionItem key={date} value={date}>
-                                    <AccordionTrigger className="text-base font-normal text-muted-foreground pl-2">
+                                    <AccordionTrigger className="text-base font-normal text-muted-foreground py-4 px-6">
                                         {date}
                                     </AccordionTrigger>
                                     <AccordionContent>
-                                        <div className="flex flex-col gap-2">
-                                            {dateCommits.map((commit) => (
-                                                <VersionRow
-                                                    key={commit.oid}
-                                                    commit={commit}
-                                                    type={
-                                                        date === 'Today'
-                                                            ? VersionRowType.TODAY
-                                                            : VersionRowType.PREVIOUS_DAYS
-                                                    }
-                                                    autoRename={commit.oid === commitToRename}
-                                                    onRename={() => setCommitToRename(null)}
-                                                />
+                                        <div className="flex flex-col">
+                                            {dateCommits.map((commit, index) => (
+                                                <React.Fragment key={commit.oid}>
+                                                    <VersionRow
+                                                        commit={commit}
+                                                        type={
+                                                            date === 'Today'
+                                                                ? VersionRowType.TODAY
+                                                                : VersionRowType.PREVIOUS_DAYS
+                                                        }
+                                                        autoRename={commit.oid === commitToRename}
+                                                        onRename={() => setCommitToRename(null)}
+                                                    />
+                                                    {index < dateCommits.length - 1 && (
+                                                        <Separator className="mx-6 w-[calc(100%-theme(spacing.12))] bg-border" />
+                                                    )}
+                                                </React.Fragment>
                                             ))}
                                         </div>
                                     </AccordionContent>
