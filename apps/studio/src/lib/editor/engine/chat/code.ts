@@ -30,7 +30,6 @@ export class ChatCodeManager {
             return;
         }
 
-        // Save before applying code
         await this.projectsManager.versions?.createCommit('Save before applying code', false);
 
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
