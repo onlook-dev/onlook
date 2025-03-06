@@ -53,10 +53,10 @@ export const VersionRow = observer(
 
         const startRenaming = () => {
             setIsRenaming(true);
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 inputRef.current?.focus();
                 inputRef.current?.select();
-            });
+            }, 100);
         };
 
         const finishRenaming = () => {
