@@ -56,8 +56,8 @@ export const Versions = observer(() => {
 
     return (
         <div className="flex flex-col text-sm">
-            <div className="flex flex-row items-center justify-between gap-2 px-4 py-4">
-                <h2 className="pl-2 text-lg">Versions</h2>
+            <div className="flex flex-row items-center justify-between gap-2 px-6 py-4">
+                <h2 className="text-lg">Versions</h2>
                 {commits && commits.length > 0 ? (
                     <Button
                         variant="outline"
