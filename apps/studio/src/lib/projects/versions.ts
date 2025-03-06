@@ -46,8 +46,7 @@ export class VersionsManager {
         showToast = true,
     ): Promise<{
         success: boolean;
-        error?: string;
-        errorReason?: string;
+        errorReason?: CreateCommitFailureReason;
     }> => {
         const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
             repoPath: this.project.folderPath,

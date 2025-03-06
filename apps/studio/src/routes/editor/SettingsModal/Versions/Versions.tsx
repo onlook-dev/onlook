@@ -43,7 +43,7 @@ export const Versions = observer(() => {
     const handleNewBackup = async () => {
         const res = await projectsManager.versions?.createCommit();
         if (!res?.success) {
-            console.error('Failed to create commit', res?.errorReason);
+            console.error('Failed to create commit. Reason code:', res?.errorReason);
             return;
         }
         const latestCommit = projectsManager.versions?.latestCommit;
