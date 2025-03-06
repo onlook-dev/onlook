@@ -1,9 +1,10 @@
-import { useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -28,17 +29,28 @@ export const VersionRow = observer(
         onRename?: () => void;
     }) => {
         const projectsManager = useProjectsManager();
+        const editorEngine = useEditorEngine();
         const inputRef = useRef<HTMLInputElement>(null);
         const [isRenaming, setIsRenaming] = useState(autoRename);
         const [commitDisplayName, setCommitDisplayName] = useState(
             commit.displayName || commit.message || 'Backup',
         );
+        const [isCheckingOut, setIsCheckingOut] = useState(false);
+        const [isCheckoutSuccess, setIsCheckoutSuccess] = useState(false);
 
         useEffect(() => {
             if (autoRename) {
                 startRenaming();
             }
         }, [autoRename]);
+
+        useEffect(() => {
+            if (isCheckoutSuccess) {
+                setTimeout(() => {
+                    setIsCheckoutSuccess(false);
+                }, 1000);
+            }
+        }, [isCheckoutSuccess]);
 
         const renderDate = () => {
             if (type === VersionRowType.TODAY) {
@@ -65,6 +77,25 @@ export const VersionRow = observer(
             updateCommitDisplayName(commitDisplayName);
             setIsRenaming(false);
             onRename?.();
+        };
+
+        const handleCheckout = async () => {
+            setIsCheckingOut(true);
+            const success = await projectsManager.versions?.checkoutCommit(commit);
+            setIsCheckingOut(false);
+            setIsCheckoutSuccess(success ?? false);
+
+            if (!success) {
+                console.error('Failed to checkout commit', commit.displayName || commit.message);
+                toast({
+                    title: 'Failed to restore',
+                    description: 'Please try again',
+                });
+                return;
+            }
+            setTimeout(() => {
+                editorEngine.isSettingsOpen = false;
+            }, 1000);
         };
 
         return (
@@ -99,6 +130,7 @@ export const VersionRow = observer(
                 <div
                     className={cn(
                         'col-span-1 gap-2 flex justify-end group-hover:opacity-100 opacity-0 transition-opacity',
+                        (isCheckoutSuccess || isCheckingOut || isRenaming) && 'opacity-100',
                     )}
                 >
                     {type === VersionRowType.SAVED ? (
@@ -122,34 +154,51 @@ export const VersionRow = observer(
                             <span className="text-muted-foreground">Save</span>
                         </Button>
                     )}
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="bg-background-tertiary/70 hover:bg-background-tertiary"
-                                onClick={startRenaming}
-                            >
-                                <Icons.Pencil className="h-4 w-4 mr-2" />
-                                Rename
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Rename backup for easier identification</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="bg-background-tertiary/70 hover:bg-background-tertiary"
-                                onClick={() => projectsManager.versions?.checkoutCommit(commit)}
-                            >
-                                <Icons.CounterClockwiseClock className="h-4 w-4 mr-2" />
-                                Restore
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Restore project to this version</TooltipContent>
-                    </Tooltip>
+                    {isCheckoutSuccess ? (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 bg-background-secondary"
+                        >
+                            <Icons.Check className="h-4 w-4 text-green-500" />
+                            <span className="text-muted-foreground">Restored</span>
+                        </Button>
+                    ) : (
+                        <div className="flex flex-row gap-2">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="bg-background-tertiary/70 hover:bg-background-tertiary"
+                                        onClick={startRenaming}
+                                        disabled={isRenaming || isCheckingOut}
+                                    >
+                                        <Icons.Pencil className="h-4 w-4 mr-2" />
+                                        Rename
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Rename backup for easier identification
+                                </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="bg-background-tertiary/70 hover:bg-background-tertiary"
+                                        onClick={handleCheckout}
+                                        disabled={isCheckingOut}
+                                    >
+                                        <Icons.CounterClockwiseClock className="h-4 w-4 mr-2" />
+                                        {isCheckingOut ? 'Restoring...' : 'Restore'}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Restore project to this version</TooltipContent>
+                            </Tooltip>
+                        </div>
+                    )}
                 </div>
             </div>
         );

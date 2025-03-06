@@ -5,10 +5,9 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Separator } from '@onlook/ui/separator';
 import { formatCommitDate } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { NoVersions } from './EmptyState/Version';
 import { VersionRow, VersionRowType } from './VersionRow';
-import React from 'react';
 
 export const Versions = observer(() => {
     const projectsManager = useProjectsManager();
@@ -42,8 +41,9 @@ export const Versions = observer(() => {
     );
 
     const handleNewBackup = async () => {
-        const success = await projectsManager.versions?.createCommit();
-        if (!success) {
+        const res = await projectsManager.versions?.createCommit();
+        if (!res?.success) {
+            console.error('Failed to create commit. Reason code:', res?.errorReason);
             return;
         }
         const latestCommit = projectsManager.versions?.latestCommit;

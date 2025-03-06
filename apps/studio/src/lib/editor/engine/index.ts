@@ -249,7 +249,7 @@ export class EditorEngine {
         image?: string;
     } | null> {
         if (this.webviews.webviews.size === 0) {
-            console.error('No webviews found');
+            console.error('Failed to take screenshot, no webviews found');
             return null;
         }
         const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;
