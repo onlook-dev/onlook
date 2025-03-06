@@ -1,8 +1,9 @@
 import type { DetectedPortResults } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
-import { isPortAvailable, runBunCommand } from '../bun';
+import { runBunCommand } from '../bun';
 import run from '../run';
+import { isPortAvailable } from '../run/helpers';
 import terminal from '../run/terminal';
 
 export async function listenForRunMessages() {
