@@ -10,6 +10,8 @@ import {
     getCommitDisplayName,
     getCurrentCommit,
     init,
+    isEmptyCommit,
+    isRepoInitialized,
     log,
     status,
     updateCommitDisplayName,
@@ -44,6 +46,17 @@ describe('GitManager Integration Tests', () => {
 
     test('should initialize Git repository', async () => {
         expect(fs.existsSync(path.join(testRepoPath, '.git'))).toBe(true);
+    });
+
+    test('should correctly detect if repository is initialized', async () => {
+        // Test initialized repo
+        expect(await isRepoInitialized(testRepoPath)).toBe(true);
+
+        // Delete the .git directory
+        fs.rmSync(path.join(testRepoPath, '.git'), { recursive: true, force: true });
+
+        // Test non-initialized repo
+        expect(await isRepoInitialized(testRepoPath)).toBe(false);
     });
 
     test('should add files', async () => {
@@ -207,5 +220,30 @@ describe('GitManager Integration Tests', () => {
         // Verify the display name was updated correctly
         const retrievedDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
         expect(retrievedDisplayName).toBe(updatedDisplayName);
+    });
+
+    test('should detect changes in repository', async () => {
+        // Initially there should be changes (untracked files)
+        expect(await isEmptyCommit(testRepoPath)).toBe(false);
+
+        // Add and commit all files
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Initial commit');
+
+        // No changes after committing everything
+        expect(await isEmptyCommit(testRepoPath)).toBe(true);
+
+        // Make a change to a file
+        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified content');
+
+        // Should detect the change
+        expect(await isEmptyCommit(testRepoPath)).toBe(false);
+
+        // Add and commit the changes
+        await addAll(testRepoPath);
+        await commit(testRepoPath, 'Modified content');
+
+        // No changes after committing everything
+        expect(await isEmptyCommit(testRepoPath)).toBe(true);
     });
 });

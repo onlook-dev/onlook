@@ -18,8 +18,13 @@ export class VersionsManager {
     }
 
     initializeRepo = async () => {
-        await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
-        await this.createCommit('Initial commit');
+        const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
+            repoPath: this.project.folderPath,
+        });
+        if (!isInitialized) {
+            await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
+            await this.createCommit('Initial commit');
+        }
         await this.listCommits();
     };
 
@@ -30,14 +35,42 @@ export class VersionsManager {
         return this.commits[0];
     }
 
-    createCommit = async (message: string = 'New backup') => {
-        await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
-        await invokeMainChannel(GitChannels.COMMIT, { repoPath: this.project.folderPath, message });
-        await this.listCommits();
-        toast({
-            title: 'Backup created!',
-            description: 'You can now restore to this version',
+    createCommit = async (
+        message: string = 'New Onlook backup',
+        showToast = true,
+    ): Promise<boolean> => {
+        const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
+            repoPath: this.project.folderPath,
         });
+        if (!isInitialized) {
+            await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
+        }
+
+        const isEmpty = await invokeMainChannel(GitChannels.IS_EMPTY_COMMIT, {
+            repoPath: this.project.folderPath,
+        });
+        if (!isEmpty) {
+            await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
+            await invokeMainChannel(GitChannels.COMMIT, {
+                repoPath: this.project.folderPath,
+                message,
+            });
+            if (showToast) {
+                toast({
+                    title: 'Backup created!',
+                    description: 'You can now restore to this version',
+                });
+            }
+            await this.listCommits();
+            return true;
+        } else {
+            if (showToast) {
+                toast({
+                    title: 'No changes to commit',
+                });
+            }
+            return false;
+        }
     };
 
     listCommits = async () => {
@@ -52,6 +85,8 @@ export class VersionsManager {
     };
 
     checkoutCommit = async (commit: GitCommit) => {
+        await this.createCommit('Save before restoring backup', false);
+
         await invokeMainChannel(GitChannels.CHECKOUT, {
             repoPath: this.project.folderPath,
             commit: commit.oid,

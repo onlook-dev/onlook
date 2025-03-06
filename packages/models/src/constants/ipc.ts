@@ -150,6 +150,8 @@ export enum MainChannels {
 }
 
 export enum GitChannels {
+    IS_REPO_INITIALIZED = 'is-repo-initialized',
+    IS_EMPTY_COMMIT = 'is-empty-commit',
     INIT_REPO = 'init-repo',
     ADD = 'add',
     ADD_ALL = 'add-all',

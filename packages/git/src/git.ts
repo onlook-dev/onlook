@@ -14,6 +14,7 @@ import {
     statusMatrix as gitStatusMatrix,
     resolveRef,
 } from 'isomorphic-git';
+import path from 'path';
 
 export interface GitCommit {
     oid: string;
@@ -26,12 +27,40 @@ export interface GitCommit {
 const GIT_AUTHOR = { name: 'Onlook', email: 'git@onlook.com' };
 const DISPLAY_NAME_NAMESPACE = 'onlook-display-name';
 
+export async function isRepoInitialized(dir: string) {
+    try {
+        // Check if .git directory exists
+        const exists = await fs.promises.exists(path.join(dir, '.git'));
+        return exists;
+    } catch (error) {
+        console.error('Error checking if repository is initialized:', error);
+        return false;
+    }
+}
+
 export async function init(repoPath: string) {
     await gitInit({ fs, dir: repoPath, defaultBranch: 'main' });
 }
 
 export async function add(repoPath: string, filepath: string) {
     await gitAdd({ fs, dir: repoPath, filepath });
+}
+
+export async function isEmptyCommit(repoPath: string): Promise<boolean> {
+    // isomorphic-git creates empty commits by default
+    const changes = (
+        await gitStatusMatrix({
+            fs,
+            dir: repoPath,
+        })
+    ).filter(
+        ([_, HEAD, WORKDIR, STAGE]) =>
+            // filter unchanged
+            // https://github.com/isomorphic-git/isomorphic-git/issues/865#issuecomment-533028127
+            // https://isomorphic-git.org/docs/en/statusMatrix.html
+            !(HEAD == 1 && WORKDIR == 1 && STAGE == 1),
+    );
+    return changes.length === 0;
 }
 
 export async function addAll(repoPath: string) {
@@ -50,8 +79,12 @@ export async function status(repoPath: string, filepath: string = '.') {
     return await gitStatus({ fs, dir: repoPath, filepath });
 }
 
-export async function commit(repoPath: string, message: string, author = GIT_AUTHOR) {
-    await gitCommit({
+export async function commit(
+    repoPath: string,
+    message: string,
+    author = GIT_AUTHOR,
+): Promise<string> {
+    return await gitCommit({
         fs,
         dir: repoPath,
         message,

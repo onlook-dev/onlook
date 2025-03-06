@@ -40,9 +40,9 @@ export class ChatManager {
     ) {
         makeAutoObservable(this);
         this.context = new ChatContext(this.editorEngine, this.projectsManager);
-        this.conversation = new ConversationManager(this.projectsManager, this.editorEngine);
+        this.conversation = new ConversationManager(this.editorEngine, this.projectsManager);
         this.stream = new StreamResolver();
-        this.code = new ChatCodeManager(this, this.editorEngine);
+        this.code = new ChatCodeManager(this, this.editorEngine, this.projectsManager);
         this.suggestions = new SuggestionManager(this.projectsManager);
         this.listen();
     }
