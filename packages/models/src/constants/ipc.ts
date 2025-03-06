@@ -148,3 +148,20 @@ export enum MainChannels {
     DELETE_IMAGE_FROM_PROJECT = 'delete-image-from-project',
     RENAME_IMAGE_IN_PROJECT = 'rename-image-in-project',
 }
+
+export enum GitChannels {
+    IS_REPO_INITIALIZED = 'is-repo-initialized',
+    IS_EMPTY_COMMIT = 'is-empty-commit',
+    INIT_REPO = 'init-repo',
+    ADD = 'add',
+    ADD_ALL = 'add-all',
+    STATUS = 'status',
+    COMMIT = 'commit',
+    CHECKOUT = 'checkout',
+    LIST_COMMITS = 'list-commits',
+    BRANCH = 'branch',
+    GET_CURRENT_COMMIT = 'get-current-commit',
+    RENAME_COMMIT = 'rename-commit',
+}
+
+export type Channels = MainChannels | GitChannels;

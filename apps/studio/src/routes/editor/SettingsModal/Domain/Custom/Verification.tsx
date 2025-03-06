@@ -1,5 +1,5 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import {
     FREESTYLE_IP_ADDRESS,
     FRESTYLE_CUSTOM_HOSTNAME,
@@ -18,9 +18,11 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { getValidUrl } from '@onlook/utility';
+import { toast } from '@onlook/ui/use-toast';
+import { getValidUrl, isApexDomain } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { RecordField } from './RecordField';
 
 enum VerificationStatus {
     NO_DOMAIN = 'no_domain',
@@ -59,6 +61,17 @@ export const Verification = observer(() => {
         setRecords([]);
     }
 
+    function onDomainInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const value = e.target.value;
+        setDomain(value);
+        const { isValid, error } = isApexDomain(value);
+        if (!isValid) {
+            setError(error);
+        } else {
+            setError(null);
+        }
+    }
+
     function validateDomain(): string | false {
         if (!domain) {
             setError('Domain is required');
@@ -66,24 +79,15 @@ export const Verification = observer(() => {
         }
 
         try {
-            const url = new URL(getValidUrl(domain.trim()));
-            const hostname = url.hostname.toLowerCase();
-
-            // Split hostname into parts and ensure only two parts (domain + TLD)
-            const parts = hostname.split('.');
-            if (parts.length !== 2) {
-                setError('Please enter a domain without subdomains (e.g., example.com)');
-                return false;
-            }
-
-            // Basic domain validation regex for the final format
-            const domainRegex = /^[a-z0-9]+(-[a-z0-9]+)*\.[a-z]{2,}$/;
-            if (!domainRegex.test(hostname)) {
-                setError('Please enter a valid domain name (e.g., example.com)');
+            const { isValid, error } = isApexDomain(domain);
+            if (!isValid) {
+                setError(error);
                 return false;
             }
 
             setError(null);
+            const url = new URL(getValidUrl(domain.trim()));
+            const hostname = url.hostname.toLowerCase();
             return hostname;
         } catch (err) {
             setError('Invalid domain format');
@@ -99,6 +103,7 @@ export const Verification = observer(() => {
 
         setDomain(validDomain);
         setStatus(VerificationStatus.LOADING);
+        setError(null);
 
         // Send verification request to server
         const response: CreateDomainVerificationResponse = await invokeMainChannel(
@@ -115,14 +120,18 @@ export const Verification = observer(() => {
         }
 
         setStatus(VerificationStatus.VERIFYING);
-        const verificationRecord = getVerificationRecord(validDomain, response.verificationCode);
+        const verificationRecord = getVerificationRecord(response.verificationCode);
         const aRecords = getARecords();
         setRecords([verificationRecord, ...aRecords]);
         setError(null);
     }
 
     async function verifyDomain() {
+        sendAnalytics('verify domain', {
+            domain: domain,
+        });
         setStatus(VerificationStatus.LOADING);
+        setError(null);
         const response: VerifyDomainResponse = await invokeMainChannel(MainChannels.VERIFY_DOMAIN, {
             domain: domain,
         });
@@ -130,35 +139,69 @@ export const Verification = observer(() => {
         if (!response.success) {
             setError(response.message ?? 'Failed to verify domain');
             setStatus(VerificationStatus.VERIFYING);
+            sendAnalytics('verify domain failed', {
+                domain: domain,
+                error: response.message ?? 'Failed to verify domain',
+            });
             return;
         }
 
         setStatus(VerificationStatus.VERIFIED);
         setError(null);
         addCustomDomain(domain);
+        handleDomainVerified();
+
+        sendAnalytics('verify domain success', {
+            domain: domain,
+        });
     }
 
+    const handleDomainVerified = () => {
+        toast({
+            title: 'Domain verified!',
+            description: 'Your domain is verified and ready to publish.',
+        });
+        setTimeout(() => {
+            editorEngine.isSettingsOpen = false;
+            editorEngine.isPublishOpen = true;
+        }, 1000);
+    };
+
     const addCustomDomain = (url: string) => {
+        sendAnalytics('add custom domain', {
+            domain: url,
+        });
         if (!domainsManager) {
             setError('Failed to add custom domain');
+            sendAnalytics('add custom domain failed', {
+                domain: url,
+                error: 'domains manager not found',
+            });
             return;
         }
         domainsManager.addCustomDomainToProject(url);
         setStatus(VerificationStatus.VERIFIED);
         setDomain(url);
         setError(null);
+        handleDomainVerified();
+        sendAnalytics('add custom domain success', {
+            domain: url,
+        });
     };
 
     function removeDomain() {
+        sendAnalytics('remove custom domain', {
+            domain: domain,
+        });
         setStatus(VerificationStatus.NO_DOMAIN);
         setDomain('');
         setRecords([]);
     }
 
-    function getVerificationRecord(domain: string, verificationCode: string) {
+    function getVerificationRecord(verificationCode: string) {
         const verificationRecord: DNSRecord = {
             type: 'TXT',
-            host: `${FRESTYLE_CUSTOM_HOSTNAME}.${domain}`,
+            host: FRESTYLE_CUSTOM_HOSTNAME,
             value: verificationCode,
         };
         return verificationRecord;
@@ -210,6 +253,18 @@ export const Verification = observer(() => {
         );
     }
 
+    function getInputButtonText() {
+        if (status === VerificationStatus.NO_DOMAIN) {
+            return 'Setup';
+        }
+
+        if (status === VerificationStatus.LOADING) {
+            return 'Loading...';
+        }
+
+        return 'Edit';
+    }
+
     function renderNoDomainInput() {
         return (
             <div className="space-y-2">
@@ -217,10 +272,11 @@ export const Verification = observer(() => {
                     <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">Custom URL</p>
                         <p className="text-small text-muted-foreground">
-                            Input your domain{' '}
-                            {status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
-                                ? 'or reuse previous'
-                                : ''}
+                            {`Input your domain  ${
+                                status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
+                                    ? 'or use previous'
+                                    : ''
+                            }`}
                         </p>
                     </div>
                     <div className="flex flex-col gap-4 flex-1">
@@ -228,7 +284,7 @@ export const Verification = observer(() => {
                             <Input
                                 disabled={status !== VerificationStatus.NO_DOMAIN}
                                 value={domain}
-                                onChange={(e) => setDomain(e.target.value)}
+                                onChange={onDomainInputChange}
                                 placeholder="example.com"
                                 className="bg-background placeholder:text-muted-foreground"
                                 onKeyDown={(e) => {
@@ -253,7 +309,7 @@ export const Verification = observer(() => {
                                 {status === VerificationStatus.LOADING && (
                                     <Icons.Shadow className="h-4 w-4 animate-spin mr-2" />
                                 )}
-                                {status === VerificationStatus.NO_DOMAIN ? 'Setup' : 'Edit'}
+                                {getInputButtonText()}
                             </Button>
                         </div>
                         {renderExistingDomains()}
@@ -343,9 +399,9 @@ export const Verification = observer(() => {
 
                 {records.map((record) => (
                     <>
-                        <p className="text-sm col-span-1 overflow-auto">{record.type}</p>
-                        <p className="text-sm col-span-3 overflow-auto">{record.host}</p>
-                        <p className="text-sm col-span-3 overflow-auto">{record.value}</p>
+                        <RecordField value={record.type} className="col-span-1" copyable={false} />
+                        <RecordField value={record.host} className="col-span-3" />
+                        <RecordField value={record.value} className="col-span-3" />
                     </>
                 ))}
             </div>

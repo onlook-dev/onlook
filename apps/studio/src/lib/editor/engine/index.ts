@@ -28,12 +28,14 @@ import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
-    private _editorMode: EditorMode = EditorMode.DESIGN;
     private _plansOpen: boolean = false;
     private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
+    private _publishOpen: boolean = false;
+
+    private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.PROJECT;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -137,6 +139,9 @@ export class EditorEngine {
     get isSettingsOpen() {
         return this._settingsOpen;
     }
+    get isPublishOpen() {
+        return this._publishOpen;
+    }
     get isHotkeysOpen() {
         return this._hotkeysOpen;
     }
@@ -145,6 +150,9 @@ export class EditorEngine {
     }
     get isWindowSelected() {
         return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+    }
+    get pages() {
+        return this.pagesManager;
     }
 
     set mode(mode: EditorMode) {
@@ -174,8 +182,8 @@ export class EditorEngine {
         this._hotkeysOpen = value;
     }
 
-    get pages() {
-        return this.pagesManager;
+    set isPublishOpen(open: boolean) {
+        this._publishOpen = open;
     }
 
     dispose() {
@@ -241,7 +249,7 @@ export class EditorEngine {
         image?: string;
     } | null> {
         if (this.webviews.webviews.size === 0) {
-            console.error('No webviews found');
+            console.error('Failed to take screenshot, no webviews found');
             return null;
         }
         const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;

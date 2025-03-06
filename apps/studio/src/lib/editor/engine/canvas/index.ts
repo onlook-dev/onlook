@@ -1,4 +1,5 @@
 import type { ProjectsManager } from '@/lib/projects';
+import { SIZE_PRESETS } from '@/lib/sizePresets';
 import { DefaultSettings } from '@onlook/models/constants';
 import type {
     FrameSettings,
@@ -101,10 +102,35 @@ export class CanvasManager {
     async applySettings(project: Project) {
         this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
         this.panPosition = project.settings?.position || this.getDefaultPanPosition();
-        this.webFrames =
-            project.settings?.frames && project.settings.frames.length
-                ? project.settings.frames
-                : [this.getDefaultFrame({ url: project.url })];
+
+        if (project.settings?.frames && project.settings.frames.length) {
+            this.webFrames = project.settings.frames;
+        } else {
+            // Find desktop and mobile presets
+            const desktopPreset = SIZE_PRESETS.find((preset) => preset.name === 'Desktop');
+            const mobilePreset = SIZE_PRESETS.find((preset) => preset.name === 'Mobile');
+
+            // Create desktop frame
+            const desktopFrame = this.getDefaultFrame({
+                url: project.url,
+                dimension: desktopPreset
+                    ? { width: desktopPreset.width, height: desktopPreset.height }
+                    : DefaultSettings.FRAME_DIMENSION,
+                device: 'Desktop',
+            });
+
+            // Create mobile frame with position offset to avoid overlap
+            const mobileFrame = this.getDefaultFrame({
+                url: project.url,
+                dimension: mobilePreset
+                    ? { width: mobilePreset.width, height: mobilePreset.height }
+                    : { width: 320, height: 568 },
+                position: { x: desktopFrame.dimension.width + 100, y: 0 },
+                device: 'Mobile',
+            });
+
+            this.webFrames = [desktopFrame, mobileFrame];
+        }
     }
 
     clear() {

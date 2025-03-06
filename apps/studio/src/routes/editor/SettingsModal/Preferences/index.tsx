@@ -1,8 +1,7 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
-import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels, Theme } from '@onlook/models/constants';
+import { Language, LANGUAGE_DISPLAY_NAMES, MainChannels, Theme } from '@onlook/models/constants';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import { Button } from '@onlook/ui/button';
 import {
@@ -14,6 +13,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IDE } from '/common/ide';
 
 const PreferencesTab = observer(() => {
@@ -23,6 +23,7 @@ const PreferencesTab = observer(() => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
+    const { i18n } = useTranslation();
 
     const IDEIcon = Icons[ide.icon];
 
@@ -48,15 +49,43 @@ const PreferencesTab = observer(() => {
         setShouldWarnDelete(enabled);
     }
 
-    function handleBackButtonClick() {
-        projectsManager.projectsTab = ProjectTabs.PROJECTS;
-    }
-
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8 p-4">
+            {/* Language Preference */}
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
-                    <p className="text-foreground-onlook text-largePlus">Theme</p>
+                    <p className="text-largePlus">Language</p>
+                    <p className="text-foreground-onlook text-small">
+                        Choose your preferred language
+                    </p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="text-smallPlus min-w-[150px]">
+                            {LANGUAGE_DISPLAY_NAMES[
+                                i18n.language as keyof typeof LANGUAGE_DISPLAY_NAMES
+                            ] || 'English'}
+                            <Icons.ChevronDown className="ml-auto" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="min-w-[150px]">
+                        {Object.entries(LANGUAGE_DISPLAY_NAMES).map(([code, name]) => (
+                            <DropdownMenuItem
+                                key={code}
+                                onClick={() => userManager.language.update(code as Language)}
+                            >
+                                <span>{name}</span>
+                                {i18n.language === code && (
+                                    <Icons.CheckCircled className="ml-auto" />
+                                )}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <div className="flex justify-between items-center">
+                <div className="flex flex-col gap-2">
+                    <p className="text-largePlus">Theme</p>
                     <p className="text-foreground-onlook text-small">
                         Choose your preferred appearance
                     </p>
@@ -91,7 +120,7 @@ const PreferencesTab = observer(() => {
                 </DropdownMenu>
             </div>
             <div className="flex justify-between items-center">
-                <p className="text-foreground-onlook text-largePlus">Default Code Editor</p>
+                <p className="text-largePlus">Default Code Editor</p>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="min-w-[150px]">
@@ -122,7 +151,7 @@ const PreferencesTab = observer(() => {
             </div>
             <div className=" flex justify-between items-center gap-4">
                 <div className=" flex flex-col gap-2">
-                    <p className="text-foreground-onlook text-largePlus">{'Warn before delete'}</p>
+                    <p className="text-largePlus">{'Warn before delete'}</p>
                     <p className="text-foreground-onlook text-small">
                         {'This adds a warning before deleting elements in the editor'}
                     </p>
@@ -146,7 +175,7 @@ const PreferencesTab = observer(() => {
             </div>
             <div className="flex justify-between items-center gap-4">
                 <div className="flex flex-col gap-2">
-                    <p className="text-foreground-onlook text-largePlus">Analytics</p>
+                    <p className="text-largePlus">Analytics</p>
                     <p className="text-foreground-onlook text-small">
                         This helps our small team of two know what we need to improve with the
                         product.

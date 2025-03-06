@@ -21,8 +21,8 @@ export class ConversationManager {
     conversations: ChatConversationImpl[] = [];
 
     constructor(
-        private projectsManager: ProjectsManager,
         private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
         reaction(

@@ -3,15 +3,11 @@ import { SettingsTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 
-export const AdvancedSettingsSection = ({
-    setIsOpen,
-}: {
-    setIsOpen: (isOpen: boolean) => void;
-}) => {
+export const AdvancedSettingsSection = () => {
     const editorEngine = useEditorEngine();
 
     const openAdvancedSettings = () => {
-        setIsOpen(false);
+        editorEngine.isPublishOpen = false;
         editorEngine.settingsTab = SettingsTabValue.DOMAIN;
         editorEngine.isSettingsOpen = true;
     };

@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
@@ -7,6 +7,7 @@ import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const SPACING = {
     base: 8,
@@ -48,11 +49,20 @@ const DEFAULT_INPUT_STATE = {
 export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
-        const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
+        const userManager = useUserManager();
+        const isPreviewMode = editorEngine.mode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
+        const { t } = useTranslation();
+
+        const shouldHideButton =
+            !selectedEl ||
+            isPreviewMode ||
+            editorEngine.chat.isWaiting ||
+            editorEngine.chat.streamingMessage ||
+            !userManager.settings.settings?.chat?.showMiniChat;
 
         // Add effect to reset input state when elementId changes
         useEffect(() => {
@@ -98,12 +108,7 @@ export const OverlayChat = observer(
             }
         }, [elementId]);
 
-        if (
-            !selectedEl ||
-            isInteractMode ||
-            editorEngine.chat.isWaiting ||
-            editorEngine.chat.streamingMessage
-        ) {
+        if (shouldHideButton) {
             return null;
         }
 
@@ -116,7 +121,7 @@ export const OverlayChat = observer(
 
         const containerStyle: React.CSSProperties = {
             position: 'fixed',
-            top: selectedEl.top - 8,
+            top: Math.max(74 + 8, selectedEl.top - 8),
             left: selectedEl.left + selectedEl.width / 2,
             transform: 'translate(-50%, 0)',
             transformOrigin: 'center center',
@@ -148,7 +153,9 @@ export const OverlayChat = observer(
                             className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
                         >
                             <Icons.Sparkles className="w-4 h-4" />
-                            <span className="text-miniPlus whitespace-nowrap">Chat with AI</span>
+                            <span className="text-miniPlus whitespace-nowrap">
+                                {t('editor.panels.edit.tabs.chat.miniChat.button')}
+                            </span>
                         </button>
                     ) : (
                         // Input Field

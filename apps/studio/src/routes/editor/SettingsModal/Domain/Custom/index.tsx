@@ -33,7 +33,7 @@ export const CustomDomain = observer(() => {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-start gap-3">
-                <h2 className="text-lg font-medium">Custom Domain</h2>
+                <h2 className="text-lg">Custom Domain</h2>
                 {plan === UsagePlanType.PRO && (
                     <div className="flex h-5 items-center space-x-2 bg-blue-500/20 dark:bg-blue-500 px-2 rounded-full">
                         <Icons.Sparkles className="h-4 w-4" />

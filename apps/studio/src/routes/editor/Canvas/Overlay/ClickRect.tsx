@@ -3,6 +3,7 @@ import { adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
 import { BaseRect } from './BaseRect';
+import { ResizeHandles } from './ResizeHandles';
 
 const parseCssBoxValues = (
     value: string,
@@ -348,8 +349,7 @@ export const ClickRect = ({
         >
             {renderMarginLabels()}
             {renderPaddingLabels()}
-            {/* {renderDimensionLabels()} */}
-            {/* {shouldShowResizeHandles && (
+            {shouldShowResizeHandles && (
                 <ResizeHandles
                     width={width}
                     height={height}
@@ -359,7 +359,7 @@ export const ClickRect = ({
                     isComponent={isComponent}
                     styles={styles}
                 />
-            )} */}
+            )}
         </BaseRect>
     );
 };

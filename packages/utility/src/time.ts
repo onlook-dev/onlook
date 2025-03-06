@@ -30,3 +30,19 @@ export const timeAgo = (date: string): string => {
     const diffSeconds = Math.floor(diff / 1000);
     return `${diffSeconds}s`;
 };
+
+export const formatCommitDate = (
+    timeStamp: number,
+    options?: { includeDate?: boolean },
+): string => {
+    const then = new Date(timeStamp * 1000);
+    return then.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        ...(options?.includeDate && {
+            month: 'numeric',
+            day: 'numeric',
+            year: '2-digit',
+        }),
+    });
+};

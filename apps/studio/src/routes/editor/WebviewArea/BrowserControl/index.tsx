@@ -198,7 +198,7 @@ const BrowserControls = observer(
         }
 
         function getSelectedColor() {
-            if (editorEngine.mode === EditorMode.INTERACT) {
+            if (editorEngine.mode === EditorMode.PREVIEW) {
                 return 'text-blue-400 fill-blue-400';
             }
             if (domState === WebviewState.DOM_ONLOOK_ENABLED) {
@@ -221,7 +221,7 @@ const BrowserControls = observer(
                     hovered ? ' bg-hover/20 ' : '',
                     selected
                         ? getSelectedColor()
-                        : editorMode === EditorMode.INTERACT
+                        : editorMode === EditorMode.PREVIEW
                           ? 'text-foreground-secondary fill-foreground-secondary'
                           : 'fill-[#f7f7f7]',
                 )}
@@ -272,7 +272,7 @@ const BrowserControls = observer(
                         {webviewRef?.current?.isLoading() ? (
                             <Icons.CrossL className="text-inherit" />
                         ) : (
-                            <Icons.Reload className="text-inherit h-4 w-4" />
+                            <Icons.Reload className="text-inherit" />
                         )}
                     </Button>
                 </div>

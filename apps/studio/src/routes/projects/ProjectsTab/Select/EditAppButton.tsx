@@ -3,8 +3,10 @@ import { sendAnalytics } from '@/lib/utils';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import type { ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ButtonMotion = motion.create(Button);
 
@@ -12,7 +14,8 @@ interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
     project: Project;
 }
 
-export default function EditAppButton({ project, ...props }: EditAppButtonProps) {
+export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps) => {
+    const { t } = useTranslation();
     const projectsManager = useProjectsManager();
 
     const selectProject = (project: Project) => {
@@ -20,6 +23,7 @@ export default function EditAppButton({ project, ...props }: EditAppButtonProps)
         projectsManager.runner?.start();
         sendAnalytics('open project', { id: project.id, url: project.url });
     };
+
     return (
         <ButtonMotion
             size="default"
@@ -29,7 +33,7 @@ export default function EditAppButton({ project, ...props }: EditAppButtonProps)
             {...props}
         >
             <Icons.PencilPaper />
-            <p> Edit App </p>
+            <p>{t('projects.actions.editApp')}</p>
         </ButtonMotion>
     );
-}
+});

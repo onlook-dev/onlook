@@ -62,3 +62,11 @@ export const getChildrenCount = (domId: string) => {
     }
     return el.children.length;
 };
+
+export const getOffsetParent = (domId: string) => {
+    const el = elementFromDomId(domId);
+    if (!el) {
+        return null;
+    }
+    return getDomElement(el.offsetParent as HTMLElement, false);
+};
