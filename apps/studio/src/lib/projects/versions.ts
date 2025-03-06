@@ -3,8 +3,7 @@ import { GitChannels } from '@onlook/models/constants';
 import { type Project } from '@onlook/models/projects';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
-import { invokeMainChannel } from '../utils';
-import type { ProjectsManager } from './index';
+import { invokeMainChannel, sendAnalytics } from '../utils';
 
 export enum CreateCommitFailureReason {
     NOT_INITIALIZED = 'NOT_INITIALIZED',
@@ -16,10 +15,7 @@ export class VersionsManager {
     commits: GitCommit[] | null = null;
     savedCommits: GitCommit[] = [];
 
-    constructor(
-        private projectsManager: ProjectsManager,
-        private project: Project,
-    ) {
+    constructor(private project: Project) {
         makeAutoObservable(this);
     }
 
@@ -48,6 +44,9 @@ export class VersionsManager {
         success: boolean;
         errorReason?: CreateCommitFailureReason;
     }> => {
+        sendAnalytics('versions create commit', {
+            message,
+        });
         const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
             repoPath: this.project.folderPath,
         });
@@ -67,6 +66,10 @@ export class VersionsManager {
                 message,
             });
             if (!commitResult) {
+                sendAnalytics('versions create commit failed', {
+                    message,
+                    errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+                });
                 return {
                     success: false,
                     errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
@@ -79,6 +82,10 @@ export class VersionsManager {
                 });
             }
             await this.listCommits();
+
+            sendAnalytics('versions create commit success', {
+                message,
+            });
             return {
                 success: true,
             };
@@ -88,6 +95,10 @@ export class VersionsManager {
                     title: 'No changes to commit',
                 });
             }
+            sendAnalytics('versions create commit failed', {
+                message,
+                errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+            });
             return {
                 success: false,
                 errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
@@ -107,11 +118,18 @@ export class VersionsManager {
     };
 
     checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
+        sendAnalytics('versions checkout commit', {
+            commit: commit.displayName || commit.message,
+        });
         const res = await this.createCommit('Save before restoring backup', false);
 
         // If failed to create commit, don't continue backing up
         // If the commit was empty, this is ok
         if (!res?.success && res?.errorReason !== CreateCommitFailureReason.COMMIT_EMPTY) {
+            sendAnalytics('versions checkout commit failed', {
+                commit: commit.displayName || commit.message,
+                errorReason: res?.errorReason,
+            });
             return false;
         }
 
@@ -124,6 +142,10 @@ export class VersionsManager {
             description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
         });
         await this.listCommits();
+
+        sendAnalytics('versions checkout commit success', {
+            commit: commit.displayName || commit.message,
+        });
         return true;
     };
 
@@ -134,6 +156,10 @@ export class VersionsManager {
             newName,
         });
         await this.listCommits();
+        sendAnalytics('versions rename commit', {
+            commit: commit,
+            newName,
+        });
     };
 
     saveCommit = async (commit: GitCommit) => {
@@ -148,10 +174,18 @@ export class VersionsManager {
             title: 'Backup bookmarked!',
             description: 'You can now quickly restore to this version',
         });
+
+        sendAnalytics('versions save commit', {
+            commit: commit.displayName || commit.message,
+        });
     };
 
     removeSavedCommit = async (commit: GitCommit) => {
         this.savedCommits = this.savedCommits.filter((c) => c.oid !== commit.oid);
+
+        sendAnalytics('versions remove saved commit', {
+            commit: commit.displayName || commit.message,
+        });
     };
 
     saveLatestCommit = async (): Promise<void> => {
