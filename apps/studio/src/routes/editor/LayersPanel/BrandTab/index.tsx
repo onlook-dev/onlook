@@ -85,19 +85,6 @@ const ColorPopover = ({
                         onChange={handleColorChange}
                         onChangeEnd={handleColorChange}
                     />
-                    <div className="flex justify-end gap-2 mt-2">
-                        <Button variant="outline" size="sm" onClick={onClose} className="text-xs">
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="default"
-                            size="sm"
-                            onClick={handleSave}
-                            className="text-xs"
-                        >
-                            Apply
-                        </Button>
-                    </div>
                 </div>
             </PopoverContent>
         </Popover>
