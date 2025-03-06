@@ -53,11 +53,11 @@ export const Versions = observer(() => {
     return (
         <div className="flex flex-col text-sm p-4">
             <div className="flex flex-row items-center justify-between gap-2 pb-4">
-                <h2 className="pl-2">Versions</h2>
+                <h2 className="pl-2 text-lg">Versions</h2>
                 {commits && commits.length > 0 ? (
                     <Button
                         variant="outline"
-                        className="ml-auto bg-background-secondary rounded"
+                        className="ml-auto text-sm font-normal bg-background-secondary rounded"
                         size="sm"
                         onClick={handleNewBackup}
                     >
@@ -74,7 +74,7 @@ export const Versions = observer(() => {
                         {groupedCommits &&
                             Object.entries(groupedCommits).map(([date, dateCommits]) => (
                                 <AccordionItem key={date} value={date}>
-                                    <AccordionTrigger className="text-sm pl-2">
+                                    <AccordionTrigger className="text-base font-normal text-muted-foreground pl-2">
                                         {date}
                                     </AccordionTrigger>
                                     <AccordionContent>
