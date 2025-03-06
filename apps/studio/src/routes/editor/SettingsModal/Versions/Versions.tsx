@@ -1,5 +1,4 @@
 import { useProjectsManager } from '@/components/Context';
-import { CreateCommitFailureReason } from '@/lib/projects/versions';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -43,15 +42,10 @@ export const Versions = observer(() => {
 
     const handleNewBackup = async () => {
         const res = await projectsManager.versions?.createCommit();
-
-        // If failed to create commit, don't continue backing up
         if (!res?.success) {
-            // If the commit was empty, continue
-            if (res?.errorReason !== CreateCommitFailureReason.COMMIT_EMPTY) {
-                return;
-            }
+            console.error('Failed to create commit', res?.errorReason);
+            return;
         }
-
         const latestCommit = projectsManager.versions?.latestCommit;
         if (!latestCommit) {
             console.error('No latest commit found');

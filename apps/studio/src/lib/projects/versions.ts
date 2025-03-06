@@ -108,12 +108,11 @@ export class VersionsManager {
     };
 
     checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
-        const success = await this.createCommit('Save before restoring backup', false);
-        if (!success) {
-            console.error(
-                'Failed to save before restoring backup',
-                commit.displayName || commit.message,
-            );
+        const res = await this.createCommit('Save before restoring backup', false);
+
+        // If failed to create commit, don't continue backing up
+        // If the commit was empty, this is ok
+        if (!res?.success && res?.errorReason !== CreateCommitFailureReason.COMMIT_EMPTY) {
             return false;
         }
 

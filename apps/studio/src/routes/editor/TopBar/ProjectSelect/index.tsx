@@ -25,7 +25,6 @@ const ProjectBreadcrumb = observer(() => {
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer>();
     const { t } = useTranslation();
 
