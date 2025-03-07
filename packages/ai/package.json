@@ -31,8 +31,10 @@
         "@onlook/typescript": "*"
     },
     "dependencies": {
+        "@modelcontextprotocol/sdk": "latest",
         "diff-match-patch": "^1.0.5",
         "fg": "^0.0.3",
-        "marked": "^15.0.7"
+        "marked": "^15.0.7",
+        "zod": "^3.22.4"
     }
 }
