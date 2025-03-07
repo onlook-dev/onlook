@@ -19,7 +19,7 @@ import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromDomId } from './elements/dom/remove';
 import { getElementIndex } from './elements/move';
 import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
-import { getComputedStyleByDomId } from './elements/style';
+import { copyElementWithStyles, getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { setWebviewId } from './state';
 import { getTheme, setTheme } from './theme';
@@ -29,6 +29,7 @@ export function setApi() {
         // Misc
         processDom,
         getComputedStyleByDomId,
+        copyElementWithStyles,
         updateElementInstance,
         setWebviewId,
         getFirstOnlookElement,

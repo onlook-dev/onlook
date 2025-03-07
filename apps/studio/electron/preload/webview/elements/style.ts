@@ -1,6 +1,29 @@
 import { jsonClone } from '@onlook/utility';
 import { elementFromDomId } from '/common/helpers';
 
+export interface ElementWithStyles {
+    html: string;
+    styles: {
+        defined: Record<string, string>;
+        computed: Record<string, string>;
+    };
+}
+
+export function copyElementWithStyles(domId: string): ElementWithStyles | null {
+    const element = elementFromDomId(domId);
+    if (!element) {
+        return null;
+    }
+
+    const htmlElement = element as HTMLElement;
+    const styles = getStyles(htmlElement);
+
+    return {
+        html: htmlElement.outerHTML,
+        styles,
+    };
+}
+
 export function getStyles(element: HTMLElement): {
     defined: Record<string, string>;
     computed: Record<string, string>;
