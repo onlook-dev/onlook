@@ -1,4 +1,10 @@
 import {
+    addBuiltWithScript,
+    injectBuiltWithScript,
+    removeBuiltWithScript,
+    removeBuiltWithScriptFromLayout,
+} from '@onlook/growth';
+import {
     ApiRoutes,
     BASE_API_ROUTE,
     CUSTOM_OUTPUT_DIR,
@@ -48,6 +54,13 @@ class HostingManager {
             this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
             timer.log('Prepare completed');
 
+            // Inject the "Built with Onlook" script
+            this.emitState(PublishStatus.LOADING, 'Adding badge...');
+            await injectBuiltWithScript(folderPath);
+            this.emitState(PublishStatus.LOADING, 'Adding script...');
+            await addBuiltWithScript(folderPath);
+            timer.log('"Built with Onlook" badge added');
+
             // Run the build script
             await this.runBuildStep(folderPath, buildScript, skipBuild);
             this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
@@ -75,6 +88,12 @@ class HostingManager {
             timer.log('Deployment completed');
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
+
+            // Remove the "Built with Onlook" script after successful deployment
+
+            await removeBuiltWithScriptFromLayout(folderPath);
+            await removeBuiltWithScript(folderPath);
+            timer.log('"Built with Onlook" badge removed');
 
             return {
                 success: true,
