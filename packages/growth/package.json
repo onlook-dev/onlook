@@ -1,0 +1,17 @@
+{
+    "name": "@onlook/growth",
+    "description": "Growth helpers",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "version": "0.0.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "scripts": {
+        "clean": "rm -rf node_modules"
+    }
+}
