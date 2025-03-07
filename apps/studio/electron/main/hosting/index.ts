@@ -44,7 +44,7 @@ class HostingManager {
         folderPath,
         buildScript,
         urls,
-        skipBuild,
+        options,
     }: PublishRequest): Promise<PublishResponse> {
         try {
             const timer = new LogTimer('Deployment');
@@ -54,15 +54,14 @@ class HostingManager {
             this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
             timer.log('Prepare completed');
 
-            // Inject the "Built with Onlook" script
-            this.emitState(PublishStatus.LOADING, 'Adding badge...');
-            await injectBuiltWithScript(folderPath);
-            this.emitState(PublishStatus.LOADING, 'Adding script...');
-            await addBuiltWithScript(folderPath);
-            timer.log('"Built with Onlook" badge added');
+            if (!options?.skipBadge) {
+                this.emitState(PublishStatus.LOADING, 'Adding badge...');
+                await this.addBadge(folderPath);
+                timer.log('"Built with Onlook" badge added');
+            }
 
             // Run the build script
-            await this.runBuildStep(folderPath, buildScript, skipBuild);
+            await this.runBuildStep(folderPath, buildScript, options?.skipBuild);
             this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
             timer.log('Build completed');
 
@@ -89,11 +88,10 @@ class HostingManager {
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
-            // Remove the "Built with Onlook" script after successful deployment
-
-            await removeBuiltWithScriptFromLayout(folderPath);
-            await removeBuiltWithScript(folderPath);
-            timer.log('"Built with Onlook" badge removed');
+            if (!options?.skipBadge) {
+                await this.removeBadge(folderPath);
+                timer.log('"Built with Onlook" badge removed');
+            }
 
             return {
                 success: true,
@@ -110,6 +108,16 @@ class HostingManager {
                 message: 'Deployment failed with error: ' + error,
             };
         }
+    }
+
+    async addBadge(folderPath: string) {
+        await injectBuiltWithScript(folderPath);
+        await addBuiltWithScript(folderPath);
+    }
+
+    async removeBadge(folderPath: string) {
+        await removeBuiltWithScriptFromLayout(folderPath);
+        await removeBuiltWithScript(folderPath);
     }
 
     async runPrepareStep(folderPath: string) {
