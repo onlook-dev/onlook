@@ -1,5 +1,6 @@
 import type { Channels } from '@onlook/models/constants';
-import { type IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import type { IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer, webFrame } from 'electron';
 
 declare global {
     interface Window {
@@ -63,3 +64,7 @@ contextBridge.exposeInMainWorld('api', api);
 contextBridge.exposeInMainWorld('store', store);
 contextBridge.exposeInMainWorld('env', env);
 contextBridge.exposeInMainWorld('process', process);
+
+// Set zoom level
+webFrame.setZoomFactor(1);
+webFrame.setVisualZoomLevelLimits(1, 1);
