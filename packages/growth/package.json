@@ -1,21 +1,17 @@
 {
-    "name": "@onlook/foundation",
-    "description": "A shared library for Onlook",
+    "name": "@onlook/growth",
+    "description": "Growth helpers",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
     "version": "0.0.0",
+    "private": true,
     "repository": {
         "type": "git",
         "url": "https://github.com/onlook-dev/onlook.git"
     },
-    "type": "commonjs",
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
-    "directories": {
-        "test": "tests"
-    },
     "scripts": {
-        "dev": "tsup --watch",
-        "build": "tsup",
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
@@ -23,7 +19,7 @@
     },
     "keywords": [
         "onlook",
-        "utils"
+        "growth"
     ],
     "author": {
         "name": "Onlook",
@@ -32,13 +28,7 @@
     "license": "Apache-2.0",
     "homepage": "https://onlook.com",
     "devDependencies": {
-        "@onlook/typescript": "*",
-        "@types/babel__generator": "^7.6.8",
-        "@types/babel__traverse": "^7.20.6",
-        "@types/bun": "latest",
-        "tslib": "^2.6.3",
-        "tsup": "^8.3.0",
-        "typescript": "^5.5.4"
+        "@onlook/typescript": "*"
     },
     "dependencies": {
         "@babel/generator": "^7.14.5",

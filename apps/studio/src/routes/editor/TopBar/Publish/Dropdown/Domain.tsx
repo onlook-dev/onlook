@@ -76,7 +76,7 @@ export const DomainSection = observer(
                 console.error(`No ${type} domain hosting manager found`);
                 return;
             }
-            domainManager.publish();
+            domainManager.publish({ skipBadge: type === DomainType.CUSTOM });
         };
 
         const retry = () => {

@@ -34,7 +34,10 @@ export interface PublishRequest {
     folderPath: string;
     buildScript: string;
     urls: string[];
-    skipBuild: boolean;
+    options?: {
+        skipBuild?: boolean;
+        skipBadge?: boolean;
+    };
 }
 
 export interface UnpublishRequest {

@@ -1,6 +1,7 @@
 import { type GeneratorOptions } from '@babel/generator';
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import type { DetectedPortResults } from '@onlook/models';
 import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import type {
     CoreElementType,
@@ -8,6 +9,7 @@ import type {
     TemplateNode,
     TemplateTag,
 } from '@onlook/models/element';
+import { detect } from 'detect-port';
 import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
@@ -155,4 +157,20 @@ export function getCoreElementInfo(path: NodePath<t.JSXElement>): CoreElementTyp
     const coreElementType = isComponentRoot ? 'component-root' : isBodyTag ? 'body-tag' : undefined;
 
     return coreElementType;
+}
+
+export async function isPortAvailable(port: number): Promise<DetectedPortResults> {
+    try {
+        const availablePort = await detect(port);
+        return {
+            isPortAvailable: port === availablePort,
+            availablePort: availablePort,
+        };
+    } catch (error) {
+        console.error('Error detecting port:', error);
+        return {
+            isPortAvailable: false,
+            availablePort: 3000,
+        };
+    }
 }
