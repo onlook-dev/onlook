@@ -4,6 +4,7 @@ import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import * as fs from 'fs';
 import * as path from 'path';
+import { builtWithScript } from './script';
 
 /**
  * Injects the Built with Onlook script into a Next.js layout file
@@ -147,18 +148,15 @@ export async function addBuiltWithScript(projectPath: string): Promise<boolean> 
             fs.mkdirSync(publicDir, { recursive: true });
         }
 
-        // Path to the builtwith.js script in the growth package
-        const sourcePath = path.join(__dirname, 'builtwith.js');
-
         // Path to the destination in the project's public folder
         const destPath = path.join(publicDir, 'builtwith.js');
 
-        // Copy the file
-        fs.copyFileSync(sourcePath, destPath);
-        console.log('Successfully copied builtwith.js to public folder');
+        // Read the content and write it directly
+        fs.writeFileSync(destPath, builtWithScript, 'utf8');
+        console.log('Successfully added builtwith.js to public folder');
         return true;
     } catch (error) {
-        console.error('Error copying builtwith.js to public folder:', error);
+        console.error('Error adding builtwith.js to public folder:', error);
         return false;
     }
 }

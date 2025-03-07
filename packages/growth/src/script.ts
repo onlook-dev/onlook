@@ -1,3 +1,4 @@
+export const builtWithScript = `
 (function () {
     if (typeof window !== 'undefined') {
         // Define custom element
@@ -8,7 +9,7 @@
 
                 // Create styles
                 const style = document.createElement('style');
-                style.textContent = `
+                style.textContent = \`
                     :host {
                         position: fixed;
                         bottom: 10px;
@@ -34,7 +35,7 @@
                         height: 22px;
                         fill: currentColor;
                     }
-                `;
+                \`;
 
                 const badge = document.createElement('div');
                 badge.className = 'badge';
@@ -89,3 +90,4 @@
         });
     }
 })();
+`;

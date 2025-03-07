@@ -40,7 +40,7 @@ describe('Built with Onlook Script', () => {
 
     // Clean up after each test
     afterEach(() => {
-        // fs.rmSync(tempDir, { recursive: true, force: true });
+        fs.rmSync(tempDir, { recursive: true, force: true });
     });
 
     test('injectBuiltWithScript adds Script component to layout.tsx', async () => {
