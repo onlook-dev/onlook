@@ -1,7 +1,7 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import type { StreamRequestType } from '@onlook/models/chat';
 import { BASE_PROXY_ROUTE, FUNCTIONS_ROUTE, ProxyRoutes } from '@onlook/models/constants';
-import { CLAUDE_MODELS, LLMProvider } from '@onlook/models/llm';
+import { CLAUDE_MODELS, LLMProvider, MCP_MODELS } from '@onlook/models/llm';
 import { type LanguageModelV1 } from 'ai';
 import { getRefreshedAuthTokens } from '../auth';
 export interface OnlookPayload {
@@ -10,12 +10,14 @@ export interface OnlookPayload {
 
 export async function initModel(
     provider: LLMProvider,
-    model: CLAUDE_MODELS,
+    model: CLAUDE_MODELS | MCP_MODELS,
     payload: OnlookPayload,
 ): Promise<LanguageModelV1> {
     switch (provider) {
         case LLMProvider.ANTHROPIC:
-            return await getAnthropicProvider(model, payload);
+            return await getAnthropicProvider(model as CLAUDE_MODELS, payload);
+        case LLMProvider.MCP:
+            return await getMCPProvider(model as MCP_MODELS, payload);
         default:
             throw new Error(`Unsupported provider: ${provider}`);
     }
@@ -52,5 +54,33 @@ async function getAnthropicProvider(
     const anthropic = createAnthropic(config);
     return anthropic(model, {
         cacheControl: true,
+    });
+}
+
+async function getMCPProvider(model: MCP_MODELS, payload: OnlookPayload): Promise<LanguageModelV1> {
+    // Import the MCP client and adapter
+    const { MCPClient, createMCPLanguageModel } = await import('@onlook/ai/mcp');
+
+    // Create a new MCP client
+    const client = new MCPClient({
+        name: 'onlook-mcp-client',
+        version: '1.0.0',
+    });
+
+    // Connect to the MCP server
+    // Note: The connection details would need to be configured
+    await client.connect({
+        type: 'stdio',
+        command: 'mcp-server', // This would need to be configured
+        args: ['--stdio'],
+    });
+
+    // Initialize the client
+    await client.initialize();
+
+    // Create a language model adapter that implements the LanguageModelV1 interface
+    return createMCPLanguageModel({
+        client,
+        model: model.toString(),
     });
 }

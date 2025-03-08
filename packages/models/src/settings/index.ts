@@ -7,6 +7,8 @@ export interface UserSettings {
     signInMethod?: string;
     editor?: EditorSettings;
     chat?: ChatSettings;
+    llmProvider?: string;
+    llmModel?: string;
 }
 
 export interface EditorSettings {

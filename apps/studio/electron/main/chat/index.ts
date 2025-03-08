@@ -1,6 +1,6 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
-import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import { CLAUDE_MODELS, LLMProvider, MCP_MODELS } from '@onlook/models';
 import {
     ChatSuggestionSchema,
     StreamRequestType,
@@ -9,7 +9,13 @@ import {
     type UsageCheckResult,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
+import {
+    generateObject,
+    streamText,
+    type CoreMessage,
+    type CoreSystemMessage,
+    type LanguageModelV1,
+} from 'ai';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { initModel } from './llmProvider';
@@ -68,9 +74,7 @@ class LlmManager {
                 } as CoreSystemMessage;
                 messages = [systemMessage, ...messages];
             }
-            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
-                requestType,
-            });
+            const model = await this.getModel(requestType);
 
             const { textStream } = await streamText({
                 model,
@@ -156,11 +160,18 @@ class LlmManager {
         return 'An unknown error occurred';
     }
 
+    private async getModel(requestType: StreamRequestType): Promise<LanguageModelV1> {
+        // Get the provider and model from settings or use defaults
+        const settings = PersistentStorage.USER_SETTINGS.read() || {};
+        const provider = settings.llmProvider || LLMProvider.ANTHROPIC;
+        const modelName = settings.llmModel || CLAUDE_MODELS.SONNET;
+
+        return await initModel(provider, modelName, { requestType });
+    }
+
     public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
         try {
-            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
-                requestType: StreamRequestType.SUGGESTIONS,
-            });
+            const model = await this.getModel(StreamRequestType.SUGGESTIONS);
 
             const { object } = await generateObject({
                 model,
