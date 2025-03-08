@@ -49,6 +49,14 @@ export class ChatConversationImpl implements ChatConversation {
         });
         conversation.createdAt = data.createdAt;
         conversation.updatedAt = data.updatedAt;
+
+        if (data.tokenUsage) {
+            conversation.tokenUsage = data.tokenUsage;
+        }
+        if (data.summaryMessage) {
+            conversation.summaryMessage = AssistantChatMessageImpl.fromJSON(data.summaryMessage);
+        }
+
         return conversation;
     }
 
