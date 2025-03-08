@@ -10,3 +10,4 @@ export * from './client';
 export * from './capabilities';
 export * from './context';
 export * from './utils';
+export * from './adapters';
