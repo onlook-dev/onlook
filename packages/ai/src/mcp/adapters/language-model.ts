@@ -40,8 +40,13 @@ export function createMCPLanguageModel(options: MCPLanguageModelOptions): Langua
     const manager = capabilityManager || new MCPCapabilityManager(client);
 
     return {
-        id: `mcp-${model || 'default'}`,
+        specificationVersion: 'v1',
         provider: 'mcp',
+        modelId: `mcp-${model || 'default'}`,
+        defaultObjectGenerationMode: undefined,
+        doStream: async (options: LanguageModelV1CallOptions) => {
+            throw new Error('Streaming is not supported by the MCP adapter yet');
+        },
         doGenerate: async (options: LanguageModelV1CallOptions) => {
             try {
                 // Refresh capabilities if needed
@@ -85,6 +90,15 @@ export function createMCPLanguageModel(options: MCPLanguageModelOptions): Langua
                 // Extract the text from the result
                 const text = result.content.map((item) => item.text).join('');
 
+                // Prepare the request body for rawCall
+                const requestBody = {
+                    messages,
+                    maxTokens,
+                    temperature,
+                    topP,
+                    stopSequences,
+                };
+
                 return {
                     text,
                     toolCalls: undefined,
@@ -92,7 +106,23 @@ export function createMCPLanguageModel(options: MCPLanguageModelOptions): Langua
                     usage: {
                         promptTokens: 0,
                         completionTokens: 0,
-                        totalTokens: 0,
+                    },
+                    rawCall: {
+                        rawPrompt: messages,
+                        rawSettings: {
+                            maxTokens,
+                            temperature,
+                            topP,
+                            stopSequences,
+                        },
+                    },
+                    request: {
+                        body: JSON.stringify(requestBody),
+                    },
+                    response: {
+                        id: `mcp-response-${Date.now()}`,
+                        timestamp: new Date(),
+                        modelId: `mcp-${model || 'default'}`,
                     },
                 };
             } catch (error) {
