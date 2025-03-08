@@ -17,6 +17,11 @@ export class SingleStyleImpl implements SingleStyle {
     ) {}
 
     getValue(styleRecord: Record<string, string>) {
+        // If this is a color style (key is 'color' or ends with 'Color'), ensure we get the actual value
+        // This ensures text colors and other color values display correctly in the properties panel
+        if (this.type === 'color' && styleRecord[this.key]) {
+            return styleRecord[this.key];
+        }
         return styleRecord[this.key] ?? this.defaultValue;
     }
 }

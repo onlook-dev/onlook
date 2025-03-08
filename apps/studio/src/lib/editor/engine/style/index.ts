@@ -108,10 +108,51 @@ export class StyleManager {
         const newMap = new Map<string, SelectedStyle>();
         let newSelectedStyle = null;
         for (const selectedEl of selectedElements) {
-            const styles = {
-                ...selectedEl.styles?.computed,
-                ...selectedEl.styles?.defined,
-            };
+            // Debug log to check what styles are coming from the DOM
+            console.log('Selected element:', selectedEl.tagName);
+            console.log('Computed styles:', selectedEl.styles?.computed);
+            console.log('Defined styles:', selectedEl.styles?.defined);
+
+            // For text styles like color, prioritize the computed styles from the browser
+            // which contain the actual rendered values, especially for properties with inheritance
+            const computedStyles = selectedEl.styles?.computed || {};
+            const definedStyles = selectedEl.styles?.defined || {};
+
+            // Specifically log color values for debugging
+            if (computedStyles['color']) {
+                console.log('COMPUTED COLOR:', computedStyles['color']);
+            }
+            if (definedStyles['color']) {
+                console.log('DEFINED COLOR:', definedStyles['color']);
+            }
+
+            // Create a merged styles object, prioritizing computed styles for critical properties
+            const criticalStyleKeys = [
+                'color',
+                'background-color',
+                'font-family',
+                'font-size',
+                'font-weight',
+            ];
+            const styles: Record<string, string> = { ...definedStyles };
+
+            // Ensure critical styles come from computed values when available
+            for (const key of criticalStyleKeys) {
+                if (computedStyles[key]) {
+                    styles[key] = computedStyles[key];
+                }
+            }
+
+            // For non-critical styles, use the defined values if available
+            for (const key in computedStyles) {
+                if (!styles[key] && computedStyles[key]) {
+                    styles[key] = computedStyles[key];
+                }
+            }
+
+            // Log the final merged styles for debugging
+            console.log('Final merged styles - color:', styles['color']);
+
             const selectedStyle: SelectedStyle = {
                 styles,
                 parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),

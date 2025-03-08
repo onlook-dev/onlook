@@ -4,7 +4,16 @@ import parseCSSColor from 'parse-css-color';
 import { isNearEqual } from './math';
 
 export function isColorEmpty(colorValue: string) {
+    // Check for common empty color values
+    if (!colorValue || colorValue === '' || colorValue === 'none' || colorValue === 'transparent') {
+        return true;
+    }
+
+    // Parse the color to check if it's truly transparent
     const color = Color.from(colorValue);
+
+    // Only consider it empty if it has zero alpha or exactly equals transparent
+    // Don't consider black (#000000) or other valid colors as empty
     return color.a === 0 || color.isEqual(Color.transparent);
 }
 
