@@ -28,13 +28,14 @@ import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
-    private _editorMode: EditorMode = EditorMode.DESIGN;
     private _plansOpen: boolean = false;
     private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
-    private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
     private _publishOpen: boolean = false;
+
+    private _editorMode: EditorMode = EditorMode.DESIGN;
+    private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.PROJECT;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -248,7 +249,7 @@ export class EditorEngine {
         image?: string;
     } | null> {
         if (this.webviews.webviews.size === 0) {
-            console.error('No webviews found');
+            console.error('Failed to take screenshot, no webviews found');
             return null;
         }
         const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;

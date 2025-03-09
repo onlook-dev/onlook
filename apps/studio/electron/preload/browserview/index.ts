@@ -1,5 +1,6 @@
-import { type IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
-import type { MainChannels } from '@onlook/models/constants';
+import type { Channels } from '@onlook/models/constants';
+import type { IpcRendererEvent } from 'electron';
+import { contextBridge, ipcRenderer, webFrame } from 'electron';
 
 declare global {
     interface Window {
@@ -29,32 +30,32 @@ const store = {
 };
 
 const api = {
-    send<T>(channel: MainChannels, args: T) {
+    send<T>(channel: Channels, args: T) {
         ipcRenderer.send(channel, args);
     },
 
-    on<T>(channel: MainChannels, func: (...args: T[]) => void) {
+    on<T>(channel: Channels, func: (...args: T[]) => void) {
         const subscription = (_event: IpcRendererEvent, ...args: T[]) => func(...args);
         ipcRenderer.on(channel, subscription);
         return () => ipcRenderer.removeListener(channel, subscription);
     },
 
-    once<T>(channel: MainChannels, func: (...args: T[]) => void) {
+    once<T>(channel: Channels, func: (...args: T[]) => void) {
         ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
 
-    invoke<T, P>(channel: MainChannels, ...args: T[]): Promise<P> {
+    invoke<T, P>(channel: Channels, ...args: T[]): Promise<P> {
         return ipcRenderer.invoke(channel, ...args);
     },
 
-    removeListener<T>(channel: MainChannels, listener: (...args: T[]) => void) {
+    removeListener<T>(channel: Channels, listener: (...args: T[]) => void) {
         ipcRenderer.removeListener(
             channel,
             listener as (event: Electron.IpcRendererEvent, ...args: any[]) => void,
         );
     },
 
-    removeAllListeners(channel: MainChannels) {
+    removeAllListeners(channel: Channels) {
         ipcRenderer.removeAllListeners(channel);
     },
 };
@@ -63,3 +64,7 @@ contextBridge.exposeInMainWorld('api', api);
 contextBridge.exposeInMainWorld('store', store);
 contextBridge.exposeInMainWorld('env', env);
 contextBridge.exposeInMainWorld('process', process);
+
+// Set zoom level
+webFrame.setZoomFactor(1);
+webFrame.setVisualZoomLevelLimits(1, 1);

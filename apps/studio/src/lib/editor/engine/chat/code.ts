@@ -1,3 +1,4 @@
+import type { ProjectsManager } from '@/lib/projects';
 import { sendAnalytics } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
 import type { AssistantChatMessage, CodeBlock } from '@onlook/models/chat';
@@ -12,6 +13,7 @@ export class ChatCodeManager {
     constructor(
         private chat: ChatManager,
         private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
         this.processor = new CodeBlockProcessor();
@@ -27,6 +29,9 @@ export class ChatCodeManager {
             console.error('Can only apply code to assistant messages');
             return;
         }
+
+        await this.projectsManager.versions?.createCommit('Save before applying code', false);
+
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
 
         for (const [file, codeBlocks] of fileToCodeBlocks) {

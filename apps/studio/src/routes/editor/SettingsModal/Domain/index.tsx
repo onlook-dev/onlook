@@ -15,12 +15,18 @@ export const DomainTab = observer(() => {
     }, [editorEngine.isSettingsOpen]);
 
     return (
-        <div className="space-y-8">
-            <BaseDomain />
+        <div className="flex flex-col gap-2">
+            <div className="p-4">
+                <BaseDomain />
+            </div>
             <Separator />
-            <CustomDomain />
+            <div className="p-4">
+                <CustomDomain />
+            </div>
             <Separator />
-            <DangerZone />
+            <div className="p-4">
+                <DangerZone />
+            </div>
         </div>
     );
 });
