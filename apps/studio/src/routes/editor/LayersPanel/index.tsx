@@ -5,15 +5,15 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import BrandTab from './BrandTab/index.tsx';
+import BrandTab from './BrandTab';
 import ComponentsTab from './ComponentsTab';
-import { HelpDropdown } from './HelpDropdown.tsx';
-import ImagesTab from './ImageTab.tsx';
+import { HelpDropdown } from './HelpDropdown';
+import ImagesTab from './ImageTab';
 import LayersTab from './LayersTab';
-import OpenCodeMini from './OpenCodeMini/index.tsx';
+import OpenCodeMini from './OpenCodeMini';
 import PagesTab from './PageTab';
 import WindowsTab from './WindowsTab';
-import ZoomControls from './ZoomControls/index.tsx';
+import ZoomControls from './ZoomControls';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -156,7 +156,7 @@ const LayersPanel = observer(() => {
 
                 <button
                     className={cn(
-                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
                         selectedTab === TabValue.BRAND && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
