@@ -23,19 +23,10 @@ export class LanguageManager {
         for (const browserLang of browserLanguages) {
             const langCode = browserLang.split('-')[0]; // Get base language code (e.g., 'en' from 'en-US')
 
-            if (langCode === Language.English) {
-                this.update(Language.English);
-                return;
-            } else if (langCode === Language.Japanese) {
-                this.update(Language.Japanese);
-                return;
-            } else if (langCode === Language.Chinese) {
-                this.update(Language.Chinese);
+            if (Object.values(Language).includes(langCode as Language)) {
+                this.update(langCode as Language);
                 return;
             }
         }
-
-        // Default to English if no match found
-        this.update(Language.English);
     }
 }
