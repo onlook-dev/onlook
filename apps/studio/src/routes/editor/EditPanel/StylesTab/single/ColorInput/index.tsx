@@ -38,7 +38,9 @@ const ColorTextInput = memo(
         backgroundImage?: string;
     }) => {
         const inputValue = isFocused ? stagingInputValue : value;
-        const colorValue = isColorEmpty(inputValue) ? '' : inputValue;
+        // Don't use isColorEmpty here as it might incorrectly identify valid colors as empty
+        // If value is a valid hex color (including #000000 for black), show it
+        const colorValue = inputValue || '';
         const displayValue =
             backgroundImage && !isBackgroundImageEmpty(backgroundImage)
                 ? backgroundImage
@@ -95,9 +97,47 @@ const ColorInput = observer(
             if (!editorEngine.style.selectedStyle?.styles || isFocused) {
                 return Color.from(elementStyle.defaultValue);
             }
-            const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
-            return Color.from(newValue);
-        }, [editorEngine.style.selectedStyle?.styles, elementStyle, isFocused]);
+
+            // For color styles specifically, we need to be careful
+            if (elementStyle.key === 'color') {
+                // Get the currently selected element
+                const selectedEl = editorEngine.elements.selected[0];
+                if (selectedEl) {
+                    const tagName = selectedEl.tagName?.toLowerCase();
+
+                    // Check if we have a heading or text element
+                    const isTextElement =
+                        tagName === 'p' ||
+                        tagName?.match(/^h[1-6]$/) ||
+                        tagName === 'span' ||
+                        tagName === 'div';
+
+                    // For text elements, prioritize the actual computed color from the DOM
+                    if (isTextElement && selectedEl.styles?.computed) {
+                        // If we have a computed color, use it
+                        if (selectedEl.styles.computed.color) {
+                            return Color.from(selectedEl.styles.computed.color);
+                        }
+                    }
+                }
+            }
+
+            // Standard color handling for non-text elements or fallback
+            const selectedStyles = editorEngine.style.selectedStyle?.styles;
+
+            // For color, check the direct style value first
+            if (elementStyle.key === 'color' && selectedStyles.color) {
+                return Color.from(selectedStyles.color);
+            }
+
+            // Standard fallback behavior
+            return Color.from(elementStyle.getValue(selectedStyles));
+        }, [
+            editorEngine.style.selectedStyle?.styles,
+            elementStyle,
+            isFocused,
+            editorEngine.elements.selected,
+        ]);
 
         // Update color state when getColor changes
         const [color, setColor] = useState(getColor);
