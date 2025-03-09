@@ -27,10 +27,13 @@ const ProjectBreadcrumb = observer(() => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer>();
     const { t } = useTranslation();
+    const [isClosingProject, setIsClosingProject] = useState(false);
 
-    async function handleNavigateToProject(tab?: ProjectTabs) {
+    async function handleNavigateToProjects(tab?: ProjectTabs) {
         try {
-            await saveScreenshot();
+            setIsClosingProject(true);
+            await takeScreenshotWithTimeout();
+            await projectsManager.runner?.stop();
         } catch (error) {
             console.error('Failed to take screenshot:', error);
         }
@@ -40,12 +43,21 @@ const ProjectBreadcrumb = observer(() => {
                 projectsManager.projectsTab = tab;
             }
             routeManager.route = Route.PROJECTS;
+            setIsClosingProject(false);
         }, 100);
     }
 
-    async function handleReturn() {
-        handleNavigateToProject();
-    }
+    const takeScreenshotWithTimeout = async () => {
+        try {
+            const screenshotPromise = saveScreenshot();
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Screenshot timeout')), 5000);
+            });
+            await Promise.race([screenshotPromise, timeoutPromise]);
+        } catch (error) {
+            console.warn('Screenshot timed out or failed, continuing anyway');
+        }
+    };
 
     const handleOpenProjectFolder = () => {
         const project = projectsManager.project;
@@ -81,9 +93,16 @@ const ProjectBreadcrumb = observer(() => {
                         variant={'ghost'}
                         className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                     >
-                        <Icons.OnlookLogo className="w-6 h-6 hidden md:block" />
+                        <Icons.OnlookLogo
+                            className={cn(
+                                'w-6 h-6 hidden md:block',
+                                isClosingProject && 'animate-pulse',
+                            )}
+                        />
                         <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
-                            {projectsManager.project?.name}
+                            {isClosingProject
+                                ? 'Stopping project...'
+                                : projectsManager.project?.name}
                         </span>
                         <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
                     </Button>
@@ -102,7 +121,7 @@ const ProjectBreadcrumb = observer(() => {
                         }, 300);
                     }}
                 >
-                    <DropdownMenuItem onClick={handleReturn}>
+                    <DropdownMenuItem onClick={() => handleNavigateToProjects()}>
                         <div className="flex row center items-center group">
                             <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t('projects.actions.goToAllProjects')}
@@ -115,7 +134,7 @@ const ProjectBreadcrumb = observer(() => {
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                             <DropdownMenuItem
-                                onClick={() => handleNavigateToProject(ProjectTabs.PROMPT_CREATE)}
+                                onClick={() => handleNavigateToProjects(ProjectTabs.PROMPT_CREATE)}
                                 className={cn(
                                     'focus:bg-blue-100 focus:text-blue-900',
                                     'hover:bg-blue-100 hover:text-blue-900',
@@ -127,7 +146,7 @@ const ProjectBreadcrumb = observer(() => {
                                 {t('projects.actions.startFromScratch')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                onClick={() => handleNavigateToProject(ProjectTabs.IMPORT_PROJECT)}
+                                onClick={() => handleNavigateToProjects(ProjectTabs.IMPORT_PROJECT)}
                                 className={cn(
                                     'focus:bg-teal-100 focus:text-teal-900',
                                     'hover:bg-teal-100 hover:text-teal-900',
