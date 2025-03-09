@@ -7,13 +7,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandTab from './BrandTab';
 import ComponentsTab from './ComponentsTab';
-import { HelpDropdown } from './HelpDropdown.tsx';
-import ImagesTab from './ImageTab.tsx';
+import { HelpDropdown } from './HelpDropdown';
+import ImagesTab from './ImageTab';
 import LayersTab from './LayersTab';
-import OpenCodeMini from './OpenCodeMini/index.tsx';
+import OpenCodeMini from './OpenCodeMini';
 import PagesTab from './PageTab';
 import WindowsTab from './WindowsTab';
-import ZoomControls from './ZoomControls/index.tsx';
+import ZoomControls from './ZoomControls';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
