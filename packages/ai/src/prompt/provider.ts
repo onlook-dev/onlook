@@ -10,6 +10,7 @@ import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
 import { PLATFORM_SIGNATURE } from './signatures';
+import { SUMMARY_PROMPTS } from './summary';
 
 export class PromptProvider {
     shouldWrapXml: boolean;
@@ -169,6 +170,40 @@ export class PromptProvider {
             }
             prompt += highlightPrompt;
             index++;
+        }
+        return prompt;
+    }
+
+    getSummaryPrompt() {
+        let prompt = '';
+
+        if (this.shouldWrapXml) {
+            prompt += wrapXml('summary-rules', SUMMARY_PROMPTS.rules);
+            prompt += wrapXml('summary-guidelines', SUMMARY_PROMPTS.guidelines);
+            prompt += wrapXml('summary-format', SUMMARY_PROMPTS.format);
+            prompt += wrapXml('summary-reminder', SUMMARY_PROMPTS.reminder);
+
+            prompt += wrapXml('example-conversation', this.getSummaryExampleConversation());
+            prompt += wrapXml(
+                'example-summary-output',
+                'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary,
+            );
+        } else {
+            prompt += SUMMARY_PROMPTS.rules + '\n\n';
+            prompt += SUMMARY_PROMPTS.guidelines + '\n\n';
+            prompt += SUMMARY_PROMPTS.format + '\n\n';
+            prompt += SUMMARY_PROMPTS.reminder + '\n\n';
+            prompt += this.getSummaryExampleConversation();
+            prompt += 'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary + '\n\n';
+        }
+
+        return prompt;
+    }
+
+    getSummaryExampleConversation() {
+        let prompt = 'EXAMPLE CONVERSATION:\n';
+        for (const message of SEARCH_REPLACE_EXAMPLE_CONVERSATION) {
+            prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
         }
         return prompt;
     }

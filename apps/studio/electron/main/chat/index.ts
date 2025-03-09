@@ -3,6 +3,7 @@ import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import {
     ChatSuggestionSchema,
+    ChatSummarySchema,
     StreamRequestType,
     type ChatSuggestion,
     type StreamResponse,
@@ -10,6 +11,7 @@ import {
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
+import type { z } from 'zod';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { initModel } from './llmProvider';
@@ -72,7 +74,7 @@ class LlmManager {
                 requestType,
             });
 
-            const { textStream } = await streamText({
+            const { textStream, usage, text } = await streamText({
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
@@ -92,7 +94,7 @@ class LlmManager {
                 fullText += partialText;
                 this.emitPartialMessage(fullText);
             }
-            return { content: fullText, status: 'full' };
+            return { content: await text, status: 'full', usage: await usage };
         } catch (error: any) {
             try {
                 console.error('Error', error);
@@ -172,6 +174,77 @@ class LlmManager {
         } catch (error) {
             console.error(error);
             return [];
+        }
+    }
+
+    public async generateChatSummary(messages: CoreMessage[]): Promise<StreamResponse> {
+        try {
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
+                requestType: StreamRequestType.SUMMARY,
+            });
+
+            const systemMessage: CoreSystemMessage = {
+                role: 'system',
+                content: this.promptProvider.getSummaryPrompt(),
+                experimental_providerMetadata: {
+                    anthropic: { cacheControl: { type: 'ephemeral' } },
+                },
+            };
+
+            // Transform messages to emphasize they are historical content
+            const conversationMessages = messages
+                .filter((msg) => msg.role !== 'tool')
+                .map((msg) => {
+                    const prefix = '[HISTORICAL CONTENT] ';
+                    const content =
+                        typeof msg.content === 'string' ? prefix + msg.content : msg.content;
+
+                    return {
+                        ...msg,
+                        content,
+                    };
+                });
+
+            const { object } = await generateObject({
+                model,
+                schema: ChatSummarySchema,
+                messages: [
+                    { role: 'system', content: systemMessage.content as string },
+                    ...conversationMessages.map((msg) => ({
+                        role: msg.role,
+                        content: msg.content as string,
+                    })),
+                ],
+            });
+
+            const {
+                filesDiscussed,
+                projectContext,
+                implementationDetails,
+                userPreferences,
+                currentStatus,
+            } = object as z.infer<typeof ChatSummarySchema>;
+
+            // Formats the structured object into the desired text format
+            const summary = `# Files Discussed
+${filesDiscussed.join('\n')}
+
+# Project Context
+${projectContext}
+
+# Implementation Details
+${implementationDetails}
+
+# User Preferences
+${userPreferences}
+
+# Current Status
+${currentStatus}`;
+
+            return { content: summary, status: 'full' };
+        } catch (error) {
+            console.error('Error generating summary:', error);
+            return { content: 'Failed to generate summary', status: 'error' };
         }
     }
 }

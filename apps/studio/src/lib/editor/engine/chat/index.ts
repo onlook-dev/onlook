@@ -178,7 +178,7 @@ export class ChatManager {
     }
 
     async handleChatResponse(res: StreamResponse | null, requestType: StreamRequestType) {
-        if (!res) {
+        if (!res || !this.conversation.current) {
             console.error('No response found');
             return;
         }
@@ -204,6 +204,15 @@ export class ChatManager {
             });
             return;
         }
+
+        if (res.usage) {
+            this.conversation.current.updateTokenUsage(res.usage);
+        }
+
+        if (this.conversation.current.needsSummary()) {
+            await this.conversation.generateConversationSummary();
+        }
+
         const assistantMessage = this.conversation.addAssistantMessage(res);
         if (!assistantMessage) {
             console.error('Failed to add assistant message');

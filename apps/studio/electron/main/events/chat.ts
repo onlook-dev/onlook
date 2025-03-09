@@ -1,4 +1,5 @@
-import type { ChatConversation, ProjectSuggestions, StreamRequestType } from '@onlook/models/chat';
+import type { ChatConversation, ProjectSuggestions } from '@onlook/models/chat';
+import { StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
@@ -63,5 +64,10 @@ export function listenForChatMessages() {
     ipcMain.handle(MainChannels.SAVE_SUGGESTIONS, (e: Electron.IpcMainInvokeEvent, args) => {
         const { suggestions } = args as { suggestions: ProjectSuggestions };
         return PersistentStorage.SUGGESTIONS.writeItem(suggestions);
+    });
+
+    ipcMain.handle(MainChannels.GENERATE_CHAT_SUMMARY, async (e, args) => {
+        const { messages } = args as { messages: CoreMessage[] };
+        return Chat.generateChatSummary(messages);
     });
 }

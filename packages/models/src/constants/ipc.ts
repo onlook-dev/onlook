@@ -103,6 +103,7 @@ export enum MainChannels {
     GENERATE_SUGGESTIONS = 'generate-suggestions',
     GET_SUGGESTIONS_BY_PROJECT = 'get-suggestions-by-project',
     SAVE_SUGGESTIONS = 'save-suggestions',
+    GENERATE_CHAT_SUMMARY = 'generate-chat-summary',
 
     // Run
     RUN_START = 'run-start',
