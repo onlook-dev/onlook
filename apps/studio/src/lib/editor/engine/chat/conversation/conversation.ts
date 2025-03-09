@@ -13,7 +13,7 @@ export class ChatConversationImpl implements ChatConversation {
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
     createdAt: string;
     updatedAt: string;
-    private readonly TOKEN_LIMIT = 150000;
+    private readonly TOKEN_LIMIT = 200000;
     private readonly SUMMARY_THRESHOLD = this.TOKEN_LIMIT * 0.75; // Trigger at 75% of token limit
     public readonly RETAINED_MESSAGES = 10;
     summaryMessage: AssistantChatMessageImpl | null = null;

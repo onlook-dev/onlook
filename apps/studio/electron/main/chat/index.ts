@@ -74,7 +74,7 @@ class LlmManager {
                 requestType,
             });
 
-            const { textStream, usage } = await streamText({
+            const { textStream, usage, text } = await streamText({
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
@@ -94,8 +94,7 @@ class LlmManager {
                 fullText += partialText;
                 this.emitPartialMessage(fullText);
             }
-            const usageData = await usage;
-            return { content: fullText, status: 'full', usage: usageData };
+            return { content: await text, status: 'full', usage: await usage };
         } catch (error: any) {
             try {
                 console.error('Error', error);
@@ -228,19 +227,19 @@ class LlmManager {
 
             // Formats the structured object into the desired text format
             const summary = `# Files Discussed
-         ${filesDiscussed.join('\n')}
+${filesDiscussed.join('\n')}
 
-         # Project Context
-         ${projectContext}
+# Project Context
+${projectContext}
 
-         # Implementation Details
-         ${implementationDetails}
+# Implementation Details
+${implementationDetails}
 
-         # User Preferences
-         ${userPreferences}
+# User Preferences
+${userPreferences}
 
-         # Current Status
-         ${currentStatus}`;
+# Current Status
+${currentStatus}`;
 
             return { content: summary, status: 'full' };
         } catch (error) {
