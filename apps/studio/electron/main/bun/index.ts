@@ -53,19 +53,3 @@ export const getBunCommand = (command: string): string => {
     const bunExecutable = getBunExecutablePath();
     return replaceCommand(command, bunExecutable);
 };
-
-export async function isPortAvailable(port: number): Promise<DetectedPortResults> {
-    try {
-        const availablePort = await detect(port);
-        return {
-            isPortAvailable: port === availablePort,
-            availablePort: availablePort,
-        };
-    } catch (error) {
-        console.error('Error detecting port:', error);
-        return {
-            isPortAvailable: false,
-            availablePort: 3000,
-        };
-    }
-}

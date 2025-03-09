@@ -125,6 +125,12 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
             });
             return;
         }
+
+        if (!deviceOptions[deviceCategory] || !deviceOptions[deviceCategory][deviceName]) {
+            setDevice('Custom:Custom');
+            return;
+        }
+
         const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
         if (width === parseInt(deviceHeight) && height === parseInt(deviceWidth)) {
             return;
@@ -143,8 +149,13 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
 
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
-        const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
 
+        if (!deviceOptions[deviceCategory] || !deviceOptions[deviceCategory][deviceName]) {
+            setDevice('Custom:Custom');
+            return;
+        }
+
+        const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
         if (
             deviceName !== 'Custom' &&
             ((width !== parseInt(deviceWidth) && width !== parseInt(deviceHeight)) ||

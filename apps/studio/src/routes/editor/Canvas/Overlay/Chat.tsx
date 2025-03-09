@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
@@ -49,12 +49,20 @@ const DEFAULT_INPUT_STATE = {
 export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
+        const userManager = useUserManager();
         const isPreviewMode = editorEngine.mode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
         const { t } = useTranslation();
+
+        const shouldHideButton =
+            !selectedEl ||
+            isPreviewMode ||
+            editorEngine.chat.isWaiting ||
+            editorEngine.chat.streamingMessage ||
+            !userManager.settings.settings?.chat?.showMiniChat;
 
         // Add effect to reset input state when elementId changes
         useEffect(() => {
@@ -100,12 +108,7 @@ export const OverlayChat = observer(
             }
         }, [elementId]);
 
-        if (
-            !selectedEl ||
-            isPreviewMode ||
-            editorEngine.chat.isWaiting ||
-            editorEngine.chat.streamingMessage
-        ) {
+        if (shouldHideButton) {
             return null;
         }
 

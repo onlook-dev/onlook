@@ -1,4 +1,9 @@
-import { DefaultSettings, MainChannels, WebviewChannels } from '@onlook/models/constants';
+import {
+    DefaultSettings,
+    MainChannels,
+    WebviewChannels,
+    type Channels,
+} from '@onlook/models/constants';
 import { jsonClone } from '@onlook/utility';
 import imageCompression from 'browser-image-compression';
 import type { WebviewTag } from 'electron/renderer';
@@ -32,7 +37,7 @@ export const getRunProjectCommand = (folderPath: string) => {
     return `${platformCommand} ${folderPath} && ${DefaultSettings.COMMANDS.run}`;
 };
 
-export const invokeMainChannel = async <T, P>(channel: MainChannels, ...args: T[]): Promise<P> => {
+export const invokeMainChannel = async <T, P>(channel: Channels, ...args: T[]): Promise<P> => {
     return window.api.invoke(channel, ...args.map(jsonClone));
 };
 

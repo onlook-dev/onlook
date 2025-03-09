@@ -1,0 +1,39 @@
+{
+    "name": "@onlook/growth",
+    "description": "Growth helpers",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "version": "0.0.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "scripts": {
+        "clean": "rm -rf node_modules",
+        "lint": "eslint --fix .",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "onlook",
+        "growth"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.com",
+    "devDependencies": {
+        "@onlook/typescript": "*"
+    },
+    "dependencies": {
+        "@babel/generator": "^7.14.5",
+        "@babel/parser": "^7.14.3",
+        "@babel/traverse": "^7.14.5",
+        "@babel/types": "^7.24.7"
+    }
+}

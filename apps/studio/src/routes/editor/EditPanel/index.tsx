@@ -5,6 +5,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
@@ -17,6 +18,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
+import ChatHistory from './ChatTab/ChatControls/ChatHistory';
 import DevTab from './DevTab';
 import PropsTab from './PropsTab';
 import StylesTab from './StylesTab';
@@ -41,6 +43,7 @@ const EditPanel = observer(() => {
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
+    const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -150,6 +153,32 @@ const EditPanel = observer(() => {
                                     />
                                     Show code while rendering
                                 </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="flex items-center py-1.5"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        userManager.settings.updateChat({
+                                            showMiniChat: !chatSettings.showMiniChat,
+                                        });
+                                    }}
+                                >
+                                    <Icons.Check
+                                        className={cn(
+                                            'mr-2 h-4 w-4',
+                                            chatSettings.showMiniChat ? 'opacity-100' : 'opacity-0',
+                                        )}
+                                    />
+                                    Show mini chat
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        setIsChatHistoryOpen(!isChatHistoryOpen);
+                                    }}
+                                >
+                                    <Icons.CounterClockwiseClock className="mr-2 h-4 w-4" />
+                                    Chat History
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                         <TabsTrigger
@@ -170,6 +199,7 @@ const EditPanel = observer(() => {
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
                 <Separator className="mt-0" />
+                <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
@@ -191,32 +221,32 @@ const EditPanel = observer(() => {
 
     return (
         <div className="flex flex-row h-full">
-            <ResizablePanel
-                side="right"
-                defaultWidth={DEV_PANEL_WIDTH}
-                forceWidth={DEV_PANEL_WIDTH}
-                minWidth={DEV_PANEL_MIN_WIDTH}
-                maxWidth={DEV_PANEL_MAX_WIDTH}
-            >
-                <div
-                    id="dev-panel"
-                    className={cn(
-                        'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/80 overflow-hidden h-full',
-                        editorEngine.mode === EditorMode.PREVIEW || !isDevPanelOpen
-                            ? 'hidden'
-                            : 'visible',
-                    )}
+            {isDevPanelOpen && (
+                <ResizablePanel
+                    side="right"
+                    defaultWidth={DEV_PANEL_WIDTH}
+                    forceWidth={DEV_PANEL_WIDTH}
+                    minWidth={DEV_PANEL_MIN_WIDTH}
+                    maxWidth={DEV_PANEL_MAX_WIDTH}
                 >
                     <div
+                        id="dev-panel"
                         className={cn(
-                            'backdrop-blur shadow h-full relative transition-opacity duration-300',
-                            isOpen ? '' : 'rounded-tr-xl',
+                            'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/80 overflow-hidden h-full',
+                            editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
                         )}
                     >
-                        <DevTab />
+                        <div
+                            className={cn(
+                                'backdrop-blur shadow h-full relative transition-opacity duration-300',
+                                isOpen ? '' : 'rounded-tr-xl',
+                            )}
+                        >
+                            <DevTab />
+                        </div>
                     </div>
-                </div>
-            </ResizablePanel>
+                </ResizablePanel>
+            )}
             <ResizablePanel
                 side="right"
                 defaultWidth={editPanelWidth}

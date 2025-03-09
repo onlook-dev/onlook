@@ -122,17 +122,35 @@ const calculateNewOverlayDimensions = (
 
 interface EdgeHandleProps extends HandleProps {
     handleDoubleClick: (e: React.MouseEvent, position: ResizeHandlePosition) => void;
+    showHandle: boolean;
 }
+
+const HANDLE_CONFIG = {
+    EDGE: {
+        THICKNESS: 5,
+        LENGTH: 32,
+        RADIUS: 3.5,
+    },
+    CORNER: {
+        SIZE: 8,
+        HIT_AREA: 20,
+    },
+    INVISIBLE_EDGE: {
+        SIZE: 4,
+    },
+} as const;
 
 const EdgeHandle: React.FC<EdgeHandleProps> = ({
     x,
     y,
     position,
     styles,
+    color,
     handleMouseDown,
     handleDoubleClick,
+    showHandle = false,
 }) => {
-    const size = 4;
+    const size = HANDLE_CONFIG.INVISIBLE_EDGE.SIZE;
     const halfSize = size / 2;
     const isVertical =
         position === ResizeHandlePosition.LEFT || position === ResizeHandlePosition.RIGHT;
@@ -155,15 +173,39 @@ const EdgeHandle: React.FC<EdgeHandleProps> = ({
     };
 
     return (
-        <rect
-            x={isVertical ? x - halfSize : 0}
-            y={isVertical ? 0 : y - halfSize}
-            width={isVertical ? size : '100%'}
-            height={isVertical ? '100%' : size}
-            fill="transparent"
-            style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
-            onMouseDown={handleMouseDownRect}
-        />
+        <>
+            <rect
+                x={isVertical ? x - halfSize : 0}
+                y={isVertical ? 0 : y - halfSize}
+                width={isVertical ? size : '100%'}
+                height={isVertical ? '100%' : size}
+                fill="transparent"
+                style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
+                onMouseDown={handleMouseDownRect}
+            />
+            {showHandle && (
+                <rect
+                    x={
+                        isVertical
+                            ? x - HANDLE_CONFIG.EDGE.THICKNESS / 2
+                            : x - HANDLE_CONFIG.EDGE.LENGTH / 2
+                    }
+                    y={
+                        isVertical
+                            ? y - HANDLE_CONFIG.EDGE.LENGTH / 2
+                            : y - HANDLE_CONFIG.EDGE.THICKNESS / 2
+                    }
+                    width={isVertical ? HANDLE_CONFIG.EDGE.THICKNESS : HANDLE_CONFIG.EDGE.LENGTH}
+                    height={isVertical ? HANDLE_CONFIG.EDGE.LENGTH : HANDLE_CONFIG.EDGE.THICKNESS}
+                    rx={HANDLE_CONFIG.EDGE.RADIUS}
+                    fill="white"
+                    stroke={color}
+                    strokeWidth={1}
+                    style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
+                    onMouseDown={handleMouseDownRect}
+                />
+            )}
+        </>
     );
 };
 
@@ -175,9 +217,9 @@ const CornerHandle: React.FC<HandleProps> = ({
     styles,
     handleMouseDown,
 }) => {
-    const size = 8;
+    const size = HANDLE_CONFIG.CORNER.SIZE;
     const halfSize = size / 2;
-    const hitAreaSize = 20;
+    const hitAreaSize = HANDLE_CONFIG.CORNER.HIT_AREA;
     const hitAreaHalfSize = hitAreaSize / 2;
 
     return (
@@ -258,6 +300,8 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
 }) => {
     const editorEngine = useEditorEngine();
     const color = isComponent ? colors.purple[500] : colors.red[500];
+    const enableWidth = styles.width?.endsWith('px');
+    const enableHeight = styles.height?.endsWith('px');
 
     // Calculate radius handle position (20px or 25% of width/height, whichever is smaller)
     const radiusOffset = Math.min(20, width * 0.25, height * 0.25);
@@ -419,77 +463,100 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
 
     return (
         <>
-            {/* Edge handles */}
-            <EdgeHandle
-                color={color}
-                x={width / 2}
-                y={0}
-                position={ResizeHandlePosition.TOP}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-                handleDoubleClick={handleDoubleClick}
-            />
-            <EdgeHandle
-                color={color}
-                x={width}
-                y={height / 2}
-                position={ResizeHandlePosition.RIGHT}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-                handleDoubleClick={handleDoubleClick}
-            />
-            <EdgeHandle
-                color={color}
-                x={width / 2}
-                y={height}
-                position={ResizeHandlePosition.BOTTOM}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-                handleDoubleClick={handleDoubleClick}
-            />
-            <EdgeHandle
-                color={color}
-                x={0}
-                y={height / 2}
-                position={ResizeHandlePosition.LEFT}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-                handleDoubleClick={handleDoubleClick}
-            />
+            {/* Top Edge handle - only show if height is set */}
+            {enableHeight && (
+                <EdgeHandle
+                    color={color}
+                    x={width / 2}
+                    y={0}
+                    position={ResizeHandlePosition.TOP}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                    handleDoubleClick={handleDoubleClick}
+                    showHandle={false}
+                />
+            )}
+            {/* Right Edge handle - only show if width is set */}
+            {enableWidth && (
+                <EdgeHandle
+                    color={color}
+                    x={width}
+                    y={height / 2}
+                    position={ResizeHandlePosition.RIGHT}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                    handleDoubleClick={handleDoubleClick}
+                    showHandle={!enableHeight}
+                />
+            )}
+            {/* Bottom Edge handle - only show if height is set */}
+            {enableHeight && (
+                <EdgeHandle
+                    color={color}
+                    x={width / 2}
+                    y={height}
+                    position={ResizeHandlePosition.BOTTOM}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                    handleDoubleClick={handleDoubleClick}
+                    showHandle={!enableWidth}
+                />
+            )}
+            {/* Left Edge handle - only show if width is set */}
+            {enableWidth && (
+                <EdgeHandle
+                    color={color}
+                    x={0}
+                    y={height / 2}
+                    position={ResizeHandlePosition.LEFT}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                    handleDoubleClick={handleDoubleClick}
+                    showHandle={false}
+                />
+            )}
 
-            {/* Corner handles */}
-            <CornerHandle
-                color={color}
-                x={0}
-                y={0}
-                position={ResizeHandlePosition.TOP_LEFT}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-            />
-            <CornerHandle
-                color={color}
-                x={width}
-                y={0}
-                position={ResizeHandlePosition.TOP_RIGHT}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-            />
-            <CornerHandle
-                color={color}
-                x={width}
-                y={height}
-                position={ResizeHandlePosition.BOTTOM_RIGHT}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-            />
-            <CornerHandle
-                color={color}
-                x={0}
-                y={height}
-                position={ResizeHandlePosition.BOTTOM_LEFT}
-                styles={styles}
-                handleMouseDown={handleMouseDownDimensions}
-            />
+            {/* Corner handles - only show if both width and height are set */}
+            {enableHeight && enableWidth && (
+                <CornerHandle
+                    color={color}
+                    x={0}
+                    y={0}
+                    position={ResizeHandlePosition.TOP_LEFT}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                />
+            )}
+            {enableHeight && enableWidth && (
+                <CornerHandle
+                    color={color}
+                    x={width}
+                    y={0}
+                    position={ResizeHandlePosition.TOP_RIGHT}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                />
+            )}
+            {enableHeight && enableWidth && (
+                <CornerHandle
+                    color={color}
+                    x={width}
+                    y={height}
+                    position={ResizeHandlePosition.BOTTOM_RIGHT}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                />
+            )}
+            {enableHeight && enableWidth && (
+                <CornerHandle
+                    color={color}
+                    x={0}
+                    y={height}
+                    position={ResizeHandlePosition.BOTTOM_LEFT}
+                    styles={styles}
+                    handleMouseDown={handleMouseDownDimensions}
+                />
+            )}
 
             {showRadius && (
                 <RadiusHandle

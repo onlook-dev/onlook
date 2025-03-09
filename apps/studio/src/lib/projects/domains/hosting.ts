@@ -76,9 +76,14 @@ export class HostingManager {
         this.state = { ...this.state, ...partialState };
     }
 
-    async publish(skipBuild: boolean = false): Promise<boolean> {
+    async publish(options?: { skipBuild?: boolean; skipBadge?: boolean }): Promise<boolean> {
         sendAnalytics('hosting publish');
         this.updateState({ status: PublishStatus.LOADING, message: 'Creating deployment...' });
+
+        await this.projectsManager.versions?.createCommit(
+            `Save before publishing to ${this.domain.url}`,
+            false,
+        );
 
         const request: PublishRequest = {
             folderPath: this.project.folderPath,
@@ -87,7 +92,7 @@ export class HostingManager {
                 this.domain.type === DomainType.CUSTOM
                     ? getPublishUrls(this.domain.url)
                     : [this.domain.url],
-            skipBuild,
+            options,
         };
 
         const res: PublishResponse | null = await invokeMainChannel(
