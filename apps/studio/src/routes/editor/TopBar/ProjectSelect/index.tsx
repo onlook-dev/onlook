@@ -1,5 +1,6 @@
 import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
 import { ProjectTabs } from '@/lib/projects';
+import { CreateState } from '@/lib/projects/create';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
@@ -44,6 +45,10 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     async function handleReturn() {
+        if (projectsManager.create.state === CreateState.CREATE_LOADING) {
+            console.warn('Cannot return to projects while loading');
+            return;
+        }
         handleNavigateToProject();
     }
 
@@ -102,9 +107,16 @@ const ProjectBreadcrumb = observer(() => {
                         }, 300);
                     }}
                 >
-                    <DropdownMenuItem onClick={handleReturn}>
+                    <DropdownMenuItem
+                        onClick={handleReturn}
+                        disabled={projectsManager.create.state === CreateState.CREATE_LOADING}
+                    >
                         <div className="flex row center items-center group">
-                            <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
+                            {projectsManager.create.state === CreateState.CREATE_LOADING ? (
+                                <Icons.Shadow className="mr-2 animate-spin" />
+                            ) : (
+                                <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
+                            )}
                             {t('projects.actions.goToAllProjects')}
                         </div>
                     </DropdownMenuItem>
