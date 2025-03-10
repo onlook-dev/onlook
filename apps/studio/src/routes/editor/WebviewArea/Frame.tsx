@@ -1,9 +1,11 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { WebviewState } from '@/lib/editor/engine/webview';
+import type { IframeMessageBridge } from '@/lib/editor/iframeMessageBridge';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
-import { DefaultSettings } from '@onlook/models/constants';
+import { sendToIframe } from '@/lib/utils';
+import { DefaultSettings, WebviewChannels } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
@@ -24,7 +26,7 @@ const Frame = observer(
         messageBridge,
         settings,
     }: {
-        messageBridge: WebviewMessageBridge;
+        messageBridge: WebviewMessageBridge | IframeMessageBridge;
         settings: FrameSettings;
     }) => {
         const RETRY_TIMEOUT = 3000;
@@ -32,7 +34,7 @@ const Frame = observer(
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
         const { t } = useTranslation();
-        const webviewRef = useRef<Electron.WebviewTag | null>(null);
+        const webviewRef = useRef<Electron.WebviewTag | HTMLIFrameElement | null>(null);
         let domState = editorEngine.webviews.getState(settings.id);
         const [selected, setSelected] = useState<boolean>(
             editorEngine.webviews.isSelected(settings.id),
@@ -80,32 +82,60 @@ const Frame = observer(
             [editorEngine.pages, settings.id],
         );
 
+        const executeJavaScript = async (element: Electron.WebviewTag | HTMLIFrameElement, code: string) => {
+            if ('executeJavaScript' in element) {
+                return (element as Electron.WebviewTag).executeJavaScript(code);
+            } else {
+                // For iframe, we use postMessage and wait for a response
+                const iframe = element as HTMLIFrameElement;
+                const messageId = `exec_${Date.now()}`;
+                
+                return new Promise((resolve) => {
+                    const handler = (e: MessageEvent) => {
+                        if (e.data && e.data.messageId === messageId) {
+                            window.removeEventListener('message', handler);
+                            resolve(e.data.result);
+                        }
+                    };
+                    
+                    window.addEventListener('message', handler);
+                    sendToIframe(iframe, WebviewChannels.EXECUTE_JS, { code, messageId });
+                });
+            }
+        };
+        
         const handleDomReady = useCallback(async () => {
-            const webview = webviewRef.current;
-            if (!webview) {
+            const element = webviewRef.current;
+            if (!element) {
                 return;
             }
-            await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
+            
+            await executeJavaScript(element, `window.api?.setWebviewId('${element.id}')`);
             setDomReady(true);
-            webview.setZoomLevel(0);
+            
+            // setZoomLevel is only available on webview
+            if ('setZoomLevel' in element) {
+                (element as Electron.WebviewTag).setZoomLevel(0);
+            }
 
-            const body = await editorEngine.ast.getBodyFromWebview(webview);
+            const body = await editorEngine.ast.getBodyFromWebview(element as any);
 
             setDomFailed(body.children.length === 0);
 
             const state = editorEngine.webviews.computeState(body);
-            editorEngine.webviews.setState(webview, state);
+            editorEngine.webviews.setState(element as any, state);
 
             if (state === WebviewState.DOM_ONLOOK_ENABLED) {
                 setTimeout(() => {
-                    selectFirstElement(webview);
+                    selectFirstElement(element as any);
                 }, 1000);
             }
 
             setTimeout(() => {
-                getDarkMode(webview);
+                getDarkMode(element as any);
             }, 100);
-            webview.executeJavaScript(`window.api?.processDom()`);
+            
+            await executeJavaScript(element, `window.api?.processDom()`);
         }, [editorEngine.ast, editorEngine.webviews]);
 
         useEffect(() => {
@@ -204,29 +234,49 @@ const Frame = observer(
         }, [settings.id]);
 
         function setupFrame() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
-            if (!webview) {
+            const element = webviewRef.current;
+            if (!element) {
                 return;
             }
-            editorEngine.webviews.register(webview);
-            messageBridge.register(webview, settings.id);
-            setBrowserEventListeners(webview);
+            
+            // Register with the appropriate managers
+            editorEngine.webviews.register(element as any);
+            messageBridge.register(element as any, settings.id);
+            
+            // Set up event listeners based on element type
+            if ('addEventListener' in element && 'tagName' in element) {
+                if (element.tagName.toLowerCase() === 'webview') {
+                    setBrowserEventListeners(element as Electron.WebviewTag);
+                } else if (element.tagName.toLowerCase() === 'iframe') {
+                    setIframeEventListeners(element as HTMLIFrameElement);
+                }
+            }
 
             return () => {
-                editorEngine.webviews.deregister(webview);
-                messageBridge.deregister(webview);
-                webview.removeEventListener('did-navigate', handleUrlChange);
+                editorEngine.webviews.deregister(element as any);
+                messageBridge.deregister(element as any);
+                
+                if ('removeEventListener' in element && 'tagName' in element) {
+                    if (element.tagName.toLowerCase() === 'webview') {
+                        (element as Electron.WebviewTag).removeEventListener('did-navigate', handleUrlChange);
+                    }
+                }
             };
         }
 
         function deregisterWebview() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
-            if (!webview) {
+            const element = webviewRef.current;
+            if (!element) {
                 return;
             }
-            editorEngine.webviews.deregister(webview);
-            messageBridge.deregister(webview);
-            webview.removeEventListener('did-navigate', handleUrlChange);
+            editorEngine.webviews.deregister(element as any);
+            messageBridge.deregister(element as any);
+            
+            if ('removeEventListener' in element && 'tagName' in element) {
+                if (element.tagName.toLowerCase() === 'webview') {
+                    (element as Electron.WebviewTag).removeEventListener('did-navigate', handleUrlChange);
+                }
+            }
         }
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
@@ -237,26 +287,56 @@ const Frame = observer(
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('console-message', handleConsoleMessage);
         }
+        
+        function setIframeEventListeners(iframe: HTMLIFrameElement) {
+            // For iframes, we use the load event instead of dom-ready
+            iframe.addEventListener('load', () => {
+                handleDomReady();
+                
+                // Set up message event listener for iframe communication
+                window.addEventListener('message', (e) => {
+                    if (e.source === iframe.contentWindow) {
+                        // Handle navigation events
+                        if (e.data.channel === 'did-navigate') {
+                            handleUrlChange(e.data);
+                        }
+                        
+                        // Handle error events
+                        if (e.data.channel === 'did-fail-load') {
+                            handleDomFailed();
+                        }
+                    }
+                });
+            });
+            
+            // Focus event
+            iframe.addEventListener('focus', handleWebviewFocus);
+        }
 
-        async function getDarkMode(webview: Electron.WebviewTag) {
-            const darkmode = (await webview.executeJavaScript(`window.api?.getTheme()`)) || 'light';
+        async function getDarkMode(element: Electron.WebviewTag | HTMLIFrameElement) {
+            const darkmode = (await executeJavaScript(element, `window.api?.getTheme()`)) || 'light';
             setDarkmode(darkmode === 'dark');
         }
 
         function handleDomFailed() {
             setDomFailed(true);
-            const webview = webviewRef.current as Electron.WebviewTag | null;
-            if (!webview) {
+            const element = webviewRef.current;
+            if (!element) {
                 return;
             }
-            editorEngine.webviews.setState(webview, WebviewState.RUNNING_NO_DOM);
+            editorEngine.webviews.setState(element as any, WebviewState.RUNNING_NO_DOM);
 
             setTimeout(() => {
-                if (webview) {
+                if (element) {
                     try {
-                        webview.reload();
+                        if ('reload' in element) {
+                            (element as Electron.WebviewTag).reload();
+                        } else if (element instanceof HTMLIFrameElement) {
+                            // For iframe, we need to reload the src
+                            element.src = element.src;
+                        }
                     } catch (error) {
-                        console.error('Failed to reload webview', error);
+                        console.error('Failed to reload element', error);
                     }
                 }
             }, RETRY_TIMEOUT);
@@ -264,7 +344,7 @@ const Frame = observer(
 
         function handleWebviewFocus() {
             editorEngine.webviews.deselectAll();
-            editorEngine.webviews.select(webviewRef.current as Electron.WebviewTag);
+            editorEngine.webviews.select(webviewRef.current as any);
         }
 
         function handleConsoleMessage(event: Electron.ConsoleMessageEvent) {
@@ -383,10 +463,10 @@ const Frame = observer(
             );
         }
 
-        async function selectFirstElement(webview: Electron.WebviewTag) {
-            const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
+        async function selectFirstElement(element: Electron.WebviewTag | HTMLIFrameElement) {
+            const domEl = await executeJavaScript(element, `window.api?.getFirstOnlookElement()`);
             if (domEl) {
-                editorEngine.elements.click([domEl], webview);
+                editorEngine.elements.click([domEl], element as any);
             }
         }
 
@@ -396,7 +476,7 @@ const Frame = observer(
                 style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
             >
                 <BrowserControls
-                    webviewRef={domReady ? webviewRef : null}
+                    webviewRef={domReady ? webviewRef as any : null}
                     webviewSrc={webviewSrc}
                     setWebviewSrc={setWebviewSrc}
                     selected={selected}
@@ -410,7 +490,7 @@ const Frame = observer(
                 />
                 <div className="relative">
                     <ResizeHandles
-                        webviewRef={webviewRef}
+                        webviewRef={webviewRef as any}
                         webviewSize={webviewSize}
                         setWebviewSize={setWebviewSize}
                         selectedPreset={selectedPreset}
@@ -421,25 +501,24 @@ const Frame = observer(
                         aspectRatioLocked={aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED}
                         webviewId={settings.id}
                     />
-                    <webview
+                    <iframe
                         id={settings.id}
-                        ref={webviewRef}
+                        ref={(el) => { webviewRef.current = el; }}
                         className={cn(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
                             shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
                             selected ? getSelectedOutlineColor() : 'outline-transparent',
                         )}
-                        src={settings.url}
-                        preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
-                        allowpopups={'true' as any}
+                        src={`${settings.url}${settings.url.includes('?') ? '&' : '?'}onlook-iframe=true`}
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
+                            border: 'none'
                         }}
-                    ></webview>
+                    ></iframe>
                     <GestureScreen
                         isResizing={isResizing}
-                        webviewRef={webviewRef}
+                        webviewRef={webviewRef as any}
                         setHovered={setHovered}
                     />
                     {domFailed && shouldShowDomFailed && renderNotRunning()}

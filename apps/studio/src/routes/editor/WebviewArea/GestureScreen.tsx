@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { getRelativeMousePositionToWebview } from '@/lib/editor/engine/overlay/utils';
 import { EditorMode } from '@/lib/models';
+// Helper for executing JavaScript in both webview and iframe elements
 import { MouseAction } from '@onlook/models/editor';
 import type { DomElement, DropElementProperties, ElementPosition } from '@onlook/models/element';
 import { cn } from '@onlook/ui/utils';
@@ -10,26 +11,54 @@ import { useCallback, useEffect, useMemo } from 'react';
 import RightClickMenu from '../RightClickMenu';
 
 interface GestureScreenProps {
-    webviewRef: React.RefObject<Electron.WebviewTag>;
+    webviewRef: React.RefObject<Electron.WebviewTag | HTMLIFrameElement>;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
     isResizing: boolean;
 }
 
+// Helper function to execute JavaScript in both webview and iframe elements
+const executeJavaScript = async (element: Electron.WebviewTag | HTMLIFrameElement, code: string): Promise<any> => {
+    if ('executeJavaScript' in element) {
+        return (element as Electron.WebviewTag).executeJavaScript(code);
+    } else {
+        // For iframe, we use postMessage and wait for a response
+        const iframe = element as HTMLIFrameElement;
+        const messageId = `exec_${Date.now()}`;
+        
+        return new Promise((resolve) => {
+            const handler = (e: MessageEvent) => {
+                if (e.data && e.data.messageId === messageId) {
+                    window.removeEventListener('message', handler);
+                    resolve(e.data.result);
+                }
+            };
+            
+            window.addEventListener('message', handler);
+            if (iframe.contentWindow) {
+                iframe.contentWindow.postMessage({
+                    channel: 'execute-js',
+                    args: { code, messageId }
+                }, '*');
+            }
+        });
+    }
+};
+
 const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
-    const getWebview = useCallback((): Electron.WebviewTag => {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
-        if (!webview) {
-            throw Error('No webview found');
+    const getWebview = useCallback((): Electron.WebviewTag | HTMLIFrameElement => {
+        const element = webviewRef.current;
+        if (!element) {
+            throw Error('No webview or iframe found');
         }
-        return webview;
+        return element;
     }, [webviewRef]);
 
     const getRelativeMousePosition = useCallback(
         (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
             const webview = getWebview();
-            return getRelativeMousePositionToWebview(e, webview);
+            return getRelativeMousePositionToWebview(e, webview as Electron.WebviewTag);
         },
         [getWebview],
     );
@@ -38,7 +67,8 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
             const webview = getWebview();
             const pos = getRelativeMousePosition(e);
-            const el: DomElement = await webview.executeJavaScript(
+            const el: DomElement = await executeJavaScript(
+                webview,
                 `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN || action === MouseAction.DOUBLE_CLICK})`,
             );
             if (!el) {
@@ -47,7 +77,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
 
             switch (action) {
                 case MouseAction.MOVE:
-                    editorEngine.elements.mouseover(el, webview);
+                    editorEngine.elements.mouseover(el, webview as Electron.WebviewTag);
                     if (e.altKey) {
                         editorEngine.elements.showMeasurement();
                     } else {
@@ -67,14 +97,14 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                         editorEngine.text.end();
                     }
                     if (e.shiftKey) {
-                        editorEngine.elements.shiftClick(el, webview);
+                        editorEngine.elements.shiftClick(el, webview as Electron.WebviewTag);
                     } else {
-                        editorEngine.move.start(el, pos, webview);
-                        editorEngine.elements.click([el], webview);
+                        editorEngine.move.start(el, pos, webview as Electron.WebviewTag);
+                        editorEngine.elements.click([el], webview as Electron.WebviewTag);
                     }
                     break;
                 case MouseAction.DOUBLE_CLICK:
-                    editorEngine.text.start(el, webview);
+                    editorEngine.text.start(el, webview as Electron.WebviewTag);
                     break;
             }
         },
@@ -136,7 +166,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
     }
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        editorEngine.insert.end(e, webviewRef.current);
+        editorEngine.insert.end(e, webviewRef.current as Electron.WebviewTag);
         editorEngine.move.end(e);
     }
 
@@ -162,11 +192,11 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
             if (properties.type === 'image') {
                 const webview = getWebview();
                 const dropPosition = getRelativeMousePosition(e);
-                await editorEngine.insert.insertDroppedImage(webview, dropPosition, properties);
+                await editorEngine.insert.insertDroppedImage(webview as Electron.WebviewTag, dropPosition, properties);
             } else {
                 const webview = getWebview();
                 const dropPosition = getRelativeMousePosition(e);
-                await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
+                await editorEngine.insert.insertDroppedElement(webview as Electron.WebviewTag, dropPosition, properties);
             }
 
             editorEngine.mode = EditorMode.DESIGN;

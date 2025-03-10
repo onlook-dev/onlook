@@ -45,6 +45,15 @@ export const sendToWebview = <T>(webview: WebviewTag, channel: WebviewChannels, 
     return webview.send(channel, ...args.map(jsonClone));
 };
 
+export const sendToIframe = <T>(iframe: HTMLIFrameElement, channel: WebviewChannels, ...args: T[]) => {
+    if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({
+            channel,
+            args: args.map(jsonClone)
+        }, '*');
+    }
+};
+
 const generateCustomId = customAlphabet(VALID_DATA_ATTR_CHARS, 7);
 export function createDomId(): string {
     return `odid-${generateCustomId()}`;

@@ -1,4 +1,5 @@
 import type { ProjectsManager } from '@/lib/projects';
+import { WebviewChannels } from '@onlook/models/constants';
 import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -12,7 +13,7 @@ export enum WebviewState {
 }
 
 interface WebviewData {
-    webview: Electron.WebviewTag;
+    webview: Electron.WebviewTag | HTMLIFrameElement;
     selected: boolean;
     state: WebviewState;
 }
@@ -50,15 +51,15 @@ export class WebviewManager {
         return Array.from(this.webviewIdToData.values()).map((w) => w.webview);
     }
 
-    getWebview(id: string): Electron.WebviewTag | undefined {
+    getWebview(id: string): Electron.WebviewTag | HTMLIFrameElement | undefined {
         return this.webviewIdToData.get(id)?.webview;
     }
 
-    register(webview: Electron.WebviewTag) {
+    register(webview: Electron.WebviewTag | HTMLIFrameElement) {
         this.webviewIdToData.set(webview.id, { webview, ...DEFAULT_DATA });
     }
 
-    deregister(webview: Electron.WebviewTag) {
+    deregister(webview: Electron.WebviewTag | HTMLIFrameElement) {
         this.disposeWebview(webview.id);
     }
 
@@ -71,7 +72,7 @@ export class WebviewManager {
         return this.webviewIdToData.get(id)?.selected ?? false;
     }
 
-    select(webview: Electron.WebviewTag) {
+    select(webview: Electron.WebviewTag | HTMLIFrameElement) {
         const data = this.webviewIdToData.get(webview.id);
         if (data) {
             data.selected = true;
@@ -81,7 +82,7 @@ export class WebviewManager {
         }
     }
 
-    deselect(webview: Electron.WebviewTag) {
+    deselect(webview: Electron.WebviewTag | HTMLIFrameElement) {
         const data = this.webviewIdToData.get(webview.id);
         if (data) {
             data.selected = false;
@@ -105,12 +106,39 @@ export class WebviewManager {
         return this.webviewIdToData.get(id)?.state ?? WebviewState.NOT_RUNNING;
     }
 
-    setState(webview: Electron.WebviewTag, state: WebviewState) {
+    setState(webview: Electron.WebviewTag | HTMLIFrameElement, state: WebviewState) {
         const data = this.webviewIdToData.get(webview.id);
         if (data) {
             data.state = state;
             this.webviewIdToData.set(webview.id, data);
             this.notifyStateObservers(webview.id);
+        }
+    }
+    
+    executeJavaScript(webview: Electron.WebviewTag | HTMLIFrameElement, code: string): Promise<any> {
+        if ('executeJavaScript' in webview) {
+            return (webview as Electron.WebviewTag).executeJavaScript(code);
+        } else {
+            // For iframe, we use postMessage and wait for a response
+            const iframe = webview as HTMLIFrameElement;
+            const messageId = `exec_${Date.now()}`;
+            
+            return new Promise((resolve) => {
+                const handler = (e: MessageEvent) => {
+                    if (e.data && e.data.messageId === messageId) {
+                        window.removeEventListener('message', handler);
+                        resolve(e.data.result);
+                    }
+                };
+                
+                window.addEventListener('message', handler);
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        channel: WebviewChannels.EXECUTE_JS,
+                        args: { code, messageId }
+                    }, '*');
+                }
+            });
         }
     }
 
@@ -186,7 +214,12 @@ export class WebviewManager {
 
     reloadWebviews() {
         for (const webview of this.selected) {
-            webview.reload();
+            if ('reload' in webview) {
+                (webview as Electron.WebviewTag).reload();
+            } else if (webview instanceof HTMLIFrameElement) {
+                // For iframe, we need to reload the src
+                webview.src = webview.src;
+            }
         }
     }
 }

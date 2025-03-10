@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
-import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
+import { IframeMessageBridge } from '@/lib/editor/iframeMessageBridge';
 import { observer } from 'mobx-react-lite';
 import Frame from './Frame';
 
 const WebviewArea = observer(() => {
     const editorEngine = useEditorEngine();
-    const messageBridge = new WebviewMessageBridge(editorEngine);
+    const messageBridge = new IframeMessageBridge(editorEngine);
     return (
         <div className="grid grid-flow-col gap-72">
             {editorEngine.canvas.frames.map((settings, index) => (

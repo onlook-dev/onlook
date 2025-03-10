@@ -12,6 +12,8 @@ export enum WebviewChannels {
     UPDATE_ELEMENT_INSTANCE_ID = 'update-element-instance-id',
     INSERT_IMAGE = 'insert-image',
     REMOVE_IMAGE = 'remove-image',
+    EXECUTE_JS = 'execute-js',
+    INIT_BRIDGE = 'init-bridge',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
