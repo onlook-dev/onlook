@@ -173,7 +173,33 @@ async function addNewColor(
                 }
 
                 if (!parentName) {
-                    addRootColorProperty(colorObj, camelCaseName, newCssVarName);
+                    colorObj.properties.push({
+                        type: 'ObjectProperty',
+                        key: {
+                            type: 'Identifier',
+                            name: camelCaseName,
+                        },
+                        value: {
+                            type: 'ObjectExpression',
+                            properties: [
+                                {
+                                    type: 'ObjectProperty',
+                                    key: {
+                                        type: 'Identifier',
+                                        name: 'DEFAULT',
+                                    },
+                                    value: {
+                                        type: 'StringLiteral',
+                                        value: `var(--${newCssVarName})`,
+                                    },
+                                    computed: false,
+                                    shorthand: false,
+                                },
+                            ],
+                        },
+                        computed: false,
+                        shorthand: false,
+                    });
                 } else {
                     addNestedColorProperty(colorObj, parentName, camelCaseName, newCssVarName);
                 }

@@ -135,8 +135,6 @@ const BrandPalletGroup = ({
     };
 
     const getColorValue = (color: ColorItem) => {
-        console.log('color', color);
-        console.log('theme', theme);
         return theme === 'dark' ? color.darkColor || color.lightColor : color.lightColor;
     };
 
@@ -385,6 +383,7 @@ interface BrandTabProps {
 const BrandTab = observer(({ onClose }: BrandTabProps) => {
     const [colorGroups, setColorGroups] = useState<{ [key: string]: ColorItem[] }>({});
     const [theme, setTheme] = useState<'dark' | 'light'>('light');
+    const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
 
     const projectsManager = useProjectsManager();
     const loadColors = async () => {
@@ -571,6 +570,30 @@ const BrandTab = observer(({ onClose }: BrandTabProps) => {
         onClose();
     };
 
+    const handleAddNewGroup = async (newName: string) => {
+        const projectRoot = projectsManager.project?.folderPath;
+        if (!projectRoot || !newName.trim()) {
+            return;
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
+                projectRoot,
+                originalName: '',
+                newName: newName.trim(),
+                newColor: '#FFFFFF',
+            });
+
+            // Reset state
+            setIsAddingNewGroup(false);
+
+            // Refresh colors
+            loadColors();
+        } catch (error) {
+            console.error('Error adding color group:', error);
+        }
+    };
+
     return (
         <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0 overflow-y-auto">
             <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
@@ -626,12 +649,38 @@ const BrandTab = observer(({ onClose }: BrandTabProps) => {
                         />
                     ))}
                 </div>
-                <Button
-                    variant="ghost"
-                    className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
-                >
-                    Add a new group
-                </Button>
+                {isAddingNewGroup ? (
+                    <div className="flex flex-col gap-1">
+                        <input
+                            type="text"
+                            autoFocus
+                            placeholder="Enter group name"
+                            className="w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1 text-sm"
+                            onBlur={(e) => {
+                                if (e.target.value.trim()) {
+                                    handleAddNewGroup(e.target.value);
+                                } else {
+                                    setIsAddingNewGroup(false);
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                    handleAddNewGroup(e.currentTarget.value);
+                                } else if (e.key === 'Escape') {
+                                    setIsAddingNewGroup(false);
+                                }
+                            }}
+                        />
+                    </div>
+                ) : (
+                    <Button
+                        variant="ghost"
+                        className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
+                        onClick={() => setIsAddingNewGroup(true)}
+                    >
+                        Add a new group
+                    </Button>
+                )}
             </div>
 
             {/* Color Palette section */}
