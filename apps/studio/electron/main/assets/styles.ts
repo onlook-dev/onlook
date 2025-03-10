@@ -328,6 +328,7 @@ async function updateExistingColor(
         // Special handling for DEFAULT
         if (keyName === 'DEFAULT') {
             newCssVarName = parentKey;
+            originalName = parentKey;
         } else {
             newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
         }
@@ -436,7 +437,6 @@ function updateCssVariable(
             new RegExp(`--${originalName}\\s*:`, 'g'),
             `--${newVarName}:`,
         );
-
         // Then update any nested variables
         const nestedVarRegex = new RegExp(`--${originalName}-([^:\\s]+)\\s*:`, 'g');
         updatedContent = updatedContent.replace(nestedVarRegex, (match, suffix) => {
