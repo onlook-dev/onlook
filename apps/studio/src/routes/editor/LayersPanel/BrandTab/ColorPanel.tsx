@@ -15,6 +15,7 @@ import { Color } from '@onlook/utility';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import ColorPickerContent from '../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
 import { cn } from '@onlook/ui/utils';
+
 interface ColorRowProps {
     label: string;
     colors: string[];
@@ -96,7 +97,7 @@ interface BrandPalletGroupProps {
     title: string;
     colors?: ColorItem[];
     theme: 'dark' | 'light';
-    onRename: () => void;
+    onRename: (groupName: string, newName: string) => void;
     onDelete: () => void;
     onColorChange?: (
         groupName: string,
@@ -117,6 +118,8 @@ const BrandPalletGroup = ({
 }: BrandPalletGroupProps) => {
     const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
     const [isAddingNewColor, setIsAddingNewColor] = useState(false);
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [newGroupName, setNewGroupName] = useState(title);
 
     const handleColorChange = (
         index: number,
@@ -132,13 +135,49 @@ const BrandPalletGroup = ({
     };
 
     const getColorValue = (color: ColorItem) => {
+        console.log('color', color);
+        console.log('theme', theme);
         return theme === 'dark' ? color.darkColor || color.lightColor : color.lightColor;
+    };
+
+    const handleRenameClick = () => {
+        setNewGroupName(title);
+        setIsRenaming(true);
+    };
+
+    const handleRenameSubmit = () => {
+        if (newGroupName.trim() && newGroupName !== title) {
+            onRename(title.toLowerCase(), newGroupName.trim());
+        }
+        setIsRenaming(false);
+    };
+
+    const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleRenameSubmit();
+        } else if (e.key === 'Escape') {
+            setIsRenaming(false);
+            setNewGroupName(title);
+        }
     };
 
     return (
         <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
-                <span className="text-sm font-normal">{title}</span>
+                {isRenaming ? (
+                    <input
+                        type="text"
+                        value={newGroupName}
+                        onChange={(e) => setNewGroupName(e.target.value)}
+                        onBlur={handleRenameSubmit}
+                        onKeyDown={handleRenameKeyDown}
+                        className="text-sm font-normal w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1"
+                        placeholder="Enter group name"
+                        autoFocus
+                    />
+                ) : (
+                    <span className="text-sm font-normal">{title}</span>
+                )}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -158,7 +197,7 @@ const BrandPalletGroup = ({
                             <Button
                                 variant="ghost"
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                onClick={onRename}
+                                onClick={handleRenameClick}
                             >
                                 <span className="flex w-full text-smallPlus items-center">
                                     <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
@@ -473,8 +512,24 @@ const BrandTab = observer(({ onClose }: BrandTabProps) => {
         loadColors();
     }, [projectsManager.project?.folderPath]);
 
-    const handleRename = () => {
-        // Implement rename logic
+    const handleRename = async (oldName: string, newName: string) => {
+        const projectRoot = projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
+                projectRoot,
+                originalKey: oldName.toLowerCase(),
+                newName: newName.toLowerCase(),
+            });
+
+            // Refresh colors after rename
+            loadColors();
+        } catch (error) {
+            console.error('Error renaming color group:', error);
+        }
     };
 
     const handleDelete = () => {

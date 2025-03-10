@@ -217,24 +217,58 @@ function updateConfigFile(
                         colorProp.key.name === parentKey &&
                         colorProp.value.type === 'ObjectExpression'
                     ) {
-                        const nestedObj = colorProp.value;
-                        nestedObj.properties.forEach((nestedProp) => {
-                            if (
-                                nestedProp.type === 'ObjectProperty' &&
-                                nestedProp.key.type === 'Identifier' &&
-                                nestedProp.key.name === keyName
-                            ) {
-                                if (newName !== keyName) {
-                                    nestedProp.key.name = toCamelCase(newName);
-                                    keyUpdated = true;
-                                }
+                        // If the keyName is not provided, we are renaming the root color
+                        if (!keyName) {
+                            if (parentKey && newName !== parentKey) {
+                                colorProp.key.name = toCamelCase(newName);
+                                keyUpdated = true;
 
-                                if (nestedProp.value.type === 'StringLiteral') {
-                                    nestedProp.value.value = `var(--${newCssVarName})`;
-                                    valueUpdated = true;
+                                // Then we need to update the child css variables
+                                if (colorProp.value.type === 'ObjectExpression') {
+                                    colorProp.value.properties.forEach((nestedProp) => {
+                                        if (
+                                            nestedProp.type === 'ObjectProperty' &&
+                                            nestedProp.key.type === 'Identifier' &&
+                                            nestedProp.value.type === 'StringLiteral'
+                                        ) {
+                                            // Handle both DEFAULT and regular nested properties
+                                            const oldVarName =
+                                                nestedProp.key.name === 'DEFAULT'
+                                                    ? parentKey
+                                                    : `${parentKey}-${nestedProp.key.name}`;
+                                            const newVarName =
+                                                nestedProp.key.name === 'DEFAULT'
+                                                    ? toCamelCase(newName)
+                                                    : `${toCamelCase(newName)}-${nestedProp.key.name}`;
+
+                                            nestedProp.value.value = nestedProp.value.value.replace(
+                                                new RegExp(`--${oldVarName}`, 'g'),
+                                                `--${newVarName}`,
+                                            );
+                                        }
+                                    });
                                 }
                             }
-                        });
+                        } else {
+                            const nestedObj = colorProp.value;
+                            nestedObj.properties.forEach((nestedProp) => {
+                                if (
+                                    nestedProp.type === 'ObjectProperty' &&
+                                    nestedProp.key.type === 'Identifier' &&
+                                    nestedProp.key.name === keyName
+                                ) {
+                                    if (newName !== keyName) {
+                                        nestedProp.key.name = toCamelCase(newName);
+                                        keyUpdated = true;
+                                    }
+
+                                    if (nestedProp.value.type === 'StringLiteral') {
+                                        nestedProp.value.value = `var(--${newCssVarName})`;
+                                        valueUpdated = true;
+                                    }
+                                }
+                            });
+                        }
                     }
                 });
             }
@@ -253,11 +287,17 @@ async function updateExistingColor(
     theme?: 'dark' | 'light',
 ): Promise<UpdateResult> {
     const [parentKey, keyName] = originalName.split('-');
-    if (!parentKey || !keyName) {
+
+    if (!parentKey) {
         return { success: false, error: `Invalid color key format: ${originalName}` };
     }
-
-    const newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
+    let newCssVarName;
+    // If the keyName is not provided, we are renaming the root color
+    if (!keyName) {
+        newCssVarName = newName !== parentKey ? `${newName}` : originalName;
+    } else {
+        newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
+    }
 
     // Update CSS file
     const updatedCssContent = updateCssVariable(
@@ -341,17 +381,36 @@ function updateCssVariable(
     const darkVarRegex = new RegExp(`(@layer\\s+base\\s*{\\s*\\.dark\\s*{[^}]*)(})`, 's');
 
     const regex = theme === 'dark' ? darkVarRegex : lightVarRegex;
+    let updatedContent = cssContent;
 
+    // First update the main variable
     if (regex.test(cssContent)) {
-        return newVarName !== originalName
-            ? cssContent.replace(
-                  regex,
-                  `$1--${originalName}: ${newColor};--${newVarName}: ${newColor}$3`,
-              )
-            : cssContent.replace(regex, `$1--${originalName}: ${newColor}$3`);
+        updatedContent =
+            newVarName !== originalName
+                ? cssContent.replace(
+                      regex,
+                      `$1--${originalName}: ${newColor};--${newVarName}: ${newColor}$3`,
+                  )
+                : cssContent.replace(regex, `$1--${originalName}: ${newColor}$3`);
+    } else {
+        updatedContent = addNewCssVariable(cssContent, newVarName, newColor);
     }
 
-    return addNewCssVariable(cssContent, newVarName, newColor);
+    if (newVarName !== originalName) {
+        // First update the base/DEFAULT variable if it exists
+        updatedContent = updatedContent.replace(
+            new RegExp(`--${originalName}\\s*:`, 'g'),
+            `--${newVarName}:`,
+        );
+
+        // Then update any nested variables
+        const nestedVarRegex = new RegExp(`--${originalName}-([^:\\s]+)\\s*:`, 'g');
+        updatedContent = updatedContent.replace(nestedVarRegex, (match, suffix) => {
+            return `--${newVarName}-${suffix}:`;
+        });
+    }
+
+    return updatedContent;
 }
 
 function getConfigPath(projectRoot: string): { configPath: string | null; cssPath: string | null } {
