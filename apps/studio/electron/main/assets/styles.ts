@@ -749,3 +749,137 @@ async function updateClassReferences(
         }),
     );
 }
+
+async function deleteColorGroup(
+    { configPath, cssPath, configContent, cssContent }: ColorUpdate,
+    groupName: string,
+    colorName?: string,
+): Promise<UpdateResult> {
+    console.log('Starting delete operation:', { groupName, colorName });
+    const camelCaseName = toCamelCase(groupName);
+
+    // Update config file
+    const updateAst = parse(configContent, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx'],
+    });
+
+    traverse(updateAst, {
+        ObjectProperty(path) {
+            if (isColorsObjectProperty(path)) {
+                const colorObj = path.node.value;
+                if (!isObjectExpression(colorObj)) {
+                    return;
+                }
+
+                // Find the group
+                const groupProp = colorObj.properties.find(
+                    (prop) =>
+                        prop.type === 'ObjectProperty' &&
+                        'key' in prop &&
+                        prop.key.type === 'Identifier' &&
+                        prop.key.name === camelCaseName,
+                );
+
+                console.log('Found group:', {
+                    groupName: camelCaseName,
+                    exists: !!groupProp,
+                    isObjectExpression:
+                        groupProp && 'value' in groupProp && isObjectExpression(groupProp.value),
+                });
+
+                if (groupProp && 'value' in groupProp && isObjectExpression(groupProp.value)) {
+                    if (colorName) {
+                        // Delete specific color within group
+                        const colorIndex = groupProp.value.properties.findIndex(
+                            (prop) =>
+                                prop.type === 'ObjectProperty' &&
+                                'key' in prop &&
+                                prop.key.type === 'Identifier' &&
+                                prop.key.name === colorName,
+                        );
+
+                        console.log('Found color:', {
+                            colorName,
+                            index: colorIndex,
+                            groupProperties: groupProp.value.properties.map((p) =>
+                                p.type === 'ObjectProperty' &&
+                                'key' in p &&
+                                p.key.type === 'Identifier'
+                                    ? p.key.name
+                                    : 'unknown',
+                            ),
+                        });
+
+                        if (colorIndex !== -1) {
+                            groupProp.value.properties.splice(colorIndex, 1);
+                            console.log('Deleted color from group');
+
+                            // If group is empty after deletion, remove the entire group
+                            if (groupProp.value.properties.length === 0) {
+                                const groupIndex = colorObj.properties.indexOf(groupProp);
+                                colorObj.properties.splice(groupIndex, 1);
+                                console.log('Removed empty group');
+                            }
+                        }
+                    } else {
+                        // Delete entire group
+                        const index = colorObj.properties.indexOf(groupProp);
+                        colorObj.properties.splice(index, 1);
+                        console.log('Deleted entire group');
+                    }
+                }
+            }
+        },
+    });
+
+    // Update CSS file
+    const cssLines = cssContent.split('\n');
+    const updatedCssLines = cssLines.filter((line) => {
+        const trimmedLine = line.trim();
+        if (colorName) {
+            // Only remove the specific color variable
+            const shouldKeep = !trimmedLine.startsWith(`--${camelCaseName}-${colorName}`);
+            if (!shouldKeep) {
+                console.log('Removing CSS variable:', trimmedLine);
+            }
+            return shouldKeep;
+        }
+        // Remove all variables that start with the group name
+        const shouldKeep = !trimmedLine.startsWith(`--${camelCaseName}`);
+        if (!shouldKeep) {
+            console.log('Removing CSS variable:', trimmedLine);
+        }
+        return shouldKeep;
+    });
+    const updatedCssContent = updatedCssLines.join('\n');
+
+    // Write the updated files
+    fs.writeFileSync(cssPath, updatedCssContent);
+    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
+    fs.writeFileSync(configPath, output.code);
+
+    console.log('Delete operation completed successfully');
+    return { success: true };
+}
+
+export async function deleteTailwindColorGroup(
+    projectRoot: string,
+    groupName: string,
+    colorName?: string,
+): Promise<UpdateResult> {
+    try {
+        const colorUpdate = await prepareColorUpdate(projectRoot);
+        if (!colorUpdate) {
+            return { success: false, error: 'Failed to prepare color update' };
+        }
+
+        return deleteColorGroup(colorUpdate, groupName, colorName);
+    } catch (error) {
+        console.error('Error deleting color:', error);
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+        };
+    }
+}

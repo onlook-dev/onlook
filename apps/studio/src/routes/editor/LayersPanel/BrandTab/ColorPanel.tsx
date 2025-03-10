@@ -98,7 +98,7 @@ interface BrandPalletGroupProps {
     colors?: ColorItem[];
     theme: 'dark' | 'light';
     onRename: (groupName: string, newName: string) => void;
-    onDelete: () => void;
+    onDelete: (colorName?: string) => void;
     onColorChange?: (
         groupName: string,
         colorIndex: number,
@@ -207,7 +207,7 @@ const BrandPalletGroup = ({
                             <Button
                                 variant="ghost"
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                onClick={onDelete}
+                                onClick={() => onDelete()}
                             >
                                 <span className="flex w-full text-smallPlus items-center">
                                     <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
@@ -300,7 +300,7 @@ const BrandPalletGroup = ({
                                                         <Button
                                                             variant="ghost"
                                                             className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
-                                                            onClick={onDelete}
+                                                            onClick={() => onDelete(color.name)}
                                                         >
                                                             <span className="flex w-full text-sm items-center">
                                                                 <Icons.Trash className="mr-2 h-4 w-4" />
@@ -531,8 +531,25 @@ const BrandTab = observer(({ onClose }: BrandTabProps) => {
         }
     };
 
-    const handleDelete = () => {
-        // Implement delete logic
+    const handleDelete = async (groupName: string, colorName?: string) => {
+        const projectRoot = projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
+
+        try {
+            console.log('Deleting color:', { groupName, colorName });
+            await invokeMainChannel(MainChannels.DELETE_TAILWIND_CONFIG, {
+                projectRoot,
+                groupName: groupName.toLowerCase(),
+                colorName,
+            });
+
+            // Refresh colors after deletion
+            loadColors();
+        } catch (error) {
+            console.error('Error deleting color:', error);
+        }
     };
 
     const handleColorChange = async (
@@ -644,7 +661,7 @@ const BrandTab = observer(({ onClose }: BrandTabProps) => {
                             title={groupName.charAt(0).toUpperCase() + groupName.slice(1)}
                             colors={colors}
                             onRename={handleRename}
-                            onDelete={handleDelete}
+                            onDelete={(colorName) => handleDelete(groupName, colorName)}
                             onColorChange={handleColorChange}
                         />
                     ))}

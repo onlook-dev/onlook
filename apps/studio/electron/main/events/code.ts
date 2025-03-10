@@ -12,7 +12,11 @@ import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
 import { getTemplateNodeProps } from '../code/props';
-import { scanTailwindConfig, updateTailwindConfig } from '../assets/styles';
+import {
+    scanTailwindConfig,
+    updateTailwindConfig,
+    deleteTailwindColorGroup,
+} from '../assets/styles';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -131,5 +135,10 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.UPDATE_TAILWIND_CONFIG, async (e, args) => {
         const { projectRoot, originalKey, newColor, newName, parentName, theme } = args;
         return updateTailwindConfig(projectRoot, originalKey, newColor, newName, theme, parentName);
+    });
+
+    ipcMain.handle(MainChannels.DELETE_TAILWIND_CONFIG, async (_, args) => {
+        const { projectRoot, groupName, colorName } = args;
+        return deleteTailwindColorGroup(projectRoot, groupName, colorName);
     });
 }

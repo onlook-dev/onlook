@@ -152,6 +152,7 @@ export enum MainChannels {
     // Config
     SCAN_TAILWIND_CONFIG = 'scan-tailwind-config',
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
+    DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
 }
 
 export enum GitChannels {
