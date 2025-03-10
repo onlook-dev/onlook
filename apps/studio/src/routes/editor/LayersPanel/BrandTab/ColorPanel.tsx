@@ -59,6 +59,8 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     const [theme, setTheme] = useState<'dark' | 'light'>('light');
     const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
 
+    console.log('colorGroups', colorGroups);
+
     const projectsManager = useProjectsManager();
     const loadColors = async () => {
         const projectRoot = projectsManager.project?.folderPath;

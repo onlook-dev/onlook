@@ -257,7 +257,7 @@ function updateConfigFile(
                                             nestedProp.key.type === 'Identifier' &&
                                             nestedProp.value.type === 'StringLiteral'
                                         ) {
-                                            // Handle both DEFAULT and regular nested properties
+                                            // Special handling for DEFAULT
                                             const oldVarName =
                                                 nestedProp.key.name === 'DEFAULT'
                                                     ? parentKey
@@ -289,7 +289,10 @@ function updateConfigFile(
                                     }
 
                                     if (nestedProp.value.type === 'StringLiteral') {
-                                        nestedProp.value.value = `var(--${newCssVarName})`;
+                                        // Special handling for DEFAULT values
+                                        const varName =
+                                            keyName === 'DEFAULT' ? parentKey : newCssVarName;
+                                        nestedProp.value.value = `var(--${varName})`;
                                         valueUpdated = true;
                                     }
                                 }
@@ -322,7 +325,12 @@ async function updateExistingColor(
     if (!keyName) {
         newCssVarName = newName !== parentKey ? `${newName}` : originalName;
     } else {
-        newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
+        // Special handling for DEFAULT
+        if (keyName === 'DEFAULT') {
+            newCssVarName = parentKey;
+        } else {
+            newCssVarName = newName !== keyName ? `${parentKey}-${newName}` : originalName;
+        }
     }
 
     // Update CSS file
@@ -544,7 +552,10 @@ function extractCssConfig(content: string) {
                         const varName = varMatch[1].trim();
                         const value = varMatch[2].trim();
 
-                        if (value.includes('hsl') || value.match(/\d+\s+\d+%\s+\d+%/)) {
+                        if (
+                            value.includes('hsl') ||
+                            value.match(/\d+\.?\d*\s+\d+\.?\d*%\s+\d+\.?\d*%/)
+                        ) {
                             try {
                                 let h = 0,
                                     s = 0,
@@ -552,22 +563,55 @@ function extractCssConfig(content: string) {
                                     a = 1;
 
                                 if (value.includes('hsl')) {
+                                    // Handle both hsl() and hsla() formats
                                     const hslMatch = value.match(
-                                        /hsl\w*\(\s*([^,]+)[,\s]+([^,]+)[,\s]+([^,)]+)/,
+                                        /hsla?\(\s*([^,\s]+)(?:deg)?\s*[,\s]\s*([^,\s]+)%\s*[,\s]\s*([^,\s]+)%\s*(?:[,/]\s*([^)]+))?\s*\)/,
                                     );
+
                                     if (hslMatch) {
-                                        h = parseFloat(hslMatch[1].replace('deg', ''));
-                                        s = parseFloat(hslMatch[2].replace('%', ''));
-                                        l = parseFloat(hslMatch[3].replace('%', ''));
+                                        // Parse hue (supports deg, turn, rad, grad)
+                                        const hueValue = hslMatch[1];
+                                        if (hueValue.endsWith('turn')) {
+                                            h = parseFloat(hueValue) * 360;
+                                        } else if (hueValue.endsWith('rad')) {
+                                            h = parseFloat(hueValue) * (180 / Math.PI);
+                                        } else if (hueValue.endsWith('grad')) {
+                                            h = parseFloat(hueValue) * 0.9;
+                                        } else {
+                                            h = parseFloat(hueValue);
+                                        }
+
+                                        s = parseFloat(hslMatch[2]);
+                                        l = parseFloat(hslMatch[3]);
+
+                                        if (hslMatch[4]) {
+                                            a = hslMatch[4].endsWith('%')
+                                                ? parseFloat(hslMatch[4]) / 100
+                                                : parseFloat(hslMatch[4]);
+                                        }
                                     }
                                 } else {
+                                    // Handle space-separated format (e.g. "210 40% 98%")
                                     const parts = value.split(/\s+/);
                                     if (parts.length >= 3) {
                                         h = parseFloat(parts[0]);
                                         s = parseFloat(parts[1].replace('%', ''));
                                         l = parseFloat(parts[2].replace('%', ''));
+
+                                        // Handle optional alpha value
+                                        if (parts.length >= 4) {
+                                            a = parts[3].endsWith('%')
+                                                ? parseFloat(parts[3]) / 100
+                                                : parseFloat(parts[3]);
+                                        }
                                     }
                                 }
+
+                                // Normalize values to valid ranges
+                                h = ((h % 360) + 360) % 360;
+                                s = Math.max(0, Math.min(100, s));
+                                l = Math.max(0, Math.min(100, l));
+                                a = Math.max(0, Math.min(1, a));
 
                                 result[varName] = Color.hsl({
                                     h: h / 360,
@@ -577,6 +621,7 @@ function extractCssConfig(content: string) {
                                 }).toHex();
                             } catch (err) {
                                 console.error(`Failed to convert HSL value: ${value}`, err);
+                                result[varName] = value;
                             }
                         } else {
                             result[varName] = value;
