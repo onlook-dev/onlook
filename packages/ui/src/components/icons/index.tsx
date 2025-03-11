@@ -82,6 +82,7 @@ import {
     MinusCircledIcon,
     MinusIcon,
     MixerHorizontalIcon,
+    MixerVerticalIcon,
     MobileIcon,
     MoonIcon,
     Pencil1Icon,
@@ -1263,6 +1264,7 @@ export const Icons = {
     Mobile: MobileIcon,
     Moon: MoonIcon,
     MixerHorizontal: MixerHorizontalIcon,
+    MixerVertical: MixerVerticalIcon,
 
     Pencil: Pencil1Icon,
     PencilPaper: Pencil2Icon,

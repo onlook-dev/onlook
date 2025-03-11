@@ -24,4 +24,5 @@ export enum SettingsTabValue {
     PROJECT = 'project',
     PREFERENCES = 'preferences',
     VERSIONS = 'versions',
+    ADVANCED = 'advanced',
 }

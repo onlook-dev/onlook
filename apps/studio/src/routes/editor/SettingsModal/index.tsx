@@ -6,6 +6,7 @@ import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import AdvancedTab from './Advance';
 import { DomainTab } from './Domain';
 import PreferencesTab from './Preferences';
 import ProjectTab from './Project';
@@ -121,6 +122,23 @@ const SettingsModal = observer(() => {
                                             <Icons.Person className="mr-2 h-4 w-4" />
                                             Preferences
                                         </Button>
+                                        <Button
+                                            variant="ghost"
+                                            className={cn(
+                                                'w-full justify-start px-0 hover:bg-transparent',
+                                                editorEngine.settingsTab ===
+                                                    SettingsTabValue.ADVANCED
+                                                    ? 'text-foreground-active'
+                                                    : 'text-muted-foreground',
+                                            )}
+                                            onClick={() =>
+                                                (editorEngine.settingsTab =
+                                                    SettingsTabValue.ADVANCED)
+                                            }
+                                        >
+                                            <Icons.MixerVertical className="mr-2 h-4 w-4" />
+                                            Advanced
+                                        </Button>
                                     </div>
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
@@ -136,6 +154,9 @@ const SettingsModal = observer(() => {
                                         )}
                                         {editorEngine.settingsTab ===
                                             SettingsTabValue.PREFERENCES && <PreferencesTab />}
+                                        {editorEngine.settingsTab === SettingsTabValue.ADVANCED && (
+                                            <AdvancedTab />
+                                        )}
                                     </div>
                                 </div>
                             </div>

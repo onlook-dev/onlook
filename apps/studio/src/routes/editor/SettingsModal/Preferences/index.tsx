@@ -1,4 +1,4 @@
-import { useProjectsManager, useUserManager } from '@/components/Context';
+import { useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel } from '@/lib/utils';
 import { Language, LANGUAGE_DISPLAY_NAMES, MainChannels, Theme } from '@onlook/models/constants';
@@ -12,48 +12,30 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IDE } from '/common/ide';
 
 const PreferencesTab = observer(() => {
     const userManager = useUserManager();
-    const projectsManager = useProjectsManager();
     const { theme, nextTheme, setTheme } = useTheme();
-    const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
-    const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
-    const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
-    const [enableBunReplace, setEnableBunReplace] = useState(true);
     const { i18n } = useTranslation();
 
+    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE);
+    const isAnalyticsEnabled = userManager.settings.settings?.enableAnalytics || false;
+    const shouldWarnDelete = userManager.settings.settings?.editor?.shouldWarnDelete ?? true;
     const IDEIcon = Icons[ide.icon];
-
-    useEffect(() => {
-        setIde(IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE));
-        setIsAnalyticsEnabled(userManager.settings.settings?.enableAnalytics || false);
-        setShouldWarnDelete(userManager.settings.settings?.editor?.shouldWarnDelete ?? true);
-        setEnableBunReplace(userManager.settings.settings?.editor?.enableBunReplace !== false);
-    }, []);
 
     function updateIde(ide: IDE) {
         userManager.settings.updateEditor({ ideType: ide.type });
-        setIde(ide);
     }
 
     function updateAnalytics(enabled: boolean) {
         userManager.settings.update({ enableAnalytics: enabled });
         invokeMainChannel(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
-        setIsAnalyticsEnabled(enabled);
     }
 
     function updateDeleteWarning(enabled: boolean) {
         userManager.settings.updateEditor({ shouldWarnDelete: enabled });
-        setShouldWarnDelete(enabled);
-    }
-
-    function updateBunReplace(enabled: boolean) {
-        userManager.settings.updateEditor({ enableBunReplace: enabled });
-        setEnableBunReplace(enabled);
     }
 
     return (
@@ -127,7 +109,12 @@ const PreferencesTab = observer(() => {
                 </DropdownMenu>
             </div>
             <div className="flex justify-between items-center">
-                <p className="text-largePlus">Default Code Editor</p>
+                <div className="flex flex-col gap-2">
+                    <p className="text-largePlus">Code Editor</p>
+                    <p className="text-foreground-onlook text-small">
+                        Choose the IDE where you open your code in
+                    </p>
+                </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="min-w-[150px]">
@@ -176,30 +163,6 @@ const PreferencesTab = observer(() => {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => updateDeleteWarning(false)}>
                             {'Warning Off'}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <div className="flex justify-between items-center gap-4">
-                <div className="flex flex-col gap-2">
-                    <p className="text-largePlus">{'Bun Replace Command'}</p>
-                    <p className="text-foreground-onlook text-small">
-                        {'Automatically replace npm commands with bun commands'}
-                    </p>
-                </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="text-smallPlus min-w-[150px]">
-                            {enableBunReplace ? 'On' : 'Off'}
-                            <Icons.ChevronDown className="ml-auto" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="text-smallPlus min-w-[150px]">
-                        <DropdownMenuItem onClick={() => updateBunReplace(true)}>
-                            {'Replace On'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateBunReplace(false)}>
-                            {'Replace Off'}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
