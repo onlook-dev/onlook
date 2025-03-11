@@ -1,13 +1,13 @@
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { useState } from 'react';
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-    DropdownMenuCheckboxItem,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { useState } from 'react';
 
 interface FontVariantProps {
     name: string;

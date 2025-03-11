@@ -2,16 +2,13 @@ import {
     AlertDialog,
     AlertDialogContent,
     AlertDialogFooter,
-    AlertDialogHeader,
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { cn } from '@onlook/ui/utils';
-import FontFiles from './FontFiles';
 import type { FontFile } from './FontFiles';
+import FontFiles from './FontFiles';
 
 interface UploadModalProps {
     isOpen: boolean;

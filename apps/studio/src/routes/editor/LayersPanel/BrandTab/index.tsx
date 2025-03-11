@@ -1,11 +1,9 @@
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import ColorPanel from './ColorPanel';
 import FontPanel from './FontPanel';
-import { FontFamily } from './FontFamily';
+import { FontFamily } from './FontPanel/FontFamily';
 
 interface ColorSquareProps {
     color: string;

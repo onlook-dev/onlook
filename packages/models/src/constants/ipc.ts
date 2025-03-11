@@ -148,6 +148,11 @@ export enum MainChannels {
     SAVE_IMAGE_TO_PROJECT = 'save-image-to-project',
     DELETE_IMAGE_FROM_PROJECT = 'delete-image-from-project',
     RENAME_IMAGE_IN_PROJECT = 'rename-image-in-project',
+
+    // Config
+    SCAN_TAILWIND_CONFIG = 'scan-tailwind-config',
+    UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
+    DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
 }
 
 export enum GitChannels {
