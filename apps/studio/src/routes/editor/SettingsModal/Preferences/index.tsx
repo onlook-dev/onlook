@@ -17,7 +17,7 @@ import { IDE } from '/common/ide';
 
 const PreferencesTab = observer(() => {
     const userManager = useUserManager();
-    const { theme, nextTheme, setTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
     const { i18n } = useTranslation();
 
     const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE);
@@ -40,7 +40,6 @@ const PreferencesTab = observer(() => {
 
     return (
         <div className="flex flex-col gap-8 p-4">
-            {/* Language Preference */}
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
                     <p className="text-largePlus">Language</p>
