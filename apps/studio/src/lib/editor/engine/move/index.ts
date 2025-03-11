@@ -16,7 +16,7 @@ export class MoveManager {
         return !!this.dragOrigin;
     }
 
-    async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
+    async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag | HTMLIFrameElement) {
         if (this.editorEngine.chat.isWaiting) {
             return;
         }
@@ -32,7 +32,8 @@ export class MoveManager {
             this.editorEngine.history.startTransaction();
             return;
         } else {
-            this.originalIndex = await webview.executeJavaScript(
+            this.originalIndex = await this.editorEngine.webviews.executeJavaScript(
+                webview,
                 `window.api?.startDrag('${el.domId}')`,
             );
         }
@@ -70,7 +71,8 @@ export class MoveManager {
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
-            webview.executeJavaScript(
+            this.editorEngine.webviews.executeJavaScript(
+                webview,
                 `window.api?.drag('${this.dragTarget.domId}', ${dx}, ${dy}, ${x}, ${y})`,
             );
         }
@@ -93,7 +95,8 @@ export class MoveManager {
             return;
         }
 
-        const offsetParent = await webview.executeJavaScript(
+        const offsetParent = await this.editorEngine.webviews.executeJavaScript(
+            webview,
             `window.api?.getOffsetParent('${dragTarget.domId}')`,
         );
         if (!offsetParent) {
@@ -136,7 +139,8 @@ export class MoveManager {
             newIndex: number;
             child: DomElement;
             parent: DomElement;
-        } | null = await webview.executeJavaScript(
+        } | null = await this.editorEngine.webviews.executeJavaScript(
+            webview,
             `window.api?.endDrag('${this.dragTarget.domId}')`,
         );
 
@@ -157,8 +161,8 @@ export class MoveManager {
     }
 
     endAllDrag() {
-        this.editorEngine.webviews.webviews.forEach((webview) => {
-            webview.webview.executeJavaScript(`window.api?.endAllDrag()`);
+        this.editorEngine.webviews.webviews.forEach((webviewData) => {
+            this.editorEngine.webviews.executeJavaScript(webviewData.webview, `window.api?.endAllDrag()`);
         });
     }
 
@@ -182,7 +186,8 @@ export class MoveManager {
         }
 
         // Get current index and parent
-        const currentIndex = await webview.executeJavaScript(
+        const currentIndex = await this.editorEngine.webviews.executeJavaScript(
+            webview,
             `window.api?.getElementIndex('${element.domId}')`,
         );
 
@@ -190,7 +195,8 @@ export class MoveManager {
             return;
         }
 
-        const parent: DomElement | null = await webview.executeJavaScript(
+        const parent: DomElement | null = await this.editorEngine.webviews.executeJavaScript(
+            webview,
             `window.api?.getParentElement('${element.domId}')`,
         );
         if (!parent) {
@@ -198,7 +204,8 @@ export class MoveManager {
         }
 
         // Get filtered children count for accurate index calculation
-        const childrenCount = await webview.executeJavaScript(
+        const childrenCount = await this.editorEngine.webviews.executeJavaScript(
+            webview,
             `window.api?.getChildrenCount('${parent.domId}')`,
         );
 

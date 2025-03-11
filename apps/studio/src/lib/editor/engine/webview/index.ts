@@ -141,6 +141,12 @@ export class WebviewManager {
             });
         }
     }
+    
+    setStyle(webview: Electron.WebviewTag | HTMLIFrameElement, property: string, value: string): void {
+        if ('style' in webview) {
+            (webview as HTMLElement).style[property as any] = value;
+        }
+    }
 
     computeState(body: Element) {
         const running: boolean = this.projectsManager.runner?.state === RunState.RUNNING || false;

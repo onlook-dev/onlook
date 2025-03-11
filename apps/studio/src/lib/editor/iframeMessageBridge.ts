@@ -25,7 +25,7 @@ export class IframeMessageBridge {
         }
         
         const { channel, args } = e.data;
-        if (!channel) return;
+        if (!channel) {return;}
         
         // Create a compatible event object for the handler
         const compatEvent = {

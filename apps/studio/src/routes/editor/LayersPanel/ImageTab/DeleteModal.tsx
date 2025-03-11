@@ -29,7 +29,7 @@ export default function DeleteImageModal({
     const handleClose = () => {
         // Reset pointer-events and editor mode when modal is closed
         for (const webview of editorEngine.webviews.webviews.values()) {
-            webview.webview.style.pointerEvents = 'auto';
+            editorEngine.webviews.setStyle(webview.webview, 'pointerEvents', 'auto');
         }
         editorEngine.mode = EditorMode.DESIGN;
         editorEngine.overlay.clear();

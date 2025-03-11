@@ -210,7 +210,7 @@ const ImagesTab = observer(() => {
         );
 
         for (const webview of editorEngine.webviews.webviews.values()) {
-            webview.webview.style.pointerEvents = 'none';
+            editorEngine.webviews.setStyle(webview.webview, 'pointerEvents', 'none');
         }
 
         editorEngine.mode = EditorMode.INSERT_IMAGE;
@@ -324,7 +324,7 @@ const ImagesTab = observer(() => {
                                 onDragStart={(e) => handleImageDragStart(e, image)}
                                 onDragEnd={() => {
                                     for (const webview of editorEngine.webviews.webviews.values()) {
-                                        webview.webview.style.pointerEvents = 'auto';
+                                        editorEngine.webviews.setStyle(webview.webview, 'pointerEvents', 'auto');
                                     }
                                     editorEngine.mode = EditorMode.DESIGN;
                                 }}
