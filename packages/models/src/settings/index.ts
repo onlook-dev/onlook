@@ -12,6 +12,7 @@ export interface UserSettings {
 export interface EditorSettings {
     shouldWarnDelete?: boolean;
     ideType?: IdeType;
+    enableBunReplace?: boolean;
 }
 
 export interface ChatSettings {

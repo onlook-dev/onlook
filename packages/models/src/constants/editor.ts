@@ -82,5 +82,6 @@ export const DefaultSettings = {
     EDITOR_SETTINGS: {
         shouldWarnDelete: true,
         ideType: DEFAULT_IDE,
+        enableBunReplace: true,
     },
 };
