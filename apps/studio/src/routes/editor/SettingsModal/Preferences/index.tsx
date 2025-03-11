@@ -23,6 +23,7 @@ const PreferencesTab = observer(() => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.fromType(DEFAULT_IDE));
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
+    const [enableBunReplace, setEnableBunReplace] = useState(true);
     const { i18n } = useTranslation();
 
     const IDEIcon = Icons[ide.icon];
@@ -31,6 +32,7 @@ const PreferencesTab = observer(() => {
         setIde(IDE.fromType(userManager.settings.settings?.editor?.ideType || DEFAULT_IDE));
         setIsAnalyticsEnabled(userManager.settings.settings?.enableAnalytics || false);
         setShouldWarnDelete(userManager.settings.settings?.editor?.shouldWarnDelete ?? true);
+        setEnableBunReplace(userManager.settings.settings?.editor?.enableBunReplace !== false);
     }, []);
 
     function updateIde(ide: IDE) {
@@ -47,6 +49,11 @@ const PreferencesTab = observer(() => {
     function updateDeleteWarning(enabled: boolean) {
         userManager.settings.updateEditor({ shouldWarnDelete: enabled });
         setShouldWarnDelete(enabled);
+    }
+
+    function updateBunReplace(enabled: boolean) {
+        userManager.settings.updateEditor({ enableBunReplace: enabled });
+        setEnableBunReplace(enabled);
     }
 
     return (
@@ -169,6 +176,30 @@ const PreferencesTab = observer(() => {
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => updateDeleteWarning(false)}>
                             {'Warning Off'}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            <div className="flex justify-between items-center gap-4">
+                <div className="flex flex-col gap-2">
+                    <p className="text-largePlus">{'Bun Replace Command'}</p>
+                    <p className="text-foreground-onlook text-small">
+                        {'Automatically replace npm commands with bun commands'}
+                    </p>
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="text-smallPlus min-w-[150px]">
+                            {enableBunReplace ? 'On' : 'Off'}
+                            <Icons.ChevronDown className="ml-auto" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="text-smallPlus min-w-[150px]">
+                        <DropdownMenuItem onClick={() => updateBunReplace(true)}>
+                            {'Replace On'}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateBunReplace(false)}>
+                            {'Replace Off'}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
