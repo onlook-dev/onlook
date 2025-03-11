@@ -12,9 +12,19 @@ import { observer } from 'mobx-react-lite';
 const AdvancedTab = observer(() => {
     const userManager = useUserManager();
     const enableBunReplace = userManager.settings.settings?.editor?.enableBunReplace ?? true;
+    const buildFlags = userManager.settings.settings?.editor?.buildFlags ?? '';
+    const customProjectsPath = userManager.settings.settings?.editor?.customProjectsPath ?? '';
 
     function updateBunReplace(enabled: boolean) {
         userManager.settings.updateEditor({ enableBunReplace: enabled });
+    }
+
+    function updateBuildFlags(flags: string) {
+        userManager.settings.updateEditor({ buildFlags: flags });
+    }
+
+    function updateCustomProjectsPath(path: string) {
+        userManager.settings.updateEditor({ customProjectsPath: path });
     }
 
     return (
@@ -44,6 +54,38 @@ const AdvancedTab = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
+            </div>
+
+            <div className="flex justify-between items-center gap-4">
+                <div className="flex flex-col gap-2">
+                    <p className="text-largePlus">{'Build flags'}</p>
+                    <p className="text-foreground-onlook text-small">
+                        {'Configure additional flags for build commands (e.g. --no-lint)'}
+                    </p>
+                </div>
+                <input
+                    type="text"
+                    value={buildFlags}
+                    onChange={(e) => updateBuildFlags(e.target.value)}
+                    className="border rounded p-2 min-w-[150px] text-smallPlus"
+                    placeholder="--no-lint"
+                />
+            </div>
+
+            <div className="flex justify-between items-center gap-4">
+                <div className="flex flex-col gap-2">
+                    <p className="text-largePlus">{'Custom projects path'}</p>
+                    <p className="text-foreground-onlook text-small">
+                        {'Set a custom location for new projects instead of Documents folder'}
+                    </p>
+                </div>
+                <input
+                    type="text"
+                    value={customProjectsPath}
+                    onChange={(e) => updateCustomProjectsPath(e.target.value)}
+                    className="border rounded p-2 min-w-[150px] text-smallPlus"
+                    placeholder="/path/to/projects"
+                />
             </div>
         </div>
     );

@@ -58,10 +58,19 @@ export class RunManager {
     async start() {
         this.state = RunState.SETTING_UP;
         this.startLoadingTimer();
+        
+        // Get user settings for build flags
+        const userSettings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS) as { editor?: { buildFlags?: string } };
+        const buildFlags = userSettings?.editor?.buildFlags || '';
+        
+        // Append build flags to the command if present
+        const baseCommand = this.project.commands?.run || DefaultSettings.COMMANDS.run;
+        const command = buildFlags ? `${baseCommand} ${buildFlags}` : baseCommand;
+        
         return await invokeMainChannel(MainChannels.RUN_START, {
             id: this.project.id,
             folderPath: this.project.folderPath,
-            command: this.project.commands?.run || DefaultSettings.COMMANDS.run,
+            command,
         });
     }
 
@@ -121,10 +130,18 @@ export class RunManager {
     }
 
     async restart() {
+        // Get user settings for build flags
+        const userSettings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS) as { editor?: { buildFlags?: string } };
+        const buildFlags = userSettings?.editor?.buildFlags || '';
+        
+        // Append build flags to the command if present
+        const baseCommand = this.project.commands?.run || DefaultSettings.COMMANDS.run;
+        const command = buildFlags ? `${baseCommand} ${buildFlags}` : baseCommand;
+        
         return await invokeMainChannel(MainChannels.RUN_RESTART, {
             id: this.project.id,
             folderPath: this.project.folderPath,
-            command: this.project.commands?.run || DefaultSettings.COMMANDS.run,
+            command,
         });
     }
 
