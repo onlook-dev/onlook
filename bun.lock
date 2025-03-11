@@ -10,7 +10,7 @@
     },
     "apps/studio": {
       "name": "@onlook/studio",
-      "version": "0.2.9",
+      "version": "0.2.11",
       "dependencies": {
         "@ai-sdk/anthropic": "^0.0.53",
         "@anthropic-ai/sdk": "^0.33.1",
@@ -95,7 +95,7 @@
         "globals": "^15.8.0",
         "mobx": "^6.12.4",
         "mobx-react-lite": "^4.0.7",
-        "postcss": "^8.4.38",
+        "postcss": "^8.5.3",
         "postcss-import": "^16.0.1",
         "prettier": "^3.3.2",
         "react": "^18.3.1",

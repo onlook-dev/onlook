@@ -119,7 +119,7 @@
         "glob": "^11.0.1",
         "mobx": "^6.12.4",
         "mobx-react-lite": "^4.0.7",
-        "postcss": "^8.4.38",
+        "postcss": "^8.5.3",
         "postcss-import": "^16.0.1",
         "prettier": "^3.3.2",
         "react": "^18.3.1",

@@ -5,45 +5,24 @@ import traverse from '@babel/traverse';
 import generate from '@babel/generator';
 import { Color } from '@onlook/utility';
 import { readFile } from '../code/files';
-import type { ObjectProperty, ObjectExpression, Node } from '@babel/types';
+import type { ObjectProperty, ObjectExpression } from '@babel/types';
 import { transformAst } from '../code/diff/transform';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { getOidFromJsxElement } from '../code/diff/helpers';
 import { getNodeClasses } from '../code/classes';
-import fg from 'fast-glob';
+import type { UpdateResult, ColorUpdate, ConfigUpdateResult, ClassReplacement } from './type';
+import {
+    extractObject,
+    getConfigPath,
+    initializeTailwindColorContent,
+    isColorsObjectProperty,
+    isObjectExpression,
+    addTailwindRootColor,
+    toCamelCase,
+    findSourceFiles,
+} from './helpers';
 
-interface UpdateResult {
-    success: boolean;
-    error?: string;
-}
-
-interface ColorUpdate {
-    configPath: string;
-    cssPath: string;
-    configContent: string;
-    cssContent: string;
-}
-
-interface ConfigUpdateResult {
-    keyUpdated: boolean;
-    valueUpdated: boolean;
-    output: string;
-}
-
-interface ClassReplacement {
-    oldClass: string;
-    newClass: string;
-}
-
-function toCamelCase(str: string): string {
-    return str
-        .toLowerCase()
-        .replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (letter, index) =>
-            index === 0 ? letter.toLowerCase() : letter.trim() ? letter.toUpperCase() : '',
-        );
-}
-
-export async function updateTailwindConfig(
+export async function updateTailwindColorConfig(
     projectRoot: string,
     originalName: string,
     newColor: string,
@@ -52,14 +31,14 @@ export async function updateTailwindConfig(
     parentName?: string,
 ): Promise<UpdateResult> {
     try {
-        const colorUpdate = await prepareColorUpdate(projectRoot);
+        const colorUpdate = await initializeTailwindColorContent(projectRoot);
         if (!colorUpdate) {
             return { success: false, error: 'Failed to prepare color update' };
         }
 
         return originalName
-            ? updateExistingColor(colorUpdate, originalName, newColor, newName, theme)
-            : addNewColor(colorUpdate, newColor, newName, parentName);
+            ? updateTailwindColorVariable(colorUpdate, originalName, newColor, newName, theme)
+            : createTailwindColorVariable(colorUpdate, newColor, newName, parentName);
     } catch (error) {
         console.error('Error updating Tailwind config:', error);
         return {
@@ -69,51 +48,7 @@ export async function updateTailwindConfig(
     }
 }
 
-async function prepareColorUpdate(projectRoot: string): Promise<ColorUpdate | null> {
-    const { configPath, cssPath } = getConfigPath(projectRoot);
-    if (!configPath || !cssPath) {
-        return null;
-    }
-
-    const configContent = await readFile(configPath);
-    const cssContent = await readFile(cssPath);
-    if (!configContent || !cssContent) {
-        return null;
-    }
-
-    return { configPath, cssPath, configContent, cssContent };
-}
-
-function isColorsObjectProperty(path: any): boolean {
-    return (
-        path.parent.type === 'ObjectExpression' &&
-        path.node.key.type === 'Identifier' &&
-        path.node.key.name === 'colors' &&
-        path.node.value.type === 'ObjectExpression'
-    );
-}
-
-function isObjectExpression(node: any): node is ObjectExpression {
-    return node.type === 'ObjectExpression';
-}
-
-function addRootColorProperty(colorObj: ObjectExpression, newName: string, newCssVarName: string) {
-    colorObj.properties.push({
-        type: 'ObjectProperty',
-        key: {
-            type: 'Identifier',
-            name: toCamelCase(newName),
-        },
-        value: {
-            type: 'StringLiteral',
-            value: `var(--${newCssVarName})`,
-        },
-        computed: false,
-        shorthand: false,
-    });
-}
-
-function addNestedColorProperty(
+function addTailwindNestedColor(
     colorObj: ObjectExpression,
     parentName: string,
     newName: string,
@@ -144,7 +79,7 @@ function addNestedColorProperty(
     }
 }
 
-async function addNewColor(
+async function createTailwindColorVariable(
     { configPath, cssPath, configContent, cssContent }: ColorUpdate,
     newColor: string,
     newName: string,
@@ -155,7 +90,7 @@ async function addNewColor(
     const newCssVarName = parentName?.length ? `${parentName}-${camelCaseName}` : camelCaseName;
 
     // Update CSS file
-    const updatedCssContent = addNewCssVariable(cssContent, newCssVarName, newColor);
+    const updatedCssContent = addTailwindCssVariable(cssContent, newCssVarName, newColor);
     fs.writeFileSync(cssPath, updatedCssContent);
 
     // Update config file
@@ -173,35 +108,9 @@ async function addNewColor(
                 }
 
                 if (!parentName) {
-                    colorObj.properties.push({
-                        type: 'ObjectProperty',
-                        key: {
-                            type: 'Identifier',
-                            name: camelCaseName,
-                        },
-                        value: {
-                            type: 'ObjectExpression',
-                            properties: [
-                                {
-                                    type: 'ObjectProperty',
-                                    key: {
-                                        type: 'Identifier',
-                                        name: 'DEFAULT',
-                                    },
-                                    value: {
-                                        type: 'StringLiteral',
-                                        value: `var(--${newCssVarName})`,
-                                    },
-                                    computed: false,
-                                    shorthand: false,
-                                },
-                            ],
-                        },
-                        computed: false,
-                        shorthand: false,
-                    });
+                    addTailwindRootColor(colorObj, camelCaseName, newCssVarName);
                 } else {
-                    addNestedColorProperty(colorObj, parentName, camelCaseName, newCssVarName);
+                    addTailwindNestedColor(colorObj, parentName, camelCaseName, newCssVarName);
                 }
             }
         },
@@ -213,7 +122,7 @@ async function addNewColor(
     return { success: true };
 }
 
-function updateConfigFile(
+function updateTailwindConfigFile(
     configContent: string,
     parentKey: string,
     keyName: string,
@@ -308,7 +217,7 @@ function updateConfigFile(
     return { keyUpdated, valueUpdated, output };
 }
 
-async function updateExistingColor(
+async function updateTailwindColorVariable(
     { configPath, cssPath, configContent, cssContent }: ColorUpdate,
     originalName: string,
     newColor: string,
@@ -335,17 +244,18 @@ async function updateExistingColor(
     }
 
     // Update CSS file
-    const updatedCssContent = updateCssVariable(
+    const updatedCssContent = updateTailwindCssVariable(
         cssContent,
         originalName,
         newCssVarName,
         newColor,
         theme,
     );
+
     fs.writeFileSync(cssPath, updatedCssContent);
 
     // Update config file
-    const { keyUpdated, valueUpdated, output } = updateConfigFile(
+    const { keyUpdated, valueUpdated, output } = updateTailwindConfigFile(
         configContent,
         parentKey,
         keyName,
@@ -376,7 +286,7 @@ async function updateExistingColor(
     return { success: true };
 }
 
-function addNewCssVariable(cssContent: string, varName: string, color: string): string {
+function addTailwindCssVariable(cssContent: string, varName: string, color: string): string {
     const cssVarAddition = `\n    --${varName}: ${color};`;
 
     let updatedContent = cssContent;
@@ -402,18 +312,32 @@ function addNewCssVariable(cssContent: string, varName: string, color: string): 
     return updatedContent;
 }
 
-function updateCssVariable(
+function updateTailwindCssVariable(
     cssContent: string,
     originalName: string,
     newVarName: string,
     newColor: string,
     theme?: 'dark' | 'light',
 ): string {
+    // Constants for CSS selectors and patterns
+    const CSS_ROOT_SELECTOR = ':root';
+    const CSS_DARK_SELECTOR = '.dark';
+    const CSS_LAYER_BASE = '@layer base';
+
+    // More specific and readable regex patterns
     const lightVarRegex = new RegExp(
-        `(:root[^{]*{[^}]*)(--${originalName}\\s*:\\s*[^;]*)(;|})`,
+        `(${CSS_ROOT_SELECTOR}[^{]*{[^}]*)` + // Capture the :root block start
+            `(--${originalName}\\s*:\\s*[^;]*)` + // Capture the CSS variable declaration
+            `(;|})`, // Capture the ending
         's',
     );
-    const darkVarRegex = new RegExp(`(@layer\\s+base\\s*{\\s*\\.dark\\s*{[^}]*)(})`, 's');
+
+    const darkVarRegex = new RegExp(
+        `(${CSS_LAYER_BASE}\\s*{\\s*` + // Match @layer base opening
+            `${CSS_DARK_SELECTOR}\\s*{[^}]*)` + // Match .dark block content
+            `(})`, // Capture the ending
+        's',
+    );
 
     const regex = theme === 'dark' ? darkVarRegex : lightVarRegex;
     let updatedContent = cssContent;
@@ -428,67 +352,25 @@ function updateCssVariable(
                   )
                 : cssContent.replace(regex, `$1--${originalName}: ${newColor}$3`);
     } else {
-        updatedContent = addNewCssVariable(cssContent, newVarName, newColor);
+        updatedContent = addTailwindCssVariable(cssContent, newVarName, newColor);
     }
 
     if (newVarName !== originalName) {
-        // First update the base/DEFAULT variable if it exists
+        const VAR_PATTERN = '--';
+
+        // Update the base/DEFAULT variable if it exists
+        const baseVarRegex = new RegExp(`${VAR_PATTERN}${originalName}\\s*:`, 'g');
+        updatedContent = updatedContent.replace(baseVarRegex, `${VAR_PATTERN}${newVarName}:`);
+
+        // Update nested variables
+        const nestedVarRegex = new RegExp(`${VAR_PATTERN}${originalName}-([^:\\s]+)\\s*:`, 'g');
         updatedContent = updatedContent.replace(
-            new RegExp(`--${originalName}\\s*:`, 'g'),
-            `--${newVarName}:`,
+            nestedVarRegex,
+            (_, suffix) => `${VAR_PATTERN}${newVarName}-${suffix}:`,
         );
-        // Then update any nested variables
-        const nestedVarRegex = new RegExp(`--${originalName}-([^:\\s]+)\\s*:`, 'g');
-        updatedContent = updatedContent.replace(nestedVarRegex, (match, suffix) => {
-            return `--${newVarName}-${suffix}:`;
-        });
     }
 
     return updatedContent;
-}
-
-function getConfigPath(projectRoot: string): { configPath: string | null; cssPath: string | null } {
-    const possiblePaths = [
-        path.join(projectRoot, 'tailwind.config.js'),
-        path.join(projectRoot, 'tailwind.config.ts'),
-        path.join(projectRoot, 'tailwind.config.cjs'),
-        path.join(projectRoot, 'tailwind.config.mjs'),
-    ];
-
-    let configPath = null;
-    for (const filePath of possiblePaths) {
-        if (fs.existsSync(filePath)) {
-            configPath = filePath;
-            break;
-        }
-    }
-
-    if (!configPath) {
-        console.log('No Tailwind config file found');
-        return { configPath: null, cssPath: null };
-    }
-
-    const possibleCssPaths = [
-        path.join(projectRoot, 'app/globals.css'),
-        path.join(projectRoot, 'src/app/globals.css'),
-        path.join(projectRoot, 'styles/globals.css'),
-        path.join(projectRoot, 'src/styles/globals.css'),
-    ];
-
-    let cssPath = null;
-    for (const filePath of possibleCssPaths) {
-        if (fs.existsSync(filePath)) {
-            cssPath = filePath;
-            break;
-        }
-    }
-
-    if (!cssPath) {
-        console.log('No globals.css file found');
-        return { configPath, cssPath: null };
-    }
-
-    return { configPath, cssPath };
 }
 
 export async function scanTailwindConfig(projectRoot: string) {
@@ -512,7 +394,7 @@ export async function scanTailwindConfig(projectRoot: string) {
                 configPath,
                 configContent: extractColorsFromTailwindConfig(configContent),
                 cssPath,
-                cssContent: extractCssConfig(''),
+                cssContent: extractTailwindCssVariables(''),
             };
         }
 
@@ -520,7 +402,7 @@ export async function scanTailwindConfig(projectRoot: string) {
             configPath,
             configContent: extractColorsFromTailwindConfig(configContent),
             cssPath,
-            cssContent: extractCssConfig(cssContent),
+            cssContent: extractTailwindCssVariables(cssContent),
         };
     } catch (error) {
         console.error('Error scanning Tailwind config:', error);
@@ -528,7 +410,7 @@ export async function scanTailwindConfig(projectRoot: string) {
     }
 }
 
-function extractCssConfig(content: string) {
+function extractTailwindCssVariables(content: string) {
     try {
         const configs: {
             root: Record<string, string>;
@@ -693,38 +575,6 @@ function extractColorsFromTailwindConfig(fileContent: string): Record<string, an
         console.error('Error parsing Tailwind config:', error);
         return {};
     }
-}
-
-function extractObject(node: Node): Record<string, any> {
-    if (node.type !== 'ObjectExpression') {
-        return {};
-    }
-
-    const result: Record<string, any> = {};
-    node.properties.forEach((prop: any) => {
-        if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
-            if (prop.value.type === 'StringLiteral') {
-                result[prop.key.name] = prop.value.value;
-            } else if (prop.value.type === 'ObjectExpression') {
-                result[prop.key.name] = extractObject(prop.value);
-            }
-        }
-    });
-
-    return result;
-}
-
-async function findSourceFiles(projectRoot: string): Promise<string[]> {
-    const pattern = path.join(projectRoot, '**/*.{ts,tsx,js,jsx}');
-    return fg
-        .sync(pattern)
-        .filter(
-            (file: string) =>
-                !file.includes('node_modules') &&
-                !file.includes('dist') &&
-                !file.includes('.next') &&
-                !file.includes('build'),
-        );
 }
 
 async function updateClassReferences(
@@ -914,7 +764,7 @@ export async function deleteTailwindColorGroup(
     colorName?: string,
 ): Promise<UpdateResult> {
     try {
-        const colorUpdate = await prepareColorUpdate(projectRoot);
+        const colorUpdate = await initializeTailwindColorContent(projectRoot);
         if (!colorUpdate) {
             return { success: false, error: 'Failed to prepare color update' };
         }
