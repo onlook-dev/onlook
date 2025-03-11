@@ -1,15 +1,8 @@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useState, useRef } from 'react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@onlook/ui/dropdown-menu';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Input } from '@onlook/ui/input';
+import { observer } from 'mobx-react-lite';
+import { useRef, useState } from 'react';
 import { FontFamily } from './FontFamily';
 import UploadModal from './UploadModal';
 

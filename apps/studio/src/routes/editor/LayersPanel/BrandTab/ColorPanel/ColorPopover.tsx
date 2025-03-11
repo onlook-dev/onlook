@@ -1,7 +1,7 @@
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import type { Color } from '@onlook/utility';
 import { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import ColorPickerContent from '../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
+import ColorPickerContent from '../../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
 
 export const ColorPopover = ({
     color,

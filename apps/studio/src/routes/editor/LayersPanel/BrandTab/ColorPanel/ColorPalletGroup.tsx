@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { Color } from '@onlook/utility';
-import { ColorPopover } from './ColorPopover';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
-import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { Color } from '@onlook/utility';
+import { useState } from 'react';
+import { ColorPopover } from './ColorPopover';
 
 export interface ColorItem {
     name: string;
