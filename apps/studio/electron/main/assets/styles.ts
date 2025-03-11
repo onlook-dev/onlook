@@ -650,7 +650,6 @@ async function deleteColorGroup(
     groupName: string,
     colorName?: string,
 ): Promise<UpdateResult> {
-    console.log('Starting delete operation:', { groupName, colorName });
     const camelCaseName = toCamelCase(groupName);
 
     // Update config file
@@ -676,13 +675,6 @@ async function deleteColorGroup(
                         prop.key.name === camelCaseName,
                 );
 
-                console.log('Found group:', {
-                    groupName: camelCaseName,
-                    exists: !!groupProp,
-                    isObjectExpression:
-                        groupProp && 'value' in groupProp && isObjectExpression(groupProp.value),
-                });
-
                 if (groupProp && 'value' in groupProp && isObjectExpression(groupProp.value)) {
                     if (colorName) {
                         // Delete specific color within group
@@ -694,34 +686,19 @@ async function deleteColorGroup(
                                 prop.key.name === colorName,
                         );
 
-                        console.log('Found color:', {
-                            colorName,
-                            index: colorIndex,
-                            groupProperties: groupProp.value.properties.map((p) =>
-                                p.type === 'ObjectProperty' &&
-                                'key' in p &&
-                                p.key.type === 'Identifier'
-                                    ? p.key.name
-                                    : 'unknown',
-                            ),
-                        });
-
                         if (colorIndex !== -1) {
                             groupProp.value.properties.splice(colorIndex, 1);
-                            console.log('Deleted color from group');
 
                             // If group is empty after deletion, remove the entire group
                             if (groupProp.value.properties.length === 0) {
                                 const groupIndex = colorObj.properties.indexOf(groupProp);
                                 colorObj.properties.splice(groupIndex, 1);
-                                console.log('Removed empty group');
                             }
                         }
                     } else {
                         // Delete entire group
                         const index = colorObj.properties.indexOf(groupProp);
                         colorObj.properties.splice(index, 1);
-                        console.log('Deleted entire group');
                     }
                 }
             }
@@ -749,12 +726,10 @@ async function deleteColorGroup(
     });
     const updatedCssContent = updatedCssLines.join('\n');
 
-    // Write the updated files
     fs.writeFileSync(cssPath, updatedCssContent);
     const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
     fs.writeFileSync(configPath, output.code);
 
-    console.log('Delete operation completed successfully');
     return { success: true };
 }
 
@@ -771,7 +746,6 @@ export async function deleteTailwindColorGroup(
 
         return deleteColorGroup(colorUpdate, groupName, colorName);
     } catch (error) {
-        console.error('Error deleting color:', error);
         return {
             success: false,
             error: error instanceof Error ? error.message : String(error),

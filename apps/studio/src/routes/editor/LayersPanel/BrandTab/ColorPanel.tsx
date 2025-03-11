@@ -59,8 +59,6 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     const [theme, setTheme] = useState<'dark' | 'light'>('light');
     const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
 
-    console.log('colorGroups', colorGroups);
-
     const projectsManager = useProjectsManager();
     const loadColors = async () => {
         const projectRoot = projectsManager.project?.folderPath;
@@ -176,8 +174,6 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                     darkColor: parsed[key].darkMode,
                 }));
             }
-
-            console.log('Color groups:', colorGroupsObj);
             setColorGroups(colorGroupsObj);
         } catch (error) {
             console.error('Error loading colors:', error);
@@ -214,7 +210,6 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         }
 
         try {
-            console.log('Deleting color:', { groupName, colorName });
             await invokeMainChannel(MainChannels.DELETE_TAILWIND_CONFIG, {
                 projectRoot,
                 groupName: groupName.toLowerCase(),
