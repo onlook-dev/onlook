@@ -1,9 +1,10 @@
+import type { Node, ObjectExpression } from '@babel/types';
+import type { ColorUpdate } from '@onlook/models/assets';
+import fg from 'fast-glob';
 import fs from 'fs';
 import path from 'path';
-import type { ObjectProperty, ObjectExpression, Node } from '@babel/types';
 import { readFile } from '../code/files';
-import type { ColorUpdate } from './type';
-import fg from 'fast-glob';
+
 export function getConfigPath(projectRoot: string): {
     configPath: string | null;
     cssPath: string | null;

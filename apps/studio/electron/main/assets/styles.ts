@@ -1,25 +1,30 @@
-import path from 'path';
-import fs from 'fs';
+import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import generate from '@babel/generator';
-import { Color } from '@onlook/utility';
-import { readFile } from '../code/files';
-import type { ObjectProperty, ObjectExpression } from '@babel/types';
-import { transformAst } from '../code/diff/transform';
+import type { ObjectExpression, ObjectProperty } from '@babel/types';
+import type {
+    ClassReplacement,
+    ColorUpdate,
+    ConfigUpdateResult,
+    UpdateResult,
+} from '@onlook/models/assets';
 import type { CodeDiffRequest } from '@onlook/models/code';
-import { getOidFromJsxElement } from '../code/diff/helpers';
+import { Color } from '@onlook/utility';
+import fs from 'fs';
+import path from 'path';
 import { getNodeClasses } from '../code/classes';
-import type { UpdateResult, ColorUpdate, ConfigUpdateResult, ClassReplacement } from './type';
+import { getOidFromJsxElement } from '../code/diff/helpers';
+import { transformAst } from '../code/diff/transform';
+import { readFile } from '../code/files';
 import {
+    addTailwindRootColor,
     extractObject,
+    findSourceFiles,
     getConfigPath,
     initializeTailwindColorContent,
     isColorsObjectProperty,
     isObjectExpression,
-    addTailwindRootColor,
     toCamelCase,
-    findSourceFiles,
 } from './helpers';
 
 export async function updateTailwindColorConfig(

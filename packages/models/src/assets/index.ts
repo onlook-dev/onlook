@@ -21,4 +21,4 @@ interface ClassReplacement {
     newClass: string;
 }
 
-export type { UpdateResult, ColorUpdate, ConfigUpdateResult, ClassReplacement };
+export type { ClassReplacement, ColorUpdate, ConfigUpdateResult, UpdateResult };

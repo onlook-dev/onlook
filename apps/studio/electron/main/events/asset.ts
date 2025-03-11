@@ -5,7 +5,7 @@ import {
     saveImageToProject,
     deleteImageFromProject,
     renameImageInProject,
-} from '../assets';
+} from '../assets/images';
 
 export function listenForAssetMessages() {
     ipcMain.handle(MainChannels.SCAN_IMAGES_IN_PROJECT, async (_event, projectRoot: string) => {
