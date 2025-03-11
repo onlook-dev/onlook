@@ -35,10 +35,12 @@ const AdvancedTab = observer(() => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="text-smallPlus min-w-[150px]">
                         <DropdownMenuItem onClick={() => updateBunReplace(true)}>
-                            {'Replace On'}
+                            {'On'}{' '}
+                            <Icons.Check className={enableBunReplace ? 'ml-auto' : 'hidden'} />
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => updateBunReplace(false)}>
-                            {'Replace Off'}
+                            {'Off'}{' '}
+                            <Icons.Check className={!enableBunReplace ? 'ml-auto' : 'hidden'} />
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
