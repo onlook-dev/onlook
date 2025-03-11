@@ -334,7 +334,22 @@ async function updateTailwindCssVariable(
         {
             postcssPlugin: 'update-css-var',
             Once(root: Root) {
-                // Process both :root and .dark rules to handle variable renames
+                let rootValue: string | undefined;
+                let darkValue: string | undefined;
+
+                root.walkRules(':root', (rule) => {
+                    rule.walkDecls(`--${originalName}`, (decl) => {
+                        rootValue = decl.value;
+                    });
+                });
+
+                root.walkRules('.dark', (rule) => {
+                    rule.walkDecls(`--${originalName}`, (decl) => {
+                        darkValue = decl.value;
+                    });
+                });
+
+                // Process both :root and .dark rules
                 root.walkRules(/^(:root|\.dark)$/, (rule) => {
                     const isDarkTheme = rule.selector === '.dark';
                     const shouldUpdateValue =
@@ -343,17 +358,50 @@ async function updateTailwindCssVariable(
 
                     rule.walkDecls((decl) => {
                         if (decl.prop === `--${originalName}`) {
+                            const otherThemeValue = isDarkTheme ? rootValue : darkValue;
+                            const isOtherThemeHex = otherThemeValue?.startsWith('#');
+                            const shouldConvertToHex = newColor?.startsWith('#') || isOtherThemeHex;
+
                             if (newVarName && newVarName !== originalName) {
+                                // Handle variable rename
+                                let valueToUse = shouldUpdateValue ? newColor! : decl.value;
+
+                                if (shouldConvertToHex && !valueToUse.startsWith('#')) {
+                                    try {
+                                        const color = parseHslValue(valueToUse);
+                                        if (color) {
+                                            valueToUse = color.toHex();
+                                        }
+                                    } catch (err) {
+                                        console.error('Failed to convert to hex:', err);
+                                    }
+                                }
+
                                 rule.append({
                                     prop: `--${newVarName}`,
-                                    value: shouldUpdateValue ? newColor! : decl.value,
+                                    value: valueToUse,
                                 });
                                 decl.remove();
-                            } else if (shouldUpdateValue) {
-                                decl.value = newColor!;
+                            } else if (shouldUpdateValue || shouldConvertToHex) {
+                                // Handle value update or format conversion
+                                let newValue = shouldUpdateValue ? newColor! : decl.value;
+
+                                if (shouldConvertToHex && !newValue.startsWith('#')) {
+                                    try {
+                                        const color = parseHslValue(newValue);
+                                        if (color) {
+                                            newValue = color.toHex();
+                                        }
+                                    } catch (err) {
+                                        console.error('Failed to convert to hex:', err);
+                                    }
+                                }
+
+                                decl.value = newValue;
                             }
                         }
 
+                        // Handle nested variables rename
                         if (newVarName && newVarName !== originalName) {
                             const nestedVarRegex = new RegExp(`^--${originalName}-`);
                             if (nestedVarRegex.test(decl.prop)) {
