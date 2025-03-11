@@ -9,7 +9,6 @@ import type {
     UpdateResult,
 } from '@onlook/models/assets';
 import type { CodeDiffRequest } from '@onlook/models/code';
-import { Color } from '@onlook/utility';
 import fs from 'fs';
 import path from 'path';
 import { getNodeClasses } from '../code/classes';
@@ -26,6 +25,9 @@ import {
     isObjectExpression,
     toCamelCase,
 } from './helpers';
+import postcss from 'postcss';
+import type { Root, Rule } from 'postcss';
+import { parseHslValue } from '@onlook/utility';
 
 export async function updateTailwindColorConfig(
     projectRoot: string,
@@ -95,7 +97,7 @@ async function createTailwindColorVariable(
     const newCssVarName = parentName?.length ? `${parentName}-${camelCaseName}` : camelCaseName;
 
     // Update CSS file
-    const updatedCssContent = addTailwindCssVariable(cssContent, newCssVarName, newColor);
+    const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
     fs.writeFileSync(cssPath, updatedCssContent);
 
     // Update config file
@@ -249,7 +251,7 @@ async function updateTailwindColorVariable(
     }
 
     // Update CSS file
-    const updatedCssContent = updateTailwindCssVariable(
+    const updatedCssContent = await updateTailwindCssVariable(
         cssContent,
         originalName,
         newCssVarName,
@@ -291,243 +293,134 @@ async function updateTailwindColorVariable(
     return { success: true };
 }
 
-function addTailwindCssVariable(cssContent: string, varName: string, color: string): string {
-    const cssVarAddition = `\n    --${varName}: ${color};`;
-
-    let updatedContent = cssContent;
-
-    // Add to both light and dark themes
-    const baseLayerRegex =
-        /(@layer\s+base\s*{)([^}]*:root\s*{[^}]*})\s*([^}]*\.dark\s*{[^}]*})\s*}/s;
-
-    if (baseLayerRegex.test(cssContent)) {
-        updatedContent = cssContent.replace(
-            baseLayerRegex,
-            (match, layerStart, rootBlock, darkBlock) => {
-                // Add to root block
-                const updatedRootBlock = rootBlock.replace(/}$/, `${cssVarAddition}\n  }`);
-                // Add to dark block
-                const updatedDarkBlock = darkBlock.replace(/}$/, `${cssVarAddition}\n  }`);
-
-                return `${layerStart}${updatedRootBlock}\n  ${updatedDarkBlock}\n}`;
-            },
-        );
-    }
-
-    return updatedContent;
+// Helper to process CSS with PostCSS
+async function processCss(css: string, plugins: any[]) {
+    const result = await postcss(plugins).process(css, {
+        from: undefined, // Prevents source map generation
+    });
+    return result.css;
 }
 
-function updateTailwindCssVariable(
+async function addTailwindCssVariable(
+    cssContent: string,
+    varName: string,
+    color: string,
+): Promise<string> {
+    return processCss(cssContent, [
+        {
+            postcssPlugin: 'add-css-var',
+            Once(root: Root) {
+                root.walkRules(':root', (rule: Rule) => {
+                    rule.append({ prop: `--${varName}`, value: color });
+                });
+
+                root.walkRules('.dark', (rule: Rule) => {
+                    rule.append({ prop: `--${varName}`, value: color });
+                });
+            },
+        },
+    ]);
+}
+
+// Update existing CSS variable
+async function updateTailwindCssVariable(
     cssContent: string,
     originalName: string,
-    newVarName: string,
-    newColor: string,
+    newVarName: string | undefined,
+    newColor: string | undefined,
     theme?: 'dark' | 'light',
-): string {
-    // Constants for CSS selectors and patterns
-    const CSS_ROOT_SELECTOR = ':root';
-    const CSS_DARK_SELECTOR = '.dark';
-    const CSS_LAYER_BASE = '@layer base';
+): Promise<string> {
+    return processCss(cssContent, [
+        {
+            postcssPlugin: 'update-css-var',
+            Once(root: Root) {
+                // Process both :root and .dark rules to handle variable renames
+                root.walkRules(/^(:root|\.dark)$/, (rule) => {
+                    const isDarkTheme = rule.selector === '.dark';
+                    const shouldUpdateValue =
+                        newColor &&
+                        (!theme || (isDarkTheme ? theme === 'dark' : theme === 'light'));
 
-    // More specific and readable regex patterns
-    const lightVarRegex = new RegExp(
-        `(${CSS_ROOT_SELECTOR}[^{]*{[^}]*)` + // Capture the :root block start
-            `(--${originalName}\\s*:\\s*[^;]*)` + // Capture the CSS variable declaration
-            `(;|})`, // Capture the ending
-        's',
-    );
-
-    const darkVarRegex = new RegExp(
-        `(${CSS_LAYER_BASE}\\s*{\\s*` + // Match @layer base opening
-            `${CSS_DARK_SELECTOR}\\s*{[^}]*)` + // Match .dark block content
-            `(})`, // Capture the ending
-        's',
-    );
-
-    const regex = theme === 'dark' ? darkVarRegex : lightVarRegex;
-    let updatedContent = cssContent;
-
-    // First update the main variable
-    if (regex.test(cssContent)) {
-        updatedContent =
-            newVarName !== originalName
-                ? cssContent.replace(
-                      regex,
-                      `$1--${originalName}: ${newColor};--${newVarName}: ${newColor}$3`,
-                  )
-                : cssContent.replace(regex, `$1--${originalName}: ${newColor}$3`);
-    } else {
-        updatedContent = addTailwindCssVariable(cssContent, newVarName, newColor);
-    }
-
-    if (newVarName !== originalName) {
-        const VAR_PATTERN = '--';
-
-        // Update the base/DEFAULT variable if it exists
-        const baseVarRegex = new RegExp(`${VAR_PATTERN}${originalName}\\s*:`, 'g');
-        updatedContent = updatedContent.replace(baseVarRegex, `${VAR_PATTERN}${newVarName}:`);
-
-        // Update nested variables
-        const nestedVarRegex = new RegExp(`${VAR_PATTERN}${originalName}-([^:\\s]+)\\s*:`, 'g');
-        updatedContent = updatedContent.replace(
-            nestedVarRegex,
-            (_, suffix) => `${VAR_PATTERN}${newVarName}-${suffix}:`,
-        );
-    }
-
-    return updatedContent;
-}
-
-export async function scanTailwindConfig(projectRoot: string) {
-    try {
-        const { configPath, cssPath } = getConfigPath(projectRoot);
-
-        if (!configPath || !cssPath) {
-            return null;
-        }
-
-        const configContent = await readFile(configPath);
-        if (!configContent) {
-            console.log('Could not read Tailwind config file');
-            return null;
-        }
-
-        const cssContent = await readFile(cssPath);
-        if (!cssContent) {
-            console.log('Could not read CSS file');
-            return {
-                configPath,
-                configContent: extractColorsFromTailwindConfig(configContent),
-                cssPath,
-                cssContent: extractTailwindCssVariables(''),
-            };
-        }
-
-        return {
-            configPath,
-            configContent: extractColorsFromTailwindConfig(configContent),
-            cssPath,
-            cssContent: extractTailwindCssVariables(cssContent),
-        };
-    } catch (error) {
-        console.error('Error scanning Tailwind config:', error);
-        return null;
-    }
-}
-
-function extractTailwindCssVariables(content: string) {
-    try {
-        const configs: {
-            root: Record<string, string>;
-            dark: Record<string, string>;
-        } = {
-            root: {},
-            dark: {},
-        };
-
-        const parseBlock = (selector: string): Record<string, string> => {
-            const blockRegex = new RegExp(`${selector}\\s*{([^}]+)}`, 'g');
-            const matches = [...content.matchAll(blockRegex)];
-
-            const result: Record<string, string> = {};
-
-            for (const match of matches) {
-                if (match[1]) {
-                    const cssVarMatches = [...match[1].matchAll(/--([^:]+):\s*([^;]+);/g)];
-
-                    for (const varMatch of cssVarMatches) {
-                        const varName = varMatch[1].trim();
-                        const value = varMatch[2].trim();
-
-                        if (
-                            value.includes('hsl') ||
-                            value.match(/\d+\.?\d*\s+\d+\.?\d*%\s+\d+\.?\d*%/)
-                        ) {
-                            try {
-                                let h = 0,
-                                    s = 0,
-                                    l = 0,
-                                    a = 1;
-
-                                if (value.includes('hsl')) {
-                                    // Handle both hsl() and hsla() formats
-                                    const hslMatch = value.match(
-                                        /hsla?\(\s*([^,\s]+)(?:deg)?\s*[,\s]\s*([^,\s]+)%\s*[,\s]\s*([^,\s]+)%\s*(?:[,/]\s*([^)]+))?\s*\)/,
-                                    );
-
-                                    if (hslMatch) {
-                                        // Parse hue (supports deg, turn, rad, grad)
-                                        const hueValue = hslMatch[1];
-                                        if (hueValue.endsWith('turn')) {
-                                            h = parseFloat(hueValue) * 360;
-                                        } else if (hueValue.endsWith('rad')) {
-                                            h = parseFloat(hueValue) * (180 / Math.PI);
-                                        } else if (hueValue.endsWith('grad')) {
-                                            h = parseFloat(hueValue) * 0.9;
-                                        } else {
-                                            h = parseFloat(hueValue);
-                                        }
-
-                                        s = parseFloat(hslMatch[2]);
-                                        l = parseFloat(hslMatch[3]);
-
-                                        if (hslMatch[4]) {
-                                            a = hslMatch[4].endsWith('%')
-                                                ? parseFloat(hslMatch[4]) / 100
-                                                : parseFloat(hslMatch[4]);
-                                        }
-                                    }
-                                } else {
-                                    // Handle space-separated format (e.g. "210 40% 98%")
-                                    const parts = value.split(/\s+/);
-                                    if (parts.length >= 3) {
-                                        h = parseFloat(parts[0]);
-                                        s = parseFloat(parts[1].replace('%', ''));
-                                        l = parseFloat(parts[2].replace('%', ''));
-
-                                        // Handle optional alpha value
-                                        if (parts.length >= 4) {
-                                            a = parts[3].endsWith('%')
-                                                ? parseFloat(parts[3]) / 100
-                                                : parseFloat(parts[3]);
-                                        }
-                                    }
-                                }
-
-                                // Normalize values to valid ranges
-                                h = ((h % 360) + 360) % 360;
-                                s = Math.max(0, Math.min(100, s));
-                                l = Math.max(0, Math.min(100, l));
-                                a = Math.max(0, Math.min(1, a));
-
-                                result[varName] = Color.hsl({
-                                    h: h / 360,
-                                    s: s / 100,
-                                    l: l / 100,
-                                    a,
-                                }).toHex();
-                            } catch (err) {
-                                console.error(`Failed to convert HSL value: ${value}`, err);
-                                result[varName] = value;
+                    rule.walkDecls((decl) => {
+                        if (decl.prop === `--${originalName}`) {
+                            if (newVarName && newVarName !== originalName) {
+                                rule.append({
+                                    prop: `--${newVarName}`,
+                                    value: shouldUpdateValue ? newColor! : decl.value,
+                                });
+                                decl.remove();
+                            } else if (shouldUpdateValue) {
+                                decl.value = newColor!;
                             }
-                        } else {
-                            result[varName] = value;
                         }
-                    }
+
+                        if (newVarName && newVarName !== originalName) {
+                            const nestedVarRegex = new RegExp(`^--${originalName}-`);
+                            if (nestedVarRegex.test(decl.prop)) {
+                                const newProp = decl.prop.replace(originalName, newVarName);
+                                rule.append({ prop: newProp, value: decl.value });
+                                decl.remove();
+                            }
+                        }
+                    });
+                });
+            },
+        },
+    ]);
+}
+
+// Extract CSS variables from stylesheet
+function extractTailwindCssVariables(content: string) {
+    const configs: {
+        root: { [key: string]: string };
+        dark: { [key: string]: string };
+    } = {
+        root: {},
+        dark: {},
+    };
+
+    const result = postcss.parse(content);
+
+    result.walkRules(':root', (rule) => {
+        rule.walkDecls(/^--/, (decl) => {
+            const varName = decl.prop.slice(2);
+            const value = decl.value;
+
+            // Convert HSL to hex if needed
+            try {
+                const color = parseHslValue(value);
+                if (color) {
+                    configs.root[varName] = color.toHex();
+                    return;
                 }
+            } catch (err) {
+                console.error(`Failed to convert HSL value: ${value}`, err);
             }
 
-            return result;
-        };
+            configs.root[varName] = value;
+        });
+    });
 
-        configs.root = parseBlock(':root');
-        configs.dark = parseBlock('\\.dark');
+    result.walkRules('.dark', (rule) => {
+        rule.walkDecls(/^--/, (decl) => {
+            const varName = decl.prop.slice(2);
+            const value = decl.value;
 
-        return configs;
-    } catch (error) {
-        console.error('Error extracting CSS config:', error);
-        return { root: {}, dark: {} };
-    }
+            try {
+                const color = parseHslValue(value);
+                if (color) {
+                    configs.dark[varName] = color.toHex();
+                    return;
+                }
+            } catch (err) {
+                console.error(`Failed to convert HSL value: ${value}`, err);
+            }
+
+            configs.dark[varName] = value;
+        });
+    });
+
+    return configs;
 }
 
 function extractColorsFromTailwindConfig(fileContent: string): Record<string, any> {
@@ -755,5 +648,42 @@ export async function deleteTailwindColorGroup(
             success: false,
             error: error instanceof Error ? error.message : String(error),
         };
+    }
+}
+
+export async function scanTailwindConfig(projectRoot: string) {
+    try {
+        const { configPath, cssPath } = getConfigPath(projectRoot);
+
+        if (!configPath || !cssPath) {
+            return null;
+        }
+
+        const configContent = await readFile(configPath);
+        if (!configContent) {
+            console.log('Could not read Tailwind config file');
+            return null;
+        }
+
+        const cssContent = await readFile(cssPath);
+        if (!cssContent) {
+            console.log('Could not read CSS file');
+            return {
+                configPath,
+                configContent: extractColorsFromTailwindConfig(configContent),
+                cssPath,
+                cssContent: extractTailwindCssVariables(''),
+            };
+        }
+
+        return {
+            configPath,
+            configContent: extractColorsFromTailwindConfig(configContent),
+            cssPath,
+            cssContent: extractTailwindCssVariables(cssContent),
+        };
+    } catch (error) {
+        console.error('Error scanning Tailwind config:', error);
+        return null;
     }
 }

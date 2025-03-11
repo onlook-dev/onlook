@@ -19,6 +19,75 @@ export function formatHexString(hex: string): string {
     return hex;
 }
 
+export function parseHslValue(value: string): Color | null {
+    let h = 0,
+        s = 0,
+        l = 0,
+        a = 1;
+
+    if (value.includes('hsl')) {
+        const hslMatch = value.match(
+            /hsla?\(\s*([^,\s]+)(?:deg)?\s*[,\s]\s*([^,\s]+)%\s*[,\s]\s*([^,\s]+)%\s*(?:[,/]\s*([^)]+))?\s*\)/,
+        );
+
+        if (hslMatch) {
+            // Parse hue with unit support
+            const hueValue = hslMatch[1];
+            h = parseHueValue(hueValue);
+            s = parseFloat(hslMatch[2]);
+            l = parseFloat(hslMatch[3]);
+
+            if (hslMatch[4]) {
+                a = hslMatch[4].endsWith('%')
+                    ? parseFloat(hslMatch[4]) / 100
+                    : parseFloat(hslMatch[4]);
+            }
+        } else {
+            return null;
+        }
+    } else {
+        // Parse space-separated format
+        const parts = value.split(/\s+/);
+        if (parts.length >= 3) {
+            h = parseFloat(parts[0]);
+            s = parseFloat(parts[1].replace('%', ''));
+            l = parseFloat(parts[2].replace('%', ''));
+
+            if (parts.length >= 4) {
+                a = parts[3].endsWith('%') ? parseFloat(parts[3]) / 100 : parseFloat(parts[3]);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    // Normalize values
+    h = ((h % 360) + 360) % 360;
+    s = Math.max(0, Math.min(100, s));
+    l = Math.max(0, Math.min(100, l));
+    a = Math.max(0, Math.min(1, a));
+
+    return Color.hsl({
+        h: h / 360,
+        s: s / 100,
+        l: l / 100,
+        a,
+    });
+}
+
+function parseHueValue(value: string): number {
+    if (value.endsWith('turn')) {
+        return parseFloat(value) * 360;
+    }
+    if (value.endsWith('rad')) {
+        return parseFloat(value) * (180 / Math.PI);
+    }
+    if (value.endsWith('grad')) {
+        return parseFloat(value) * 0.9;
+    }
+    return parseFloat(value);
+}
+
 export interface Palette {
     name: string;
     colors: {
