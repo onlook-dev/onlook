@@ -214,7 +214,7 @@ const LayersPanel = observer(() => {
                         className="flex-1 w-[280px] bg-background/80 rounded-xl"
                         onMouseEnter={() => setIsContentPanelOpen(true)}
                     >
-                        <div className="border backdrop-blur h-full shadow overflow-auto p-0 rounded-xl">
+                        <div className="border backdrop-blur h-full shadow p-0 rounded-xl">
                             {selectedTab === TabValue.LAYERS && <LayersTab />}
                             {selectedTab === TabValue.COMPONENTS &&
                                 (COMPONENT_DISCOVERY_ENABLED ? (

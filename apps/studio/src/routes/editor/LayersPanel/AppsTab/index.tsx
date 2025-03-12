@@ -4,6 +4,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { Input } from '@onlook/ui/input';
 import { useTranslation } from 'react-i18next';
+import StripeIntegration from './DetailPanel';
 
 // Sample data for app categories
 const APP_CATEGORIES = [
@@ -24,6 +25,12 @@ const FEATURED_APPS = [
         id: '2',
         name: 'Stripe',
         description: 'Interact with the Stripe API. This server supports...',
+        icon: '',
+    },
+    {
+        id: '3',
+        name: 'MongoDB',
+        description: 'Connect to MongoDB databases and perform CRUD operations...',
         icon: '',
     },
 ];
@@ -90,16 +97,20 @@ interface AppData {
 
 interface AppCardProps {
     app: AppData;
+    onClick: (app: AppData) => void;
 }
 
 // Regular app card for the All Apps section
-const AppCard: React.FC<AppCardProps> = ({ app }) => {
+const AppCard: React.FC<AppCardProps> = ({ app, onClick }) => {
     return (
-        <div className="flex flex-col py-4">
+        <button
+            className="w-full text-left flex flex-col py-4 cursor-pointer"
+            onClick={() => onClick(app)}
+        >
             <div>
                 <div className="flex items-center">
                     <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md text-white text-xl font-semibold mr-3 bg-background-secondary">
-                        {app.icon}
+                        {app.icon || 'S'}
                     </div>
                     <div className="flex-1 min-w-0 flex items-center">
                         <h3 className="text-base font-normal text-white">{app.name}</h3>
@@ -107,22 +118,26 @@ const AppCard: React.FC<AppCardProps> = ({ app }) => {
                 </div>
                 <p className="text-sm text-gray-400 mt-2 line-clamp-2">{app.description}</p>
             </div>
-        </div>
+        </button>
     );
 };
 
 // Featured app card for the Featured section
 interface FeaturedAppCardProps {
     app: AppData;
+    onClick: (app: AppData) => void;
 }
 
-const FeaturedAppCard: React.FC<FeaturedAppCardProps> = ({ app }) => {
+const FeaturedAppCard: React.FC<FeaturedAppCardProps> = ({ app, onClick }) => {
     return (
-        <div className="flex flex-col rounded-lg overflow-hidden border border-border">
+        <button
+            className="w-full text-left flex flex-col rounded-lg overflow-hidden border border-border cursor-pointer"
+            onClick={() => onClick(app)}
+        >
             <div className="p-3">
                 <div className="flex items-center">
                     <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md text-white text-xl font-semibold mr-3 bg-background-secondary">
-                        {app.icon}
+                        {app.icon || 'S'}
                     </div>
                     <div className="flex-1 min-w-0 flex items-center">
                         <h3 className="text-base font-normal text-white">{app.name}</h3>
@@ -130,15 +145,16 @@ const FeaturedAppCard: React.FC<FeaturedAppCardProps> = ({ app }) => {
                 </div>
                 <p className="text-sm text-gray-400 mt-2 line-clamp-2">{app.description}</p>
             </div>
-        </div>
+        </button>
     );
 };
 
-const AppsTab: React.FC = () => {
+const AppsTab = observer(() => {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'browse' | 'installed'>('browse');
     const [sortOption, setSortOption] = useState('newest');
+    const [selectedApp, setSelectedApp] = useState<AppData | null>(null);
 
     // Filter apps based on search query
     const filteredApps = ALL_APPS.filter((app) => {
@@ -148,150 +164,186 @@ const AppsTab: React.FC = () => {
         );
     });
 
+    const handleAppClick = (app: AppData) => {
+        console.log('App clicked:', app.name);
+        setSelectedApp(app);
+    };
+
+    const handleCloseDetailPanel = () => {
+        console.log('Closing detail panel');
+        setSelectedApp(null);
+    };
+
     return (
-        <div className="w-full h-full flex flex-col text-xs text-active overflow-hidden">
-            {/* Search Bar */}
-            <div className="px-4 py-3 border-b border-border">
-                <div className="relative">
-                    <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Search apps..."
-                        className="h-9 text-xs pl-7 pr-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Escape') {
-                                setSearchQuery('');
-                                (e.target as HTMLInputElement).blur();
-                            }
-                        }}
-                    />
-                    {searchQuery && (
-                        <button
-                            className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
-                            onClick={() => setSearchQuery('')}
-                        >
-                            <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex px-4 border-b border-border">
-                <button
+        <div className="w-full h-full flex flex-row text-xs text-active">
+            <div className="flex flex-row w-full h-full">
+                {/* Main Apps Panel */}
+                <div
                     className={cn(
-                        'flex-1 py-3 text-sm font-normal',
-                        activeTab === 'browse'
-                            ? 'text-foreground border-b border-foreground'
-                            : 'text-muted-foreground',
+                        'flex-shrink-0 flex flex-col bg-background',
+                        selectedApp
+                            ? 'w-full rounded-l-xl border-r-0 mr-[1px]'
+                            : 'w-full rounded-xl',
                     )}
-                    onClick={() => setActiveTab('browse')}
                 >
-                    Browse
-                </button>
-                <button
-                    className={cn(
-                        'flex-1 py-3 text-sm font-normal',
-                        activeTab === 'installed'
-                            ? 'text-foreground border-b border-foreground'
-                            : 'text-muted-foreground',
-                    )}
-                    onClick={() => setActiveTab('installed')}
-                >
-                    Installed Apps
-                </button>
-            </div>
-
-            {/* Main Content - Scrollable */}
-            <div className="flex-1 overflow-y-auto">
-                {activeTab === 'browse' && (
-                    <>
-                        {/* Categories */}
-                        <div className="flex p-4 space-x-1.5 overflow-x-auto">
-                            {APP_CATEGORIES.map((category) => (
+                    {/* Search Bar */}
+                    <div className="px-4 py-3 border-b border-border">
+                        <div className="relative">
+                            <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search apps..."
+                                className="h-9 text-xs pl-7 pr-8"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Escape') {
+                                        setSearchQuery('');
+                                        (e.target as HTMLInputElement).blur();
+                                    }
+                                }}
+                            />
+                            {searchQuery && (
                                 <button
-                                    key={category.id}
-                                    className="px-3 py-1.5 text-sm font-normal rounded-lg text-muted-foreground whitespace-nowrap border-border border bg-transparent"
+                                    className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
+                                    onClick={() => setSearchQuery('')}
                                 >
-                                    {category.name}
+                                    <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
                                 </button>
-                            ))}
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Main Content - Scrollable */}
+                    <div className="flex-1 overflow-y-auto">
+                        {/* Tabs */}
+                        <div className="flex px-4 border-b border-border top-0 z-10">
+                            <button
+                                className={cn(
+                                    'flex-1 py-3 text-sm font-normal',
+                                    activeTab === 'browse'
+                                        ? 'text-foreground border-b border-foreground'
+                                        : 'text-muted-foreground',
+                                )}
+                                onClick={() => setActiveTab('browse')}
+                            >
+                                Browse
+                            </button>
+                            <button
+                                className={cn(
+                                    'flex-1 py-3 text-sm font-normal',
+                                    activeTab === 'installed'
+                                        ? 'text-foreground border-b border-foreground'
+                                        : 'text-muted-foreground',
+                                )}
+                                onClick={() => setActiveTab('installed')}
+                            >
+                                Installed Apps
+                            </button>
                         </div>
 
-                        {/* Featured Apps */}
-                        <div className="pt-1 pb-6 border-b border-border">
-                            <div className="flex items-center justify-between px-4 mb-3">
-                                <h2 className="text-sm font-normal text-muted-foreground">
-                                    Featured
-                                </h2>
-                                <div className="flex space-x-1">
-                                    <button className="p-1 text-muted-foreground hover:text-foreground">
-                                        <Icons.ArrowLeft className="h-4 w-4" />
-                                    </button>
-                                    <button className="p-1 text-muted-foreground hover:text-foreground">
-                                        <Icons.ArrowRight className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="flex px-4 overflow-x-auto">
-                                {FEATURED_APPS.map((app) => (
-                                    <div
-                                        key={app.id}
-                                        className="min-w-[225px] max-w-[250px] mr-1.5"
-                                    >
-                                        <FeaturedAppCard app={app} />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* All Apps */}
-                        <div className="px-4 pt-6 pb-4">
-                            <div className="flex items-center justify-between mb-1">
-                                <h2 className="text-sm font-normal text-muted-foreground">
-                                    All apps
-                                </h2>
-                                <div className="flex items-center">
-                                    <span className="text-xs text-muted-foreground mr-1">
-                                        Sort by:
-                                    </span>
-                                    <div className="relative">
-                                        <select
-                                            className="appearance-none bg-transparent text-xs text-foreground pr-4 focus:outline-none cursor-pointer"
-                                            value={sortOption}
-                                            onChange={(e) => setSortOption(e.target.value)}
+                        {activeTab === 'browse' && (
+                            <>
+                                {/* Categories */}
+                                <div className="flex p-4 space-x-1.5 overflow-x-auto">
+                                    {APP_CATEGORIES.map((category) => (
+                                        <button
+                                            key={category.id}
+                                            className="px-3 py-1.5 text-sm font-normal rounded-lg text-muted-foreground whitespace-nowrap border-border border bg-transparent"
                                         >
-                                            {SORT_OPTIONS.map((option) => (
-                                                <option key={option.id} value={option.id}>
-                                                    {option.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <Icons.ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                                            {category.name}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Featured Apps */}
+                                <div className="pt-1 pb-6 border-b border-border">
+                                    <div className="flex items-center justify-between px-4 mb-3">
+                                        <h2 className="text-sm font-normal text-muted-foreground">
+                                            Featured
+                                        </h2>
+                                        <div className="flex space-x-1">
+                                            <button className="p-1 text-muted-foreground hover:text-foreground">
+                                                <Icons.ArrowLeft className="h-4 w-4" />
+                                            </button>
+                                            <button className="p-1 text-muted-foreground hover:text-foreground">
+                                                <Icons.ArrowRight className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="flex px-4 overflow-x-auto">
+                                        {FEATURED_APPS.map((app) => (
+                                            <div
+                                                key={app.id}
+                                                className="min-w-[225px] max-w-[250px] mr-1.5"
+                                            >
+                                                <FeaturedAppCard
+                                                    app={app}
+                                                    onClick={handleAppClick}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-                            </div>
-                            <div className="divide-y divide-border">
-                                {filteredApps.map((app) => (
-                                    <AppCard key={app.id} app={app} />
-                                ))}
-                            </div>
-                        </div>
-                    </>
-                )}
 
-                {activeTab === 'installed' && (
-                    <div className="p-3">
-                        <div className="text-center py-8 text-muted-foreground">
-                            No installed apps yet.
-                        </div>
+                                {/* All Apps */}
+                                <div className="px-4 pt-6 pb-4">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <h2 className="text-sm font-normal text-muted-foreground">
+                                            All apps
+                                        </h2>
+                                        <div className="flex items-center">
+                                            <span className="text-xs text-muted-foreground mr-1">
+                                                Sort by:
+                                            </span>
+                                            <div className="relative">
+                                                <select
+                                                    className="appearance-none bg-transparent text-xs text-foreground pr-4 focus:outline-none cursor-pointer"
+                                                    value={sortOption}
+                                                    onChange={(e) => setSortOption(e.target.value)}
+                                                >
+                                                    {SORT_OPTIONS.map((option) => (
+                                                        <option key={option.id} value={option.id}>
+                                                            {option.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <Icons.ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="divide-y divide-border">
+                                        {filteredApps.map((app) => (
+                                            <AppCard
+                                                key={app.id}
+                                                app={app}
+                                                onClick={handleAppClick}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {activeTab === 'installed' && (
+                            <div className="p-3">
+                                <div className="text-center py-8 text-muted-foreground">
+                                    No installed apps yet.
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Detail Panel */}
+                {selectedApp && (
+                    <div className="flex-shrink-0 border border-border bg-background my-[-1px] rounded-r-xl border-l-0 overflow-hidden">
+                        <StripeIntegration onClose={handleCloseDetailPanel} />
                     </div>
                 )}
             </div>
         </div>
     );
-};
+});
 
-export default observer(AppsTab);
+export default AppsTab;
