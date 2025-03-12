@@ -31,7 +31,7 @@ import { parseHslValue } from '@onlook/utility';
 
 export async function updateTailwindColorConfig(
     projectRoot: string,
-    originalName: string,
+    originalKey: string,
     newColor: string,
     newName: string,
     theme?: 'dark' | 'light',
@@ -42,9 +42,19 @@ export async function updateTailwindColorConfig(
         if (!colorUpdate) {
             return { success: false, error: 'Failed to prepare color update' };
         }
+        // Check if this is a default color update
+        const defaultColorMatch = originalKey.match(/^([a-z]+)-(\d+)$/);
 
-        return originalName
-            ? updateTailwindColorVariable(colorUpdate, originalName, newColor, newName, theme)
+        if (defaultColorMatch) {
+            const [, colorFamily, indexStr] = defaultColorMatch;
+            const colorIndex = parseInt(indexStr) / 100;
+
+            await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor);
+            return { success: true };
+        }
+
+        return originalKey
+            ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, newName, theme)
             : createTailwindColorVariable(colorUpdate, newColor, newName, parentName);
     } catch (error) {
         console.error('Error updating Tailwind config:', error);
@@ -326,8 +336,8 @@ async function addTailwindCssVariable(
 async function updateTailwindCssVariable(
     cssContent: string,
     originalName: string,
-    newVarName: string | undefined,
-    newColor: string | undefined,
+    newVarName?: string,
+    newColor?: string,
     theme?: 'dark' | 'light',
 ): Promise<string> {
     return processCss(cssContent, [
@@ -734,4 +744,113 @@ export async function scanTailwindConfig(projectRoot: string) {
         console.error('Error scanning Tailwind config:', error);
         return null;
     }
+}
+
+async function updateDefaultTailwindColor(
+    { configPath, cssPath, configContent, cssContent }: ColorUpdate,
+    colorFamily: string,
+    colorIndex: number,
+    newColor: string,
+): Promise<boolean> {
+    const updateAst = parse(configContent, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx'],
+    });
+
+    let isUpdated = false;
+    // Update the specific shade base on tailwinds color scale
+    // If the colorIndex is 0, we need + 50
+    // If the colorIndex is 10, we need - 50
+    const shadeKey =
+        colorIndex * 100 + (colorIndex === 0 ? -50 : 0) + (colorIndex === 10 ? -50 : 0);
+    const newColorValue = `var(--${colorFamily}-${shadeKey})`;
+
+    // Update the default color in the config file
+    traverse(updateAst, {
+        ObjectProperty(path) {
+            if (isColorsObjectProperty(path)) {
+                const colorObj = path.node.value;
+                if (!isObjectExpression(colorObj)) {
+                    return;
+                }
+
+                // Find the color family object
+                const familyProp = colorObj.properties.find(
+                    (prop) =>
+                        prop.type === 'ObjectProperty' &&
+                        'key' in prop &&
+                        prop.key.type === 'Identifier' &&
+                        prop.key.name === colorFamily,
+                );
+
+                // If the color family object is not found, create it
+                if (!familyProp) {
+                    colorObj.properties.push({
+                        type: 'ObjectProperty',
+                        key: { type: 'Identifier', name: colorFamily },
+                        value: {
+                            type: 'ObjectExpression',
+                            properties: [
+                                {
+                                    type: 'ObjectProperty',
+                                    key: { type: 'NumericLiteral', value: shadeKey },
+                                    value: { type: 'StringLiteral', value: newColorValue },
+                                    computed: false,
+                                    shorthand: false,
+                                },
+                            ],
+                        },
+                        computed: false,
+                        shorthand: false,
+                    });
+                } else if (
+                    familyProp &&
+                    'value' in familyProp &&
+                    isObjectExpression(familyProp.value)
+                ) {
+                    const shadeProp = familyProp.value.properties.find(
+                        (prop) =>
+                            prop.type === 'ObjectProperty' &&
+                            'key' in prop &&
+                            prop.key.type === 'NumericLiteral' &&
+                            prop.key.value === shadeKey,
+                    );
+
+                    if (shadeProp && 'value' in shadeProp) {
+                        // Marked updated to actually update the value in css file
+                        isUpdated = true;
+                    } else {
+                        familyProp.value.properties.push({
+                            type: 'ObjectProperty',
+                            key: { type: 'NumericLiteral', value: shadeKey },
+                            value: { type: 'StringLiteral', value: newColorValue },
+                            computed: false,
+                            shorthand: false,
+                        });
+                    }
+                }
+            }
+        },
+    });
+
+    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
+    fs.writeFileSync(configPath, output.code);
+
+    if (!isUpdated) {
+        const newCssVarName = `${colorFamily}-${shadeKey}`;
+        const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
+        fs.writeFileSync(cssPath, updatedCssContent);
+    } else {
+        // Update the CSS file
+        const originalName = `${colorFamily}-${shadeKey}`;
+        const updatedCssContent = await updateTailwindCssVariable(
+            cssContent,
+            originalName,
+            undefined,
+            newColor,
+        );
+        fs.writeFileSync(cssPath, updatedCssContent);
+    }
+
+    return isUpdated;
 }
