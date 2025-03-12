@@ -194,6 +194,10 @@
     },
     "projects": {
         "create": {
+            "settings": {
+                "title": "設定",
+                "tooltip": "新しいプロジェクトの設定を構成"
+            },
             "success": "プロジェクトが正常に作成されました。",
             "steps": {
                 "count": "{{total}}のうち{{current}}",

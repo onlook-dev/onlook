@@ -1,6 +1,10 @@
 {
     "projects": {
         "create": {
+            "settings": {
+                "title": "设置",
+                "tooltip": "配置新项目设置"
+            },
             "success": "项目创建成功。",
             "steps": {
                 "count": "第 {{current}} 步，共 {{total}} 步",

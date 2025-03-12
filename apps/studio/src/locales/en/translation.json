@@ -1,6 +1,10 @@
 {
     "projects": {
         "create": {
+            "settings": {
+                "title": "Settings",
+                "tooltip": "Configure new project settings"
+            },
             "success": "Project created successfully.",
             "steps": {
                 "count": "{{current}} of {{total}}",

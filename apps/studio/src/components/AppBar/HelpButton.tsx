@@ -1,5 +1,6 @@
-import { useRouteManager, useUserManager } from '@/components/Context';
+import { useEditorEngine, useRouteManager, useUserManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
+import { SettingsTabValue } from '@/lib/models';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import {
@@ -27,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 export const HelpButton = observer(() => {
     const userManager = useUserManager();
     const routeManager = useRouteManager();
+    const editorEngine = useEditorEngine();
 
     const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -117,6 +119,16 @@ export const HelpButton = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
+                <DropdownMenuItem
+                    className="text-sm"
+                    onClick={() => {
+                        editorEngine.isSettingsOpen = true;
+                        editorEngine.settingsTab = SettingsTabValue.PREFERENCES;
+                    }}
+                >
+                    <Icons.Gear className="w-4 h-4 mr-2" />
+                    {t('help.menu.openSettings')}
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">
