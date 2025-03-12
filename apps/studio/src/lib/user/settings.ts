@@ -5,6 +5,7 @@ import { invokeMainChannel } from '../utils';
 
 export class UserSettingsManager {
     settings: UserSettings | null = null;
+    defaultProjectPath: string | null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -13,6 +14,7 @@ export class UserSettingsManager {
 
     async restoreSettings() {
         this.settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
+        this.defaultProjectPath = await invokeMainChannel(MainChannels.GET_CREATE_PROJECT_PATH);
     }
 
     async update(settings: Partial<UserSettings>) {

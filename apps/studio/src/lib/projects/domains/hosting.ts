@@ -1,6 +1,7 @@
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import {
     PublishStatus,
+    type PublishOptions,
     type PublishRequest,
     type PublishResponse,
     type PublishState,
@@ -76,7 +77,7 @@ export class HostingManager {
         this.state = { ...this.state, ...partialState };
     }
 
-    async publish(options?: { skipBuild?: boolean; skipBadge?: boolean }): Promise<boolean> {
+    async publish(options: PublishOptions): Promise<boolean> {
         sendAnalytics('hosting publish');
         this.updateState({ status: PublishStatus.LOADING, message: 'Creating deployment...' });
 

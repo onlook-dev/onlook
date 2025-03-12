@@ -1,63 +1,36 @@
 import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
-import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 
-const ProjectTab = observer(({ project }: { project?: Project | null }) => {
+const ProjectTab = observer(() => {
     const projectsManager = useProjectsManager();
-    const projectToUpdate = project || projectsManager.project;
-    const [formValues, setFormValues] = useState({
-        name: projectToUpdate?.name || '',
-        url: projectToUpdate?.url || '',
-        folderPath: projectToUpdate?.folderPath || '',
-        commands: projectToUpdate?.commands || DefaultSettings.COMMANDS,
-    });
-    const [canSave, setCanSave] = useState(false);
+    const project = projectsManager.project;
+
+    const installCommand = project?.commands?.install || DefaultSettings.COMMANDS.install;
+    const runCommand = project?.commands?.run || DefaultSettings.COMMANDS.run;
+    const buildCommand = project?.commands?.build || DefaultSettings.COMMANDS.build;
+    const folderPath = project?.folderPath || '';
+    const name = project?.name || '';
+    const url = project?.url || '';
 
     const handleUpdatePath = async () => {
         const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
             | null;
-        if (path) {
-            setFormValues((prev) => ({ ...prev, folderPath: path }));
-            setCanSave(true);
-        }
-    };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { id, value } = e.target;
-        setFormValues((prev) => {
-            if (id === 'run' || id === 'build' || id === 'install') {
-                return {
-                    ...prev,
-                    commands: {
-                        ...prev.commands,
-                        [id]: value,
-                    },
-                };
-            }
-            return {
-                ...prev,
-                [id]: value,
-            };
+        if (!path) {
+            console.error('No path selected');
+            return;
+        }
+
+        projectsManager.updatePartialProject({
+            folderPath: path,
         });
-        setCanSave(true);
-    };
-
-    const handleSave = () => {
-        if (projectToUpdate) {
-            projectsManager.updateProject({
-                ...projectToUpdate,
-                ...formValues,
-            });
-            setCanSave(false);
-        }
     };
 
     return (
@@ -69,8 +42,12 @@ const ProjectTab = observer(({ project }: { project?: Project | null }) => {
                         <p className=" text-muted-foreground">Name</p>
                         <Input
                             id="name"
-                            value={formValues.name}
-                            onChange={handleChange}
+                            value={name}
+                            onChange={(e) =>
+                                projectsManager.updatePartialProject({
+                                    name: e.target.value,
+                                })
+                            }
                             className="w-2/3"
                         />
                     </div>
@@ -78,8 +55,12 @@ const ProjectTab = observer(({ project }: { project?: Project | null }) => {
                         <p className=" text-muted-foreground">URL</p>
                         <Input
                             id="url"
-                            value={formValues.url}
-                            onChange={handleChange}
+                            value={url}
+                            onChange={(e) =>
+                                projectsManager.updatePartialProject({
+                                    url: e.target.value,
+                                })
+                            }
                             className="w-2/3"
                         />
                     </div>
@@ -88,8 +69,13 @@ const ProjectTab = observer(({ project }: { project?: Project | null }) => {
                         <div className="flex items-center gap-2 w-2/3">
                             <Input
                                 id="folderPath"
-                                value={formValues.folderPath}
-                                onChange={handleChange}
+                                value={folderPath}
+                                readOnly={true}
+                                onChange={(e) =>
+                                    projectsManager.updatePartialProject({
+                                        folderPath: e.target.value,
+                                    })
+                                }
                             />
                             <Button size={'icon'} variant={'outline'} onClick={handleUpdatePath}>
                                 <Icons.Directory />
@@ -113,36 +99,51 @@ const ProjectTab = observer(({ project }: { project?: Project | null }) => {
                         <p className="text-muted-foreground">Install</p>
                         <Input
                             id="install"
-                            value={formValues.commands.install || DefaultSettings.COMMANDS.install}
-                            onChange={handleChange}
+                            value={installCommand}
                             className="w-2/3"
+                            onChange={(e) =>
+                                projectsManager.updatePartialProject({
+                                    commands: {
+                                        ...project?.commands,
+                                        install: e.target.value,
+                                    },
+                                })
+                            }
                         />
                     </div>
                     <div className="flex justify-between items-center">
                         <p className=" text-muted-foreground">Run</p>
                         <Input
                             id="run"
-                            value={formValues.commands.run || DefaultSettings.COMMANDS.run}
-                            onChange={handleChange}
+                            value={runCommand}
                             className="w-2/3"
+                            onChange={(e) =>
+                                projectsManager.updatePartialProject({
+                                    commands: {
+                                        ...project?.commands,
+                                        run: e.target.value,
+                                    },
+                                })
+                            }
                         />
                     </div>
                     <div className="flex justify-between items-center">
                         <p className=" text-muted-foreground">Build</p>
                         <Input
                             id="build"
-                            value={formValues.commands.build || DefaultSettings.COMMANDS.build}
-                            onChange={handleChange}
+                            value={buildCommand}
+                            onChange={(e) =>
+                                projectsManager.updatePartialProject({
+                                    commands: {
+                                        ...project?.commands,
+                                        build: e.target.value,
+                                    },
+                                })
+                            }
                             className="w-2/3"
                         />
                     </div>
                 </div>
-            </div>
-
-            <div className="flex justify-end p-4">
-                <Button size={'sm'} onClick={handleSave} disabled={!canSave}>
-                    {canSave ? 'Save' : 'Saved'}
-                </Button>
             </div>
         </div>
     );

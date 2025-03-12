@@ -35,7 +35,7 @@ async function downloadBun() {
             }
         })()];
 
-    const BUN_VERSION = '1.2.4';
+    const BUN_VERSION = '1.2.5';
     const RESOURCES_DIR = resolve(process.cwd(), 'apps', 'studio', 'resources', 'bun');
 
     // Create resources directory if it doesn't exist

@@ -52,7 +52,7 @@ export class DomainsManager {
         return this._customHosting;
     }
 
-    addBaseDomainToProject() {
+    addBaseDomainToProject(buildFlags?: string) {
         const domains = {
             base: null,
             custom: null,
@@ -66,7 +66,7 @@ export class DomainsManager {
         this.projectsManager.updateProject({ ...this.project, domains });
 
         setTimeout(() => {
-            this.base?.publish();
+            this.base?.publish({ buildFlags });
         }, 100);
     }
 

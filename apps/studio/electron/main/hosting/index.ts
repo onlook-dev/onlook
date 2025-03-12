@@ -12,7 +12,12 @@ import {
     HostingRoutes,
     MainChannels,
 } from '@onlook/models/constants';
-import { PublishStatus, type PublishRequest, type PublishResponse } from '@onlook/models/hosting';
+import {
+    PublishStatus,
+    type PublishOptions,
+    type PublishRequest,
+    type PublishResponse,
+} from '@onlook/models/hosting';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -61,7 +66,7 @@ class HostingManager {
             }
 
             // Run the build script
-            await this.runBuildStep(folderPath, buildScript, options?.skipBuild);
+            await this.runBuildStep(folderPath, buildScript, options);
             this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
             timer.log('Build completed');
 
@@ -136,12 +141,16 @@ class HostingManager {
         }
     }
 
-    async runBuildStep(folderPath: string, buildScript: string, skipBuild: boolean = false) {
-        const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
-        if (skipBuild) {
+    async runBuildStep(folderPath: string, buildScript: string, options?: PublishOptions) {
+        const BUILD_SCRIPT_NO_LINT = options?.buildFlags
+            ? `${buildScript} -- ${options?.buildFlags}`
+            : buildScript;
+
+        if (options?.skipBuild) {
             console.log('Skipping build');
             return;
         }
+
         const {
             success: buildSuccess,
             error: buildError,

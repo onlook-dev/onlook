@@ -13,6 +13,8 @@ export interface EditorSettings {
     shouldWarnDelete?: boolean;
     ideType?: IdeType;
     enableBunReplace?: boolean;
+    buildFlags?: string;
+    newProjectPath?: string;
 }
 
 export interface ChatSettings {
