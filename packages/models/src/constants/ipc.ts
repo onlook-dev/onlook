@@ -82,6 +82,7 @@ export enum MainChannels {
     UPDATE_PROJECTS = 'update-projects',
 
     // Create
+    GET_CREATE_PROJECT_PATH = 'get-create-project-path',
     CREATE_NEW_PROJECT = 'create-new-project',
     CREATE_NEW_PROJECT_CALLBACK = 'create-new-project-callback',
     SETUP_PROJECT = 'setup-project',

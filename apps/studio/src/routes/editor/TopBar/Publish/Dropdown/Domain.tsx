@@ -64,7 +64,9 @@ export const DomainSection = observer(
                 console.error('No domains manager found');
                 return;
             }
-            projectsManager.domains.addBaseDomainToProject();
+            projectsManager.domains.addBaseDomainToProject(
+                userManager.settings.settings?.editor?.buildFlags,
+            );
         };
 
         const publish = () => {
@@ -76,7 +78,10 @@ export const DomainSection = observer(
                 console.error(`No ${type} domain hosting manager found`);
                 return;
             }
-            domainManager.publish({ skipBadge: type === DomainType.CUSTOM });
+            domainManager.publish({
+                skipBadge: type === DomainType.CUSTOM,
+                buildFlags: userManager.settings.settings?.editor?.buildFlags,
+            });
         };
 
         const retry = () => {

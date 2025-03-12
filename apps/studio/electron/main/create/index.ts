@@ -8,18 +8,16 @@ import {
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage, CoreSystemMessage } from 'ai';
-import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { mainWindow } from '..';
 import Chat from '../chat';
+import { getCreateProjectPath } from './helpers';
 import { createProject } from './install';
 
 export class ProjectCreator {
     private static instance: ProjectCreator;
     private abortController: AbortController | null = null;
-
-    private constructor() {}
 
     public static getInstance(): ProjectCreator {
         if (!ProjectCreator.instance) {
@@ -129,8 +127,7 @@ export class ProjectCreator {
             throw new Error('AbortError');
         }
 
-        const documentsPath = app.getPath('documents');
-        const projectsPath = path.join(documentsPath, 'Onlook', 'Projects');
+        const projectsPath = getCreateProjectPath();
         await fs.promises.mkdir(projectsPath, { recursive: true });
         const projectName = `project-${Date.now()}`;
 

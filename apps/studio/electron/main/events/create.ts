@@ -4,10 +4,15 @@ import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
 import projectCreator from '../create';
+import { getCreateProjectPath } from '../create/helpers';
 import { createProject } from '../create/install';
 import { installProjectDependencies } from '../create/setup';
 
 export function listenForCreateMessages() {
+    ipcMain.handle(MainChannels.GET_CREATE_PROJECT_PATH, (e: Electron.IpcMainInvokeEvent) => {
+        return getCreateProjectPath();
+    });
+
     ipcMain.handle(MainChannels.CREATE_NEW_PROJECT, (e: Electron.IpcMainInvokeEvent, args) => {
         const progressCallback: CreateCallback = (stage: CreateStage, message: string) => {
             mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_CALLBACK, {
