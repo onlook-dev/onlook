@@ -120,20 +120,11 @@ const SettingsModal = observer(() => {
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
                                     <div className="flex-1 overflow-y-auto">
-                                        {editorEngine.settingsTab === SettingsTabValue.DOMAIN && (
-                                            <DomainTab />
-                                        )}
-                                        {editorEngine.settingsTab === SettingsTabValue.PROJECT && (
-                                            <ProjectTab />
-                                        )}
-                                        {editorEngine.settingsTab === SettingsTabValue.VERSIONS && (
-                                            <VersionsTab />
-                                        )}
-                                        {editorEngine.settingsTab ===
-                                            SettingsTabValue.PREFERENCES && <PreferencesTab />}
-                                        {editorEngine.settingsTab === SettingsTabValue.ADVANCED && (
-                                            <AdvancedTab />
-                                        )}
+                                        {
+                                            tabs.find(
+                                                (tab) => tab.label === editorEngine.settingsTab,
+                                            )?.component
+                                        }
                                     </div>
                                 </div>
                             </div>
