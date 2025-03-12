@@ -4,6 +4,7 @@ import { useState } from 'react';
 import ColorPanel from './ColorPanel';
 import FontPanel from './FontPanel';
 import { FontFamily } from './FontPanel/FontFamily';
+import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 
 interface ColorSquareProps {
     color: string;
@@ -70,7 +71,9 @@ const BrandTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0">
+        <div
+            className={`flex flex-col h-[calc(100vh-8.25rem)] ${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} text-xs text-active flex-grow w-full p-0`}
+        >
             {/* Brand Palette Section */}
             <div className="flex flex-col gap-3 px-4 pt-4 pb-6 border-b border-border">
                 <div className="flex flex-col gap-2">

@@ -6,6 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import DeviceSettings from './DeviceSettings';
 import FrameDimensions from './FrameDimensions';
+import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 
 const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -24,7 +25,7 @@ const WindowsTab = observer(() => {
     if (!settings) {
         return (
             <p
-                className={`${WIDTH} h-full flex items-center justify-center p-2 text-center text-sm text-foreground-secondary`}
+                className={`${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} h-full flex items-center justify-center p-2 text-center text-sm text-foreground-secondary`}
             >
                 {t('editor.panels.layers.tabs.windows.emptyState')}
             </p>
@@ -32,7 +33,7 @@ const WindowsTab = observer(() => {
     }
 
     return (
-        <div className={`${WIDTH} flex flex-col gap-3 p-4`}>
+        <div className={`${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} flex flex-col gap-3 p-4`}>
             <div className="flex flex-row gap-1">
                 <Button
                     variant={'outline'}

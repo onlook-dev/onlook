@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
+import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -211,7 +212,7 @@ const LayersPanel = observer(() => {
             {isContentPanelOpen && (
                 <>
                     <div
-                        className="flex-1 w-[280px] bg-background/80 rounded-xl"
+                        className={`flex-1 bg-background/80 rounded-xl`}
                         onMouseEnter={() => setIsContentPanelOpen(true)}
                     >
                         <div className="border backdrop-blur h-full shadow p-0 rounded-xl">
@@ -233,6 +234,7 @@ const LayersPanel = observer(() => {
                             {selectedTab === TabValue.APPS && <AppsTab />}
                         </div>
                     </div>
+
                     {/* Invisible padding area that maintains hover state */}
                     {!isLocked && (
                         <div

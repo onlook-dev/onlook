@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import { FontFamily } from './FontFamily';
 import UploadModal from './UploadModal';
+import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 
 interface FontVariantProps {
     name: string;
@@ -93,7 +94,9 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
         : filteredSiteFonts;
 
     return (
-        <div className="flex flex-col h-full min-h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0">
+        <div
+            className={`flex flex-col h-full min-h-[calc(100vh-8.25rem)] ${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} text-xs text-active flex-grow w-full p-0`}
+        >
             {/* Header Section */}
             <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
                 <h2 className="text-sm font-normal text-foreground">Fonts</h2>

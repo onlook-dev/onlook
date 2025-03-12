@@ -1,5 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
+import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -264,7 +265,9 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0 overflow-y-auto">
+        <div
+            className={`flex flex-col h-[calc(100vh-8.25rem)] ${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} text-xs text-active flex-grow p-0 overflow-y-auto`}
+        >
             <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
                 <h2 className="text-sm font-normal text-foreground">Brand Colors</h2>
                 <Button
