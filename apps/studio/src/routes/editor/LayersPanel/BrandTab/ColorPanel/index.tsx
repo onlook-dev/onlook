@@ -160,7 +160,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                     darkColor: parsed[key].darkMode,
                 }));
             }
-            const def = generateDefaultColors(cssConfig);
+            const def = generateDefaultColors(lightModeColors, darkModeColors);
             if (def) {
                 setDefaultColors(def);
             }
@@ -170,14 +170,13 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         }
     };
 
-    const generateDefaultColors = (cssConfig: any) => {
+    const generateDefaultColors = (lightModeColors: any, darkModeColors: any) => {
         return Object.keys(colors)
             .map((colorName) => {
                 if (['inherit', 'current', 'transparent', 'black', 'white'].includes(colorName)) {
                     return null;
                 }
-                // Get the color scale from the config if it exists, otherwise use default
-                const configColorScale = cssConfig?.root || {};
+
                 const defaultColorScale = colors[colorName as keyof typeof colors];
 
                 if (typeof defaultColorScale !== 'object' || defaultColorScale === null) {
@@ -189,14 +188,14 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                     .filter(([shade]) => shade !== 'DEFAULT') // Skip default value if present
                     .map(([shade, defaultValue]) => {
                         // Check if this color is overridden in the config
-                        const configValue = configColorScale[`${colorName}-${shade}`];
-                        console.log('configValue', configValue);
-                        if (configValue) {
+                        const lightModeValue = lightModeColors[`${colorName}-${shade}`];
+                        const darkModeValue = darkModeColors[`${colorName}-${shade}`];
+                        if (lightModeValue || darkModeValue) {
                             return {
                                 name: shade,
                                 originalKey: `${colorName}-${shade}`,
-                                lightColor: configValue,
-                                darkColor: configValue,
+                                lightColor: lightModeValue || '',
+                                darkColor: darkModeValue || '',
                             };
                         }
 

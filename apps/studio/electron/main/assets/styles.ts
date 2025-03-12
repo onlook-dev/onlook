@@ -49,7 +49,7 @@ export async function updateTailwindColorConfig(
             const [, colorFamily, indexStr] = defaultColorMatch;
             const colorIndex = parseInt(indexStr) / 100;
 
-            await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor);
+            await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor, theme);
             return { success: true };
         }
 
@@ -751,6 +751,7 @@ async function updateDefaultTailwindColor(
     colorFamily: string,
     colorIndex: number,
     newColor: string,
+    theme?: 'dark' | 'light',
 ): Promise<boolean> {
     const updateAst = parse(configContent, {
         sourceType: 'module',
@@ -847,6 +848,7 @@ async function updateDefaultTailwindColor(
             originalName,
             undefined,
             newColor,
+            theme,
         );
         fs.writeFileSync(cssPath, updatedCssContent);
     }
