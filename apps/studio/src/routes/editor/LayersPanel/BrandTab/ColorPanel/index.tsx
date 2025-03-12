@@ -39,7 +39,12 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     const [colorGroups, setColorGroups] = useState<{ [key: string]: ColorItem[] }>({});
     const [theme, setTheme] = useState<'dark' | 'light'>('light');
     const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
-
+    const [defaultColors, setDefaultColors] = useState<
+        {
+            name: string;
+            colors: ColorItem[];
+        }[]
+    >([]);
     const projectsManager = useProjectsManager();
     const loadColors = async () => {
         const projectRoot = projectsManager.project?.folderPath;
@@ -155,41 +160,62 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                     darkColor: parsed[key].darkMode,
                 }));
             }
+            const def = generateDefaultColors(cssConfig);
+            if (def) {
+                setDefaultColors(def);
+            }
             setColorGroups(colorGroupsObj);
         } catch (error) {
             console.error('Error loading colors:', error);
         }
     };
 
-    const defaultColors = Object.keys(colors)
-        .map((colorName) => {
-            // Skip special colors that aren't color scales
-            if (['inherit', 'current', 'transparent', 'black', 'white'].includes(colorName)) {
-                return null;
-            }
+    const generateDefaultColors = (cssConfig: any) => {
+        return Object.keys(colors)
+            .map((colorName) => {
+                if (['inherit', 'current', 'transparent', 'black', 'white'].includes(colorName)) {
+                    return null;
+                }
+                // Get the color scale from the config if it exists, otherwise use default
+                const configColorScale = cssConfig?.root || {};
+                const defaultColorScale = colors[colorName as keyof typeof colors];
 
-            // Ensure the color value is an object with numeric keys
-            const colorScale = colors[colorName as keyof typeof colors];
-            if (typeof colorScale !== 'object' || colorScale === null) {
-                return null;
-            }
+                if (typeof defaultColorScale !== 'object' || defaultColorScale === null) {
+                    return null;
+                }
 
-            // Create color items for each shade in the scale
-            const colorItems: ColorItem[] = Object.entries(colorScale)
-                .filter(([shade]) => shade !== 'DEFAULT') // Skip default value if present
-                .map(([shade, value]) => ({
-                    name: shade,
-                    originalKey: `${colorName}-${shade}`,
-                    lightColor: value,
-                    darkColor: value,
-                }));
+                // Create color items for each shade in the scale
+                const colorItems: ColorItem[] = Object.entries(defaultColorScale)
+                    .filter(([shade]) => shade !== 'DEFAULT') // Skip default value if present
+                    .map(([shade, defaultValue]) => {
+                        // Check if this color is overridden in the config
+                        const configValue = configColorScale[`${colorName}-${shade}`];
+                        console.log('configValue', configValue);
+                        if (configValue) {
+                            return {
+                                name: shade,
+                                originalKey: `${colorName}-${shade}`,
+                                lightColor: configValue,
+                                darkColor: configValue,
+                            };
+                        }
 
-            return {
-                name: colorName,
-                colors: colorItems,
-            };
-        })
-        .filter(Boolean);
+                        // If no override, use the default value
+                        return {
+                            name: shade,
+                            originalKey: `${colorName}-${shade}`,
+                            lightColor: defaultValue,
+                            darkColor: defaultValue,
+                        };
+                    });
+
+                return {
+                    name: colorName,
+                    colors: colorItems,
+                };
+            })
+            .filter((item): item is { name: string; colors: ColorItem[] } => item !== null); // Type guard to remove nulls
+    };
 
     useEffect(() => {
         loadColors();
@@ -411,20 +437,17 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
             <div className="flex flex-col gap-4 px-4 py-[18px] border-b border-border">
                 <h3 className="text-sm font-medium mb-2">Default Colors</h3>
                 {defaultColors.map(
-                    (colorGroup) =>
-                        colorGroup && (
+                    (color) =>
+                        color && (
                             <BrandPalletGroup
-                                key={colorGroup?.name}
+                                key={color.name}
                                 theme={theme}
-                                title={
-                                    colorGroup?.name.charAt(0).toUpperCase() +
-                                    colorGroup?.name.slice(1)
-                                }
-                                colors={colorGroup?.colors}
+                                title={color.name.charAt(0).toUpperCase() + color.name.slice(1)}
+                                colors={color.colors}
                                 onRename={handleRename}
-                                onDelete={(colorName) => handleDelete(colorGroup?.name, colorName)}
+                                onDelete={(colorName) => handleDelete(color.name, colorName)}
                                 onColorChange={(groupName, colorIndex, newColor) =>
-                                    handleDefaultColorChange(colorGroup?.name, colorIndex, newColor)
+                                    handleDefaultColorChange(color.name, colorIndex, newColor)
                                 }
                                 isDefaultPalette={true}
                             />

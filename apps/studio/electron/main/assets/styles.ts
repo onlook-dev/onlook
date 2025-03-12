@@ -761,8 +761,7 @@ async function updateDefaultTailwindColor(
     // Update the specific shade base on tailwinds color scale
     // If the colorIndex is 0, we need + 50
     // If the colorIndex is 10, we need - 50
-    const shadeKey =
-        colorIndex * 100 + (colorIndex === 0 ? -50 : 0) + (colorIndex === 10 ? -50 : 0);
+    const shadeKey = colorIndex * 100 + (colorIndex === 0 ? 50 : 0) + (colorIndex === 10 ? -50 : 0);
     const newColorValue = `var(--${colorFamily}-${shadeKey})`;
 
     // Update the default color in the config file
