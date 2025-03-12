@@ -9,6 +9,7 @@ import { ThemeProvider } from './components/ThemeProvider';
 import './i18n';
 import i18n from './i18n';
 import Routes from './routes';
+import SettingsModal from './routes/editor/SettingsModal';
 
 function App() {
     const userManager = useUserManager();
@@ -23,6 +24,7 @@ function App() {
                 <TooltipProvider>
                     <AppBar />
                     <Routes />
+                    <SettingsModal />
                     <Toaster />
                 </TooltipProvider>
             </ThemeProvider>
