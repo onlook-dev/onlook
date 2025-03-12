@@ -214,7 +214,7 @@ export const BrandPalletGroup = ({
                                                             </span>
                                                         </Button>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
+                                                    {/* <DropdownMenuItem asChild>
                                                         <Button
                                                             variant="ghost"
                                                             className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
@@ -224,7 +224,7 @@ export const BrandPalletGroup = ({
                                                                 <span>Duplicate</span>
                                                             </span>
                                                         </Button>
-                                                    </DropdownMenuItem>
+                                                    </DropdownMenuItem> */}
                                                     <DropdownMenuItem asChild>
                                                         <Button
                                                             variant="ghost"

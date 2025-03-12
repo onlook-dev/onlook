@@ -148,9 +148,17 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
             });
 
             // Handle any top-level colors that aren't part of a group
-            const ungroupedKeys = Object.keys(parsed).filter(
-                (key) => !Object.values(groups).some((set) => set.has(key)),
-            );
+            const ungroupedKeys = Object.keys(parsed).filter((key) => {
+                const isInGroup = Object.values(groups).some((set) => set.has(key));
+                if (isInGroup) {
+                    return false;
+                }
+                const isPrefix = Object.values(groups).some((set) =>
+                    Array.from(set).some((groupedKey) => groupedKey.startsWith(key + '-')),
+                );
+
+                return !isPrefix;
+            });
 
             if (ungroupedKeys.length > 0) {
                 colorGroupsObj['base'] = ungroupedKeys.map((key) => ({
@@ -171,9 +179,19 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     };
 
     const generateDefaultColors = (lightModeColors: any, darkModeColors: any) => {
+        const deprecatedColors = ['lightBlue', 'warmGray', 'trueGray', 'coolGray', 'blueGray'];
+        const excludedColors = [
+            'inherit',
+            'current',
+            'transparent',
+            'black',
+            'white',
+            ...deprecatedColors,
+        ];
+
         return Object.keys(colors)
             .map((colorName) => {
-                if (['inherit', 'current', 'transparent', 'black', 'white'].includes(colorName)) {
+                if (excludedColors.includes(colorName)) {
                     return null;
                 }
 
@@ -208,12 +226,37 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                         };
                     });
 
+                // Check for additional custom shades (like 1100) in the theme colors
+                const customShades = Object.keys(lightModeColors)
+                    .filter((key) => key.startsWith(`${colorName}-`))
+                    .map((key) => key.split('-')[1])
+                    .filter((shade) => !colorItems.some((item) => item.name === shade));
+
+                // Add custom shades to colorItems
+                customShades.forEach((shade) => {
+                    const lightModeValue = lightModeColors[`${colorName}-${shade}`];
+                    const darkModeValue = darkModeColors[`${colorName}-${shade}`];
+                    colorItems.push({
+                        name: shade,
+                        originalKey: `${colorName}-${shade}`,
+                        lightColor: lightModeValue || '',
+                        darkColor: darkModeValue || '',
+                    });
+                });
+
+                // Sort color items by shade number
+                colorItems.sort((a, b) => {
+                    const aNum = parseInt(a.name);
+                    const bNum = parseInt(b.name);
+                    return aNum - bNum;
+                });
+
                 return {
                     name: colorName,
                     colors: colorItems,
                 };
             })
-            .filter((item): item is { name: string; colors: ColorItem[] } => item !== null); // Type guard to remove nulls
+            .filter((item): item is { name: string; colors: ColorItem[] } => item !== null);
     };
 
     useEffect(() => {

@@ -43,7 +43,7 @@ export async function updateTailwindColorConfig(
             return { success: false, error: 'Failed to prepare color update' };
         }
         // Check if this is a default color update
-        const defaultColorMatch = originalKey.match(/^([a-z]+)-(\d+)$/);
+        const defaultColorMatch = originalKey && originalKey.match(/^([a-z]+)-(\d+)$/);
 
         if (defaultColorMatch) {
             const [, colorFamily, indexStr] = defaultColorMatch;
