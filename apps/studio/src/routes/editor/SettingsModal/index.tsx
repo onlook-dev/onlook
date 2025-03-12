@@ -24,7 +24,7 @@ const SettingsModal = observer(() => {
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
 
-    const projectSettingTabs: SettingTab[] = [
+    const projectOnlyTabs: SettingTab[] = [
         {
             label: SettingsTabValue.DOMAIN,
             icon: <Icons.Globe className="mr-2 h-4 w-4" />,
@@ -42,7 +42,7 @@ const SettingsModal = observer(() => {
         },
     ];
 
-    const globalSettingTabs: SettingTab[] = [
+    const globalTabs: SettingTab[] = [
         {
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
@@ -55,7 +55,7 @@ const SettingsModal = observer(() => {
         },
     ];
 
-    const tabs = project ? [...projectSettingTabs, ...globalSettingTabs] : [...globalSettingTabs];
+    const tabs = project ? [...projectOnlyTabs, ...globalTabs] : [...globalTabs];
 
     return (
         <AnimatePresence>

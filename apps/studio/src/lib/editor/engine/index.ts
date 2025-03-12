@@ -29,7 +29,7 @@ import { WebviewManager } from './webview';
 
 export class EditorEngine {
     private _plansOpen: boolean = false;
-    private _settingsOpen: boolean = true;
+    private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
     private _publishOpen: boolean = false;
 
