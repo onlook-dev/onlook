@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -11,9 +11,51 @@ import { DomainTab } from './Domain';
 import PreferencesTab from './Preferences';
 import ProjectTab from './Project';
 import { VersionsTab } from './Versions';
+import { capitalizeFirstLetter } from '/common/helpers';
+
+interface SettingTab {
+    label: SettingsTabValue;
+    icon: React.ReactNode;
+    component: React.ReactNode;
+}
 
 const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
+    const projectsManager = useProjectsManager();
+    const project = projectsManager.project;
+
+    const projectOnlyTabs: SettingTab[] = [
+        {
+            label: SettingsTabValue.DOMAIN,
+            icon: <Icons.Globe className="mr-2 h-4 w-4" />,
+            component: <DomainTab />,
+        },
+        {
+            label: SettingsTabValue.PROJECT,
+            icon: <Icons.Gear className="mr-2 h-4 w-4" />,
+            component: <ProjectTab />,
+        },
+        {
+            label: SettingsTabValue.VERSIONS,
+            icon: <Icons.Code className="mr-2 h-4 w-4" />,
+            component: <VersionsTab />,
+        },
+    ];
+
+    const globalTabs: SettingTab[] = [
+        {
+            label: SettingsTabValue.PREFERENCES,
+            icon: <Icons.Person className="mr-2 h-4 w-4" />,
+            component: <PreferencesTab />,
+        },
+        {
+            label: SettingsTabValue.ADVANCED,
+            icon: <Icons.MixerVertical className="mr-2 h-4 w-4" />,
+            component: <AdvancedTab />,
+        },
+    ];
+
+    const tabs = project ? [...projectOnlyTabs, ...globalTabs] : [...globalTabs];
 
     return (
         <AnimatePresence>
@@ -56,107 +98,33 @@ const SettingsModal = observer(() => {
                                 <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
                                     <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
-                                        <Button
-                                            variant="ghost"
-                                            className={cn(
-                                                'w-full justify-start px-0 hover:bg-transparent',
-                                                editorEngine.settingsTab === SettingsTabValue.DOMAIN
-                                                    ? 'text-foreground-active'
-                                                    : 'text-muted-foreground',
-                                            )}
-                                            onClick={() =>
-                                                (editorEngine.settingsTab = SettingsTabValue.DOMAIN)
-                                            }
-                                        >
-                                            <Icons.Globe className="mr-2 h-4 w-4" />
-                                            Domain
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            className={cn(
-                                                'w-full justify-start px-0 hover:bg-transparent',
-                                                editorEngine.settingsTab ===
-                                                    SettingsTabValue.PROJECT
-                                                    ? 'text-foreground-active'
-                                                    : 'text-muted-foreground',
-                                            )}
-                                            onClick={() =>
-                                                (editorEngine.settingsTab =
-                                                    SettingsTabValue.PROJECT)
-                                            }
-                                        >
-                                            <Icons.Gear className="mr-2 h-4 w-4" />
-                                            Project
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            className={cn(
-                                                'w-full justify-start px-0 hover:bg-transparent',
-                                                editorEngine.settingsTab ===
-                                                    SettingsTabValue.VERSIONS
-                                                    ? 'text-foreground-active'
-                                                    : 'text-muted-foreground',
-                                            )}
-                                            onClick={() =>
-                                                (editorEngine.settingsTab =
-                                                    SettingsTabValue.VERSIONS)
-                                            }
-                                        >
-                                            <Icons.Code className="mr-2 h-4 w-4" />
-                                            Versions
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            className={cn(
-                                                'w-full justify-start px-0 hover:bg-transparent',
-                                                editorEngine.settingsTab ===
-                                                    SettingsTabValue.PREFERENCES
-                                                    ? 'text-foreground-active'
-                                                    : 'text-muted-foreground',
-                                            )}
-                                            onClick={() =>
-                                                (editorEngine.settingsTab =
-                                                    SettingsTabValue.PREFERENCES)
-                                            }
-                                        >
-                                            <Icons.Person className="mr-2 h-4 w-4" />
-                                            Preferences
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            className={cn(
-                                                'w-full justify-start px-0 hover:bg-transparent',
-                                                editorEngine.settingsTab ===
-                                                    SettingsTabValue.ADVANCED
-                                                    ? 'text-foreground-active'
-                                                    : 'text-muted-foreground',
-                                            )}
-                                            onClick={() =>
-                                                (editorEngine.settingsTab =
-                                                    SettingsTabValue.ADVANCED)
-                                            }
-                                        >
-                                            <Icons.MixerVertical className="mr-2 h-4 w-4" />
-                                            Advanced
-                                        </Button>
+                                        {tabs.map((tab) => (
+                                            <Button
+                                                key={tab.label}
+                                                variant="ghost"
+                                                className={cn(
+                                                    'w-full justify-start px-0 hover:bg-transparent',
+                                                    editorEngine.settingsTab === tab.label
+                                                        ? 'text-foreground-active'
+                                                        : 'text-muted-foreground',
+                                                )}
+                                                onClick={() =>
+                                                    (editorEngine.settingsTab = tab.label)
+                                                }
+                                            >
+                                                {tab.icon}
+                                                {capitalizeFirstLetter(tab.label.toLowerCase())}
+                                            </Button>
+                                        ))}
                                     </div>
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
                                     <div className="flex-1 overflow-y-auto">
-                                        {editorEngine.settingsTab === SettingsTabValue.DOMAIN && (
-                                            <DomainTab />
-                                        )}
-                                        {editorEngine.settingsTab === SettingsTabValue.PROJECT && (
-                                            <ProjectTab />
-                                        )}
-                                        {editorEngine.settingsTab === SettingsTabValue.VERSIONS && (
-                                            <VersionsTab />
-                                        )}
-                                        {editorEngine.settingsTab ===
-                                            SettingsTabValue.PREFERENCES && <PreferencesTab />}
-                                        {editorEngine.settingsTab === SettingsTabValue.ADVANCED && (
-                                            <AdvancedTab />
-                                        )}
+                                        {
+                                            tabs.find(
+                                                (tab) => tab.label === editorEngine.settingsTab,
+                                            )?.component
+                                        }
                                     </div>
                                 </div>
                             </div>
