@@ -48,7 +48,7 @@ const ProjectTab = observer(() => {
         });
     };
 
-    const handleReinstallDependencies = async () => {
+    const reinstallDependencies = async () => {
         if (!project?.folderPath) {
             toast({
                 title: 'Error',
@@ -82,11 +82,11 @@ const ProjectTab = observer(() => {
         }
     };
 
-    const handleReinstallClick = () => {
+    const reinstall = () => {
         if (isTerminalRunning) {
             setShowReinstallDialog(true);
         } else {
-            handleReinstallDependencies();
+            reinstallDependencies();
         }
     };
 
@@ -206,7 +206,7 @@ const ProjectTab = observer(() => {
                     <Button
                         variant="outline"
                         className="gap-2"
-                        onClick={handleReinstallClick}
+                        onClick={reinstall}
                         disabled={isReinstalling}
                     >
                         {isReinstalling ? (
@@ -234,9 +234,9 @@ const ProjectTab = observer(() => {
                         </Button>
                         <Button
                             variant="default"
-                            onClick={() => {
-                                projectsManager.runner?.stop().then(() => {
-                                    handleReinstallDependencies();
+                            onClick={async () => {
+                                await projectsManager.runner?.stop().then(() => {
+                                    reinstallDependencies();
                                 });
                             }}
                         >
