@@ -10,6 +10,13 @@ import { useEffect, useState } from 'react';
 import { BrandPalletGroup, type ColorItem } from './ColorPalletGroup';
 import colors from 'tailwindcss/colors';
 
+const THEME = {
+    LIGHT: 'light',
+    DARK: 'dark',
+} as const;
+
+type Theme = (typeof THEME)[keyof typeof THEME];
+
 interface ThemeColors {
     [key: string]: string;
 }
@@ -37,7 +44,7 @@ interface ColorPanelProps {
 
 const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     const [colorGroups, setColorGroups] = useState<{ [key: string]: ColorItem[] }>({});
-    const [theme, setTheme] = useState<'dark' | 'light'>('light');
+    const [theme, setTheme] = useState<Theme>(THEME.LIGHT);
     const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
     const [defaultColors, setDefaultColors] = useState<
         {
@@ -386,6 +393,59 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
             console.error('Error updating default color:', error);
         }
     };
+
+    const handleDuplicate = async (
+        groupName: string,
+        colorName: string,
+        isDefaultPalette?: boolean,
+    ) => {
+        const projectRoot = projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
+
+        try {
+            if (isDefaultPalette) {
+                const colorToDuplicate = defaultColors.find((color) => color.name === groupName);
+                if (!colorToDuplicate) {
+                    throw new Error('Color not found');
+                }
+
+                const colorIndex = colorToDuplicate.colors.length;
+                const color = Color.from(colorToDuplicate.colors[colorIndex - 1].lightColor);
+
+                await handleDefaultColorChange(groupName, colorIndex, color);
+            } else {
+                const group = colorGroups[groupName];
+                const colorToDuplicate = group?.find((color) => color.name === colorName);
+
+                if (!colorToDuplicate) {
+                    throw new Error('Color not found');
+                }
+
+                const newName = `${colorName}Copy`;
+
+                const color = Color.from(
+                    theme === THEME.DARK
+                        ? colorToDuplicate.darkColor || colorToDuplicate.lightColor
+                        : colorToDuplicate.lightColor,
+                );
+
+                await handleColorChange(
+                    groupName,
+                    group.length,
+                    color,
+                    newName,
+                    groupName.toLowerCase(),
+                );
+
+                loadColors();
+            }
+        } catch (error) {
+            console.error('Error duplicating color:', error);
+        }
+    };
+
     return (
         <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0 overflow-y-auto">
             <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
@@ -402,23 +462,23 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
             {/* Theme Toggle */}
             <div className="flex gap-2 px-4 py-3 border-b border-border">
                 <Button
-                    variant={theme === 'light' ? 'default' : 'outline'}
+                    variant={theme === THEME.LIGHT ? 'default' : 'outline'}
                     className={cn(
                         'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
-                        theme === 'light' && 'bg-gray-900 text-white',
+                        theme === THEME.LIGHT && 'bg-gray-900 text-white',
                     )}
-                    onClick={() => setTheme('light')}
+                    onClick={() => setTheme(THEME.LIGHT)}
                 >
                     <Icons.Sun className="h-4 w-4" />
                     Light mode
                 </Button>
                 <Button
-                    variant={theme === 'dark' ? 'default' : 'outline'}
+                    variant={theme === THEME.DARK ? 'default' : 'outline'}
                     className={cn(
                         'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
-                        theme === 'dark' && 'bg-gray-900 text-white',
+                        theme === THEME.DARK && 'bg-gray-900 text-white',
                     )}
-                    onClick={() => setTheme('dark')}
+                    onClick={() => setTheme(THEME.DARK)}
                 >
                     <Icons.Moon className="h-4 w-4" />
                     Dark mode
@@ -438,6 +498,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                             onRename={handleRename}
                             onDelete={(colorName) => handleDelete(groupName, colorName)}
                             onColorChange={handleColorChange}
+                            onDuplicate={(colorName) => handleDuplicate(groupName, colorName)}
                         />
                     ))}
                 </div>
@@ -490,6 +551,9 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                                 onDelete={(colorName) => handleDelete(color.name, colorName)}
                                 onColorChange={(groupName, colorIndex, newColor) =>
                                     handleDefaultColorChange(color.name, colorIndex, newColor)
+                                }
+                                onDuplicate={(colorName) =>
+                                    handleDuplicate(color.name, colorName, true)
                                 }
                                 isDefaultPalette={true}
                             />

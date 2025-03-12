@@ -30,6 +30,7 @@ interface BrandPalletGroupProps {
         newName: string,
         parentName?: string,
     ) => void;
+    onDuplicate?: (colorName: string) => void;
     isDefaultPalette?: boolean;
 }
 
@@ -40,6 +41,7 @@ export const BrandPalletGroup = ({
     onRename,
     onDelete,
     onColorChange,
+    onDuplicate,
     isDefaultPalette = false,
 }: BrandPalletGroupProps) => {
     const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
@@ -214,17 +216,20 @@ export const BrandPalletGroup = ({
                                                             </span>
                                                         </Button>
                                                     </DropdownMenuItem>
-                                                    {/* <DropdownMenuItem asChild>
+                                                    <DropdownMenuItem asChild>
                                                         <Button
                                                             variant="ghost"
                                                             className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                            onClick={() =>
+                                                                onDuplicate?.(color.name)
+                                                            }
                                                         >
                                                             <span className="flex w-full text-sm items-center">
                                                                 <Icons.Copy className="mr-2 h-4 w-4" />
                                                                 <span>Duplicate</span>
                                                             </span>
                                                         </Button>
-                                                    </DropdownMenuItem> */}
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem asChild>
                                                         <Button
                                                             variant="ghost"

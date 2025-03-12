@@ -29,12 +29,19 @@ import postcss from 'postcss';
 import type { Root, Rule } from 'postcss';
 import { parseHslValue } from '@onlook/utility';
 
+const THEME = {
+    LIGHT: 'light',
+    DARK: 'dark',
+} as const;
+
+type Theme = (typeof THEME)[keyof typeof THEME];
+
 export async function updateTailwindColorConfig(
     projectRoot: string,
     originalKey: string,
     newColor: string,
     newName: string,
-    theme?: 'dark' | 'light',
+    theme?: Theme,
     parentName?: string,
 ): Promise<UpdateResult> {
     try {
@@ -239,7 +246,7 @@ async function updateTailwindColorVariable(
     originalName: string,
     newColor: string,
     newName: string,
-    theme?: 'dark' | 'light',
+    theme?: Theme,
 ): Promise<UpdateResult> {
     const [parentKey, keyName] = originalName.split('-');
 
@@ -338,7 +345,7 @@ async function updateTailwindCssVariable(
     originalName: string,
     newVarName?: string,
     newColor?: string,
-    theme?: 'dark' | 'light',
+    theme?: Theme,
 ): Promise<string> {
     return processCss(cssContent, [
         {
@@ -364,7 +371,7 @@ async function updateTailwindCssVariable(
                     const isDarkTheme = rule.selector === '.dark';
                     const shouldUpdateValue =
                         newColor &&
-                        (!theme || (isDarkTheme ? theme === 'dark' : theme === 'light'));
+                        (!theme || (isDarkTheme ? theme === THEME.DARK : theme === THEME.LIGHT));
 
                     rule.walkDecls((decl) => {
                         if (decl.prop === `--${originalName}`) {
@@ -751,7 +758,7 @@ async function updateDefaultTailwindColor(
     colorFamily: string,
     colorIndex: number,
     newColor: string,
-    theme?: 'dark' | 'light',
+    theme?: Theme,
 ): Promise<boolean> {
     const updateAst = parse(configContent, {
         sourceType: 'module',
