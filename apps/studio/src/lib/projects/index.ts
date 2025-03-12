@@ -97,6 +97,14 @@ export class ProjectsManager {
         this.projects = updatedProjects;
     }
 
+    updatePartialProject(newProject: Partial<Project>) {
+        if (!this.project) {
+            console.error('Project not found');
+            return;
+        }
+        this.updateProject({ ...this.project, ...newProject });
+    }
+
     updateAppState(appState: AppState) {
         invokeMainChannel(MainChannels.REPLACE_APP_STATE, appState);
     }
