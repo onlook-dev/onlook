@@ -59,7 +59,6 @@ export async function updateTailwindColorConfig(
             await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor, theme);
             return { success: true };
         }
-
         return originalKey
             ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, newName, theme)
             : createTailwindColorVariable(colorUpdate, newColor, newName, parentName);
@@ -86,20 +85,55 @@ function addTailwindNestedColor(
             prop.key.name === parentName,
     );
 
-    if (parentColorObj && parentColorObj.value.type === 'ObjectExpression') {
-        parentColorObj.value.properties.push({
-            type: 'ObjectProperty',
-            key: {
-                type: 'Identifier',
-                name: toCamelCase(newName),
-            },
-            value: {
-                type: 'StringLiteral',
-                value: `var(--${newCssVarName})`,
-            },
-            computed: false,
-            shorthand: false,
-        });
+    if (parentColorObj) {
+        if (parentColorObj.value.type === 'StringLiteral') {
+            const oldValue = parentColorObj.value.value;
+            parentColorObj.value = {
+                type: 'ObjectExpression',
+                properties: [
+                    {
+                        type: 'ObjectProperty',
+                        key: {
+                            type: 'Identifier',
+                            name: 'DEFAULT',
+                        },
+                        value: {
+                            type: 'StringLiteral',
+                            value: oldValue,
+                        },
+                        computed: false,
+                        shorthand: false,
+                    },
+                    {
+                        type: 'ObjectProperty',
+                        key: {
+                            type: 'Identifier',
+                            name: toCamelCase(newName),
+                        },
+                        value: {
+                            type: 'StringLiteral',
+                            value: `var(--${newCssVarName})`,
+                        },
+                        computed: false,
+                        shorthand: false,
+                    },
+                ],
+            };
+        } else if (parentColorObj.value.type === 'ObjectExpression') {
+            parentColorObj.value.properties.push({
+                type: 'ObjectProperty',
+                key: {
+                    type: 'Identifier',
+                    name: toCamelCase(newName),
+                },
+                value: {
+                    type: 'StringLiteral',
+                    value: `var(--${newCssVarName})`,
+                },
+                computed: false,
+                shorthand: false,
+            });
+        }
     }
 }
 
@@ -160,6 +194,8 @@ function updateTailwindConfigFile(
 
     let keyUpdated = false;
     let valueUpdated = false;
+
+    console.log('Updating tailwind config file:', parentKey, keyName, newName, newCssVarName);
 
     traverse(updateAst, {
         ObjectProperty(path) {
@@ -250,6 +286,8 @@ async function updateTailwindColorVariable(
 ): Promise<UpdateResult> {
     const [parentKey, keyName] = originalName.split('-');
 
+    console.log('Updating tailwind color variable:', parentKey, keyName, newName, newColor, theme);
+
     if (!parentKey) {
         return { success: false, error: `Invalid color key format: ${originalName}` };
     }
@@ -293,15 +331,21 @@ async function updateTailwindColorVariable(
         // Update class references if the name changed
         if (keyUpdated) {
             const projectRoot = path.dirname(configPath);
-            const oldClass = `${parentKey}-${keyName}`;
-            const newClass = `${parentKey}-${newName}`;
+            const replacements: ClassReplacement[] = [];
 
-            await updateClassReferences(projectRoot, [
-                {
-                    oldClass,
-                    newClass,
-                },
-            ]);
+            if (!keyName) {
+                replacements.push({
+                    oldClass: parentKey,
+                    newClass: newName,
+                });
+            } else {
+                replacements.push({
+                    oldClass: `${parentKey}-${keyName}`,
+                    newClass: `${parentKey}-${newName}`,
+                });
+            }
+
+            await updateClassReferences(projectRoot, replacements);
         }
     } else {
         console.log(`Warning: Could not update key: ${keyName} in ${parentKey}`);
@@ -570,13 +614,9 @@ async function updateClassReferences(
                     const oldClasses = classResult.value;
                     let hasChanges = false;
                     const newClasses = oldClasses.map((currentClass) => {
-                        // For each replacement, check if the current class ends with the old class name
-                        // and replace only that part while preserving any prefix
                         for (const { oldClass, newClass } of replacements) {
-                            if (
-                                currentClass === oldClass ||
-                                currentClass.endsWith(`-${oldClass}`)
-                            ) {
+                            const oldClassPattern = new RegExp(`(^|-)${oldClass}(-|$)`);
+                            if (oldClassPattern.test(currentClass)) {
                                 hasChanges = true;
                                 return currentClass.replace(oldClass, newClass);
                             }

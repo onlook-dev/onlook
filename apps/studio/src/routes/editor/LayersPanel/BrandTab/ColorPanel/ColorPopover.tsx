@@ -49,7 +49,7 @@ export const ColorPopover = ({
                             value={editedName}
                             onChange={(e) => setEditedName(e.target.value)}
                             className="w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1 text-sm"
-                            disabled={isDefaultPalette}
+                            disabled={isDefaultPalette || editedName === 'DEFAULT'} // Disable editing of DEFAULT
                         />
                     </div>
                     <ColorPickerContent

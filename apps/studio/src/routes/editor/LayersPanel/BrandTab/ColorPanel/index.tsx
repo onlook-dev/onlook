@@ -168,12 +168,16 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
             });
 
             if (ungroupedKeys.length > 0) {
-                colorGroupsObj['base'] = ungroupedKeys.map((key) => ({
-                    name: key,
-                    originalKey: key,
-                    lightColor: parsed[key].lightMode,
-                    darkColor: parsed[key].darkMode,
-                }));
+                ungroupedKeys.forEach((key) => {
+                    colorGroupsObj[key] = [
+                        {
+                            name: 'DEFAULT',
+                            originalKey: `${key}-DEFAULT`,
+                            lightColor: parsed[key].lightMode,
+                            darkColor: parsed[key].darkMode,
+                        },
+                    ];
+                });
             }
             const def = generateDefaultColors(lightModeColors, darkModeColors);
             if (def) {
