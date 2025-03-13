@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 
-// Import the StripeIcon component or create a placeholder
-interface StripeIconProps {
+// Import the AppIcon component or create a placeholder
+interface AppIconProps {
     size?: 'sm' | 'md' | 'lg';
 }
 
-const StripeIcon: React.FC<StripeIconProps> = ({ size = 'md' }) => {
+const AppIcon: React.FC<AppIconProps> = ({ size = 'md' }) => {
     const sizeClasses = {
         sm: 'w-8 h-8 text-xl',
         md: 'w-10 h-10 text-2xl',
@@ -16,7 +16,7 @@ const StripeIcon: React.FC<StripeIconProps> = ({ size = 'md' }) => {
 
     return (
         <div
-            className={`flex items-center justify-center rounded-md bg-indigo-600 text-white font-semibold ${sizeClasses[size]}`}
+            className={`flex items-center justify-center rounded-md bg-background-secondary text-white font-semibold ${sizeClasses[size]}`}
         ></div>
     );
 };
@@ -38,12 +38,12 @@ const ToolCard: React.FC<ToolProps> = ({ name, description, inputs, icon }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
-        <div className="border border-border rounded-md overflow-hidden">
+        <div className="border-b border-border last:border-b-0">
             <div
                 className="flex items-center py-3 px-3 cursor-pointer"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <div className="mr-3">{icon || <StripeIcon size="sm" />}</div>
+                <div className="mr-3">{icon || <AppIcon size="sm" />}</div>
                 <div className="flex-1">
                     <h3 className="text-base font-normal text-white">{name}</h3>
                 </div>
@@ -58,21 +58,28 @@ const ToolCard: React.FC<ToolProps> = ({ name, description, inputs, icon }) => {
             </div>
 
             {isExpanded && (
-                <div className="px-3 pb-3">
-                    {description && <p className="text-sm text-gray-400 mb-4">{description}</p>}
+                <div className="px-3 pb-5">
+                    {description && (
+                        <p className="text-sm font-normal text-muted-foreground mb-4 ml-11">
+                            {description}
+                        </p>
+                    )}
 
                     {inputs && inputs.length > 0 && (
-                        <div>
-                            <div className="bg-background-secondary/20 rounded-md p-3">
-                                <div className="flex text-sm font-normal text-gray-400 pb-2">
-                                    <div className="w-1/3">Input</div>
-                                    <div className="w-2/3">Description</div>
+                        <div className="rounded-md overflow-hidden border border-border">
+                            <div className="bg-background-secondary/60 px-3 py-2">
+                                <div className="flex text-sm font-normal">
+                                    <div className="w-1/3 text-gray-400">Input</div>
+                                    <div className="w-2/3 text-gray-400">Description</div>
                                 </div>
-                                {inputs.map((input, index) => (
-                                    <div key={index} className="flex py-2 border-t border-border">
-                                        <div className="w-1/3 pr-2">
-                                            <div className="text-sm text-white">{input.label}</div>
-                                            <div className="text-xs text-gray-500">
+                            </div>
+
+                            {inputs.map((input, index) => (
+                                <div key={index} className="border-t border-border">
+                                    <div className="flex px-3 py-3">
+                                        <div className="w-1/3 flex flex-col gap-[2px]">
+                                            <div className="text-white text-sm">{input.label}</div>
+                                            <div className="text-muted-foreground text-xs">
                                                 {input.type}
                                             </div>
                                         </div>
@@ -80,8 +87,8 @@ const ToolCard: React.FC<ToolProps> = ({ name, description, inputs, icon }) => {
                                             {input.description}
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>

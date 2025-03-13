@@ -22,7 +22,7 @@ const AppIcon: React.FC<{
     return (
         <div
             className={cn(
-                `flex items-center justify-center rounded-md bg-indigo-600 text-white font-semibold ${sizeClasses[size]}`,
+                `flex items-center justify-center rounded-md bg-background-secondary text-white font-semibold ${sizeClasses[size]}`,
                 className,
             )}
         ></div>
@@ -142,17 +142,19 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
 
                 {/* Install Section */}
                 <div className="px-4 py-5 border-b border-border border-b-[0.5px]">
-                    <h3 className="text-[15px] font-medium mb-4">Add stripe</h3>
-                    <div className="flex items-center mb-4">
-                        <div className="text-white text-[15px]">Requirements</div>
+                    <h3 className="text-base font-normal mb-2">Add stripe</h3>
+                    <div className="flex items-center mb-2">
+                        <div className="text-muted-foreground text-sm font-normal">
+                            Requirements
+                        </div>
                         <div className="ml-auto">
-                            <div className="w-6 h-6 rounded-full text-white text-xs flex items-center justify-center border border-border">
+                            <div className="w-6 h-6 rounded-full text-white text-xs flex items-center justify-center bg-background-secondary border border-border">
                                 ?
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex mb-4">
+                    <div className="flex mb-3">
                         <div className="relative flex-1">
                             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                                 <svg
@@ -176,21 +178,23 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                 placeholder="Enter your Stripe API key"
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
-                                className="pl-9 py-3 border-border rounded-md text-white w-full"
+                                className="pl-9 py-6 border-border rounded-md text-white w-full"
                             />
                         </div>
                     </div>
 
-                    <Button className="w-full bg-background-secondary hover:bg-background-secondary/90 text-white font-medium py-3 rounded-md">
+                    <Button className="w-full bg-background-secondary hover:bg-background-secondary/90 text-white text-sm font-medium py-6 rounded-md">
                         Install on your project
                     </Button>
                 </div>
 
                 {/* Available Tools */}
                 <div className="px-4 py-5">
-                    <h3 className="text-[15px] font-medium mb-4">Available tools</h3>
+                    <h3 className="text-sm font-normal mb-3 text-muted-foreground">
+                        Available tools
+                    </h3>
 
-                    <div className="space-y-2">
+                    <div className="border border-border rounded-md overflow-hidden">
                         <ToolCard
                             name="Create a new customer"
                             icon={
@@ -198,7 +202,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     size="sm"
                                     icon={app?.icon}
                                     name={appName}
-                                    className="bg-indigo-600"
+                                    className="bg-background-secondary"
                                 />
                             }
                         />
@@ -209,7 +213,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     size="sm"
                                     icon={app?.icon}
                                     name={appName}
-                                    className="bg-indigo-600"
+                                    className="bg-background-secondary"
                                 />
                             }
                         />
@@ -221,7 +225,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     size="sm"
                                     icon={app?.icon}
                                     name={appName}
-                                    className="bg-indigo-600"
+                                    className="bg-background-secondary"
                                 />
                             }
                             inputs={[
@@ -246,7 +250,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     size="sm"
                                     icon={app?.icon}
                                     name={appName}
-                                    className="bg-indigo-600"
+                                    className="bg-background-secondary"
                                 />
                             }
                         />
@@ -257,7 +261,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     size="sm"
                                     icon={app?.icon}
                                     name={appName}
-                                    className="bg-indigo-600"
+                                    className="bg-background-secondary"
                                 />
                             }
                         />
@@ -268,7 +272,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     size="sm"
                                     icon={app?.icon}
                                     name={appName}
-                                    className="bg-indigo-600"
+                                    className="bg-background-secondary"
                                 />
                             }
                         />
