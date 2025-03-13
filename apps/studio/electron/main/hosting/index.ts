@@ -8,6 +8,7 @@ import {
     ApiRoutes,
     BASE_API_ROUTE,
     CUSTOM_OUTPUT_DIR,
+    DefaultSettings,
     FUNCTIONS_ROUTE,
     HostingRoutes,
     MainChannels,
@@ -18,6 +19,7 @@ import {
     type PublishRequest,
     type PublishResponse,
 } from '@onlook/models/hosting';
+import { isNullOrUndefined } from '@onlook/utility';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -142,9 +144,13 @@ class HostingManager {
     }
 
     async runBuildStep(folderPath: string, buildScript: string, options?: PublishOptions) {
-        const BUILD_SCRIPT_NO_LINT = options?.buildFlags
-            ? `${buildScript} -- ${options?.buildFlags}`
-            : buildScript;
+        // Use default build flags if no build flags are provided
+        const buildFlagsString: string = isNullOrUndefined(options?.buildFlags)
+            ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+            : options.buildFlags;
+
+        const BUILD_SCRIPT_NO_LINT =
+            buildFlagsString.trim() !== '' ? `${buildScript} -- ${buildFlagsString}` : buildScript;
 
         if (options?.skipBuild) {
             console.log('Skipping build');
