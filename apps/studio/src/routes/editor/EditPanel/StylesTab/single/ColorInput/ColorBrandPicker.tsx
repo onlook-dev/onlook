@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color } from '@onlook/utility';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import ColorButton from './ColorButton';
 import ColorPickerContent from './ColorPicker';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
@@ -69,8 +69,6 @@ const ColorGroup = ({
 
 const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPickerProps) => {
     const editorEngine = useEditorEngine();
-    const configManager = editorEngine.config;
-    const { colorGroups, colorDefaults } = configManager;
     const [isOpen, toggleOpen] = useState(false);
     const defaultValue = TabValue.BRAND;
     const [searchQuery, setSearchQuery] = useState('');
@@ -86,6 +84,14 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
             inputRef.current?.blur();
         }
     };
+
+    const colorGroups = useMemo(() => {
+        return editorEngine.config.colorGroups;
+    }, [editorEngine.config.colorGroups]);
+
+    const colorDefaults = useMemo(() => {
+        return editorEngine.config.colorDefaults;
+    }, [editorEngine.config.colorDefaults]);
 
     const filteredColorGroups = Object.entries(colorGroups).filter(([name, colors]) => {
         return colors.some((color) => color.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -106,7 +112,6 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
         }
         return () => editorEngine.history.commitTransaction();
     }, [isOpen]);
-
     return (
         <Popover onOpenChange={(open) => toggleOpen(open)}>
             <PopoverTrigger>
@@ -117,7 +122,7 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
                 className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-56"
             >
                 <div>
-                    <Tabs defaultValue={defaultValue} className="bg-transparent pb-0 mt-2">
+                    <Tabs defaultValue={defaultValue} className="bg-transparent pb-0">
                         <TabsList className="bg-transparent px-2 m-0 gap-2">
                             <TabsTrigger
                                 value={TabValue.BRAND}
@@ -133,14 +138,14 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
                             </TabsTrigger>
                         </TabsList>
                         <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">
-                            <div className="border-b">
+                            <div className="border-b border-t">
                                 <div className="relative">
                                     <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                                     <Input
                                         ref={inputRef}
                                         type="text"
                                         placeholder="Search colors"
-                                        className="text-xs pl-7 pr-8"
+                                        className="text-xs pl-7 pr-8 rounded-none border-none"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         onKeyDown={handleKeyDown}
@@ -155,7 +160,7 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
                                     )}
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-1 overflow-y-auto max-h-48 p-2">
+                            <div className="flex flex-col gap-1 overflow-y-auto max-h-96 p-2">
                                 {filteredColorGroups.map(([name, colors]) => (
                                     <ColorGroup
                                         key={name}
