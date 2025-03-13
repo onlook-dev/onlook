@@ -8,6 +8,7 @@ import {
     ApiRoutes,
     BASE_API_ROUTE,
     CUSTOM_OUTPUT_DIR,
+    DefaultSettings,
     FUNCTIONS_ROUTE,
     HostingRoutes,
     MainChannels,
@@ -142,9 +143,13 @@ class HostingManager {
     }
 
     async runBuildStep(folderPath: string, buildScript: string, options?: PublishOptions) {
-        const BUILD_SCRIPT_NO_LINT = options?.buildFlags
-            ? `${buildScript} -- ${options?.buildFlags}`
-            : buildScript;
+        const buildFlagsString: string =
+            options?.buildFlags == undefined || options.buildFlags === null
+                ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+                : options.buildFlags;
+
+        const BUILD_SCRIPT_NO_LINT =
+            buildFlagsString.trim() !== '' ? `${buildScript} -- ${buildFlagsString}` : buildScript;
 
         if (options?.skipBuild) {
             console.log('Skipping build');
