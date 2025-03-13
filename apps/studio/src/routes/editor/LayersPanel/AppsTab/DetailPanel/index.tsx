@@ -160,7 +160,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                 </div>
 
                 {/* Description */}
-                <div className="px-4 py-5 text-[15px] leading-normal border-b border-border border-b-[0.5px]">
+                <div className="px-4 py-5 text-base font-normal leading-normal border-b border-border border-b-[0.5px]">
                     <p>
                         {app?.description ||
                             'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.'}
@@ -181,7 +181,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                         </div>
                     </div>
 
-                    <div className="flex mb-3">
+                    <div className="flex mb-2">
                         <div className="relative flex-1">
                             <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                                 <svg
