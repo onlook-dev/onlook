@@ -30,22 +30,22 @@ const FEATURED_APPS: AppData[] = [
         id: '1',
         name: 'Stripe',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Integrate payment processing, subscriptions, and financial services into your app. The Stripe MCP allows you to accept payments, manage customers, and handle complex billing scenarios.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/stripe.svg',
     },
     {
         id: '2',
-        name: 'Stripe',
+        name: 'MongoDB',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Connect to MongoDB databases to store, query, and manage your application data. This MCP integration enables document creation, complex queries, and database management without writing backend code.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/mongodb.svg',
     },
     {
         id: '3',
-        name: 'MongoDB',
+        name: 'Figma',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Access Figma design files, components, and assets directly in your application. The Figma MCP lets you retrieve designs, export assets, and keep your app in sync with your design system.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/figma.svg',
     },
 ];
 
@@ -53,45 +53,45 @@ const FEATURED_APPS: AppData[] = [
 const ALL_APPS: AppData[] = [
     {
         id: '1',
-        name: 'Stripe',
+        name: 'GitHub',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Manage repositories, issues, and pull requests through the GitHub MCP. Automate workflows, track code changes, and integrate version control directly into your application.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
     },
     {
         id: '2',
-        name: 'Stripe',
+        name: 'Slack',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Send messages, create channels, and manage workspaces with the Slack MCP. Build interactive notifications and collaborative features that connect your app with team communications.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/slack.svg',
     },
     {
         id: '3',
-        name: 'Stripe',
+        name: 'Notion',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Create, read, and update Notion pages, databases, and content. The Notion MCP enables knowledge management and documentation features without leaving your application.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/notion.svg',
     },
     {
         id: '4',
-        name: 'Stripe',
+        name: 'Salesforce',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Access customer data, manage leads, and automate sales processes with the Salesforce MCP. Connect your app to the leading CRM platform to enhance customer relationship management.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/salesforce.svg',
     },
     {
         id: '5',
-        name: 'Stripe',
+        name: 'Airtable',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Interact with Airtable bases to create flexible databases and spreadsheets. The Airtable MCP allows you to build, query, and visualize structured data without complex database setup.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/airtable.svg',
     },
     {
         id: '6',
-        name: 'Stripe',
+        name: 'Twilio',
         description:
-            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
-        icon: '',
+            'Send SMS, make calls, and manage communication channels through the Twilio MCP. Add powerful messaging and voice capabilities to your application with minimal configuration.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twilio.svg',
     },
 ];
 
@@ -247,12 +247,12 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                         All apps
                                     </h2>
                                     <div className="flex items-center">
-                                        <span className="text-xs text-muted-foreground mr-1">
+                                        <span className="text-sm text-muted-foreground mr-1">
                                             Sort by:
                                         </span>
                                         <div className="relative">
                                             <select
-                                                className="appearance-none bg-transparent text-xs text-foreground pr-4 focus:outline-none cursor-pointer"
+                                                className="appearance-none bg-transparent text-sm text-foreground pr-4 focus:outline-none cursor-pointer"
                                                 value={sortOption}
                                                 onChange={(e) => setSortOption(e.target.value)}
                                             >

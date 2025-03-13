@@ -16,7 +16,7 @@ const AppIcon: React.FC<AppIconProps> = ({ size = 'md' }) => {
 
     return (
         <div
-            className={`flex items-center justify-center rounded-md bg-background-secondary text-white font-semibold ${sizeClasses[size]}`}
+            className={`flex items-center justify-center rounded-md bg-background-secondary text-white font-semibold border border-white/[0.07] ${sizeClasses[size]}`}
         ></div>
     );
 };

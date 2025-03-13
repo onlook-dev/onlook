@@ -189,7 +189,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                 </div>
 
                 {/* Available Tools */}
-                <div className="px-4 py-5">
+                <div className="px-4 pt-6 pb-12">
                     <h3 className="text-sm font-normal mb-3 text-muted-foreground">
                         Available tools
                     </h3>
@@ -197,6 +197,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                     <div className="border border-border rounded-md overflow-hidden">
                         <ToolCard
                             name="Create a new customer"
+                            description="This tool will create a new customer in Stripe."
                             icon={
                                 <AppIcon
                                     size="sm"
@@ -205,9 +206,22 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     className="bg-background-secondary"
                                 />
                             }
+                            inputs={[
+                                {
+                                    label: 'Email',
+                                    type: 'String',
+                                    description: 'The email address of the customer.',
+                                },
+                                {
+                                    label: 'Name',
+                                    type: 'String',
+                                    description: 'The name of the customer.',
+                                },
+                            ]}
                         />
                         <ToolCard
                             name="Create a new product"
+                            description="This tool will create a new product in Stripe."
                             icon={
                                 <AppIcon
                                     size="sm"
@@ -216,6 +230,18 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     className="bg-background-secondary"
                                 />
                             }
+                            inputs={[
+                                {
+                                    label: 'Name',
+                                    type: 'String',
+                                    description: 'The name of the product.',
+                                },
+                                {
+                                    label: 'Description',
+                                    type: 'String',
+                                    description: 'The description of the product.',
+                                },
+                            ]}
                         />
                         <ToolCard
                             name="Create a new payment link"
@@ -245,6 +271,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                         />
                         <ToolCard
                             name="Read product information"
+                            description="This tool will retrieve information about a product in Stripe."
                             icon={
                                 <AppIcon
                                     size="sm"
@@ -253,9 +280,18 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     className="bg-background-secondary"
                                 />
                             }
+                            inputs={[
+                                {
+                                    label: 'Product ID',
+                                    type: 'String',
+                                    description:
+                                        'The ID of the product to retrieve information for.',
+                                },
+                            ]}
                         />
                         <ToolCard
                             name="Create a new price"
+                            description="This tool will create a new price for a product in Stripe."
                             icon={
                                 <AppIcon
                                     size="sm"
@@ -264,9 +300,27 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     className="bg-background-secondary"
                                 />
                             }
+                            inputs={[
+                                {
+                                    label: 'Product ID',
+                                    type: 'String',
+                                    description: 'The ID of the product to create a price for.',
+                                },
+                                {
+                                    label: 'Unit Amount',
+                                    type: 'Integer',
+                                    description: 'The amount in cents to charge per unit.',
+                                },
+                                {
+                                    label: 'Currency',
+                                    type: 'String',
+                                    description: 'Three-letter ISO currency code (e.g., usd, eur).',
+                                },
+                            ]}
                         />
                         <ToolCard
-                            name="Create a new price"
+                            name="List all products"
+                            description="This tool will list all products in your Stripe account."
                             icon={
                                 <AppIcon
                                     size="sm"
@@ -275,6 +329,18 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     className="bg-background-secondary"
                                 />
                             }
+                            inputs={[
+                                {
+                                    label: 'Limit',
+                                    type: 'Integer',
+                                    description: 'Maximum number of products to return.',
+                                },
+                                {
+                                    label: 'Active',
+                                    type: 'Boolean',
+                                    description: 'Filter for active or inactive products.',
+                                },
+                            ]}
                         />
                     </div>
                 </div>
