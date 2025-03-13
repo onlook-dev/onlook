@@ -17,9 +17,7 @@ const StripeIcon: React.FC<StripeIconProps> = ({ size = 'md' }) => {
     return (
         <div
             className={`flex items-center justify-center rounded-md bg-indigo-600 text-white font-semibold ${sizeClasses[size]}`}
-        >
-            S
-        </div>
+        ></div>
     );
 };
 

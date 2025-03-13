@@ -1,18 +1,18 @@
 import React from 'react';
 import type { AppData } from './index';
 
-export interface FeaturedAppCardProps {
+export interface AppCardProps {
     app: AppData;
     onClick: (app: AppData) => void;
 }
 
-const FeaturedAppCard: React.FC<FeaturedAppCardProps> = ({ app, onClick }) => {
+const AppCard: React.FC<AppCardProps> = ({ app, onClick }) => {
     return (
         <button
-            className="w-full text-left flex flex-col rounded-lg overflow-hidden border border-border border-[0.5px] cursor-pointer"
+            className="w-full text-left flex flex-col py-4 cursor-pointer"
             onClick={() => onClick(app)}
         >
-            <div className="p-3">
+            <div>
                 <div className="flex items-center">
                     <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md text-white text-xl font-semibold mr-3 bg-background-secondary">
                         {app.icon || ''}
@@ -27,4 +27,4 @@ const FeaturedAppCard: React.FC<FeaturedAppCardProps> = ({ app, onClick }) => {
     );
 };
 
-export default FeaturedAppCard;
+export default AppCard;

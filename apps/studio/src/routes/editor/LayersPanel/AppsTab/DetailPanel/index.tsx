@@ -5,7 +5,7 @@ import { Input } from '@onlook/ui/input';
 import { Button } from '@onlook/ui/button';
 import ToolCard from './ToolCard';
 import type { ToolInputProps, ToolProps } from './ToolCard';
-import type { AppData } from '../FeaturedAppCard';
+import type { AppData } from '../index';
 
 const AppIcon: React.FC<{
     size?: 'sm' | 'md' | 'lg';
@@ -19,18 +19,13 @@ const AppIcon: React.FC<{
         lg: 'w-[72px] h-[72px] text-[32px]',
     };
 
-    // Use the first letter of the app name if no icon is provided
-    const displayText = icon || name.charAt(0);
-
     return (
         <div
             className={cn(
                 `flex items-center justify-center rounded-md bg-indigo-600 text-white font-semibold ${sizeClasses[size]}`,
                 className,
             )}
-        >
-            {displayText}
-        </div>
+        ></div>
     );
 };
 
