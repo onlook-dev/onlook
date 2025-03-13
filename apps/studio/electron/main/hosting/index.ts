@@ -19,6 +19,7 @@ import {
     type PublishRequest,
     type PublishResponse,
 } from '@onlook/models/hosting';
+import { isNullOrUndefined } from '@onlook/utility';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -143,10 +144,10 @@ class HostingManager {
     }
 
     async runBuildStep(folderPath: string, buildScript: string, options?: PublishOptions) {
-        const buildFlagsString: string =
-            options?.buildFlags == undefined || options.buildFlags === null
-                ? DefaultSettings.EDITOR_SETTINGS.buildFlags
-                : options.buildFlags;
+        // Use default build flags if no build flags are provided
+        const buildFlagsString: string = isNullOrUndefined(options?.buildFlags)
+            ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+            : options.buildFlags;
 
         const BUILD_SCRIPT_NO_LINT =
             buildFlagsString.trim() !== '' ? `${buildScript} -- ${buildFlagsString}` : buildScript;
