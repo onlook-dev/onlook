@@ -8,6 +8,6 @@
 // Panel dimensions
 export const PANEL_DIMENSIONS = {
     LAYERS_PANEL: {
-        WIDTH: 'w-[280px]', // Minimum width for the layers panel content
+        WIDTH: 'max-w-[280px] min-w-[280px]', // Minimum width for the layers panel content
     },
 };
