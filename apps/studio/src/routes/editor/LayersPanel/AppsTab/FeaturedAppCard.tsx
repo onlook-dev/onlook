@@ -15,7 +15,7 @@ export interface FeaturedAppCardProps {
 const FeaturedAppCard: React.FC<FeaturedAppCardProps> = ({ app, onClick }) => {
     return (
         <button
-            className="w-full text-left flex flex-col rounded-lg overflow-hidden border border-border cursor-pointer"
+            className="w-full text-left flex flex-col rounded-lg overflow-hidden border border-border border-[0.5px] cursor-pointer"
             onClick={() => onClick(app)}
         >
             <div className="p-3">

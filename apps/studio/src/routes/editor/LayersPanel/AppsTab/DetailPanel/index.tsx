@@ -46,7 +46,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
     return (
         <div className="flex flex-col h-full text-white w-full">
             {/* Header */}
-            <div className="px-4 py-4 flex items-center justify-between border-b border-border">
+            <div className="px-4 py-4 flex items-center justify-between border-b border-border border-b-[0.5px]">
                 <div className="h-9 flex items-center justify-between w-full">
                     <h2 className="text-base font-normal">{appName}</h2>
                     <button className="text-white hover:text-gray-300" onClick={onClose}>
@@ -57,7 +57,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
 
             <div className="flex-1 overflow-y-auto">
                 {/* Logo Section */}
-                <div className="flex flex-col items-center bg-background justify-center text-center py-10 relative overflow-hidden">
+                <div className="flex flex-col items-center bg-background justify-center text-center py-10 border-b border-border border-b-[0.5px] relative overflow-hidden">
                     <AppIcon size="lg" icon={app?.icon} name={appName} />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="w-full aspect-square relative flex items-center justify-center">
@@ -138,7 +138,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                 </div>
 
                 {/* Description */}
-                <div className="px-4 py-5 text-[15px] leading-normal border-t border-border">
+                <div className="px-4 py-5 text-[15px] leading-normal border-b border-border border-b-[0.5px]">
                     <p>
                         {app?.description ||
                             'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.'}
@@ -146,7 +146,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                 </div>
 
                 {/* Install Section */}
-                <div className="border-t border-border px-4 py-5">
+                <div className="px-4 py-5 border-b border-border border-b-[0.5px]">
                     <h3 className="text-[15px] font-medium mb-4">Add stripe</h3>
                     <div className="flex items-center mb-4">
                         <div className="text-white text-[15px]">Requirements</div>
@@ -192,7 +192,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                 </div>
 
                 {/* Available Tools */}
-                <div className="border-t border-border px-4 py-5">
+                <div className="px-4 py-5">
                     <h3 className="text-[15px] font-medium mb-4">Available tools</h3>
 
                     <div className="space-y-2">

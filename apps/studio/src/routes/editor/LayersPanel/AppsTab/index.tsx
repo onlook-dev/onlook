@@ -21,19 +21,22 @@ const FEATURED_APPS = [
     {
         id: '1',
         name: 'Stripe',
-        description: 'Interact with the Stripe API. This server supports...',
+        description:
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
     {
         id: '2',
         name: 'Stripe',
-        description: 'Interact with the Stripe API. This server supports...',
+        description:
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
     {
         id: '3',
         name: 'MongoDB',
-        description: 'Connect to MongoDB databases and perform CRUD operations...',
+        description:
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
 ];
@@ -44,42 +47,42 @@ const ALL_APPS = [
         id: '1',
         name: 'Stripe',
         description:
-            'Interact with the Stripe API. This server supports various tools to interact...',
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
     {
         id: '2',
         name: 'Stripe',
         description:
-            'Interact with the Stripe API. This server supports various tools to interact...',
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
     {
         id: '3',
         name: 'Stripe',
         description:
-            'Interact with the Stripe API. This server supports various tools to interact...',
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
     {
         id: '4',
         name: 'Stripe',
         description:
-            'Interact with the Stripe API. This server supports various tools to interact...',
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
     {
         id: '5',
         name: 'Stripe',
         description:
-            'Interact with the Stripe API. This server supports various tools to interact...',
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
     {
         id: '6',
         name: 'Stripe',
         description:
-            'Interact with the Stripe API. This server supports various tools to interact...',
+            'The Stripe Model Context Protocol server allows you to integrate with Stripe APIs through function calling. This protocol supports various tools to interact with different Stripe services.',
         icon: '',
     },
 ];
@@ -160,7 +163,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                 className={`${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} h-full flex flex-col overflow-hidden`}
             >
                 {/* Search Bar */}
-                <div className="px-4 py-4 border-b border-border">
+                <div className="px-4 py-4 border-b border-border border-b-[0.5px]">
                     <div className="relative">
                         <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                         <Input
@@ -188,12 +191,12 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex px-4 border-b border-border top-0 z-10">
+                <div className="flex px-4 border-b border-border border-b-[0.5px] top-0 z-10">
                     <button
                         className={cn(
                             'flex-1 py-3 text-sm font-normal',
                             activeTab === 'browse'
-                                ? 'text-foreground border-b border-foreground'
+                                ? 'text-foreground border-b border-foreground border-b-[0.5px]'
                                 : 'text-muted-foreground',
                         )}
                         onClick={() => setActiveTab('browse')}
@@ -204,7 +207,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                         className={cn(
                             'flex-1 py-3 text-sm font-normal',
                             activeTab === 'installed'
-                                ? 'text-foreground border-b border-foreground'
+                                ? 'text-foreground border-b border-foreground border-b-[0.5px]'
                                 : 'text-muted-foreground',
                         )}
                         onClick={() => setActiveTab('installed')}
@@ -222,7 +225,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                 {APP_CATEGORIES.map((category) => (
                                     <button
                                         key={category.id}
-                                        className="px-3 py-1.5 text-sm font-normal rounded-lg text-muted-foreground whitespace-nowrap border-border border bg-transparent"
+                                        className="px-3 py-1.5 text-sm font-normal rounded-lg text-muted-foreground whitespace-nowrap border-border border border-[0.5px] bg-transparent"
                                     >
                                         {category.name}
                                     </button>
@@ -230,7 +233,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                             </div>
 
                             {/* Featured Apps */}
-                            <div className="pt-1 pb-6 border-b border-border">
+                            <div className="pt-1 pb-6 border-b border-border border-b-[0.5px]">
                                 <div className="flex items-center justify-between px-4 mb-3">
                                     <h2 className="text-sm font-normal text-muted-foreground">
                                         Featured
@@ -282,7 +285,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="divide-y divide-border">
+                                <div className="divide-y divide-border divide-y-[0.5px]">
                                     {filteredApps.map((app) => (
                                         <AppCard key={app.id} app={app} onClick={handleAppClick} />
                                     ))}
@@ -303,7 +306,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
 
             {/* Detail Panel - Side Panel */}
             {selectedApp && (
-                <div className="w-[450px] border-l border-border">
+                <div className="w-[450px] border-l border-border border-l-[0.5px]">
                     <DetailPanel onClose={handleCloseDetailPanel} app={selectedApp} />
                 </div>
             )}
