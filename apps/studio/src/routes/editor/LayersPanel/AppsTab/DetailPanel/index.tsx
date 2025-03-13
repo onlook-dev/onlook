@@ -7,6 +7,19 @@ import ToolCard from './ToolCard';
 import type { ToolInputProps, ToolProps } from './ToolCard';
 import type { AppData } from '../index';
 
+// Company brand colors
+const BRAND_COLORS: Record<string, string> = {
+    Stripe: '#635BFF',
+    MongoDB: '#47A248',
+    Figma: '#F24E1E',
+    GitHub: '#181717',
+    Slack: '#4A154B',
+    Notion: '#151515',
+    Salesforce: '#00A1E0',
+    Airtable: '#18BFFF',
+    Twilio: '#F22F46',
+};
+
 const AppIcon: React.FC<{
     size?: 'sm' | 'md' | 'lg';
     icon?: string;
@@ -14,18 +27,32 @@ const AppIcon: React.FC<{
     className?: string;
 }> = ({ size = 'md', icon, name, className }) => {
     const sizeClasses = {
-        sm: 'w-8 h-8 text-xl',
-        md: 'w-10 h-10 text-2xl',
+        sm: 'w-7 h-7 text-xl',
+        md: 'w-8 h-8 text-2xl',
         lg: 'w-[72px] h-[72px] text-[32px]',
     };
 
     return (
         <div
             className={cn(
-                `flex items-center justify-center rounded-md bg-background-secondary text-white font-semibold ${sizeClasses[size]}`,
+                `flex items-center justify-center rounded-md text-white font-semibold ${sizeClasses[size]} border border-white/[0.07]`,
                 className,
             )}
-        ></div>
+            style={{ backgroundColor: BRAND_COLORS[name] || '#ffffff' }}
+        >
+            {icon ? (
+                <img
+                    src={icon}
+                    alt={`${name} logo`}
+                    className="w-1/2 h-1/2 object-contain"
+                    style={{ filter: 'brightness(0) invert(1)' }}
+                />
+            ) : (
+                <div className="flex items-center justify-center text-white font-semibold">
+                    {name.charAt(0)}
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -148,7 +175,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                             Requirements
                         </div>
                         <div className="ml-auto">
-                            <div className="w-6 h-6 rounded-full text-white text-xs flex items-center justify-center bg-background-secondary border border-border">
+                            <div className="w-5 h-5 rounded-full text-white text-[10px] flex items-center justify-center bg-background-secondary border border-border">
                                 ?
                             </div>
                         </div>

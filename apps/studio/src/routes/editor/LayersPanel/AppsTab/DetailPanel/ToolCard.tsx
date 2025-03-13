@@ -9,8 +9,8 @@ interface AppIconProps {
 
 const AppIcon: React.FC<AppIconProps> = ({ size = 'md' }) => {
     const sizeClasses = {
-        sm: 'w-8 h-8 text-xl',
-        md: 'w-10 h-10 text-2xl',
+        sm: 'w-6 h-6 text-xl',
+        md: 'w-8 h-8 text-2xl',
         lg: 'w-[60px] h-[60px] text-[32px]',
     };
 
@@ -60,7 +60,7 @@ const ToolCard: React.FC<ToolProps> = ({ name, description, inputs, icon }) => {
             {isExpanded && (
                 <div className="px-3 pb-5">
                     {description && (
-                        <p className="text-sm font-normal text-muted-foreground mb-4 ml-11">
+                        <p className="text-sm font-normal text-muted-foreground mb-4 ml-[42px]">
                             {description}
                         </p>
                     )}

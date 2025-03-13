@@ -202,15 +202,19 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                     {activeTab === 'browse' && (
                         <>
                             {/* Categories */}
-                            <div className="flex p-4 space-x-1.5 overflow-x-auto">
-                                {APP_CATEGORIES.map((category) => (
-                                    <button
-                                        key={category.id}
-                                        className="px-3 py-1.5 text-sm font-normal rounded-lg text-muted-foreground whitespace-nowrap border-border border border-[0.5px] bg-transparent"
-                                    >
-                                        {category.name}
-                                    </button>
-                                ))}
+                            <div className="relative">
+                                <div className="flex p-4 space-x-1.5 overflow-x-auto">
+                                    {APP_CATEGORIES.map((category) => (
+                                        <button
+                                            key={category.id}
+                                            className="px-3 py-1.5 text-sm font-normal rounded-lg text-muted-foreground whitespace-nowrap border-border border border-[0.5px] bg-transparent"
+                                        >
+                                            {category.name}
+                                        </button>
+                                    ))}
+                                </div>
+                                {/* Gradient overlay for scroll fade effect */}
+                                <div className="absolute right-0 top-0 bottom-0 w-16 pointer-events-none bg-gradient-to-l from-background to-transparent"></div>
                             </div>
 
                             {/* Featured Apps */}
@@ -228,15 +232,22 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="flex px-4 overflow-x-auto">
-                                    {FEATURED_APPS.map((app) => (
-                                        <div
-                                            key={app.id}
-                                            className="min-w-[225px] max-w-[250px] mr-1.5"
-                                        >
-                                            <FeaturedAppCard app={app} onClick={handleAppClick} />
-                                        </div>
-                                    ))}
+                                <div className="relative">
+                                    <div className="flex px-4 overflow-x-auto">
+                                        {FEATURED_APPS.map((app) => (
+                                            <div
+                                                key={app.id}
+                                                className="min-w-[225px] max-w-[250px] mr-1.5"
+                                            >
+                                                <FeaturedAppCard
+                                                    app={app}
+                                                    onClick={handleAppClick}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Gradient overlay for scroll fade effect */}
+                                    <div className="absolute right-0 top-0 bottom-0 w-16 pointer-events-none bg-gradient-to-l from-background to-transparent"></div>
                                 </div>
                             </div>
 
