@@ -1,5 +1,6 @@
 import React from 'react';
 import type { AppData } from './index';
+import { cn } from '@onlook/ui/utils';
 
 // Company brand colors
 const BRAND_COLORS: Record<string, string> = {
@@ -17,12 +18,13 @@ const BRAND_COLORS: Record<string, string> = {
 export interface AppCardProps {
     app: AppData;
     onClick: (app: AppData) => void;
+    className?: string;
 }
 
-const AppCard: React.FC<AppCardProps> = ({ app, onClick }) => {
+const AppCard: React.FC<AppCardProps> = ({ app, onClick, className }) => {
     return (
         <button
-            className="w-full text-left flex flex-col py-4 cursor-pointer"
+            className={cn('w-full text-left flex flex-col cursor-pointer', className)}
             onClick={() => onClick(app)}
         >
             <div>

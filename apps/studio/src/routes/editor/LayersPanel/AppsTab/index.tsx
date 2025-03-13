@@ -5,7 +5,6 @@ import { cn } from '@onlook/ui/utils';
 import { Input } from '@onlook/ui/input';
 import { useTranslation } from 'react-i18next';
 import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
-import FeaturedAppCard from './FeaturedAppCard';
 import AppCard from './AppCard';
 import DetailPanel from './DetailPanel';
 
@@ -235,15 +234,12 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                 <div className="relative">
                                     <div className="flex px-4 overflow-x-auto">
                                         {FEATURED_APPS.map((app) => (
-                                            <div
+                                            <AppCard
                                                 key={app.id}
-                                                className="min-w-[225px] max-w-[250px] mr-1.5"
-                                            >
-                                                <FeaturedAppCard
-                                                    app={app}
-                                                    onClick={handleAppClick}
-                                                />
-                                            </div>
+                                                app={app}
+                                                onClick={handleAppClick}
+                                                className="flex-shrink-0 max-w-[225px] min-w-[225px] p-3 border border-border border-[0.5px] rounded-lg mr-1.5"
+                                            />
                                         ))}
                                     </div>
                                     {/* Gradient overlay for scroll fade effect */}
@@ -279,7 +275,12 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                 </div>
                                 <div className="divide-y divide-border divide-y-[0.5px]">
                                     {filteredApps.map((app) => (
-                                        <AppCard key={app.id} app={app} onClick={handleAppClick} />
+                                        <AppCard
+                                            key={app.id}
+                                            app={app}
+                                            onClick={handleAppClick}
+                                            className="py-4"
+                                        />
                                     ))}
                                 </div>
                             </div>
