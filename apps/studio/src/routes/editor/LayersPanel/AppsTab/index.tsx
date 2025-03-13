@@ -7,6 +7,20 @@ import { useTranslation } from 'react-i18next';
 import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 import AppCard from './AppCard';
 import DetailPanel from './DetailPanel';
+import InstalledAppCard from './InstalledAppCard';
+
+// Company brand colors
+const BRAND_COLORS: Record<string, string> = {
+    Stripe: '#635BFF',
+    MongoDB: '#47A248',
+    Figma: '#F24E1E',
+    GitHub: '#181717',
+    Slack: '#4A154B',
+    Notion: '#151515',
+    Salesforce: '#00A1E0',
+    Airtable: '#18BFFF',
+    Twilio: '#F22F46',
+};
 
 // Define AppData interface
 export interface AppData {
@@ -91,6 +105,38 @@ const ALL_APPS: AppData[] = [
         description:
             'Send SMS, make calls, and manage communication channels through the Twilio MCP. Add powerful messaging and voice capabilities to your application with minimal configuration.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/twilio.svg',
+    },
+];
+
+// Sample data for installed apps
+const INSTALLED_APPS: AppData[] = [
+    {
+        id: '1',
+        name: 'Stripe',
+        description:
+            'Interact with the Stripe API. This server supports various tools to interact with different Stripe services.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/stripe.svg',
+    },
+    {
+        id: '2',
+        name: 'GitHub',
+        description:
+            'Manage repositories, issues, and pull requests through the GitHub MCP. Automate workflows and track code changes.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
+    },
+    {
+        id: '3',
+        name: 'Figma',
+        description:
+            'Access Figma design files, components, and assets directly in your application. Retrieve designs and export assets.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/figma.svg',
+    },
+    {
+        id: '4',
+        name: 'MongoDB',
+        description:
+            'Connect to MongoDB databases to store, query, and manage your application data. Enable document creation and complex queries.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/mongodb.svg',
     },
 ];
 
@@ -288,10 +334,28 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                     )}
 
                     {activeTab === 'installed' && (
-                        <div className="p-3">
-                            <div className="text-center py-8 text-muted-foreground">
-                                No installed apps yet.
-                            </div>
+                        <div className="p-4">
+                            {INSTALLED_APPS.length > 0 ? (
+                                <div className="space-y-4">
+                                    {INSTALLED_APPS.map((app) => (
+                                        <InstalledAppCard
+                                            key={app.id}
+                                            app={app}
+                                            onClick={handleAppClick}
+                                            onToggle={(app, enabled) => {
+                                                console.log(
+                                                    `App ${app.name} toggled: ${enabled ? 'enabled' : 'disabled'}`,
+                                                );
+                                                // Here you would handle the toggle state change
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    No installed apps yet.
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
