@@ -9,11 +9,13 @@ export enum CreateCommitFailureReason {
     NOT_INITIALIZED = 'NOT_INITIALIZED',
     COMMIT_EMPTY = 'COMMIT_EMPTY',
     FAILED_TO_SAVE = 'FAILED_TO_SAVE',
+    COMMIT_IN_PROGRESS = 'COMMIT_IN_PROGRESS',
 }
 
 export class VersionsManager {
     commits: GitCommit[] | null = null;
     savedCommits: GitCommit[] = [];
+    isSaving = false;
 
     constructor(private project: Project) {
         makeAutoObservable(this);
@@ -44,68 +46,94 @@ export class VersionsManager {
         success: boolean;
         errorReason?: CreateCommitFailureReason;
     }> => {
-        sendAnalytics('versions create commit', {
-            message,
-        });
-        const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
-            repoPath: this.project.folderPath,
-        });
-
-        if (!isInitialized) {
-            await invokeMainChannel(GitChannels.INIT_REPO, { repoPath: this.project.folderPath });
-        }
-
-        const isEmpty = await invokeMainChannel(GitChannels.IS_EMPTY_COMMIT, {
-            repoPath: this.project.folderPath,
-        });
-
-        if (!isEmpty) {
-            await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
-            const commitResult = await invokeMainChannel(GitChannels.COMMIT, {
-                repoPath: this.project.folderPath,
-                message,
-            });
-            if (!commitResult) {
-                sendAnalytics('versions create commit failed', {
-                    message,
-                    errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+        try {
+            if (this.isSaving) {
+                toast({
+                    title: 'Backup already in progress',
                 });
                 return {
                     success: false,
-                    errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+                    errorReason: CreateCommitFailureReason.COMMIT_IN_PROGRESS,
                 };
             }
-            if (showToast) {
-                toast({
-                    title: 'Backup created!',
-                    description: 'You can now restore to this version',
-                });
-            }
-            await this.listCommits();
 
-            sendAnalytics('versions create commit success', {
+            this.isSaving = true;
+
+            sendAnalytics('versions create commit', {
                 message,
             });
-            return {
-                success: true,
-            };
-        } else {
-            if (showToast) {
-                toast({
-                    title: 'No changes to commit',
+            const isInitialized = await invokeMainChannel(GitChannels.IS_REPO_INITIALIZED, {
+                repoPath: this.project.folderPath,
+            });
+
+            if (!isInitialized) {
+                await invokeMainChannel(GitChannels.INIT_REPO, {
+                    repoPath: this.project.folderPath,
                 });
             }
-            sendAnalytics('versions create commit failed', {
-                message,
-                errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+
+            const isEmpty = await invokeMainChannel(GitChannels.IS_EMPTY_COMMIT, {
+                repoPath: this.project.folderPath,
             });
+
+            if (!isEmpty) {
+                await invokeMainChannel(GitChannels.ADD_ALL, { repoPath: this.project.folderPath });
+                const commitResult = await invokeMainChannel(GitChannels.COMMIT, {
+                    repoPath: this.project.folderPath,
+                    message,
+                });
+                this.isSaving = false;
+                if (!commitResult) {
+                    sendAnalytics('versions create commit failed', {
+                        message,
+                        errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+                    });
+                    return {
+                        success: false,
+                        errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+                    };
+                }
+                if (showToast) {
+                    toast({
+                        title: 'Backup created!',
+                        description: 'You can now restore to this version',
+                    });
+                }
+                await this.listCommits();
+
+                sendAnalytics('versions create commit success', {
+                    message,
+                });
+                return {
+                    success: true,
+                };
+            } else {
+                this.isSaving = false;
+                if (showToast) {
+                    toast({
+                        title: 'No changes to commit',
+                    });
+                }
+                sendAnalytics('versions create commit failed', {
+                    message,
+                    errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+                });
+                return {
+                    success: false,
+                    errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+                };
+            }
+        } catch (error) {
+            this.isSaving = false;
+            console.error('Failed to create commit', error);
             return {
                 success: false,
-                errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+                errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
             };
+        } finally {
+            this.isSaving = false;
         }
     };
-
     listCommits = async () => {
         const commits: GitCommit[] | null = await invokeMainChannel(GitChannels.LIST_COMMITS, {
             repoPath: this.project.folderPath,

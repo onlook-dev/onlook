@@ -16,9 +16,14 @@ export const NoVersions = observer(() => {
                 variant="outline"
                 size="sm"
                 onClick={() => projectsManager.versions?.initializeRepo()}
+                disabled={projectsManager.versions?.isSaving}
             >
-                <Icons.Plus className="h-4 w-4 mr-2" />
-                Create backup
+                {projectsManager.versions?.isSaving ? (
+                    <Icons.Shadow className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                    <Icons.Plus className="h-4 w-4 mr-2" />
+                )}
+                {projectsManager.versions?.isSaving ? 'Saving...' : 'Create backup'}
             </Button>
         </div>
     );
