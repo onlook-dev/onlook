@@ -92,7 +92,7 @@ export class ChatManager {
         sendAnalytics('send chat message', {
             content,
         });
-        await this.sendChatToAi(StreamRequestType.CHAT);
+        await this.sendChatToAi(StreamRequestType.CHAT, content);
     }
 
     async sendFixErrorToAi(errors: ParsedError[]): Promise<boolean> {
@@ -116,11 +116,11 @@ export class ChatManager {
         sendAnalytics('send fix error chat message', {
             errors: errors.map((e) => e.content),
         });
-        await this.sendChatToAi(StreamRequestType.ERROR_FIX);
+        await this.sendChatToAi(StreamRequestType.ERROR_FIX, prompt);
         return true;
     }
 
-    async sendChatToAi(requestType: StreamRequestType): Promise<void> {
+    async sendChatToAi(requestType: StreamRequestType, userPrompt?: string): Promise<void> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
@@ -132,7 +132,7 @@ export class ChatManager {
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
         this.stream.clear();
         this.isWaiting = false;
-        this.handleChatResponse(res, requestType);
+        this.handleChatResponse(res, requestType, userPrompt);
         sendAnalytics('receive chat response');
     }
 
@@ -177,7 +177,11 @@ export class ChatManager {
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(res: StreamResponse | null, requestType: StreamRequestType) {
+    async handleChatResponse(
+        res: StreamResponse | null,
+        requestType: StreamRequestType,
+        userPrompt?: string,
+    ) {
         if (!res || !this.conversation.current) {
             console.error('No response found');
             return;
@@ -232,7 +236,7 @@ export class ChatManager {
 
         if (this.userManager.settings.settings?.chat?.autoApplyCode) {
             setTimeout(() => {
-                this.code.applyCode(assistantMessage.id);
+                this.code.applyCode(assistantMessage.id, userPrompt);
             }, 100);
         }
     }

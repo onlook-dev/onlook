@@ -19,7 +19,7 @@ export class ChatCodeManager {
         this.processor = new CodeBlockProcessor();
     }
 
-    async applyCode(messageId: string) {
+    async applyCode(messageId: string, commitMessage?: string) {
         const message = this.chat.conversation.current?.getMessageById(messageId);
         if (!message) {
             console.error('No message found with id', messageId);
@@ -30,7 +30,10 @@ export class ChatCodeManager {
             return;
         }
 
-        await this.projectsManager.versions?.createCommit('Save before applying code', false);
+        this.projectsManager.versions?.createCommit(
+            commitMessage ?? 'Save before applying code',
+            false,
+        );
 
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
 

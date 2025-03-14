@@ -19,7 +19,7 @@ import {
     type PublishRequest,
     type PublishResponse,
 } from '@onlook/models/hosting';
-import { isNullOrUndefined } from '@onlook/utility';
+import { isEmptyString, isNullOrUndefined } from '@onlook/utility';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -147,10 +147,11 @@ class HostingManager {
         // Use default build flags if no build flags are provided
         const buildFlagsString: string = isNullOrUndefined(options?.buildFlags)
             ? DefaultSettings.EDITOR_SETTINGS.buildFlags
-            : options.buildFlags;
+            : options?.buildFlags || '';
 
-        const BUILD_SCRIPT_NO_LINT =
-            buildFlagsString.trim() !== '' ? `${buildScript} -- ${buildFlagsString}` : buildScript;
+        const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
+            ? buildScript
+            : `${buildScript} -- ${buildFlagsString}`;
 
         if (options?.skipBuild) {
             console.log('Skipping build');
