@@ -6,7 +6,8 @@ import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import PopoverPicker from './Popover';
+import BrandPopoverPicker from './ColorBrandPicker';
+// import PopoverPicker from './Popover';
 
 const stripUrlWrapper = (url: string) => {
     return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
@@ -185,13 +186,18 @@ const ColorInput = observer(
 
         return (
             <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
-                <PopoverPicker
+                <BrandPopoverPicker
+                    color={color}
+                    onChange={sendStyleUpdate}
+                    onChangeEnd={sendStyleUpdate}
+                />
+                {/* <PopoverPicker
                     color={color}
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
                     backgroundImage={backgroundImage}
                     compoundStyle={compoundStyle}
-                />
+                /> */}
                 <ColorTextInput
                     value={value}
                     isFocused={isFocused}

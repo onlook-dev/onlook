@@ -30,6 +30,8 @@ interface BrandPalletGroupProps {
         newName: string,
         parentName?: string,
     ) => void;
+    onDuplicate?: (colorName: string) => void;
+    isDefaultPalette?: boolean;
 }
 
 export const BrandPalletGroup = ({
@@ -39,6 +41,8 @@ export const BrandPalletGroup = ({
     onRename,
     onDelete,
     onColorChange,
+    onDuplicate,
+    isDefaultPalette = false,
 }: BrandPalletGroupProps) => {
     const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
     const [isAddingNewColor, setIsAddingNewColor] = useState(false);
@@ -86,7 +90,7 @@ export const BrandPalletGroup = ({
     return (
         <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
-                {isRenaming ? (
+                {!isDefaultPalette && isRenaming ? (
                     <input
                         type="text"
                         value={newGroupName}
@@ -100,47 +104,49 @@ export const BrandPalletGroup = ({
                 ) : (
                     <span className="text-sm font-normal">{title}</span>
                 )}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-4 w-4 p-0 hover:bg-transparent"
+                {!isDefaultPalette && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-4 w-4 p-0 hover:bg-transparent"
+                            >
+                                <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            className="rounded-md bg-background"
+                            align="start"
+                            side="bottom"
                         >
-                            <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        className="rounded-md bg-background"
-                        align="start"
-                        side="bottom"
-                    >
-                        <DropdownMenuItem asChild>
-                            <Button
-                                variant="ghost"
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                onClick={handleRenameClick}
-                            >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
-                                    <span>Rename</span>
-                                </span>
-                            </Button>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Button
-                                variant="ghost"
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                onClick={() => onDelete()}
-                            >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
-                                    <span>Delete</span>
-                                </span>
-                            </Button>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                            <DropdownMenuItem asChild>
+                                <Button
+                                    variant="ghost"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                    onClick={handleRenameClick}
+                                >
+                                    <span className="flex w-full text-smallPlus items-center">
+                                        <Icons.Pencil className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                        <span>Rename</span>
+                                    </span>
+                                </Button>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Button
+                                    variant="ghost"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                    onClick={() => onDelete()}
+                                >
+                                    <span className="flex w-full text-smallPlus items-center">
+                                        <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                        <span>Delete</span>
+                                    </span>
+                                </Button>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </div>
             <div className="flex flex-col gap-2">
                 <div className="grid grid-cols-6 gap-1">
@@ -155,6 +161,7 @@ export const BrandPalletGroup = ({
                                         onColorChange={(newColor, newName) =>
                                             handleColorChange(index, newColor, newName)
                                         }
+                                        isDefaultPalette={isDefaultPalette}
                                     />
                                 ) : (
                                     <>
@@ -213,6 +220,9 @@ export const BrandPalletGroup = ({
                                                         <Button
                                                             variant="ghost"
                                                             className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                            onClick={() =>
+                                                                onDuplicate?.(color.name)
+                                                            }
                                                         >
                                                             <span className="flex w-full text-sm items-center">
                                                                 <Icons.Copy className="mr-2 h-4 w-4" />

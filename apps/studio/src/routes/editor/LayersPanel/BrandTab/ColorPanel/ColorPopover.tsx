@@ -8,11 +8,13 @@ export const ColorPopover = ({
     brandColor,
     onClose,
     onColorChange,
+    isDefaultPalette = false,
 }: {
     color: Color;
     brandColor: string;
     onClose?: () => void;
     onColorChange?: (newColor: Color, newName: string) => void;
+    isDefaultPalette?: boolean;
 }) => {
     const [editedColor, setEditedColor] = useState<Color>(color);
     const [editedName, setEditedName] = useState<string>(brandColor);
@@ -47,6 +49,7 @@ export const ColorPopover = ({
                             value={editedName}
                             onChange={(e) => setEditedName(e.target.value)}
                             className="w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1 text-sm"
+                            disabled={isDefaultPalette || editedName === 'DEFAULT'} // Disable editing of DEFAULT
                         />
                     </div>
                     <ColorPickerContent

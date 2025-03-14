@@ -12,6 +12,7 @@ import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
+import { ThemeManager } from './config';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
@@ -45,6 +46,7 @@ export class EditorEngine {
     private pagesManager: PagesManager;
     private errorManager: ErrorManager;
     private imageManager: ImageManager;
+    private themeManager: ThemeManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
@@ -71,6 +73,7 @@ export class EditorEngine {
         this.pagesManager = new PagesManager(this, this.projectsManager);
         this.errorManager = new ErrorManager(this, this.projectsManager);
         this.imageManager = new ImageManager(this, this.projectsManager);
+        this.themeManager = new ThemeManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -126,6 +129,9 @@ export class EditorEngine {
     }
     get image() {
         return this.imageManager;
+    }
+    get theme() {
+        return this.themeManager;
     }
     get editPanelTab() {
         return this._editorPanelTab;
@@ -206,6 +212,7 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
+        this.themeManager?.dispose();
         this._settingsOpen = false;
         this._plansOpen = false;
     }
