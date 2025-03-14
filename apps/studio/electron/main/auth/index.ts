@@ -1,13 +1,14 @@
 import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { AuthTokens, UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
-import type { AuthResponse, User } from '@supabase/supabase-js';
+import type { AuthResponse, Session, SupabaseClient, User } from '@supabase/supabase-js';
 import { shell } from 'electron';
 import { mainWindow } from '..';
 import analytics, { sendAnalytics } from '../analytics';
 import { PersistentStorage } from '../storage';
 
 let isAutoRefreshEnabled = false;
+let isListeningForSessionChanges = false;
 
 export async function startAuthAutoRefresh() {
     if (!supabase || isAutoRefreshEnabled) {
@@ -90,7 +91,7 @@ export async function handleAuthCallback(url: string) {
         return;
     }
 
-    const authTokens = getToken(url);
+    const authTokens = getTokenFromCallbackUrl(url);
     PersistentStorage.AUTH_TOKENS.replace(authTokens);
 
     if (!supabase) {
@@ -114,14 +115,15 @@ export async function handleAuthCallback(url: string) {
     PersistentStorage.USER_METADATA.replace(userMetadata);
 
     analytics.identify(userMetadata);
-    emitAuthEvent();
+    emitSignInEvent();
+    listenForSessionChanges(supabase);
 }
 
-function emitAuthEvent() {
+function emitSignInEvent() {
     mainWindow?.webContents.send(MainChannels.USER_SIGNED_IN);
 }
 
-function getToken(url: string): AuthTokens {
+function getTokenFromCallbackUrl(url: string): AuthTokens {
     const fragmentParams = new URLSearchParams(url.split('#')[1]);
 
     const accessToken = fragmentParams.get('access_token');
@@ -160,23 +162,38 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         throw new Error('No backend connected');
     }
 
+    const {
+        data: { session: currentSession },
+    } = await supabase.auth.getSession();
+    if (currentSession) {
+        return getAuthTokensFromSession(currentSession);
+    }
+
     const authTokens = PersistentStorage.AUTH_TOKENS.read();
     if (!authTokens) {
         throw new Error('No auth tokens found');
     }
 
     const {
-        data: { session },
+        data: { session: refreshedSession },
         error,
     }: AuthResponse = await supabase.auth.setSession({
         access_token: authTokens.accessToken,
         refresh_token: authTokens.refreshToken,
     });
 
-    if (error || !session) {
+    if (error || !refreshedSession) {
         throw new Error('Failed to refresh session, you may need to sign in again. ' + error);
     }
 
+    const refreshedAuthTokens = getAuthTokensFromSession(refreshedSession);
+
+    // Save the refreshed auth tokens to the persistent storage
+    PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
+    return refreshedAuthTokens;
+}
+
+function getAuthTokensFromSession(session: Session): AuthTokens {
     const refreshedAuthTokens: AuthTokens = {
         accessToken: session.access_token,
         refreshToken: session.refresh_token,
@@ -185,10 +202,21 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         providerToken: session.provider_token ?? '',
         tokenType: session.token_type ?? '',
     };
-
-    // Save the refreshed auth tokens to the persistent storage
-    PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
+}
+
+function listenForSessionChanges(supabase: SupabaseClient) {
+    if (isListeningForSessionChanges) {
+        return;
+    }
+    isListeningForSessionChanges = true;
+
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+            const authTokens = getAuthTokensFromSession(session);
+            PersistentStorage.AUTH_TOKENS.replace(authTokens);
+        }
+    });
 }
 
 export async function signOut() {
