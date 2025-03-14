@@ -6,8 +6,8 @@ import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import PopoverPicker from './Popover';
 import BrandPopoverPicker from './ColorBrandPicker';
+// import PopoverPicker from './Popover';
 
 const stripUrlWrapper = (url: string) => {
     return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
