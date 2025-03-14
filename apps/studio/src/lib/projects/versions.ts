@@ -58,9 +58,6 @@ export class VersionsManager {
 
         this.isSaving = true;
 
-        // Add test delay for testing
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
         sendAnalytics('versions create commit', {
             message,
         });
