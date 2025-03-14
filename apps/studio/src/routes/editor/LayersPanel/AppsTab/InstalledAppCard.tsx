@@ -29,6 +29,7 @@ export interface InstalledAppCardProps {
     hideDivider?: boolean;
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
+    hasError?: boolean;
 }
 
 const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
@@ -44,6 +45,7 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
     hideDivider = false,
     onMouseEnter,
     onMouseLeave,
+    hasError = false,
 }) => {
     // Never dim active cards or hovered cards
     // Only dim cards that are neither active nor hovered when either:
@@ -69,7 +71,7 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
     return (
         <div
             className={cn(
-                `group border border-border border-[0.5px] rounded-lg overflow-hidden relative`,
+                `group border border-border border-[0.5px] rounded-lg overflow-hidden relative cursor-pointer`,
                 `transition-all duration-100`,
                 isDimmed ? 'opacity-50' : 'opacity-100',
                 isActive && 'bg-background-secondary/50',
@@ -80,9 +82,9 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
             onMouseLeave={onMouseLeave}
         >
             {/* Animated background that scales up on hover */}
-            <div className="absolute inset-0 bg-background-secondary/50 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none transform scale-95 group-hover:scale-100 group-hover:opacity-100"></div>
+            <div className="absolute z-0 inset-0 bg-background-secondary/50 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none transform scale-95 group-hover:scale-100 group-hover:opacity-100"></div>
 
-            <div className="p-3 relative">
+            <div className="p-3 relative z-1">
                 {/* Top row with logo and app name */}
                 <div className="flex items-center mb-2">
                     <div className="relative">
@@ -108,10 +110,19 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
                                 </div>
                             )}
                         </div>
-                        {/* Active indicator dot */}
-                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#00C781] border border-secondary border-[4px] flex items-center justify-center">
-                            <div className="w-1 h-1 bg-black rounded-full opacity-0"></div>
-                        </div>
+                        {/* Active indicator dot - only shown when not in error state */}
+                        {!hasError && (
+                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#00C781] border border-secondary border-[4px] flex items-center justify-center">
+                                <div className="w-1 h-1 bg-black rounded-full opacity-0"></div>
+                            </div>
+                        )}
+
+                        {/* Error indicator dot - only shown when hasError is true */}
+                        {hasError && (
+                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 border border-secondary border-[4px] flex items-center justify-center">
+                                <div className="w-1 h-1 bg-black rounded-full opacity-0"></div>
+                            </div>
+                        )}
                     </div>
                     <h3 className="text-base font-normal text-white ml-3">{app.name}</h3>
                 </div>
@@ -126,7 +137,7 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
 
                 <div className="absolute top-3 right-3">
                     <button
-                        className="flex items-center justify-center p-2 rounded-lg border-border border-[0.5px] hover:bg-[#222222] text-[#999999]"
+                        className="flex items-center justify-center p-2 rounded-lg border-border border-[0.5px] text-muted-foreground hover:bg-[#222222] hover:text-white"
                         onClick={(e) => {
                             e.stopPropagation();
                             handleManageClick();
@@ -136,6 +147,39 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
                     </button>
                 </div>
             </div>
+
+            {/* Error strip - only shown when hasError is true */}
+            {hasError && (
+                <div className="w-full z-10 bg-red-700 py-[6px] px-3 flex items-center relative">
+                    <div className="flex items-center opacity-80">
+                        <div className="w-4 h-4 rounded-full border border-[1.5px] border-white flex items-center justify-center mr-[6px]">
+                            <svg
+                                width="9"
+                                height="9"
+                                viewBox="0 0 12 12"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M9 3L3 9M3 3L9 9"
+                                    stroke="white"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                        </div>
+                        <span className="text-white text-sm font-normal">App error</span>
+                    </div>
+                    <button
+                        className="flex items-center text-white pr-3 pl-2 py-1 transition-colors hover:bg-black/15 absolute right-0 h-full"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <Icons.Sparkles className="h-4 w-4 mr-1" />
+                        <span className="text-sm font-normal">Fix in chat</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

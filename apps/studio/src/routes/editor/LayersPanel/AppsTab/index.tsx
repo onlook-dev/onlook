@@ -28,6 +28,7 @@ export interface AppData {
     name: string;
     description: string;
     icon: string;
+    hasError?: boolean;
 }
 
 // Sample data for app categories
@@ -116,6 +117,7 @@ const INSTALLED_APPS: AppData[] = [
         description:
             'Interact with the Stripe API. This server supports various tools to interact with different Stripe services.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/stripe.svg',
+        hasError: false,
     },
     {
         id: 'installed-github',
@@ -125,11 +127,12 @@ const INSTALLED_APPS: AppData[] = [
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
     },
     {
-        id: 'installed-figma',
-        name: 'Figma',
+        id: 'installed-salesforce',
+        name: 'Salesforce',
         description:
-            'Access Figma design files, components, and assets directly in your application. Retrieve designs and export assets.',
-        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/figma.svg',
+            'Access customer data, manage leads, and automate sales processes with the Salesforce MCP. Connect your app to the leading CRM platform.',
+        icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/salesforce.svg',
+        hasError: true,
     },
     {
         id: 'installed-mongodb',
@@ -407,6 +410,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                                 index === INSTALLED_APPS.length - 1 ||
                                                 selectedApp?.id === app.id
                                             }
+                                            hasError={app.hasError}
                                             onToggle={(app, enabled) => {
                                                 console.log(
                                                     `App ${app.name} toggled: ${enabled ? 'enabled' : 'disabled'}`,
