@@ -82,7 +82,6 @@ export class VersionsManager {
                     repoPath: this.project.folderPath,
                     message,
                 });
-                this.isSaving = false;
                 if (!commitResult) {
                     sendAnalytics('versions create commit failed', {
                         message,
@@ -108,7 +107,6 @@ export class VersionsManager {
                     success: true,
                 };
             } else {
-                this.isSaving = false;
                 if (showToast) {
                     toast({
                         title: 'No changes to commit',
