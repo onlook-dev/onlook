@@ -5,6 +5,7 @@ import type {
     Change,
     GroupContainer,
     ImageContentData,
+    StyleChange,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
 import { ipcRenderer } from 'electron';
@@ -42,10 +43,12 @@ function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
         const { domId, change } = data as {
             domId: string;
-            change: Change<Record<string, string>>;
+            change: Change<Record<string, StyleChange>>;
         };
         cssManager.updateStyle(domId, change.updated);
-        publishStyleUpdate(domId);
+
+        // Why is this needed?
+        //publishStyleUpdate(domId);
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {

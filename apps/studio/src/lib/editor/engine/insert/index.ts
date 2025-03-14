@@ -1,12 +1,13 @@
 import { EditorMode } from '@/lib/models';
 import { createDomId, createOid } from '@/lib/utils';
 import type { ImageContentData } from '@onlook/models';
-import type {
-    ActionElement,
-    ActionLocation,
-    ActionTarget,
-    InsertElementAction,
-    UpdateStyleAction,
+import {
+    StyleChangeType,
+    type ActionElement,
+    type ActionLocation,
+    type ActionTarget,
+    type InsertElementAction,
+    type UpdateStyleAction,
 } from '@onlook/models/actions';
 import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
@@ -294,9 +295,18 @@ export class InsertManager {
                 {
                     change: {
                         updated: {
-                            backgroundImage: `url('/${prefix}/${imageData.fileName}')`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
+                            backgroundImage: {
+                                value: `url('/${prefix}/${imageData.fileName}')`,
+                                type: StyleChangeType.Value,
+                            },
+                            backgroundSize: {
+                                value: 'cover',
+                                type: StyleChangeType.Value,
+                            },
+                            backgroundPosition: {
+                                value: 'center',
+                                type: StyleChangeType.Value,
+                            },
                         },
                         original: {},
                     },

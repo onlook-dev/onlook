@@ -9,6 +9,17 @@ export interface ActionTarget {
     webviewId: string;
 }
 
+export interface StyleChange {
+    value: string;
+    type: StyleChangeType;
+}
+
+export enum StyleChangeType {
+    Value = 'value',
+    Custom = 'custom',
+    Remove = 'remove',
+}
+
 export interface StyleActionTarget extends ActionTarget {
-    change: Change<Record<string, string>>;
+    change: Change<Record<string, StyleChange>>;
 }
