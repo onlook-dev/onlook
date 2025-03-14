@@ -1,14 +1,20 @@
 import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { AuthTokens, UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
-import type { AuthResponse, Session, SupabaseClient, User } from '@supabase/supabase-js';
+import type {
+    AuthResponse,
+    Session,
+    Subscription,
+    SupabaseClient,
+    User,
+} from '@supabase/supabase-js';
 import { shell } from 'electron';
 import { mainWindow } from '..';
 import analytics, { sendAnalytics } from '../analytics';
 import { PersistentStorage } from '../storage';
 
 let isAutoRefreshEnabled = false;
-let isListeningForSessionChanges = false;
+let sessionSubscription: Subscription | undefined;
 
 export async function startAuthAutoRefresh() {
     if (!supabase || isAutoRefreshEnabled) {
@@ -166,7 +172,9 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         data: { session: currentSession },
     } = await supabase.auth.getSession();
     if (currentSession) {
-        return getAuthTokensFromSession(currentSession);
+        const authTokens = getAuthTokensFromSession(currentSession);
+        PersistentStorage.AUTH_TOKENS.replace(authTokens);
+        return authTokens;
     }
 
     const authTokens = PersistentStorage.AUTH_TOKENS.read();
@@ -205,20 +213,6 @@ function getAuthTokensFromSession(session: Session): AuthTokens {
     return refreshedAuthTokens;
 }
 
-function listenForSessionChanges(supabase: SupabaseClient) {
-    if (isListeningForSessionChanges) {
-        return;
-    }
-    isListeningForSessionChanges = true;
-
-    supabase.auth.onAuthStateChange((event, session) => {
-        if (session) {
-            const authTokens = getAuthTokensFromSession(session);
-            PersistentStorage.AUTH_TOKENS.replace(authTokens);
-        }
-    });
-}
-
 export async function signOut() {
     sendAnalytics('sign out');
     analytics.signOut();
@@ -227,4 +221,30 @@ export async function signOut() {
     PersistentStorage.USER_METADATA.clear();
     PersistentStorage.AUTH_TOKENS.clear();
     mainWindow?.webContents.send(MainChannels.USER_SIGNED_OUT);
+    unsubscribeFromSessionChanges();
+}
+
+function listenForSessionChanges(supabase: SupabaseClient) {
+    if (sessionSubscription) {
+        console.log('Already listening for session changes');
+        return;
+    }
+
+    const {
+        data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+            const authTokens = getAuthTokensFromSession(session);
+            PersistentStorage.AUTH_TOKENS.replace(authTokens);
+        }
+    });
+
+    sessionSubscription = subscription;
+}
+
+function unsubscribeFromSessionChanges() {
+    if (sessionSubscription) {
+        sessionSubscription.unsubscribe();
+        sessionSubscription = undefined;
+    }
 }
