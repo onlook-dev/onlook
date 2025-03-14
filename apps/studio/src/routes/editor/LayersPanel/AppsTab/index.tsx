@@ -40,21 +40,21 @@ const APP_CATEGORIES = [
 // Sample data for featured apps
 const FEATURED_APPS: AppData[] = [
     {
-        id: '1',
+        id: 'featured-stripe',
         name: 'Stripe',
         description:
             'Integrate payment processing, subscriptions, and financial services into your app. The Stripe MCP allows you to accept payments, manage customers, and handle complex billing scenarios.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/stripe.svg',
     },
     {
-        id: '2',
+        id: 'featured-mongodb',
         name: 'MongoDB',
         description:
             'Connect to MongoDB databases to store, query, and manage your application data. This MCP integration enables document creation, complex queries, and database management without writing backend code.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/mongodb.svg',
     },
     {
-        id: '3',
+        id: 'featured-figma',
         name: 'Figma',
         description:
             'Access Figma design files, components, and assets directly in your application. The Figma MCP lets you retrieve designs, export assets, and keep your app in sync with your design system.',
@@ -65,42 +65,42 @@ const FEATURED_APPS: AppData[] = [
 // Sample data for all apps
 const ALL_APPS: AppData[] = [
     {
-        id: '1',
+        id: 'all-github',
         name: 'GitHub',
         description:
             'Manage repositories, issues, and pull requests through the GitHub MCP. Automate workflows, track code changes, and integrate version control directly into your application.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
     },
     {
-        id: '2',
+        id: 'all-slack',
         name: 'Slack',
         description:
             'Send messages, create channels, and manage workspaces with the Slack MCP. Build interactive notifications and collaborative features that connect your app with team communications.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/slack.svg',
     },
     {
-        id: '3',
+        id: 'all-notion',
         name: 'Notion',
         description:
             'Create, read, and update Notion pages, databases, and content. The Notion MCP enables knowledge management and documentation features without leaving your application.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/notion.svg',
     },
     {
-        id: '4',
+        id: 'all-salesforce',
         name: 'Salesforce',
         description:
             'Access customer data, manage leads, and automate sales processes with the Salesforce MCP. Connect your app to the leading CRM platform to enhance customer relationship management.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/salesforce.svg',
     },
     {
-        id: '5',
+        id: 'all-airtable',
         name: 'Airtable',
         description:
             'Interact with Airtable bases to create flexible databases and spreadsheets. The Airtable MCP allows you to build, query, and visualize structured data without complex database setup.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/airtable.svg',
     },
     {
-        id: '6',
+        id: 'all-twilio',
         name: 'Twilio',
         description:
             'Send SMS, make calls, and manage communication channels through the Twilio MCP. Add powerful messaging and voice capabilities to your application with minimal configuration.',
@@ -111,28 +111,28 @@ const ALL_APPS: AppData[] = [
 // Sample data for installed apps
 const INSTALLED_APPS: AppData[] = [
     {
-        id: '1',
+        id: 'installed-stripe',
         name: 'Stripe',
         description:
             'Interact with the Stripe API. This server supports various tools to interact with different Stripe services.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/stripe.svg',
     },
     {
-        id: '2',
+        id: 'installed-github',
         name: 'GitHub',
         description:
             'Manage repositories, issues, and pull requests through the GitHub MCP. Automate workflows and track code changes.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/github.svg',
     },
     {
-        id: '3',
+        id: 'installed-figma',
         name: 'Figma',
         description:
             'Access Figma design files, components, and assets directly in your application. Retrieve designs and export assets.',
         icon: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/figma.svg',
     },
     {
-        id: '4',
+        id: 'installed-mongodb',
         name: 'MongoDB',
         description:
             'Connect to MongoDB databases to store, query, and manage your application data. Enable document creation and complex queries.',
@@ -157,6 +157,11 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
     const [activeTab, setActiveTab] = useState<'browse' | 'installed'>('browse');
     const [sortOption, setSortOption] = useState('newest');
     const [selectedApp, setSelectedApp] = useState<AppData | null>(null);
+    const [selectedAppListId, setSelectedAppListId] = useState<string | null>(null);
+
+    // Add state for tracking hover
+    const [hoveredAppId, setHoveredAppId] = useState<string | null>(null);
+    const [hoveredListId, setHoveredListId] = useState<string | null>(null);
 
     // Filter apps based on search query
     const filteredApps = ALL_APPS.filter((app) => {
@@ -166,9 +171,10 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
         );
     });
 
-    const handleAppClick = (app: AppData) => {
+    const handleAppClick = (app: AppData, listId: string) => {
         console.log('App clicked:', app.name);
         setSelectedApp(app);
+        setSelectedAppListId(listId);
         if (onSelectApp) {
             onSelectApp(app);
         }
@@ -177,9 +183,21 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
     const handleCloseDetailPanel = () => {
         console.log('Closing detail panel');
         setSelectedApp(null);
+        setSelectedAppListId(null);
         if (onSelectApp) {
             onSelectApp(null);
         }
+    };
+
+    // Add handlers for mouse enter/leave
+    const handleAppMouseEnter = (app: AppData, listId: string) => {
+        setHoveredAppId(app.id);
+        setHoveredListId(listId);
+    };
+
+    const handleAppMouseLeave = () => {
+        setHoveredAppId(null);
+        setHoveredListId(null);
     };
 
     return (
@@ -195,7 +213,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                         <Input
                             type="search"
                             placeholder="Search apps..."
-                            className="h-9 text-xs pl-7 pr-8"
+                            className="h-9 rounded-md text-xs pl-7 pr-8"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => {
@@ -283,7 +301,22 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                             <AppCard
                                                 key={app.id}
                                                 app={app}
-                                                onClick={handleAppClick}
+                                                onClick={(app) => handleAppClick(app, 'featured')}
+                                                isActive={selectedApp?.id === app.id}
+                                                anyAppActive={
+                                                    !!selectedApp &&
+                                                    selectedAppListId === 'featured'
+                                                }
+                                                isHovered={hoveredAppId === app.id}
+                                                anyCardHovered={
+                                                    !!hoveredAppId && hoveredListId === 'featured'
+                                                }
+                                                onMouseEnter={() =>
+                                                    handleAppMouseEnter(app, 'featured')
+                                                }
+                                                onMouseLeave={handleAppMouseLeave}
+                                                listId="featured"
+                                                hideDivider={true}
                                                 className="flex-shrink-0 max-w-[225px] min-w-[225px] p-3 border border-border border-[0.5px] rounded-lg mr-1.5"
                                             />
                                         ))}
@@ -294,8 +327,8 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                             </div>
 
                             {/* All Apps */}
-                            <div className="px-4 pt-6 pb-4">
-                                <div className="flex items-center justify-between mb-1">
+                            <div className="pt-6 pb-4 w-full">
+                                <div className="flex items-center justify-between px-4 mb-1 w-full">
                                     <h2 className="text-sm font-normal text-muted-foreground">
                                         All apps
                                     </h2>
@@ -319,13 +352,28 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="divide-y divide-border divide-y-[0.5px]">
-                                    {filteredApps.map((app) => (
+                                <div className="flex flex-col items-stretch w-full">
+                                    {filteredApps.map((app, index) => (
                                         <AppCard
                                             key={app.id}
                                             app={app}
-                                            onClick={handleAppClick}
-                                            className="py-4"
+                                            onClick={(app) => handleAppClick(app, 'all')}
+                                            isActive={selectedApp?.id === app.id}
+                                            anyAppActive={
+                                                !!selectedApp && selectedAppListId === 'all'
+                                            }
+                                            isHovered={hoveredAppId === app.id}
+                                            anyCardHovered={
+                                                !!hoveredAppId && hoveredListId === 'all'
+                                            }
+                                            onMouseEnter={() => handleAppMouseEnter(app, 'all')}
+                                            onMouseLeave={handleAppMouseLeave}
+                                            listId="all"
+                                            className="py-4 px-4 rounded-none"
+                                            hideDivider={
+                                                index === filteredApps.length - 1 ||
+                                                selectedApp?.id === app.id
+                                            }
                                         />
                                     ))}
                                 </div>
@@ -337,11 +385,28 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                         <div className="p-4">
                             {INSTALLED_APPS.length > 0 ? (
                                 <div className="space-y-4">
-                                    {INSTALLED_APPS.map((app) => (
+                                    {INSTALLED_APPS.map((app, index) => (
                                         <InstalledAppCard
                                             key={app.id}
                                             app={app}
-                                            onClick={handleAppClick}
+                                            onClick={(app) => handleAppClick(app, 'installed')}
+                                            isActive={selectedApp?.id === app.id}
+                                            anyAppActive={
+                                                !!selectedApp && selectedAppListId === 'installed'
+                                            }
+                                            isHovered={hoveredAppId === app.id}
+                                            anyCardHovered={
+                                                !!hoveredAppId && hoveredListId === 'installed'
+                                            }
+                                            onMouseEnter={() =>
+                                                handleAppMouseEnter(app, 'installed')
+                                            }
+                                            onMouseLeave={handleAppMouseLeave}
+                                            listId="installed"
+                                            hideDivider={
+                                                index === INSTALLED_APPS.length - 1 ||
+                                                selectedApp?.id === app.id
+                                            }
                                             onToggle={(app, enabled) => {
                                                 console.log(
                                                     `App ${app.name} toggled: ${enabled ? 'enabled' : 'disabled'}`,

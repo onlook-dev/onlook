@@ -169,7 +169,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
 
                 {/* Install Section */}
                 <div className="px-4 py-5 border-b border-border border-b-[0.5px]">
-                    <h3 className="text-base font-normal mb-2">Add stripe</h3>
+                    <h3 className="text-base font-normal mb-2">Add {appName}</h3>
                     <div className="flex items-center mb-2">
                         <div className="text-muted-foreground text-sm font-normal">
                             Requirements
@@ -208,7 +208,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                 placeholder="Enter your Stripe API key"
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
-                                className="pl-14 py-6 border-border rounded-md font-normal text-sm text-white w-full"
+                                className="pl-12 py-6 border-border rounded-md font-normal text-sm text-white w-full"
                             />
                         </div>
                     </div>

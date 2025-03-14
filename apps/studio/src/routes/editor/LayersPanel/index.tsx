@@ -160,6 +160,20 @@ const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.BRAND && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    )}
+                    onClick={() => handleClick(TabValue.BRAND)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.BRAND)}
+                >
+                    <Icons.Layers className="w-5 h-5" />
+                    <span className="text-xs leading-tight">Brand</span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
                         selectedTab === TabValue.APPS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
@@ -171,20 +185,6 @@ const LayersPanel = observer(() => {
                     <span className="text-xs leading-tight">
                         {t('editor.panels.layers.tabs.apps')}
                     </span>
-                </button>
-
-                <button
-                    className={cn(
-                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        selectedTab === TabValue.BRAND && isLocked
-                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
-                    )}
-                    onClick={() => handleClick(TabValue.BRAND)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.BRAND)}
-                >
-                    <Icons.Layers className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Brand</span>
                 </button>
 
                 <button

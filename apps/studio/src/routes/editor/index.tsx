@@ -24,7 +24,7 @@ function ProjectEditor() {
                     <EditPanel />
                 </div>
 
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up">
+                <div className="absolute hidden bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up">
                     <Toolbar />
                 </div>
 

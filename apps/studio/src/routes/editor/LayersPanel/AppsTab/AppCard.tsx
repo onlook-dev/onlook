@@ -19,18 +19,60 @@ export interface AppCardProps {
     app: AppData;
     onClick: (app: AppData) => void;
     className?: string;
+    isActive?: boolean;
+    anyAppActive?: boolean;
+    isHovered?: boolean;
+    anyCardHovered?: boolean;
+    listId?: string;
+    hideDivider?: boolean;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 }
 
-const AppCard: React.FC<AppCardProps> = ({ app, onClick, className }) => {
+const AppCard: React.FC<AppCardProps> = ({
+    app,
+    onClick,
+    className,
+    isActive = false,
+    anyAppActive = false,
+    isHovered = false,
+    anyCardHovered = false,
+    listId,
+    hideDivider = false,
+    onMouseEnter,
+    onMouseLeave,
+}) => {
+    // Never dim active cards or hovered cards
+    // Only dim cards that are neither active nor hovered when either:
+    // - There's an active card in the list, or
+    // - There's a hovered card in the list
+    const isDimmed = !isActive && !isHovered && (anyAppActive || anyCardHovered);
+
     return (
         <button
-            className={cn('w-full text-left flex flex-col cursor-pointer', className)}
+            className={cn(
+                'group w-full text-left flex flex-col cursor-pointer flex-grow relative overflow-hidden',
+                'transition-all duration-100',
+                isDimmed ? 'opacity-70' : 'opacity-100',
+                isActive && 'bg-background-secondary/50',
+                className,
+            )}
             onClick={() => onClick(app)}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
         >
-            <div>
-                <div className="flex items-center">
+            {/* Animated background that scales up on hover */}
+            <div className="absolute inset-0 bg-background-secondary/50 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none transform scale-90 group-hover:scale-100 group-hover:opacity-100"></div>
+
+            <div className="w-full relative">
+                <div className="flex items-center w-full">
                     <div
-                        className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md overflow-hidden mr-3 border border-white/[0.07]"
+                        className={cn(
+                            'flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-md overflow-hidden mr-3 border',
+                            'transition-all duration-100',
+                            isActive ? 'border-white/20' : 'border-white/[0.07]',
+                            'group-hover:border-white/20',
+                        )}
                         style={{ backgroundColor: BRAND_COLORS[app.name] || '#ffffff' }}
                     >
                         {app.icon ? (
@@ -52,6 +94,11 @@ const AppCard: React.FC<AppCardProps> = ({ app, onClick, className }) => {
                 </div>
                 <p className="text-sm text-gray-400 mt-2 line-clamp-2">{app.description}</p>
             </div>
+
+            {/* Bottom divider line - only shown if hideDivider is false */}
+            {!hideDivider && (
+                <div className="absolute bottom-0 left-4 right-4 h-[0.5px] bg-border"></div>
+            )}
         </button>
     );
 };
