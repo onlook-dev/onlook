@@ -15,7 +15,7 @@
         "tooling/*"
     ],
     "scripts": {
-        "build:foundation": "bun --elide-lines 0 --filter @onlook/foundation build",
+        "build:foundation": "bun --filter @onlook/foundation build",
         "build:cli": "bun build:foundation && bun --elide-lines 0 --filter onlook typecheck && bun --elide-lines 0 --filter onlook build",
         "build:studio": "bun build:foundation && bun --elide-lines 0 --filter @onlook/studio build",
         "clean": "git clean -xdf node_modules",
@@ -25,6 +25,7 @@
         "dev:foundation": "bun --elide-lines 0 --filter @onlook/foundation dev",
         "dev:studio": "bun --elide-lines 0 --filter @onlook/studio dev",
         "build": "bun --elide-lines 0 --filter '*' build",
+        "ci:build": "bun run build:foundation && bun --filter '*' build",
         "dev": "bun --elide-lines 0 --filter '*' dev",
         "test": "bun --elide-lines 0 --filter '*' test",
         "format": "bun --elide-lines 0 --filter '*' format",
