@@ -2,6 +2,7 @@ import { EditorAttributes } from '@onlook/models/constants';
 import type { CssNode, Declaration, Raw, Rule, SelectorList } from 'css-tree';
 import { cssTree } from '../bundles/';
 import { selectorFromDomId } from '/common/helpers';
+import type { StyleChange } from '@onlook/models/actions';
 
 class CSSManager {
     private static instance: CSSManager;
@@ -76,18 +77,18 @@ class CSSManager {
         return matchingNodes;
     }
 
-    public updateStyle(domId: string, style: Record<string, string>) {
+    public updateStyle(domId: string, style: Record<string, StyleChange>) {
         const selector = selectorFromDomId(domId, false);
         const ast = this.stylesheet;
         for (const [property, value] of Object.entries(style)) {
             const cssProperty = this.jsToCssProperty(property);
             const matchingNodes = this.find(ast, selector);
             if (!matchingNodes.length) {
-                this.addRule(ast, selector, cssProperty, value);
+                this.addRule(ast, selector, cssProperty, value.value);
             } else {
                 matchingNodes.forEach((node) => {
                     if (node.type === 'Rule') {
-                        this.updateRule(node, cssProperty, value);
+                        this.updateRule(node, cssProperty, value.value);
                     }
                 });
             }

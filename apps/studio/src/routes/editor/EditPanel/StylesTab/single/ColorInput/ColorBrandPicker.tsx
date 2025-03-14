@@ -9,10 +9,10 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import ColorButton from './ColorButton';
 import ColorPickerContent from './ColorPicker';
 
-interface PopoverPickerProps {
+interface ColorBrandPickerProps {
     color: Color;
-    onChange: (color: Color) => void;
-    onChangeEnd: (color: Color) => void;
+    onChange: (color: Color | ColorItem) => void;
+    onChangeEnd: (color: Color | ColorItem) => void;
 }
 
 enum TabValue {
@@ -28,11 +28,10 @@ const ColorGroup = ({
 }: {
     name: string;
     colors: ColorItem[];
-    onColorSelect: (color: Color) => void;
+    onColorSelect: (colorKey: ColorItem) => void;
     isDefault?: boolean;
 }) => {
     const [expanded, setExpanded] = useState(false);
-
     return (
         <div className="w-full group">
             <button
@@ -54,7 +53,7 @@ const ColorGroup = ({
                     <div
                         key={color.name}
                         className="flex items-center gap-1.5 hover:bg-background-secondary rounded-md p-1 hover:cursor-pointer"
-                        onClick={() => onColorSelect(Color.from(color.lightColor))}
+                        onClick={() => onColorSelect(color)}
                     >
                         <div
                             className="w-5 h-5 rounded-sm"
@@ -67,7 +66,7 @@ const ColorGroup = ({
     );
 };
 
-const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPickerProps) => {
+const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: ColorBrandPickerProps) => {
     const editorEngine = useEditorEngine();
     const [isOpen, toggleOpen] = useState(false);
     const defaultValue = TabValue.BRAND;
@@ -100,6 +99,11 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
     const filteredColorDefaults = Object.entries(colorDefaults).filter(([name, colors]) => {
         return colors.some((color) => color.name.toLowerCase().includes(searchQuery.toLowerCase()));
     });
+
+    const handleColorSelect = (color: ColorItem) => {
+        onChangeEnd?.(color);
+        toggleOpen(false);
+    };
 
     useEffect(() => {
         if (isOpen && !editorEngine.history.isInTransaction) {
@@ -166,7 +170,7 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
                                         key={name}
                                         name={name}
                                         colors={colors}
-                                        onColorSelect={onChange}
+                                        onColorSelect={handleColorSelect}
                                     />
                                 ))}
                                 {filteredColorDefaults.map(([name, colors]) => (
@@ -174,7 +178,7 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
                                         key={name}
                                         name={name}
                                         colors={colors}
-                                        onColorSelect={onChange}
+                                        onColorSelect={handleColorSelect}
                                         isDefault={true}
                                     />
                                 ))}

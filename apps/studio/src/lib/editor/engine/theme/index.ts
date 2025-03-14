@@ -399,6 +399,35 @@ export class ThemeManager {
         return this.defaultColors;
     }
 
+    getColorByName(colorName: string): string | undefined {
+        const [groupName, shadeName] = colorName.split('-');
+
+        const brandGroup = this.brandColors[groupName];
+        if (brandGroup) {
+            if (!shadeName || shadeName === 'DEFAULT') {
+                const defaultColor = brandGroup.find((color) => color.name === 'DEFAULT');
+                if (defaultColor?.lightColor) {
+                    return defaultColor.lightColor;
+                }
+            } else {
+                const color = brandGroup.find((color) => color.name === shadeName);
+                if (color?.lightColor) {
+                    return color.lightColor;
+                }
+            }
+        }
+
+        const defaultGroup = this.defaultColors[groupName];
+        if (defaultGroup && shadeName) {
+            const color = defaultGroup.find((color) => color.name === shadeName);
+            if (color?.lightColor) {
+                return color.lightColor;
+            }
+        }
+
+        return undefined;
+    }
+
     dispose() {
         this.brandColors = {};
         this.defaultColors = {};
