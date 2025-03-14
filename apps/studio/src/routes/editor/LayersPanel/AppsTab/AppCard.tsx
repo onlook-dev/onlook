@@ -53,10 +53,10 @@ const AppCard: React.FC<AppCardProps> = ({
             className={cn(
                 'group w-full text-left flex flex-col cursor-pointer flex-grow relative overflow-hidden',
                 'transition-all duration-100',
-                isDimmed ? 'opacity-70' : 'opacity-100',
                 isActive && 'bg-background-secondary/50',
                 className,
             )}
+            style={{ opacity: isDimmed ? 0.65 : 1 }}
             onClick={() => onClick(app)}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
