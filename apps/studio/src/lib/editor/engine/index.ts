@@ -12,6 +12,7 @@ import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
+import { ThemeManager } from './config';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
@@ -26,7 +27,6 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { ConfigManager } from './config';
 
 export class EditorEngine {
     private _plansOpen: boolean = false;
@@ -46,7 +46,7 @@ export class EditorEngine {
     private pagesManager: PagesManager;
     private errorManager: ErrorManager;
     private imageManager: ImageManager;
-    private configManager: ConfigManager;
+    private themeManager: ThemeManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
@@ -73,7 +73,7 @@ export class EditorEngine {
         this.pagesManager = new PagesManager(this, this.projectsManager);
         this.errorManager = new ErrorManager(this, this.projectsManager);
         this.imageManager = new ImageManager(this, this.projectsManager);
-        this.configManager = new ConfigManager(this, this.projectsManager);
+        this.themeManager = new ThemeManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -130,8 +130,8 @@ export class EditorEngine {
     get image() {
         return this.imageManager;
     }
-    get config() {
-        return this.configManager;
+    get theme() {
+        return this.themeManager;
     }
     get editPanelTab() {
         return this._editorPanelTab;
@@ -212,7 +212,7 @@ export class EditorEngine {
         this.groupManager?.dispose();
         this.canvasManager?.clear();
         this.imageManager?.dispose();
-        this.configManager?.dispose();
+        this.themeManager?.dispose();
         this._settingsOpen = false;
         this._plansOpen = false;
     }

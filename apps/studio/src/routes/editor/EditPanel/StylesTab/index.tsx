@@ -184,7 +184,7 @@ const StylesTab = observer(() => {
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
-        editorEngine.config.scanConfig();
+        editorEngine.theme.scanConfig();
     }, []);
 
     return (

@@ -42,21 +42,18 @@ interface ConfigResult {
     configContent: any;
 }
 
-export const THEME = {
-    LIGHT: 'light',
-    DARK: 'dark',
-} as const;
-
-type Theme = (typeof THEME)[keyof typeof THEME];
+export enum Theme {
+    LIGHT = 'light',
+    DARK = 'dark',
+}
 
 export type {
     ClassReplacement,
     ColorUpdate,
-    ConfigUpdateResult,
-    UpdateResult,
-    ThemeColors,
     ColorValue,
-    ParsedColors,
     ConfigResult,
-    Theme,
+    ConfigUpdateResult,
+    ParsedColors,
+    ThemeColors,
+    UpdateResult,
 };

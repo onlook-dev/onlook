@@ -8,9 +8,13 @@ import type {
     ConfigUpdateResult,
     UpdateResult,
 } from '@onlook/models/assets';
+import { Theme } from '@onlook/models/assets';
 import type { CodeDiffRequest } from '@onlook/models/code';
+import { parseHslValue } from '@onlook/utility';
 import fs from 'fs';
 import path from 'path';
+import type { Root, Rule } from 'postcss';
+import postcss from 'postcss';
 import { getNodeClasses } from '../code/classes';
 import { getOidFromJsxElement } from '../code/diff/helpers';
 import { transformAst } from '../code/diff/transform';
@@ -25,16 +29,6 @@ import {
     isObjectExpression,
     toCamelCase,
 } from './helpers';
-import postcss from 'postcss';
-import type { Root, Rule } from 'postcss';
-import { parseHslValue } from '@onlook/utility';
-
-const THEME = {
-    LIGHT: 'light',
-    DARK: 'dark',
-} as const;
-
-type Theme = (typeof THEME)[keyof typeof THEME];
 
 export async function updateTailwindColorConfig(
     projectRoot: string,
@@ -415,7 +409,7 @@ async function updateTailwindCssVariable(
                     const isDarkTheme = rule.selector === '.dark';
                     const shouldUpdateValue =
                         newColor &&
-                        (!theme || (isDarkTheme ? theme === THEME.DARK : theme === THEME.LIGHT));
+                        (!theme || (isDarkTheme ? theme === Theme.DARK : theme === Theme.LIGHT));
 
                     rule.walkDecls((decl) => {
                         if (decl.prop === `--${originalName}`) {

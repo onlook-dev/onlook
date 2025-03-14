@@ -1,36 +1,36 @@
 import { useEditorEngine } from '@/components/Context';
+import { Theme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import type { Color } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { BrandPalletGroup } from './ColorPalletGroup';
-import { THEME, type Theme } from '@onlook/models/assets';
-import type { Color } from '@onlook/utility';
 
 interface ColorPanelProps {
     onClose: () => void;
 }
 
 const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
-    const [theme, setTheme] = useState<Theme>(THEME.LIGHT);
+    const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
     const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
 
     const editorEngine = useEditorEngine();
-    const configManager = editorEngine.config;
+    const themeManager = editorEngine.theme;
 
-    const { colorGroups, colorDefaults } = configManager;
+    const { colorGroups, colorDefaults } = themeManager;
 
     useEffect(() => {
-        configManager.scanConfig();
+        themeManager.scanConfig();
     }, []);
 
     const handleRename = (groupName: string, newName: string) => {
-        configManager.rename(groupName, newName);
+        themeManager.rename(groupName, newName);
     };
 
     const handleDelete = (groupName: string, colorName?: string) => {
-        configManager.delete(groupName, colorName);
+        themeManager.delete(groupName, colorName);
     };
 
     const handleColorChange = (
@@ -41,7 +41,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         parentName?: string,
         theme?: Theme,
     ) => {
-        configManager.update(groupName, index, newColor, newName, parentName, theme);
+        themeManager.update(groupName, index, newColor, newName, parentName, theme);
     };
 
     const handleDuplicate = (
@@ -50,11 +50,11 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         isDefaultPalette?: boolean,
         theme?: Theme,
     ) => {
-        configManager.duplicate(groupName, colorName, isDefaultPalette, theme);
+        themeManager.duplicate(groupName, colorName, isDefaultPalette, theme);
     };
 
     const handleAddNewGroup = (newName: string) => {
-        configManager.add(newName);
+        themeManager.add(newName);
         setIsAddingNewGroup(false);
     };
 
@@ -64,7 +64,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         newColor: Color,
         theme?: Theme,
     ) => {
-        configManager.handleDefaultColorChange(groupName, colorIndex, newColor, theme);
+        themeManager.handleDefaultColorChange(groupName, colorIndex, newColor, theme);
     };
 
     const handleClose = () => {
@@ -87,23 +87,23 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
             {/* Theme Toggle */}
             <div className="flex gap-2 px-4 py-3 border-b border-border">
                 <Button
-                    variant={theme === THEME.LIGHT ? 'default' : 'outline'}
+                    variant={theme === Theme.LIGHT ? 'default' : 'outline'}
                     className={cn(
                         'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
-                        theme === THEME.LIGHT && 'bg-gray-900 text-white',
+                        theme === Theme.LIGHT && 'bg-gray-900 text-white',
                     )}
-                    onClick={() => setTheme(THEME.LIGHT)}
+                    onClick={() => setTheme(Theme.LIGHT)}
                 >
                     <Icons.Sun className="h-4 w-4" />
                     Light mode
                 </Button>
                 <Button
-                    variant={theme === THEME.DARK ? 'default' : 'outline'}
+                    variant={theme === Theme.DARK ? 'default' : 'outline'}
                     className={cn(
                         'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
-                        theme === THEME.DARK && 'bg-gray-900 text-white',
+                        theme === Theme.DARK && 'bg-gray-900 text-white',
                     )}
-                    onClick={() => setTheme(THEME.DARK)}
+                    onClick={() => setTheme(Theme.DARK)}
                 >
                     <Icons.Moon className="h-4 w-4" />
                     Dark mode

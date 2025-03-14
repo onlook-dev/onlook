@@ -1,13 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
+import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
+import { Icons } from '@onlook/ui/icons/index';
+import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color } from '@onlook/utility';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import ColorButton from './ColorButton';
 import ColorPickerContent from './ColorPicker';
-import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
-import { Icons } from '@onlook/ui/icons/index';
-import { Input } from '@onlook/ui/input';
 
 interface PopoverPickerProps {
     color: Color;
@@ -86,12 +86,12 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: PopoverPicker
     };
 
     const colorGroups = useMemo(() => {
-        return editorEngine.config.colorGroups;
-    }, [editorEngine.config.colorGroups]);
+        return editorEngine.theme.colorGroups;
+    }, [editorEngine.theme.colorGroups]);
 
     const colorDefaults = useMemo(() => {
-        return editorEngine.config.colorDefaults;
-    }, [editorEngine.config.colorDefaults]);
+        return editorEngine.theme.colorDefaults;
+    }, [editorEngine.theme.colorDefaults]);
 
     const filteredColorGroups = Object.entries(colorGroups).filter(([name, colors]) => {
         return colors.some((color) => color.name.toLowerCase().includes(searchQuery.toLowerCase()));

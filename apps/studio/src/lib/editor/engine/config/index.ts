@@ -1,16 +1,15 @@
-import { makeAutoObservable } from 'mobx';
-
-import type { EditorEngine } from '..';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models';
 import type { ProjectsManager } from '@/lib/projects';
+import { invokeMainChannel } from '@/lib/utils';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
+import { MainChannels } from '@onlook/models';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
-import colors from 'tailwindcss/colors';
+import { Theme } from '@onlook/models/assets';
 import { Color } from '@onlook/utility';
-import { THEME, type Theme } from '@onlook/models/assets';
+import { makeAutoObservable } from 'mobx';
+import colors from 'tailwindcss/colors';
+import type { EditorEngine } from '..';
 
-export class ConfigManager {
+export class ThemeManager {
     private brandColors: Record<string, ColorItem[]> = {};
     private defaultColors: Record<string, ColorItem[]> = {};
 
@@ -359,7 +358,7 @@ export class ConfigManager {
         try {
             if (isDefaultPalette) {
                 const colorToDuplicate = this.defaultColors[groupName];
-                if (!colorToDuplicate) {
+                if (!colorToDuplicate || colorToDuplicate.length === 0) {
                     throw new Error('Color not found');
                 }
 
@@ -378,7 +377,7 @@ export class ConfigManager {
                 const newName = `${colorName}Copy`;
 
                 const color = Color.from(
-                    theme === THEME.DARK
+                    theme === Theme.DARK
                         ? colorToDuplicate.darkColor || colorToDuplicate.lightColor
                         : colorToDuplicate.lightColor,
                 );
