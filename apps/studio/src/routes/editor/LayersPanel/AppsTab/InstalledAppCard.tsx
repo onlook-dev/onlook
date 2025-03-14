@@ -137,7 +137,7 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
 
                 <div className="absolute top-3 right-3">
                     <button
-                        className="flex items-center justify-center p-2 rounded-lg border-border border-[0.5px] text-muted-foreground hover:bg-[#222222] hover:text-white"
+                        className="flex items-center justify-center p-[6px] rounded-lg border-white/5 border-[1px] text-muted-foreground hover:bg-[#222222] hover:text-white hover:border-white/5 shadow-sm transition-all"
                         onClick={(e) => {
                             e.stopPropagation();
                             handleManageClick();
