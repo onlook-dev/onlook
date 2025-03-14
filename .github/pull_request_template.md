@@ -14,6 +14,7 @@
 - [ ] New feature
 - [ ] Documentation update
 - [ ] Release
+- [ ] Refactor
 - [ ] Other (please describe):
 
 ## Testing
