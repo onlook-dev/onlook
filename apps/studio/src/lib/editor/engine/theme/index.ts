@@ -7,7 +7,7 @@ import { Theme } from '@onlook/models/assets';
 import { Color } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
-import type { EditorEngine } from '../index.ts';
+import type { EditorEngine } from '..';
 
 export class ThemeManager {
     private brandColors: Record<string, ColorItem[]> = {};
