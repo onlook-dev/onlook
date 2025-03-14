@@ -64,9 +64,14 @@ export const Versions = observer(() => {
                         className="ml-auto text-sm font-normal bg-background-secondary rounded"
                         size="sm"
                         onClick={handleNewBackup}
+                        disabled={projectsManager.versions?.isSaving}
                     >
-                        <Icons.Plus className="h-4 w-4 mr-2" />
-                        New backup
+                        {projectsManager.versions?.isSaving ? (
+                            <Icons.Shadow className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                            <Icons.Plus className="h-4 w-4 mr-2" />
+                        )}
+                        {projectsManager.versions?.isSaving ? 'Saving...' : 'New backup'}
                     </Button>
                 ) : null}
             </div>

@@ -9,11 +9,13 @@ export enum CreateCommitFailureReason {
     NOT_INITIALIZED = 'NOT_INITIALIZED',
     COMMIT_EMPTY = 'COMMIT_EMPTY',
     FAILED_TO_SAVE = 'FAILED_TO_SAVE',
+    COMMIT_IN_PROGRESS = 'COMMIT_IN_PROGRESS',
 }
 
 export class VersionsManager {
     commits: GitCommit[] | null = null;
     savedCommits: GitCommit[] = [];
+    isSaving = false;
 
     constructor(private project: Project) {
         makeAutoObservable(this);
@@ -44,6 +46,21 @@ export class VersionsManager {
         success: boolean;
         errorReason?: CreateCommitFailureReason;
     }> => {
+        if (this.isSaving) {
+            toast({
+                title: 'Backup already in progress',
+            });
+            return {
+                success: false,
+                errorReason: CreateCommitFailureReason.COMMIT_IN_PROGRESS,
+            };
+        }
+
+        this.isSaving = true;
+
+        // Add test delay for testing
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
         sendAnalytics('versions create commit', {
             message,
         });
@@ -65,6 +82,7 @@ export class VersionsManager {
                 repoPath: this.project.folderPath,
                 message,
             });
+            this.isSaving = false;
             if (!commitResult) {
                 sendAnalytics('versions create commit failed', {
                     message,
@@ -90,6 +108,7 @@ export class VersionsManager {
                 success: true,
             };
         } else {
+            this.isSaving = false;
             if (showToast) {
                 toast({
                     title: 'No changes to commit',
