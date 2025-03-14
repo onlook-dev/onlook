@@ -12,7 +12,7 @@ import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
-import { ThemeManager } from './config';
+import { ThemeManager } from './theme';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
