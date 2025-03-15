@@ -149,23 +149,24 @@ export class ChatManager {
             >(
                 MainChannels.SEND_CHAT_MESSAGES_STREAM,
                 { messages, requestType },
-                (response: StreamResponse, done?: boolean) => {
-                    if (done) {
-                        finalResponse = response;
+                (response: StreamResponse | string, status?: 'partial' | 'complete' | 'error') => {
+                    if (status === 'error') {
+                        const errorMessage = response as string;
+                        this.stream.errorMessage = errorMessage;
+                        this.isWaiting = false;
+                        this.stream.streamId = null;
+                        resolve({ content: errorMessage, status: 'error' });
+                    } else if (status === 'complete') {
+                        finalResponse = response as StreamResponse;
                         this.stream.streamId = null;
                         resolve(finalResponse);
-                    } else if (response.status === 'partial') {
-                        this.stream.content = response.content;
-                        if (response.streamId && !this.stream.streamId) {
-                            this.stream.streamId = response.streamId;
+                    } else if (status === 'partial') {
+                        const partialResponse = response as StreamResponse;
+                        this.stream.content = partialResponse.content;
+                        if (partialResponse.streamId && !this.stream.streamId) {
+                            this.stream.streamId = partialResponse.streamId;
                         }
                     }
-                },
-                (error: string) => {
-                    this.stream.errorMessage = error;
-                    this.isWaiting = false;
-                    this.stream.streamId = null;
-                    resolve({ content: error, status: 'error' });
                 }
             ).then(({ streamId }) => {
                 if (!this.stream.streamId) {

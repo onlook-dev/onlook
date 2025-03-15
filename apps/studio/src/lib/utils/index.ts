@@ -44,22 +44,21 @@ export const invokeMainChannel = async <T, P>(channel: Channels, ...args: T[]): 
 export const streamFromMainChannel = <T, P>(
     channel: Channels,
     args: T,
-    onData: (data: P, done?: boolean) => void,
-    onError?: (error: string) => void
+    callback: (data: P | string, status?: 'partial' | 'complete' | 'error') => void
 ): Promise<{ streamId: string }> => {
     const streamId = nanoid();
     const streamChannel = `${channel}-stream-${streamId}` as Channels;
     
     // Register listener for stream events
-    const listener = (data: any, status?: 'done' | 'error') => {
-        if (status === 'error') {
-            if (onError) onError(data);
+    const listener = (data: any, type?: string) => {
+        if (type === 'error') {
+            callback(data as string, 'error');
             window.api.removeListener(streamChannel, listener);
-        } else if (status === 'done') {
-            onData(data, true);
+        } else if (type === 'done') {
+            callback(data as P, 'complete');
             window.api.removeListener(streamChannel, listener);
         } else {
-            onData(data);
+            callback(data as P, 'partial');
         }
     };
     

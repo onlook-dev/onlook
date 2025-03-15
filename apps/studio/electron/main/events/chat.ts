@@ -22,22 +22,22 @@ export function listenForChatMessages() {
                 abortController: new AbortController(),
                 streamId,
                 onPartial: (content: string) => {
-                    // Send partial updates through IPC
+                    // Send partial updates through IPC with 'partial' status
                     e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, {
                         status: 'partial',
                         content,
                         streamId,
-                    }, undefined);
+                    }, 'partial');
                 },
                 onComplete: (response: StreamResponse) => {
-                    // Send complete response through IPC
+                    // Send complete response through IPC with 'done' status
                     e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, 
                         response, 
                         'done'
                     );
                 },
                 onError: (error: string) => {
-                    // Send error through IPC
+                    // Send error through IPC with 'error' status
                     e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, 
                         error, 
                         'error'
