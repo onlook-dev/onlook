@@ -40,9 +40,9 @@ export const ColorPopover = ({
                     style={{ backgroundColor: editedColor.toHex() }}
                 />
             </PopoverTrigger>
-            <PopoverContent className="w-64">
-                <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-1">
+            <PopoverContent className="p-0 min-w-fit">
+                <div className="flex flex-col gap-0 p-0">
+                    <div className="flex flex-col gap-1 p-2 pb-1">
                         <label className="text-xs text-muted-foreground">Color Name</label>
                         <input
                             type="text"

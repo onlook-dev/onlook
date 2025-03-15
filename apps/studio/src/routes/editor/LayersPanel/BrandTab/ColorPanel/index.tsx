@@ -85,11 +85,11 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                 </Button>
             </div>
             {/* Theme Toggle */}
-            <div className="flex gap-2 px-4 py-3 border-b border-border">
+            <div className="flex gap-1 px-4 py-2 text-sm border-b border-border">
                 <Button
                     variant={theme === Theme.LIGHT ? 'default' : 'outline'}
                     className={cn(
-                        'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
+                        'flex-1 gap-2 px-0 w-full border-none text-gray-200 bg-transparent hover:bg-background-secondary shadow-none',
                         theme === Theme.LIGHT && 'bg-gray-900 text-white',
                     )}
                     onClick={() => setTheme(Theme.LIGHT)}
@@ -100,7 +100,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                 <Button
                     variant={theme === Theme.DARK ? 'default' : 'outline'}
                     className={cn(
-                        'flex-1 gap-2 border-none text-gray-200 hover:bg-background-secondary',
+                        'flex-1 gap-2 px-0 w-full border-none text-gray-200 bg-transparent hover:bg-background-secondary shadow-none',
                         theme === Theme.DARK && 'bg-gray-900 text-white',
                     )}
                     onClick={() => setTheme(Theme.DARK)}

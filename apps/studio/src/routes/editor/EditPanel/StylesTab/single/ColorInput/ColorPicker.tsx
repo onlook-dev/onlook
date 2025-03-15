@@ -102,7 +102,9 @@ const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange, onCha
                 </button>
             </div>
             <PopoverSeparator />
-            <PopoverScrollArea className="h-32 px-1">{renderPalette()}</PopoverScrollArea>
+            <PopoverScrollArea className="h-28 px-1 overflow-hidden overflow-y-auto">
+                {renderPalette()}
+            </PopoverScrollArea>
         </div>
     );
 };
