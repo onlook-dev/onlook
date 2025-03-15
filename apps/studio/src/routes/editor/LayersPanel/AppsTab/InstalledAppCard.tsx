@@ -112,17 +112,14 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
                         </div>
                         {/* Active indicator dot - only shown when not in error state */}
                         {!hasError && (
-                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#00C781] border border-secondary border-[4.5px] flex items-center justify-center">
-                                <div className="w-1 h-1 bg-black rounded-full opacity-0"></div>
-                            </div>
+                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#00C781] border border-secondary border-[4.5px] flex items-center justify-center"></div>
                         )}
 
                         {/* Error indicator dot - only shown when hasError is true */}
                         {hasError && (
-                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 border border-secondary border-[4.5px] flex items-center justify-center">
-                                <div className="w-1 h-1 bg-black rounded-full opacity-0"></div>
-                            </div>
+                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 border border-secondary border-[4.5px] flex items-center justify-center"></div>
                         )}
+                        <div className="hidden absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-white/25 border border-secondary border-[4.5px] flex items-center justify-center"></div>
                     </div>
                     <h3 className="text-base font-normal text-white ml-3">{app.name}</h3>
                 </div>

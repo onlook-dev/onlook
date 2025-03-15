@@ -269,7 +269,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                         <>
                             {/* Categories */}
                             <div className="relative">
-                                <div className="flex p-4 space-x-1.5 overflow-x-auto">
+                                <div className="flex p-4 pb-0 space-x-1.5 overflow-x-auto">
                                     {APP_CATEGORIES.map((category) => (
                                         <button
                                             key={category.id}
@@ -283,54 +283,59 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
                                 <div className="absolute right-0 top-0 bottom-0 w-16 pointer-events-none bg-gradient-to-l from-background to-transparent"></div>
                             </div>
 
-                            {/* Featured Apps */}
-                            <div className="pt-1 pb-6 border-b border-border border-b-[0.5px]">
-                                <div className="flex items-center justify-between px-4 mb-3">
-                                    <h2 className="text-sm font-normal text-muted-foreground">
-                                        Featured
-                                    </h2>
-                                    <div className="flex space-x-1">
-                                        <button className="p-1 text-muted-foreground hover:text-foreground">
-                                            <Icons.ArrowLeft className="h-4 w-4" />
-                                        </button>
-                                        <button className="p-1 text-muted-foreground hover:text-foreground">
-                                            <Icons.ArrowRight className="h-4 w-4" />
-                                        </button>
+                            {/* Featured Apps - Only show when not searching */}
+                            {!searchQuery && (
+                                <div className="pt-6 pb-6 border-b border-border border-b-[0.5px]">
+                                    <div className="flex items-center justify-between px-4 mb-3">
+                                        <h2 className="text-sm font-normal text-muted-foreground">
+                                            Featured
+                                        </h2>
+                                        <div className="flex space-x-1">
+                                            <button className="p-1 text-muted-foreground hover:text-foreground">
+                                                <Icons.ArrowLeft className="h-4 w-4" />
+                                            </button>
+                                            <button className="p-1 text-muted-foreground hover:text-foreground">
+                                                <Icons.ArrowRight className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="flex px-4 overflow-x-auto">
+                                            {FEATURED_APPS.map((app) => (
+                                                <AppCard
+                                                    key={app.id}
+                                                    app={app}
+                                                    onClick={(app) =>
+                                                        handleAppClick(app, 'featured')
+                                                    }
+                                                    isActive={selectedApp?.id === app.id}
+                                                    anyAppActive={
+                                                        !!selectedApp &&
+                                                        selectedAppListId === 'featured'
+                                                    }
+                                                    isHovered={hoveredAppId === app.id}
+                                                    anyCardHovered={
+                                                        !!hoveredAppId &&
+                                                        hoveredListId === 'featured'
+                                                    }
+                                                    onMouseEnter={() =>
+                                                        handleAppMouseEnter(app, 'featured')
+                                                    }
+                                                    onMouseLeave={handleAppMouseLeave}
+                                                    listId="featured"
+                                                    hideDivider={true}
+                                                    className="flex-shrink-0 max-w-[225px] min-w-[225px] p-3 border border-border border-[0.5px] rounded-lg mr-1.5"
+                                                />
+                                            ))}
+                                        </div>
+                                        {/* Gradient overlay for scroll fade effect */}
+                                        <div className="absolute right-0 top-0 bottom-0 w-16 pointer-events-none bg-gradient-to-l from-background to-transparent"></div>
                                     </div>
                                 </div>
-                                <div className="relative">
-                                    <div className="flex px-4 overflow-x-auto">
-                                        {FEATURED_APPS.map((app) => (
-                                            <AppCard
-                                                key={app.id}
-                                                app={app}
-                                                onClick={(app) => handleAppClick(app, 'featured')}
-                                                isActive={selectedApp?.id === app.id}
-                                                anyAppActive={
-                                                    !!selectedApp &&
-                                                    selectedAppListId === 'featured'
-                                                }
-                                                isHovered={hoveredAppId === app.id}
-                                                anyCardHovered={
-                                                    !!hoveredAppId && hoveredListId === 'featured'
-                                                }
-                                                onMouseEnter={() =>
-                                                    handleAppMouseEnter(app, 'featured')
-                                                }
-                                                onMouseLeave={handleAppMouseLeave}
-                                                listId="featured"
-                                                hideDivider={true}
-                                                className="flex-shrink-0 max-w-[225px] min-w-[225px] p-3 border border-border border-[0.5px] rounded-lg mr-1.5"
-                                            />
-                                        ))}
-                                    </div>
-                                    {/* Gradient overlay for scroll fade effect */}
-                                    <div className="absolute right-0 top-0 bottom-0 w-16 pointer-events-none bg-gradient-to-l from-background to-transparent"></div>
-                                </div>
-                            </div>
+                            )}
 
                             {/* All Apps */}
-                            <div className="pt-6 pb-4 w-full">
+                            <div className={`pt-6 pb-4 w-full ${!searchQuery ? '' : 'pt-1'}`}>
                                 <div className="flex items-center justify-between px-4 mb-1 w-full">
                                     <h2 className="text-sm font-normal text-muted-foreground">
                                         All apps

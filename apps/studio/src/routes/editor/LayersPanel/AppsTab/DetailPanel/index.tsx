@@ -71,10 +71,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
     const [apiKey, setApiKey] = useState('');
     const appName = app?.name || 'Stripe';
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isChecked, setIsChecked] = useState(true);
 
     const handleDisable = () => {
-        // Implement disable functionality
-        console.log(`Disabling ${appName}`);
+        setIsChecked(!isChecked);
+        console.log(`Toggling check for ${appName}`);
     };
 
     const handleDelete = () => {
@@ -96,6 +97,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                     className={`flex items-center ${isDropdownOpen ? 'text-white' : 'text-muted-foreground'}`}
                                 >
                                     <div className="w-4 h-4 mr-1.5 rounded-full bg-[#00C781] border border-secondary border-[4.5px] flex items-center justify-center"></div>
+                                    <div className="w-4 h-4 mr-1.5 rounded-full bg-red-500 border border-secondary border-[4.5px] flex items-center justify-center"></div>
+                                    <div className="w-4 h-4 mr-1.5 rounded-full bg-white/25 border border-secondary border-[4.5px] flex items-center justify-center"></div>
+
                                     <span className="mr-1.5 text-sm">Active</span>
                                     {isDropdownOpen ? (
                                         <Icons.ChevronUp className="h-4 w-4 text-white" />
@@ -116,7 +120,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                         onClick={handleDisable}
                                     >
                                         <span className="flex w-full font-normal text-sm items-center">
-                                            <Icons.Check className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                            {isChecked ? (
+                                                <Icons.Check className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                            ) : (
+                                                <div className="mr-2 h-4 w-4" />
+                                            )}
                                             <span>Disable</span>
                                         </span>
                                     </Button>
@@ -146,7 +154,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
             </div>
 
             {/* Error Bar */}
-            <div className="flex items-center justify-between px-4 py-2 border-b border-border border-b-[0.5px]">
+            <div className="flex hidden items-center justify-between px-4 py-2 border-b border-border border-b-[0.5px]">
                 <div className="flex items-center">
                     <div className="flex items-center justify-center w-6 h-6 mr-1">
                         <Icons.CrossCircled className="w-5 h-5 text-red-500" />
@@ -318,7 +326,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                         </div>
                     </div>
 
-                    <Button className="w-full bg-background-secondary hover:bg-background-secondary/90 text-white text-sm font-medium py-6 rounded-md">
+                    <Button className="w-full bg-background-secondary hover:bg-background-secondary/90 text-white text-base font-medium py-7 rounded-md">
                         Install on your project
                     </Button>
                 </div>
