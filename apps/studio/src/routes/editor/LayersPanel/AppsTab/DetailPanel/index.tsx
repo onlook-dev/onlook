@@ -3,6 +3,12 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { Input } from '@onlook/ui/input';
 import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import ToolCard from './ToolCard';
 import type { ToolInputProps, ToolProps } from './ToolCard';
 import type { AppData } from '../index';
@@ -64,13 +70,72 @@ interface DetailPanelProps {
 const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
     const [apiKey, setApiKey] = useState('');
     const appName = app?.name || 'Stripe';
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const handleDisable = () => {
+        // Implement disable functionality
+        console.log(`Disabling ${appName}`);
+    };
+
+    const handleDelete = () => {
+        // Implement delete functionality
+        console.log(`Deleting ${appName}`);
+    };
 
     return (
         <div className="flex flex-col h-full text-white w-full">
             {/* Header */}
             <div className="px-4 py-4 flex items-center justify-between border-b border-border border-b-[0.5px]">
                 <div className="h-9 flex items-center justify-between w-full">
-                    <h2 className="text-base font-normal">{appName}</h2>
+                    <div className="flex items-center">
+                        <h2 className="text-base font-normal">{appName}</h2>
+                        <div className="mx-4 h-6 w-[1px] bg-border"></div>
+                        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                            <DropdownMenuTrigger className="flex items-center text-base font-normal hover:bg-transparent focus:outline-none">
+                                <div
+                                    className={`flex items-center ${isDropdownOpen ? 'text-white' : 'text-muted-foreground'}`}
+                                >
+                                    <div className="w-4 h-4 mr-1.5 rounded-full bg-[#00C781] border border-secondary border-[4.5px] flex items-center justify-center"></div>
+                                    <span className="mr-1.5 text-sm">Active</span>
+                                    {isDropdownOpen ? (
+                                        <Icons.ChevronUp className="h-4 w-4 text-white" />
+                                    ) : (
+                                        <Icons.ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="start"
+                                className="rounded-md bg-background p-1 min-w-[140px]"
+                                side="bottom"
+                            >
+                                <DropdownMenuItem asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md group px-2 py-0.5"
+                                        onClick={handleDisable}
+                                    >
+                                        <span className="flex w-full font-normal text-sm items-center">
+                                            <Icons.Check className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                            <span>Disable</span>
+                                        </span>
+                                    </Button>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md group px-2 py-0.5"
+                                        onClick={handleDelete}
+                                    >
+                                        <span className="flex w-full font-normal text-sm items-center">
+                                            <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                            <span>Delete</span>
+                                        </span>
+                                    </Button>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                     <button className="text-white hover:text-gray-300" onClick={onClose}>
                         <Icons.CrossL className="h-4 w-4" />
                     </button>

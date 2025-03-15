@@ -112,14 +112,14 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
                         </div>
                         {/* Active indicator dot - only shown when not in error state */}
                         {!hasError && (
-                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#00C781] border border-secondary border-[4px] flex items-center justify-center">
+                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#00C781] border border-secondary border-[4.5px] flex items-center justify-center">
                                 <div className="w-1 h-1 bg-black rounded-full opacity-0"></div>
                             </div>
                         )}
 
                         {/* Error indicator dot - only shown when hasError is true */}
                         {hasError && (
-                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 border border-secondary border-[4px] flex items-center justify-center">
+                            <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 border border-secondary border-[4.5px] flex items-center justify-center">
                                 <div className="w-1 h-1 bg-black rounded-full opacity-0"></div>
                             </div>
                         )}
@@ -152,7 +152,7 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
             {hasError && (
                 <div className="w-full z-10 bg-red-700 py-[6px] px-3 flex items-center relative">
                     <div className="flex items-center opacity-80">
-                        <div className="w-4 h-4 rounded-full border border-[1px] border-white flex items-center justify-center mr-1">
+                        <div className="w-[15px] h-[15px] rounded-full border border-[1.5px] border-white flex items-center justify-center mr-1">
                             <svg
                                 width="9"
                                 height="9"
@@ -163,7 +163,7 @@ const InstalledAppCard: React.FC<InstalledAppCardProps> = ({
                                 <path
                                     d="M9 3L3 9M3 3L9 9"
                                     stroke="white"
-                                    strokeWidth="1.5"
+                                    strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                 />
