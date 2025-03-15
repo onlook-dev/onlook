@@ -295,6 +295,26 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                         </div>
                     </div>
 
+                    <div className="flex mb-2">
+                        <div className="relative flex-1">
+                            <div
+                                className="absolute left-3 top-1/2 p-1 bg-background-secondary rounded-md transform -translate-y-1/2 border-white/10"
+                                style={{ borderWidth: '0.5px' }}
+                            >
+                                <Icons.Link className="h-4 w-4 text-white" />
+                            </div>
+                            <div className="flex">
+                                <div className="pl-12 py-2 border border-border border-r-0 rounded-l-md rounded-r-[0px] font-normal text-sm text-muted-foreground w-full flex items-center">
+                                    https://mcp.onlook.com/.../stripe-012G
+                                </div>
+                                <Button className="rounded-l-none rounded-r-md bg-background-none hover:bg-background-secondary/90 text-white text-sm font-medium py-6 px-4 border border-border">
+                                    Authenticate
+                                    <Icons.ExternalLink className="ml-2 h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+
                     <Button className="w-full bg-background-secondary hover:bg-background-secondary/90 text-white text-sm font-medium py-6 rounded-md">
                         Install on your project
                     </Button>
