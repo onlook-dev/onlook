@@ -142,6 +142,23 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                 </div>
             </div>
 
+            {/* Error Bar */}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border border-b-[0.5px]">
+                <div className="flex items-center">
+                    <div className="flex items-center justify-center w-6 h-6 mr-1">
+                        <Icons.CrossCircled className="w-5 h-5 text-red-500" />
+                    </div>
+                    <span className="text-sm text-white">SSE error: Non-200 status code (500)</span>
+                </div>
+                <Button
+                    variant="outline"
+                    className="flex px-2 py-0 h-8 items-center text-sm font-normal bg-transparent border border-border hover:bg-background-secondary"
+                >
+                    <Icons.Sparkles className="w-4 h-4 mr-1.5" />
+                    Fix in chat
+                </Button>
+            </div>
+
             <div className="flex-1 overflow-y-auto">
                 {/* Logo Section */}
                 <div className="flex flex-col items-center bg-background justify-center text-center py-10 border-b border-border border-b-[0.5px] relative overflow-hidden">

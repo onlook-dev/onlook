@@ -432,7 +432,7 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
 
             {/* Detail Panel - Side Panel */}
             {selectedApp && (
-                <div className="w-[450px] border-l border-border border-l-[0.5px]">
+                <div className="w-[500px] border-l border-border border-l-[0.5px]">
                     <DetailPanel onClose={handleCloseDetailPanel} app={selectedApp} />
                 </div>
             )}
