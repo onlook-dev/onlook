@@ -57,6 +57,10 @@ class LlmManager {
         options?: {
             abortController?: AbortController;
             skipSystemPrompt?: boolean;
+            streamId?: string;
+            onPartial?: (content: string) => void;
+            onComplete?: (response: StreamResponse) => void;
+            onError?: (error: string) => void;
         },
     ): Promise<StreamResponse> {
         const { abortController, skipSystemPrompt } = options || {};
@@ -100,6 +104,8 @@ class LlmManager {
                         content: fullText,
                     };
                     port.postMessage(res);
+                } else if (options?.onPartial) {
+                    options.onPartial(fullText);
                 } else {
                     this.emitPartialMessage(fullText);
                 }
@@ -109,6 +115,8 @@ class LlmManager {
             if (port) {
                 port.postMessage(response);
                 port.close();
+            } else if (options?.onComplete) {
+                options.onComplete(response);
             }
             return response;
         } catch (error: any) {
@@ -119,30 +127,46 @@ class LlmManager {
                         const rateLimitError = JSON.parse(
                             error.error.responseBody,
                         ) as UsageCheckResult;
-                        return {
+                        const response: StreamResponse = {
                             status: 'rate-limited',
                             content: 'You have reached your daily limit.',
                             rateLimitResult: rateLimitError,
                         };
+                        if (options?.onError) {
+                            options.onError(response.content);
+                        }
+                        return response;
                     } else {
-                        return {
+                        const response: StreamResponse = {
                             status: 'error',
                             content: error.error.responseBody,
                         };
+                        if (options?.onError) {
+                            options.onError(response.content);
+                        }
+                        return response;
                     }
                 }
                 const errorMessage = this.getErrorMessage(error);
-                return { content: errorMessage, status: 'error' };
+                const response: StreamResponse = { content: errorMessage, status: 'error' };
+                if (options?.onError) {
+                    options.onError(errorMessage);
+                }
+                return response;
             } catch (error) {
                 console.error('Error parsing error', error);
-                return { content: 'An unknown error occurred', status: 'error' };
+                const errorMessage = 'An unknown error occurred';
+                if (options?.onError) {
+                    options.onError(errorMessage);
+                }
+                return { content: errorMessage, status: 'error' };
             } finally {
                 this.abortController = null;
             }
         }
     }
 
-    public abortStream(port?: MessagePortMain): boolean {
+    public abortStream(port?: MessagePortMain, streamId?: string): boolean {
         if (this.abortController) {
             this.abortController.abort();
             if (port) {

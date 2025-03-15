@@ -1,8 +1,9 @@
-import type { ChatConversation, ProjectSuggestions } from '@onlook/models/chat';
+import type { ChatConversation, ProjectSuggestions, StreamResponse } from '@onlook/models/chat';
 import { StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
-import { ipcMain, MessageChannelMain } from 'electron';
+import { ipcMain } from 'electron';
+import { nanoid } from 'nanoid';
 import Chat from '../chat';
 import { PersistentStorage } from '../storage';
 
@@ -15,42 +16,49 @@ export function listenForChatMessages() {
                 requestType: StreamRequestType;
             };
             
-            // Create a message channel for duplex communication
-            const { port1, port2 } = new MessageChannelMain();
+            // Generate a unique ID for this stream
+            const streamId = nanoid();
             
-            // Transfer port2 to the renderer process
-            e.sender.postMessage(MainChannels.CHAT_STREAM_CHANNEL, null, [port2]);
-            
-            // Start the port to begin receiving messages
-            port1.start();
-            
-            // Handle abort messages from renderer
-            port1.on('message', (event) => {
-                const { type } = event.data;
-                if (type === 'abort') {
-                    Chat.abortStream(port1);
+            // Start streaming in the background
+            Chat.stream(messages, requestType, undefined, {
+                abortController: new AbortController(),
+                streamId,
+                onPartial: (content: string) => {
+                    // Send partial updates through IPC
+                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                        status: 'partial',
+                        content,
+                        streamId,
+                    } as StreamResponse);
+                },
+                onComplete: (response: StreamResponse) => {
+                    // Send complete response through IPC
+                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                        ...response,
+                        streamId: undefined,
+                    });
+                },
+                onError: (error: string) => {
+                    // Send error through IPC
+                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                        status: 'error',
+                        content: error,
+                        streamId: undefined,
+                    });
                 }
             });
             
-            // Handle port closure
-            port1.on('close', () => {
-                // Clean up resources if needed
-            });
-            
-            // Start streaming
-            Chat.stream(messages, requestType, port1);
-            
-            // Return a placeholder response
-            // The actual responses will be sent through the MessagePort
-            return { status: 'streaming', content: '' };
+            // Return the stream ID to the renderer
+            return { status: 'streaming', content: '', streamId };
         },
     );
 
-    // This handler is kept for backward compatibility
+    // This handler is kept for backward compatibility and updated to use streamId
     ipcMain.handle(
         MainChannels.SEND_STOP_STREAM_REQUEST,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            return Chat.abortStream();
+            const { streamId } = args as { streamId?: string };
+            return Chat.abortStream(undefined, streamId);
         },
     );
 

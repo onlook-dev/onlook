@@ -7,7 +7,7 @@ export class StreamResolver {
     requestId: string | null = null;
     errorMessage: string | null = null;
     rateLimited: UsageCheckResult | null = null;
-    port: MessagePort | null = null;
+    streamId: string | null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -19,18 +19,11 @@ export class StreamResolver {
         this.requestId = null;
         this.errorMessage = null;
         this.rateLimited = null;
-        this.closePort();
-    }
-
-    closePort() {
-        if (this.port) {
-            this.port.close();
-            this.port = null;
-        }
+        this.streamId = null;
     }
 
     listen() {
-        // Keep legacy listener for backward compatibility
+        // Listen for stream partial updates
         window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args: StreamResponse) => {
             const { content } = args;
             this.content = content;
@@ -38,41 +31,37 @@ export class StreamResolver {
             this.rateLimited = null;
         });
 
-        // Listen for new message port
-        window.api.on(MainChannels.CHAT_STREAM_CHANNEL, (event: MessageEvent) => {
-            this.closePort();
-            this.port = event.ports[0];
-            this.port.start();
+        // Listen for stream updates through the channel
+        window.api.on(MainChannels.CHAT_STREAM_CHANNEL, (response: StreamResponse) => {
+            if (response.streamId) {
+                this.streamId = response.streamId;
+            }
             
-            this.port.onmessage = (event: MessageEvent) => {
-                const response = event.data as StreamResponse;
-                if (response.status === 'partial') {
-                    this.content = response.content;
-                    this.errorMessage = null;
-                    this.rateLimited = null;
-                } else if (response.status === 'full') {
-                    this.content = response.content;
-                    this.errorMessage = null;
-                    this.rateLimited = null;
-                } else if (response.status === 'error') {
-                    this.errorMessage = response.content;
-                    this.rateLimited = null;
-                } else if (response.status === 'rate-limited') {
-                    this.errorMessage = response.content;
-                    this.rateLimited = response.rateLimitResult ?? null;
-                }
-            };
-            
-            // Use addEventListener for close event instead of onclose
-            this.port.addEventListener('close', () => {
-                this.port = null;
-            });
+            if (response.status === 'partial') {
+                this.content = response.content;
+                this.errorMessage = null;
+                this.rateLimited = null;
+            } else if (response.status === 'full') {
+                this.content = response.content;
+                this.errorMessage = null;
+                this.rateLimited = null;
+                this.streamId = null;
+            } else if (response.status === 'error') {
+                this.errorMessage = response.content;
+                this.rateLimited = null;
+                this.streamId = null;
+            } else if (response.status === 'rate-limited') {
+                this.errorMessage = response.content;
+                this.rateLimited = response.rateLimitResult ?? null;
+                this.streamId = null;
+            }
         });
     }
 
     abortStream() {
-        if (this.port) {
-            this.port.postMessage({ type: 'abort' });
+        if (this.streamId) {
+            window.api.send(MainChannels.SEND_STOP_STREAM_REQUEST, { streamId: this.streamId });
+            this.streamId = null;
         }
     }
 }

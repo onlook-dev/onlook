@@ -149,7 +149,7 @@ export class ChatManager {
     }
 
     stopStream() {
-        if (this.stream.port) {
+        if (this.stream.streamId) {
             this.stream.abortStream();
         } else {
             // Fallback to legacy method
