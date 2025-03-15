@@ -475,8 +475,8 @@ async function updateTailwindCssVariable(
 // Extract CSS variables from stylesheet
 function extractTailwindCssVariables(content: string) {
     const configs: {
-        root: { [key: string]: string };
-        dark: { [key: string]: string };
+        root: { [key: string]: { value: string; line: number | undefined } };
+        dark: { [key: string]: { value: string; line: number | undefined } };
     } = {
         root: {},
         dark: {},
@@ -493,14 +493,20 @@ function extractTailwindCssVariables(content: string) {
             try {
                 const color = parseHslValue(value);
                 if (color) {
-                    configs.root[varName] = color.toHex();
+                    configs.root[varName] = {
+                        value: color.toHex(),
+                        line: decl.source?.start?.line,
+                    };
                     return;
                 }
             } catch (err) {
                 console.error(`Failed to convert HSL value: ${value}`, err);
             }
 
-            configs.root[varName] = value;
+            configs.root[varName] = {
+                value,
+                line: decl.source?.start?.line,
+            };
         });
     });
 
@@ -512,14 +518,20 @@ function extractTailwindCssVariables(content: string) {
             try {
                 const color = parseHslValue(value);
                 if (color) {
-                    configs.dark[varName] = color.toHex();
+                    configs.dark[varName] = {
+                        value: color.toHex(),
+                        line: decl.source?.start?.line,
+                    };
                     return;
                 }
             } catch (err) {
                 console.error(`Failed to convert HSL value: ${value}`, err);
             }
 
-            configs.dark[varName] = value;
+            configs.dark[varName] = {
+                value,
+                line: decl.source?.start?.line,
+            };
         });
     });
 

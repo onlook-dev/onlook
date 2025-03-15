@@ -22,13 +22,17 @@ interface ClassReplacement {
 }
 
 interface ThemeColors {
-    [key: string]: string;
+    [key: string]: {
+        value: string;
+        line?: number;
+    };
 }
 
 interface ColorValue {
     name: string;
     lightMode: string;
     darkMode: string;
+    line?: number;
 }
 
 interface ParsedColors {

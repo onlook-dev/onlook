@@ -9,9 +9,16 @@ import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
 
+interface ColorValue {
+    value: string;
+    line?: number;
+}
+
 export class ThemeManager {
     private brandColors: Record<string, ColorItem[]> = {};
     private defaultColors: Record<string, ColorItem[]> = {};
+    private configPath: string | null = null;
+    private cssPath: string | null = null;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -36,7 +43,10 @@ export class ThemeManager {
                 return;
             }
 
-            const { cssContent, configContent } = configResult;
+            const { cssContent, configContent, cssPath, configPath } = configResult;
+
+            this.cssPath = cssPath;
+            this.configPath = configPath;
 
             const cssConfig = typeof cssContent === 'string' ? JSON.parse(cssContent) : cssContent;
             const config =
@@ -51,15 +61,18 @@ export class ThemeManager {
             const processConfigObject = (obj: any, prefix = '', parentKey = '') => {
                 Object.entries(obj).forEach(([key, value]) => {
                     const fullKey = prefix ? `${prefix}-${key}` : key;
-
                     if (parentKey) {
                         if (!groups[parentKey]) {
                             groups[parentKey] = new Set();
                         }
                         groups[parentKey].add(fullKey);
                     }
-
-                    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    if (
+                        typeof value === 'object' &&
+                        value !== null &&
+                        !Array.isArray(value) &&
+                        !('value' in value)
+                    ) {
                         processConfigObject(value, prefix ? `${prefix}-${key}` : key, key);
 
                         if ('DEFAULT' in value) {
@@ -67,27 +80,36 @@ export class ThemeManager {
                             if (varName) {
                                 parsed[key] = {
                                     name: key,
-                                    lightMode: lightModeColors[varName] || '',
-                                    darkMode: darkModeColors[varName] || '',
+                                    lightMode: lightModeColors[varName]?.value || '',
+                                    darkMode: darkModeColors[varName]?.value || '',
+                                    line: lightModeColors[varName]?.line,
                                 };
                             }
                         }
-                    } else if (typeof value === 'string') {
+                    } else if (
+                        typeof value === 'object' &&
+                        value !== null &&
+                        'value' in value &&
+                        typeof value.value === 'string'
+                    ) {
                         // Try to extract the var name first
-                        const varName = extractVarName(value);
+                        const varName = extractVarName((value as ColorValue).value);
+
                         if (varName) {
                             parsed[fullKey] = {
                                 name: fullKey,
-                                lightMode: lightModeColors[varName] || '',
-                                darkMode: darkModeColors[varName] || '',
+                                lightMode: lightModeColors[varName]?.value || '',
+                                darkMode: darkModeColors[varName]?.value || '',
+                                line: (value as ColorValue).line,
                             };
                         } else {
-                            const color = Color.from(value);
+                            const color = Color.from((value as ColorValue).value);
                             if (color) {
                                 parsed[fullKey] = {
                                     name: fullKey,
                                     lightMode: color.toHex(),
                                     darkMode: color.toHex(),
+                                    line: (value as ColorValue).line,
                                 };
                             }
                         }
@@ -117,6 +139,7 @@ export class ThemeManager {
                             originalKey: key,
                             lightColor: color?.lightMode || '',
                             darkColor: color?.darkMode || '',
+                            line: color?.line,
                         };
                     });
                 }
@@ -143,6 +166,7 @@ export class ThemeManager {
                             originalKey: `${key}-DEFAULT`,
                             lightColor: parsed[key].lightMode,
                             darkColor: parsed[key].darkMode,
+                            line: parsed[key].line,
                         },
                     ];
                 });
@@ -397,6 +421,14 @@ export class ThemeManager {
 
     get colorDefaults() {
         return this.defaultColors;
+    }
+
+    get tailwindConfigPath() {
+        return this.configPath;
+    }
+
+    get tailwindCssPath() {
+        return this.cssPath;
     }
 
     getColorByName(colorName: string): string | undefined {
