@@ -2,7 +2,7 @@ import type { ChatConversation, ProjectSuggestions } from '@onlook/models/chat';
 import { StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
-import { ipcMain } from 'electron';
+import { ipcMain, MessageChannelMain } from 'electron';
 import Chat from '../chat';
 import { PersistentStorage } from '../storage';
 
@@ -14,10 +14,39 @@ export function listenForChatMessages() {
                 messages: CoreMessage[];
                 requestType: StreamRequestType;
             };
-            return Chat.stream(messages, requestType);
+            
+            // Create a message channel for duplex communication
+            const { port1, port2 } = new MessageChannelMain();
+            
+            // Transfer port2 to the renderer process
+            e.sender.postMessage(MainChannels.CHAT_STREAM_CHANNEL, null, [port2]);
+            
+            // Start the port to begin receiving messages
+            port1.start();
+            
+            // Handle abort messages from renderer
+            port1.on('message', (event) => {
+                const { type } = event.data;
+                if (type === 'abort') {
+                    Chat.abortStream(port1);
+                }
+            });
+            
+            // Handle port closure
+            port1.on('close', () => {
+                // Clean up resources if needed
+            });
+            
+            // Start streaming
+            Chat.stream(messages, requestType, port1);
+            
+            // Return a placeholder response
+            // The actual responses will be sent through the MessagePort
+            return { status: 'streaming', content: '' };
         },
     );
 
+    // This handler is kept for backward compatibility
     ipcMain.handle(
         MainChannels.SEND_STOP_STREAM_REQUEST,
         (e: Electron.IpcMainInvokeEvent, args) => {

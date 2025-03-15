@@ -1,6 +1,7 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import type { MessagePortMain } from 'electron';
 import {
     ChatSuggestionSchema,
     ChatSummarySchema,
@@ -52,6 +53,7 @@ class LlmManager {
     public async stream(
         messages: CoreMessage[],
         requestType: StreamRequestType,
+        port?: MessagePortMain,
         options?: {
             abortController?: AbortController;
             skipSystemPrompt?: boolean;
@@ -92,9 +94,23 @@ class LlmManager {
             let fullText = '';
             for await (const partialText of textStream) {
                 fullText += partialText;
-                this.emitPartialMessage(fullText);
+                if (port) {
+                    const res: StreamResponse = {
+                        status: 'partial',
+                        content: fullText,
+                    };
+                    port.postMessage(res);
+                } else {
+                    this.emitPartialMessage(fullText);
+                }
             }
-            return { content: await text, status: 'full', usage: await usage };
+            
+            const response: StreamResponse = { content: await text, status: 'full', usage: await usage };
+            if (port) {
+                port.postMessage(response);
+                port.close();
+            }
+            return response;
         } catch (error: any) {
             try {
                 console.error('Error', error);
@@ -126,9 +142,17 @@ class LlmManager {
         }
     }
 
-    public abortStream(): boolean {
+    public abortStream(port?: MessagePortMain): boolean {
         if (this.abortController) {
             this.abortController.abort();
+            if (port) {
+                const res: StreamResponse = {
+                    status: 'error',
+                    content: 'Stream aborted by user',
+                };
+                port.postMessage(res);
+                port.close();
+            }
             return true;
         }
         return false;

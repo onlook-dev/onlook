@@ -149,10 +149,15 @@ export class ChatManager {
     }
 
     stopStream() {
-        const requestId = nanoid();
-        invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
-            requestId,
-        });
+        if (this.stream.port) {
+            this.stream.abortStream();
+        } else {
+            // Fallback to legacy method
+            const requestId = nanoid();
+            invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
+                requestId,
+            });
+        }
         sendAnalytics('stop chat stream');
     }
 
