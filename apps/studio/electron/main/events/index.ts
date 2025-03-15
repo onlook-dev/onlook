@@ -4,6 +4,7 @@ import { BrowserWindow, ipcMain, shell } from 'electron';
 import { mainWindow } from '..';
 import { imageStorage } from '../storage/images';
 import { updater } from '../update';
+import '../utils'; // Ensure utils are loaded
 import { listenForAnalyticsMessages } from './analytics';
 import { listenForAssetMessages } from './asset';
 import { listenForAuthMessages } from './auth';

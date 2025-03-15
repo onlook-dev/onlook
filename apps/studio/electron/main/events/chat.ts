@@ -6,57 +6,43 @@ import { ipcMain } from 'electron';
 import { nanoid } from 'nanoid';
 import Chat from '../chat';
 import { PersistentStorage } from '../storage';
+import { handleStream } from '../utils';
 
 export function listenForChatMessages() {
-    ipcMain.handle(
+    // Use the handleStream wrapper for the chat stream
+    handleStream<
+        { messages: CoreMessage[]; requestType: StreamRequestType },
+        StreamResponse
+    >(
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
-        (e: Electron.IpcMainInvokeEvent, args) => {
-            const { messages, requestType, streamId } = args as {
-                messages: CoreMessage[];
-                requestType: StreamRequestType;
-                streamId: string;
-            };
+        async (event, args, callbacks) => {
+            const { messages, requestType, streamId } = args;
             
             // Start streaming in the background
             Chat.stream(messages, requestType, undefined, {
                 abortController: new AbortController(),
                 streamId,
                 onPartial: (content: string) => {
-                    // Send partial updates through IPC with 'partial' status
-                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, {
+                    callbacks.onPartial({
                         status: 'partial',
                         content,
                         streamId,
-                    }, 'partial');
+                    });
                 },
                 onComplete: (response: StreamResponse) => {
-                    // Send complete response through IPC with 'done' status
-                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, 
-                        response, 
-                        'done'
-                    );
+                    callbacks.onComplete(response);
                 },
                 onError: (error: string) => {
-                    // Send error through IPC with 'error' status
-                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, 
-                        error, 
-                        'error'
-                    );
+                    callbacks.onError(error);
                 }
             });
             
             // Return the stream ID to the renderer
             return { streamId };
         },
-    );
-
-    // Add abort handler
-    ipcMain.handle(
-        `${MainChannels.SEND_CHAT_MESSAGES_STREAM}-abort`,
-        (e: Electron.IpcMainInvokeEvent, args) => {
-            const { streamId } = args as { streamId: string };
+        async (event, streamId) => {
             return Chat.abortStream(undefined, streamId);
-        },
+        }
     );
     
     // This handler is kept for backward compatibility
