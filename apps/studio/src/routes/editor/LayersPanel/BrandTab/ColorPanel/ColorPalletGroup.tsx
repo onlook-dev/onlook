@@ -9,12 +9,16 @@ import { Icons } from '@onlook/ui/icons';
 import { Color } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
+import { MainChannels } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
+import { useEditorEngine } from '@/components/Context';
 
 export interface ColorItem {
     name: string;
     originalKey: string;
     lightColor: string;
     darkColor?: string;
+    line?: number;
 }
 
 interface BrandPalletGroupProps {
@@ -48,6 +52,9 @@ export const BrandPalletGroup = ({
     const [isAddingNewColor, setIsAddingNewColor] = useState(false);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newGroupName, setNewGroupName] = useState(title);
+
+    const editorEngine = useEditorEngine();
+    const themeManager = editorEngine.theme;
 
     const handleColorChange = (
         index: number,
@@ -85,6 +92,17 @@ export const BrandPalletGroup = ({
             setIsRenaming(false);
             setNewGroupName(title);
         }
+    };
+
+    const handleViewInCode = (line?: number) => {
+        if (!line) {
+            return;
+        }
+
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, {
+            filePath: themeManager.tailwindConfigPath,
+            line,
+        });
     };
 
     return (
@@ -229,6 +247,20 @@ export const BrandPalletGroup = ({
                                                             <span className="flex w-full text-sm items-center">
                                                                 <Icons.Copy className="mr-2 h-4 w-4" />
                                                                 <span>Duplicate</span>
+                                                            </span>
+                                                        </Button>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                            onClick={() =>
+                                                                handleViewInCode(color.line)
+                                                            }
+                                                        >
+                                                            <span className="flex w-full text-sm items-center">
+                                                                <Icons.ExternalLink className="mr-2 h-4 w-4" />
+                                                                <span>View in code</span>
                                                             </span>
                                                         </Button>
                                                     </DropdownMenuItem>
