@@ -44,50 +44,33 @@ export const invokeMainChannel = async <T, P>(channel: Channels, ...args: T[]): 
 export const streamFromMainChannel = <T, P>(
     channel: Channels,
     args: T,
-    callbacks: {
-        onPartial?: (data: P) => void;
-        onComplete?: (data: P) => void;
-        onError?: (error: string) => void;
-    }
+    onData: (data: P, done?: boolean) => void,
+    onError?: (error: string) => void
 ): Promise<{ streamId: string }> => {
     const streamId = nanoid();
     const streamChannel = `${channel}-stream-${streamId}` as Channels;
-    const completeChannel = `${streamChannel}-complete` as Channels;
-    const errorChannel = `${streamChannel}-error` as Channels;
     
-    // Set up listeners for stream events
-    const partialListener = (data: P) => {
-        if (callbacks.onPartial) callbacks.onPartial(data);
+    // Register listener for stream events
+    const listener = (data: any, status?: 'done' | 'error') => {
+        if (status === 'error') {
+            if (onError) onError(data);
+            window.api.removeListener(streamChannel, listener);
+        } else if (status === 'done') {
+            onData(data, true);
+            window.api.removeListener(streamChannel, listener);
+        } else {
+            onData(data);
+        }
     };
     
-    const completeListener = (data: P) => {
-        if (callbacks.onComplete) callbacks.onComplete(data);
-        // Clean up listeners
-        window.api.removeListener(streamChannel, partialListener);
-        window.api.removeListener(completeChannel, completeListener);
-        window.api.removeListener(errorChannel, errorListener);
-    };
-    
-    const errorListener = (error: string) => {
-        if (callbacks.onError) callbacks.onError(error);
-        // Clean up listeners
-        window.api.removeListener(streamChannel, partialListener);
-        window.api.removeListener(completeChannel, completeListener);
-        window.api.removeListener(errorChannel, errorListener);
-    };
-    
-    // Register listeners
-    window.api.on(streamChannel, partialListener);
-    window.api.on(completeChannel, completeListener);
-    window.api.on(errorChannel, errorListener);
+    window.api.on(streamChannel, listener);
     
     // Invoke the channel with the streamId
     return invokeMainChannel(channel, { ...args, streamId });
 };
 
 export const abortStream = (channel: Channels, streamId: string): Promise<boolean> => {
-    const abortChannel = `${channel}-abort` as Channels;
-    return invokeMainChannel(abortChannel, { streamId });
+    return invokeMainChannel(`${channel}-abort` as Channels, { streamId });
 };
 
 export const sendToWebview = <T>(webview: WebviewTag, channel: WebviewChannels, ...args: T[]) => {

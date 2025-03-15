@@ -27,18 +27,21 @@ export function listenForChatMessages() {
                         status: 'partial',
                         content,
                         streamId,
-                    } as StreamResponse);
+                    }, undefined);
                 },
                 onComplete: (response: StreamResponse) => {
                     // Send complete response through IPC
-                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}-complete`, {
-                        ...response,
-                        streamId,
-                    } as StreamResponse);
+                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, 
+                        response, 
+                        'done'
+                    );
                 },
                 onError: (error: string) => {
                     // Send error through IPC
-                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}-error`, error);
+                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, 
+                        error, 
+                        'error'
+                    );
                 }
             });
             

@@ -149,26 +149,23 @@ export class ChatManager {
             >(
                 MainChannels.SEND_CHAT_MESSAGES_STREAM,
                 { messages, requestType },
-                {
-                    onPartial: (response) => {
-                        if (response.status === 'partial') {
-                            this.stream.content = response.content;
-                            if (response.streamId && !this.stream.streamId) {
-                                this.stream.streamId = response.streamId;
-                            }
-                        }
-                    },
-                    onComplete: (response) => {
+                (response: StreamResponse, done?: boolean) => {
+                    if (done) {
                         finalResponse = response;
                         this.stream.streamId = null;
                         resolve(finalResponse);
-                    },
-                    onError: (error) => {
-                        this.stream.errorMessage = error;
-                        this.isWaiting = false;
-                        this.stream.streamId = null;
-                        resolve({ content: error, status: 'error' });
+                    } else if (response.status === 'partial') {
+                        this.stream.content = response.content;
+                        if (response.streamId && !this.stream.streamId) {
+                            this.stream.streamId = response.streamId;
+                        }
                     }
+                },
+                (error: string) => {
+                    this.stream.errorMessage = error;
+                    this.isWaiting = false;
+                    this.stream.streamId = null;
+                    resolve({ content: error, status: 'error' });
                 }
             ).then(({ streamId }) => {
                 if (!this.stream.streamId) {
