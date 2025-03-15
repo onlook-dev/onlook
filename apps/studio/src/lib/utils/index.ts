@@ -9,6 +9,7 @@ import imageCompression from 'browser-image-compression';
 import type { WebviewTag } from 'electron/renderer';
 import { customAlphabet } from 'nanoid/non-secure';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
+import IPCStream from 'electron-ipc-stream';
 
 export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';
 
@@ -69,3 +70,7 @@ export async function compressImage(file: File): Promise<string | undefined> {
         console.error('Error compressing image:', error);
     }
 }
+
+export const createDuplexStream = (channel: string): IPCStream => {
+    return new IPCStream(channel);
+};

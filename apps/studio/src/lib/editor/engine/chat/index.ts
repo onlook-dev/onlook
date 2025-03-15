@@ -48,11 +48,8 @@ export class ChatManager {
     }
 
     listen() {
-        const disposer = reaction(
-            () => this.stream.content,
-            (content) => this.resolveStreamObject(content),
-        );
-        this.disposers.push(disposer);
+        // We no longer need to listen for stream content changes
+        // as the stream will directly update the content
     }
 
     focusChatInput() {
@@ -128,31 +125,74 @@ export class ChatManager {
         this.shouldAutoScroll = true;
         this.stream.clear();
         this.isWaiting = true;
+        
+        // Set up reaction to update the streaming message when content changes
+        const disposer = reaction(
+            () => this.stream.content,
+            (content) => this.resolveStreamObject(content),
+            { fireImmediately: true }
+        );
+        
         const messages = this.conversation.current.getMessagesForStream();
         const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
-        this.stream.clear();
+        
+        // Clean up
+        disposer();
         this.isWaiting = false;
-        this.handleChatResponse(res, requestType, userPrompt);
+        
+        // Handle the final response
+        if (res) {
+            this.handleChatResponse(res, requestType, userPrompt);
+        }
+        
         sendAnalytics('receive chat response');
     }
 
-    sendStreamRequest(
+    async sendStreamRequest(
         messages: CoreMessage[],
         requestType: StreamRequestType,
     ): Promise<StreamResponse | null> {
         const requestId = nanoid();
-        return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+        
+        // Create a duplex stream for this request
+        const stream = this.stream.createStream(requestId);
+        
+        // Start the stream in the main process
+        await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
             requestId,
             requestType,
         });
+        
+        // Return a promise that resolves when the stream receives a 'full' status response
+        return new Promise((resolve) => {
+            const dataHandler = (data: StreamResponse) => {
+                if (data.status === 'full' || data.status === 'error' || data.status === 'rate-limited') {
+                    stream.removeListener('data', dataHandler);
+                    resolve(data);
+                }
+            };
+            
+            stream.on('data', dataHandler);
+        });
     }
 
     stopStream() {
-        const requestId = nanoid();
+        if (!this.stream.requestId) {
+            console.error('No active stream to stop');
+            return;
+        }
+        
         invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
-            requestId,
+            requestId: this.stream.requestId,
         });
+        
+        // Close the stream on the renderer side
+        const stream = this.stream.getStream();
+        if (stream) {
+            stream.end();
+        }
+        
         sendAnalytics('stop chat stream');
     }
 

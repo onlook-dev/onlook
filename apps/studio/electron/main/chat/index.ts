@@ -15,6 +15,7 @@ import type { z } from 'zod';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { initModel } from './llmProvider';
+import ChatStreamManager from './stream';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -52,6 +53,7 @@ class LlmManager {
     public async stream(
         messages: CoreMessage[],
         requestType: StreamRequestType,
+        requestId: string,
         options?: {
             abortController?: AbortController;
             skipSystemPrompt?: boolean;
@@ -59,6 +61,10 @@ class LlmManager {
     ): Promise<StreamResponse> {
         const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
+        
+        // Create a duplex stream for this request
+        const chatStream = ChatStreamManager.createStream(requestId);
+        
         try {
             if (!skipSystemPrompt) {
                 const systemMessage = {
@@ -92,9 +98,24 @@ class LlmManager {
             let fullText = '';
             for await (const partialText of textStream) {
                 fullText += partialText;
-                this.emitPartialMessage(fullText);
+                // Write to the duplex stream instead of emitting an event
+                const res: StreamResponse = {
+                    status: 'partial',
+                    content: fullText,
+                };
+                chatStream.write(res);
             }
-            return { content: await text, status: 'full', usage: await usage };
+            
+            // Send the final response and close the stream
+            const finalResponse: StreamResponse = { 
+                content: await text, 
+                status: 'full', 
+                usage: await usage 
+            };
+            chatStream.write(finalResponse);
+            chatStream.end();
+            
+            return finalResponse;
         } catch (error: any) {
             try {
                 console.error('Error', error);
@@ -126,20 +147,14 @@ class LlmManager {
         }
     }
 
-    public abortStream(): boolean {
+    public abortStream(requestId: string): boolean {
         if (this.abortController) {
             this.abortController.abort();
+            // Close the stream
+            ChatStreamManager.closeStream(requestId);
             return true;
         }
         return false;
-    }
-
-    private emitPartialMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'partial',
-            content,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
     }
 
     private getErrorMessage(error: unknown): string {

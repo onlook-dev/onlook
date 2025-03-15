@@ -101,10 +101,16 @@ export class ProjectCreator {
             },
         };
 
-        const response = await Chat.stream([systemMessage, ...messages], StreamRequestType.CREATE, {
-            abortController: this.abortController,
-            skipSystemPrompt: true,
-        });
+        const requestId = Date.now().toString();
+        const response = await Chat.stream(
+            [systemMessage, ...messages], 
+            StreamRequestType.CREATE,
+            requestId,
+            {
+                abortController: this.abortController,
+                skipSystemPrompt: true,
+            }
+        );
 
         if (response.status !== 'full') {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
