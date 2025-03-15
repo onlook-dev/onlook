@@ -136,7 +136,10 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
-                    <button className="text-white hover:text-gray-300" onClick={onClose}>
+                    <button
+                        className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-background-secondary transition-colors"
+                        onClick={onClose}
+                    >
                         <Icons.CrossL className="h-4 w-4" />
                     </button>
                 </div>
@@ -301,7 +304,7 @@ const DetailPanel: React.FC<DetailPanelProps> = ({ onClose, app }) => {
                                 className="absolute left-3 top-1/2 p-1 bg-background-secondary rounded-md transform -translate-y-1/2 border-white/10"
                                 style={{ borderWidth: '0.5px' }}
                             >
-                                <Icons.Link className="h-4 w-4 text-white" />
+                                <Icons.Link className="h-[18px] w-[18px] text-white" />
                             </div>
                             <div className="flex">
                                 <div className="pl-12 py-2 border border-border border-r-0 rounded-l-md rounded-r-[0px] font-normal text-sm text-muted-foreground w-full flex items-center">
