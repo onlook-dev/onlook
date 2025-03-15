@@ -61,7 +61,7 @@ const ProjectTab = observer(() => {
         setIsReinstalling(true);
 
         try {
-            await invokeMainChannel(MainChannels.INSTALL_PROJECT_DEPENDENCIES, {
+            await invokeMainChannel(MainChannels.REINSTALL_PROJECT_DEPENDENCIES, {
                 folderPath: project.folderPath,
                 installCommand: installCommand,
             });
