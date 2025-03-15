@@ -20,4 +20,5 @@ export type StreamResponse = {
     status: 'partial' | 'full' | 'error' | 'rate-limited';
     rateLimitResult?: UsageCheckResult;
     usage?: LanguageModelUsage;
+    streamId?: string;
 };

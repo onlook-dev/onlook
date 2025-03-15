@@ -1,8 +1,9 @@
-import type { ChatConversation, ProjectSuggestions } from '@onlook/models/chat';
+import type { ChatConversation, ProjectSuggestions, StreamResponse } from '@onlook/models/chat';
 import { StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
+import { nanoid } from 'nanoid';
 import Chat from '../chat';
 import { PersistentStorage } from '../storage';
 
@@ -14,14 +15,50 @@ export function listenForChatMessages() {
                 messages: CoreMessage[];
                 requestType: StreamRequestType;
             };
-            return Chat.stream(messages, requestType);
+            
+            // Generate a unique ID for this stream
+            const streamId = nanoid();
+            
+            // Start streaming in the background
+            Chat.stream(messages, requestType, undefined, {
+                abortController: new AbortController(),
+                streamId,
+                onPartial: (content: string) => {
+                    // Send partial updates through IPC
+                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                        status: 'partial',
+                        content,
+                        streamId,
+                    } as StreamResponse);
+                },
+                onComplete: (response: StreamResponse) => {
+                    // Send complete response through IPC
+                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                        ...response,
+                        streamId: undefined,
+                    });
+                },
+                onError: (error: string) => {
+                    // Send error through IPC
+                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                        status: 'error',
+                        content: error,
+                        streamId: undefined,
+                    });
+                }
+            });
+            
+            // Return the stream ID to the renderer
+            return { status: 'streaming', content: '', streamId };
         },
     );
 
+    // This handler is kept for backward compatibility and updated to use streamId
     ipcMain.handle(
         MainChannels.SEND_STOP_STREAM_REQUEST,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            return Chat.abortStream();
+            const { streamId } = args as { streamId?: string };
+            return Chat.abortStream(undefined, streamId);
         },
     );
 
