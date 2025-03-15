@@ -23,41 +23,23 @@ export class StreamResolver {
     }
 
     listen() {
-        // Listen for stream partial updates
+        // Legacy listener for backward compatibility
         window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args: StreamResponse) => {
             const { content } = args;
             this.content = content;
             this.errorMessage = null;
             this.rateLimited = null;
         });
-
-        // Listen for stream updates through the channel
-        window.api.on(MainChannels.CHAT_STREAM_CHANNEL, (response: StreamResponse) => {
-            if (response.streamId) {
-                this.streamId = response.streamId;
-            }
-            
-            if (response.status === 'partial') {
-                this.content = response.content;
-                this.errorMessage = null;
-                this.rateLimited = null;
-            } else if (response.status === 'full') {
-                this.content = response.content;
-                this.errorMessage = null;
-                this.rateLimited = null;
-                this.streamId = null;
-            } else if (response.status === 'error') {
-                this.errorMessage = response.content;
-                this.rateLimited = null;
-                this.streamId = null;
-            } else if (response.status === 'rate-limited') {
-                this.errorMessage = response.content;
-                this.rateLimited = response.rateLimitResult ?? null;
-                this.streamId = null;
-            }
-        });
     }
-
+    
+    setStreamId(streamId: string) {
+        this.streamId = streamId;
+    }
+    
+    clearStreamId() {
+        this.streamId = null;
+    }
+    
     abortStream() {
         if (this.streamId) {
             window.api.send(MainChannels.SEND_STOP_STREAM_REQUEST, { streamId: this.streamId });

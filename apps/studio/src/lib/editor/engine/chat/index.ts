@@ -1,6 +1,6 @@
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics, streamFromMainChannel, abortStream } from '@/lib/utils';
 import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
@@ -140,17 +140,48 @@ export class ChatManager {
         messages: CoreMessage[],
         requestType: StreamRequestType,
     ): Promise<StreamResponse | null> {
-        const requestId = nanoid();
-        return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
-            messages,
-            requestId,
-            requestType,
+        return new Promise((resolve) => {
+            let finalResponse: StreamResponse | null = null;
+            
+            streamFromMainChannel<
+                { messages: CoreMessage[]; requestType: StreamRequestType },
+                StreamResponse
+            >(
+                MainChannels.SEND_CHAT_MESSAGES_STREAM,
+                { messages, requestType },
+                {
+                    onPartial: (response) => {
+                        if (response.status === 'partial') {
+                            this.stream.content = response.content;
+                            if (response.streamId && !this.stream.streamId) {
+                                this.stream.streamId = response.streamId;
+                            }
+                        }
+                    },
+                    onComplete: (response) => {
+                        finalResponse = response;
+                        this.stream.streamId = null;
+                        resolve(finalResponse);
+                    },
+                    onError: (error) => {
+                        this.stream.errorMessage = error;
+                        this.isWaiting = false;
+                        this.stream.streamId = null;
+                        resolve({ content: error, status: 'error' });
+                    }
+                }
+            ).then(({ streamId }) => {
+                if (!this.stream.streamId) {
+                    this.stream.streamId = streamId;
+                }
+            });
         });
     }
 
     stopStream() {
         if (this.stream.streamId) {
-            this.stream.abortStream();
+            abortStream(MainChannels.SEND_CHAT_MESSAGES_STREAM, this.stream.streamId);
+            this.stream.streamId = null;
         } else {
             // Fallback to legacy method
             const requestId = nanoid();

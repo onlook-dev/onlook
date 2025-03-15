@@ -11,13 +11,11 @@ export function listenForChatMessages() {
     ipcMain.handle(
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { messages, requestType } = args as {
+            const { messages, requestType, streamId } = args as {
                 messages: CoreMessage[];
                 requestType: StreamRequestType;
+                streamId: string;
             };
-            
-            // Generate a unique ID for this stream
-            const streamId = nanoid();
             
             // Start streaming in the background
             Chat.stream(messages, requestType, undefined, {
@@ -25,7 +23,7 @@ export function listenForChatMessages() {
                 streamId,
                 onPartial: (content: string) => {
                     // Send partial updates through IPC
-                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}`, {
                         status: 'partial',
                         content,
                         streamId,
@@ -33,27 +31,32 @@ export function listenForChatMessages() {
                 },
                 onComplete: (response: StreamResponse) => {
                     // Send complete response through IPC
-                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
+                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}-complete`, {
                         ...response,
-                        streamId: undefined,
-                    });
+                        streamId,
+                    } as StreamResponse);
                 },
                 onError: (error: string) => {
                     // Send error through IPC
-                    e.sender.send(MainChannels.CHAT_STREAM_CHANNEL, {
-                        status: 'error',
-                        content: error,
-                        streamId: undefined,
-                    });
+                    e.sender.send(`${MainChannels.SEND_CHAT_MESSAGES_STREAM}-stream-${streamId}-error`, error);
                 }
             });
             
             // Return the stream ID to the renderer
-            return { status: 'streaming', content: '', streamId };
+            return { streamId };
         },
     );
 
-    // This handler is kept for backward compatibility and updated to use streamId
+    // Add abort handler
+    ipcMain.handle(
+        `${MainChannels.SEND_CHAT_MESSAGES_STREAM}-abort`,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { streamId } = args as { streamId: string };
+            return Chat.abortStream(undefined, streamId);
+        },
+    );
+    
+    // This handler is kept for backward compatibility
     ipcMain.handle(
         MainChannels.SEND_STOP_STREAM_REQUEST,
         (e: Electron.IpcMainInvokeEvent, args) => {
