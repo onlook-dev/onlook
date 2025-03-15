@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
+import { getStrReplaceEditorTool, listFilesTool } from '@onlook/ai/src/tools';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import {
     ChatSuggestionSchema,
@@ -10,8 +10,16 @@ import {
     type UsageCheckResult,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
-import type { z } from 'zod';
+import {
+    generateObject,
+    streamText,
+    type CoreMessage,
+    type CoreSystemMessage,
+    type TextStreamPart,
+    type ToolSet,
+} from 'ai';
+import { readFileSync } from 'fs';
+import { z } from 'zod';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { initModel } from './llmProvider';
@@ -74,26 +82,47 @@ class LlmManager {
                 requestType,
             });
 
-            const { textStream, usage, text } = await streamText({
+            const toolSet: ToolSet = {
+                listAllFiles: listFilesTool,
+                str_replace_editor: getStrReplaceEditorTool({
+                    readFile: async (path) => {
+                        return readFileSync(path, 'utf8');
+                    },
+                    writeFile: async (path, content) => {
+                        console.log('writeFile', path, content);
+                        return true;
+                    },
+                    undoEdit: async () => {
+                        console.log('undoEdit');
+                        return true;
+                    },
+                }),
+            };
+
+            const { usage, text, fullStream } = await streamText({
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
                 onError: (error) => {
+                    console.error('Error', JSON.stringify(error, null, 2));
                     throw error;
                 },
                 maxSteps: 10,
-                tools: {
-                    listAllFiles: listFilesTool,
-                    readFile: readFileTool,
-                },
+                tools: toolSet,
                 maxTokens: 64000,
+                headers: {
+                    'anthropic-beta': 'output-128k-2025-02-19',
+                },
             });
-
-            let fullText = '';
-            for await (const partialText of textStream) {
-                fullText += partialText;
-                this.emitPartialMessage(fullText);
+            const streamParts: TextStreamPart<ToolSet>[] = [];
+            for await (const partialStream of fullStream) {
+                streamParts.push(partialStream);
             }
+            const fullText = streamParts
+                .map((part) => (part.type === 'text-delta' ? part.textDelta : ''))
+                .join('');
+
+            this.emitPartialMessage(fullText);
             return { content: await text, status: 'full', usage: await usage };
         } catch (error: any) {
             try {
