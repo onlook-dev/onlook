@@ -10,7 +10,14 @@ import {
     type UsageCheckResult,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { generateObject, streamText, type CoreMessage, type CoreSystemMessage } from 'ai';
+import {
+    generateObject,
+    streamText,
+    type CoreMessage,
+    type CoreSystemMessage,
+    type TextStreamPart,
+    type ToolSet,
+} from 'ai';
 import { readFileSync } from 'fs';
 import { z } from 'zod';
 import { mainWindow } from '..';
@@ -75,7 +82,24 @@ class LlmManager {
                 requestType,
             });
 
-            const { textStream, usage, text, fullStream } = await streamText({
+            const toolSet: ToolSet = {
+                listAllFiles: listFilesTool,
+                str_replace_editor: getStrReplaceEditorTool({
+                    readFile: async (path) => {
+                        return readFileSync(path, 'utf8');
+                    },
+                    writeFile: async (path, content) => {
+                        console.log('writeFile', path, content);
+                        return true;
+                    },
+                    undoEdit: async () => {
+                        console.log('undoEdit');
+                        return true;
+                    },
+                }),
+            };
+
+            const { usage, text, fullStream } = await streamText({
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
@@ -84,34 +108,21 @@ class LlmManager {
                     throw error;
                 },
                 maxSteps: 10,
-                tools: {
-                    listAllFiles: listFilesTool,
-                    str_replace_editor: getStrReplaceEditorTool({
-                        readFile: async (path) => {
-                            return readFileSync(path, 'utf8');
-                        },
-                        writeFile: async (path, content) => {
-                            console.log('writeFile', path, content);
-                            return true;
-                        },
-                        undoEdit: async () => {
-                            console.log('undoEdit');
-                            return true;
-                        },
-                    }),
-                },
+                tools: toolSet,
                 maxTokens: 64000,
                 headers: {
                     'anthropic-beta': 'output-128k-2025-02-19',
                 },
             });
-
-            let fullText = '';
-
-            for await (const partialText of textStream) {
-                fullText += partialText;
-                this.emitPartialMessage(fullText);
+            const streamParts: TextStreamPart<ToolSet>[] = [];
+            for await (const partialStream of fullStream) {
+                streamParts.push(partialStream);
             }
+            const fullText = streamParts
+                .map((part) => (part.type === 'text-delta' ? part.textDelta : ''))
+                .join('');
+
+            this.emitPartialMessage(fullText);
             return { content: await text, status: 'full', usage: await usage };
         } catch (error: any) {
             try {
