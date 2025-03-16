@@ -36,4 +36,5 @@ export const ErrorMessage = observer(() => {
             </div>
         );
     }
-return null;
+    return null;
+});

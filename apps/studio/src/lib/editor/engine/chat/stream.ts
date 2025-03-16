@@ -1,10 +1,10 @@
 import type { PartialStreamResponse, UsageCheckResult } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import type { TextPart, TextStreamPart, ToolCallPart, ToolSet } from 'ai';
+import type { TextPart, TextStreamPart, ToolCallPart, ToolResultPart, ToolSet } from 'ai';
 import { makeAutoObservable } from 'mobx';
 
 export class StreamResolver {
-    content: (TextPart | ToolCallPart)[] = [];
+    content: (TextPart | ToolCallPart | ToolResultPart)[] = [];
     requestId: string | null = null;
     errorMessage: string | null = null;
     rateLimited: UsageCheckResult | null = null;
@@ -50,7 +50,9 @@ export class StreamResolver {
         this.content.push(resolvedPart);
     }
 
-    resolveToolCallPart(payload: TextStreamPart<ToolSet>): TextPart | ToolCallPart | null {
+    resolveToolCallPart(
+        payload: TextStreamPart<ToolSet>,
+    ): TextPart | ToolCallPart | ToolResultPart | null {
         if (payload.type === 'tool-call') {
             return payload;
         } else if (payload.type === 'text-delta') {

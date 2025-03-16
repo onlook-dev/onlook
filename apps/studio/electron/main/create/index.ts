@@ -112,9 +112,7 @@ export class ProjectCreator {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
         }
 
-        const content = extractCodeBlocks(
-            response.payload.map((p) => (p.type === 'text-delta' ? p.textDelta : '')).join(''),
-        );
+        const content = extractCodeBlocks(response.text);
 
         return {
             path: PAGE_SYSTEM_PROMPT.defaultPath,

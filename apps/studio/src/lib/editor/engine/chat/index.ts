@@ -4,9 +4,9 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import {
     ChatMessageRole,
     StreamRequestType,
+    type AssistantChatMessage,
     type CompletedStreamResponse,
     type ErrorStreamResponse,
-    type FullStreamResponse,
     type RateLimitedStreamResponse,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
@@ -118,7 +118,7 @@ export class ChatManager {
     sendStreamRequest(
         messages: CoreMessage[],
         requestType: StreamRequestType,
-    ): Promise<FullStreamResponse | null> {
+    ): Promise<CompletedStreamResponse | null> {
         const requestId = nanoid();
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
@@ -194,21 +194,16 @@ export class ChatManager {
         }
 
         this.context.clearAttachments();
-
-        if (this.userManager.settings.settings?.chat?.autoApplyCode) {
-            setTimeout(() => {
-                // TODO: Reenable this
-                // this.code.applyCode(assistantMessage.id, userPrompt);
-            }, 100);
-        }
     }
 
-    handleNewCoreMessages(messages: CoreMessage[]) {
+    handleNewCoreMessages(messages: CoreMessage[], userPrompt?: string) {
         for (const message of messages) {
             if (message.role === ChatMessageRole.ASSISTANT) {
                 const assistantMessage = this.conversation.addCoreAssistantMessage(message);
                 if (!assistantMessage) {
                     console.error('Failed to add assistant message');
+                } else {
+                    this.autoApplyCode(assistantMessage, userPrompt);
                 }
             } else if (message.role === ChatMessageRole.USER) {
                 const userMessage = this.conversation.addCoreUserMessage(message);
@@ -216,6 +211,14 @@ export class ChatManager {
                     console.error('Failed to add user message');
                 }
             }
+        }
+    }
+
+    autoApplyCode(assistantMessage: AssistantChatMessage, userPrompt?: string) {
+        if (this.userManager.settings.settings?.chat?.autoApplyCode) {
+            setTimeout(() => {
+                this.code.applyCode(assistantMessage.id, userPrompt);
+            }, 100);
         }
     }
 

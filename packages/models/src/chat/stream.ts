@@ -14,6 +14,7 @@ export interface FullStreamResponse extends StreamResponse {
     payload: CoreMessage[];
     type: 'full';
     usage?: LanguageModelUsage;
+    text: string;
 }
 
 export interface ErrorStreamResponse extends StreamResponse {

@@ -87,7 +87,7 @@ class LlmManager {
                 requestType,
             });
 
-            const { usage, fullStream, response } = await streamText({
+            const { usage, fullStream, text, response } = await streamText({
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
@@ -107,7 +107,12 @@ class LlmManager {
                 this.emitMessagePart(partialStream);
                 streamParts.push(partialStream);
             }
-            return { payload: (await response).messages, type: 'full', usage: await usage };
+            return {
+                payload: (await response).messages,
+                type: 'full',
+                usage: await usage,
+                text: await text,
+            };
         } catch (error: any) {
             try {
                 console.error('Error', error);
