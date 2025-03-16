@@ -8,6 +8,7 @@ export class StreamResolver {
     requestId: string | null = null;
     errorMessage: string | null = null;
     rateLimited: UsageCheckResult | null = null;
+    id: string = 'stream';
 
     constructor() {
         makeAutoObservable(this);

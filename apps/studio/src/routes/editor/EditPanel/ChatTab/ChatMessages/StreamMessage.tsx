@@ -6,14 +6,22 @@ import MarkdownRenderer from './MarkdownRenderer';
 export const StreamingMessage = observer(() => {
     const editorEngine = useEditorEngine();
     const content = editorEngine.chat.stream.content;
+    const messageId = editorEngine.chat.stream.id;
 
     const renderMessageContent = () => {
         if (typeof content === 'string') {
-            return <MarkdownRenderer content={content} applied={false} />;
+            return <MarkdownRenderer content={content} applied={false} messageId={messageId} />;
         }
         return content.map((part) => {
             if (part.type === 'text') {
-                return <MarkdownRenderer key={part.text} content={part.text} applied={false} />;
+                return (
+                    <MarkdownRenderer
+                        key={part.text}
+                        content={part.text}
+                        applied={false}
+                        messageId={messageId}
+                    />
+                );
             } else if (part.type === 'tool-call') {
                 return (
                     <div key={part.toolCallId} className="border-2 border-red-500">
