@@ -1,6 +1,7 @@
 import type { AssistantContent } from 'ai';
 import { observer } from 'mobx-react-lite';
 import MarkdownRenderer from '../MarkdownRenderer';
+import { ToolCallDisplay } from './ToolCallDisplay';
 
 export const MessageContent = observer(
     ({
@@ -37,9 +38,7 @@ export const MessageContent = observer(
                 );
             } else if (part.type === 'tool-call') {
                 return (
-                    <div key={part.toolCallId} className="border-2 border-red-500">
-                        tool call: {JSON.stringify(part, null, 2)}
-                    </div>
+                    <ToolCallDisplay key={part.toolCallId} toolCall={part} isStream={isStream} />
                 );
             } else if (part.type === 'reasoning') {
                 return (
