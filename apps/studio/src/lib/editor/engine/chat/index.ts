@@ -190,7 +190,9 @@ export class ChatManager {
             this.conversation.current.messages.length > 0
         ) {
             this.suggestions.shouldHide = true;
-            this.suggestions.generateNextSuggestions(this.conversation.current.messages);
+            this.suggestions.generateNextSuggestions(
+                this.conversation.current.getMessagesForStream(),
+            );
         }
 
         this.context.clearAttachments();

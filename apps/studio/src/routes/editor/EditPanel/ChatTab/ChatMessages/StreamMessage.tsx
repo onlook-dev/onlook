@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@onlook/ui/icons/index';
+import type { AssistantContent } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MessageContent } from './MessageContent';
 
@@ -21,7 +22,7 @@ export const StreamMessage = observer(() => {
                     <div className="flex flex-col text-wrap gap-2">
                         <MessageContent
                             messageId={messageId}
-                            content={content}
+                            content={content as AssistantContent}
                             applied={false}
                             isStream={true}
                         />
