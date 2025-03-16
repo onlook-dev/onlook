@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
-import { ChatMessageType } from '@onlook/models/chat';
+import { ChatMessageRole } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -25,11 +25,11 @@ const ChatMessages = observer(() => {
 
     const renderMessage = useCallback((message: AssistantChatMessageImpl | UserChatMessageImpl) => {
         let messageNode;
-        switch (message.type) {
-            case ChatMessageType.ASSISTANT:
+        switch (message.role) {
+            case ChatMessageRole.ASSISTANT:
                 messageNode = <AssistantMessage message={message} />;
                 break;
-            case ChatMessageType.USER:
+            case ChatMessageRole.USER:
                 messageNode = <UserMessage message={message} />;
                 break;
         }

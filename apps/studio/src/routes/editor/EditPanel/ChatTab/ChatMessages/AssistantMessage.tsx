@@ -1,6 +1,7 @@
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import MarkdownRenderer from './MarkdownRenderer';
 
+// TODO: Handle each part of the message differently
 const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
     return (
         <div className="p-4 text-small content-start">
@@ -9,7 +10,6 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
                     messageId={message.id}
                     content={message.content}
                     applied={message.applied}
-                    isStream={message.isStream}
                 />
             </div>
         </div>

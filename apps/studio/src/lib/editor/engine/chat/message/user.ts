@@ -61,4 +61,11 @@ export class UserChatMessageImpl implements UserChatMessage {
             },
         ];
     }
+
+    getStringContent(): string {
+        if (typeof this.content === 'string') {
+            return this.content;
+        }
+        return this.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+    }
 }

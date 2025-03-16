@@ -14,8 +14,8 @@ export const StreamingMessage = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            {editorEngine.chat.streamingMessage && (
-                <AssistantMessage message={editorEngine.chat.streamingMessage} />
+            {editorEngine.chat.stream && (
+                <AssistantMessage message={editorEngine.chat.stream.message} />
             )}
         </>
     );

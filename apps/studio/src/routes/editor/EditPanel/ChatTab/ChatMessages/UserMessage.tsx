@@ -29,7 +29,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }, [isEditing, editValue]);
 
     const handleEditClick = () => {
-        setEditValue(message.content);
+        setEditValue(message.getStringContent());
         setIsEditing(true);
     };
 
@@ -54,14 +54,14 @@ const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     function handleCopyClick() {
-        const text = message.content;
+        const text = message.getStringContent();
         navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     }
 
     const handleRetry = () => {
-        editorEngine.chat.resubmitMessage(message.id, message.content);
+        editorEngine.chat.resubmitMessage(message.id, message.getStringContent());
     };
 
     function renderEditingInput() {
@@ -90,7 +90,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     function renderContent() {
-        return <div>{message.content}</div>;
+        return <div>{message.getStringContent()}</div>;
     }
 
     function renderButtons() {

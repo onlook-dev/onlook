@@ -9,13 +9,11 @@ const MarkdownRenderer = ({
     content,
     className = '',
     applied,
-    isStream = false,
 }: {
     messageId: string;
     content: string;
     className?: string;
     applied: boolean;
-    isStream?: boolean;
 }) => {
     const transformedContent = content.replace(
         /^(.*?)\n```(\w+)\n/gm,
@@ -45,7 +43,7 @@ const MarkdownRenderer = ({
                         const codeContent = String(children).replace(/\n$/, '');
 
                         if (language === 'bash') {
-                            return <BashCodeDisplay content={codeContent} isStream={isStream} />;
+                            return <BashCodeDisplay content={codeContent} isStream={false} />;
                         }
 
                         if (match && filePath) {
@@ -55,7 +53,7 @@ const MarkdownRenderer = ({
                                     content={codeContent}
                                     messageId={messageId}
                                     applied={applied}
-                                    isStream={isStream}
+                                    isStream={false}
                                 />
                             );
                         }
