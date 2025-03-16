@@ -5,23 +5,25 @@ import MarkdownRenderer from './MarkdownRenderer';
 
 export const StreamingMessage = observer(() => {
     const editorEngine = useEditorEngine();
+    const content = editorEngine.chat.stream.content;
 
-    const renderStreamContent = () => {
-        if (editorEngine.chat.stream.content) {
-            return editorEngine.chat.stream.content.map((part) => {
-                if (part.type === 'text-delta') {
-                    return (
-                        <MarkdownRenderer
-                            key={part.textDelta}
-                            content={part.textDelta}
-                            applied={false}
-                        />
-                    );
-                }
-            });
+    const renderMessageContent = () => {
+        if (typeof content === 'string') {
+            return <MarkdownRenderer content={content} applied={false} />;
         }
-        return null;
+        return content.map((part) => {
+            if (part.type === 'text') {
+                return <MarkdownRenderer key={part.text} content={part.text} applied={false} />;
+            } else if (part.type === 'tool-call') {
+                return (
+                    <div key={part.toolCallId} className="border-2 border-red-500">
+                        tool call: {JSON.stringify(part, null, 2)}
+                    </div>
+                );
+            }
+        });
     };
+
     return (
         <>
             {editorEngine.chat.isWaiting && (
@@ -30,7 +32,9 @@ export const StreamingMessage = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            {renderStreamContent()}
+            <div className="px-4 py-2 text-small content-start">
+                <div className="flex flex-col text-wrap gap-2">{renderMessageContent()}</div>
+            </div>
         </>
     );
 });

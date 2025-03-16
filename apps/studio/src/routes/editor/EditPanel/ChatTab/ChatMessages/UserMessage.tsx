@@ -107,7 +107,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             <Icons.Reload className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Retry</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Retry
+                    </TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
@@ -121,7 +123,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             <Icons.Pencil className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Edit</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Edit
+                    </TooltipContent>
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -138,7 +142,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             )}
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Copy</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Copy
+                    </TooltipContent>
                 </Tooltip>
             </div>
         );

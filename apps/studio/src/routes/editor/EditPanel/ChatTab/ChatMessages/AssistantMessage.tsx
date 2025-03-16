@@ -16,14 +16,24 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
                         applied={message.applied}
                     />
                 );
+            } else if (part.type === 'tool-call') {
+                return (
+                    <div key={part.toolCallId} className="border-2 border-red-500">
+                        tool call: {JSON.stringify(part, null, 2)}
+                    </div>
+                );
+            } else if (part.type === 'reasoning') {
+                return (
+                    <div key={part.text} className="border-2 border-green-500">
+                        reasoning: {JSON.stringify(part, null, 2)}
+                    </div>
+                );
             }
-
-            // TODO: Handle tool calls
         });
     };
 
     return (
-        <div className="p-4 text-small content-start">
+        <div className="px-4 py-2 text-small content-start">
             <div className="flex flex-col text-wrap gap-2">{renderMessageContent()}</div>
         </div>
     );

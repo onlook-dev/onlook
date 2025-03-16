@@ -32,7 +32,7 @@ class LlmManager {
     private promptProvider: PromptProvider;
 
     private chatToolSet: ToolSet = {
-        listAllFiles: listFilesTool,
+        list_files: listFilesTool,
         str_replace_editor: getStrReplaceEditorTool({
             readFile: async (path) => {
                 return readFileSync(path, 'utf8');

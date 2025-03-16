@@ -20,7 +20,14 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     }
 
     toCoreMessage(): CoreAssistantMessage {
-        return this;
+        if (typeof this.content === 'string') {
+            return this;
+        }
+        const filteredContent = this.content.filter((part) => part.type !== 'tool-call');
+        return {
+            ...this,
+            content: filteredContent,
+        };
     }
 
     static fromJSON(data: AssistantChatMessage): AssistantChatMessageImpl {
