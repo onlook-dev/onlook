@@ -46,7 +46,7 @@ const AdvancedTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col gap-8 p-4">
+        <div className="flex flex-col gap-8 p-6">
             <div className="flex justify-between items-center gap-4">
                 <div className="flex flex-col gap-2">
                     <p className="text-largePlus">{'Default project path'}</p>

@@ -184,7 +184,8 @@
                     "name": "Insert Text",
                     "tooltip": "Add a new text element"
                 }
-            }
+            },
+            "versionHistory": "Version History"
         },
         "panels": {
             "edit": {

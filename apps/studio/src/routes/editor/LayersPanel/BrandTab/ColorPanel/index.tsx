@@ -73,7 +73,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
 
     return (
         <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0 overflow-y-auto">
-            <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
+            <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border fixed top-0 left-0 right-0 bg-background z-10">
                 <h2 className="text-sm font-normal text-foreground">Brand Colors</h2>
                 <Button
                     variant="ghost"
@@ -85,7 +85,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                 </Button>
             </div>
             {/* Theme Toggle */}
-            <div className="flex gap-1 px-4 py-2 text-sm border-b border-border">
+            <div className="flex gap-2 px-4 py-3 border-b border-border mt-[2.5rem]">
                 <Button
                     variant={theme === Theme.LIGHT ? 'default' : 'outline'}
                     className={cn(
@@ -112,7 +112,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
 
             {/* Brand Palette Groups section */}
             <div className="flex flex-col gap-4 px-4 py-[18px] border-b border-border">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
                     {/* Theme color groups */}
                     {Object.entries(colorGroups).map(([groupName, colors]) => (
                         <BrandPalletGroup
@@ -163,7 +163,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
 
             {/* Color Palette section */}
             <div className="flex flex-col gap-4 px-4 py-[18px] border-b border-border">
-                <h3 className="text-sm font-medium mb-2">Default Colors</h3>
+                <h3 className="text-sm font-medium mb-1">Default Colors</h3>
                 {Object.entries(colorDefaults).map(([colorName, colors]) => (
                     <BrandPalletGroup
                         key={colorName}

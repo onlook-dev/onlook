@@ -88,7 +88,7 @@ export const BrandPalletGroup = ({
     };
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1 group/palette">
             <div className="flex justify-between items-center">
                 {!isDefaultPalette && isRenaming ? (
                     <input
@@ -102,7 +102,7 @@ export const BrandPalletGroup = ({
                         autoFocus
                     />
                 ) : (
-                    <span className="text-sm font-normal">{title}</span>
+                    <span className="text-small text-foreground-secondary font-normal">{title}</span>
                 )}
                 {!isDefaultPalette && (
                     <DropdownMenu>
@@ -110,9 +110,9 @@ export const BrandPalletGroup = ({
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-4 w-4 p-0 hover:bg-transparent"
+                                className="h-6 w-6 p-0 hover:bg-transparent opacity-0 group-hover/palette:opacity-100 [&[data-state=open]]:opacity-100 transition-opacity"
                             >
-                                <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                <Icons.DotsHorizontal className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
@@ -166,7 +166,7 @@ export const BrandPalletGroup = ({
                                 ) : (
                                     <>
                                         <div
-                                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
+                                            className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-primary/10"
                                             style={{ backgroundColor: getColorValue(color) }}
                                         />
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
@@ -181,13 +181,13 @@ export const BrandPalletGroup = ({
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent
-                                                    className="rounded-md bg-background p-1 min-w-[140px]"
+                                                    className="rounded-md bg-background p-0 ml-1 mt-[-4px] min-w-[140px]"
                                                     align="start"
-                                                    side="bottom"
+                                                    side="right"
                                                 >
-                                                    <div className="flex items-start gap-2 px-2 py-1 border-b border-border mb-0.5">
+                                                    <div className="flex items-start gap-2 px-2.5 py-2 border-b border-border mb-0.5">
                                                         <div
-                                                            className="w-4 h-4 rounded-sm mt-[2px]"
+                                                            className="w-4 h-4 rounded-sm mt-[2px] hidden"
                                                             style={{
                                                                 backgroundColor:
                                                                     getColorValue(color),

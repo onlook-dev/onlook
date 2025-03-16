@@ -39,7 +39,7 @@ const PreferencesTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col gap-8 p-4">
+        <div className="flex flex-col gap-8 p-6">
             <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
                     <p className="text-largePlus">Language</p>

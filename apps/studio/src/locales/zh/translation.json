@@ -184,7 +184,8 @@
                     "name": "插入文本",
                     "tooltip": "添加新文本元素"
                 }
-            }
+            },
+            "versionHistory": "版本历史"
         },
         "panels": {
             "edit": {

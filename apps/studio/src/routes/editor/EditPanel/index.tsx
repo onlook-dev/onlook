@@ -232,13 +232,13 @@ const EditPanel = observer(() => {
                     <div
                         id="dev-panel"
                         className={cn(
-                            'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/80 overflow-hidden h-full',
+                            'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/95 overflow-hidden h-full',
                             editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
                         )}
                     >
                         <div
                             className={cn(
-                                'backdrop-blur shadow h-full relative transition-opacity duration-300',
+                                'backdrop-blur-xl shadow h-full relative transition-opacity duration-300',
                                 isOpen ? '' : 'rounded-tr-xl',
                             )}
                         >
@@ -257,14 +257,14 @@ const EditPanel = observer(() => {
                 <div
                     id="style-panel"
                     className={cn(
-                        'w-full transition-width duration-300 opacity-100 bg-background/80 overflow-hidden',
+                        'w-full transition-width duration-300 opacity-100 bg-background/95 overflow-hidden group/panel',
                         editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
                         !isDevPanelOpen && 'rounded-tl-xl',
                     )}
                 >
                     <div
                         className={cn(
-                            'border-[0.5px] backdrop-blur shadow h-full relative transition-opacity duration-300',
+                            'border-[0.5px] backdrop-blur-xl shadow h-full relative transition-opacity duration-300',
                             isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                         )}
                     >

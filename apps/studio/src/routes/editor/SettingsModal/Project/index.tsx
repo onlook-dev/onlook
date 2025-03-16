@@ -35,7 +35,7 @@ const ProjectTab = observer(() => {
 
     return (
         <div className="text-sm">
-            <div className="flex flex-col gap-4 p-4">
+            <div className="flex flex-col gap-4 p-6">
                 <h2 className="text-lg">Metadata</h2>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -87,7 +87,7 @@ const ProjectTab = observer(() => {
 
             <Separator />
 
-            <div className="flex flex-col gap-4 p-4">
+            <div className="flex flex-col gap-4 p-6">
                 <div className="flex flex-col gap-2">
                     <h2 className="text-lg">Commands</h2>
                     <p className="text-small text-foreground-secondary">
