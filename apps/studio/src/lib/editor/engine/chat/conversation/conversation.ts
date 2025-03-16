@@ -1,4 +1,4 @@
-import { ChatMessageType, type ChatConversation, type TokenUsage } from '@onlook/models/chat';
+import { ChatMessageRole, type ChatConversation, type TokenUsage } from '@onlook/models/chat';
 import { MAX_NAME_LENGTH } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -13,10 +13,13 @@ export class ChatConversationImpl implements ChatConversation {
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
     createdAt: string;
     updatedAt: string;
+
+    // Summary
     private readonly TOKEN_LIMIT = 200000;
     private readonly SUMMARY_THRESHOLD = this.TOKEN_LIMIT * 0.75; // Trigger at 75% of token limit
-    public readonly RETAINED_MESSAGES = 10;
+    private readonly RETAINED_MESSAGES = 10;
     summaryMessage: AssistantChatMessageImpl | null = null;
+
     public tokenUsage: TokenUsage = {
         promptTokens: 0,
         completionTokens: 0,
@@ -40,13 +43,18 @@ export class ChatConversationImpl implements ChatConversation {
         const conversation = new ChatConversationImpl(data.projectId, []);
         conversation.id = data.id;
         conversation.displayName = data.displayName;
-        conversation.messages = data.messages.map((m) => {
-            if (m.type === ChatMessageType.USER) {
-                return UserChatMessageImpl.fromJSON(m);
-            } else {
-                return AssistantChatMessageImpl.fromJSON(m);
-            }
-        });
+        conversation.messages = data.messages
+            .map((m) => {
+                if (m.role === ChatMessageRole.USER) {
+                    return UserChatMessageImpl.fromJSON(m);
+                } else if (m.role === ChatMessageRole.ASSISTANT) {
+                    return AssistantChatMessageImpl.fromJSON(m);
+                } else {
+                    console.error('Invalid message role', m.role);
+                    return null;
+                }
+            })
+            .filter((m) => m !== null) as (UserChatMessageImpl | AssistantChatMessageImpl)[];
         conversation.createdAt = data.createdAt;
         conversation.updatedAt = data.updatedAt;
 
@@ -85,7 +93,6 @@ export class ChatConversationImpl implements ChatConversation {
     setSummaryMessage(content: string) {
         this.summaryMessage = new AssistantChatMessageImpl(
             `Technical Summary of Previous Conversations:\n${content}`,
-            false,
         );
     }
 
@@ -107,7 +114,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     getLastUserMessage() {
-        return this.messages.findLast((message) => message.type === ChatMessageType.USER);
+        return this.messages.findLast((message) => message.role === ChatMessageRole.USER);
     }
 
     updateMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {

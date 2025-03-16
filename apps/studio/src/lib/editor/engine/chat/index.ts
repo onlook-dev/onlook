@@ -4,26 +4,24 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import {
     ChatMessageRole,
     StreamRequestType,
+    type CompletedStreamResponse,
     type ErrorStreamResponse,
     type FullStreamResponse,
     type RateLimitedStreamResponse,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
-import type { CoreMessage, TextStreamPart, ToolSet } from 'ai';
-import { makeAutoObservable, reaction } from 'mobx';
+import type { CoreMessage } from 'ai';
+import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 import { isPromptTooLongError, PROMPT_TOO_LONG_ERROR } from './helpers';
-import { AssistantChatMessageImpl } from './message/assistant';
-import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 import { SuggestionManager } from './suggestions';
 
-const USE_MOCK = false;
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 
 export class ChatManager {
@@ -33,11 +31,6 @@ export class ChatManager {
     context: ChatContext;
     stream: StreamResolver;
     suggestions: SuggestionManager;
-    streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
-        ? MOCK_STREAMING_ASSISTANT_MSG
-        : null;
-    shouldAutoScroll = true;
-    private disposers: Array<() => void> = [];
 
     constructor(
         private editorEngine: EditorEngine,
@@ -50,36 +43,10 @@ export class ChatManager {
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine, this.projectsManager);
         this.suggestions = new SuggestionManager(this.projectsManager);
-        this.listen();
-    }
-
-    listen() {
-        const disposer = reaction(
-            () => this.stream.content,
-            (content) => this.resolveStreamObject(content),
-        );
-        this.disposers.push(disposer);
     }
 
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
-    }
-
-    resolveStreamObject(content: TextStreamPart<ToolSet>[] | null) {
-        if (!this.conversation) {
-            console.error('No conversation found');
-            return;
-        }
-        if (!this.conversation.projectId) {
-            console.error('No project id found');
-            return;
-        }
-
-        if (!content) {
-            this.streamingMessage = null;
-            return;
-        }
-        this.streamingMessage = new AssistantChatMessageImpl(content, true);
     }
 
     async sendNewMessage(content: string): Promise<void> {
@@ -131,15 +98,20 @@ export class ChatManager {
             console.error('No conversation found');
             return;
         }
-        this.shouldAutoScroll = true;
         this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-        const res: FullStreamResponse | RateLimitedStreamResponse | ErrorStreamResponse | null =
-            await this.sendStreamRequest(messages, requestType);
+        const res: CompletedStreamResponse | null = await this.sendStreamRequest(
+            messages,
+            requestType,
+        );
         this.stream.clear();
         this.isWaiting = false;
-        this.handleChatResponse(res, requestType, userPrompt);
+        if (res) {
+            this.handleChatResponse(res, requestType, userPrompt);
+        } else {
+            console.error('No stream response found');
+        }
         sendAnalytics('receive chat response');
     }
 
@@ -163,7 +135,7 @@ export class ChatManager {
         sendAnalytics('stop chat stream');
     }
 
-    resubmitMessage(id: string, content: string) {
+    resubmitMessage(id: string, newMessageContent: string) {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
@@ -178,14 +150,14 @@ export class ChatManager {
             return;
         }
 
-        message.updateContent(content);
+        message.updateStringContent(newMessageContent);
         this.conversation.current.removeAllMessagesAfter(message);
         this.sendChatToAi(StreamRequestType.CHAT);
         sendAnalytics('resubmit chat message');
     }
 
     async handleChatResponse(
-        res: FullStreamResponse | RateLimitedStreamResponse | ErrorStreamResponse | null,
+        res: CompletedStreamResponse,
         requestType: StreamRequestType,
         userPrompt?: string,
     ) {
@@ -193,25 +165,12 @@ export class ChatManager {
             console.error('No response found');
             return;
         }
+
         if (res.type === 'rate-limited') {
-            console.error('Rate limited in chat response', res.rateLimitResult);
-            this.stream.errorMessage = res.rateLimitResult?.reason;
-            this.stream.rateLimited = res.rateLimitResult ?? null;
-            sendAnalytics('rate limited', {
-                rateLimitResult: res.rateLimitResult,
-            });
+            this.handleRateLimited(res);
             return;
-        }
-        if (res.type === 'error') {
-            console.error('Error found in chat response', res.message);
-            if (isPromptTooLongError(res.message)) {
-                this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
-            } else {
-                this.stream.errorMessage = res.message;
-            }
-            sendAnalytics('chat error', {
-                content: res.message,
-            });
+        } else if (res.type === 'error') {
+            this.handleError(res);
             return;
         }
 
@@ -223,11 +182,7 @@ export class ChatManager {
             await this.conversation.generateConversationSummary();
         }
 
-        const assistantMessage = this.conversation.addAssistantMessage(res);
-        if (!assistantMessage) {
-            console.error('Failed to add assistant message');
-            return;
-        }
+        this.handleNewCoreMessages(res.payload);
 
         if (
             requestType === StreamRequestType.CHAT &&
@@ -242,21 +197,53 @@ export class ChatManager {
 
         if (this.userManager.settings.settings?.chat?.autoApplyCode) {
             setTimeout(() => {
-                this.code.applyCode(assistantMessage.id, userPrompt);
+                // TODO: Reenable this
+                // this.code.applyCode(assistantMessage.id, userPrompt);
             }, 100);
         }
     }
 
+    handleNewCoreMessages(messages: CoreMessage[]) {
+        for (const message of messages) {
+            console.log('message', message);
+            if (message.role === ChatMessageRole.ASSISTANT) {
+                const assistantMessage = this.conversation.addAssistantMessage(message);
+                if (!assistantMessage) {
+                    console.error('Failed to add assistant message');
+                    return;
+                }
+            } else if (message.role === ChatMessageRole.USER) {
+                // const userMessage = this.conversation.addUserMessage(message.content, []);
+                // if (!userMessage) {
+                //     console.error('Failed to add user message');
+                //     return;
+                // }
+            }
+        }
+    }
+
+    handleRateLimited(res: RateLimitedStreamResponse) {
+        this.stream.errorMessage = res.rateLimitResult?.reason;
+        this.stream.rateLimited = res.rateLimitResult ?? null;
+        sendAnalytics('rate limited', {
+            rateLimitResult: res.rateLimitResult,
+        });
+    }
+
+    handleError(res: ErrorStreamResponse) {
+        console.error('Error found in chat response', res.message);
+        if (isPromptTooLongError(res.message)) {
+            this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
+        } else {
+            this.stream.errorMessage = res.message;
+        }
+        sendAnalytics('chat error', {
+            content: res.message,
+        });
+    }
+
     dispose() {
-        // Clean up MobX reactions
-        this.disposers.forEach((dispose) => dispose());
-        this.disposers = [];
-
-        // Clean up stream
         this.stream.clear();
-        this.streamingMessage = null;
-
-        // Clean up managers
         this.code?.dispose();
         this.context?.dispose();
         if (this.conversation) {

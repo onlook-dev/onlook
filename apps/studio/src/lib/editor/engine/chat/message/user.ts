@@ -1,22 +1,17 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
-import {
-    ChatMessageRole,
-    MessageContextType,
-    type UserChatContent,
-    type UserChatMessage,
-} from '@onlook/models/chat';
-import type { CoreUserMessage, ImagePart, TextPart } from 'ai';
+import type { ChatMessageContext } from '@onlook/models/chat';
+import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
+import type { CoreUserMessage, UserContent } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;
     role: ChatMessageRole.USER = ChatMessageRole.USER;
-    content: UserChatContent;
+    content: UserContent;
     context: ChatMessageContext[] = [];
     promptProvider: PromptProvider;
 
-    constructor(content: UserChatContent, context: ChatMessageContext[] = []) {
+    constructor(content: UserContent, context: ChatMessageContext[] = []) {
         this.id = nanoid();
         this.content = content;
         this.context = context;
@@ -38,11 +33,32 @@ export class UserChatMessageImpl implements UserChatMessage {
         };
     }
 
+    static fromCoreMessage(message: CoreUserMessage): UserChatMessageImpl {
+        return new UserChatMessageImpl(message.content);
+    }
+
+    static fromStringContent(
+        content: string,
+        context: ChatMessageContext[] = [],
+    ): UserChatMessageImpl {
+        const message = new UserChatMessageImpl([{ type: 'text', text: content }], context);
+        return message;
+    }
+
     toCoreMessage(): CoreUserMessage {
         return this.promptProvider.getHydratedUserMessage(this.content, this.context);
     }
 
-    updateContent(content: UserChatContent) {
+    updateContent(content: UserContent) {
         this.content = content;
+    }
+
+    updateStringContent(content: string) {
+        this.content = [
+            {
+                type: 'text',
+                text: content,
+            },
+        ];
     }
 }

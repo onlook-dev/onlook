@@ -4,9 +4,8 @@ import type {
     FileMessageContext,
     HighlightMessageContext,
     ProjectMessageContext,
-    UserChatContent,
 } from '@onlook/models/chat';
-import type { CoreUserMessage, ImagePart } from 'ai';
+import type { CoreUserMessage, ImagePart, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
 import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
@@ -71,10 +70,7 @@ export class PromptProvider {
         return prompt;
     }
 
-    getHydratedUserMessage(
-        content: UserChatContent,
-        context: ChatMessageContext[],
-    ): CoreUserMessage {
+    getHydratedUserMessage(content: UserContent, context: ChatMessageContext[]): CoreUserMessage {
         if (content.length === 0) {
             throw new Error('Message is required');
         }
@@ -83,7 +79,7 @@ export class PromptProvider {
         const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
         const errors = context.filter((c) => c.type === 'error').map((c) => c);
         const project = context.filter((c) => c.type === 'project').map((c) => c);
-        const images = content.filter((c) => c.type === 'image').map((c) => c);
+        const images = context.filter((c) => c.type === 'image').map((c) => c);
 
         let prompt = '';
         let contextPrompt = this.getFilesContent(files, highlights);
@@ -104,10 +100,13 @@ export class PromptProvider {
         }
 
         if (this.shouldWrapXml) {
-            const textContent = content
-                .filter((c) => c.type === 'text')
-                .map((c) => c.text)
-                .join('\n');
+            const textContent =
+                typeof content === 'string'
+                    ? content
+                    : content
+                          .filter((c) => c.type === 'text')
+                          .map((c) => c.text)
+                          .join('\n');
             prompt += wrapXml('instruction', textContent);
         } else {
             prompt += content;
@@ -115,7 +114,7 @@ export class PromptProvider {
 
         const imageParts: ImagePart[] = images.map((i) => ({
             type: 'image',
-            image: i.image,
+            image: i.content,
             mimeType: i.mimeType,
         }));
 

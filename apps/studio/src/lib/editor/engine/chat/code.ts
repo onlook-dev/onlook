@@ -1,7 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { sendAnalytics } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
-import type { AssistantChatMessage, CodeBlock } from '@onlook/models/chat';
+import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
@@ -25,7 +25,7 @@ export class ChatCodeManager {
             console.error('No message found with id', messageId);
             return;
         }
-        if (message.type !== 'assistant') {
+        if (message.role !== ChatMessageRole.ASSISTANT) {
             console.error('Can only apply code to assistant messages');
             return;
         }
@@ -85,7 +85,7 @@ export class ChatCodeManager {
             console.error('No message found with id', messageId);
             return;
         }
-        if (message.type !== 'assistant') {
+        if (message.role !== ChatMessageRole.ASSISTANT) {
             console.error('Can only revert code to assistant messages');
             return;
         }
@@ -132,6 +132,7 @@ export class ChatCodeManager {
     }
 
     getFileToCodeBlocks(message: AssistantChatMessage) {
+        // TODO: Changing to handling toolcall
         const content = message.content;
         const codeBlocks = this.processor.extractCodeBlocks(content);
         const fileToCode: Map<string, CodeBlock[]> = new Map();

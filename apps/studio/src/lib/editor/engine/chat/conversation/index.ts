@@ -1,12 +1,9 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import {
-    type ChatConversation,
-    type ChatMessageContext,
-    type FullStreamResponse,
-} from '@onlook/models/chat';
+import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
+import type { CoreAssistantMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../..';
 import { AssistantChatMessageImpl } from '../message/assistant';
@@ -145,21 +142,6 @@ export class ConversationManager {
         });
     }
 
-    addUserMessage(
-        content: string,
-        context: ChatMessageContext[],
-    ): UserChatMessageImpl | undefined {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-
-        const newMessage = new UserChatMessageImpl(content, context);
-        this.current.appendMessage(newMessage);
-        this.saveConversationToStorage();
-        return newMessage;
-    }
-
     async generateConversationSummary(): Promise<void> {
         if (!this.current || !this.current.needsSummary()) {
             return;
@@ -177,12 +159,26 @@ export class ConversationManager {
         this.saveConversationToStorage();
     }
 
-    addAssistantMessage(res: FullStreamResponse): AssistantChatMessageImpl | undefined {
+    addUserMessage(
+        strinContent: string,
+        context: ChatMessageContext[],
+    ): UserChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = new AssistantChatMessageImpl(res.payload);
+        const newMessage = UserChatMessageImpl.fromStringContent(strinContent, context);
+        this.current.appendMessage(newMessage);
+        this.saveConversationToStorage();
+        return newMessage;
+    }
+
+    addAssistantMessage(coreMessage: CoreAssistantMessage): AssistantChatMessageImpl | undefined {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const newMessage = AssistantChatMessageImpl.fromCoreMessage(coreMessage);
         this.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;

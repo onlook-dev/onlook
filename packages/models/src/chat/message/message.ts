@@ -1,4 +1,4 @@
-import type { CoreSystemMessage, FilePart, ImagePart, TextPart, ToolCallPart } from 'ai';
+import type { CoreAssistantMessage, CoreSystemMessage, CoreUserMessage } from 'ai';
 import type { CodeDiff } from '../../code/index.ts';
 import { type ChatMessageContext } from './context.ts';
 
@@ -8,27 +8,19 @@ export enum ChatMessageRole {
     SYSTEM = 'system',
 }
 
-export type UserChatContent = (TextPart | ImagePart | FilePart)[];
-export type AssistantChatContent = (TextPart | ToolCallPart)[];
-
-export interface UserChatMessage {
+export interface UserChatMessage extends CoreUserMessage {
     id: string;
-    role: ChatMessageRole.USER;
     context: ChatMessageContext[];
-    content: UserChatContent;
 }
 
-export interface AssistantChatMessage {
+export interface AssistantChatMessage extends CoreAssistantMessage {
     id: string;
-    role: ChatMessageRole.ASSISTANT;
     applied: boolean;
-    content: AssistantChatContent;
     snapshots: Record<string, CodeDiff> | null;
 }
 
 export interface SystemChatMessage extends CoreSystemMessage {
     id: string;
-    role: ChatMessageRole.SYSTEM;
 }
 
 export type ChatMessage = UserChatMessage | AssistantChatMessage | SystemChatMessage;

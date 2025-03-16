@@ -9,19 +9,18 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     content: AssistantContent;
     applied: boolean = false;
     snapshots: Record<string, CodeDiff> = {};
-    isStream: boolean;
 
-    constructor(content: AssistantContent, isStream: boolean = false) {
+    constructor(content: AssistantContent) {
         this.id = nanoid();
         this.content = content;
-        this.isStream = isStream;
+    }
+
+    static fromCoreMessage(message: CoreAssistantMessage): AssistantChatMessageImpl {
+        return new AssistantChatMessageImpl(message.content);
     }
 
     toCoreMessage(): CoreAssistantMessage {
-        return {
-            role: this.role,
-            content: this.content,
-        };
+        return this;
     }
 
     static fromJSON(data: AssistantChatMessage): AssistantChatMessageImpl {
@@ -35,7 +34,6 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     static toJSON(message: AssistantChatMessageImpl): AssistantChatMessage {
         return {
             id: message.id,
-            type: message.type,
             role: message.role,
             content: message.content,
             applied: message.applied,

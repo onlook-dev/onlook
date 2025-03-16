@@ -1,6 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { tool } from 'ai';
-import { readFileSync } from 'fs';
 import { z } from 'zod';
 import { getAllFiles } from './helpers';
 

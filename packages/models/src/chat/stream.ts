@@ -1,4 +1,4 @@
-import type { LanguageModelUsage, TextStreamPart, ToolSet } from 'ai';
+import type { CoreMessage, LanguageModelUsage, TextStreamPart, ToolSet } from 'ai';
 import type { UsageCheckResult } from './response';
 
 export interface StreamResponse {
@@ -11,7 +11,7 @@ export interface PartialStreamResponse extends StreamResponse {
 }
 
 export interface FullStreamResponse extends StreamResponse {
-    payload: TextStreamPart<ToolSet>[];
+    payload: CoreMessage[];
     type: 'full';
     usage?: LanguageModelUsage;
 }
