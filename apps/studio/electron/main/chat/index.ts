@@ -6,7 +6,8 @@ import {
     ChatSummarySchema,
     StreamRequestType,
     type ChatSuggestion,
-    type StreamResponse,
+    type CompletedStreamResponse,
+    type PartialStreamResponse,
     type UsageCheckResult,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
@@ -29,6 +30,23 @@ class LlmManager {
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
     private promptProvider: PromptProvider;
+
+    private chatToolSet: ToolSet = {
+        listAllFiles: listFilesTool,
+        str_replace_editor: getStrReplaceEditorTool({
+            readFile: async (path) => {
+                return readFileSync(path, 'utf8');
+            },
+            writeFile: async (path, content) => {
+                console.log('writeFile', path, content);
+                return true;
+            },
+            undoEdit: async () => {
+                console.log('undoEdit');
+                return true;
+            },
+        }),
+    };
 
     private constructor() {
         this.restoreSettings();
@@ -64,7 +82,7 @@ class LlmManager {
             abortController?: AbortController;
             skipSystemPrompt?: boolean;
         },
-    ): Promise<StreamResponse> {
+    ): Promise<CompletedStreamResponse> {
         const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
         try {
@@ -82,23 +100,6 @@ class LlmManager {
                 requestType,
             });
 
-            const toolSet: ToolSet = {
-                listAllFiles: listFilesTool,
-                str_replace_editor: getStrReplaceEditorTool({
-                    readFile: async (path) => {
-                        return readFileSync(path, 'utf8');
-                    },
-                    writeFile: async (path, content) => {
-                        console.log('writeFile', path, content);
-                        return true;
-                    },
-                    undoEdit: async () => {
-                        console.log('undoEdit');
-                        return true;
-                    },
-                }),
-            };
-
             const { usage, text, fullStream } = await streamText({
                 model,
                 messages,
@@ -108,7 +109,7 @@ class LlmManager {
                     throw error;
                 },
                 maxSteps: 10,
-                tools: toolSet,
+                tools: this.chatToolSet,
                 maxTokens: 64000,
                 headers: {
                     'anthropic-beta': 'output-128k-2025-02-19',
@@ -116,14 +117,11 @@ class LlmManager {
             });
             const streamParts: TextStreamPart<ToolSet>[] = [];
             for await (const partialStream of fullStream) {
+                this.emitMessagePart(partialStream);
                 streamParts.push(partialStream);
             }
-            const fullText = streamParts
-                .map((part) => (part.type === 'text-delta' ? part.textDelta : ''))
-                .join('');
 
-            this.emitPartialMessage(fullText);
-            return { content: await text, status: 'full', usage: await usage };
+            return { payload: streamParts, type: 'full', usage: await usage };
         } catch (error: any) {
             try {
                 console.error('Error', error);
@@ -133,22 +131,21 @@ class LlmManager {
                             error.error.responseBody,
                         ) as UsageCheckResult;
                         return {
-                            status: 'rate-limited',
-                            content: 'You have reached your daily limit.',
+                            type: 'rate-limited',
                             rateLimitResult: rateLimitError,
                         };
                     } else {
                         return {
-                            status: 'error',
-                            content: error.error.responseBody,
+                            type: 'error',
+                            message: error.error.responseBody,
                         };
                     }
                 }
                 const errorMessage = this.getErrorMessage(error);
-                return { content: errorMessage, status: 'error' };
+                return { message: errorMessage, type: 'error' };
             } catch (error) {
                 console.error('Error parsing error', error);
-                return { content: 'An unknown error occurred', status: 'error' };
+                return { message: 'An unknown error occurred', type: 'error' };
             } finally {
                 this.abortController = null;
             }
@@ -163,10 +160,10 @@ class LlmManager {
         return false;
     }
 
-    private emitPartialMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'partial',
-            content,
+    private emitMessagePart(streamPart: TextStreamPart<ToolSet>) {
+        const res: PartialStreamResponse = {
+            type: 'partial',
+            payload: streamPart,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
     }
@@ -206,7 +203,7 @@ class LlmManager {
         }
     }
 
-    public async generateChatSummary(messages: CoreMessage[]): Promise<StreamResponse> {
+    public async generateChatSummary(messages: CoreMessage[]): Promise<string | null> {
         try {
             const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
                 requestType: StreamRequestType.SUMMARY,
@@ -270,10 +267,10 @@ ${userPreferences}
 # Current Status
 ${currentStatus}`;
 
-            return { content: summary, status: 'full' };
+            return summary;
         } catch (error) {
             console.error('Error generating summary:', error);
-            return { content: 'Failed to generate summary', status: 'error' };
+            return null;
         }
     }
 }

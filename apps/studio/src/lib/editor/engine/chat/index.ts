@@ -1,10 +1,16 @@
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
+import {
+    ChatMessageRole,
+    StreamRequestType,
+    type ErrorStreamResponse,
+    type FullStreamResponse,
+    type RateLimitedStreamResponse,
+} from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
-import type { CoreMessage } from 'ai';
+import type { CoreMessage, TextStreamPart, ToolSet } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
@@ -59,7 +65,7 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    resolveStreamObject(content: string | null) {
+    resolveStreamObject(content: TextStreamPart<ToolSet>[] | null) {
         if (!this.conversation) {
             console.error('No conversation found');
             return;
@@ -129,7 +135,8 @@ export class ChatManager {
         this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-        const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
+        const res: FullStreamResponse | RateLimitedStreamResponse | ErrorStreamResponse | null =
+            await this.sendStreamRequest(messages, requestType);
         this.stream.clear();
         this.isWaiting = false;
         this.handleChatResponse(res, requestType, userPrompt);
@@ -139,7 +146,7 @@ export class ChatManager {
     sendStreamRequest(
         messages: CoreMessage[],
         requestType: StreamRequestType,
-    ): Promise<StreamResponse | null> {
+    ): Promise<FullStreamResponse | null> {
         const requestId = nanoid();
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
@@ -166,7 +173,7 @@ export class ChatManager {
             console.error('No message found with id', id);
             return;
         }
-        if (message.type !== 'user') {
+        if (message.role !== ChatMessageRole.USER) {
             console.error('Can only edit user messages');
             return;
         }
@@ -178,7 +185,7 @@ export class ChatManager {
     }
 
     async handleChatResponse(
-        res: StreamResponse | null,
+        res: FullStreamResponse | RateLimitedStreamResponse | ErrorStreamResponse | null,
         requestType: StreamRequestType,
         userPrompt?: string,
     ) {
@@ -186,25 +193,24 @@ export class ChatManager {
             console.error('No response found');
             return;
         }
-        if (res.status === 'rate-limited') {
-            console.error('Rate limited in chat response', res.content);
-            this.stream.errorMessage = res.content;
+        if (res.type === 'rate-limited') {
+            console.error('Rate limited in chat response', res.rateLimitResult);
+            this.stream.errorMessage = res.rateLimitResult?.reason;
             this.stream.rateLimited = res.rateLimitResult ?? null;
             sendAnalytics('rate limited', {
                 rateLimitResult: res.rateLimitResult,
-                content: res.content,
             });
             return;
         }
-        if (res.status === 'error') {
-            console.error('Error found in chat response', res.content);
-            if (isPromptTooLongError(res.content)) {
+        if (res.type === 'error') {
+            console.error('Error found in chat response', res.message);
+            if (isPromptTooLongError(res.message)) {
                 this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
             } else {
-                this.stream.errorMessage = res.content;
+                this.stream.errorMessage = res.message;
             }
             sendAnalytics('chat error', {
-                content: res.content,
+                content: res.message,
             });
             return;
         }

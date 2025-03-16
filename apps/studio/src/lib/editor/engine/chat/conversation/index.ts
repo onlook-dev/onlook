@@ -3,7 +3,7 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import {
     type ChatConversation,
     type ChatMessageContext,
-    type StreamResponse,
+    type FullStreamResponse,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
@@ -165,22 +165,24 @@ export class ConversationManager {
             return;
         }
 
-        const res: StreamResponse = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
+        const res: string | null = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
             messages: this.current.messages.map((m) => m.toCoreMessage()),
         });
 
-        if (res && res.status === 'full') {
-            this.current.setSummaryMessage(res.content);
-            this.saveConversationToStorage();
+        if (!res) {
+            console.log(`Failed to generate summary for conversation`);
+            return;
         }
+        this.current.setSummaryMessage(res);
+        this.saveConversationToStorage();
     }
 
-    addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
+    addAssistantMessage(res: FullStreamResponse): AssistantChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = new AssistantChatMessageImpl(res.content);
+        const newMessage = new AssistantChatMessageImpl(res.payload);
         this.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;

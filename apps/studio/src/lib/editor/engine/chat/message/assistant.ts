@@ -1,18 +1,17 @@
-import { type AssistantChatMessage, ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
+import { type AssistantChatMessage, ChatMessageRole } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
-import type { CoreAssistantMessage } from 'ai';
+import type { AssistantContent, CoreAssistantMessage } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;
-    type: ChatMessageType.ASSISTANT = ChatMessageType.ASSISTANT;
     role: ChatMessageRole.ASSISTANT = ChatMessageRole.ASSISTANT;
-    content: string;
+    content: AssistantContent;
     applied: boolean = false;
     snapshots: Record<string, CodeDiff> = {};
     isStream: boolean;
 
-    constructor(content: string, isStream: boolean = false) {
+    constructor(content: AssistantContent, isStream: boolean = false) {
         this.id = nanoid();
         this.content = content;
         this.isStream = isStream;

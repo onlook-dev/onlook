@@ -44,7 +44,7 @@ describe('Prompt', () => {
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
 
-        const prompt = new PromptProvider().getUserMessage('test', {
+        const prompt = new PromptProvider().getHydratedUserMessage('test', {
             files: [
                 {
                     path: 'test.txt',
@@ -88,7 +88,7 @@ describe('Prompt', () => {
     test('User empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
-        const prompt = new PromptProvider().getUserMessage('test', {
+        const prompt = new PromptProvider().getHydratedUserMessage('test', {
             files: [],
             highlights: [],
             errors: [],
