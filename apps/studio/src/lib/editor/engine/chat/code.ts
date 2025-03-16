@@ -132,7 +132,7 @@ export class ChatCodeManager {
     }
 
     getFileToCodeBlocks(message: AssistantChatMessage) {
-        // TODO: Changing to handling toolcall
+        // TODO: Need to handle failure cases
         const content = message.content;
         const contentString =
             typeof content === 'string'

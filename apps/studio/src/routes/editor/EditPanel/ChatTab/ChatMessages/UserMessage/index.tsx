@@ -6,7 +6,7 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
-import { SentContextPill } from '../ContextPills/SentContextPill';
+import { SentContextPill } from '../../ContextPills/SentContextPill';
 
 interface UserMessageProps {
     message: UserChatMessageImpl;

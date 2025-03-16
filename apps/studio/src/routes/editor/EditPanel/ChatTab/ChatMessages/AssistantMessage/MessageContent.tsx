@@ -1,26 +1,38 @@
-import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
-import MarkdownRenderer from './MarkdownRenderer';
+import type { AssistantContent } from 'ai';
+import { observer } from 'mobx-react-lite';
+import MarkdownRenderer from '../MarkdownRenderer';
 
-// TODO: Handle each part of the message differently
-const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
-    const renderMessageContent = () => {
-        if (typeof message.content === 'string') {
+export const MessageContent = observer(
+    ({
+        messageId,
+        content,
+        applied,
+        isStream,
+    }: {
+        messageId: string;
+        content: AssistantContent;
+        applied: boolean;
+        isStream: boolean;
+    }) => {
+        if (typeof content === 'string') {
             return (
                 <MarkdownRenderer
-                    messageId={message.id}
-                    content={message.content}
-                    applied={message.applied}
+                    messageId={messageId}
+                    content={content}
+                    applied={applied}
+                    isStream={isStream}
                 />
             );
         }
-        return message.content.map((part) => {
+        return content.map((part) => {
             if (part.type === 'text') {
                 return (
                     <MarkdownRenderer
-                        messageId={message.id}
+                        messageId={messageId}
                         key={part.text}
                         content={part.text}
-                        applied={message.applied}
+                        applied={applied}
+                        isStream={isStream}
                     />
                 );
             } else if (part.type === 'tool-call') {
@@ -37,13 +49,5 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
                 );
             }
         });
-    };
-
-    return (
-        <div className="px-4 py-2 text-small content-start">
-            <div className="flex flex-col text-wrap gap-2">{renderMessageContent()}</div>
-        </div>
-    );
-};
-
-export default AssistantMessage;
+    },
+);
