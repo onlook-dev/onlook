@@ -148,7 +148,7 @@ export class ConversationManager {
         }
 
         const res: string | null = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
-            messages: this.current.messages.map((m) => m.toCoreMessage()),
+            messages: this.current.getMessagesForStream(),
         });
 
         if (!res) {
