@@ -25,15 +25,15 @@ export class PromptProvider {
 
         if (this.shouldWrapXml) {
             prompt += wrapXml('role', EDIT_PROMPTS.system);
-            // prompt += wrapXml('search-replace-rules', EDIT_PROMPTS.searchReplaceRules);
-            // prompt += wrapXml(
-            //     'example-conversation',
-            //     this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
-            // );
+            prompt += wrapXml('search-replace-rules', EDIT_PROMPTS.searchReplaceRules);
+            prompt += wrapXml(
+                'example-conversation',
+                this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
+            );
         } else {
             prompt += EDIT_PROMPTS.system;
-            // prompt += EDIT_PROMPTS.searchReplaceRules;
-            // prompt += this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
+            prompt += EDIT_PROMPTS.searchReplaceRules;
+            prompt += this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
         }
         prompt = prompt.replace(PLATFORM_SIGNATURE, platform);
         return prompt;

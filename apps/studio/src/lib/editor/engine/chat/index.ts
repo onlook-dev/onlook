@@ -205,19 +205,16 @@ export class ChatManager {
 
     handleNewCoreMessages(messages: CoreMessage[]) {
         for (const message of messages) {
-            console.log('message', message);
             if (message.role === ChatMessageRole.ASSISTANT) {
-                const assistantMessage = this.conversation.addAssistantMessage(message);
+                const assistantMessage = this.conversation.addCoreAssistantMessage(message);
                 if (!assistantMessage) {
                     console.error('Failed to add assistant message');
-                    return;
                 }
             } else if (message.role === ChatMessageRole.USER) {
-                // const userMessage = this.conversation.addUserMessage(message.content, []);
-                // if (!userMessage) {
-                //     console.error('Failed to add user message');
-                //     return;
-                // }
+                const userMessage = this.conversation.addCoreUserMessage(message);
+                if (!userMessage) {
+                    console.error('Failed to add user message');
+                }
             }
         }
     }

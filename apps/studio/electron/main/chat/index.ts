@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { getStrReplaceEditorTool, listFilesTool } from '@onlook/ai/src/tools';
+import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import {
     ChatSuggestionSchema,
@@ -19,7 +19,6 @@ import {
     type TextStreamPart,
     type ToolSet,
 } from 'ai';
-import { readFileSync } from 'fs';
 import { z } from 'zod';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
@@ -33,19 +32,7 @@ class LlmManager {
 
     private chatToolSet: ToolSet = {
         list_files: listFilesTool,
-        str_replace_editor: getStrReplaceEditorTool({
-            readFile: async (path) => {
-                return readFileSync(path, 'utf8');
-            },
-            writeFile: async (path, content) => {
-                console.log('writeFile', path, content);
-                return true;
-            },
-            undoEdit: async () => {
-                console.log('undoEdit');
-                return true;
-            },
-        }),
+        read_file: readFileTool,
     };
 
     private constructor() {
@@ -120,7 +107,6 @@ class LlmManager {
                 this.emitMessagePart(partialStream);
                 streamParts.push(partialStream);
             }
-
             return { payload: (await response).messages, type: 'full', usage: await usage };
         } catch (error: any) {
             try {

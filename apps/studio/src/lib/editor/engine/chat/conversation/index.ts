@@ -3,7 +3,7 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
-import type { CoreAssistantMessage } from 'ai';
+import type { CoreAssistantMessage, CoreUserMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../..';
 import { AssistantChatMessageImpl } from '../message/assistant';
@@ -160,20 +160,33 @@ export class ConversationManager {
     }
 
     addUserMessage(
-        strinContent: string,
+        stringContent: string,
         context: ChatMessageContext[],
     ): UserChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = UserChatMessageImpl.fromStringContent(strinContent, context);
+        const newMessage = UserChatMessageImpl.fromStringContent(stringContent, context);
         this.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
     }
 
-    addAssistantMessage(coreMessage: CoreAssistantMessage): AssistantChatMessageImpl | undefined {
+    addCoreUserMessage(coreMessage: CoreUserMessage): UserChatMessageImpl | undefined {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const newMessage = UserChatMessageImpl.fromCoreMessage(coreMessage);
+        this.current.appendMessage(newMessage);
+        this.saveConversationToStorage();
+        return newMessage;
+    }
+
+    addCoreAssistantMessage(
+        coreMessage: CoreAssistantMessage,
+    ): AssistantChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;

@@ -31,7 +31,6 @@ export class StreamResolver {
 
         if (this.content.length === 0) {
             this.content.push(resolvedPart);
-            console.log('Pushed resolved part', resolvedPart);
             return;
         }
 
@@ -60,7 +59,6 @@ export class StreamResolver {
             } satisfies TextPart;
             return textPart;
         }
-        console.log('Unhandled payload type', payload.type);
         return null;
     }
 

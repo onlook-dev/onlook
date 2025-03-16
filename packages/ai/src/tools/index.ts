@@ -1,5 +1,6 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { tool } from 'ai';
+import { readFile } from 'fs/promises';
 import { z } from 'zod';
 import { getAllFiles } from './helpers';
 
@@ -21,9 +22,21 @@ export const listFilesTool = tool({
     },
 });
 
+export const readFileTool = tool({
+    description: 'Read the contents of a file',
+    parameters: z.object({
+        path: z.string().describe('The absolute path to the file to read'),
+    }),
+    execute: async ({ path }) => {
+        const file = await readFile(path, 'utf8');
+        return file;
+    },
+});
+
 // https://docs.anthropic.com/en/docs/agents-and-tools/computer-use#understand-anthropic-defined-tools
 // https://sdk.vercel.ai/docs/guides/computer-use#get-started-with-computer-use
 
+// We currently can't use this because it doens't support streaming
 interface FileOperationHandlers {
     readFile: (path: string) => Promise<string>;
     writeFile: (path: string, content: string) => Promise<boolean>;
