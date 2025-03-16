@@ -1,16 +1,12 @@
 import { cn } from '@onlook/ui/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import CodeChangeDisplay from '../CodeChangeDisplay';
 import BashCodeDisplay from '../CodeChangeDisplay/BashCodeDisplay';
 
 const MarkdownRenderer = ({
-    messageId,
     content,
     className = '',
-    applied,
 }: {
-    messageId: string;
     content: string;
     className?: string;
     applied: boolean;
@@ -47,15 +43,15 @@ const MarkdownRenderer = ({
                         }
 
                         if (match && filePath) {
-                            return (
-                                <CodeChangeDisplay
-                                    path={filePath}
-                                    content={codeContent}
-                                    messageId={messageId}
-                                    applied={applied}
-                                    isStream={false}
-                                />
-                            );
+                            // return (
+                            //     <CodeChangeDisplay
+                            //         path={filePath}
+                            //         content={codeContent}
+                            //         messageId={messageId}
+                            //         applied={applied}
+                            //         isStream={false}
+                            //     />
+                            // );
                         }
 
                         return (

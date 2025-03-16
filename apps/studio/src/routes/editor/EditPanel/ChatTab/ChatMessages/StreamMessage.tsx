@@ -1,11 +1,27 @@
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
-import AssistantMessage from './AssistantMessage';
+import MarkdownRenderer from './MarkdownRenderer';
 
 export const StreamingMessage = observer(() => {
     const editorEngine = useEditorEngine();
 
+    const renderStreamContent = () => {
+        if (editorEngine.chat.stream.content) {
+            return editorEngine.chat.stream.content.map((part) => {
+                if (part.type === 'text-delta') {
+                    return (
+                        <MarkdownRenderer
+                            key={part.textDelta}
+                            content={part.textDelta}
+                            applied={false}
+                        />
+                    );
+                }
+            });
+        }
+        return null;
+    };
     return (
         <>
             {editorEngine.chat.isWaiting && (
@@ -14,9 +30,7 @@ export const StreamingMessage = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            {editorEngine.chat.stream && (
-                <AssistantMessage message={editorEngine.chat.stream.message} />
-            )}
+            {renderStreamContent()}
         </>
     );
 });
