@@ -6,13 +6,13 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
-import { SentContextPill } from '../../ContextPills/SentContextPill';
+import { SentContextPill } from '../ContextPills/SentContextPill';
 
 interface UserMessageProps {
     message: UserChatMessageImpl;
 }
 
-const UserMessage = ({ message }: UserMessageProps) => {
+export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -170,5 +170,3 @@ const UserMessage = ({ message }: UserMessageProps) => {
         </div>
     );
 };
-
-export default UserMessage;

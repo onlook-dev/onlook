@@ -1,7 +1,7 @@
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import { MessageContent } from './MessageContent';
 
-const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
+export const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
     return (
         <div className="px-4 py-2 text-small content-start">
             <div className="flex flex-col text-wrap gap-2">
@@ -15,5 +15,3 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
         </div>
     );
 };
-
-export default AssistantMessage;

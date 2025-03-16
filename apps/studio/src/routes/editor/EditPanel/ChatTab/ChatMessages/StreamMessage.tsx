@@ -3,7 +3,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import { MessageContent } from './MessageContent';
 
-export const StreamingMessage = observer(() => {
+export const StreamMessage = observer(() => {
     const editorEngine = useEditorEngine();
     const content = editorEngine.chat.stream.content;
     const messageId = editorEngine.chat.stream.id;
@@ -16,18 +16,18 @@ export const StreamingMessage = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            <div className="px-4 py-2 text-small content-start">
-                <div className="flex flex-col text-wrap gap-2">
-                    <MessageContent
-                        messageId={messageId}
-                        content={content}
-                        applied={false}
-                        isStream={true}
-                    />
+            {content.length > 0 && (
+                <div className="px-4 py-2 text-small content-start">
+                    <div className="flex flex-col text-wrap gap-2">
+                        <MessageContent
+                            messageId={messageId}
+                            content={content}
+                            applied={false}
+                            isStream={true}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
         </>
     );
 });
-
-export default StreamingMessage;

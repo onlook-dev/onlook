@@ -7,12 +7,12 @@ import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import AssistantMessage from './AssistantMessage';
-import StreamMessage from './AssistantMessage/StreamingMessage';
+import { AssistantMessage } from './AssistantMessage';
 import { ErrorMessage } from './ErrorMessage';
-import UserMessage from './UserMessage';
+import { StreamMessage } from './StreamMessage';
+import { UserMessage } from './UserMessage';
 
-const ChatMessages = observer(() => {
+export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
     const chatMessagesRef = useRef<HTMLDivElement>(null);
@@ -76,5 +76,3 @@ const ChatMessages = observer(() => {
         </AnimatePresence>
     );
 });
-
-export default ChatMessages;
