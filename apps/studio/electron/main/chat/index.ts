@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { listFilesTool, readFileTool } from '@onlook/ai/src/tools';
+import { chatToolSet } from '@onlook/ai/src/tools';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import {
     ChatSuggestionSchema,
@@ -29,11 +29,6 @@ class LlmManager {
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
     private promptProvider: PromptProvider;
-
-    private chatToolSet: ToolSet = {
-        list_files: listFilesTool,
-        read_file: readFileTool,
-    };
 
     private constructor() {
         this.restoreSettings();
@@ -96,7 +91,7 @@ class LlmManager {
                     throw error;
                 },
                 maxSteps: 10,
-                tools: this.chatToolSet,
+                tools: chatToolSet,
                 maxTokens: 64000,
                 headers: {
                     'anthropic-beta': 'output-128k-2025-02-19',

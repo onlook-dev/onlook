@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic';
-import { tool } from 'ai';
+import { tool, type ToolSet } from 'ai';
 import { readFile } from 'fs/promises';
 import { z } from 'zod';
 import { getAllFiles } from './helpers';
@@ -110,4 +110,9 @@ export const getStrReplaceEditorTool = (handlers: FileOperationHandlers) => {
         },
     });
     return strReplaceEditorTool;
+};
+
+export const chatToolSet: ToolSet = {
+    list_files: listFilesTool,
+    read_file: readFileTool,
 };
