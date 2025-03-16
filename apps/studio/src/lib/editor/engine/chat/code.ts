@@ -134,7 +134,11 @@ export class ChatCodeManager {
     getFileToCodeBlocks(message: AssistantChatMessage) {
         // TODO: Changing to handling toolcall
         const content = message.content;
-        const codeBlocks = this.processor.extractCodeBlocks(content);
+        const contentString =
+            typeof content === 'string'
+                ? content
+                : content.map((part) => (part.type === 'text' ? part.text : '')).join('');
+        const codeBlocks = this.processor.extractCodeBlocks(contentString);
         const fileToCode: Map<string, CodeBlock[]> = new Map();
         for (const codeBlock of codeBlocks) {
             if (!codeBlock.fileName) {

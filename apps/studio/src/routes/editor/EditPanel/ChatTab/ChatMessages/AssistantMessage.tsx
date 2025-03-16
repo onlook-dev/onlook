@@ -5,12 +5,19 @@ import MarkdownRenderer from './MarkdownRenderer';
 const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
     const renderMessageContent = () => {
         if (typeof message.content === 'string') {
-            return <MarkdownRenderer content={message.content} applied={message.applied} />;
+            return (
+                <MarkdownRenderer
+                    messageId={message.id}
+                    content={message.content}
+                    applied={message.applied}
+                />
+            );
         }
         return message.content.map((part) => {
             if (part.type === 'text') {
                 return (
                     <MarkdownRenderer
+                        messageId={message.id}
                         key={part.text}
                         content={part.text}
                         applied={message.applied}
