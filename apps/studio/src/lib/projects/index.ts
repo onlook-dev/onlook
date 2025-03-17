@@ -82,6 +82,8 @@ export class ProjectsManager {
                 base: null,
                 custom: null,
             },
+            metaTitle: '',
+            metaDescription: '',
         };
 
         const updatedProjects = [...this._projects, newProject];
