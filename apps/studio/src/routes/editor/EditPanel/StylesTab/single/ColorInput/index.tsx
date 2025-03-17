@@ -120,18 +120,20 @@ const ColorInput = observer(
         // Memoize handlers to prevent unnecessary re-renders
         const sendStyleUpdate = useCallback(
             (newValue: Color | ColorItem) => {
+                editorEngine.history.startTransaction();
                 if (newValue instanceof Color) {
                     const valueString = newValue.toHex();
                     editorEngine.style.update(elementStyle.key, valueString);
                     onValueChange?.(elementStyle.key, valueString);
                 } else {
-                    let colorValue = newValue.name;
-                    if (colorValue === 'DEFAULT') {
-                        colorValue = newValue.originalKey.split('-DEFAULT')[0];
+                    let colorValue = newValue.originalKey;
+                    if (colorValue.endsWith('DEFAULT')) {
+                        colorValue = colorValue.split('-DEFAULT')[0];
                     }
                     editorEngine.style.updateCustom(elementStyle.key, colorValue);
                     onValueChange?.(elementStyle.key, colorValue);
                 }
+                editorEngine.history.commitTransaction();
             },
             [editorEngine.style, elementStyle.key, onValueChange],
         );

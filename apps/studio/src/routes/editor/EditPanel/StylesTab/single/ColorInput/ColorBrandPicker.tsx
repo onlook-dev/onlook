@@ -102,20 +102,20 @@ const BrandPopoverPicker = memo(({ color, onChange, onChangeEnd }: ColorBrandPic
 
     const handleColorSelect = (color: ColorItem) => {
         onChangeEnd?.(color);
-        toggleOpen(false);
+        // toggleOpen(false);
     };
 
-    useEffect(() => {
-        if (isOpen && !editorEngine.history.isInTransaction) {
-            editorEngine.history.startTransaction();
-            return;
-        }
+    // useEffect(() => {
+    //     if (isOpen && !editorEngine.history.isInTransaction) {
+    //         editorEngine.history.startTransaction();
+    //         return;
+    //     }
 
-        if (!isOpen && editorEngine.history.isInTransaction) {
-            editorEngine.history.commitTransaction();
-        }
-        return () => editorEngine.history.commitTransaction();
-    }, [isOpen]);
+    //     if (!isOpen && editorEngine.history.isInTransaction) {
+    //         editorEngine.history.commitTransaction();
+    //     }
+    //     return () => editorEngine.history.commitTransaction();
+    // }, [isOpen]);
     return (
         <Popover onOpenChange={(open) => toggleOpen(open)}>
             <PopoverTrigger>

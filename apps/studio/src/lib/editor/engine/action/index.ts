@@ -99,7 +99,6 @@ export class ActionManager {
                     return [key, value];
                 }),
             );
-            console.log('convertedChange', convertedChange);
 
             sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
                 domId: target.domId,
