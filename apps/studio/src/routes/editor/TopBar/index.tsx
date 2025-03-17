@@ -84,7 +84,9 @@ const EditorTopBar = observer(() => {
                                 <Icons.CounterClockwiseClock className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">{t('editor.toolbar.versionHistory')}</TooltipContent>
+                        <TooltipContent side="bottom">
+                            {t('editor.toolbar.versionHistory')}
+                        </TooltipContent>
                     </Tooltip>
                 </div>
                 <Publish />

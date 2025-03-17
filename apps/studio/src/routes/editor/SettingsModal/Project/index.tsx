@@ -6,23 +6,11 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import { RunState } from '@onlook/models/run';
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@onlook/ui/alert-dialog';
-import { toast } from '@onlook/ui/use-toast';
+import { ReinstallButton } from './ReinstallButon';
 
 const ProjectTab = observer(() => {
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
-    const [isReinstalling, setIsReinstalling] = useState(false);
-    const [showReinstallDialog, setShowReinstallDialog] = useState(false);
 
     const installCommand = project?.commands?.install || DefaultSettings.COMMANDS.install;
     const runCommand = project?.commands?.run || DefaultSettings.COMMANDS.run;
@@ -30,8 +18,6 @@ const ProjectTab = observer(() => {
     const folderPath = project?.folderPath || '';
     const name = project?.name || '';
     const url = project?.url || '';
-
-    const isTerminalRunning = projectsManager.runner?.state === RunState.RUNNING;
 
     const handleUpdatePath = async () => {
         const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
@@ -46,48 +32,6 @@ const ProjectTab = observer(() => {
         projectsManager.updatePartialProject({
             folderPath: path,
         });
-    };
-
-    const reinstallDependencies = async () => {
-        if (!project?.folderPath) {
-            toast({
-                title: 'Error',
-                description: 'Project path is not defined',
-                variant: 'destructive',
-            });
-            return;
-        }
-
-        setIsReinstalling(true);
-
-        try {
-            await invokeMainChannel(MainChannels.REINSTALL_PROJECT_DEPENDENCIES, {
-                folderPath: project.folderPath,
-                installCommand: installCommand,
-            });
-
-            toast({
-                title: 'Dependencies reinstalled',
-                description: 'Project dependencies have been reinstalled successfully',
-            });
-        } catch (error) {
-            toast({
-                title: 'Failed to reinstall dependencies',
-                description: error instanceof Error ? error.message : 'Unknown error occurred',
-                variant: 'destructive',
-            });
-        } finally {
-            setIsReinstalling(false);
-            setShowReinstallDialog(false);
-        }
-    };
-
-    const reinstall = () => {
-        if (isTerminalRunning) {
-            setShowReinstallDialog(true);
-        } else {
-            reinstallDependencies();
-        }
     };
 
     return (
@@ -201,50 +145,17 @@ const ProjectTab = observer(() => {
                         />
                     </div>
                 </div>
-
-                <div className="pt-4 justify-end flex">
-                    <Button
-                        variant="outline"
-                        className="gap-2"
-                        onClick={reinstall}
-                        disabled={isReinstalling}
-                    >
-                        {isReinstalling ? (
-                            <Icons.Shadow className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Icons.MagicWand className="h-4 w-4" />
-                        )}
-                        {isReinstalling ? 'Reinstalling...' : 'Reinstall Dependencies'}
-                    </Button>
-                </div>
             </div>
-
-            <AlertDialog open={showReinstallDialog} onOpenChange={setShowReinstallDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Reinstall Dependencies</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Your app is currently running. Reinstalling dependencies will stop the
-                            running instance. Do you want to continue?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <Button variant="ghost" onClick={() => setShowReinstallDialog(false)}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="default"
-                            onClick={async () => {
-                                await projectsManager.runner?.stop().then(() => {
-                                    reinstallDependencies();
-                                });
-                            }}
-                        >
-                            Stop and Reinstall
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <Separator />
+            <div className="flex justify-between items-center p-6">
+                <div className="flex flex-col gap-2">
+                    <p className="text-largePlus">Reinstall Depdencies</p>
+                    <p className="text-foreground-onlook text-small">
+                        For when project failed to install dependencies
+                    </p>
+                </div>
+                <ReinstallButton />
+            </div>
         </div>
     );
 });

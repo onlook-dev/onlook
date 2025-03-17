@@ -102,7 +102,9 @@ export const BrandPalletGroup = ({
                         autoFocus
                     />
                 ) : (
-                    <span className="text-small text-foreground-secondary font-normal">{title}</span>
+                    <span className="text-small text-foreground-secondary font-normal">
+                        {title}
+                    </span>
                 )}
                 {!isDefaultPalette && (
                     <DropdownMenu>
