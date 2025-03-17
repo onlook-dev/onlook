@@ -244,7 +244,7 @@ class HostingManager {
         if (!res.ok || !freestyleResponse.success) {
             console.log(JSON.stringify(freestyleResponse));
             throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error?.message || freestyleResponse.message}`,
+                `${freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error'}`,
             );
         }
 
