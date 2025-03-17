@@ -1,7 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
-import { type FSWatcher, watch } from 'chokidar';
+import * as watcher from '@parcel/watcher';
 import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
@@ -13,7 +13,7 @@ import terminal from './terminal';
 class RunManager {
     private static instance: RunManager;
     private mapping = new Map<string, TemplateNode>();
-    private watcher: FSWatcher | null = null;
+    private watcher: watcher.AsyncSubscription | null = null;
     state: RunState = RunState.STOPPED;
     runningDirs = new Set<string>();
 
@@ -121,34 +121,60 @@ class RunManager {
 
     async cleanProjectDir(folderPath: string): Promise<void> {
         this.mapping.clear();
-        await this.watcher?.close();
-        this.watcher = null;
+        if (this.watcher) {
+            await this.watcher.unsubscribe();
+            this.watcher = null;
+        }
         await removeIdsFromDirectory(folderPath);
     }
 
     async listen(filePaths: string[]) {
         if (this.watcher) {
-            this.watcher.close();
+            await this.watcher.unsubscribe();
             this.watcher = null;
         }
 
-        this.watcher = watch(filePaths, {
-            persistent: true,
-        });
+        // @parcel/watcher requires a directory to watch, not individual files
+        // We'll extract unique directories from the file paths
+        const directories = new Set<string>();
+        for (const filePath of filePaths) {
+            const directory = filePath.substring(0, filePath.lastIndexOf('/'));
+            directories.add(directory);
+        }
 
-        this.watcher
-            .on('change', (filePath) => {
-                this.processFileForMapping(filePath);
-            })
-            .on('error', (error) => {
-                console.error(`Watcher error: ${error}`);
-            });
+        // Subscribe to each directory
+        for (const directory of directories) {
+            try {
+                this.watcher = await watcher.subscribe(directory, (err, events) => {
+                    if (err) {
+                        console.error(`Watcher error: ${err}`);
+                        return;
+                    }
+                    
+                    for (const event of events) {
+                        // Only process changes to files we're interested in
+                        if (event.type === 'update' && filePaths.includes(event.path)) {
+                            this.processFileForMapping(event.path);
+                        }
+                    }
+                }, {
+                    // Similar options to chokidar's persistent: true
+                    backend: 'fs-events',
+                });
+            } catch (error) {
+                console.error(`Failed to watch directory ${directory}: ${error}`);
+            }
+        }
     }
 
     addFileToWatcher(filePath: string) {
         for (const allowedExtension of ALLOWED_EXTENSIONS) {
             if (filePath.endsWith(allowedExtension)) {
-                this.watcher?.add(filePath);
+                // @parcel/watcher doesn't have an add method like chokidar
+                // We need to re-subscribe to include the new file's directory
+                const directory = filePath.substring(0, filePath.lastIndexOf('/'));
+                
+                // Process the file immediately
                 this.processFileForMapping(filePath);
                 break;
             }
@@ -187,8 +213,10 @@ class RunManager {
         for (const dir of this.runningDirs) {
             await this.cleanProjectDir(dir);
         }
-        await this.watcher?.close();
-        this.watcher = null;
+        if (this.watcher) {
+            await this.watcher.unsubscribe();
+            this.watcher = null;
+        }
         this.runningDirs.clear();
         this.mapping.clear();
     }
