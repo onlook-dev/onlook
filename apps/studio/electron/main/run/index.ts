@@ -170,7 +170,6 @@ class RunManager {
     }
 
     async processFileForMapping(filePath: string) {
-        console.log('processing file for mapping', filePath);
         const content = await getFileContentWithIds(filePath);
         if (!content || content.trim() === '') {
             console.error(`Failed to get content for file: ${filePath}`);
@@ -204,9 +203,9 @@ class RunManager {
         this.runningDirs.delete(folderPath);
     }
 
-    clearSubscription() {
+    async clearSubscription() {
         if (this.subscription) {
-            this.subscription.unsubscribe();
+            await this.subscription.unsubscribe();
             this.subscription = null;
         }
         this.createdFiles.clear();
