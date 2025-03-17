@@ -112,7 +112,7 @@ class HostingManager {
             });
             return {
                 success: false,
-                message: 'Deployment failed with error: ' + error,
+                message: error instanceof Error ? error.message : 'Unknown error',
             };
         }
     }
@@ -231,19 +231,20 @@ class HostingManager {
                 }),
             },
         );
-        if (!res.ok) {
-            throw new Error(`Failed to deploy to preview environment, error: ${res.statusText}`);
-        }
+
         const freestyleResponse = (await res.json()) as {
             success: boolean;
             message?: string;
-            error?: string;
+            error?: {
+                message: string;
+            };
             data?: FreestyleDeployWebSuccessResponse;
         };
 
-        if (!freestyleResponse.success) {
+        if (!res.ok || !freestyleResponse.success) {
+            console.log(JSON.stringify(freestyleResponse));
             throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error || freestyleResponse.message}`,
+                `${freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error'}`,
             );
         }
 
