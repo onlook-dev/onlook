@@ -32,7 +32,7 @@ export const Versions = observer(() => {
                 dateKey = date.toLocaleDateString('en-US', {
                     month: 'long',
                     day: 'numeric',
-                    year: 'numeric'
+                    year: 'numeric',
                 });
             }
 
