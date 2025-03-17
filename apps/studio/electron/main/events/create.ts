@@ -6,7 +6,7 @@ import { mainWindow } from '..';
 import projectCreator from '../create';
 import { getCreateProjectPath } from '../create/helpers';
 import { createProject } from '../create/install';
-import { installProjectDependencies } from '../create/setup';
+import { installProjectDependencies, reinstallProjectDependencies } from '../create/setup';
 
 export function listenForCreateMessages() {
     ipcMain.handle(MainChannels.GET_CREATE_PROJECT_PATH, (e: Electron.IpcMainInvokeEvent) => {
@@ -36,6 +36,20 @@ export function listenForCreateMessages() {
             };
             const { folderPath, installCommand } = args;
             return installProjectDependencies(folderPath, installCommand, progressCallback);
+        },
+    );
+
+    ipcMain.handle(
+        MainChannels.REINSTALL_PROJECT_DEPENDENCIES,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const progressCallback: SetupCallback = (stage: SetupStage, message: string) => {
+                mainWindow?.webContents.send(MainChannels.SETUP_PROJECT_CALLBACK, {
+                    stage,
+                    message,
+                });
+            };
+            const { folderPath, installCommand } = args;
+            return reinstallProjectDependencies(folderPath, installCommand, progressCallback);
         },
     );
 

@@ -6,6 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
+import { ReinstallButton } from './ReinstallButon';
 
 const ProjectTab = observer(() => {
     const projectsManager = useProjectsManager();
@@ -144,6 +145,16 @@ const ProjectTab = observer(() => {
                         />
                     </div>
                 </div>
+            </div>
+            <Separator />
+            <div className="flex justify-between items-center p-6">
+                <div className="flex flex-col gap-2">
+                    <p className="text-largePlus">Reinstall Depdencies</p>
+                    <p className="text-foreground-onlook text-small">
+                        For when project failed to install dependencies
+                    </p>
+                </div>
+                <ReinstallButton />
             </div>
         </div>
     );
