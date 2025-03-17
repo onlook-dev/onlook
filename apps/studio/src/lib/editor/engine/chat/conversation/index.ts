@@ -1,12 +1,9 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import {
-    type ChatConversation,
-    type ChatMessageContext,
-    type StreamResponse,
-} from '@onlook/models/chat';
+import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
+import type { CoreAssistantMessage, CoreUserMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../..';
 import { AssistantChatMessageImpl } from '../message/assistant';
@@ -145,42 +142,56 @@ export class ConversationManager {
         });
     }
 
+    async generateConversationSummary(): Promise<void> {
+        if (!this.current || !this.current.needsSummary()) {
+            return;
+        }
+
+        const res: string | null = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
+            messages: this.current.getMessagesForStream(),
+        });
+
+        if (!res) {
+            console.log(`Failed to generate summary for conversation`);
+            return;
+        }
+        this.current.setSummaryMessage(res);
+        this.saveConversationToStorage();
+    }
+
     addUserMessage(
-        content: string,
+        stringContent: string,
         context: ChatMessageContext[],
     ): UserChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-
-        const newMessage = new UserChatMessageImpl(content, context);
+        const newMessage = UserChatMessageImpl.fromStringContent(stringContent, context);
         this.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
     }
 
-    async generateConversationSummary(): Promise<void> {
-        if (!this.current || !this.current.needsSummary()) {
-            return;
-        }
-
-        const res: StreamResponse = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
-            messages: this.current.messages.map((m) => m.toCoreMessage()),
-        });
-
-        if (res && res.status === 'full') {
-            this.current.setSummaryMessage(res.content);
-            this.saveConversationToStorage();
-        }
-    }
-
-    addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
+    addCoreUserMessage(coreMessage: CoreUserMessage): UserChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = new AssistantChatMessageImpl(res.content);
+        const newMessage = UserChatMessageImpl.fromCoreMessage(coreMessage);
+        this.current.appendMessage(newMessage);
+        this.saveConversationToStorage();
+        return newMessage;
+    }
+
+    addCoreAssistantMessage(
+        coreMessage: CoreAssistantMessage,
+    ): AssistantChatMessageImpl | undefined {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const newMessage = AssistantChatMessageImpl.fromCoreMessage(coreMessage);
         this.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;

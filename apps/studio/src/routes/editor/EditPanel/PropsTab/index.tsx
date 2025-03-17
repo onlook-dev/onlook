@@ -17,7 +17,7 @@ export interface Prop {
     icon?: React.ReactNode;
 }
 
-const PropsTab = () => {
+export const PropsTab = () => {
     const [props, setProps] = useState<{ [key: string]: Prop } | null>({});
     const [selectedEl, setSelectedEl] = useState<DomElement | undefined>();
 
@@ -180,5 +180,3 @@ const PropsTab = () => {
         </div>
     );
 };
-
-export default PropsTab;

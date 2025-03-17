@@ -50,7 +50,7 @@ export class ChatContext {
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
         const fileContext: FileMessageContext[] = [];
         for (const fileName of fileNames) {
-            const fileContent = await this.editorEngine.code.getFileContent(fileName, true);
+            const fileContent = await this.editorEngine.code.getFileContent(fileName, false);
             if (fileContent === null) {
                 continue;
             }

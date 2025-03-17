@@ -10,6 +10,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { isNullOrUndefined } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 
 const AdvancedTab = observer(() => {
@@ -20,9 +21,9 @@ const AdvancedTab = observer(() => {
     const newProjectPath =
         userManager.settings.settings?.editor?.newProjectPath ??
         userManager.settings.defaultProjectPath;
-    const buildFlags =
-        userManager.settings.settings?.editor?.buildFlags ??
-        DefaultSettings.EDITOR_SETTINGS.buildFlags;
+    const buildFlags = isNullOrUndefined(userManager.settings.settings?.editor?.buildFlags)
+        ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+        : userManager.settings.settings?.editor?.buildFlags;
 
     function updateBunReplace(enabled: boolean) {
         userManager.settings.updateEditor({ enableBunReplace: enabled });
@@ -45,7 +46,7 @@ const AdvancedTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col gap-8 p-4">
+        <div className="flex flex-col gap-8 p-6">
             <div className="flex justify-between items-center gap-4">
                 <div className="flex flex-col gap-2">
                     <p className="text-largePlus">{'Default project path'}</p>

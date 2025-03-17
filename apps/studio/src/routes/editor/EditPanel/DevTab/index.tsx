@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/Context';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -6,8 +5,6 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 
 enum TabValue {
     CONSOLE = 'console',
@@ -30,14 +27,7 @@ const FileTab: React.FC<FileTabProps> = ({ filename }) => {
     );
 };
 
-const DevTab = observer(() => {
-    const editorEngine = useEditorEngine();
-    const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.CONSOLE);
-
-    const handleTabChange = (value: string) => {
-        setSelectedTab(value as TabValue);
-    };
-
+export const DevTab = () => {
     return (
         <div className="h-full flex flex-col w-full border-l-[0.5px] border-t-[0.5px] border-b-[0.5px] backdrop-blur shadow rounded-tl-xl">
             {/* Top Bar with Edit Code and Files dropdowns */}
@@ -100,6 +90,4 @@ const DevTab = observer(() => {
             <div className="flex-1 h-full"></div>
         </div>
     );
-});
-
-export default DevTab;
+};

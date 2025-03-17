@@ -1,10 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@onlook/ui/icons/index';
+import type { AssistantContent } from 'ai';
 import { observer } from 'mobx-react-lite';
-import AssistantMessage from './AssistantMessage';
+import { MessageContent } from './MessageContent';
 
-export const StreamingMessage = observer(() => {
+export const StreamMessage = observer(() => {
     const editorEngine = useEditorEngine();
+    const content = editorEngine.chat.stream.content;
+    const messageId = editorEngine.chat.stream.id;
 
     return (
         <>
@@ -14,11 +17,18 @@ export const StreamingMessage = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            {editorEngine.chat.streamingMessage && (
-                <AssistantMessage message={editorEngine.chat.streamingMessage} />
+            {content.length > 0 && (
+                <div className="px-4 py-2 text-small content-start">
+                    <div className="flex flex-col text-wrap gap-2">
+                        <MessageContent
+                            messageId={messageId}
+                            content={content as AssistantContent}
+                            applied={false}
+                            isStream={true}
+                        />
+                    </div>
+                </div>
             )}
         </>
     );
 });
-
-export default StreamingMessage;

@@ -1,19 +1,17 @@
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
-import MarkdownRenderer from './MarkdownRenderer';
+import { MessageContent } from './MessageContent';
 
-const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
+export const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
     return (
-        <div className="p-4 text-small content-start">
+        <div className="px-4 py-2 text-small content-start">
             <div className="flex flex-col text-wrap gap-2">
-                <MarkdownRenderer
+                <MessageContent
                     messageId={message.id}
                     content={message.content}
                     applied={message.applied}
-                    isStream={message.isStream}
+                    isStream={false}
                 />
             </div>
         </div>
     );
 };
-
-export default AssistantMessage;

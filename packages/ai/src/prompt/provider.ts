@@ -1,9 +1,11 @@
 import type {
+    ChatMessageContext,
     ErrorMessageContext,
     FileMessageContext,
     HighlightMessageContext,
     ProjectMessageContext,
 } from '@onlook/models/chat';
+import type { CoreUserMessage, ImagePart, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
 import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
@@ -68,21 +70,19 @@ export class PromptProvider {
         return prompt;
     }
 
-    getUserMessage(
-        message: string,
-        context: {
-            files: FileMessageContext[];
-            highlights: HighlightMessageContext[];
-            errors: ErrorMessageContext[];
-            project?: ProjectMessageContext;
-        },
-    ) {
-        if (message.length === 0) {
+    getHydratedUserMessage(content: UserContent, context: ChatMessageContext[]): CoreUserMessage {
+        if (content.length === 0) {
             throw new Error('Message is required');
         }
 
+        const files = context.filter((c) => c.type === 'file').map((c) => c);
+        const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
+        const errors = context.filter((c) => c.type === 'error').map((c) => c);
+        const project = context.filter((c) => c.type === 'project').map((c) => c);
+        const images = context.filter((c) => c.type === 'image').map((c) => c);
+
         let prompt = '';
-        let contextPrompt = this.getFilesContent(context.files, context.highlights);
+        let contextPrompt = this.getFilesContent(files, highlights);
         if (contextPrompt) {
             if (this.shouldWrapXml) {
                 contextPrompt = wrapXml('context', contextPrompt);
@@ -90,21 +90,44 @@ export class PromptProvider {
             prompt += contextPrompt;
         }
 
-        if (context.errors.length > 0) {
-            let errorPrompt = this.getErrorsContent(context.errors);
+        if (errors.length > 0) {
+            let errorPrompt = this.getErrorsContent(errors);
             prompt += errorPrompt;
         }
 
-        if (context.project) {
-            prompt += this.getProjectContext(context.project);
+        if (project.length > 0) {
+            prompt += this.getProjectContext(project[0]);
         }
 
         if (this.shouldWrapXml) {
-            prompt += wrapXml('instruction', message);
+            const textContent =
+                typeof content === 'string'
+                    ? content
+                    : content
+                          .filter((c) => c.type === 'text')
+                          .map((c) => c.text)
+                          .join('\n');
+            prompt += wrapXml('instruction', textContent);
         } else {
-            prompt += message;
+            prompt += content;
         }
-        return prompt;
+
+        const imageParts: ImagePart[] = images.map((i) => ({
+            type: 'image',
+            image: i.content,
+            mimeType: i.mimeType,
+        }));
+
+        return {
+            role: 'user',
+            content: [
+                ...imageParts,
+                {
+                    type: 'text',
+                    text: prompt,
+                },
+            ],
+        };
     }
 
     getFilesContent(files: FileMessageContext[], highlights: HighlightMessageContext[]) {

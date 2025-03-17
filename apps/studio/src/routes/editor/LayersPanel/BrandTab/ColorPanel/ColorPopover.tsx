@@ -8,11 +8,13 @@ export const ColorPopover = ({
     brandColor,
     onClose,
     onColorChange,
+    isDefaultPalette = false,
 }: {
     color: Color;
     brandColor: string;
     onClose?: () => void;
     onColorChange?: (newColor: Color, newName: string) => void;
+    isDefaultPalette?: boolean;
 }) => {
     const [editedColor, setEditedColor] = useState<Color>(color);
     const [editedName, setEditedName] = useState<string>(brandColor);
@@ -38,15 +40,16 @@ export const ColorPopover = ({
                     style={{ backgroundColor: editedColor.toHex() }}
                 />
             </PopoverTrigger>
-            <PopoverContent className="w-64">
-                <div className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-1">
+            <PopoverContent className="p-0 min-w-fit" side="right" align="start">
+                <div className="flex flex-col gap-0 p-0">
+                    <div className="flex flex-col gap-1 p-2 pb-1">
                         <label className="text-xs text-muted-foreground">Color Name</label>
                         <input
                             type="text"
                             value={editedName}
                             onChange={(e) => setEditedName(e.target.value)}
                             className="w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1 text-sm"
+                            disabled={isDefaultPalette || editedName === 'DEFAULT'} // Disable editing of DEFAULT
                         />
                     </div>
                     <ColorPickerContent
