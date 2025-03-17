@@ -47,20 +47,25 @@ export async function add(repoPath: string, filepath: string) {
 }
 
 export async function isEmptyCommit(repoPath: string): Promise<boolean> {
-    // isomorphic-git creates empty commits by default
-    const changes = (
-        await gitStatusMatrix({
-            fs,
-            dir: repoPath,
-        })
-    ).filter(
-        ([_, HEAD, WORKDIR, STAGE]) =>
-            // filter unchanged
-            // https://github.com/isomorphic-git/isomorphic-git/issues/865#issuecomment-533028127
-            // https://isomorphic-git.org/docs/en/statusMatrix.html
-            !(HEAD == 1 && WORKDIR == 1 && STAGE == 1),
-    );
-    return changes.length === 0;
+    try {
+        // isomorphic-git creates empty commits by default
+        const changes = (
+            await gitStatusMatrix({
+                fs,
+                dir: repoPath,
+            })
+        ).filter(
+            ([_, HEAD, WORKDIR, STAGE]) =>
+                // filter unchanged
+                // https://github.com/isomorphic-git/isomorphic-git/issues/865#issuecomment-533028127
+                // https://isomorphic-git.org/docs/en/statusMatrix.html
+                !(HEAD == 1 && WORKDIR == 1 && STAGE == 1),
+        );
+        return changes.length === 0;
+    } catch (error) {
+        console.error('Error checking if commit is empty:', error);
+        return false;
+    }
 }
 
 export async function addAll(repoPath: string) {

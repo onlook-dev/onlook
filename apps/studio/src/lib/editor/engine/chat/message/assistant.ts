@@ -23,6 +23,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         if (typeof this.content === 'string') {
             return this;
         }
+        // TODO: Perhaps we should add tool-result instead of filtering tool-call?
         const filteredContent = this.content.filter((part) => part.type !== 'tool-call');
         return {
             ...this,
