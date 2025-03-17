@@ -9,6 +9,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import BrandPopoverPicker from './ColorBrandPicker';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
 import PopoverPicker from './Popover';
+// import PopoverPicker from './Popover';
 
 const stripUrlWrapper = (url: string) => {
     return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
@@ -120,7 +121,6 @@ const ColorInput = observer(
         // Memoize handlers to prevent unnecessary re-renders
         const sendStyleUpdate = useCallback(
             (newValue: Color | ColorItem) => {
-                editorEngine.history.startTransaction();
                 if (newValue instanceof Color) {
                     const valueString = newValue.toHex();
                     editorEngine.style.update(elementStyle.key, valueString);
@@ -133,7 +133,6 @@ const ColorInput = observer(
                     editorEngine.style.updateCustom(elementStyle.key, colorValue);
                     onValueChange?.(elementStyle.key, colorValue);
                 }
-                editorEngine.history.commitTransaction();
             },
             [editorEngine.style, elementStyle.key, onValueChange],
         );
@@ -206,7 +205,10 @@ const ColorInput = observer(
                     color={color}
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
-                /> */}
+                    backgroundImage={backgroundImage}
+                    compoundStyle={compoundStyle}
+                />
+                */}
                 <PopoverPicker
                     color={color}
                     onChange={sendStyleUpdate}
