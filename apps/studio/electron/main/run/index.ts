@@ -77,7 +77,7 @@ class RunManager {
 
             this.setState(RunState.STOPPING, 'Cleaning up...');
             await this.cleanProjectDir(folderPath);
-
+            await this.stopAll();
             this.setState(RunState.STOPPED, 'Stopped.');
             this.runningDirs.delete(folderPath);
             sendAnalytics('run stopped');
@@ -120,15 +120,6 @@ class RunManager {
         sendAnalytics('terminal stopped');
     }
 
-    async cleanProjectDir(folderPath: string): Promise<void> {
-        this.mapping.clear();
-        if (this.subscription) {
-            await this.subscription.unsubscribe();
-            this.subscription = null;
-        }
-        await removeIdsFromDirectory(folderPath);
-    }
-
     async listen(folderPath: string) {
         if (this.subscription) {
             await this.subscription.unsubscribe();
@@ -147,23 +138,13 @@ class RunManager {
 
                 for (const event of events) {
                     if (event.type === 'update') {
-                        for (const allowedExtension of ALLOWED_EXTENSIONS) {
-                            if (event.path.endsWith(allowedExtension)) {
-                                console.log(event.path, event.type);
-                                this.processFileForMapping(event.path);
-                                break;
-                            }
+                        if (this.isAllowedExtension(event.path)) {
+                            this.processFileForMapping(event.path);
                         }
                     } else if (event.type === 'create') {
-                        // Only process the file if it's not already in the createdFiles set
-
                         if (!this.createdFiles.has(event.path)) {
-                            for (const allowedExtension of ALLOWED_EXTENSIONS) {
-                                if (event.path.endsWith(allowedExtension)) {
-                                    console.log(event.path, event.type);
-                                    this.processFileForMapping(event.path);
-                                    break;
-                                }
+                            if (this.isAllowedExtension(event.path)) {
+                                this.processFileForMapping(event.path);
                             }
                             this.createdFiles.add(event.path);
                         }
@@ -174,6 +155,10 @@ class RunManager {
                 ignore: ['**/node_modules/**', '**/.git/**', ...ignoredDirectories],
             },
         );
+    }
+
+    isAllowedExtension(path: string): boolean {
+        return ALLOWED_EXTENSIONS.some((ext) => path.endsWith(ext));
     }
 
     async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
@@ -208,12 +193,22 @@ class RunManager {
         for (const dir of this.runningDirs) {
             await this.cleanProjectDir(dir);
         }
-        if (this.subscription) {
-            await this.subscription.unsubscribe();
-            this.subscription = null;
-        }
+        this.clearSubscription();
         this.runningDirs.clear();
         this.mapping.clear();
+    }
+
+    async cleanProjectDir(folderPath: string): Promise<void> {
+        await removeIdsFromDirectory(folderPath);
+        this.runningDirs.delete(folderPath);
+    }
+
+    clearSubscription() {
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+            this.subscription = null;
+        }
+        this.createdFiles.clear();
     }
 }
 
