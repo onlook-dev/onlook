@@ -98,6 +98,12 @@ export class ChatManager {
             console.error('No conversation found');
             return;
         }
+        // Save current changes before sending to AI
+        this.projectsManager.versions?.createCommit(
+            userPrompt ?? 'Save before applying code',
+            false,
+        );
+
         this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
@@ -108,7 +114,7 @@ export class ChatManager {
         this.stream.clear();
         this.isWaiting = false;
         if (res) {
-            this.handleChatResponse(res, requestType, userPrompt);
+            this.handleChatResponse(res, requestType);
         } else {
             console.error('No stream response found');
         }
@@ -156,11 +162,7 @@ export class ChatManager {
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(
-        res: CompletedStreamResponse,
-        requestType: StreamRequestType,
-        userPrompt?: string,
-    ) {
+    async handleChatResponse(res: CompletedStreamResponse, requestType: StreamRequestType) {
         if (!res || !this.conversation.current) {
             console.error('No response found');
             return;
@@ -182,7 +184,7 @@ export class ChatManager {
             await this.conversation.generateConversationSummary();
         }
 
-        this.handleNewCoreMessages(res.payload, userPrompt);
+        this.handleNewCoreMessages(res.payload);
 
         if (
             requestType === StreamRequestType.CHAT &&
@@ -198,14 +200,14 @@ export class ChatManager {
         this.context.clearAttachments();
     }
 
-    handleNewCoreMessages(messages: CoreMessage[], userPrompt?: string) {
+    handleNewCoreMessages(messages: CoreMessage[]) {
         for (const message of messages) {
             if (message.role === ChatMessageRole.ASSISTANT) {
                 const assistantMessage = this.conversation.addCoreAssistantMessage(message);
                 if (!assistantMessage) {
                     console.error('Failed to add assistant message');
                 } else {
-                    this.autoApplyCode(assistantMessage, userPrompt);
+                    this.autoApplyCode(assistantMessage);
                 }
             } else if (message.role === ChatMessageRole.USER) {
                 const userMessage = this.conversation.addCoreUserMessage(message);
@@ -216,10 +218,10 @@ export class ChatManager {
         }
     }
 
-    autoApplyCode(assistantMessage: AssistantChatMessage, userPrompt?: string) {
+    autoApplyCode(assistantMessage: AssistantChatMessage) {
         if (this.userManager.settings.settings?.chat?.autoApplyCode) {
             setTimeout(() => {
-                this.code.applyCode(assistantMessage.id, userPrompt);
+                this.code.applyCode(assistantMessage.id);
             }, 100);
         }
     }
