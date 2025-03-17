@@ -12,6 +12,7 @@ import { ColorPopover } from './ColorPopover';
 import { MainChannels } from '@onlook/models/constants';
 import { invokeMainChannel } from '@/lib/utils';
 import { useEditorEngine } from '@/components/Context';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 export interface ColorItem {
     name: string;
@@ -52,9 +53,10 @@ export const BrandPalletGroup = ({
     const [isAddingNewColor, setIsAddingNewColor] = useState(false);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newGroupName, setNewGroupName] = useState(title);
-
     const editorEngine = useEditorEngine();
     const themeManager = editorEngine.theme;
+    const existedName = colors.map((color) => color.name);
+    const [localError, setLocalError] = useState<string | null>(null);
 
     const handleColorChange = (
         index: number,
@@ -78,20 +80,34 @@ export const BrandPalletGroup = ({
         setIsRenaming(true);
     };
 
+    const validateName = (value: string) => {
+        if (value.trim() === '') {
+            return 'Group name cannot be empty';
+        }
+
+        if (value === title) {
+            return null;
+        }
+
+        if (Object.keys(themeManager.colorGroups).includes(value.toLowerCase())) {
+            return 'Group name already exists';
+        }
+
+        return null;
+    };
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setNewGroupName(newValue);
+        const validationError = validateName(newValue);
+        setLocalError(validationError);
+    };
+
     const handleRenameSubmit = () => {
-        if (newGroupName.trim() && newGroupName !== title) {
+        if (!localError && newGroupName.trim() && newGroupName !== title) {
             onRename(title.toLowerCase(), newGroupName.trim());
         }
         setIsRenaming(false);
-    };
-
-    const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleRenameSubmit();
-        } else if (e.key === 'Escape') {
-            setIsRenaming(false);
-            setNewGroupName(title);
-        }
     };
 
     const handleViewInCode = (line?: number) => {
@@ -109,16 +125,35 @@ export const BrandPalletGroup = ({
         <div className="flex flex-col gap-1 group/palette">
             <div className="flex justify-between items-center">
                 {!isDefaultPalette && isRenaming ? (
-                    <input
-                        type="text"
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        onBlur={handleRenameSubmit}
-                        onKeyDown={handleRenameKeyDown}
-                        className="text-sm font-normal w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1"
-                        placeholder="Enter group name"
-                        autoFocus
-                    />
+                    <Tooltip open={!!localError}>
+                        <TooltipTrigger asChild>
+                            <input
+                                type="text"
+                                value={newGroupName}
+                                onChange={handleNameChange}
+                                onBlur={handleRenameSubmit}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !localError) {
+                                        handleRenameSubmit();
+                                    } else if (e.key === 'Escape') {
+                                        setIsRenaming(false);
+                                        setNewGroupName(title);
+                                        setLocalError(null);
+                                    }
+                                }}
+                                className={`text-sm font-normal w-full rounded-md border ${
+                                    localError ? 'border-red-500' : 'border-white/10'
+                                } bg-background-secondary px-2 py-1`}
+                                placeholder="Enter group name"
+                                autoFocus
+                            />
+                        </TooltipTrigger>
+                        {localError && (
+                            <TooltipContent side="top" className="bg-red-500 text-white">
+                                {localError}
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
                 ) : (
                     <span className="text-small text-foreground-secondary font-normal">
                         {title}
@@ -182,6 +217,7 @@ export const BrandPalletGroup = ({
                                             handleColorChange(index, newColor, newName)
                                         }
                                         isDefaultPalette={isDefaultPalette}
+                                        existedName={existedName}
                                     />
                                 ) : (
                                     <>
@@ -299,6 +335,7 @@ export const BrandPalletGroup = ({
                                     title.toLowerCase(),
                                 )
                             }
+                            existedName={existedName}
                         />
                     ) : (
                         <Button
