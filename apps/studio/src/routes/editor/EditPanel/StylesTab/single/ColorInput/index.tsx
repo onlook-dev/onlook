@@ -125,8 +125,12 @@ const ColorInput = observer(
                     editorEngine.style.update(elementStyle.key, valueString);
                     onValueChange?.(elementStyle.key, valueString);
                 } else {
-                    editorEngine.style.updateCustom(elementStyle.key, newValue.originalKey);
-                    onValueChange?.(elementStyle.key, newValue.originalKey);
+                    let colorValue = newValue.name;
+                    if (colorValue === 'DEFAULT') {
+                        colorValue = newValue.originalKey.split('-DEFAULT')[0];
+                    }
+                    editorEngine.style.updateCustom(elementStyle.key, colorValue);
+                    onValueChange?.(elementStyle.key, colorValue);
                 }
             },
             [editorEngine.style, elementStyle.key, onValueChange],

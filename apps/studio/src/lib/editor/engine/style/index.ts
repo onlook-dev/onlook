@@ -108,7 +108,6 @@ export class StyleManager {
     }
 
     updateStyleNoAction(styles: Record<string, string>) {
-        console.log('styles', styles);
         for (const [selector, selectedStyle] of this.domIdToStyle.entries()) {
             this.domIdToStyle.set(selector, {
                 ...selectedStyle,
@@ -123,7 +122,6 @@ export class StyleManager {
             ...this.selectedStyle,
             styles: { ...this.selectedStyle.styles, ...styles },
         };
-        console.log('this.selectedStyle', this.selectedStyle);
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {

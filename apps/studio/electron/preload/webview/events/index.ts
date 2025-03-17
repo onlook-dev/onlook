@@ -47,8 +47,7 @@ function listenForEditEvents() {
         };
         cssManager.updateStyle(domId, change.updated);
 
-        // Why is this needed?
-        //publishStyleUpdate(domId);
+        publishStyleUpdate(domId);
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {
