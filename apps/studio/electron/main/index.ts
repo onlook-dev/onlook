@@ -133,8 +133,23 @@ const setupAppEventListeners = () => {
     });
 
     async function cleanUp() {
-        mainWindow?.webContents.send(MainChannels.CLEAN_UP_BEFORE_QUIT);
-        await runManager.stopAll();
+        // Timeout after 10 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Cleanup timeout')), 10000);
+        });
+
+        try {
+            await Promise.race([
+                Promise.all([
+                    mainWindow?.webContents.send(MainChannels.CLEAN_UP_BEFORE_QUIT),
+                    runManager.stopAll(),
+                ]),
+                timeoutPromise,
+            ]);
+        } catch (error) {
+            console.error('Cleanup failed or timed out:', error);
+        }
+
         cleanupComplete = true;
     }
 
