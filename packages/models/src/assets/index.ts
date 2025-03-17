@@ -32,7 +32,13 @@ interface ColorValue {
     name: string;
     lightMode: string;
     darkMode: string;
-    line?: number;
+    line?: {
+        config?: number;
+        css?: {
+            lightMode?: number;
+            darkMode?: number;
+        };
+    };
 }
 
 interface ParsedColors {

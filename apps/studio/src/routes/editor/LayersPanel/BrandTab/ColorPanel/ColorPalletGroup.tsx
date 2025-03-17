@@ -13,13 +13,20 @@ import { MainChannels } from '@onlook/models/constants';
 import { invokeMainChannel } from '@/lib/utils';
 import { useEditorEngine } from '@/components/Context';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipPortal } from '@onlook/ui/tooltip';
+import { Theme } from '@onlook/models/assets';
 
 export interface ColorItem {
     name: string;
     originalKey: string;
     lightColor: string;
     darkColor?: string;
-    line?: number;
+    line?: {
+        config?: number;
+        css?: {
+            lightMode?: number;
+            darkMode?: number;
+        };
+    };
 }
 
 interface BrandPalletGroupProps {
@@ -110,13 +117,20 @@ export const BrandPalletGroup = ({
         setIsRenaming(false);
     };
 
-    const handleViewInCode = (line?: number) => {
-        if (!line) {
+    const handleViewInCode = (color: ColorItem) => {
+        if (!color.line?.config) {
             return;
         }
 
+        const line = theme === Theme.DARK ? color.line.css?.darkMode : color.line.css?.lightMode;
+
         invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, {
             filePath: themeManager.tailwindConfigPath,
+            line: color.line.config,
+        });
+
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, {
+            filePath: themeManager.tailwindCssPath,
             line,
         });
     };
@@ -304,9 +318,7 @@ export const BrandPalletGroup = ({
                                                         <Button
                                                             variant="ghost"
                                                             className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
-                                                            onClick={() =>
-                                                                handleViewInCode(color.line)
-                                                            }
+                                                            onClick={() => handleViewInCode(color)}
                                                         >
                                                             <span className="flex w-full text-sm items-center">
                                                                 <Icons.ExternalLink className="mr-2 h-4 w-4" />

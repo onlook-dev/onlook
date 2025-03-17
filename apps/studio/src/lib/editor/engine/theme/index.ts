@@ -54,7 +54,6 @@ export class ThemeManager {
 
             const lightModeColors: ThemeColors = cssConfig.root || {};
             const darkModeColors: ThemeColors = cssConfig.dark || {};
-
             const parsed: ParsedColors = {};
             const groups: { [key: string]: Set<string> } = {};
 
@@ -82,7 +81,13 @@ export class ThemeManager {
                                     name: key,
                                     lightMode: lightModeColors[varName]?.value || '',
                                     darkMode: darkModeColors[varName]?.value || '',
-                                    line: lightModeColors[varName]?.line,
+                                    line: {
+                                        config: config[varName]?.line,
+                                        css: {
+                                            lightMode: lightModeColors[varName]?.line,
+                                            darkMode: darkModeColors[varName]?.line,
+                                        },
+                                    },
                                 };
                             }
                         }
@@ -100,7 +105,13 @@ export class ThemeManager {
                                 name: fullKey,
                                 lightMode: lightModeColors[varName]?.value || '',
                                 darkMode: darkModeColors[varName]?.value || '',
-                                line: (value as ColorValue).line,
+                                line: {
+                                    config: (value as ColorValue).line,
+                                    css: {
+                                        lightMode: lightModeColors[varName]?.line,
+                                        darkMode: darkModeColors[varName]?.line,
+                                    },
+                                },
                             };
                         } else {
                             const color = Color.from((value as ColorValue).value);
@@ -109,7 +120,13 @@ export class ThemeManager {
                                     name: fullKey,
                                     lightMode: color.toHex(),
                                     darkMode: color.toHex(),
-                                    line: (value as ColorValue).line,
+                                    line: {
+                                        config: (value as ColorValue).line,
+                                        css: {
+                                            lightMode: lightModeColors[fullKey]?.line,
+                                            darkMode: darkModeColors[fullKey]?.line,
+                                        },
+                                    },
                                 };
                             }
                         }
@@ -139,7 +156,10 @@ export class ThemeManager {
                             originalKey: key,
                             lightColor: color?.lightMode || '',
                             darkColor: color?.darkMode || '',
-                            line: color?.line,
+                            line: {
+                                config: color?.line?.config,
+                                css: color?.line?.css,
+                            },
                         };
                     });
                 }
