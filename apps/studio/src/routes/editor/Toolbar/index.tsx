@@ -8,10 +8,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Terminal from './Terminal';
 import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
-import { useTranslation } from 'react-i18next';
 
 const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
     {
@@ -52,7 +52,7 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
     },
 ];
 
-const Toolbar = observer(() => {
+export const Toolbar = observer(() => {
     const { t } = useTranslation();
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
@@ -207,5 +207,3 @@ const Toolbar = observer(() => {
         </AnimatePresence>
     );
 });
-
-export default Toolbar;

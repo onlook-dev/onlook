@@ -6,7 +6,7 @@ import { HelpButton } from './HelpButton';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 
-const AppBar = observer(() => {
+export const AppBar = observer(() => {
     const routeManager = useRouteManager();
     const updateManager = useUpdateManager();
 
@@ -28,5 +28,3 @@ const AppBar = observer(() => {
         </div>
     );
 });
-
-export default AppBar;

@@ -6,13 +6,13 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import ModeToggle from './ModeToggle';
 import ProjectBreadcrumb from './ProjectSelect';
 import Publish from './Publish';
 import { Hotkey } from '/common/hotkeys';
-import { useTranslation } from 'react-i18next';
 
-const EditorTopBar = observer(() => {
+export const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
 
@@ -94,5 +94,3 @@ const EditorTopBar = observer(() => {
         </div>
     );
 });
-
-export default EditorTopBar;

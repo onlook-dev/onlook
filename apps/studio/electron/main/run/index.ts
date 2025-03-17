@@ -192,7 +192,7 @@ class RunManager {
         for (const dir of this.runningDirs) {
             await this.cleanProjectDir(dir);
         }
-        this.clearSubscription();
+        await this.clearSubscription();
         this.runningDirs.clear();
         this.mapping.clear();
     }

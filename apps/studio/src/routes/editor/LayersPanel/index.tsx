@@ -17,7 +17,7 @@ import ZoomControls from './ZoomControls';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
-const LayersPanel = observer(() => {
+export const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
 
@@ -226,5 +226,3 @@ const LayersPanel = observer(() => {
         </div>
     );
 });
-
-export default LayersPanel;
