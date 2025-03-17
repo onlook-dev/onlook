@@ -57,21 +57,24 @@ export const ChatMessages = observer(() => {
                         .map((message) => renderMessage(message))}
                 </motion.div>
             ) : (
-                <motion.div
-                    key="empty-state"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80"
-                >
-                    <div className="w-32 h-32">
-                        <Icons.EmptyState className="w-full h-full" />
-                    </div>
-                    <p className="text-center text-regularPlus text-balance max-w-[300px]">
-                        {t('editor.panels.edit.tabs.chat.emptyState')}
-                    </p>
-                </motion.div>
+                // Only show empty state if no elements are selected
+                !editorEngine.elements.selected.length && (
+                    <motion.div
+                        key="empty-state"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80"
+                    >
+                        <div className="w-32 h-32">
+                            <Icons.EmptyState className="w-full h-full" />
+                        </div>
+                        <p className="text-center text-regularPlus text-balance max-w-[300px]">
+                            {t('editor.panels.edit.tabs.chat.emptyState')}
+                        </p>
+                    </motion.div>
+                )
             )}
         </AnimatePresence>
     );

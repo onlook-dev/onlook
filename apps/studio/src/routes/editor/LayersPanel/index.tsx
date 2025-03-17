@@ -89,7 +89,7 @@ const LayersPanel = observer(() => {
             onMouseLeave={handleMouseLeave}
         >
             {/* Left sidebar with tabs */}
-            <div className="w-20 bg-background-onlook/60 backdrop-blur-sm flex flex-col items-center py-0.5 gap-2">
+            <div className="w-20 bg-background-onlook/60 backdrop-blur-xl flex flex-col items-center py-0.5 gap-2">
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
@@ -193,10 +193,10 @@ const LayersPanel = observer(() => {
             {isContentPanelOpen && (
                 <>
                     <div
-                        className="flex-1 w-[280px] bg-background/80 rounded-xl"
+                        className="flex-1 w-[280px] bg-background/95 rounded-xl"
                         onMouseEnter={() => setIsContentPanelOpen(true)}
                     >
-                        <div className="border backdrop-blur h-full shadow overflow-auto p-0 rounded-xl">
+                        <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
                             {selectedTab === TabValue.LAYERS && <LayersTab />}
                             {selectedTab === TabValue.COMPONENTS &&
                                 (COMPONENT_DISCOVERY_ENABLED ? (

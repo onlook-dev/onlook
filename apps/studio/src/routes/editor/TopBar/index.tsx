@@ -10,9 +10,11 @@ import ModeToggle from './ModeToggle';
 import ProjectBreadcrumb from './ProjectSelect';
 import Publish from './Publish';
 import { Hotkey } from '/common/hotkeys';
+import { useTranslation } from 'react-i18next';
 
 const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();
+    const { t } = useTranslation();
 
     const UNDO_REDO_BUTTONS = [
         {
@@ -82,7 +84,7 @@ const EditorTopBar = observer(() => {
                                 <Icons.CounterClockwiseClock className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">Restore previous versions</TooltipContent>
+                        <TooltipContent side="bottom">{t('editor.toolbar.versionHistory')}</TooltipContent>
                     </Tooltip>
                 </div>
                 <Publish />

@@ -89,7 +89,8 @@
                     "name": "テキスト挿入",
                     "tooltip": "新しいテキスト要素を追加"
                 }
-            }
+            },
+            "versionHistory": "バージョン履歴"
         },
         "panels": {
             "edit": {

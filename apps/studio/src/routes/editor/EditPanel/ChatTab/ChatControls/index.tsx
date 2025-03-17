@@ -13,7 +13,7 @@ export const ChatControls = observer(() => {
     };
 
     return (
-        <div className="flex flex-row">
+        <div className="flex flex-row opacity-0 transition-opacity duration-200 group-hover/panel:opacity-100">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button

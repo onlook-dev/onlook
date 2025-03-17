@@ -303,7 +303,7 @@ export const Verification = observer(() => {
                                 }}
                                 variant="secondary"
                                 size="sm"
-                                className="h-8 text-sm"
+                                className="h-9 text-smallPlus"
                                 disabled={status === VerificationStatus.LOADING}
                             >
                                 {status === VerificationStatus.LOADING && (

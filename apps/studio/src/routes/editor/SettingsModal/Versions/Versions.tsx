@@ -28,7 +28,12 @@ export const Versions = observer(() => {
             } else if (date.toDateString() === yesterday.toDateString()) {
                 dateKey = 'Yesterday';
             } else {
-                dateKey = formatCommitDate(commit.timestamp, { includeDate: true });
+                // Format the date in a more human-readable way
+                dateKey = date.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
             }
 
             if (!acc[dateKey]) {
@@ -56,7 +61,7 @@ export const Versions = observer(() => {
 
     return (
         <div className="flex flex-col text-sm">
-            <div className="flex flex-row items-center justify-between gap-2 px-6 py-4">
+            <div className="flex flex-row items-center justify-between gap-2 px-6 py-6">
                 <h2 className="text-lg">Versions</h2>
                 {commits && commits.length > 0 ? (
                     <Button
