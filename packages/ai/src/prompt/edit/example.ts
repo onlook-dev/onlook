@@ -8,7 +8,7 @@ export const assistant1 = `Let's create a new TodoList component with basic func
 2. Add the ability to toggle todo items
 3. Include basic styling
 
-Implementing the changes:
+Here's the updated code:
 
 ${projectPath}/components/TodoList.tsx
 ${FENCE.code.start}tsx
@@ -62,7 +62,7 @@ export const assistant2 = `Let's refactor the TodoList by extracting the TodoIte
 2. Move the item rendering logic to the new component
 3. Update the TodoList to use the new component
 
-Implementing the changes:
+Here's the updated code:
 
 ${projectPath}/components/TodoItem.tsx
 ${FENCE.code.start}tsx
