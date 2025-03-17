@@ -79,7 +79,6 @@ class RunManager {
             await this.cleanProjectDir(folderPath);
             await this.stopAll();
             this.setState(RunState.STOPPED, 'Stopped.');
-            this.runningDirs.delete(folderPath);
             sendAnalytics('run stopped');
             return true;
         } catch (error) {
