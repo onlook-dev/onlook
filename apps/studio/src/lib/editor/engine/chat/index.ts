@@ -182,7 +182,7 @@ export class ChatManager {
             await this.conversation.generateConversationSummary();
         }
 
-        this.handleNewCoreMessages(res.payload);
+        this.handleNewCoreMessages(res.payload, userPrompt);
 
         if (
             requestType === StreamRequestType.CHAT &&

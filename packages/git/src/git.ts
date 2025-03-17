@@ -64,14 +64,21 @@ export async function isEmptyCommit(repoPath: string): Promise<boolean> {
 }
 
 export async function addAll(repoPath: string) {
-    await gitStatusMatrix({ fs, dir: repoPath }).then((status) =>
-        Promise.all(
-            status.map(([filepath, , worktreeStatus]) =>
-                worktreeStatus
-                    ? gitAdd({ fs, dir: repoPath, filepath })
-                    : gitRemove({ fs, dir: repoPath, filepath }),
-            ),
-        ),
+    const status = await gitStatusMatrix({ fs, dir: repoPath });
+    await Promise.all(
+        status.map(async ([filepath, HEAD, worktreeStatus]) => {
+            try {
+                // If file exists in worktree (worktreeStatus === 1), add it
+                // If file doesn't exist in worktree (worktreeStatus === 0) but exists in HEAD (HEAD === 1), remove it
+                if (worktreeStatus) {
+                    return gitAdd({ fs, dir: repoPath, filepath });
+                } else if (HEAD) {
+                    return gitRemove({ fs, dir: repoPath, filepath });
+                }
+            } catch (error) {
+                console.error(`Error processing file ${filepath}:`, error);
+            }
+        }),
     );
 }
 
