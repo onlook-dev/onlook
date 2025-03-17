@@ -180,7 +180,7 @@ const StyleSections = memo(() => {
 });
 StyleSections.displayName = 'StyleSections';
 
-const StylesTab = observer(() => {
+export const StylesTab = observer(() => {
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
@@ -201,5 +201,3 @@ const StylesTab = observer(() => {
         )
     );
 });
-
-export default StylesTab;

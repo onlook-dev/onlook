@@ -24,7 +24,11 @@ export const CodeBlock = ({
     const LINE_HEIGHT = 20;
 
     useEffect(() => {
-        initMonaco();
+        try {
+            initMonaco();
+        } catch (error) {
+            console.error('Failed to initialize Monaco editor:', error);
+        }
         return () => {
             if (editor.current) {
                 editor.current.dispose();

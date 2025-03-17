@@ -47,31 +47,42 @@ export async function add(repoPath: string, filepath: string) {
 }
 
 export async function isEmptyCommit(repoPath: string): Promise<boolean> {
-    // isomorphic-git creates empty commits by default
-    const changes = (
-        await gitStatusMatrix({
-            fs,
-            dir: repoPath,
-        })
-    ).filter(
-        ([_, HEAD, WORKDIR, STAGE]) =>
-            // filter unchanged
-            // https://github.com/isomorphic-git/isomorphic-git/issues/865#issuecomment-533028127
-            // https://isomorphic-git.org/docs/en/statusMatrix.html
-            !(HEAD == 1 && WORKDIR == 1 && STAGE == 1),
-    );
-    return changes.length === 0;
+    try {
+        const changes = (
+            await gitStatusMatrix({
+                fs,
+                dir: repoPath,
+            })
+        ).filter(
+            ([_, HEAD, WORKDIR, STAGE]) =>
+                // filter unchanged
+                // https://github.com/isomorphic-git/isomorphic-git/issues/865#issuecomment-533028127
+                // https://isomorphic-git.org/docs/en/statusMatrix.html
+                !(HEAD == 1 && WORKDIR == 1 && STAGE == 1),
+        );
+        return changes.length === 0;
+    } catch (error) {
+        console.error('Error checking if commit is empty:', error);
+        return false;
+    }
 }
 
 export async function addAll(repoPath: string) {
-    await gitStatusMatrix({ fs, dir: repoPath }).then((status) =>
-        Promise.all(
-            status.map(([filepath, , worktreeStatus]) =>
-                worktreeStatus
-                    ? gitAdd({ fs, dir: repoPath, filepath })
-                    : gitRemove({ fs, dir: repoPath, filepath }),
-            ),
-        ),
+    const status = await gitStatusMatrix({ fs, dir: repoPath });
+    await Promise.all(
+        status.map(async ([filepath, HEAD, worktreeStatus]) => {
+            try {
+                // If file exists in worktree (worktreeStatus === 1), add it
+                // If file doesn't exist in worktree (worktreeStatus === 0) but exists in HEAD (HEAD === 1), remove it
+                if (worktreeStatus) {
+                    return gitAdd({ fs, dir: repoPath, filepath });
+                } else if (HEAD) {
+                    return gitRemove({ fs, dir: repoPath, filepath });
+                }
+            } catch (error) {
+                console.error(`Error processing file ${filepath}:`, error);
+            }
+        }),
     );
 }
 
