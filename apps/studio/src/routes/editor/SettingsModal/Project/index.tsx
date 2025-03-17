@@ -149,7 +149,7 @@ const ProjectTab = observer(() => {
             <Separator />
             <div className="flex justify-between items-center p-6">
                 <div className="flex flex-col gap-2">
-                    <p className="text-largePlus">Reinstall Depdencies</p>
+                    <p className="text-largePlus">Reinstall Dependencies</p>
                     <p className="text-foreground-onlook text-small">
                         For when project failed to install dependencies
                     </p>
