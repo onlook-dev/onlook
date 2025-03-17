@@ -1,21 +1,22 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
-import { type FSWatcher, watch } from 'chokidar';
+import { subscribe, type AsyncSubscription } from '@parcel/watcher';
 import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { ALLOWED_EXTENSIONS, getValidFiles } from './helpers';
+import { ALLOWED_EXTENSIONS, getValidFiles, IGNORED_DIRECTORIES } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
 class RunManager {
     private static instance: RunManager;
     private mapping = new Map<string, TemplateNode>();
-    private watcher: FSWatcher | null = null;
+    private subscription: AsyncSubscription | null = null;
     state: RunState = RunState.STOPPED;
     runningDirs = new Set<string>();
+    createdFiles = new Set<string>();
 
     private constructor() {
         this.mapping = new Map();
@@ -50,8 +51,8 @@ class RunManager {
 
             this.setState(RunState.SETTING_UP, 'Setting up...');
             this.mapping.clear();
-            const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(filePaths);
+            await this.addIdsToDirectoryAndCreateMapping(folderPath);
+            await this.listen(folderPath);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -121,38 +122,58 @@ class RunManager {
 
     async cleanProjectDir(folderPath: string): Promise<void> {
         this.mapping.clear();
-        await this.watcher?.close();
-        this.watcher = null;
+        if (this.subscription) {
+            await this.subscription.unsubscribe();
+            this.subscription = null;
+        }
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(filePaths: string[]) {
-        if (this.watcher) {
-            this.watcher.close();
-            this.watcher = null;
+    async listen(folderPath: string) {
+        if (this.subscription) {
+            await this.subscription.unsubscribe();
+            this.subscription = null;
         }
 
-        this.watcher = watch(filePaths, {
-            persistent: true,
-        });
+        const ignoredDirectories = IGNORED_DIRECTORIES.map((dir) => `**/${dir}/**`);
 
-        this.watcher
-            .on('change', (filePath) => {
-                this.processFileForMapping(filePath);
-            })
-            .on('error', (error) => {
-                console.error(`Watcher error: ${error}`);
-            });
-    }
+        this.subscription = await subscribe(
+            folderPath,
+            (err, events) => {
+                if (err) {
+                    console.error(`Watcher error: ${err}`);
+                    return;
+                }
 
-    addFileToWatcher(filePath: string) {
-        for (const allowedExtension of ALLOWED_EXTENSIONS) {
-            if (filePath.endsWith(allowedExtension)) {
-                this.watcher?.add(filePath);
-                this.processFileForMapping(filePath);
-                break;
-            }
-        }
+                for (const event of events) {
+                    if (event.type === 'update') {
+                        for (const allowedExtension of ALLOWED_EXTENSIONS) {
+                            if (event.path.endsWith(allowedExtension)) {
+                                console.log(event.path, event.type);
+                                this.processFileForMapping(event.path);
+                                break;
+                            }
+                        }
+                    } else if (event.type === 'create') {
+                        // Only process the file if it's not already in the createdFiles set
+
+                        if (!this.createdFiles.has(event.path)) {
+                            for (const allowedExtension of ALLOWED_EXTENSIONS) {
+                                if (event.path.endsWith(allowedExtension)) {
+                                    console.log(event.path, event.type);
+                                    this.processFileForMapping(event.path);
+                                    break;
+                                }
+                            }
+                            this.createdFiles.add(event.path);
+                        }
+                    }
+                }
+            },
+            {
+                ignore: ['**/node_modules/**', '**/.git/**', ...ignoredDirectories],
+            },
+        );
     }
 
     async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
@@ -187,8 +208,10 @@ class RunManager {
         for (const dir of this.runningDirs) {
             await this.cleanProjectDir(dir);
         }
-        await this.watcher?.close();
-        this.watcher = null;
+        if (this.subscription) {
+            await this.subscription.unsubscribe();
+            this.subscription = null;
+        }
         this.runningDirs.clear();
         this.mapping.clear();
     }
