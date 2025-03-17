@@ -3,6 +3,7 @@ import { DefaultSettings } from '@onlook/models/constants';
 import { promises as fs, readFileSync } from 'fs';
 import mime from 'mime-lite';
 import path from 'path';
+import writeFileAtomic from 'write-file-atomic';
 
 async function scanImagesDirectory(projectRoot: string): Promise<ImageContentData[]> {
     const imagesPath = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
@@ -166,7 +167,7 @@ async function updateImageReferences(
                 return;
             }
             const updatedContent = content.replace(pattern, newImageUrl);
-            await fs.writeFile(file, updatedContent, { encoding: 'utf8' });
+            await writeFileAtomic(file, updatedContent, { encoding: 'utf8' });
         }),
     );
 }
