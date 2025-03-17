@@ -48,9 +48,11 @@ export class VersionsManager {
     }> => {
         try {
             if (this.isSaving) {
-                toast({
-                    title: 'Backup already in progress',
-                });
+                if (showToast) {
+                    toast({
+                        title: 'Backup already in progress',
+                    });
+                }
                 return {
                     success: false,
                     errorReason: CreateCommitFailureReason.COMMIT_IN_PROGRESS,
