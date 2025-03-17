@@ -12,7 +12,7 @@ import { ColorPopover } from './ColorPopover';
 import { MainChannels } from '@onlook/models/constants';
 import { invokeMainChannel } from '@/lib/utils';
 import { useEditorEngine } from '@/components/Context';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipPortal } from '@onlook/ui/tooltip';
 
 export interface ColorItem {
     name: string;
@@ -148,11 +148,9 @@ export const BrandPalletGroup = ({
                                 autoFocus
                             />
                         </TooltipTrigger>
-                        {localError && (
-                            <TooltipContent side="top" className="bg-red-500 text-white">
-                                {localError}
-                            </TooltipContent>
-                        )}
+                        <TooltipPortal>
+                            <TooltipContent side="top">{localError}</TooltipContent>
+                        </TooltipPortal>
                     </Tooltip>
                 ) : (
                     <span className="text-small text-foreground-secondary font-normal">
@@ -233,7 +231,23 @@ export const BrandPalletGroup = ({
                                                         size="icon"
                                                         className="h-[85%] w-[85%] p-0 bg-black hover:bg-black rounded-md flex items-center justify-center"
                                                     >
-                                                        <Icons.DotsHorizontal className="h-4 w-4 text-white" />
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Icons.DotsHorizontal className="h-4 w-4 text-white" />
+                                                            </TooltipTrigger>
+                                                            <TooltipPortal>
+                                                                <TooltipContent side="top">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm">
+                                                                            {color.name}
+                                                                        </span>
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            {getColorValue(color)}
+                                                                        </span>
+                                                                    </div>
+                                                                </TooltipContent>
+                                                            </TooltipPortal>
+                                                        </Tooltip>
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent

@@ -72,7 +72,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0 overflow-y-auto">
+        <div className="flex flex-col h-full text-xs text-active flex-grow w-full p-0 overflow-y-auto">
             <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border fixed top-0 left-0 right-0 bg-background z-10">
                 <h2 className="text-sm font-normal text-foreground">Brand Colors</h2>
                 <Button

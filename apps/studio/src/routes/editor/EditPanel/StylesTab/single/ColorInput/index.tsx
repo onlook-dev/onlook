@@ -207,8 +207,8 @@ const ColorInput = observer(
                     onChangeEnd={sendStyleUpdate}
                     backgroundImage={backgroundImage}
                     compoundStyle={compoundStyle}
-                />
-                */}
+                /> */}
+
                 <PopoverPicker
                     color={color}
                     onChange={sendStyleUpdate}

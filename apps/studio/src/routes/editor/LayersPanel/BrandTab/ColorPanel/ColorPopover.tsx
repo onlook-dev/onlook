@@ -28,7 +28,7 @@ export const ColorPopover = ({
     };
 
     const handleSave = () => {
-        if (existedName?.includes(editedName)) {
+        if (existedName?.includes(editedName) && editedName !== brandColor) {
             setError('Color name already exists');
             return;
         }
@@ -50,7 +50,7 @@ export const ColorPopover = ({
                     style={{ backgroundColor: editedColor.toHex() }}
                 />
             </PopoverTrigger>
-            <PopoverContent className="p-0 min-w-fit" side="right" align="start">
+            <PopoverContent className="p-0 w-56" side="right" align="start">
                 <div className="flex flex-col gap-0 p-0">
                     <div className="flex flex-col gap-1 p-2 pb-1">
                         <label className="text-xs text-muted-foreground">Color Name</label>
