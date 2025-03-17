@@ -115,6 +115,7 @@ export const BrandPalletGroup = ({
             onRename(title.toLowerCase(), newGroupName.trim());
         }
         setIsRenaming(false);
+        setLocalError(null);
     };
 
     const handleViewInCode = (color: ColorItem) => {
@@ -163,7 +164,9 @@ export const BrandPalletGroup = ({
                             />
                         </TooltipTrigger>
                         <TooltipPortal>
-                            <TooltipContent side="top">{localError}</TooltipContent>
+                            <TooltipContent side="top" className="text-white bg-red-500">
+                                {localError}
+                            </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>
                 ) : (
