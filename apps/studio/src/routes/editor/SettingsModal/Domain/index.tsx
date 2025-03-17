@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import BaseDomain from './Base';
 import { CustomDomain } from './Custom';
 import DangerZone from './DangerZone';
+import MetaSection from './MetaSection';
 
 export const DomainTab = observer(() => {
     const userManager = useUserManager();
@@ -22,6 +23,10 @@ export const DomainTab = observer(() => {
             <Separator />
             <div className="p-4">
                 <CustomDomain />
+            </div>
+            <Separator />
+            <div className="p-4">
+                <MetaSection />
             </div>
             <Separator />
             <div className="p-4">

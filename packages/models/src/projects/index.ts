@@ -56,6 +56,8 @@ export interface Project {
         base: DomainSettings | null;
         custom: DomainSettings | null;
     } | null;
+    metaTitle?: string;
+    metaDescription?: string;
 
     // deprecated
     // hosting?: HostingSettings | null;
