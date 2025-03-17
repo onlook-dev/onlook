@@ -21,7 +21,7 @@ interface ChatHistoryProps {
     onOpenChange: (open: boolean) => void;
 }
 
-const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
+export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
     const editorEngine = useEditorEngine();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
@@ -152,5 +152,3 @@ const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
         </Popover>
     );
 });
-
-export default ChatHistory;

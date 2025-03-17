@@ -61,7 +61,7 @@ export const OverlayChat = observer(
             !selectedEl ||
             isPreviewMode ||
             editorEngine.chat.isWaiting ||
-            editorEngine.chat.streamingMessage ||
+            editorEngine.chat.stream.content.length > 0 ||
             !userManager.settings.settings?.chat?.showMiniChat;
 
         // Add effect to reset input state when elementId changes

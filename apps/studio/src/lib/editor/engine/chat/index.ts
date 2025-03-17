@@ -1,23 +1,27 @@
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
+import {
+    ChatMessageRole,
+    StreamRequestType,
+    type AssistantChatMessage,
+    type CompletedStreamResponse,
+    type ErrorStreamResponse,
+    type RateLimitedStreamResponse,
+} from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 import { isPromptTooLongError, PROMPT_TOO_LONG_ERROR } from './helpers';
-import { AssistantChatMessageImpl } from './message/assistant';
-import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 import { SuggestionManager } from './suggestions';
 
-const USE_MOCK = false;
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 
 export class ChatManager {
@@ -27,11 +31,6 @@ export class ChatManager {
     context: ChatContext;
     stream: StreamResolver;
     suggestions: SuggestionManager;
-    streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
-        ? MOCK_STREAMING_ASSISTANT_MSG
-        : null;
-    shouldAutoScroll = true;
-    private disposers: Array<() => void> = [];
 
     constructor(
         private editorEngine: EditorEngine,
@@ -44,36 +43,10 @@ export class ChatManager {
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine, this.projectsManager);
         this.suggestions = new SuggestionManager(this.projectsManager);
-        this.listen();
-    }
-
-    listen() {
-        const disposer = reaction(
-            () => this.stream.content,
-            (content) => this.resolveStreamObject(content),
-        );
-        this.disposers.push(disposer);
     }
 
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
-    }
-
-    resolveStreamObject(content: string | null) {
-        if (!this.conversation) {
-            console.error('No conversation found');
-            return;
-        }
-        if (!this.conversation.projectId) {
-            console.error('No project id found');
-            return;
-        }
-
-        if (!content) {
-            this.streamingMessage = null;
-            return;
-        }
-        this.streamingMessage = new AssistantChatMessageImpl(content, true);
     }
 
     async sendNewMessage(content: string): Promise<void> {
@@ -125,21 +98,27 @@ export class ChatManager {
             console.error('No conversation found');
             return;
         }
-        this.shouldAutoScroll = true;
         this.stream.clear();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-        const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
+        const res: CompletedStreamResponse | null = await this.sendStreamRequest(
+            messages,
+            requestType,
+        );
         this.stream.clear();
         this.isWaiting = false;
-        this.handleChatResponse(res, requestType, userPrompt);
+        if (res) {
+            this.handleChatResponse(res, requestType, userPrompt);
+        } else {
+            console.error('No stream response found');
+        }
         sendAnalytics('receive chat response');
     }
 
     sendStreamRequest(
         messages: CoreMessage[],
         requestType: StreamRequestType,
-    ): Promise<StreamResponse | null> {
+    ): Promise<CompletedStreamResponse | null> {
         const requestId = nanoid();
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
@@ -156,7 +135,7 @@ export class ChatManager {
         sendAnalytics('stop chat stream');
     }
 
-    resubmitMessage(id: string, content: string) {
+    resubmitMessage(id: string, newMessageContent: string) {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
@@ -166,19 +145,19 @@ export class ChatManager {
             console.error('No message found with id', id);
             return;
         }
-        if (message.type !== 'user') {
+        if (message.role !== ChatMessageRole.USER) {
             console.error('Can only edit user messages');
             return;
         }
 
-        message.updateContent(content);
+        message.updateStringContent(newMessageContent);
         this.conversation.current.removeAllMessagesAfter(message);
         this.sendChatToAi(StreamRequestType.CHAT);
         sendAnalytics('resubmit chat message');
     }
 
     async handleChatResponse(
-        res: StreamResponse | null,
+        res: CompletedStreamResponse,
         requestType: StreamRequestType,
         userPrompt?: string,
     ) {
@@ -186,26 +165,12 @@ export class ChatManager {
             console.error('No response found');
             return;
         }
-        if (res.status === 'rate-limited') {
-            console.error('Rate limited in chat response', res.content);
-            this.stream.errorMessage = res.content;
-            this.stream.rateLimited = res.rateLimitResult ?? null;
-            sendAnalytics('rate limited', {
-                rateLimitResult: res.rateLimitResult,
-                content: res.content,
-            });
+
+        if (res.type === 'rate-limited') {
+            this.handleRateLimited(res);
             return;
-        }
-        if (res.status === 'error') {
-            console.error('Error found in chat response', res.content);
-            if (isPromptTooLongError(res.content)) {
-                this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
-            } else {
-                this.stream.errorMessage = res.content;
-            }
-            sendAnalytics('chat error', {
-                content: res.content,
-            });
+        } else if (res.type === 'error') {
+            this.handleError(res);
             return;
         }
 
@@ -217,11 +182,7 @@ export class ChatManager {
             await this.conversation.generateConversationSummary();
         }
 
-        const assistantMessage = this.conversation.addAssistantMessage(res);
-        if (!assistantMessage) {
-            console.error('Failed to add assistant message');
-            return;
-        }
+        this.handleNewCoreMessages(res.payload, userPrompt);
 
         if (
             requestType === StreamRequestType.CHAT &&
@@ -229,11 +190,33 @@ export class ChatManager {
             this.conversation.current.messages.length > 0
         ) {
             this.suggestions.shouldHide = true;
-            this.suggestions.generateNextSuggestions(this.conversation.current.messages);
+            this.suggestions.generateNextSuggestions(
+                this.conversation.current.getMessagesForStream(),
+            );
         }
 
         this.context.clearAttachments();
+    }
 
+    handleNewCoreMessages(messages: CoreMessage[], userPrompt?: string) {
+        for (const message of messages) {
+            if (message.role === ChatMessageRole.ASSISTANT) {
+                const assistantMessage = this.conversation.addCoreAssistantMessage(message);
+                if (!assistantMessage) {
+                    console.error('Failed to add assistant message');
+                } else {
+                    this.autoApplyCode(assistantMessage, userPrompt);
+                }
+            } else if (message.role === ChatMessageRole.USER) {
+                const userMessage = this.conversation.addCoreUserMessage(message);
+                if (!userMessage) {
+                    console.error('Failed to add user message');
+                }
+            }
+        }
+    }
+
+    autoApplyCode(assistantMessage: AssistantChatMessage, userPrompt?: string) {
         if (this.userManager.settings.settings?.chat?.autoApplyCode) {
             setTimeout(() => {
                 this.code.applyCode(assistantMessage.id, userPrompt);
@@ -241,16 +224,28 @@ export class ChatManager {
         }
     }
 
+    handleRateLimited(res: RateLimitedStreamResponse) {
+        this.stream.errorMessage = res.rateLimitResult?.reason;
+        this.stream.rateLimited = res.rateLimitResult ?? null;
+        sendAnalytics('rate limited', {
+            rateLimitResult: res.rateLimitResult,
+        });
+    }
+
+    handleError(res: ErrorStreamResponse) {
+        console.error('Error found in chat response', res.message);
+        if (isPromptTooLongError(res.message)) {
+            this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
+        } else {
+            this.stream.errorMessage = res.message;
+        }
+        sendAnalytics('chat error', {
+            content: res.message,
+        });
+    }
+
     dispose() {
-        // Clean up MobX reactions
-        this.disposers.forEach((dispose) => dispose());
-        this.disposers = [];
-
-        // Clean up stream
         this.stream.clear();
-        this.streamingMessage = null;
-
-        // Clean up managers
         this.code?.dispose();
         this.context?.dispose();
         if (this.conversation) {

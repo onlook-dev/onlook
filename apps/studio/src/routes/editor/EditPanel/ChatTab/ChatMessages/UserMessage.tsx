@@ -12,7 +12,7 @@ interface UserMessageProps {
     message: UserChatMessageImpl;
 }
 
-const UserMessage = ({ message }: UserMessageProps) => {
+export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -29,7 +29,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }, [isEditing, editValue]);
 
     const handleEditClick = () => {
-        setEditValue(message.content);
+        setEditValue(message.getStringContent());
         setIsEditing(true);
     };
 
@@ -54,14 +54,14 @@ const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     function handleCopyClick() {
-        const text = message.content;
+        const text = message.getStringContent();
         navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     }
 
     const handleRetry = () => {
-        editorEngine.chat.resubmitMessage(message.id, message.content);
+        editorEngine.chat.resubmitMessage(message.id, message.getStringContent());
     };
 
     function renderEditingInput() {
@@ -90,7 +90,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     function renderContent() {
-        return <div>{message.content}</div>;
+        return <div>{message.getStringContent()}</div>;
     }
 
     function renderButtons() {
@@ -107,7 +107,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             <Icons.Reload className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Retry</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Retry
+                    </TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
@@ -121,7 +123,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             <Icons.Pencil className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Edit</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Edit
+                    </TooltipContent>
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -138,7 +142,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             )}
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Copy</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Copy
+                    </TooltipContent>
                 </Tooltip>
             </div>
         );
@@ -164,5 +170,3 @@ const UserMessage = ({ message }: UserMessageProps) => {
         </div>
     );
 };
-
-export default UserMessage;

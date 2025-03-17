@@ -3,8 +3,10 @@ import { PAGE_SYSTEM_PROMPT, PromptProvider } from '@onlook/ai/src/prompt';
 import { CreateStage, type CreateCallback, type CreateProjectResponse } from '@onlook/models';
 import {
     StreamRequestType,
+    type ErrorStreamResponse,
     type ImageMessageContext,
-    type StreamResponse,
+    type PartialStreamResponse,
+    type RateLimitedStreamResponse,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage, CoreSystemMessage } from 'ai';
@@ -106,11 +108,11 @@ export class ProjectCreator {
             skipSystemPrompt: true,
         });
 
-        if (response.status !== 'full') {
+        if (response.type !== 'full') {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
         }
 
-        const content = extractCodeBlocks(response.content);
+        const content = extractCodeBlocks(response.text);
 
         return {
             path: PAGE_SYSTEM_PROMPT.defaultPath,
@@ -206,16 +208,14 @@ ${PAGE_SYSTEM_PROMPT.defaultContent}`;
         await fs.promises.writeFile(pagePath, generatedPage.content);
     }
 
-    private getStreamErrorMessage(streamResult: StreamResponse): string {
-        if (streamResult.status === 'error') {
-            return streamResult.content;
+    private getStreamErrorMessage(
+        streamResult: PartialStreamResponse | ErrorStreamResponse | RateLimitedStreamResponse,
+    ): string {
+        if (streamResult.type === 'error') {
+            return streamResult.message;
         }
 
-        if (streamResult.status === 'partial') {
-            return streamResult.content;
-        }
-
-        if (streamResult.status === 'rate-limited') {
+        if (streamResult.type === 'rate-limited') {
             if (streamResult.rateLimitResult) {
                 const requestLimit =
                     streamResult.rateLimitResult.reason === 'daily'
@@ -225,6 +225,10 @@ ${PAGE_SYSTEM_PROMPT.defaultContent}`;
                 return `You reached your ${streamResult.rateLimitResult.reason} ${requestLimit} message limit.`;
             }
             return 'Rate limit exceeded. Please try again later.';
+        }
+
+        if (streamResult.type === 'partial') {
+            return 'Returned partial response';
         }
 
         return 'Unknown error';

@@ -4,7 +4,8 @@ ASSISTANT: Let's create a new TodoList component with basic functionality:
 2. Add the ability to toggle todo items
 3. Include basic styling
 
-Here are the *SEARCH/REPLACE* blocks:
+Here's the updated code:
+
 /path/to/your/project/components/TodoList.tsx
 ```tsx
 <<<<<<< SEARCH
@@ -55,7 +56,8 @@ ASSISTANT: Let's refactor the TodoList by extracting the TodoItem into its own c
 2. Move the item rendering logic to the new component
 3. Update the TodoList to use the new component
 
-Here are the *SEARCH/REPLACE* blocks:
+Here's the updated code:
+
 /path/to/your/project/components/TodoItem.tsx
 ```tsx
 <<<<<<< SEARCH

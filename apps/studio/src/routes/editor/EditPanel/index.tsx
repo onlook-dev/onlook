@@ -16,12 +16,12 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ChatTab from './ChatTab';
-import ChatControls from './ChatTab/ChatControls';
-import ChatHistory from './ChatTab/ChatControls/ChatHistory';
-import DevTab from './DevTab';
-import PropsTab from './PropsTab';
-import StylesTab from './StylesTab';
+import { ChatTab } from './ChatTab';
+import { ChatControls } from './ChatTab/ChatControls';
+import { ChatHistory } from './ChatTab/ChatControls/ChatHistory';
+import { DevTab } from './DevTab';
+import { PropsTab } from './PropsTab';
+import { StylesTab } from './StylesTab';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,

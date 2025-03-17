@@ -10,7 +10,6 @@ html body #root {
 
 body {
     font-family: 'Inter Variable', sans-serif;
-    user-select: none;
 }
 
 p {

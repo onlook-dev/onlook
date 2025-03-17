@@ -36,8 +36,8 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@ai-sdk/anthropic": "^0.0.53",
-        "@anthropic-ai/sdk": "^0.33.1",
+        "@ai-sdk/anthropic": "^1.1.17",
+        "ai": "^4.1.61",
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",
         "@fontsource-variable/inter": "^5.1.0",
@@ -47,7 +47,6 @@
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
         "@xterm/xterm": "^5.6.0-beta.98",
-        "ai": "^4.1.26",
         "browser-image-compression": "^2.0.2",
         "chokidar": "^4.0.1",
         "detect-port": "^2.1.0",

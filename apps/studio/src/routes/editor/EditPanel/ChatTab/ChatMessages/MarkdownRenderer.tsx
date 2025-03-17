@@ -9,13 +9,13 @@ const MarkdownRenderer = ({
     content,
     className = '',
     applied,
-    isStream = false,
+    isStream,
 }: {
     messageId: string;
     content: string;
     className?: string;
     applied: boolean;
-    isStream?: boolean;
+    isStream: boolean;
 }) => {
     const transformedContent = content.replace(
         /^(.*?)\n```(\w+)\n/gm,
