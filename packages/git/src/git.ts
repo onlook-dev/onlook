@@ -48,7 +48,6 @@ export async function add(repoPath: string, filepath: string) {
 
 export async function isEmptyCommit(repoPath: string): Promise<boolean> {
     try {
-        // isomorphic-git creates empty commits by default
         const changes = (
             await gitStatusMatrix({
                 fs,

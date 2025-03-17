@@ -28,8 +28,12 @@ export const readFileTool = tool({
         path: z.string().describe('The absolute path to the file to read'),
     }),
     execute: async ({ path }) => {
-        const file = await readFile(path, 'utf8');
-        return file;
+        try {
+            const file = await readFile(path, 'utf8');
+            return file;
+        } catch (error) {
+            return `Error: ${error instanceof Error ? error.message : error}`;
+        }
     },
 });
 
