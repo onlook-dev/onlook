@@ -5,7 +5,7 @@ import ProjectEditor from './editor';
 import Projects from './projects';
 import SignIn from './signin';
 
-const Routes = observer(() => {
+export const Routes = observer(() => {
     const routeManager = useRouteManager();
     const authManager = useAuthManager();
     const projectsManager = useProjectsManager();
@@ -29,5 +29,3 @@ const Routes = observer(() => {
             return <div>404: Unknown route</div>;
     }
 });
-
-export default Routes;

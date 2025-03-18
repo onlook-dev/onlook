@@ -265,7 +265,7 @@ const ImagesTab = observer(() => {
                         )}
                     </div>
                     <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger asChild>
                             <Button
                                 variant={'default'}
                                 size={'icon'}

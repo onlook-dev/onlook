@@ -34,7 +34,7 @@ const DEV_PANEL_MIN_WIDTH = 300;
 const DEV_PANEL_MAX_WIDTH = 1000;
 const isDevPanelOpen = false;
 
-const EditPanel = observer(() => {
+export const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
     const { t } = useTranslation();
@@ -275,5 +275,3 @@ const EditPanel = observer(() => {
         </div>
     );
 });
-
-export default EditPanel;
