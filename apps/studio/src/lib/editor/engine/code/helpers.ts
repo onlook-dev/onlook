@@ -1,7 +1,7 @@
+import { StyleChangeType, type StyleChange } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { twMerge } from 'tailwind-merge';
 import { CssToTailwindTranslator, propertyMap } from '/common/helpers/twTranslator';
-import { StyleChangeType, type StyleChange } from '@onlook/models/actions';
 
 export async function getOrCreateCodeDiffRequest(
     oid: string,

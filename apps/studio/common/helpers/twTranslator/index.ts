@@ -1,5 +1,3 @@
-import { StyleChangeType } from '@onlook/models/actions';
-
 export interface ResultCode {
     selectorName: string;
     resultVal: string;
@@ -3282,7 +3280,6 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
         return null;
     }
     const cssCodeList = it.cssCode.split(';').filter((v) => v !== '');
-    console.log(cssCodeList);
     const resultVals = cssCodeList
         .map((v) => {
             let key = '';
@@ -3296,7 +3293,6 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
                     break;
                 }
             }
-            console.log(key);
             const pipe = propertyMap.get(key.trim());
             let hasImportant = false;
             if (val.includes('!important')) {
@@ -3471,7 +3467,6 @@ export const defaultTranslatorConfig = {
 export const CssToTailwindTranslator = (
     code: string,
     config: TranslatorConfig = defaultTranslatorConfig,
-    type: StyleChangeType = StyleChangeType.Value,
 ): {
     code: 'SyntaxError' | 'OK';
     data: ResultCode[];
