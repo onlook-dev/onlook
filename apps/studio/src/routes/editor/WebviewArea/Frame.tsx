@@ -227,11 +227,14 @@ const Frame = observer(
             editorEngine.webviews.deregister(webview);
             messageBridge.deregister(webview);
             webview.removeEventListener('did-navigate', handleUrlChange);
+            webview.removeEventListener('did-navigate-in-page', handleUrlChange);
+            webview.removeEventListener('did-redirect-navigation', handleUrlChange);
         }
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
             webview.addEventListener('did-navigate', handleUrlChange);
             webview.addEventListener('did-navigate-in-page', handleUrlChange);
+            webview.addEventListener('did-redirect-navigation', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
             webview.addEventListener('did-fail-load', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
