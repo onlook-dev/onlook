@@ -3,6 +3,7 @@ import { GitChannels } from '@onlook/models/constants';
 import { type Project } from '@onlook/models/projects';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../editor/engine';
 import { invokeMainChannel, sendAnalytics } from '../utils';
 
 export enum CreateCommitFailureReason {
@@ -17,7 +18,10 @@ export class VersionsManager {
     savedCommits: GitCommit[] = [];
     isSaving = false;
 
-    constructor(private project: Project) {
+    constructor(
+        private project: Project,
+        private editorEngine?: EditorEngine,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -170,6 +174,13 @@ export class VersionsManager {
             description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
         });
         await this.listCommits();
+
+        // Add a 1-second delay before refreshing webviews
+        if (this.editorEngine) {
+            setTimeout(() => {
+                this.editorEngine?.webviews.reloadWebviews();
+            }, 1000);
+        }
 
         sendAnalytics('versions checkout commit success', {
             commit: commit.displayName || commit.message,
