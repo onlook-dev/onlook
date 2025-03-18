@@ -205,8 +205,7 @@ export class ThemeManager {
             console.error('Error loading colors:', error);
         }
     }
-
-    generateDefaultColors(lightModeColors: any, darkModeColors: any, config: any) {
+    generateDefaultColors(lightModeColors: ThemeColors, darkModeColors: ThemeColors, config: any) {
         const deprecatedColors = ['lightBlue', 'warmGray', 'trueGray', 'coolGray', 'blueGray'];
         const excludedColors = [
             'inherit',
