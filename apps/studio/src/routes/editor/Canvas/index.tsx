@@ -7,7 +7,7 @@ import HotkeysArea from './Hotkeys';
 import Overlay from './Overlay';
 import PanOverlay from './PanOverlay';
 
-const Canvas = observer(({ children }: { children: ReactNode }) => {
+export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;
     const PAN_SENSITIVITY = 0.52;
     const MIN_ZOOM = 0.1;
@@ -183,5 +183,3 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         </HotkeysArea>
     );
 });
-
-export default Canvas;

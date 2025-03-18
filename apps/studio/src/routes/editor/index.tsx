@@ -1,12 +1,12 @@
-import Canvas from './Canvas';
-import EditPanel from './EditPanel';
-import HotkeysModal from './HotkeysModal';
-import LayersPanel from './LayersPanel';
-import SettingsModal from './SettingsModal';
-import Toolbar from './Toolbar';
-import EditorTopBar from './TopBar';
-import PricingModal from './TopBar/Subscription/PricingPage';
-import WebviewArea from './WebviewArea';
+import { SettingsModal } from '../modals/Settings';
+import { Canvas } from './Canvas';
+import { EditPanel } from './EditPanel';
+import { HotkeysModal } from './HotkeysModal';
+import { LayersPanel } from './LayersPanel';
+import { Toolbar } from './Toolbar';
+import { EditorTopBar } from './TopBar';
+import { PricingModal } from './TopBar/Subscription/PricingPage';
+import { WebviewArea } from './WebviewArea';
 
 function ProjectEditor() {
     return (

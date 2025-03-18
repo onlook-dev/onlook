@@ -19,7 +19,7 @@ interface SettingTab {
     component: React.ReactNode;
 }
 
-const SettingsModal = observer(() => {
+export const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
@@ -135,5 +135,3 @@ const SettingsModal = observer(() => {
         </AnimatePresence>
     );
 });
-
-export default SettingsModal;

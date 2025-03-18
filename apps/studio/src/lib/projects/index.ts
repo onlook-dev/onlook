@@ -171,7 +171,7 @@ export class ProjectsManager {
         }
 
         if (!this._versions) {
-            this._versions = new VersionsManager(project);
+            this._versions = new VersionsManager(project, this.editorEngine);
         } else {
             this._versions.updateProject(project);
         }

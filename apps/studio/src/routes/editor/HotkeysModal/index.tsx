@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { Hotkey } from '/common/hotkeys';
 
-const HotkeysModal = observer(() => {
+export const HotkeysModal = observer(() => {
     const editorEngine = useEditorEngine();
 
     enum HotkeyCategory {
@@ -215,5 +215,3 @@ const HotkeysModal = observer(() => {
         </AnimatePresence>
     );
 });
-
-export default HotkeysModal;
