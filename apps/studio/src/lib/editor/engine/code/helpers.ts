@@ -1,6 +1,6 @@
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { twMerge } from 'tailwind-merge';
-import { CssToTailwindTranslator } from '/common/helpers/twTranslator';
+import { CssToTailwindTranslator, propertyMap } from '/common/helpers/twTranslator';
 import { StyleChangeType, type StyleChange } from '@onlook/models/actions';
 
 export async function getOrCreateCodeDiffRequest(
@@ -29,21 +29,48 @@ export function addTailwindToRequest(
     request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
 }
 
-export function getTailwindClasses(oid: string, styles: Record<string, StyleChange>) {
-    const css = createCSSRuleString(oid, styles);
+export function getTailwindClasses(oid: string, styles: Record<string, StyleChange>): string[] {
+    const customColors = Object.entries(styles).reduce(
+        (acc, [key, style]) => {
+            if (style.type === StyleChangeType.Custom) {
+                acc[key] = style;
+            }
+            return acc;
+        },
+        {} as Record<string, StyleChange>,
+    );
+    const normalColors = Object.entries(styles).reduce(
+        (acc, [key, style]) => {
+            if (style.type !== StyleChangeType.Custom) {
+                acc[key] = style;
+            }
+            return acc;
+        },
+        {} as Record<string, StyleChange>,
+    );
+
+    const css = createCSSRuleString(oid, normalColors);
     const tw = CssToTailwindTranslator(css);
-    return tw.data.map((res) => res.resultVal);
+    const twClasses = tw.data.map((res) => res.resultVal);
+
+    const customClasses = Object.entries(customColors)
+        .map(([key, style]) => {
+            const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+            const css = propertyMap.get(cssKey.trim());
+            if (typeof css === 'function') {
+                return css(style.value, true);
+            }
+        })
+        .filter((v) => v !== undefined);
+
+    return [...twClasses, ...customClasses];
 }
 
 export function createCSSRuleString(oid: string, styles: Record<string, StyleChange>) {
     const cssString = Object.entries(styles)
         .map(
             ([property, value]) =>
-                `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${
-                    value.type === StyleChangeType.Custom
-                        ? `var(--${value.value})`
-                        : value.value.trim()
-                };`,
+                `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value.value.trim()};`,
         )
         .join(' ');
     return `${oid} { ${cssString} }`;

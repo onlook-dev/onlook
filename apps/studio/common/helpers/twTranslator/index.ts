@@ -27,13 +27,6 @@ const getCustomVal = (val: string) => {
     return val;
 };
 
-const isCustomColor = (str: string) => {
-    if (str.startsWith('var(--') && str.endsWith(')')) {
-        return str.replace('var(--', '').replace(')', '');
-    }
-    return '';
-};
-
 const isColor = (str: string, joinLinearGradient = false) => {
     const namedColors = [
         'initial',
@@ -406,10 +399,10 @@ const getFilterDefaultVal = (val: string) => {
     }[val];
 };
 
-const propertyMap: Map<string, Record<string, string> | ((val: string) => string)> = new Map<
+export const propertyMap: Map<
     string,
-    Record<string, string> | ((val: string) => string)
->([
+    Record<string, string> | ((val: string, isCustom?: boolean) => string)
+> = new Map<string, Record<string, string> | ((val: string, isCustom?: boolean) => string)>([
     [
         'align-content',
         {
@@ -617,16 +610,13 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'background-color',
-        (val) =>
-            (({
+        (val, isCustom = false) =>
+            ({
                 transparent: 'bg-transparent',
                 currentColor: 'bg-current',
                 currentcolor: 'bg-current',
-            })[val] ?? isCustomColor(val))
-                ? `bg-${isCustomColor(val)}`
-                : isColor(val, true)
-                  ? `bg-[${getCustomVal(val)}]`
-                  : '',
+            })[val] ??
+            (isCustom ? `bg-${val}` : isColor(val, true) ? `bg-[${getCustomVal(val)}]` : ''),
     ],
     ['background-image', (val) => ({ none: 'bg-none' })[val] ?? `bg-[${getCustomVal(val)}]`],
     [
@@ -703,9 +693,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-bottom-color',
-        (val) =>
-            isCustomColor(val)
-                ? `[border-bottom-color:${isCustomColor(val)}]`
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-bottom-color:${val}]`
                 : isColor(val, true)
                   ? `[border-bottom-color:${getCustomVal(val)}]`
                   : '',
@@ -743,15 +733,15 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-color',
-        (val) =>
+        (val, isCustom = false) =>
             ({
                 transparent: 'border-transparent',
                 currentColor: 'border-current',
                 currentcolor: 'border-current',
             })[val] ??
-            (isCustomColor(val)
-                ? `border-${isCustomColor(val)}`
-                : isColor(val)
+            (isCustom
+                ? `border-${val}`
+                : isColor(val, true)
                   ? `border-[${getCustomVal(val)}]`
                   : ''),
     ],
@@ -772,9 +762,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-left-color',
-        (val) =>
-            isCustomColor(val)
-                ? `[border-left-color:${isCustomColor(val)}]`
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-left-color:${val}]`
                 : isColor(val, true)
                   ? `[border-left-color:${getCustomVal(val)}]`
                   : '',
@@ -827,9 +817,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-right-color',
-        (val) =>
-            isCustomColor(val)
-                ? `[border-right-color:${isCustomColor(val)}]`
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-right-color:${val}]`
                 : isColor(val, true)
                   ? `[border-right-color:${getCustomVal(val)}]`
                   : '',
@@ -861,9 +851,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-top-color',
-        (val) =>
-            isCustomColor(val)
-                ? `[border-top-color:${isCustomColor(val)}]`
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-top-color:${val}]`
                 : isColor(val, true)
                   ? `[border-top-color:${getCustomVal(val)}]`
                   : '',
@@ -1012,9 +1002,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ['column-rule', (val) => `[column-rule:${getCustomVal(val)}]`],
     [
         'column-rule-color',
-        (val) =>
-            isCustomColor(val)
-                ? `[column-rule-color:${isCustomColor(val)}]`
+        (val, isCustom = false) =>
+            isCustom
+                ? `[column-rule-color:${val}]`
                 : isColor(val, true)
                   ? `[column-rule-color:${getCustomVal(val)}]`
                   : '',
@@ -1104,13 +1094,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'fill',
-        (val) =>
+        (val, isCustom = false) =>
             ({ currentColor: 'fill-current', currentcolor: 'fill-current' })[val] ??
-            (isCustomColor(val)
-                ? `fill-${isCustomColor(val)}`
-                : isColor(val, true)
-                  ? `fill-[${getCustomVal(val)}]`
-                  : ''),
+            (isCustom ? `fill-${val}` : isColor(val, true) ? `fill-[${getCustomVal(val)}]` : ''),
     ],
     [
         'filter',
@@ -1817,9 +1803,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ['outline', (val) => `outline-[${getCustomVal(val)}]`],
     [
         'outline-color',
-        (val) =>
-            isCustomColor(val)
-                ? `outline-${isCustomColor(val)}`
+        (val, isCustom = false) =>
+            isCustom
+                ? `outline-${val}`
                 : isColor(val, true)
                   ? `outline-[${getCustomVal(val)}]`
                   : '',
@@ -2095,12 +2081,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ['shape-outside', (val) => `[shape-outside:${getCustomVal(val)}]`],
     [
         'stroke',
-        (val) =>
+        (val, isCustom = false) =>
             (({
                 currentColor: 'stroke-current',
                 currentcolor: 'stroke-current',
-            })[val] ?? isCustomColor(val))
-                ? `stroke-${isCustomColor(val)}`
+            })[val] ?? isCustom)
+                ? `stroke-${val}`
                 : isColor(val, true)
                   ? `stroke-[${getCustomVal(val)}]`
                   : '',
@@ -2170,9 +2156,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'text-decoration-color',
-        (val) =>
-            isCustomColor(val)
-                ? `[text-decoration-color:${isCustomColor(val)}]`
+        (val, isCustom = false) =>
+            isCustom
+                ? `[text-decoration-color:${val}]`
                 : isColor(val, true)
                   ? `[text-decoration-color:${getCustomVal(val)}]`
                   : '',
@@ -2203,9 +2189,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'text-emphasis-color',
-        (val) =>
-            isCustomColor(val)
-                ? `[text-emphasis-color:${isCustomColor(val)}]`
+        (val, isCustom = false) =>
+            isCustom
+                ? `[text-emphasis-color:${val}]`
                 : isColor(val, true)
                   ? `[text-emphasis-color:${getCustomVal(val)}]`
                   : '',
@@ -3296,6 +3282,7 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
         return null;
     }
     const cssCodeList = it.cssCode.split(';').filter((v) => v !== '');
+    console.log(cssCodeList);
     const resultVals = cssCodeList
         .map((v) => {
             let key = '';
@@ -3309,6 +3296,7 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
                     break;
                 }
             }
+            console.log(key);
             const pipe = propertyMap.get(key.trim());
             let hasImportant = false;
             if (val.includes('!important')) {

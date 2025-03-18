@@ -27,6 +27,7 @@ export interface ColorItem {
             darkMode?: number;
         };
     };
+    override?: boolean;
 }
 
 interface BrandPalletGroupProps {
@@ -329,18 +330,37 @@ export const BrandPalletGroup = ({
                                                             </span>
                                                         </Button>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
-                                                            onClick={() => onDelete(color.name)}
-                                                        >
-                                                            <span className="flex w-full text-sm items-center">
-                                                                <Icons.Trash className="mr-2 h-4 w-4" />
-                                                                <span>Delete</span>
-                                                            </span>
-                                                        </Button>
-                                                    </DropdownMenuItem>
+                                                    {!isDefaultPalette ? (
+                                                        <DropdownMenuItem asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                                onClick={() => onDelete(color.name)}
+                                                            >
+                                                                <span className="flex w-full text-sm items-center">
+                                                                    <Icons.Trash className="mr-2 h-4 w-4" />
+                                                                    <span>Delete</span>
+                                                                </span>
+                                                            </Button>
+                                                        </DropdownMenuItem>
+                                                    ) : (
+                                                        color.override && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                                    onClick={() =>
+                                                                        onDelete(color.name)
+                                                                    }
+                                                                >
+                                                                    <span className="flex w-full text-sm items-center">
+                                                                        <Icons.Reset className="mr-2 h-4 w-4" />
+                                                                        <span>Reset override</span>
+                                                                    </span>
+                                                                </Button>
+                                                            </DropdownMenuItem>
+                                                        )
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>

@@ -191,7 +191,12 @@ export class ThemeManager {
                     ];
                 });
             }
-            const defaultColors = this.generateDefaultColors(lightModeColors, darkModeColors);
+            const defaultColors = this.generateDefaultColors(
+                lightModeColors,
+                darkModeColors,
+                config,
+            );
+
             if (defaultColors) {
                 this.defaultColors = defaultColors;
             }
@@ -201,7 +206,7 @@ export class ThemeManager {
         }
     }
 
-    generateDefaultColors(lightModeColors: any, darkModeColors: any) {
+    generateDefaultColors(lightModeColors: any, darkModeColors: any, config: any) {
         const deprecatedColors = ['lightBlue', 'warmGray', 'trueGray', 'coolGray', 'blueGray'];
         const excludedColors = [
             'inherit',
@@ -228,14 +233,22 @@ export class ThemeManager {
                 const colorItems: ColorItem[] = Object.entries(defaultColorScale)
                     .filter(([shade]) => shade !== 'DEFAULT')
                     .map(([shade, defaultValue]) => {
-                        const lightModeValue = lightModeColors[`${colorName}-${shade}`];
-                        const darkModeValue = darkModeColors[`${colorName}-${shade}`];
+                        const lightModeValue = lightModeColors[`${colorName}-${shade}`]?.value;
+                        const darkModeValue = darkModeColors[`${colorName}-${shade}`]?.value;
 
                         return {
                             name: shade,
                             originalKey: `${colorName}-${shade}`,
                             lightColor: lightModeValue || defaultValue,
                             darkColor: darkModeValue || defaultValue,
+                            line: {
+                                config: config[`${colorName}-${shade}`]?.line,
+                                css: {
+                                    lightMode: lightModeColors[`${colorName}-${shade}`]?.line,
+                                    darkMode: darkModeColors[`${colorName}-${shade}`]?.line,
+                                },
+                            },
+                            override: !!lightModeValue || !!darkModeValue,
                         };
                     });
 
@@ -244,15 +257,22 @@ export class ThemeManager {
                     .filter((key) => key.startsWith(`${colorName}-`))
                     .map((key) => key.split('-')[1])
                     .filter((shade) => !colorItems.some((item) => item.name === shade));
-
                 customShades.forEach((shade) => {
-                    const lightModeValue = lightModeColors[`${colorName}-${shade}`];
-                    const darkModeValue = darkModeColors[`${colorName}-${shade}`];
+                    const lightModeValue = lightModeColors[`${colorName}-${shade}`]?.value;
+                    const darkModeValue = darkModeColors[`${colorName}-${shade}`]?.value;
                     colorItems.push({
                         name: shade,
                         originalKey: `${colorName}-${shade}`,
                         lightColor: lightModeValue || '',
                         darkColor: darkModeValue || '',
+                        line: {
+                            config: config[`${colorName}-${shade}`]?.line,
+                            css: {
+                                lightMode: lightModeColors[`${colorName}-${shade}`]?.line,
+                                darkMode: darkModeColors[`${colorName}-${shade}`]?.line,
+                            },
+                        },
+                        override: true,
                     });
                 });
 
@@ -262,7 +282,6 @@ export class ThemeManager {
                     const bNum = parseInt(b.name);
                     return aNum - bNum;
                 });
-
                 // Add to record instead of array
                 defaultColorsRecord[colorName] = colorItems;
             });
