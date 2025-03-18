@@ -125,16 +125,6 @@ export function copyDir(src: string, dest: string) {
     }
 }
 
-export async function runBuildScript(
-    folderPath: string,
-    buildScript: string,
-): Promise<RunBunCommandResult> {
-    return await runBunCommand(buildScript, {
-        cwd: folderPath,
-        env: { ...process.env, NODE_ENV: 'production' },
-    });
-}
-
 export function updateGitignore(projectDir: string, target: string): boolean {
     const gitignorePath = join(projectDir, '.gitignore');
 

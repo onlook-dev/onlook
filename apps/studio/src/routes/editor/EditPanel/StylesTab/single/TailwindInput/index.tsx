@@ -4,6 +4,7 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { ClassParsingResult, DomElement } from '@onlook/models/element';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -463,16 +464,17 @@ const TailwindInput = observer(() => {
                         )}
                     </div>
                     {rootHistory.error ? (
-                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
-                            <button
+                        <div className="absolute bottom-1 right-1 text-xs flex items-center">
+                            <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={(e) => {
                                     e.stopPropagation(); // Prevents unfocusing the textarea
                                     navigateToTemplateNode(selectedEl?.oid);
                                 }}
-                                className="underline"
                             >
-                                Go to source
-                            </button>
+                                Open <Icons.ExternalLink className="h-3 w-3 ml-1" />
+                            </Button>
                         </div>
                     ) : (
                         isRootFocused && <EnterIndicator />
@@ -563,16 +565,17 @@ const TailwindInput = observer(() => {
                         )}
                     </div>
                     {instanceHistory.error ? (
-                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
-                            <button
+                        <div className="absolute bottom-1 right-2 text-xs flex items-center">
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={(e) => {
                                     e.stopPropagation(); // Prevents unfocusing the textarea
                                     navigateToTemplateNode(selectedEl?.oid);
                                 }}
-                                className="underline"
                             >
-                                Go to source
-                            </button>
+                                Open <Icons.ExternalLink className="h-3 w-3 ml-1" />
+                            </Button>
                         </div>
                     ) : (
                         isInstanceFocused && <EnterIndicator />

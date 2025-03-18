@@ -1,14 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
 import type { CompoundStyle, SingleStyle } from '@/lib/editor/styles/models';
 import { invokeMainChannel } from '@/lib/utils';
+import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
 import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import BrandPopoverPicker from './ColorBrandPicker';
-import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
-import PopoverPicker from './Popover';
 // import PopoverPicker from './Popover';
 
 const stripUrlWrapper = (url: string) => {
@@ -201,21 +200,21 @@ const ColorInput = observer(
         };
         return (
             <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
-                {/* <BrandPopoverPicker
-                    color={color}
-                    onChange={sendStyleUpdate}
-                    onChangeEnd={sendStyleUpdate}
-                    backgroundImage={backgroundImage}
-                    compoundStyle={compoundStyle}
-                /> */}
-
-                <PopoverPicker
+                <BrandPopoverPicker
                     color={color}
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
                     backgroundImage={backgroundImage}
                     compoundStyle={compoundStyle}
                 />
+
+                {/* <PopoverPicker
+                    color={color}
+                    onChange={sendStyleUpdate}
+                    onChangeEnd={sendStyleUpdate}
+                    backgroundImage={backgroundImage}
+                    compoundStyle={compoundStyle}
+                /> */}
                 <ColorTextInput
                     value={value}
                     isFocused={isFocused}

@@ -30,11 +30,11 @@ import { getRefreshedAuthTokens } from '../auth';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
-    runBuildScript,
     serializeFiles,
     updateGitignore,
     type FileRecord,
 } from './helpers';
+import { runBuildScript } from './run';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
