@@ -94,25 +94,21 @@ const BrandPopoverPicker = memo(
             }
         };
 
-        const colorGroups = useMemo(() => {
-            return editorEngine.theme.colorGroups;
-        }, [editorEngine.theme.colorGroups]);
+        const filteredColorGroups = Object.entries(editorEngine.theme.colorGroups).filter(
+            ([name, colors]) => {
+                return colors.some((color) =>
+                    color.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                );
+            },
+        );
 
-        const colorDefaults = useMemo(() => {
-            return editorEngine.theme.colorDefaults;
-        }, [editorEngine.theme.colorDefaults]);
-
-        const filteredColorGroups = Object.entries(colorGroups).filter(([name, colors]) => {
-            return colors.some((color) =>
-                color.name.toLowerCase().includes(searchQuery.toLowerCase()),
-            );
-        });
-
-        const filteredColorDefaults = Object.entries(colorDefaults).filter(([name, colors]) => {
-            return colors.some((color) =>
-                color.name.toLowerCase().includes(searchQuery.toLowerCase()),
-            );
-        });
+        const filteredColorDefaults = Object.entries(editorEngine.theme.colorDefaults).filter(
+            ([name, colors]) => {
+                return colors.some((color) =>
+                    color.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                );
+            },
+        );
 
         const handleColorSelect = (color: ColorItem) => {
             onChangeEnd?.(color);
