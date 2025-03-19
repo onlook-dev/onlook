@@ -1,9 +1,9 @@
 import { useAuthManager, useProjectsManager, useRouteManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import { observer } from 'mobx-react-lite';
-import ProjectEditor from './editor';
-import Projects from './projects';
-import SignIn from './signin';
+import { ProjectEditor } from './editor';
+import { Projects } from './projects';
+import { SignIn } from './signin';
 
 export const Routes = observer(() => {
     const routeManager = useRouteManager();

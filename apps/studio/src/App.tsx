@@ -3,11 +3,10 @@ import { Toaster } from '@onlook/ui/toaster';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { I18nextProvider } from 'react-i18next';
 import { AppBar } from './components/AppBar';
+import { Modals } from './components/Modals';
 import { ThemeProvider } from './components/ThemeProvider';
 import i18n from './i18n';
 import { Routes } from './routes';
-import { QuittingModal } from './routes/modals/Quitting';
-import { SettingsModal } from './routes/modals/Settings';
 
 function App() {
     return (
@@ -16,8 +15,7 @@ function App() {
                 <TooltipProvider>
                     <AppBar />
                     <Routes />
-                    <SettingsModal />
-                    <QuittingModal />
+                    <Modals />
                     <Toaster />
                 </TooltipProvider>
             </ThemeProvider>

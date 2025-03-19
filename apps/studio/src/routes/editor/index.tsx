@@ -1,14 +1,12 @@
-import { SettingsModal } from '../modals/Settings';
 import { Canvas } from './Canvas';
 import { EditPanel } from './EditPanel';
 import { HotkeysModal } from './HotkeysModal';
 import { LayersPanel } from './LayersPanel';
 import { Toolbar } from './Toolbar';
 import { EditorTopBar } from './TopBar';
-import { PricingModal } from './TopBar/Subscription/PricingPage';
 import { WebviewArea } from './WebviewArea';
 
-function ProjectEditor() {
+export function ProjectEditor() {
     return (
         <>
             <div className="relative flex flex-row h-[calc(100vh-2.60rem)] select-none">
@@ -32,11 +30,7 @@ function ProjectEditor() {
                     <EditorTopBar />
                 </div>
             </div>
-            <PricingModal />
-            <SettingsModal />
             <HotkeysModal />
         </>
     );
 }
-
-export default ProjectEditor;
