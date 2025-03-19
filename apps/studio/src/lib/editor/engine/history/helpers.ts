@@ -96,6 +96,42 @@ export function undoAction(action: Action): Action {
 export function updateTransactionActions(actions: Action[], newAction: Action): Action[] {
     // Only allow one action per type, otherwise, overwrite the existing action
     if (actions.some((a) => a.type === newAction.type)) {
+        if (newAction.type === 'update-style') {
+            const existingAction = actions.find(
+                (a) => a.type === 'update-style',
+            ) as UpdateStyleAction;
+            if (existingAction) {
+                // Create a new action with merged targets
+                const mergedAction: UpdateStyleAction = {
+                    type: 'update-style',
+                    targets: [...existingAction.targets],
+                };
+
+                // Update or add targets from newAction
+                newAction.targets.forEach((newTarget) => {
+                    const existingTarget = mergedAction.targets.find(
+                        (et) => et.domId === newTarget.domId,
+                    );
+                    if (existingTarget) {
+                        existingTarget.change = {
+                            updated: {
+                                ...existingTarget.change.updated,
+                                ...newTarget.change.updated,
+                            },
+                            original: {
+                                ...existingTarget.change.original,
+                                ...newTarget.change.original,
+                            },
+                        };
+                    } else {
+                        mergedAction.targets.push(newTarget);
+                    }
+                });
+
+                return actions.map((a) => (a.type === 'update-style' ? mergedAction : a));
+            }
+        }
+
         return actions.map((a) => (a.type === newAction.type ? newAction : a));
     }
     return [...actions, newAction];
