@@ -1,8 +1,9 @@
 import { getTruncatedFileName } from '@/lib/utils';
-import { type ChatMessageContext } from '@onlook/models/chat';
+import { MessageContextType, type ChatMessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons/index';
 import React from 'react';
 import NodeIcon from '../../../LayersPanel/Tree/NodeIcon';
+import { assertNever } from '/common/helpers';
 
 export function getTruncatedName(context: ChatMessageContext) {
     let name = context.displayName;
@@ -18,19 +19,24 @@ export function getTruncatedName(context: ChatMessageContext) {
 export function getContextIcon(context: ChatMessageContext) {
     let icon: React.ComponentType | React.ReactElement | null = null;
     switch (context.type) {
-        case 'file':
+        case MessageContextType.FILE:
             icon = Icons.File;
             break;
-        case 'image':
+        case MessageContextType.IMAGE:
             icon = Icons.Image;
             break;
-        case 'error':
+        case MessageContextType.ERROR:
             icon = Icons.InfoCircled;
             break;
-        case 'highlight':
+        case MessageContextType.HIGHLIGHT:
             return (
                 <NodeIcon tagName={context.displayName} iconClass="w-3 h-3 ml-1 mr-2 flex-none" />
             );
+        case MessageContextType.PROJECT:
+            icon = Icons.Cube;
+            break;
+        default:
+            assertNever(context);
     }
     if (icon) {
         return React.createElement(icon);

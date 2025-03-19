@@ -111,13 +111,13 @@ export class ChatManager {
             messages,
             requestType,
         );
-        this.stream.clear();
-        this.isWaiting = false;
         if (res) {
             this.handleChatResponse(res, requestType);
         } else {
             console.error('No stream response found');
         }
+        this.stream.clear();
+        this.isWaiting = false;
         sendAnalytics('receive chat response');
     }
 
