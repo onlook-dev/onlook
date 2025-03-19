@@ -1,6 +1,12 @@
-import { useAuthManager, useEditorEngine, useProjectsManager } from '@/components/Context';
+import {
+    useAuthManager,
+    useEditorEngine,
+    useProjectsManager,
+    useUserManager,
+} from '@/components/Context';
 import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
 import { ProjectTabs } from '@/lib/projects';
+import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -16,6 +22,8 @@ export const TopBar = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const authManager = useAuthManager();
+    const userManager = useUserManager();
+    const plan = userManager.subscription?.plan;
 
     function signOut() {
         authManager.signOut();
@@ -73,6 +81,24 @@ export const TopBar = observer(() => {
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <UserProfileDropdown>
+                    {plan === UsagePlanType.PRO && (
+                        <DropdownMenuItem
+                            onSelect={() => {
+                                editorEngine.isPlansOpen = true;
+                            }}
+                        >
+                            <Icons.Person className="w-4 h-4 mr-2" />
+                            Subscription
+                        </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                        onSelect={() => {
+                            editorEngine.isSettingsOpen = true;
+                        }}
+                    >
+                        <Icons.Gear className="w-4 h-4 mr-2" />
+                        Settings
+                    </DropdownMenuItem>
                     <DropdownMenuItem disabled={!authManager.isAuthEnabled} onSelect={signOut}>
                         <Icons.Exit className="w-4 h-4 mr-2" />
                         Sign out
