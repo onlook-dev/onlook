@@ -1,8 +1,8 @@
 import { EditorAttributes } from '@onlook/models/constants';
+import type { StyleChange } from '@onlook/models/style';
 import type { CssNode, Declaration, Raw, Rule, SelectorList } from 'css-tree';
 import { cssTree } from '../bundles/';
 import { selectorFromDomId } from '/common/helpers';
-import type { StyleChange } from '@onlook/models/actions';
 
 class CSSManager {
     private static instance: CSSManager;

@@ -1,6 +1,5 @@
 import { sendAnalytics, sendToWebview } from '@/lib/utils';
 import {
-    StyleChangeType,
     type Action,
     type EditTextAction,
     type GroupElementsAction,
@@ -13,6 +12,7 @@ import {
     type UpdateStyleAction,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
+import { StyleChangeType } from '@onlook/models/style';
 import type { EditorEngine } from '..';
 import { assertNever } from '/common/helpers';
 

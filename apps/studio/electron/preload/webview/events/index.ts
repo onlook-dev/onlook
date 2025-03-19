@@ -5,9 +5,9 @@ import type {
     Change,
     GroupContainer,
     ImageContentData,
-    StyleChange,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
+import type { StyleChange } from '@onlook/models/style';
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
 import { groupElements, ungroupElements } from '../elements/dom/group';
