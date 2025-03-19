@@ -117,6 +117,11 @@ export const PricingModal = observer(() => {
             setIsCheckingOut(null);
         } catch (error) {
             console.error('Error managing subscription:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error managing subscription',
+                description: `${error}`,
+            });
             setIsCheckingOut(null);
         }
     };
