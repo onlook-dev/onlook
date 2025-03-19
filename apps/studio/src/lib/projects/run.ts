@@ -1,7 +1,7 @@
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../editor/engine';
 import { invokeMainChannel } from '../utils';
 import { PortManager } from './port';
@@ -14,9 +14,10 @@ export type TerminalMessage = {
 export class RunManager {
     private project: Project;
     private portManager: PortManager;
-    state: RunState = RunState.STOPPED;
+    private _state: RunState = RunState.STOPPED;
     message: string | null = null;
     isLoading: boolean = false;
+    private previousState: RunState = RunState.STOPPED;
     private cleanupLoadingTimer?: () => void;
 
     constructor(
@@ -53,6 +54,18 @@ export class RunManager {
 
     get port() {
         return this.portManager;
+    }
+
+    get state() {
+        return this._state;
+    }
+
+    set state(state: RunState) {
+        if (this.previousState === state) {
+            return;
+        }
+        this.previousState = this._state;
+        this._state = state;
     }
 
     async start() {
@@ -144,6 +157,17 @@ export class RunManager {
                 this.editorEngine.errors.addTerminalError(message);
             }
         });
+
+        reaction(
+            () => this.editorEngine.errors.errors,
+            (errors) => {
+                if (errors.length > 0) {
+                    this.state = RunState.ERROR;
+                } else {
+                    this.state = this.previousState;
+                }
+            },
+        );
     }
 
     handleTerminalInput(data: string) {

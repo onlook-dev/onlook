@@ -142,15 +142,15 @@ const setupAppEventListeners = () => {
             await Promise.race([
                 Promise.all([
                     mainWindow?.webContents.send(MainChannels.CLEAN_UP_BEFORE_QUIT),
-                    runManager.stopAll(),
+                    runManager?.stopAll(),
                 ]),
                 timeoutPromise,
             ]);
         } catch (error) {
             console.error('Cleanup failed or timed out:', error);
+        } finally {
+            cleanupComplete = true;
         }
-
-        cleanupComplete = true;
     }
 
     app.on('before-quit', (event) => {

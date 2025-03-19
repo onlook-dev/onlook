@@ -33,6 +33,7 @@ export default [
             '@typescript-eslint/no-unused-vars': 'warn',
             '@typescript-eslint/no-unused-expressions': 'warn',
             '@typescript-eslint/ban-ts-comment': 'warn',
+            'no-control-regex': 'warn',
         },
     },
 ];
