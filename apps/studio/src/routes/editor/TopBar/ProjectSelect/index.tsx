@@ -1,4 +1,5 @@
 import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
+import { SettingsTabValue } from '@/lib/models';
 import { ProjectTabs } from '@/lib/projects';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
@@ -173,6 +174,7 @@ const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuItem
                         onClick={() => {
                             editorEngine.isSettingsOpen = true;
+                            editorEngine.settingsTab = SettingsTabValue.PROJECT;
                         }}
                     >
                         {t('projects.actions.settings')}

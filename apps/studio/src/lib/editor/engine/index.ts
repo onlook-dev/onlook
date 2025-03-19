@@ -12,7 +12,6 @@ import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
-import { ThemeManager } from './theme';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
@@ -26,6 +25,7 @@ import { PagesManager } from './pages';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
+import { ThemeManager } from './theme';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
@@ -36,7 +36,7 @@ export class EditorEngine {
 
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;

@@ -1,4 +1,3 @@
-import { SettingsModal } from '../../components/Modals/Settings';
 import { Canvas } from './Canvas';
 import { EditPanel } from './EditPanel';
 import { HotkeysModal } from './HotkeysModal';
@@ -7,7 +6,7 @@ import { Toolbar } from './Toolbar';
 import { EditorTopBar } from './TopBar';
 import { WebviewArea } from './WebviewArea';
 
-function ProjectEditor() {
+export function ProjectEditor() {
     return (
         <>
             <div className="relative flex flex-row h-[calc(100vh-2.60rem)] select-none">
@@ -31,10 +30,7 @@ function ProjectEditor() {
                     <EditorTopBar />
                 </div>
             </div>
-            <SettingsModal />
             <HotkeysModal />
         </>
     );
 }
-
-export default ProjectEditor;

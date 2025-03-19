@@ -7,7 +7,7 @@ import PromptCreation from './PromptCreation';
 import TopBar from './TopBar';
 import { CreateMethod } from './helpers';
 
-const Projects = observer(() => {
+export const Projects = observer(() => {
     const projectsManager = useProjectsManager();
     const renderTab = () => {
         switch (projectsManager.projectsTab) {
@@ -38,5 +38,3 @@ const Projects = observer(() => {
         </div>
     );
 });
-
-export default Projects;

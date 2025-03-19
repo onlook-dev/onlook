@@ -5,6 +5,7 @@ import {
     useUserManager,
 } from '@/components/Context';
 import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
+import { SettingsTabValue } from '@/lib/models';
 import { ProjectTabs } from '@/lib/projects';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
@@ -94,6 +95,7 @@ export const TopBar = observer(() => {
                     <DropdownMenuItem
                         onSelect={() => {
                             editorEngine.isSettingsOpen = true;
+                            editorEngine.settingsTab = SettingsTabValue.PREFERENCES;
                         }}
                     >
                         <Icons.Gear className="w-4 h-4 mr-2" />

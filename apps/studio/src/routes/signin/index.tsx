@@ -13,7 +13,7 @@ enum SignInMethod {
     GOOGLE = 'google',
 }
 
-const SignIn = observer(() => {
+export const SignIn = observer(() => {
     const { t } = useTranslation();
     const authManager = useAuthManager();
     const userManager = useUserManager();
@@ -109,5 +109,3 @@ const SignIn = observer(() => {
         </div>
     );
 });
-
-export default SignIn;
