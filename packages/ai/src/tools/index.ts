@@ -1,6 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { tool, type ToolSet } from 'ai';
 import { readFile } from 'fs/promises';
+import { ONLOOK_PROMPT } from 'src/prompt/onlook';
 import { z } from 'zod';
 import { getAllFiles } from './helpers';
 
@@ -39,6 +40,14 @@ export const readFilesTool = tool({
         } catch (error) {
             return `Error: ${error instanceof Error ? error.message : error}`;
         }
+    },
+});
+
+export const onlookInstructionsTool = tool({
+    description: 'Get the instructions for the Onlook AI',
+    parameters: z.object({}),
+    execute: async () => {
+        return ONLOOK_PROMPT;
     },
 });
 
@@ -124,4 +133,5 @@ export const getStrReplaceEditorTool = (handlers: FileOperationHandlers) => {
 export const chatToolSet: ToolSet = {
     list_files: listFilesTool,
     read_files: readFilesTool,
+    onlook_instructions: onlookInstructionsTool,
 };
