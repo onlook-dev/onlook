@@ -17,8 +17,7 @@ export class ErrorManager {
     }
 
     get errors() {
-        const webviewErrors = Array.from(Object.values(this.webviewIdToError)).flat();
-        return [...webviewErrors, ...this.terminalErrors];
+        return [...this.terminalErrors];
     }
 
     async sendFixError() {

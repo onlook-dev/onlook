@@ -31,7 +31,7 @@ class TerminalManager {
             });
 
             ptyProcess.onData((data: string) => {
-                this.checkError(data);
+                this.checkTerminalState(data);
                 this.addTerminalMessage(id, data);
             });
 
@@ -41,6 +41,22 @@ class TerminalManager {
             console.error('Failed to create terminal.', error);
             return false;
         }
+    }
+
+    checkTerminalState(data: string) {
+        if (this.shouldIgnoreCheck(data)) {
+            return;
+        }
+        const errorFound = this.checkError(data);
+        if (errorFound) {
+            return;
+        }
+        this.checkSuccess(data);
+    }
+
+    shouldIgnoreCheck(data: string) {
+        const ignorePatterns = ['[webpack.cache.PackFileCacheStrategy]'];
+        return ignorePatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()));
     }
 
     checkError(data: string) {
@@ -75,12 +91,32 @@ class TerminalManager {
             'TS2307:', // Cannot find module
         ];
 
+        let errorFound = false;
         if (errorPatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()))) {
             mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
                 state: RunState.ERROR,
                 message: `Command error detected: ${data.trim()}`,
             });
+            errorFound = true;
         }
+        return errorFound;
+    }
+
+    checkSuccess(data: string): boolean {
+        // Strip ANSI escape codes to get plain text
+        const stripAnsi = (str: string) => str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+
+        const plainText = stripAnsi(data).trim().toLowerCase();
+        const successPatterns = ['get / 200'];
+
+        if (successPatterns.some((pattern) => plainText.includes(pattern))) {
+            mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
+                state: RunState.RUNNING,
+                message: 'Command executed successfully.',
+            });
+            return true;
+        }
+        return false;
     }
 
     addTerminalMessage(id: string, data: string) {
