@@ -1,13 +1,14 @@
 import { useEditorEngine } from '@/components/Context';
 import type { CompoundStyle, SingleStyle } from '@/lib/editor/styles/models';
 import { invokeMainChannel } from '@/lib/utils';
+import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
 import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-// import BrandPopoverPicker from './ColorBrandPicker';
-import PopoverPicker from './Popover';
+import BrandPopoverPicker from './ColorBrandPicker';
+// import PopoverPicker from './Popover';
 
 const stripUrlWrapper = (url: string) => {
     return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
@@ -97,8 +98,14 @@ const ColorInput = observer(
                 return Color.from(elementStyle.defaultValue);
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
+
+            const color = editorEngine.theme.getColorByName(newValue);
+            if (color) {
+                return Color.from(color);
+            }
+
             return Color.from(newValue);
-        }, [editorEngine.style.selectedStyle?.styles, elementStyle, isFocused]);
+        }, [editorEngine.style.selectedStyle?.styles, elementStyle, isFocused, editorEngine.theme]);
 
         // Update color state when getColor changes
         const [color, setColor] = useState(getColor);
@@ -112,11 +119,19 @@ const ColorInput = observer(
 
         // Memoize handlers to prevent unnecessary re-renders
         const sendStyleUpdate = useCallback(
-            (newValue: Color) => {
-                setColor(newValue);
-                const valueString = newValue.toHex();
-                editorEngine.style.update(elementStyle.key, valueString);
-                onValueChange?.(elementStyle.key, valueString);
+            (newValue: Color | ColorItem) => {
+                if (newValue instanceof Color) {
+                    const valueString = newValue.toHex();
+                    editorEngine.style.update(elementStyle.key, valueString);
+                    onValueChange?.(elementStyle.key, valueString);
+                } else {
+                    let colorValue = newValue.originalKey;
+                    if (colorValue.endsWith('DEFAULT')) {
+                        colorValue = colorValue.split('-DEFAULT')[0];
+                    }
+                    editorEngine.style.updateCustom(elementStyle.key, colorValue);
+                    onValueChange?.(elementStyle.key, colorValue);
+                }
             },
             [editorEngine.style, elementStyle.key, onValueChange],
         );
@@ -183,21 +198,23 @@ const ColorInput = observer(
             }
             return <Icons.CrossS />;
         };
-
         return (
             <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
-                {/* <BrandPopoverPicker
-                    color={color}
-                    onChange={sendStyleUpdate}
-                    onChangeEnd={sendStyleUpdate}
-                /> */}
-                <PopoverPicker
+                <BrandPopoverPicker
                     color={color}
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
                     backgroundImage={backgroundImage}
                     compoundStyle={compoundStyle}
                 />
+
+                {/* <PopoverPicker
+                    color={color}
+                    onChange={sendStyleUpdate}
+                    onChangeEnd={sendStyleUpdate}
+                    backgroundImage={backgroundImage}
+                    compoundStyle={compoundStyle}
+                /> */}
                 <ColorTextInput
                     value={value}
                     isFocused={isFocused}

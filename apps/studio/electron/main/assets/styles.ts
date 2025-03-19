@@ -189,8 +189,6 @@ function updateTailwindConfigFile(
     let keyUpdated = false;
     let valueUpdated = false;
 
-    console.log('Updating tailwind config file:', parentKey, keyName, newName, newCssVarName);
-
     traverse(updateAst, {
         ObjectProperty(path) {
             if (isColorsObjectProperty(path)) {
@@ -203,8 +201,7 @@ function updateTailwindConfigFile(
                     if (
                         colorProp.type === 'ObjectProperty' &&
                         colorProp.key.type === 'Identifier' &&
-                        colorProp.key.name === parentKey &&
-                        colorProp.value.type === 'ObjectExpression'
+                        colorProp.key.name === parentKey
                     ) {
                         // If the keyName is not provided, we are renaming the root color
                         if (!keyName) {
@@ -240,6 +237,9 @@ function updateTailwindConfigFile(
                             }
                         } else {
                             const nestedObj = colorProp.value;
+                            if (!isObjectExpression(nestedObj)) {
+                                return;
+                            }
                             nestedObj.properties.forEach((nestedProp) => {
                                 if (
                                     nestedProp.type === 'ObjectProperty' &&
@@ -279,8 +279,6 @@ async function updateTailwindColorVariable(
     theme?: Theme,
 ): Promise<UpdateResult> {
     const [parentKey, keyName] = originalName.split('-');
-
-    console.log('Updating tailwind color variable:', parentKey, keyName, newName, newColor, theme);
 
     if (!parentKey) {
         return { success: false, error: `Invalid color key format: ${originalName}` };
@@ -456,8 +454,12 @@ async function updateTailwindCssVariable(
                             }
                         }
 
-                        // Handle nested variables rename
-                        if (newVarName && newVarName !== originalName) {
+                        // Handle nested variables rename if existed
+                        if (
+                            newVarName &&
+                            newVarName !== originalName &&
+                            decl.prop.includes(originalName)
+                        ) {
                             const nestedVarRegex = new RegExp(`^--${originalName}-`);
                             if (nestedVarRegex.test(decl.prop)) {
                                 const newProp = decl.prop.replace(originalName, newVarName);
@@ -475,8 +477,8 @@ async function updateTailwindCssVariable(
 // Extract CSS variables from stylesheet
 function extractTailwindCssVariables(content: string) {
     const configs: {
-        root: { [key: string]: string };
-        dark: { [key: string]: string };
+        root: { [key: string]: { value: string; line: number | undefined } };
+        dark: { [key: string]: { value: string; line: number | undefined } };
     } = {
         root: {},
         dark: {},
@@ -493,14 +495,20 @@ function extractTailwindCssVariables(content: string) {
             try {
                 const color = parseHslValue(value);
                 if (color) {
-                    configs.root[varName] = color.toHex();
+                    configs.root[varName] = {
+                        value: color.toHex(),
+                        line: decl.source?.start?.line,
+                    };
                     return;
                 }
             } catch (err) {
                 console.error(`Failed to convert HSL value: ${value}`, err);
             }
 
-            configs.root[varName] = value;
+            configs.root[varName] = {
+                value,
+                line: decl.source?.start?.line,
+            };
         });
     });
 
@@ -512,14 +520,20 @@ function extractTailwindCssVariables(content: string) {
             try {
                 const color = parseHslValue(value);
                 if (color) {
-                    configs.dark[varName] = color.toHex();
+                    configs.dark[varName] = {
+                        value: color.toHex(),
+                        line: decl.source?.start?.line,
+                    };
                     return;
                 }
             } catch (err) {
                 console.error(`Failed to convert HSL value: ${value}`, err);
             }
 
-            configs.dark[varName] = value;
+            configs.dark[varName] = {
+                value,
+                line: decl.source?.start?.line,
+            };
         });
     });
 
@@ -672,28 +686,34 @@ async function deleteColorGroup(
                         prop.key.name === camelCaseName,
                 );
 
-                if (groupProp && 'value' in groupProp && isObjectExpression(groupProp.value)) {
-                    if (colorName) {
-                        // Delete specific color within group
-                        const colorIndex = groupProp.value.properties.findIndex(
-                            (prop) =>
-                                prop.type === 'ObjectProperty' &&
-                                'key' in prop &&
-                                prop.key.type === 'Identifier' &&
-                                prop.key.name === colorName,
-                        );
+                if (groupProp && 'value' in groupProp) {
+                    if (isObjectExpression(groupProp.value)) {
+                        if (colorName) {
+                            // Delete specific color within group
+                            const colorIndex = groupProp.value.properties.findIndex(
+                                (prop) =>
+                                    prop.type === 'ObjectProperty' &&
+                                    'key' in prop &&
+                                    prop.key.type === 'Identifier' &&
+                                    prop.key.name === colorName,
+                            );
 
-                        if (colorIndex !== -1) {
-                            groupProp.value.properties.splice(colorIndex, 1);
+                            if (colorIndex !== -1) {
+                                groupProp.value.properties.splice(colorIndex, 1);
 
-                            // If group is empty after deletion, remove the entire group
-                            if (groupProp.value.properties.length === 0) {
-                                const groupIndex = colorObj.properties.indexOf(groupProp);
-                                colorObj.properties.splice(groupIndex, 1);
+                                // If group is empty after deletion, remove the entire group
+                                if (groupProp.value.properties.length === 0) {
+                                    const groupIndex = colorObj.properties.indexOf(groupProp);
+                                    colorObj.properties.splice(groupIndex, 1);
+                                }
                             }
+                        } else {
+                            // Delete entire group
+                            const index = colorObj.properties.indexOf(groupProp);
+                            colorObj.properties.splice(index, 1);
                         }
                     } else {
-                        // Delete entire group
+                        // Delete entire group if it's direct value
                         const index = colorObj.properties.indexOf(groupProp);
                         colorObj.properties.splice(index, 1);
                     }

@@ -9,12 +9,25 @@ import { Icons } from '@onlook/ui/icons';
 import { Color } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
+import { MainChannels } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
+import { useEditorEngine } from '@/components/Context';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipPortal } from '@onlook/ui/tooltip';
+import { Theme } from '@onlook/models/assets';
 
 export interface ColorItem {
     name: string;
     originalKey: string;
     lightColor: string;
     darkColor?: string;
+    line?: {
+        config?: number;
+        css?: {
+            lightMode?: number;
+            darkMode?: number;
+        };
+    };
+    override?: boolean;
 }
 
 interface BrandPalletGroupProps {
@@ -48,6 +61,10 @@ export const BrandPalletGroup = ({
     const [isAddingNewColor, setIsAddingNewColor] = useState(false);
     const [isRenaming, setIsRenaming] = useState(false);
     const [newGroupName, setNewGroupName] = useState(title);
+    const editorEngine = useEditorEngine();
+    const themeManager = editorEngine.theme;
+    const existedName = colors.map((color) => color.name);
+    const [localError, setLocalError] = useState<string | null>(null);
 
     const handleColorChange = (
         index: number,
@@ -71,36 +88,88 @@ export const BrandPalletGroup = ({
         setIsRenaming(true);
     };
 
+    const validateName = (value: string) => {
+        if (value.trim() === '') {
+            return 'Group name cannot be empty';
+        }
+
+        if (value === title) {
+            return null;
+        }
+
+        if (Object.keys(themeManager.colorGroups).includes(value.toLowerCase())) {
+            return 'Group name already exists';
+        }
+
+        return null;
+    };
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setNewGroupName(newValue);
+        const validationError = validateName(newValue);
+        setLocalError(validationError);
+    };
+
     const handleRenameSubmit = () => {
-        if (newGroupName.trim() && newGroupName !== title) {
+        if (!localError && newGroupName.trim() && newGroupName !== title) {
             onRename(title.toLowerCase(), newGroupName.trim());
         }
         setIsRenaming(false);
+        setLocalError(null);
     };
 
-    const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleRenameSubmit();
-        } else if (e.key === 'Escape') {
-            setIsRenaming(false);
-            setNewGroupName(title);
+    const handleViewInCode = (color: ColorItem) => {
+        if (!color.line?.config) {
+            return;
         }
+
+        const line = theme === Theme.DARK ? color.line.css?.darkMode : color.line.css?.lightMode;
+
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, {
+            filePath: themeManager.tailwindConfigPath,
+            line: color.line.config,
+        });
+
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, {
+            filePath: themeManager.tailwindCssPath,
+            line,
+        });
     };
 
     return (
         <div className="flex flex-col gap-1 group/palette">
             <div className="flex justify-between items-center">
                 {!isDefaultPalette && isRenaming ? (
-                    <input
-                        type="text"
-                        value={newGroupName}
-                        onChange={(e) => setNewGroupName(e.target.value)}
-                        onBlur={handleRenameSubmit}
-                        onKeyDown={handleRenameKeyDown}
-                        className="text-sm font-normal w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1"
-                        placeholder="Enter group name"
-                        autoFocus
-                    />
+                    <Tooltip open={!!localError}>
+                        <TooltipTrigger asChild>
+                            <input
+                                type="text"
+                                value={newGroupName}
+                                onChange={handleNameChange}
+                                onBlur={handleRenameSubmit}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !localError) {
+                                        handleRenameSubmit();
+                                    } else if (e.key === 'Escape') {
+                                        setIsRenaming(false);
+                                        setNewGroupName(title);
+                                        setLocalError(null);
+                                    }
+                                }}
+                                className={`text-sm font-normal w-full rounded-md border ${
+                                    localError ? 'border-red-500' : 'border-white/10'
+                                } bg-background-secondary px-2 py-1`}
+                                placeholder="Enter group name"
+                                autoFocus
+                            />
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                            <TooltipContent side="top" className="text-white bg-red-500">
+                                {localError}
+                            </TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
                 ) : (
                     <span className="text-small text-foreground-secondary font-normal">
                         {title}
@@ -164,6 +233,7 @@ export const BrandPalletGroup = ({
                                             handleColorChange(index, newColor, newName)
                                         }
                                         isDefaultPalette={isDefaultPalette}
+                                        existedName={existedName}
                                     />
                                 ) : (
                                     <>
@@ -179,7 +249,23 @@ export const BrandPalletGroup = ({
                                                         size="icon"
                                                         className="h-[85%] w-[85%] p-0 bg-black hover:bg-black rounded-md flex items-center justify-center"
                                                     >
-                                                        <Icons.DotsHorizontal className="h-4 w-4 text-white" />
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Icons.DotsHorizontal className="h-4 w-4 text-white" />
+                                                            </TooltipTrigger>
+                                                            <TooltipPortal>
+                                                                <TooltipContent side="top">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm">
+                                                                            {color.name}
+                                                                        </span>
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            {getColorValue(color)}
+                                                                        </span>
+                                                                    </div>
+                                                                </TooltipContent>
+                                                            </TooltipPortal>
+                                                        </Tooltip>
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent
@@ -236,14 +322,45 @@ export const BrandPalletGroup = ({
                                                         <Button
                                                             variant="ghost"
                                                             className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
-                                                            onClick={() => onDelete(color.name)}
+                                                            onClick={() => handleViewInCode(color)}
                                                         >
                                                             <span className="flex w-full text-sm items-center">
-                                                                <Icons.Trash className="mr-2 h-4 w-4" />
-                                                                <span>Delete</span>
+                                                                <Icons.ExternalLink className="mr-2 h-4 w-4" />
+                                                                <span>View in code</span>
                                                             </span>
                                                         </Button>
                                                     </DropdownMenuItem>
+                                                    {!isDefaultPalette ? (
+                                                        <DropdownMenuItem asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                                onClick={() => onDelete(color.name)}
+                                                            >
+                                                                <span className="flex w-full text-sm items-center">
+                                                                    <Icons.Trash className="mr-2 h-4 w-4" />
+                                                                    <span>Delete</span>
+                                                                </span>
+                                                            </Button>
+                                                        </DropdownMenuItem>
+                                                    ) : (
+                                                        color.override && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
+                                                                    onClick={() =>
+                                                                        onDelete(color.name)
+                                                                    }
+                                                                >
+                                                                    <span className="flex w-full text-sm items-center">
+                                                                        <Icons.Reset className="mr-2 h-4 w-4" />
+                                                                        <span>Reset override</span>
+                                                                    </span>
+                                                                </Button>
+                                                            </DropdownMenuItem>
+                                                        )
+                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
@@ -267,6 +384,7 @@ export const BrandPalletGroup = ({
                                     title.toLowerCase(),
                                 )
                             }
+                            existedName={existedName}
                         />
                     ) : (
                         <Button

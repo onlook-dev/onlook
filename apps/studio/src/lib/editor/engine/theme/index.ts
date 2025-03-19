@@ -9,9 +9,16 @@ import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
 
+interface ColorValue {
+    value: string;
+    line?: number;
+}
+
 export class ThemeManager {
     private brandColors: Record<string, ColorItem[]> = {};
     private defaultColors: Record<string, ColorItem[]> = {};
+    private configPath: string | null = null;
+    private cssPath: string | null = null;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -36,7 +43,10 @@ export class ThemeManager {
                 return;
             }
 
-            const { cssContent, configContent } = configResult;
+            const { cssContent, configContent, cssPath, configPath } = configResult;
+
+            this.cssPath = cssPath;
+            this.configPath = configPath;
 
             const cssConfig = typeof cssContent === 'string' ? JSON.parse(cssContent) : cssContent;
             const config =
@@ -44,22 +54,24 @@ export class ThemeManager {
 
             const lightModeColors: ThemeColors = cssConfig.root || {};
             const darkModeColors: ThemeColors = cssConfig.dark || {};
-
             const parsed: ParsedColors = {};
             const groups: { [key: string]: Set<string> } = {};
 
             const processConfigObject = (obj: any, prefix = '', parentKey = '') => {
                 Object.entries(obj).forEach(([key, value]) => {
                     const fullKey = prefix ? `${prefix}-${key}` : key;
-
                     if (parentKey) {
                         if (!groups[parentKey]) {
                             groups[parentKey] = new Set();
                         }
                         groups[parentKey].add(fullKey);
                     }
-
-                    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    if (
+                        typeof value === 'object' &&
+                        value !== null &&
+                        !Array.isArray(value) &&
+                        !('value' in value)
+                    ) {
                         processConfigObject(value, prefix ? `${prefix}-${key}` : key, key);
 
                         if ('DEFAULT' in value) {
@@ -67,27 +79,54 @@ export class ThemeManager {
                             if (varName) {
                                 parsed[key] = {
                                     name: key,
-                                    lightMode: lightModeColors[varName] || '',
-                                    darkMode: darkModeColors[varName] || '',
+                                    lightMode: lightModeColors[varName]?.value || '',
+                                    darkMode: darkModeColors[varName]?.value || '',
+                                    line: {
+                                        config: config[varName]?.line,
+                                        css: {
+                                            lightMode: lightModeColors[varName]?.line,
+                                            darkMode: darkModeColors[varName]?.line,
+                                        },
+                                    },
                                 };
                             }
                         }
-                    } else if (typeof value === 'string') {
+                    } else if (
+                        typeof value === 'object' &&
+                        value !== null &&
+                        'value' in value &&
+                        typeof value.value === 'string'
+                    ) {
                         // Try to extract the var name first
-                        const varName = extractVarName(value);
+                        const varName = extractVarName((value as ColorValue).value);
+
                         if (varName) {
                             parsed[fullKey] = {
                                 name: fullKey,
-                                lightMode: lightModeColors[varName] || '',
-                                darkMode: darkModeColors[varName] || '',
+                                lightMode: lightModeColors[varName]?.value || '',
+                                darkMode: darkModeColors[varName]?.value || '',
+                                line: {
+                                    config: (value as ColorValue).line,
+                                    css: {
+                                        lightMode: lightModeColors[varName]?.line,
+                                        darkMode: darkModeColors[varName]?.line,
+                                    },
+                                },
                             };
                         } else {
-                            const color = Color.from(value);
+                            const color = Color.from((value as ColorValue).value);
                             if (color) {
                                 parsed[fullKey] = {
                                     name: fullKey,
                                     lightMode: color.toHex(),
                                     darkMode: color.toHex(),
+                                    line: {
+                                        config: (value as ColorValue).line,
+                                        css: {
+                                            lightMode: lightModeColors[fullKey]?.line,
+                                            darkMode: darkModeColors[fullKey]?.line,
+                                        },
+                                    },
                                 };
                             }
                         }
@@ -117,6 +156,10 @@ export class ThemeManager {
                             originalKey: key,
                             lightColor: color?.lightMode || '',
                             darkColor: color?.darkMode || '',
+                            line: {
+                                config: color?.line?.config,
+                                css: color?.line?.css,
+                            },
                         };
                     });
                 }
@@ -143,11 +186,17 @@ export class ThemeManager {
                             originalKey: `${key}-DEFAULT`,
                             lightColor: parsed[key].lightMode,
                             darkColor: parsed[key].darkMode,
+                            line: parsed[key].line,
                         },
                     ];
                 });
             }
-            const defaultColors = this.generateDefaultColors(lightModeColors, darkModeColors);
+            const defaultColors = this.generateDefaultColors(
+                lightModeColors,
+                darkModeColors,
+                config,
+            );
+
             if (defaultColors) {
                 this.defaultColors = defaultColors;
             }
@@ -156,8 +205,7 @@ export class ThemeManager {
             console.error('Error loading colors:', error);
         }
     }
-
-    generateDefaultColors(lightModeColors: any, darkModeColors: any) {
+    generateDefaultColors(lightModeColors: ThemeColors, darkModeColors: ThemeColors, config: any) {
         const deprecatedColors = ['lightBlue', 'warmGray', 'trueGray', 'coolGray', 'blueGray'];
         const excludedColors = [
             'inherit',
@@ -184,14 +232,22 @@ export class ThemeManager {
                 const colorItems: ColorItem[] = Object.entries(defaultColorScale)
                     .filter(([shade]) => shade !== 'DEFAULT')
                     .map(([shade, defaultValue]) => {
-                        const lightModeValue = lightModeColors[`${colorName}-${shade}`];
-                        const darkModeValue = darkModeColors[`${colorName}-${shade}`];
+                        const lightModeValue = lightModeColors[`${colorName}-${shade}`]?.value;
+                        const darkModeValue = darkModeColors[`${colorName}-${shade}`]?.value;
 
                         return {
                             name: shade,
                             originalKey: `${colorName}-${shade}`,
                             lightColor: lightModeValue || defaultValue,
                             darkColor: darkModeValue || defaultValue,
+                            line: {
+                                config: config[`${colorName}-${shade}`]?.line,
+                                css: {
+                                    lightMode: lightModeColors[`${colorName}-${shade}`]?.line,
+                                    darkMode: darkModeColors[`${colorName}-${shade}`]?.line,
+                                },
+                            },
+                            override: !!lightModeValue || !!darkModeValue,
                         };
                     });
 
@@ -200,15 +256,22 @@ export class ThemeManager {
                     .filter((key) => key.startsWith(`${colorName}-`))
                     .map((key) => key.split('-')[1])
                     .filter((shade) => !colorItems.some((item) => item.name === shade));
-
                 customShades.forEach((shade) => {
-                    const lightModeValue = lightModeColors[`${colorName}-${shade}`];
-                    const darkModeValue = darkModeColors[`${colorName}-${shade}`];
+                    const lightModeValue = lightModeColors[`${colorName}-${shade}`]?.value;
+                    const darkModeValue = darkModeColors[`${colorName}-${shade}`]?.value;
                     colorItems.push({
                         name: shade,
                         originalKey: `${colorName}-${shade}`,
                         lightColor: lightModeValue || '',
                         darkColor: darkModeValue || '',
+                        line: {
+                            config: config[`${colorName}-${shade}`]?.line,
+                            css: {
+                                lightMode: lightModeColors[`${colorName}-${shade}`]?.line,
+                                darkMode: darkModeColors[`${colorName}-${shade}`]?.line,
+                            },
+                        },
+                        override: true,
                     });
                 });
 
@@ -218,7 +281,6 @@ export class ThemeManager {
                     const bNum = parseInt(b.name);
                     return aNum - bNum;
                 });
-
                 // Add to record instead of array
                 defaultColorsRecord[colorName] = colorItems;
             });
@@ -397,6 +459,43 @@ export class ThemeManager {
 
     get colorDefaults() {
         return this.defaultColors;
+    }
+
+    get tailwindConfigPath() {
+        return this.configPath;
+    }
+
+    get tailwindCssPath() {
+        return this.cssPath;
+    }
+
+    getColorByName(colorName: string): string | undefined {
+        const [groupName, shadeName] = colorName.split('-');
+
+        const brandGroup = this.brandColors[groupName];
+        if (brandGroup) {
+            if (!shadeName || shadeName === 'DEFAULT') {
+                const defaultColor = brandGroup.find((color) => color.name === 'DEFAULT');
+                if (defaultColor?.lightColor) {
+                    return defaultColor.lightColor;
+                }
+            } else {
+                const color = brandGroup.find((color) => color.name === shadeName);
+                if (color?.lightColor) {
+                    return color.lightColor;
+                }
+            }
+        }
+
+        const defaultGroup = this.defaultColors[groupName];
+        if (defaultGroup && shadeName) {
+            const color = defaultGroup.find((color) => color.name === shadeName);
+            if (color?.lightColor) {
+                return color.lightColor;
+            }
+        }
+
+        return undefined;
     }
 
     dispose() {

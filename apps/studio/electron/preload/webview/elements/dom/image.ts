@@ -1,9 +1,14 @@
+import { StyleChangeType } from '@onlook/models/actions';
 import cssManager from '../../style';
 
 export function insertImage(domId: string, image: string) {
-    cssManager.updateStyle(domId, { backgroundImage: `url(${image})` });
+    cssManager.updateStyle(domId, {
+        backgroundImage: { value: `url(${image})`, type: StyleChangeType.Value },
+    });
 }
 
 export function removeImage(domId: string) {
-    cssManager.updateStyle(domId, { backgroundImage: 'none' });
+    cssManager.updateStyle(domId, {
+        backgroundImage: { value: 'none', type: StyleChangeType.Value },
+    });
 }
