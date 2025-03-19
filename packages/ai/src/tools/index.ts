@@ -25,12 +25,17 @@ export const listFilesTool = tool({
 export const readFileTool = tool({
     description: 'Read the contents of a file',
     parameters: z.object({
-        path: z.string().describe('The absolute path to the file to read'),
+        paths: z.array(z.string()).describe('The absolute paths to the files to read'),
     }),
-    execute: async ({ path }) => {
+    execute: async ({ paths }) => {
         try {
-            const file = await readFile(path, 'utf8');
-            return file;
+            const files = await Promise.all(
+                paths.map(async (path) => {
+                    const file = await readFile(path, 'utf8');
+                    return { path, content: file };
+                }),
+            );
+            return files;
         } catch (error) {
             return `Error: ${error instanceof Error ? error.message : error}`;
         }

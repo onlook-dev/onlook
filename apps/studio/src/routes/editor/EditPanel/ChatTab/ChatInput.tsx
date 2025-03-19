@@ -296,7 +296,8 @@ export const ChatInput = observer(() => {
                     placeholder={
                         disabled
                             ? projectsManager.runner?.isRunning ||
-                              projectsManager.runner?.isStarting
+                              projectsManager.runner?.isStarting ||
+                              projectsManager.runner?.isError
                                 ? t('editor.panels.edit.tabs.chat.emptyState')
                                 : t('editor.panels.edit.tabs.chat.emptyStateStart')
                             : t('editor.panels.edit.tabs.chat.input.placeholder')
