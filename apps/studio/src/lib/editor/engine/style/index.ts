@@ -1,11 +1,10 @@
 import {
-    StyleChangeType,
     type Change,
     type StyleActionTarget,
-    type StyleChange,
     type UpdateStyleAction,
 } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 
