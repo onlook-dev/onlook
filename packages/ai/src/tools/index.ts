@@ -1,8 +1,8 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { tool, type ToolSet } from 'ai';
 import { readFile } from 'fs/promises';
-import { ONLOOK_PROMPT } from 'src/prompt/onlook';
 import { z } from 'zod';
+import { ONLOOK_PROMPT } from '../prompt/onlook';
 import { getAllFiles } from './helpers';
 
 export const listFilesTool = tool({
