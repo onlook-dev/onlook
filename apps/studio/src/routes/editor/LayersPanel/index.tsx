@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
-import { EditorMode } from '@/lib/models';
+import { EditorMode, LeftTabValue } from '@/lib/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BrandTab from './BrandTab';
 import ComponentsTab from './ComponentsTab';
@@ -15,7 +15,7 @@ import PagesTab from './PageTab';
 import WindowsTab from './WindowsTab';
 import ZoomControls from './ZoomControls';
 
-const COMPONENT_DISCOVERY_ENABLED = false;
+const COMPONENT_DISCOVERY_ENABLED = true;
 
 export const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -32,6 +32,14 @@ export const LayersPanel = observer(() => {
     const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.LAYERS);
     const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
+
+    useEffect(() => {
+        if(editorEngine.componentPanelTab === LeftTabValue.COMPONENTS){
+            setSelectedTab(TabValue.COMPONENTS);
+            setIsContentPanelOpen(true);
+            setIsLocked(true);
+        }
+    }, [editorEngine.componentPanelTab]);
 
     const handleMouseEnter = (tab: TabValue) => {
         if (isLocked) {
@@ -78,6 +86,7 @@ export const LayersPanel = observer(() => {
             setIsContentPanelOpen(true);
             setIsLocked(true);
         }
+        editorEngine.componentPanelTab = LeftTabValue.LAYERS;
     };
 
     return (
@@ -89,7 +98,7 @@ export const LayersPanel = observer(() => {
             onMouseLeave={handleMouseLeave}
         >
             {/* Left sidebar with tabs */}
-            <div className="w-20 bg-background-onlook/60 backdrop-blur-xl flex flex-col items-center py-0.5 gap-2">
+            <div className="w-24 bg-background-onlook/60 backdrop-blur-sm flex flex-col items-center py-0.5 gap-2">
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
@@ -119,6 +128,22 @@ export const LayersPanel = observer(() => {
                     <Icons.File className="w-5 h-5" />
                     <span className="text-xs leading-tight">
                         {t('editor.panels.layers.tabs.pages')}
+                    </span>
+                </button>
+
+                <button
+                    className={cn(
+                        'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
+                        selectedTab === TabValue.COMPONENTS && isLocked
+                            ? 'bg-accent text-foreground border-[0.5px] border-foreground/20 w-18'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => handleClick(TabValue.COMPONENTS)}
+                    onMouseEnter={() => handleMouseEnter(TabValue.COMPONENTS)}
+                >
+                    <Icons.Component className="w-5 h-5" />
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.components')}
                     </span>
                 </button>
 

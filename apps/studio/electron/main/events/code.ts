@@ -4,7 +4,7 @@ import type { TemplateNode } from '@onlook/models/element';
 import { ipcMain } from 'electron';
 import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
-import { extractComponentsFromDirectory } from '../code/components';
+import { createNewComponent, deleteComponent, duplicateComponent, extractComponentsFromDirectory, renameComponent } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { isChildTextEditable } from '../code/diff/text';
 import { readFile } from '../code/files';
@@ -147,5 +147,42 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.DELETE_TAILWIND_CONFIG, async (_, args) => {
         const { projectRoot, groupName, colorName } = args;
         return deleteTailwindColorGroup(projectRoot, groupName, colorName);
+    });
+
+    ipcMain.handle(MainChannels.DUPLICATE_COMPONENT, async (_, args) => {
+        const { filePath, componentName } = args as {
+            filePath: string;
+            componentName: string
+        };
+        const result = duplicateComponent(filePath, componentName);
+        return result;
+    });
+
+    ipcMain.handle(MainChannels.RENAME_COMPONENT, async (_, args) => {
+        const { newComponentName , filePath } = args as {
+            newComponentName: string
+            filePath: string;
+        };
+        const result = renameComponent(newComponentName , filePath);
+        return result;
+    });
+
+    ipcMain.handle(MainChannels.CREATE_COMPONENT, async (_, args) => {
+        const { componentName , oid } = args as {
+            componentName: string
+            filePath: string;
+            oid: string;
+        };
+        const templateNode = await runManager.getTemplateNode(oid);
+        const result = createNewComponent(componentName, templateNode?.path || "");
+        return result;
+    });
+
+    ipcMain.handle(MainChannels.DELETE_COMPONENT, async (_, args) => {
+        const { filePath } = args as {
+            filePath: string;
+        };
+        const result = deleteComponent(filePath);
+        return result;
     });
 }

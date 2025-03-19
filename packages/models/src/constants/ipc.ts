@@ -51,7 +51,11 @@ export enum MainChannels {
     VIEW_SOURCE_FILE = 'view-source-file',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
-    CLEAN_CODE_KEYS = 'clean-move-keys',
+    DUPLICATE_COMPONENT = 'duplicate-component',
+    RENAME_COMPONENT = 'rename-component',
+    CREATE_COMPONENT = 'create-component',
+    DELETE_COMPONENT = 'delete-component',
+    CLEAN_CODmemberE_KEYS = 'clean-move-keys',
 
     // Analytics
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
