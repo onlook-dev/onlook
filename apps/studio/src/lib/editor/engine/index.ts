@@ -1,4 +1,4 @@
-import { EditorMode, EditorTabValue, SettingsTabValue } from '@/lib/models';
+import { EditorMode, EditorTabValue, LeftTabValue, SettingsTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
@@ -37,6 +37,7 @@ export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
+    private _componentPanelTab: LeftTabValue = LeftTabValue.LAYERS;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -47,10 +48,10 @@ export class EditorEngine {
     private errorManager: ErrorManager;
     private imageManager: ImageManager;
     private themeManager: ThemeManager;
+    private projectInfoManager: ProjectInfoManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
-    private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private elementManager: ElementManager = new ElementManager(this);
     private textEditingManager: TextEditingManager = new TextEditingManager(this);
     private actionManager: ActionManager = new ActionManager(this);
@@ -74,6 +75,7 @@ export class EditorEngine {
         this.errorManager = new ErrorManager(this, this.projectsManager);
         this.imageManager = new ImageManager(this, this.projectsManager);
         this.themeManager = new ThemeManager(this, this.projectsManager);
+        this.projectInfoManager = new ProjectInfoManager(this.projectsManager);
     }
 
     get elements() {
@@ -160,6 +162,9 @@ export class EditorEngine {
     get pages() {
         return this.pagesManager;
     }
+    get componentPanelTab() {
+        return this._componentPanelTab;
+    }
 
     set mode(mode: EditorMode) {
         this._editorMode = mode;
@@ -190,6 +195,10 @@ export class EditorEngine {
 
     set isPublishOpen(open: boolean) {
         this._publishOpen = open;
+    }
+
+    set componentPanelTab(tab: LeftTabValue) {
+        this._componentPanelTab = tab;
     }
 
     dispose() {

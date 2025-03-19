@@ -1,5 +1,5 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
-import { EditorTabValue } from '@/lib/models';
+import { EditorTabValue, LeftTabValue } from '@/lib/models';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import {
@@ -73,6 +73,14 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.NEW_AI_CHAT,
+        },
+        {
+            label: 'Create component',
+            action: () => {
+                editorEngine.componentPanelTab = LeftTabValue.COMPONENTS;
+                editorEngine.projectInfo.createUntitledComponent();
+            },
+            icon: <Icons.Component className="mr-2 h-4 w-4" />,
         },
     ];
 

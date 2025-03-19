@@ -16,7 +16,12 @@ export enum EditorMode {
 export enum EditorTabValue {
     STYLES = 'styles',
     CHAT = 'chat',
-    PROPS = 'properties',
+    PROPS = 'properties'
+}
+
+export enum LeftTabValue {
+    LAYERS = 'layers',
+    COMPONENTS = 'components',
 }
 
 export enum SettingsTabValue {
