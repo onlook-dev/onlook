@@ -24,15 +24,16 @@ export class ChatContext {
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
+        this.getChatContext();
     }
 
     async getChatContext(): Promise<ChatMessageContext[]> {
         const selected = this.editorEngine.elements.selected;
-        if (selected.length === 0) {
-            return [];
-        }
         const fileNames = new Set<string>();
-        const highlightedContext = await this.getHighlightedContext(selected, fileNames);
+        let highlightedContext: HighlightMessageContext[] = [];
+        if (selected.length) {
+            highlightedContext = await this.getHighlightedContext(selected, fileNames);
+        }
         const fileContext = await this.getFileContext(fileNames);
         const imageContext = await this.getImageContext();
         const projectContext = await this.getProjectContext();
