@@ -45,7 +45,6 @@ export class ChatContext {
         const imageContext = await this.getImageContext();
         const projectContext = await this.getProjectContext();
         const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
-        console.log('context', context);
         return context;
     }
 
