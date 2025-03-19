@@ -148,17 +148,22 @@ const setupAppEventListeners = () => {
             ]);
         } catch (error) {
             console.error('Cleanup failed or timed out:', error);
-        } finally {
-            cleanupComplete = true;
         }
     }
 
     app.on('before-quit', (event) => {
         if (!cleanupComplete) {
+            cleanupComplete = false;
             event.preventDefault();
-            cleanUp().then(() => {
-                app.quit();
-            });
+            cleanUp()
+                .catch((error) => {
+                    console.error('Cleanup failed:', error);
+                    app.quit();
+                })
+                .finally(() => {
+                    cleanupComplete = true;
+                    app.quit();
+                });
         }
     });
 
