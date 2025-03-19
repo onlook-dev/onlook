@@ -22,8 +22,8 @@ export const listFilesTool = tool({
     },
 });
 
-export const readFileTool = tool({
-    description: 'Read the contents of a file',
+export const readFilesTool = tool({
+    description: 'Read the contents of files',
     parameters: z.object({
         paths: z.array(z.string()).describe('The absolute paths to the files to read'),
     }),
@@ -123,5 +123,5 @@ export const getStrReplaceEditorTool = (handlers: FileOperationHandlers) => {
 
 export const chatToolSet: ToolSet = {
     list_files: listFilesTool,
-    read_file: readFileTool,
+    read_files: readFilesTool,
 };

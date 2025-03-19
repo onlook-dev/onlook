@@ -24,7 +24,14 @@ export class ChatContext {
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
-        this.getChatContext();
+        reaction(
+            () => this.projectsManager.project?.folderPath,
+            (folderPath) => {
+                if (folderPath) {
+                    this.getChatContext().then((context) => (this.context = context));
+                }
+            },
+        );
     }
 
     async getChatContext(): Promise<ChatMessageContext[]> {
@@ -38,6 +45,7 @@ export class ChatContext {
         const imageContext = await this.getImageContext();
         const projectContext = await this.getProjectContext();
         const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
+        console.log('context', context);
         return context;
     }
 
