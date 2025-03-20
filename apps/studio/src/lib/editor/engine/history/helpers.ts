@@ -93,10 +93,45 @@ export function undoAction(action: Action): Action {
     }
 }
 
-export function updateTransactionActions(actions: Action[], newAction: Action): Action[] {
-    // Only allow one action per type, otherwise, overwrite the existing action
-    if (actions.some((a) => a.type === newAction.type)) {
-        return actions.map((a) => (a.type === newAction.type ? newAction : a));
+function handleUpdateStyleAction(
+    actions: Action[],
+    existingActionIndex: number,
+    newAction: UpdateStyleAction,
+): Action[] {
+    const existingAction = actions[existingActionIndex] as UpdateStyleAction;
+    const mergedTargets = [...existingAction.targets];
+
+    for (const newTarget of newAction.targets) {
+        const existingTarget = mergedTargets.find((et) => et.domId === newTarget.domId);
+
+        if (existingTarget) {
+            existingTarget.change = {
+                updated: { ...existingTarget.change.updated, ...newTarget.change.updated },
+                original: { ...existingTarget.change.original, ...newTarget.change.original },
+            };
+        } else {
+            mergedTargets.push(newTarget);
+        }
     }
-    return [...actions, newAction];
+
+    return actions.map((a, i) =>
+        i === existingActionIndex ? { type: 'update-style', targets: mergedTargets } : a,
+    );
+}
+
+export function updateTransactionActions(actions: Action[], newAction: Action): Action[] {
+    const existingActionIndex = actions.findIndex((a) => a.type === newAction.type);
+    if (existingActionIndex === -1) {
+        return [...actions, newAction];
+    }
+
+    if (newAction.type === 'update-style') {
+        return handleUpdateStyleAction(
+            actions,
+            existingActionIndex,
+            newAction as UpdateStyleAction,
+        );
+    }
+
+    return actions.map((a, i) => (i === existingActionIndex ? newAction : a));
 }
