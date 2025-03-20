@@ -1,16 +1,16 @@
 import { useEditorEngine } from '@/components/Context';
+import type { CompoundStyle } from '@/lib/editor/styles/models';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color } from '@onlook/utility';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
+import { isBackgroundImageEmpty } from '.';
 import ColorButton from './ColorButton';
 import ColorPickerContent from './ColorPicker';
 import ImagePickerContent from './ImagePicker';
-import type { CompoundStyle } from '@/lib/editor/styles/models';
-import { isBackgroundImageEmpty } from '.';
 
 interface ColorBrandPickerProps {
     color: Color;
@@ -132,8 +132,9 @@ const BrandPopoverPicker = memo(
                     <ColorButton value={color} onClick={() => toggleOpen(!isOpen)} />
                 </PopoverTrigger>
                 <PopoverContent
-                    align="end"
                     className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-56"
+                    side="left"
+                    align="start"
                 >
                     <div>
                         <Tabs defaultValue={defaultValue} className="bg-transparent pb-0">
