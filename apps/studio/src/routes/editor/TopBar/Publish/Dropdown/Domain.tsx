@@ -79,7 +79,7 @@ export const DomainSection = observer(
                 return;
             }
             domainManager.publish({
-                skipBadge: type === DomainType.CUSTOM || plan === UsagePlanType.PRO,
+                skipBadge: type === DomainType.CUSTOM,
                 buildFlags: userManager.settings.settings?.editor?.buildFlags,
             });
         };

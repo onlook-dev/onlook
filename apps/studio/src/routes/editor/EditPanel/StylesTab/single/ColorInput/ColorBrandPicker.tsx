@@ -72,7 +72,7 @@ const ColorGroup = ({
     );
 };
 
-const BrandPopoverPicker = memo(
+export const BrandPopoverPicker = memo(
     ({ color, onChange, onChangeEnd, backgroundImage, compoundStyle }: ColorBrandPickerProps) => {
         const editorEngine = useEditorEngine();
         const [isOpen, toggleOpen] = useState(false);
@@ -223,5 +223,3 @@ const BrandPopoverPicker = memo(
 );
 
 BrandPopoverPicker.displayName = 'BrandPopoverPicker';
-
-export default BrandPopoverPicker;

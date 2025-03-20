@@ -22,7 +22,7 @@ enum TabValue {
     IMAGE = 'image',
 }
 
-const PopoverPicker = memo(
+export const PopoverPicker = memo(
     ({ color, onChange, onChangeEnd, backgroundImage, compoundStyle }: PopoverPickerProps) => {
         const editorEngine = useEditorEngine();
         const [isOpen, toggleOpen] = useState(false);
@@ -102,5 +102,3 @@ const PopoverPicker = memo(
 );
 
 PopoverPicker.displayName = 'PopoverPicker';
-
-export default PopoverPicker;
