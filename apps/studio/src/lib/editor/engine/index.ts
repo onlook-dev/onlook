@@ -36,7 +36,7 @@ export class EditorEngine {
 
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.DOMAIN;
+    private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
     private _componentPanelTab: LeftTabValue = LeftTabValue.LAYERS;
 
     private canvasManager: CanvasManager;
