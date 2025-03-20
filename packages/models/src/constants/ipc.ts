@@ -55,7 +55,7 @@ export enum MainChannels {
     RENAME_COMPONENT = 'rename-component',
     CREATE_COMPONENT = 'create-component',
     DELETE_COMPONENT = 'delete-component',
-    CLEAN_CODmemberE_KEYS = 'clean-move-keys',
+    CLEAN_CODE_KEYS = 'clean-move-keys',
 
     // Analytics
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',

@@ -43,7 +43,7 @@ function getReactComponentDescriptor(
         }
 
         const initializer = declaration.getInitializer();
-        if (Node.isArrowFunction(initializer)) {
+        if (Node.isArrowFunction(initializer) || Node.isFunctionExpression(initializer)) {
             return { name };
         }
     }
@@ -242,7 +242,7 @@ export async function createNewComponent(componentName: string, filePath: string
     try {
         const dirPath = path.dirname(filePath);
 
-        const newfilePath = path.join(dirPath, `${componentName}.tsx`);
+        const newFilePath = path.join(dirPath, `${componentName}.tsx`);
 
         const componentTemplate = `export default function ${componentName}() {
     return (
@@ -256,9 +256,9 @@ export async function createNewComponent(componentName: string, filePath: string
     );
 }`;
 
-        await fs.writeFile(newfilePath, componentTemplate, 'utf-8');
+        await fs.writeFile(newFilePath, componentTemplate, 'utf-8');
 
-        return newfilePath;
+        return newFilePath;
     } catch (error) {
         console.error('Error creating component:', error);
         throw error;

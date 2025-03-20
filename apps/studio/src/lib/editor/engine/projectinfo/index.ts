@@ -4,13 +4,13 @@ import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { ProjectsManager } from '@/lib/projects';
 
-export const CREATE_NEW_COMPONENT = 'creare-new-component';
+export const CREATE_NEW_COMPONENT = 'create-new-component';
 export class ProjectInfoManager {
     private projectComponents: ReactComponentDescriptor[];
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
-        this.scanComponents();
         this.projectComponents = [];
+        this.scanComponents();
     }
 
     async scanComponents() {
@@ -37,7 +37,7 @@ export class ProjectInfoManager {
             });
             this.scanComponents();
         } catch (error) {
-            console.error('Failed to duplicate page:', error);
+            console.error('Failed to duplicate component:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(errorMessage);
         }
@@ -51,7 +51,7 @@ export class ProjectInfoManager {
             });
             this.scanComponents();
         } catch (error) {
-            console.error('Failed to duplicate page:', error);
+            console.error('Failed to rename component:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(errorMessage);
         }
@@ -74,7 +74,7 @@ export class ProjectInfoManager {
             });
             this.scanComponents();
         } catch (error) {
-            console.error('Failed to duplicate page:', error);
+            console.error('Failed to create component:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(errorMessage);
         }
@@ -87,7 +87,7 @@ export class ProjectInfoManager {
             });
             this.scanComponents();
         } catch (error) {
-            console.error('Failed to duplicate page:', error);
+            console.error('Failed to delete component:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(errorMessage);
         }

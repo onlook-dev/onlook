@@ -100,9 +100,14 @@ const ComponentsTab = observer(({ components }: { components: ReactComponentDesc
         if (e.key === 'Enter') {
             setEditingIndex(null);
             if (isCreateAction) {
-                const element = editorEngine.elements.selected[0];
-                if (renameVal) {
-                    await editorEngine.projectInfo.createComponent(renameVal, element.oid || '');
+                if (editorEngine.elements.selected.length > 0) {
+                    const element = editorEngine.elements.selected[0];
+                    if (renameVal) {
+                        await editorEngine.projectInfo.createComponent(
+                            renameVal,
+                            element.oid || '',
+                        );
+                    }
                 }
             } else {
                 if (renameVal) {
