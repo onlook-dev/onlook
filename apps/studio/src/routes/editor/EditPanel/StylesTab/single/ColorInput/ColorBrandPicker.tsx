@@ -131,10 +131,7 @@ const BrandPopoverPicker = memo(
                 <PopoverTrigger>
                     <ColorButton value={color} onClick={() => toggleOpen(!isOpen)} />
                 </PopoverTrigger>
-                <PopoverContent
-                    align="end"
-                    className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-56"
-                >
+                <PopoverContent className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-56 fixed -left-60">
                     <div>
                         <Tabs defaultValue={defaultValue} className="bg-transparent pb-0">
                             <TabsList className="bg-transparent px-2 m-0 gap-2">
