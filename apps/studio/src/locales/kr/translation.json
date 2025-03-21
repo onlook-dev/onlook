@@ -1,0 +1,313 @@
+{
+    "projects": {
+        "create": {
+            "settings": {
+                "title": "설정",
+                "tooltip": "새 프로젝트 설정 구성"
+            },
+            "success": "프로젝트가 성공적으로 생성되었습니다.",
+            "steps": {
+                "count": "{{current}} / {{total}}",
+                "error": "프로젝트 데이터가 없습니다."
+            },
+            "methods": {
+                "new": "새 프로젝트 생성",
+                "load": "기존 프로젝트 불러오기"
+            },
+            "loading": {
+                "title": "새 Onlook 앱 설정 중입니다...",
+                "description": "몇 초 정도 걸릴 수 있습니다.",
+                "cancel": "취소"
+            },
+            "error": {
+                "title": "Onlook 앱 생성 중 오류가 발생했습니다.",
+                "backToPrompt": "프롬프트로 돌아가기"
+            }
+        },
+        "select": {
+            "empty": "프로젝트를 찾을 수 없습니다.",
+            "sort": {
+                "recent": "최근 업데이트 순",
+                "name": "프로젝트 이름 순"
+            },
+            "lastEdited": "{{time}} 전에 마지막으로 수정됨"
+        },
+        "actions": {
+            "import": "가져오기",
+            "close": "닫기",
+            "about": "Onlook 소개",
+            "signOut": "로그아웃",
+            "editApp": "앱 편집",
+            "projectSettings": "프로젝트 설정",
+            "showInExplorer": "탐색기에서 보기",
+            "renameProject": "프로젝트 이름 변경",
+            "deleteProject": "프로젝트 삭제",
+            "cancel": "취소",
+            "delete": "삭제",
+            "rename": "이름 변경",
+            "goToAllProjects": "모든 프로젝트로 이동",
+            "newProject": "새 프로젝트",
+            "startFromScratch": "처음부터 시작하기",
+            "importProject": "프로젝트 가져오기",
+            "subscriptions": "구독하기",
+            "settings": "설정"
+        },
+        "dialogs": {
+            "delete": {
+                "title": "이 프로젝트를 삭제하시겠습니까?",
+                "description": "이 작업은 되돌릴 수 없습니다. 프로젝트와 모든 관련 데이터가 영구적으로 삭제됩니다.",
+                "moveToTrash": "폴더도 휴지통으로 이동"
+            },
+            "rename": {
+                "title": "프로젝트 이름 변경",
+                "label": "프로젝트 이름",
+                "error": "프로젝트 이름은 비워둘 수 없습니다."
+            }
+        },
+        "prompt": {
+            "title": "어떤 종류의 웹사이트를 만들고 싶으신가요?",
+            "description": "프로젝트에 대해 알려주세요. 최대한 자세하게 설명해주세요.",
+            "input": {
+                "placeholder": "참고 스크린샷을 붙여넣거나, 자세히 작성하거나, 창의적으로 표현해보세요...",
+                "imageUpload": "이미지 참조 업로드",
+                "fileReference": "파일 참조",
+                "submit": "사이트 구축 시작하기"
+            },
+            "blankStart": "빈 페이지로 시작하기"
+        }
+    },
+    "welcome": {
+        "title": "Onlook에 오신 것을 환영합니다",
+        "titleReturn": "Onlook에 다시 오신 것을 환영합니다",
+        "description": "Onlook은 React 앱을 위한 오픈소스 비주얼 에디터입니다. 라이브 제품에서 직접 디자인하세요.",
+        "alpha": "알파",
+        "login": {
+            "github": "GitHub으로 로그인",
+            "google": "Google로 로그인",
+            "lastUsed": "마지막으로 로그인한 계정"
+        },
+        "terms": {
+            "agreement": "가입함으로써 다음에 동의합니다:",
+            "privacy": "개인정보 처리방침",
+            "and": "및",
+            "tos": "서비스 이용약관"
+        },
+        "version": "버전 {{version}}"
+    },
+    "pricing": {
+        "plans": {
+            "basic": {
+                "name": "Onlook 베이직",
+                "price": "$0/월",
+                "description": "코드로 쉽게 프로토타입을 만들고 실험해보세요.",
+                "features": [
+                    "비주얼 코드 에디터 사용",
+                    "무제한 프로젝트",
+                    "매일 {{dailyMessages}}개의 AI 채팅 메시지",
+                    "월 {{monthlyMessages}}개의 AI 메시지",
+                    "채팅당 스크린샷 1개로 제한"
+                ]
+            },
+            "pro": {
+                "name": "Onlook 프로",
+                "price": "$20/월",
+                "description": "창의성의 한계를 넘어서다. AI로 멋진 사이트를 만들어보세요.",
+                "features": [
+                    "비주얼 코드 에디터 사용",
+                    "무제한 프로젝트",
+                    "매일 무제한 AI 채팅 메시지",
+                    "월 무제한 채팅",
+                    "Onlook 워터마크 제거",
+                    "Onlook에서 호스팅되는 1개의 무료 사용자 지정 도메인",
+                    "우선 지원 서비스"
+                ]
+            }
+        },
+        "titles": {
+            "choosePlan": "요금제 선택",
+            "proMember": "프로 멤버가 되어주셔서 감사합니다!"
+        },
+        "buttons": {
+            "currentPlan": "현재 사용중인 요금제",
+            "getPro": "프로 구독하기",
+            "manageSubscription": "구독 관리"
+        },
+        "loading": {
+            "checkingPayment": "결제 확인 중..."
+        },
+        "toasts": {
+            "checkingOut": {
+                "title": "결제 진행 중",
+                "description": "결제를 완료하기 위해 Stripe로 이동합니다."
+            },
+            "redirectingToStripe": {
+                "title": "Stripe로 이동 중",
+                "description": "구독을 관리하기 위해 Stripe로 이동합니다."
+            },
+            "error": {
+                "title": "오류",
+                "description": "결제 프로세스를 시작할 수 없습니다. 다시 시도해 주세요."
+            }
+        },
+        "footer": {
+            "unusedMessages": "사용하지 않은 채팅 메시지는 다음 달로 이월되지 않습니다."
+        }
+    },
+    "editor": {
+        "modes": {
+            "design": {
+                "name": "디자인",
+                "description": "웹사이트 디자인 편집 및 수정",
+                "tooltip": "디자인 모드로 변경"
+            },
+            "preview": {
+                "name": "미리보기",
+                "description": "웹사이트 기능 미리보기 및 테스트",
+                "tooltip": "미리보기 모드로 변경"
+            }
+        },
+        "toolbar": {
+            "tools": {
+                "select": {
+                    "name": "선택",
+                    "tooltip": "요소 선택 및 수정"
+                },
+                "pan": {
+                    "name": "이동",
+                    "tooltip": "캔버스 이동 및 주변 탐색"
+                },
+                "insertDiv": {
+                    "name": "컨테이너 추가",
+                    "tooltip": "새 컨테이너 요소 추가"
+                },
+                "insertText": {
+                    "name": "텍스트 추가",
+                    "tooltip": "새 텍스트 요소 추가"
+                }
+            },
+            "versionHistory": "버전 기록"
+        },
+        "panels": {
+            "edit": {
+                "tabs": {
+                    "chat": {
+                        "name": "채팅",
+                        "emptyState": "AI와 채팅할 요소를 선택하세요",
+                        "emptyStateStart": "채팅을 시작하려면 프로젝트를 시작하세요",
+                        "input": {
+                            "placeholder": "메시지를 입력하세요...",
+                            "tooltip": "선택한 요소에 대해 AI와 채팅"
+                        },
+                        "controls": {
+                            "newChat": "새 채팅",
+                            "history": "채팅 기록"
+                        },
+                        "settings": {
+                            "showSuggestions": "제안 표시",
+                            "expandCodeBlocks": "렌더링 시 코드 표시"
+                        },
+                        "miniChat": {
+                            "button": "AI와 채팅하기"
+                        }
+                    },
+                    "styles": {
+                        "name": "스타일",
+                        "emptyState": "스타일 속성을 편집할 요소를 선택하세요",
+                        "groups": {
+                            "position": "위치 및 크기",
+                            "layout": "Flexbox & 레이아웃",
+                            "style": "스타일",
+                            "text": "텍스트"
+                        },
+                        "tailwind": {
+                            "title": "Tailwind 클래스",
+                            "placeholder": "여기에 Tailwind 클래스를 추가하세요.",
+                            "componentClasses": {
+                                "title": "메인 컴포넌트 클래스",
+                                "tooltip": "기본값으로 변경 사항이 컴포넌트 코드에 적용됩니다."
+                            },
+                            "instanceClasses": {
+                                "title": "인스턴스 클래스",
+                                "tooltip": "변경 사항이 인스턴스 코드에 적용됩니다."
+                            }
+                        }
+                    }
+                }
+            },
+            "layers": {
+                "name": "레이어",
+                "tabs": {
+                    "layers": "레이어",
+                    "pages": "페이지",
+                    "components": "컴포넌트",
+                    "images": "이미지",
+                    "windows": {
+                        "name": "윈도우",
+                        "emptyState": "설정을 편집할 창(윈도우)을 선택하세요"
+                    },
+                    "brand": "브랜드"
+                }
+            }
+        },
+        "settings": {
+            "preferences": {
+                "language": "언어",
+                "theme": "테마",
+                "deleteWarning": "삭제 경고",
+                "analytics": "분석",
+                "editor": {
+                    "ide": "편집기",
+                    "shouldWarnDelete": "요소 삭제 시 경고",
+                    "enableAnalytics": "분석 사용"
+                },
+                "shortcuts": "단축키"
+            }
+        },
+        "frame": {
+            "startDesigning": {
+                "prefix": "",
+                "action": "실행",
+                "suffix": "버튼을 눌러 앱 디자인을 시작하세요"
+            },
+            "playButton": "실행",
+            "waitingForApp": "앱 시작을 기다리는 중..."
+        },
+        "runButton": {
+            "portInUse": "포트 사용 중",
+            "loading": "로딩 중",
+            "play": "실행",
+            "retry": "재시도",
+            "stop": "중지"
+        },
+        "zoom": {
+            "level": "확대/축소 수준",
+            "in": "확대",
+            "out": "축소",
+            "fit": "화면에 맞춤",
+            "reset": "100% 보기",
+            "double": "200% 확대"
+        }
+    },
+    "help": {
+        "menu": {
+            "reloadOnlook": "Onlook 새로고침",
+            "theme": {
+                "title": "테마",
+                "light": "라이트",
+                "dark": "다크",
+                "system": "시스템"
+            },
+            "language": "언어",
+            "openSettings": "설정 열기",
+            "contactUs": {
+                "title": "문의하기",
+                "website": "웹사이트",
+                "discord": "Discord",
+                "github": "GitHub",
+                "email": "이메일"
+            },
+            "reportIssue": "오류 신고하기",
+            "shortcuts": "단축키"
+        }
+    }
+}
