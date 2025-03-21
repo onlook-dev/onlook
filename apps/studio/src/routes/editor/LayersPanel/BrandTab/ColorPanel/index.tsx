@@ -41,7 +41,18 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         parentName?: string,
         theme?: Theme,
     ) => {
-        themeManager.update(groupName, index, newColor, newName, parentName, theme);
+        themeManager.update(groupName, index, newColor, newName, parentName, theme, false);
+    };
+
+    const handleColorChangeEnd = (
+        groupName: string,
+        index: number,
+        newColor: Color,
+        newName: string,
+        parentName?: string,
+        theme?: Theme,
+    ) => {
+        themeManager.update(groupName, index, newColor, newName, parentName, theme, true);
     };
 
     const handleDuplicate = (
@@ -123,6 +134,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                             onRename={handleRename}
                             onDelete={(colorName) => handleDelete(groupName, colorName)}
                             onColorChange={handleColorChange}
+                            onColorChangeEnd={handleColorChangeEnd}
                             onDuplicate={(colorName) => handleDuplicate(groupName, colorName)}
                         />
                     ))}
@@ -173,6 +185,9 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                         onRename={handleRename}
                         onDelete={(colorItem) => handleDelete(colorName, colorItem)}
                         onColorChange={(groupName, colorIndex, newColor) =>
+                            handleDefaultColorChange(colorName, colorIndex, newColor)
+                        }
+                        onColorChangeEnd={(groupName, colorIndex, newColor) =>
                             handleDefaultColorChange(colorName, colorIndex, newColor)
                         }
                         onDuplicate={(colorItem) => handleDuplicate(colorName, colorItem, true)}

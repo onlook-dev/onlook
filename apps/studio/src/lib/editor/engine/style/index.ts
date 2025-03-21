@@ -33,9 +33,9 @@ export class StyleManager {
         );
     }
 
-    updateCustom(style: string, value: string) {
+    updateCustom(style: string, value: string, domIds: string[] = []) {
         const styleObj = { [style]: value };
-        const action = this.getUpdateStyleAction(styleObj, [], StyleChangeType.Custom);
+        const action = this.getUpdateStyleAction(styleObj, domIds, StyleChangeType.Custom);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(styleObj);
     }
