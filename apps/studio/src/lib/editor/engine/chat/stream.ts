@@ -64,12 +64,21 @@ export class StreamResolver {
         return null;
     }
 
-    clear() {
+    clearBeforeSend() {
         this.content = [];
         this.requestId = null;
+        this.rateLimited = null;
         this.errorMessage = null;
     }
-    clearRateLimited() {
+
+    clearAfterSend() {
+        this.content = [];
+    }
+
+    dispose() {
+        this.content = [];
+        this.requestId = null;
         this.rateLimited = null;
+        this.errorMessage = null;
     }
 }

@@ -104,8 +104,7 @@ export class ChatManager {
             false,
         );
 
-        this.stream.clear();
-        this.stream.clearRateLimited();
+        this.stream.clearBeforeSend();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
         const res: CompletedStreamResponse | null = await this.sendStreamRequest(
@@ -117,7 +116,7 @@ export class ChatManager {
         } else {
             console.error('No stream response found');
         }
-        this.stream.clear();
+        this.stream.clearAfterSend();
         this.isWaiting = false;
         sendAnalytics('receive chat response');
     }
@@ -253,7 +252,7 @@ export class ChatManager {
     }
 
     dispose() {
-        this.stream.clear();
+        this.stream.dispose();
         this.code?.dispose();
         this.context?.dispose();
         if (this.conversation) {
