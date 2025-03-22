@@ -46,7 +46,8 @@ export const SubscriptionModal = observer(() => {
         const getPlan = async () => {
             const plan = await userManager.subscription.getPlanFromServer();
             if (plan === UsagePlanType.PRO) {
-                editorEngine.chat.stream.clearBeforeSend();
+                editorEngine.chat.stream.clearRateLimited();
+                editorEngine.chat.stream.clearErrorMessage();
             }
             setIsCheckingOut(null);
         };

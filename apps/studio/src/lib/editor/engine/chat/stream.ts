@@ -71,6 +71,14 @@ export class StreamResolver {
         this.errorMessage = null;
     }
 
+    clearRateLimited() {
+        this.rateLimited = null;
+    }
+
+    clearErrorMessage() {
+        this.errorMessage = null;
+    }
+
     clearAfterSend() {
         this.content = [];
     }

@@ -211,7 +211,6 @@ ${PAGE_SYSTEM_PROMPT.defaultContent}`;
     private getStreamErrorMessage(
         streamResult: PartialStreamResponse | ErrorStreamResponse | RateLimitedStreamResponse,
     ): string {
-        console.log('streamResult', streamResult);
         if (streamResult.type === 'error') {
             return streamResult.message;
         }
