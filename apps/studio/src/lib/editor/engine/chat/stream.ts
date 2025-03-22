@@ -19,7 +19,6 @@ export class StreamResolver {
         window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args: PartialStreamResponse) => {
             const { payload } = args;
             this.resolveContent(payload);
-            this.errorMessage = null;
         });
     }
 
