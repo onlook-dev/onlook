@@ -20,7 +20,6 @@ export class StreamResolver {
             const { payload } = args;
             this.resolveContent(payload);
             this.errorMessage = null;
-            this.rateLimited = null;
         });
     }
 
@@ -69,6 +68,8 @@ export class StreamResolver {
         this.content = [];
         this.requestId = null;
         this.errorMessage = null;
+    }
+    clearRateLimited() {
         this.rateLimited = null;
     }
 }
