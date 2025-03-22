@@ -6,7 +6,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const PortWarningModal = observer(
     ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
@@ -16,8 +16,14 @@ const PortWarningModal = observer(
         const [showStillTaken, setShowStillTaken] = useState(false);
 
         if (!portManager) {
+            console.error('Port manager not found');
             return null;
         }
+
+        useEffect(() => {
+            portManager.listenForPortChanges();
+            return () => portManager.clearPortCheckInterval();
+        }, [portManager]);
 
         const handleChangePort = () => {
             editorEngine.settingsTab = SettingsTabValue.PROJECT;

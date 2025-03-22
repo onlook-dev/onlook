@@ -49,10 +49,10 @@ export class PortManager {
         this.currentPort = this.getPortFromProject();
     }
 
-    async checkPort(): Promise<void> {
+    async checkPort(): Promise<boolean> {
         if (this.runManager.state !== RunState.STOPPED) {
             this.isPortAvailable = true;
-            return;
+            return this.isPortAvailable;
         }
 
         const response: DetectedPortResults = await invokeMainChannel(
@@ -63,6 +63,7 @@ export class PortManager {
         );
         this.isPortAvailable = response.isPortAvailable;
         this.suggestedPort = response.availablePort;
+        return this.isPortAvailable;
     }
 
     clearPortCheckInterval() {

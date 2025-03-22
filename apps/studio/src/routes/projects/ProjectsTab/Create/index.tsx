@@ -131,7 +131,7 @@ const CreateProject = ({
         projectsManager.project = newProject;
 
         setTimeout(() => {
-            projectsManager.runner?.start();
+            projectsManager.runner?.startIfPortAvailable();
         }, 1000);
 
         sendAnalytics('create project', {
