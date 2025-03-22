@@ -196,5 +196,6 @@ export class RunManager {
             this.cleanupLoadingTimer();
         }
         await this.stop();
+        this.portManager.dispose();
     }
 }

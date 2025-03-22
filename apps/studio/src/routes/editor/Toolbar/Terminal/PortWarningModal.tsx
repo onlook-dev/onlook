@@ -6,7 +6,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const PortWarningModal = observer(
     ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
@@ -18,18 +18,6 @@ const PortWarningModal = observer(
         if (!portManager) {
             return null;
         }
-
-        useEffect(() => {
-            const interval = setInterval(async () => {
-                try {
-                    await portManager.checkPort();
-                } catch (error) {
-                    console.error('Error checking port status:', error);
-                }
-            }, 3000);
-
-            return () => clearInterval(interval);
-        }, []);
 
         const handleChangePort = () => {
             editorEngine.settingsTab = SettingsTabValue.PROJECT;
