@@ -6,7 +6,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const PortWarningModal = observer(
     ({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) => {
@@ -15,9 +15,14 @@ const PortWarningModal = observer(
         const portManager = projectsManager.runner?.port;
         const [showStillTaken, setShowStillTaken] = useState(false);
 
-        if (!portManager) {
-            return null;
-        }
+        useEffect(() => {
+            if (!portManager) {
+                return;
+            }
+
+            portManager.listenForPortChanges();
+            return () => portManager.clearPortCheckInterval();
+        }, [portManager]);
 
         const handleChangePort = () => {
             editorEngine.settingsTab = SettingsTabValue.PROJECT;
@@ -27,11 +32,15 @@ const PortWarningModal = observer(
 
         const getMessage = () =>
             showStillTaken
-                ? `Port ${portManager.currentPort} is still occupied. Check your other IDE.`
-                : `Port ${portManager.currentPort} is currently in use.`;
+                ? `Port ${portManager?.currentPort} is still occupied. Check your other IDE.`
+                : `Port ${portManager?.currentPort} is currently in use.`;
 
         const handleRefresh = async () => {
             try {
+                if (!portManager) {
+                    return;
+                }
+
                 await portManager.checkPort();
                 if (!portManager.isPortAvailable) {
                     setShowStillTaken(true);
@@ -112,7 +121,7 @@ const PortWarningModal = observer(
                             </div>
                             <p className="text-regular text-foreground/80">
                                 Another process is running on{' '}
-                                <strong>localhost:{portManager.currentPort}</strong>. You may need
+                                <strong>localhost:{portManager?.currentPort}</strong>. You may need
                                 to stop that process or run your application on a different port.
                             </p>
                         </div>
