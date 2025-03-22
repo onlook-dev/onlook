@@ -5,13 +5,53 @@ import { flexibleSearchAndReplace } from './search-replace';
 export class CodeBlockProcessor {
     /**
      * Sequentially applies a list of diffs to the original text
+     * Returns the resulting text after applying all possible diffs
+     * If a diff cannot be applied, it is skipped and the method continues with the next diff
+     * @returns An object containing the modified text and information about failed diffs
      */
-    async applyDiffs(originalText: string, diffs: string[]): Promise<string> {
+    async applyDiffs(originalText: string, diffs: string[]): Promise<{ 
+        text: string; 
+        failures: { diffIndex: number; error: string }[] 
+    }> {
         let text = originalText;
-        for (const diff of diffs) {
-            text = await this.applyDiff(text, diff);
+        const failures: { diffIndex: number; error: string }[] = [];
+        
+        for (let i = 0; i < diffs.length; i++) {
+            try {
+                const searchReplaces = CodeBlockProcessor.parseDiff(diffs[i]);
+                if (searchReplaces.length === 0) {
+                    failures.push({ diffIndex: i, error: 'Invalid diff format - No valid fence blocks found' });
+                    continue;
+                }
+                
+                let diffApplied = false;
+                let currentText = text;
+                
+                for (const { search, replace } of searchReplaces) {
+                    const result = await flexibleSearchAndReplace(search, replace, currentText);
+                    if (result.success && result.text) {
+                        currentText = result.text;
+                        diffApplied = true;
+                    } else {
+                        failures.push({ 
+                            diffIndex: i, 
+                            error: result.error || 'Search pattern not found or other error occurred' 
+                        });
+                    }
+                }
+                
+                if (diffApplied) {
+                    text = currentText;
+                }
+            } catch (error) {
+                failures.push({ 
+                    diffIndex: i, 
+                    error: error instanceof Error ? error.message : 'Unknown error'
+                });
+            }
         }
-        return text;
+        
+        return { text, failures };
     }
 
     /**
@@ -57,18 +97,30 @@ export class CodeBlockProcessor {
     /**
      * Applies a search/replace diff to the original text with advanced formatting handling
      * Uses multiple strategies and preprocessing options to handle complex replacements
+     * @returns The modified text if successful, or the original text if all search/replace operations failed
      */
     async applyDiff(originalText: string, diffText: string): Promise<string> {
         const searchReplaces = CodeBlockProcessor.parseDiff(diffText);
         let text = originalText;
+        let anySuccess = false;
 
         for (const { search, replace } of searchReplaces) {
             const result = await flexibleSearchAndReplace(search, replace, text);
-            if (!result.success) {
-                // Fallback to simple replacement if flexible strategies fail
-                text = text.replace(search, replace);
-            } else if (result.text) {
+            if (result.success && result.text) {
                 text = result.text;
+                anySuccess = true;
+            } else {
+                // Fallback to simple replacement if flexible strategies fail
+                try {
+                    const newText = text.replace(search, replace);
+                    if (newText !== text) {
+                        text = newText;
+                        anySuccess = true;
+                    }
+                } catch (error) {
+                    // Continue if simple replacement fails
+                    console.warn('Simple replacement failed:', error);
+                }
             }
         }
 
