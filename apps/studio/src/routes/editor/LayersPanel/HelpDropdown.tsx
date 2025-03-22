@@ -92,24 +92,15 @@ export const HelpDropdown = observer(() => {
                         {t('help.menu.language')}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-32 ml-2">
-                        <DropdownMenuItem
-                            className="text-sm"
-                            onClick={() => userManager.language.update(Language.English)}
-                        >
-                            {LANGUAGE_DISPLAY_NAMES[Language.English]}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="text-sm"
-                            onClick={() => userManager.language.update(Language.Japanese)}
-                        >
-                            {LANGUAGE_DISPLAY_NAMES[Language.Japanese]}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="text-sm"
-                            onClick={() => userManager.language.update(Language.Chinese)}
-                        >
-                            {LANGUAGE_DISPLAY_NAMES[Language.Chinese]}
-                        </DropdownMenuItem>
+                        {Object.values(Language).map((language) => (
+                            <DropdownMenuItem
+                                key={language}
+                                className="text-sm"
+                                onClick={() => userManager.language.update(language)}
+                            >
+                                {LANGUAGE_DISPLAY_NAMES[language]}
+                            </DropdownMenuItem>
+                        ))}
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem
