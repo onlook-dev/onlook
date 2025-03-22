@@ -7,6 +7,7 @@ export class PortManager {
     isPortAvailable: boolean = true;
     suggestedPort: number = 3000;
     currentPort: number = 3000;
+    portCheckInterval: Timer | null = null;
 
     constructor(
         private runManager: RunManager,
@@ -14,6 +15,7 @@ export class PortManager {
     ) {
         makeAutoObservable(this);
         this.currentPort = this.getPortFromProject();
+        this.listenForPortChanges();
         reaction(
             () => this.runManager.state,
             () => {
@@ -22,6 +24,13 @@ export class PortManager {
                 }
             },
         );
+    }
+
+    listenForPortChanges() {
+        this.clearPortCheckInterval();
+        this.portCheckInterval = setInterval(async () => {
+            await this.checkPort();
+        }, 3000);
     }
 
     getPortFromProject() {
@@ -40,10 +49,10 @@ export class PortManager {
         this.currentPort = this.getPortFromProject();
     }
 
-    async checkPort(): Promise<void> {
+    async checkPort(): Promise<boolean> {
         if (this.runManager.state !== RunState.STOPPED) {
             this.isPortAvailable = true;
-            return;
+            return this.isPortAvailable;
         }
 
         const response: DetectedPortResults = await invokeMainChannel(
@@ -54,5 +63,17 @@ export class PortManager {
         );
         this.isPortAvailable = response.isPortAvailable;
         this.suggestedPort = response.availablePort;
+        return this.isPortAvailable;
+    }
+
+    clearPortCheckInterval() {
+        if (this.portCheckInterval) {
+            clearInterval(this.portCheckInterval);
+            this.portCheckInterval = null;
+        }
+    }
+
+    dispose() {
+        this.clearPortCheckInterval();
     }
 }
