@@ -24,6 +24,11 @@ const PortWarningModal = observer(
             return () => portManager.clearPortCheckInterval();
         }, [portManager]);
 
+        if (!portManager) {
+            console.error('Port manager not found');
+            return null;
+        }
+
         const handleChangePort = () => {
             editorEngine.settingsTab = SettingsTabValue.PROJECT;
             onOpenChange(false);

@@ -15,6 +15,7 @@ export class PortManager {
     ) {
         makeAutoObservable(this);
         this.currentPort = this.getPortFromProject();
+        this.listenForPortChanges();
         reaction(
             () => this.runManager.state,
             () => {
@@ -63,6 +64,17 @@ export class PortManager {
         this.isPortAvailable = response.isPortAvailable;
         this.suggestedPort = response.availablePort;
         return this.isPortAvailable;
+    }
+
+    clearPortCheckInterval() {
+        if (this.portCheckInterval) {
+            clearInterval(this.portCheckInterval);
+            this.portCheckInterval = null;
+        }
+    }
+
+    dispose() {
+        this.clearPortCheckInterval();
     }
 
     clearPortCheckInterval() {
