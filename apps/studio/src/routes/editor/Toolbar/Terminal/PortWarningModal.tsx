@@ -15,19 +15,15 @@ const PortWarningModal = observer(
         const portManager = projectsManager.runner?.port;
         const [showStillTaken, setShowStillTaken] = useState(false);
 
-        useEffect(() => {
-            if (!portManager) {
-                return;
-            }
-
-            portManager.listenForPortChanges();
-            return () => portManager.clearPortCheckInterval();
-        }, [portManager]);
-
         if (!portManager) {
             console.error('Port manager not found');
             return null;
         }
+
+        useEffect(() => {
+            portManager.listenForPortChanges();
+            return () => portManager.clearPortCheckInterval();
+        }, [portManager]);
 
         const handleChangePort = () => {
             editorEngine.settingsTab = SettingsTabValue.PROJECT;
@@ -42,10 +38,6 @@ const PortWarningModal = observer(
 
         const handleRefresh = async () => {
             try {
-                if (!portManager) {
-                    return;
-                }
-
                 await portManager.checkPort();
                 if (!portManager.isPortAvailable) {
                     setShowStillTaken(true);
