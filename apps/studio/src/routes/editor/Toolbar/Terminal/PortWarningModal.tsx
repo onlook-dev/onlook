@@ -37,8 +37,8 @@ const PortWarningModal = observer(
 
         const getMessage = () =>
             showStillTaken
-                ? `Port ${portManager?.currentPort} is still occupied. Check your other IDE.`
-                : `Port ${portManager?.currentPort} is currently in use.`;
+                ? `Port ${portManager.currentPort} is still occupied. Check your other IDE.`
+                : `Port ${portManager.currentPort} is currently in use.`;
 
         const handleRefresh = async () => {
             try {
@@ -126,7 +126,7 @@ const PortWarningModal = observer(
                             </div>
                             <p className="text-regular text-foreground/80">
                                 Another process is running on{' '}
-                                <strong>localhost:{portManager?.currentPort}</strong>. You may need
+                                <strong>localhost:{portManager.currentPort}</strong>. You may need
                                 to stop that process or run your application on a different port.
                             </p>
                         </div>

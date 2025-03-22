@@ -76,15 +76,4 @@ export class PortManager {
     dispose() {
         this.clearPortCheckInterval();
     }
-
-    clearPortCheckInterval() {
-        if (this.portCheckInterval) {
-            clearInterval(this.portCheckInterval);
-            this.portCheckInterval = null;
-        }
-    }
-
-    dispose() {
-        this.clearPortCheckInterval();
-    }
 }
