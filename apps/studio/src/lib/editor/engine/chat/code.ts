@@ -49,7 +49,7 @@ export class ChatCodeManager {
                     toast({
                         title: 'Failed to apply code block',
                         variant: 'destructive',
-                        description: 'Please try again or prompt the model to fix it.',
+                        description: 'Please try again or prompt the AI to fix it.',
                     });
                 }
                 content = result.text;
