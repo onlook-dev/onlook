@@ -29,5 +29,9 @@
     "homepage": "https://onlook.com",
     "devDependencies": {
         "@onlook/typescript": "*"
+    },
+    "dependencies": {
+        "normalize-url": "^8.0.1",
+        "tldts": "^6.1.82"
     }
 }

@@ -52,6 +52,8 @@ const NodeIcon = ({ iconClass, tagName: preprocessedTagName }: NodeIconProps) =>
         return <Icons.ViewVertical className={iconClass} />;
     } else if (tagName === 'CANVAS') {
         return <Icons.PencilPaper className={iconClass} />;
+    } else if (tagName === 'BODY') {
+        return <Icons.Desktop className={iconClass} />;
     } else {
         return <Icons.Frame className={iconClass} />;
     }

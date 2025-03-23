@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 import { spawn } from 'node:child_process'
 
-const pkg = createRequire(import.meta.url)('../package.json')
+const pkg = createRequire(import.meta.url)('../apps/studio/package.json')
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // write .debug.env

@@ -64,8 +64,8 @@ export function adaptRectToCanvas(
     return {
         width: rect.width * scale,
         height: rect.height * scale,
-        top: (rect.top + sourceOffset.top) * scale + canvasTransform.f,
-        left: (rect.left + sourceOffset.left) * scale + canvasTransform.e,
+        top: (rect.top + sourceOffset.top + canvasTransform.f / scale) * scale,
+        left: (rect.left + sourceOffset.left + canvasTransform.e / scale) * scale,
     };
 }
 

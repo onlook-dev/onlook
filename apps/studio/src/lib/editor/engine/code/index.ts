@@ -50,12 +50,12 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    viewSourceFile(filePath: string | null): void {
+    viewSourceFile(filePath: string | null, line?: number): void {
         if (!filePath) {
             console.error('No file path found.');
             return;
         }
-        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, filePath);
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, { filePath, line });
         sendAnalytics('view source code');
     }
 
@@ -152,9 +152,9 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
-    async writeInsert({ location, element, pasteParams }: InsertElementAction) {
+    async writeInsert({ location, element, pasteParams, codeBlock }: InsertElementAction) {
         const oidToCodeChange = new Map<string, CodeDiffRequest>();
-        const insertedEl = getInsertedElement(element, location, pasteParams);
+        const insertedEl = getInsertedElement(element, location, pasteParams, codeBlock);
 
         if (!insertedEl.location.targetOid) {
             console.error('No oid found for inserted element');
@@ -166,15 +166,15 @@ export class CodeManager {
             oidToCodeChange,
         );
         request.structureChanges.push(insertedEl);
-
         await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
-    private async writeRemove({ element }: RemoveElementAction) {
+    private async writeRemove({ element, codeBlock }: RemoveElementAction) {
         const oidToCodeChange = new Map<string, CodeDiffRequest>();
         const removedEl: CodeRemove = {
             oid: element.oid,
             type: CodeActionType.REMOVE,
+            codeBlock,
         };
 
         const request = await getOrCreateCodeDiffRequest(removedEl.oid, oidToCodeChange);
@@ -320,7 +320,7 @@ export class CodeManager {
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory: boolean = false) {
         let codeDiffs: CodeDiff[];
         if (useHistory) {
-            codeDiffs = await this.getCodeDiffs([requests[0]]);
+            codeDiffs = await this.getCodeDiffs(requests);
             this.runCodeDiffs(codeDiffs);
         } else {
             // Write code directly

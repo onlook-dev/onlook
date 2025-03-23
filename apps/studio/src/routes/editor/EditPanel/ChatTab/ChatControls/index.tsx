@@ -4,45 +4,16 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import ChatHistory from './ChatHistory';
 
-const ChatControls = observer(() => {
+export const ChatControls = observer(() => {
     const editorEngine = useEditorEngine();
-    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const [showTooltip, setShowTooltip] = useState<boolean | undefined>(undefined);
-
     const handleNewChat = () => {
         editorEngine.chat.conversation.startNewConversation();
-        setIsHistoryOpen(false);
-    };
-
-    const handleHistoryOpenChange = (open: boolean) => {
-        setIsHistoryOpen(open);
-        // Force tooltip to close when dialog closes
-        if (!open) {
-            setShowTooltip(false);
-            // Reset tooltip state after a brief delay to allow hover to work again
-            setTimeout(() => setShowTooltip(undefined), 200);
-        }
+        editorEngine.chat.focusChatInput();
     };
 
     return (
-        <div className="flex flex-row gap">
-            <Tooltip open={isHistoryOpen ? false : showTooltip}>
-                <TooltipTrigger asChild>
-                    <div>
-                        <ChatHistory
-                            isOpen={isHistoryOpen}
-                            onOpenChange={handleHistoryOpenChange}
-                        />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                    <p>Chat History</p>
-                    <TooltipArrow className="fill-foreground" />
-                </TooltipContent>
-            </Tooltip>
+        <div className="flex flex-row opacity-0 transition-opacity duration-200 group-hover/panel:opacity-100">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
@@ -63,5 +34,3 @@ const ChatControls = observer(() => {
         </div>
     );
 });
-
-export default ChatControls;

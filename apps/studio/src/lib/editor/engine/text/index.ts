@@ -1,8 +1,11 @@
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
+import { toast } from '@onlook/ui/use-toast';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
-import { adaptRectToCanvas } from '../overlay/utils';
 import type { IFrameView } from '../frameview';
+import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {
     targetDomEl: DomElement | null = null;
@@ -16,6 +19,21 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: IFrameView) {
+        const isEditable: boolean | null = await invokeMainChannel(
+            MainChannels.IS_CHILD_TEXT_EDITABLE,
+            { oid: el.oid },
+        );
+        if (isEditable !== true) {
+            toast({
+                title:
+                    isEditable === null
+                        ? "Can't determine if text is editable"
+                        : "Can't edit text because it's not plain text. Edit in code or use AI.",
+                variant: 'destructive',
+            });
+            return;
+        }
+
         const res: { originalContent: string } | null = await webview.executeJavaScript(
             `window.api?.startEditingText('${el.domId}')`,
         );

@@ -1,7 +1,9 @@
+import type { DetectedPortResults } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
+import { runBunCommand } from '../bun';
 import run from '../run';
-import { runCommand } from '../run/process';
+import { isPortAvailable } from '../run/helpers';
 import terminal from '../run/terminal';
 
 export async function listenForRunMessages() {
@@ -59,6 +61,14 @@ export async function listenForRunMessages() {
 
     ipcMain.handle(MainChannels.RUN_COMMAND, async (_, args) => {
         const { cwd, command } = args as { cwd: string; command: string };
-        return await runCommand(cwd, command);
+        return await runBunCommand(command, { cwd });
     });
+
+    ipcMain.handle(
+        MainChannels.IS_PORT_AVAILABLE,
+        async (e: Electron.IpcMainInvokeEvent, args): Promise<DetectedPortResults> => {
+            const { port } = args as { port: number };
+            return await isPortAvailable(port);
+        },
+    );
 }

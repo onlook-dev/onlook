@@ -23,7 +23,6 @@ export interface UpdateStyleAction {
 export interface PasteParams {
     oid: string;
     domId: string;
-    codeBlock: string | null;
 }
 
 // Reversible insert and remove actions
@@ -34,6 +33,7 @@ interface BaseInsertRemoveAction {
     element: ActionElement;
     editText: boolean | null;
     pasteParams: PasteParams | null;
+    codeBlock: string | null;
 }
 
 export interface InsertElementAction extends BaseInsertRemoveAction {

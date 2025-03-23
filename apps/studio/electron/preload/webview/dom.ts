@@ -10,23 +10,23 @@ import type { TOnlookWindow } from './api';
 const processDebounced = debounce((root: HTMLElement) => {
     const webviewId = getWebviewId();
     if (!webviewId) {
-        console.error('Webview id not found, skipping dom processing');
+        console.warn('Webview id not found, skipping dom processing');
         return false;
     }
     const layerMap = buildLayerTree(root);
     if (!layerMap) {
-        console.error('Error building layer tree, root element is null');
+        console.warn('Error building layer tree, root element is null');
         return false;
     }
 
     const rootDomId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
     if (!rootDomId) {
-        console.error('Root dom id not found');
+        console.warn('Root dom id not found');
         return false;
     }
     const rootNode = layerMap.get(rootDomId);
     if (!rootNode) {
-        console.error('Root node not found');
+        console.warn('Root node not found');
         return false;
     }
 
@@ -39,7 +39,7 @@ const processDebounced = debounce((root: HTMLElement) => {
 
 export function processDom(root: HTMLElement = document.body): boolean {
     if (!getWebviewId()) {
-        console.error('Webview id not found, skipping dom processing');
+        console.warn('Webview id not found, skipping dom processing');
         return false;
     }
     processDebounced(root);

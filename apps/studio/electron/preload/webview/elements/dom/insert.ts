@@ -84,7 +84,7 @@ export function insertElement(
 ): DomElement | undefined {
     const targetEl = elementFromDomId(location.targetDomId);
     if (!targetEl) {
-        console.error(`Target element not found: ${location.targetDomId}`);
+        console.warn(`Target element not found: ${location.targetDomId}`);
         return;
     }
     const newEl = createElement(element);
@@ -98,7 +98,7 @@ export function insertElement(
             break;
         case 'index':
             if (location.index === undefined || location.index < 0) {
-                console.error(`Invalid index: ${location.index}`);
+                console.warn(`Invalid index: ${location.index}`);
                 return;
             }
 
@@ -109,7 +109,7 @@ export function insertElement(
             }
             break;
         default:
-            console.error(`Invalid position: ${location}`);
+            console.warn(`Invalid position: ${location}`);
             assertNever(location);
     }
 
@@ -144,7 +144,7 @@ export function removeElement(location: ActionLocation): DomElement | null {
     const targetEl = elementFromDomId(location.targetDomId);
 
     if (!targetEl) {
-        console.error(`Target element not found: ${location.targetDomId}`);
+        console.warn(`Target element not found: ${location.targetDomId}`);
         return null;
     }
 
@@ -161,12 +161,12 @@ export function removeElement(location: ActionLocation): DomElement | null {
             if (location.index !== -1) {
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
-                console.error(`Invalid index: ${location.index}`);
+                console.warn(`Invalid index: ${location.index}`);
                 return null;
             }
             break;
         default:
-            console.error(`Invalid position: ${location}`);
+            console.warn(`Invalid position: ${location}`);
             assertNever(location);
     }
 

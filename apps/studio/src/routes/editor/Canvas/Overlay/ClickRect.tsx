@@ -349,7 +349,6 @@ export const ClickRect = ({
         >
             {renderMarginLabels()}
             {renderPaddingLabels()}
-            {renderDimensionLabels()}
             {shouldShowResizeHandles && (
                 <ResizeHandles
                     width={width}

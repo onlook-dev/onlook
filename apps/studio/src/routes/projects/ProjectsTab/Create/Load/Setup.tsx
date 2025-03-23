@@ -1,6 +1,6 @@
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
-import type { SetupStage } from '@onlook/foundation';
+import type { SetupStage } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';

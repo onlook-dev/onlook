@@ -1,11 +1,25 @@
 import {
+    addBuiltWithScript,
+    injectBuiltWithScript,
+    removeBuiltWithScript,
+    removeBuiltWithScriptFromLayout,
+} from '@onlook/growth';
+import {
     ApiRoutes,
     BASE_API_ROUTE,
     CUSTOM_OUTPUT_DIR,
+    DefaultSettings,
     FUNCTIONS_ROUTE,
+    HostingRoutes,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
+import {
+    PublishStatus,
+    type PublishOptions,
+    type PublishRequest,
+    type PublishResponse,
+} from '@onlook/models/hosting';
+import { isEmptyString, isNullOrUndefined } from '@onlook/utility';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -16,11 +30,11 @@ import { getRefreshedAuthTokens } from '../auth';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
-    runBuildScript,
     serializeFiles,
     updateGitignore,
     type FileRecord,
 } from './helpers';
+import { runBuildScript } from './run';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
@@ -33,26 +47,29 @@ class HostingManager {
         return HostingManager.instance;
     }
 
-    async deploy(
-        folderPath: string,
-        buildScript: string,
-        urls: string[],
-        skipBuild: boolean = false,
-    ): Promise<{
-        state: HostingStatus;
-        message?: string;
-    }> {
+    async publish({
+        folderPath,
+        buildScript,
+        urls,
+        options,
+    }: PublishRequest): Promise<PublishResponse> {
         try {
             const timer = new LogTimer('Deployment');
-            this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
+            this.emitState(PublishStatus.LOADING, 'Preparing project...');
 
             await this.runPrepareStep(folderPath);
-            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
+            this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
             timer.log('Prepare completed');
 
+            if (!options?.skipBadge) {
+                this.emitState(PublishStatus.LOADING, 'Adding badge...');
+                await this.addBadge(folderPath);
+                timer.log('"Built with Onlook" badge added');
+            }
+
             // Run the build script
-            await this.runBuildStep(folderPath, buildScript, skipBuild);
-            this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
+            await this.runBuildStep(folderPath, buildScript, options);
+            this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
             timer.log('Build completed');
 
             // Postprocess the project for deployment
@@ -70,29 +87,44 @@ class HostingManager {
             const NEXT_BUILD_OUTPUT_PATH = `${folderPath}/${CUSTOM_OUTPUT_DIR}/standalone`;
             const files: FileRecord = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
 
-            this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
+            this.emitState(PublishStatus.LOADING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
             const id = await this.sendHostingPostRequest(files, urls);
             timer.log('Deployment completed');
 
-            this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
+            this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
+
+            if (!options?.skipBadge) {
+                await this.removeBadge(folderPath);
+                timer.log('"Built with Onlook" badge removed');
+            }
 
             return {
-                state: HostingStatus.READY,
+                success: true,
                 message: 'Deployment successful, deployment ID: ' + id,
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + error);
+            this.emitState(PublishStatus.ERROR, 'Deployment failed with error: ' + error);
             analytics.trackError('Failed to deploy to preview environment', {
                 error,
             });
             return {
-                state: HostingStatus.ERROR,
-                message: 'Deployment failed with error: ' + error,
+                success: false,
+                message: error instanceof Error ? error.message : 'Unknown error',
             };
         }
+    }
+
+    async addBadge(folderPath: string) {
+        await injectBuiltWithScript(folderPath);
+        await addBuiltWithScript(folderPath);
+    }
+
+    async removeBadge(folderPath: string) {
+        await removeBuiltWithScriptFromLayout(folderPath);
+        await removeBuiltWithScript(folderPath);
     }
 
     async runPrepareStep(folderPath: string) {
@@ -111,26 +143,38 @@ class HostingManager {
         }
     }
 
-    async runBuildStep(folderPath: string, buildScript: string, skipBuild: boolean = false) {
-        const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
-        if (skipBuild) {
+    async runBuildStep(folderPath: string, buildScript: string, options?: PublishOptions) {
+        // Use default build flags if no build flags are provided
+        const buildFlagsString: string = isNullOrUndefined(options?.buildFlags)
+            ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+            : options?.buildFlags || '';
+
+        const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
+            ? buildScript
+            : `${buildScript} -- ${buildFlagsString}`;
+
+        if (options?.skipBuild) {
             console.log('Skipping build');
             return;
         }
-        const { success: buildSuccess, error: buildError } = await runBuildScript(
-            folderPath,
-            BUILD_SCRIPT_NO_LINT,
-        );
+
+        const {
+            success: buildSuccess,
+            error: buildError,
+            output: buildOutput,
+        } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
 
         if (!buildSuccess) {
-            this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
+            this.emitState(PublishStatus.ERROR, `Build failed with error: ${buildError}`);
             throw new Error(`Build failed with error: ${buildError}`);
+        } else {
+            console.log('Build succeeded with output: ', buildOutput);
         }
     }
 
-    emitState(state: HostingStatus, message?: string) {
+    emitState(state: PublishStatus, message?: string) {
         console.log(`Deployment state: ${state} - ${message}`);
-        mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
+        mainWindow?.webContents.send(MainChannels.PUBLISH_STATE_CHANGED, {
             state,
             message,
         });
@@ -140,16 +184,13 @@ class HostingManager {
         });
     }
 
-    async unpublish(urls: string[]): Promise<{
-        success: boolean;
-        message?: string;
-    }> {
+    async unpublish(urls: string[]): Promise<PublishResponse> {
         try {
             const id = await this.sendHostingPostRequest({}, urls);
-            this.emitState(HostingStatus.NO_ENV, 'Deployment deleted with ID: ' + id);
+            this.emitState(PublishStatus.UNPUBLISHED, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
-                state: HostingStatus.NO_ENV,
+                state: PublishStatus.UNPUBLISHED,
                 message: 'Deployment deleted with ID: ' + id,
             });
             return {
@@ -158,7 +199,7 @@ class HostingManager {
             };
         } catch (error) {
             console.error('Failed to delete deployment', error);
-            this.emitState(HostingStatus.ERROR, 'Failed to delete deployment');
+            this.emitState(PublishStatus.ERROR, 'Failed to delete deployment');
             analytics.trackError('Failed to delete deployment', {
                 error,
             });
@@ -177,7 +218,7 @@ class HostingManager {
         };
 
         const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}`,
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.DEPLOY_WEB}`,
             {
                 method: 'POST',
                 headers: {
@@ -190,43 +231,24 @@ class HostingManager {
                 }),
             },
         );
-        if (!res.ok) {
-            throw new Error(`Failed to deploy to preview environment, error: ${res.statusText}`);
-        }
+
         const freestyleResponse = (await res.json()) as {
             success: boolean;
             message?: string;
-            error?: string;
+            error?: {
+                message: string;
+            };
             data?: FreestyleDeployWebSuccessResponse;
         };
 
-        if (!freestyleResponse.success) {
+        if (!res.ok || !freestyleResponse.success) {
+            console.log(JSON.stringify(freestyleResponse));
             throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error || freestyleResponse.message}`,
+                `${freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error'}`,
             );
         }
 
         return freestyleResponse.data?.deploymentId ?? '';
-    }
-
-    async getCustomDomains(): Promise<CustomDomain[]> {
-        const authTokens = await getRefreshedAuthTokens();
-        const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}${ApiRoutes.CUSTOM_DOMAINS}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${authTokens.accessToken}`,
-                },
-            },
-        );
-        const customDomains = (await res.json()) as {
-            data: CustomDomain[];
-            error: string;
-        };
-        if (customDomains.error) {
-            throw new Error(`Failed to get custom domains, error: ${customDomains.error}`);
-        }
-        return customDomains.data;
     }
 }
 

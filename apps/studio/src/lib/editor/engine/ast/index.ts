@@ -7,9 +7,10 @@ import { LayersManager } from './layers';
 import type { IFrameView } from '../frameview';
 
 export class AstManager {
-    private layersManager: LayersManager = new LayersManager();
+    private layersManager: LayersManager;
 
     constructor(private editorEngine: EditorEngine) {
+        this.layersManager = new LayersManager(editorEngine);
         makeAutoObservable(this);
     }
 
@@ -67,7 +68,6 @@ export class AstManager {
             console.warn('Failed to processNodeForMap: No oid found');
             return;
         }
-
         const templateNode = await this.getTemplateNodeById(node.oid);
         if (!templateNode) {
             console.warn('Failed to processNodeForMap: Template node not found');
@@ -102,7 +102,6 @@ export class AstManager {
             ${templateNode.coreElementType ? `'${templateNode.coreElementType}'` : 'undefined'}
         )`,
         );
-
         this.findNodeInstance(webviewId, node, node, templateNode);
     }
 
@@ -112,7 +111,7 @@ export class AstManager {
         node: LayerNode,
         templateNode: TemplateNode,
     ) {
-        if (node.tagName === 'body') {
+        if (node.tagName.toLocaleLowerCase() === 'body') {
             return;
         }
         if (!node.parent) {

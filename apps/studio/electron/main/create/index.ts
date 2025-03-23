@@ -1,18 +1,25 @@
-import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
-import type { ImageMessageContext, StreamResponse } from '@onlook/models/chat';
+import { extractCodeBlocks } from '@onlook/ai/src/coder';
+import { PAGE_SYSTEM_PROMPT, PromptProvider } from '@onlook/ai/src/prompt';
+import { CreateStage, type CreateCallback, type CreateProjectResponse } from '@onlook/models';
+import {
+    StreamRequestType,
+    type ErrorStreamResponse,
+    type ImageMessageContext,
+    type PartialStreamResponse,
+    type RateLimitedStreamResponse,
+} from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage } from 'ai';
-import { app } from 'electron';
+import type { CoreMessage, CoreSystemMessage } from 'ai';
 import fs from 'fs';
 import path from 'path';
 import { mainWindow } from '..';
 import Chat from '../chat';
+import { getCreateProjectPath } from './helpers';
+import { createProject } from './install';
 
 export class ProjectCreator {
     private static instance: ProjectCreator;
     private abortController: AbortController | null = null;
-
-    private constructor() {}
 
     public static getInstance(): ProjectCreator {
         if (!ProjectCreator.instance) {
@@ -21,30 +28,18 @@ export class ProjectCreator {
         return ProjectCreator.instance;
     }
 
-    public async createProject(
-        prompt: string,
-        images: ImageMessageContext[],
-    ): Promise<{
+    private async executeProjectCreation<T>(action: () => Promise<T>): Promise<{
         success: boolean;
         error?: string;
-        projectPath?: string;
+        response?: T;
         cancelled?: boolean;
     }> {
         this.cancel();
         this.abortController = new AbortController();
 
         try {
-            const [generatedPage, projectPath] = await Promise.all([
-                this.generatePage(prompt, images),
-                this.runCreate(),
-            ]);
-
-            if (this.abortController.signal.aborted) {
-                return { success: false, cancelled: true };
-            }
-
-            await this.applyGeneratedPage(projectPath, generatedPage);
-            return { success: true, projectPath };
+            const result = await action();
+            return { success: true, response: result };
         } catch (error) {
             if ((error as Error).name === 'AbortError') {
                 return { success: false, cancelled: true };
@@ -56,6 +51,32 @@ export class ProjectCreator {
         }
     }
 
+    public async createProject(
+        prompt: string,
+        images: ImageMessageContext[],
+    ): Promise<CreateProjectResponse> {
+        return this.executeProjectCreation(async () => {
+            const [generatedPage, projectPath] = await Promise.all([
+                this.generatePage(prompt, images),
+                this.runCreate(),
+            ]);
+
+            if (this.abortController?.signal.aborted) {
+                throw new Error('AbortError');
+            }
+
+            await this.applyGeneratedPage(projectPath, generatedPage);
+            return { projectPath, content: generatedPage.content };
+        });
+    }
+
+    public async createBlankProject(): Promise<CreateProjectResponse> {
+        return this.executeProjectCreation(async () => {
+            const projectPath = await this.runCreate();
+            return { projectPath, content: '' };
+        });
+    }
+
     public cancel(): void {
         if (this.abortController) {
             this.abortController.abort();
@@ -63,35 +84,43 @@ export class ProjectCreator {
         }
     }
 
-    private async generatePage(prompt: string, images: ImageMessageContext[]) {
+    private async generatePage(
+        prompt: string,
+        images: ImageMessageContext[],
+    ): Promise<{ path: string; content: string }> {
         if (!this.abortController) {
             throw new Error('No active creation process');
         }
 
-        const defaultPagePath = 'app/page.tsx';
-        const systemPrompt = `You are an expert React developer specializing in React and Tailwind CSS. You are given a prompt and you need to create a React page that matches the prompt. Try to use a distinct style and infer it from the prompt. Err on the side of being quirky and unique.
-IMPORTANT: 
-- Output only the code without any explanation or markdown formatting. 
-- The content will be injected into the page and ran so make sure it is valid React code.
-- Don't use any dependencies or libraries besides tailwind.
-- Make sure to add import statements for any dependencies you use.`;
-
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
+        const systemPrompt = new PromptProvider().getCreatePageSystemPrompt();
+        const systemMessage: CoreSystemMessage = {
+            role: 'system',
+            content: systemPrompt,
+            experimental_providerMetadata: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+            },
+        };
 
-        const response = await Chat.stream(messages, systemPrompt, this.abortController);
+        const response = await Chat.stream([systemMessage, ...messages], StreamRequestType.CREATE, {
+            abortController: this.abortController,
+            skipSystemPrompt: true,
+        });
 
-        if (response.status !== 'full') {
+        if (response.type !== 'full') {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
         }
 
+        const content = extractCodeBlocks(response.text);
+
         return {
-            path: defaultPagePath,
-            content: response.content,
+            path: PAGE_SYSTEM_PROMPT.defaultPath,
+            content,
         };
     }
 
-    private async runCreate() {
+    private async runCreate(): Promise<string> {
         if (!this.abortController) {
             throw new Error('No active creation process');
         }
@@ -100,8 +129,7 @@ IMPORTANT:
             throw new Error('AbortError');
         }
 
-        const documentsPath = app.getPath('documents');
-        const projectsPath = path.join(documentsPath, 'Onlook', 'Projects');
+        const projectsPath = getCreateProjectPath();
         await fs.promises.mkdir(projectsPath, { recursive: true });
         const projectName = `project-${Date.now()}`;
 
@@ -122,7 +150,7 @@ IMPORTANT:
                 progress = 40;
                 break;
             case CreateStage.COMPLETE:
-                progress = 80;
+                progress = 50;
                 this.emitPromptProgress('Project created! Generating page...', progress);
                 return;
         }
@@ -137,17 +165,9 @@ IMPORTANT:
     };
 
     private getMessages(prompt: string, images: ImageMessageContext[]): CoreMessage[] {
-        const defaultPageContent = `'use client';
-        
-export default function Page() {
-    return (
-      <div></div>
-    );
-}`;
-
         const promptContent = `${images.length > 0 ? 'Refer to the images above. ' : ''}Create a landing page that matches this description: ${prompt}
 Use this as the starting template:
-${defaultPageContent}`;
+${PAGE_SYSTEM_PROMPT.defaultContent}`;
 
         // For text-only messages
         if (images.length === 0) {
@@ -188,16 +208,14 @@ ${defaultPageContent}`;
         await fs.promises.writeFile(pagePath, generatedPage.content);
     }
 
-    private getStreamErrorMessage(streamResult: StreamResponse): string {
-        if (streamResult.status === 'error') {
-            return streamResult.content;
+    private getStreamErrorMessage(
+        streamResult: PartialStreamResponse | ErrorStreamResponse | RateLimitedStreamResponse,
+    ): string {
+        if (streamResult.type === 'error') {
+            return streamResult.message;
         }
 
-        if (streamResult.status === 'partial') {
-            return streamResult.content;
-        }
-
-        if (streamResult.status === 'rate-limited') {
+        if (streamResult.type === 'rate-limited') {
             if (streamResult.rateLimitResult) {
                 const requestLimit =
                     streamResult.rateLimitResult.reason === 'daily'
@@ -207,6 +225,10 @@ ${defaultPageContent}`;
                 return `You reached your ${streamResult.rateLimitResult.reason} ${requestLimit} message limit.`;
             }
             return 'Rate limit exceeded. Please try again later.';
+        }
+
+        if (streamResult.type === 'partial') {
+            return 'Returned partial response';
         }
 
         return 'Unknown error';

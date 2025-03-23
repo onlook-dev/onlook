@@ -8,6 +8,9 @@ import {
     ArrowDownIcon,
     ArrowLeftIcon,
     ArrowRightIcon,
+    ArrowUpIcon,
+    BookmarkFilledIcon,
+    BookmarkIcon,
     BorderAllIcon,
     BorderBottomIcon,
     BorderDashedIcon,
@@ -26,10 +29,10 @@ import {
     ChevronRightIcon,
     ChevronUpIcon,
     CircleBackslashIcon,
+    CircleIcon,
     ClipboardCopyIcon,
     ClipboardIcon,
     CodeIcon,
-    Component1Icon,
     ComponentInstanceIcon,
     CopyIcon,
     CornerBottomLeftIcon,
@@ -45,10 +48,12 @@ import {
     CursorArrowIcon,
     DesktopIcon,
     DiscordLogoIcon,
+    DotsHorizontalIcon,
     DotsVerticalIcon,
     DownloadIcon,
     DragHandleDots2Icon,
     DropdownMenuIcon,
+    EnvelopeClosedIcon,
     ExclamationTriangleIcon,
     ExitIcon,
     ExternalLinkIcon,
@@ -63,44 +68,50 @@ import {
     GroupIcon,
     HandIcon,
     ImageIcon,
+    InfoCircledIcon,
     InputIcon,
+    KeyboardIcon,
     LaptopIcon,
-    LayersIcon,
     Link2Icon,
     LinkNone1Icon,
     ListBulletIcon,
     LockClosedIcon,
     LockOpen1Icon,
     MagicWandIcon,
+    MagnifyingGlassIcon,
     MinusCircledIcon,
     MinusIcon,
+    MixerHorizontalIcon,
+    MixerVerticalIcon,
     MobileIcon,
     MoonIcon,
     Pencil1Icon,
     Pencil2Icon,
+    PersonIcon,
     PilcrowIcon,
     PinLeftIcon,
     PinRightIcon,
-    PlayIcon,
     PlusCircledIcon,
     PlusIcon,
     QuestionMarkCircledIcon,
     ReloadIcon,
     ResetIcon,
+    RowSpacingIcon,
     ScissorsIcon,
     SectionIcon,
     ShadowIcon,
     Share2Icon,
     SizeIcon,
+    SketchLogoIcon,
     SpaceBetweenHorizontallyIcon,
     SpaceBetweenVerticallyIcon,
     SquareIcon,
-    StopIcon,
     SunIcon,
     TextAlignCenterIcon,
     TextAlignLeftIcon,
     TextAlignRightIcon,
     TextIcon,
+    TokensIcon,
     TrashIcon,
     UploadIcon,
     VideoIcon,
@@ -1105,9 +1116,86 @@ export const Icons = {
             />
         </svg>
     ),
+    Lightbulb: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M5.46661 11.0938V10.6878C5.46661 10.4515 5.33135 10.2385 5.13002 10.1149C4.99455 10.0316 4.8638 9.9415 4.73826 9.84494C3.66103 9.0165 2.9668 7.71456 2.9668 6.25056C2.9668 3.74771 4.99575 1.71875 7.49858 1.71875C10.0015 1.71875 12.0304 3.74771 12.0304 6.25056C12.0304 7.71456 11.3361 9.0165 10.259 9.84494C10.1334 9.9415 10.0026 10.0316 9.8672 10.1149C9.66583 10.2385 9.53058 10.4515 9.53058 10.6878V11.0938M5.46661 11.0938V11.8743C5.46661 12.9965 6.37639 13.9062 7.49858 13.9062C8.62083 13.9062 9.53058 12.9965 9.53058 11.8743V11.0938M5.46661 11.0938H9.53058"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="square"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    LightbulbSlash: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M5.46661 11.0938V10.6878C5.46661 10.4515 5.33135 10.2385 5.13002 10.1149C4.99455 10.0316 4.8638 9.9415 4.73826 9.84494C3.66103 9.0165 2.9668 7.71456 2.9668 6.25056C2.9668 5.43145 3.18411 4.66309 3.56423 4M5.46661 11.0938V11.8743C5.46661 12.9965 6.37639 13.9062 7.49858 13.9062C8.62083 13.9062 9.53058 12.9965 9.53058 11.8743V11.0938M5.46661 11.0938H7.49859H9.53058M9.53058 11.0938V10.6878C9.54789 10.432 9.85184 10.1149 9.85184 10.1149"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="square"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M1.71875 1.71875L12.5 12.5"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M11.3816 8.58925C11.7938 7.9065 12.0309 7.10621 12.0309 6.25056C12.0309 3.74771 10.002 1.71875 7.4991 1.71875C6.63093 1.71875 5.58622 1.90585 5.22461 2.2983"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    Brand: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M2.96875 2.1875H6.40625V1.25H2.96875V2.1875ZM7.1875 2.96875V10.3125H8.125V2.96875H7.1875ZM2.1875 10.3125V2.96875H1.25V10.3125H2.1875ZM4.6875 12.8125C3.30679 12.8125 2.1875 11.6932 2.1875 10.3125H1.25C1.25 12.211 2.78902 13.75 4.6875 13.75V12.8125ZM7.1875 10.3125C7.1875 11.6932 6.06821 12.8125 4.6875 12.8125V13.75C6.586 13.75 8.125 12.211 8.125 10.3125H7.1875ZM2.96875 1.25C2.01951 1.25 1.25 2.01951 1.25 2.96875H2.1875C2.1875 2.53727 2.53727 2.1875 2.96875 2.1875V1.25ZM7.26175 2.41667L10.2387 4.13543L10.7074 3.32352L7.7305 1.60478L7.26175 2.41667ZM10.5246 5.20263L6.85275 11.5625L7.66469 12.0312L11.3366 5.67138L10.5246 5.20263ZM10.8648 4.76152L12.5836 7.7385L13.3954 7.26975L11.6767 4.29277L10.8648 4.76152ZM12.2976 8.80569L5.93772 12.4776L6.4065 13.2894L12.7664 9.61756L12.2976 8.80569ZM12.5836 7.7385C12.7993 8.11213 12.6713 8.58994 12.2976 8.80569L12.7664 9.61756C13.5884 9.143 13.8701 8.09181 13.3954 7.26975L12.5836 7.7385ZM7.7305 1.60478C7.49619 1.4695 7.242 1.39533 6.98762 1.37818L6.92456 2.31356C7.03919 2.32128 7.15419 2.35457 7.26175 2.41667L7.7305 1.60478ZM6.40625 2.1875C6.53044 2.1875 6.64656 2.21612 6.74963 2.2667L7.16256 1.42504C6.93381 1.3128 6.67669 1.25 6.40625 1.25V2.1875ZM6.74963 2.2667C7.00994 2.39441 7.1875 2.66128 7.1875 2.96875H8.125C8.125 2.29011 7.73163 1.70423 7.16256 1.42504L6.74963 2.2667ZM11.6767 4.29277C11.5415 4.05854 11.3585 3.86727 11.1469 3.72526L10.6245 4.50372C10.7199 4.56771 10.8027 4.65399 10.8648 4.76152L11.6767 4.29277ZM10.2387 4.13543C10.3462 4.19751 10.4325 4.28036 10.4965 4.37571L11.2749 3.85327C11.1329 3.64168 10.9416 3.45874 10.7074 3.32352L10.2387 4.13543ZM10.4965 4.37571C10.6581 4.61645 10.6784 4.93636 10.5246 5.20263L11.3366 5.67138C11.6759 5.08366 11.6281 4.37957 11.2749 3.85327L10.4965 4.37571ZM5.3125 10.3125C5.3125 10.6577 5.03268 10.9375 4.6875 10.9375V11.875C5.55044 11.875 6.25 11.1754 6.25 10.3125H5.3125ZM4.6875 10.9375C4.34232 10.9375 4.0625 10.6577 4.0625 10.3125H3.125C3.125 11.1754 3.82456 11.875 4.6875 11.875V10.9375ZM4.0625 10.3125C4.0625 9.96731 4.34232 9.6875 4.6875 9.6875V8.75C3.82456 8.75 3.125 9.44956 3.125 10.3125H4.0625ZM4.6875 9.6875C5.03268 9.6875 5.3125 9.96731 5.3125 10.3125H6.25C6.25 9.44956 5.55044 8.75 4.6875 8.75V9.6875Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
+
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
     ArrowRight: ArrowRightIcon,
+    ArrowUp: ArrowUpIcon,
+    AlignLeft: AlignLeftIcon,
+    AlignCenterHorizontally: AlignCenterHorizontallyIcon,
+    AlignRight: AlignRightIcon,
+    AlignTop: AlignTopIcon,
+    AlignCenterVertically: AlignCenterVerticallyIcon,
+    AlignBottom: AlignBottomIcon,
+
     BorderAll: BorderAllIcon,
     BorderBottom: BorderBottomIcon,
     BorderDashed: BorderDashedIcon,
@@ -1118,6 +1206,9 @@ export const Icons = {
     BorderTop: BorderTopIcon,
     Box: BoxIcon,
     Button: ButtonIcon,
+    Bookmark: BookmarkIcon,
+    BookmarkFilled: BookmarkFilledIcon,
+
     ChatBubble: ChatBubbleIcon,
     Check: CheckIcon,
     CheckCircled: CheckCircledIcon,
@@ -1141,34 +1232,57 @@ export const Icons = {
     CrossS: Cross2Icon,
     CrossCircled: CrossCircledIcon,
     Cube: CubeIcon,
+    CursorArrow: CursorArrowIcon,
+    Circle: CircleIcon,
+
     Desktop: DesktopIcon,
     DiscordLogo: DiscordLogoIcon,
     DotsVertical: DotsVerticalIcon,
+    DotsHorizontal: DotsHorizontalIcon,
     Download: DownloadIcon,
     DropdownMenu: DropdownMenuIcon,
+    DragHandleDots: DragHandleDots2Icon,
+
     ExclamationTriangle: ExclamationTriangleIcon,
     Exit: ExitIcon,
     ExternalLink: ExternalLinkIcon,
     EyeOpen: EyeOpenIcon,
     EyeClosed: EyeClosedIcon,
+    EnvelopeClosed: EnvelopeClosedIcon,
+
     File: FileIcon,
     FilePlus: FilePlusIcon,
     Frame: FrameIcon,
+
     Gear: GearIcon,
     GitHubLogo: GitHubLogoIcon,
     Globe: GlobeIcon,
     Group: GroupIcon,
+
+    Hand: HandIcon,
+
     Image: ImageIcon,
     Input: InputIcon,
+    InfoCircled: InfoCircledIcon,
+
+    Keyboard: KeyboardIcon,
+
     Laptop: LaptopIcon,
     Link: Link2Icon,
     LinkNone: LinkNone1Icon,
     ListBullet: ListBulletIcon,
+    LockOpen: LockOpen1Icon,
+    LockClosed: LockClosedIcon,
+
+    MagnifyingGlass: MagnifyingGlassIcon,
     MagicWand: MagicWandIcon,
     Minus: MinusIcon,
     MinusCircled: MinusCircledIcon,
     Mobile: MobileIcon,
     Moon: MoonIcon,
+    MixerHorizontal: MixerHorizontalIcon,
+    MixerVertical: MixerVerticalIcon,
+
     Pencil: Pencil1Icon,
     PencilPaper: Pencil2Icon,
     Pilcrow: PilcrowIcon,
@@ -1176,37 +1290,160 @@ export const Icons = {
     PinRight: PinRightIcon,
     Plus: PlusIcon,
     PlusCircled: PlusCircledIcon,
+    Person: PersonIcon,
+
     QuestionMarkCircled: QuestionMarkCircledIcon,
     Reload: ReloadIcon,
     Reset: ResetIcon,
+    RowSpacing: RowSpacingIcon,
+
     Scissors: ScissorsIcon,
     Section: SectionIcon,
     Shadow: ShadowIcon,
     Share: Share2Icon,
     Size: SizeIcon,
     Sun: SunIcon,
+    SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
+    SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
+    Square: SquareIcon,
+    SketchLogo: SketchLogoIcon,
+
     Text: TextIcon,
     TextAlignCenter: TextAlignCenterIcon,
     TextAlignLeft: TextAlignLeftIcon,
     TextAlignRight: TextAlignRightIcon,
     Trash: TrashIcon,
-    Video: VideoIcon,
+    Tokens: TokensIcon,
     Upload: UploadIcon,
+
+    Video: VideoIcon,
     ViewGrid: ViewGridIcon,
     ViewHorizontal: ViewHorizontalIcon,
     ViewVertical: ViewVerticalIcon,
-    CursorArrow: CursorArrowIcon,
-    Hand: HandIcon,
-    Square: SquareIcon,
-    LockOpen: LockOpen1Icon,
-    LockClosed: LockClosedIcon,
-    DragHandleDots: DragHandleDots2Icon,
-    AlignLeft: AlignLeftIcon,
-    AlignCenterHorizontally: AlignCenterHorizontallyIcon,
-    AlignRight: AlignRightIcon,
-    SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
-    AlignTop: AlignTopIcon,
-    AlignCenterVertically: AlignCenterVerticallyIcon,
-    AlignBottom: AlignBottomIcon,
-    SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
+    EmptyState: ({ className, ...props }: IconProps) => (
+        <svg
+            width="130"
+            height="119"
+            viewBox="0 0 130 119"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <g filter="url(#filter0_d_4954_166260)">
+                <rect
+                    x="14.75"
+                    y="10.5"
+                    width="90"
+                    height="90"
+                    fill="url(#paint0_linear)"
+                    fillOpacity="0.2"
+                    shapeRendering="crispEdges"
+                />
+                <rect
+                    x="15"
+                    y="10.75"
+                    width="89.5"
+                    height="89.5"
+                    className="stroke-gray-300 dark:stroke-gray-600"
+                    strokeWidth="0.5"
+                    strokeDasharray="4 4"
+                    shapeRendering="crispEdges"
+                />
+            </g>
+            <g filter="url(#filter1_d_4954_166260)">
+                <path
+                    d="M112.018 81.4171L117.758 78.8025L111.789 65.6879L122.654 65.2087L98.5703 44.3438V76.1775L106.039 68.3025L112.018 81.4171Z"
+                    className="fill-gray-200 stroke-gray-400 dark:fill-gray-900 dark:stroke-gray-500"
+                    strokeLinejoin="round"
+                />
+            </g>
+            <defs>
+                <linearGradient
+                    id="paint0_linear"
+                    x1="59.75"
+                    y1="10.5"
+                    x2="59.75"
+                    y2="100.5"
+                    gradientUnits="userSpaceOnUse"
+                >
+                    <stop className="[stop-color:theme(colors.gray.50)] dark:[stop-color:theme(colors.gray.700)]" />
+                    <stop
+                        offset="1"
+                        className="[stop-color:theme(colors.gray.200)] dark:[stop-color:theme(colors.gray.900)]"
+                    />
+                </linearGradient>
+                <filter
+                    id="filter0_d_4954_166260"
+                    x="0.75"
+                    y="0.5"
+                    width="118"
+                    height="118"
+                    filterUnits="userSpaceOnUse"
+                    colorInterpolationFilters="sRGB"
+                >
+                    <feFlood floodOpacity="0" result="BackgroundImageFix" />
+                    <feColorMatrix
+                        in="SourceAlpha"
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                        result="hardAlpha"
+                    />
+                    <feOffset dy="4" />
+                    <feGaussianBlur stdDeviation="7" />
+                    <feComposite in2="hardAlpha" operator="out" />
+                    <feColorMatrix
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in2="BackgroundImageFix"
+                        result="effect1_dropShadow_4954_166260"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in="SourceGraphic"
+                        in2="effect1_dropShadow_4954_166260"
+                        result="shape"
+                    />
+                </filter>
+                <filter
+                    id="filter1_d_4954_166260"
+                    x="85.25"
+                    y="43"
+                    width="48"
+                    height="48"
+                    filterUnits="userSpaceOnUse"
+                    colorInterpolationFilters="sRGB"
+                >
+                    <feFlood floodOpacity="0" result="BackgroundImageFix" />
+                    <feColorMatrix
+                        in="SourceAlpha"
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+                        result="hardAlpha"
+                    />
+                    <feOffset dy="4" />
+                    <feGaussianBlur stdDeviation="2" />
+                    <feComposite in2="hardAlpha" operator="out" />
+                    <feColorMatrix
+                        type="matrix"
+                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in2="BackgroundImageFix"
+                        result="effect1_dropShadow_4954_166260"
+                    />
+                    <feBlend
+                        mode="normal"
+                        in="SourceGraphic"
+                        in2="effect1_dropShadow_4954_166260"
+                        result="shape"
+                    />
+                </filter>
+            </defs>
+        </svg>
+    ),
 } satisfies { [key: string]: React.FC<IconProps> };

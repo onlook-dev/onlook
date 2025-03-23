@@ -1,17 +1,18 @@
 import { sendAnalytics, sendToWebview } from '@/lib/utils';
-import type {
-    Action,
-    EditTextAction,
-    GroupElementsAction,
-    InsertElementAction,
-    InsertImageAction,
-    MoveElementAction,
-    RemoveElementAction,
-    RemoveImageAction,
-    UngroupElementsAction,
-    UpdateStyleAction,
+import {
+    type Action,
+    type EditTextAction,
+    type GroupElementsAction,
+    type InsertElementAction,
+    type InsertImageAction,
+    type MoveElementAction,
+    type RemoveElementAction,
+    type RemoveImageAction,
+    type UngroupElementsAction,
+    type UpdateStyleAction,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
+import { StyleChangeType } from '@onlook/models/style';
 import type { EditorEngine } from '..';
 import { assertNever } from '/common/helpers';
 
@@ -86,9 +87,25 @@ export class ActionManager {
                 console.error('Failed to get webview');
                 return;
             }
+            const convertedChange = Object.fromEntries(
+                Object.entries(target.change.updated).map(([key, value]) => {
+                    const newValue = this.editorEngine.theme.getColorByName(value.value);
+                    if (value.type === StyleChangeType.Custom && newValue) {
+                        value.value = newValue;
+                    }
+                    if (value.type === StyleChangeType.Custom && !newValue) {
+                        value.value = '';
+                    }
+                    return [key, value];
+                }),
+            );
+
             sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
                 domId: target.domId,
-                change: target.change,
+                change: {
+                    ...target.change,
+                    updated: convertedChange,
+                },
             });
         });
     }

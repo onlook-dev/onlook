@@ -33,8 +33,8 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
         pasteParams: {
             oid: element.container.oid,
             domId: element.container.domId,
-            codeBlock: null,
         },
+        codeBlock: null,
         children: [],
         oid: element.container.oid,
         tagName: element.container.tagName,

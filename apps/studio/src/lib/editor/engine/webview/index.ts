@@ -65,6 +65,7 @@ export class WebviewManager {
 
     deregisterAll() {
         this.webviewIdToData.clear();
+        this.editorEngine?.errors.clear();
     }
 
     isSelected(id: string) {
@@ -76,6 +77,7 @@ export class WebviewManager {
         if (data) {
             data.selected = true;
             this.webviewIdToData.set(webview.id, data);
+            this.editorEngine.pages.handleWebviewUrlChange(webview.id);
             this.notify();
         }
     }
@@ -121,13 +123,16 @@ export class WebviewManager {
         const doc = body.ownerDocument;
         const hasElements = body.children.length > 0;
         if (!hasElements) {
+            this.editorEngine.errors.shouldShowErrors = true;
             return WebviewState.RUNNING_NO_DOM;
         }
 
         const hasOnlook = isOnlookInDoc(doc);
         if (hasOnlook) {
+            this.editorEngine.errors.shouldShowErrors = false;
             return WebviewState.DOM_ONLOOK_ENABLED;
         }
+        this.editorEngine.errors.shouldShowErrors = true;
         return WebviewState.DOM_NO_ONLOOK;
     }
 
@@ -166,10 +171,6 @@ export class WebviewManager {
         // Run all disposers
         this.disposers.forEach((dispose) => dispose());
         this.disposers = [];
-
-        // Clear references
-        this.editorEngine = null as any;
-        this.projectsManager = null as any;
     }
 
     disposeWebview(id: string) {
@@ -181,5 +182,12 @@ export class WebviewManager {
 
         // Clean up AST mappings
         this.editorEngine?.ast?.mappings?.remove(id);
+        this.editorEngine?.errors.clear();
+    }
+
+    reloadWebviews() {
+        for (const webview of this.selected) {
+            webview.reload();
+        }
     }
 }

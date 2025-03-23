@@ -7,8 +7,8 @@ export interface UsageCheckResult {
     monthly_requests_limit: number;
 }
 
-export type StreamResponse = {
-    content: string;
-    status: 'partial' | 'full' | 'error' | 'rate-limited';
-    rateLimitResult?: UsageCheckResult;
-};
+export interface TokenUsage {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+}

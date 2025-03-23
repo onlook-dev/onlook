@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import path from 'path';
 import { CodeBlockProcessor } from '../../../src/coder/block';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __dirname = import.meta.dir;
 
 describe('Extract Code Blocks', () => {
     const coder = new CodeBlockProcessor();

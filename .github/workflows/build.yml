@@ -26,10 +26,9 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                os:
-                    - macos-latest
-                    - windows-latest
-                    # - ubuntu-latest
+                 include:
+                    - os: macos-latest
+                    - os: windows-latest
 
         steps:
             - name: Checkout code
@@ -39,6 +38,13 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20
+
+            - name: Install node-gyp dependencies
+              shell: bash
+              run: |
+                  if [ "$RUNNER_OS" == "macOS" ]; then
+                      brew install python-setuptools
+                  fi
 
             - name: Set Mac API key
               if: startsWith(matrix.os, 'macos')
@@ -53,6 +59,11 @@ jobs:
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
+            - name: Download Bun binary
+              env:
+                  CI_ARCH: ${{ matrix.arch }}
+              run: bun run download_bun
+
             - name: Set environment variables
               shell: bash
               run: |
@@ -61,9 +72,7 @@ jobs:
                   echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
             - name: Build foundation
-              run: |
-                  bun build:foundation
-                  bun run build
+              run: bun run ci:build
             
             - name: Build and Release 
               uses: samuelmeuli/action-electron-builder@v1
@@ -74,7 +83,7 @@ jobs:
                   release: ${{ startsWith(github.ref, 'refs/tags/v') }}
                   mac_certs: ${{ secrets.MAC_CERTS }}
                   mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
-                  args: ${{ startsWith(matrix.os, 'macos') && '--x64 --arm64' || '' }}
+                  args: ${{ startsWith(matrix.os, 'macos') && '--x64 --arm64' || '' }} --config builder-config/base.ts
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}

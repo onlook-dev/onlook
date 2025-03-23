@@ -1,8 +1,11 @@
+import { DEFAULT_IDE } from '../ide/index.ts';
+
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
 export const HOSTING_DOMAIN = 'onlook.live';
 export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const MAX_NAME_LENGTH = 50;
+
 export enum EditorAttributes {
     // DOM attributes
     ONLOOK_TOOLBAR = 'onlook-toolbar',
@@ -49,20 +52,18 @@ export enum Orientation {
 export enum Theme {
     Light = 'light',
     Dark = 'dark',
-    Device = 'device',
+    System = 'system',
 }
 
 export const DefaultSettings = {
-    SCALE: 0.6,
-    POSITION: { x: 300, y: 50 },
+    SCALE: 0.7,
+    PAN_POSITION: { x: 175, y: 100 },
     URL: 'http://localhost:3000/',
     FRAME_POSITION: { x: 0, y: 0 },
     FRAME_DIMENSION: { width: 1536, height: 960 },
-    DUPLICATE: false,
-    LINKED_IDS: [],
     ASPECT_RATIO_LOCKED: false,
     DEVICE: 'Custom:Custom',
-    THEME: Theme.Device,
+    THEME: Theme.System,
     ORIENTATION: Orientation.Potrait,
     MIN_DIMENSIONS: { width: '280px', height: '360px' },
     COMMANDS: {
@@ -71,4 +72,17 @@ export const DefaultSettings = {
         install: 'npm install',
     },
     IMAGE_FOLDER: 'public/images',
+    IMAGE_DIMENSION: { width: '100px', height: '100px' },
+    CHAT_SETTINGS: {
+        showSuggestions: true,
+        autoApplyCode: true,
+        expandCodeBlocks: false,
+        showMiniChat: true,
+    },
+    EDITOR_SETTINGS: {
+        shouldWarnDelete: true,
+        ideType: DEFAULT_IDE,
+        enableBunReplace: true,
+        buildFlags: '--no-lint',
+    },
 };

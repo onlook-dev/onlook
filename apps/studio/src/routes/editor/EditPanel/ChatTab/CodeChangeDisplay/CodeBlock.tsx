@@ -24,7 +24,11 @@ export const CodeBlock = ({
     const LINE_HEIGHT = 20;
 
     useEffect(() => {
-        initMonaco();
+        try {
+            initMonaco();
+        } catch (error) {
+            console.error('Failed to initialize Monaco editor:', error);
+        }
         return () => {
             if (editor.current) {
                 editor.current.dispose();
@@ -48,8 +52,10 @@ export const CodeBlock = ({
     async function initMonaco() {
         if (editorContainer.current) {
             await initHighlighter();
-            const height = getEditorHeight(code);
-            editorContainer.current.style.height = `${height}px`;
+            if (editorContainer.current?.style) {
+                const height = getEditorHeight(code);
+                editorContainer.current.style.height = `${height}px`;
+            }
 
             editor.current = monaco.editor.create(editorContainer.current, {
                 value: '',

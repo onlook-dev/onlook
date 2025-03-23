@@ -1,16 +1,33 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { type StreamResponse } from '@onlook/models/chat';
-import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import { type CoreMessage } from 'ai';
+import { chatToolSet } from '@onlook/ai/src/tools';
+import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import {
+    ChatSuggestionSchema,
+    ChatSummarySchema,
+    StreamRequestType,
+    type ChatSuggestion,
+    type CompletedStreamResponse,
+    type PartialStreamResponse,
+    type UsageCheckResult,
+} from '@onlook/models/chat';
+import { MainChannels } from '@onlook/models/constants';
+import {
+    generateObject,
+    streamText,
+    type CoreMessage,
+    type CoreSystemMessage,
+    type TextStreamPart,
+    type ToolSet,
+} from 'ai';
+import { z } from 'zod';
 import { mainWindow } from '..';
-import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
+import { initModel } from './llmProvider';
 
 class LlmManager {
     private static instance: LlmManager;
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
-    private userId: string | null = null;
     private promptProvider: PromptProvider;
 
     private constructor() {
@@ -23,7 +40,6 @@ class LlmManager {
         const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
 
         if (enable) {
-            this.userId = settings.id || null;
             this.useAnalytics = true;
         } else {
             this.useAnalytics = false;
@@ -43,67 +59,82 @@ class LlmManager {
 
     public async stream(
         messages: CoreMessage[],
-        systemPrompt: string | null = null,
-        abortController: AbortController | null = null,
-    ): Promise<StreamResponse> {
+        requestType: StreamRequestType,
+        options?: {
+            abortController?: AbortController;
+            skipSystemPrompt?: boolean;
+        },
+    ): Promise<CompletedStreamResponse> {
+        const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
         try {
-            const authTokens = await getRefreshedAuthTokens();
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${authTokens.accessToken}`,
+            if (!skipSystemPrompt) {
+                const systemMessage = {
+                    role: 'system',
+                    content: this.promptProvider.getSystemPrompt(process.platform),
+                    experimental_providerMetadata: {
+                        anthropic: { cacheControl: { type: 'ephemeral' } },
                     },
-                    body: JSON.stringify({
-                        messages,
-                        systemPrompt: systemPrompt
-                            ? systemPrompt
-                            : this.promptProvider.getSystemPrompt(process.platform),
-                        useAnalytics: this.useAnalytics,
-                        userId: this.userId,
-                    }),
-                    signal: this.abortController.signal,
+                } as CoreSystemMessage;
+                messages = [systemMessage, ...messages];
+            }
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
+                requestType,
+            });
+
+            const { usage, fullStream, text, response } = await streamText({
+                model,
+                messages,
+                abortSignal: this.abortController?.signal,
+                onError: (error) => {
+                    console.error('Error', JSON.stringify(error, null, 2));
+                    throw error;
                 },
-            );
-
-            if (response.status !== 200) {
-                if (response.status === 403) {
-                    return {
-                        status: 'rate-limited',
-                        content: 'You have reached your daily limit.',
-                        rateLimitResult: await response.json(),
-                    };
+                maxSteps: 10,
+                tools: chatToolSet,
+                maxTokens: 64000,
+                headers: {
+                    'anthropic-beta': 'output-128k-2025-02-19',
+                },
+            });
+            const streamParts: TextStreamPart<ToolSet>[] = [];
+            for await (const partialStream of fullStream) {
+                this.emitMessagePart(partialStream);
+                streamParts.push(partialStream);
+            }
+            return {
+                payload: (await response).messages,
+                type: 'full',
+                usage: await usage,
+                text: await text,
+            };
+        } catch (error: any) {
+            try {
+                console.error('Error', error);
+                if (error?.error?.statusCode) {
+                    if (error?.error?.statusCode === 403) {
+                        const rateLimitError = JSON.parse(
+                            error.error.responseBody,
+                        ) as UsageCheckResult;
+                        return {
+                            type: 'rate-limited',
+                            rateLimitResult: rateLimitError,
+                        };
+                    } else {
+                        return {
+                            type: 'error',
+                            message: error.error.responseBody,
+                        };
+                    }
                 }
-                const errorMessage = await response.text();
-                throw new Error(errorMessage);
+                const errorMessage = this.getErrorMessage(error);
+                return { message: errorMessage, type: 'error' };
+            } catch (error) {
+                console.error('Error parsing error', error);
+                return { message: 'An unknown error occurred', type: 'error' };
+            } finally {
+                this.abortController = null;
             }
-
-            const reader = response.body?.getReader();
-            if (!reader) {
-                throw new Error('No response from server');
-            }
-
-            let fullContent = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    break;
-                }
-
-                const chunk = new TextDecoder().decode(value);
-                fullContent += chunk;
-                this.emitPartialMessage(fullContent);
-            }
-            return { status: 'full', content: fullContent };
-        } catch (error) {
-            console.error('Error receiving stream', error);
-            const errorMessage = this.getErrorMessage(error);
-            return { content: errorMessage, status: 'error' };
-        } finally {
-            this.abortController = null;
         }
     }
 
@@ -115,10 +146,10 @@ class LlmManager {
         return false;
     }
 
-    private emitPartialMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'partial',
-            content,
+    private emitMessagePart(streamPart: TextStreamPart<ToolSet>) {
+        const res: PartialStreamResponse = {
+            type: 'partial',
+            payload: streamPart,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
     }
@@ -130,10 +161,103 @@ class LlmManager {
         if (typeof error === 'string') {
             return error;
         }
+        if (error instanceof Response) {
+            return error.statusText;
+        }
         if (error && typeof error === 'object' && 'message' in error) {
             return String(error.message);
         }
         return 'An unknown error occurred';
+    }
+
+    public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
+        try {
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
+                requestType: StreamRequestType.SUGGESTIONS,
+            });
+
+            const { object } = await generateObject({
+                model,
+                output: 'array',
+                schema: ChatSuggestionSchema,
+                messages,
+            });
+            return object as ChatSuggestion[];
+        } catch (error) {
+            console.error(error);
+            return [];
+        }
+    }
+
+    public async generateChatSummary(messages: CoreMessage[]): Promise<string | null> {
+        try {
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.HAIKU, {
+                requestType: StreamRequestType.SUMMARY,
+            });
+
+            const systemMessage: CoreSystemMessage = {
+                role: 'system',
+                content: this.promptProvider.getSummaryPrompt(),
+                experimental_providerMetadata: {
+                    anthropic: { cacheControl: { type: 'ephemeral' } },
+                },
+            };
+
+            // Transform messages to emphasize they are historical content
+            const conversationMessages = messages
+                .filter((msg) => msg.role !== 'tool')
+                .map((msg) => {
+                    const prefix = '[HISTORICAL CONTENT] ';
+                    const content =
+                        typeof msg.content === 'string' ? prefix + msg.content : msg.content;
+
+                    return {
+                        ...msg,
+                        content,
+                    };
+                });
+
+            const { object } = await generateObject({
+                model,
+                schema: ChatSummarySchema,
+                messages: [
+                    { role: 'system', content: systemMessage.content as string },
+                    ...conversationMessages.map((msg) => ({
+                        role: msg.role,
+                        content: msg.content as string,
+                    })),
+                ],
+            });
+
+            const {
+                filesDiscussed,
+                projectContext,
+                implementationDetails,
+                userPreferences,
+                currentStatus,
+            } = object as z.infer<typeof ChatSummarySchema>;
+
+            // Formats the structured object into the desired text format
+            const summary = `# Files Discussed
+${filesDiscussed.join('\n')}
+
+# Project Context
+${projectContext}
+
+# Implementation Details
+${implementationDetails}
+
+# User Preferences
+${userPreferences}
+
+# Current Status
+${currentStatus}`;
+
+            return summary;
+        } catch (error) {
+            console.error('Error generating summary:', error);
+            return null;
+        }
     }
 }
 

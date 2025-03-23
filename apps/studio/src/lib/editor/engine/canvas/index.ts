@@ -1,4 +1,5 @@
 import type { ProjectsManager } from '@/lib/projects';
+import { SIZE_PRESETS } from '@/lib/sizePresets';
 import { DefaultSettings } from '@onlook/models/constants';
 import type {
     FrameSettings,
@@ -14,7 +15,7 @@ type SettingsObserver = (settings: FrameSettings) => void;
 
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
-    private panPosition: RectPosition = DefaultSettings.POSITION;
+    private panPosition: RectPosition = DefaultSettings.PAN_POSITION;
     private webFrames: FrameSettings[] = [];
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
@@ -26,13 +27,21 @@ export class CanvasManager {
 
     getDefaultPanPosition(): RectPosition {
         if (!window) {
-            return DefaultSettings.POSITION;
+            return DefaultSettings.PAN_POSITION;
         }
 
-        const x =
-            window.innerWidth / 2 - (DefaultSettings.FRAME_DIMENSION.width * this.zoomScale) / 2;
-        const y =
-            window.innerHeight / 2 - (DefaultSettings.FRAME_DIMENSION.height * this.zoomScale) / 2;
+        let x = 200;
+        let y = 100;
+        const center = false;
+        if (center) {
+            x =
+                window.innerWidth / 2 -
+                (DefaultSettings.FRAME_DIMENSION.width * this.zoomScale) / 2;
+            y =
+                window.innerHeight / 2 -
+                (DefaultSettings.FRAME_DIMENSION.height * this.zoomScale) / 2;
+        }
+
         return { x, y };
     }
 
@@ -93,16 +102,41 @@ export class CanvasManager {
     async applySettings(project: Project) {
         this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
         this.panPosition = project.settings?.position || this.getDefaultPanPosition();
-        this.webFrames =
-            project.settings?.frames && project.settings.frames.length
-                ? project.settings.frames
-                : [this.getDefaultFrame({ url: project.url })];
+
+        if (project.settings?.frames && project.settings.frames.length) {
+            this.webFrames = project.settings.frames;
+        } else {
+            // Find desktop and mobile presets
+            const desktopPreset = SIZE_PRESETS.find((preset) => preset.name === 'Desktop');
+            const mobilePreset = SIZE_PRESETS.find((preset) => preset.name === 'Mobile');
+
+            // Create desktop frame
+            const desktopFrame = this.getDefaultFrame({
+                url: project.url,
+                dimension: desktopPreset
+                    ? { width: desktopPreset.width, height: desktopPreset.height }
+                    : DefaultSettings.FRAME_DIMENSION,
+                device: 'Desktop',
+            });
+
+            // Create mobile frame with position offset to avoid overlap
+            const mobileFrame = this.getDefaultFrame({
+                url: project.url,
+                dimension: mobilePreset
+                    ? { width: mobilePreset.width, height: mobilePreset.height }
+                    : { width: 320, height: 568 },
+                position: { x: desktopFrame.dimension.width + 100, y: 0 },
+                device: 'Mobile',
+            });
+
+            this.webFrames = [desktopFrame, mobileFrame];
+        }
     }
 
     clear() {
         this.webFrames = [];
         this.zoomScale = DefaultSettings.SCALE;
-        this.panPosition = DefaultSettings.POSITION;
+        this.panPosition = DefaultSettings.PAN_POSITION;
     }
 
     getFrameMap(frames: FrameSettings[]): Map<string, FrameSettings> {
@@ -119,24 +153,11 @@ export class CanvasManager {
             url: defaults.url || DefaultSettings.URL,
             position: defaults.position || DefaultSettings.FRAME_POSITION,
             dimension: defaults.dimension || DefaultSettings.FRAME_DIMENSION,
-            duplicate: defaults.duplicate || DefaultSettings.DUPLICATE,
-            linkedIds: defaults.linkedIds || DefaultSettings.LINKED_IDS,
             aspectRatioLocked: defaults.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
             device: defaults.device || DefaultSettings.DEVICE,
             theme: defaults.theme || DefaultSettings.THEME,
             orientation: defaults.orientation || DefaultSettings.ORIENTATION,
         };
-    }
-
-    getLinkedFrames(frameId: string): FrameSettings[] {
-        const frame = this.frames.find((f) => f.id === frameId);
-        if (!frame) {
-            return [];
-        }
-
-        return this.frames.filter(
-            (f) => frame.linkedIds?.includes(f.id) || f.linkedIds?.includes(frame.id),
-        );
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);

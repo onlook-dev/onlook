@@ -8,23 +8,20 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Terminal from './Terminal';
 import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
 
-const TOOLBAR_ITEMS: {
-    mode: EditorMode;
-    icon: React.FC;
-    hotkey: Hotkey;
-    disabled: boolean;
-    draggable: boolean;
-}[] = [
+const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
     {
         mode: EditorMode.DESIGN,
         icon: Icons.CursorArrow,
         hotkey: Hotkey.SELECT,
         disabled: false,
         draggable: false,
+        label: t('editor.toolbar.tools.select.name'),
+        tooltip: t('editor.toolbar.tools.select.tooltip'),
     },
     {
         mode: EditorMode.PAN,
@@ -32,6 +29,8 @@ const TOOLBAR_ITEMS: {
         hotkey: Hotkey.PAN,
         disabled: false,
         draggable: false,
+        label: t('editor.toolbar.tools.pan.name'),
+        tooltip: t('editor.toolbar.tools.pan.tooltip'),
     },
     {
         mode: EditorMode.INSERT_DIV,
@@ -39,6 +38,8 @@ const TOOLBAR_ITEMS: {
         hotkey: Hotkey.INSERT_DIV,
         disabled: false,
         draggable: true,
+        label: t('editor.toolbar.tools.insertDiv.name'),
+        tooltip: t('editor.toolbar.tools.insertDiv.tooltip'),
     },
     {
         mode: EditorMode.INSERT_TEXT,
@@ -46,10 +47,13 @@ const TOOLBAR_ITEMS: {
         hotkey: Hotkey.INSERT_TEXT,
         disabled: false,
         draggable: true,
+        label: t('editor.toolbar.tools.insertText.name'),
+        tooltip: t('editor.toolbar.tools.insertText.tooltip'),
     },
 ];
 
-const Toolbar = observer(() => {
+export const Toolbar = observer(() => {
+    const { t } = useTranslation();
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
     const [terminalHidden, setTerminalHidden] = useState(true);
@@ -97,9 +101,11 @@ const Toolbar = observer(() => {
         setTimeout(() => document.body.removeChild(dragPreview), 0);
     };
 
+    const toolbarItems = TOOLBAR_ITEMS({ t });
+
     return (
         <AnimatePresence mode="wait">
-            {editorEngine.mode !== EditorMode.INTERACT && (
+            {editorEngine.mode !== EditorMode.PREVIEW && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -125,7 +131,7 @@ const Toolbar = observer(() => {
                                     }
                                 }}
                             >
-                                {TOOLBAR_ITEMS.map((item) => (
+                                {toolbarItems.map((item) => (
                                     <Tooltip key={item.mode}>
                                         <TooltipTrigger asChild>
                                             <div
@@ -201,5 +207,3 @@ const Toolbar = observer(() => {
         </AnimatePresence>
     );
 });
-
-export default Toolbar;

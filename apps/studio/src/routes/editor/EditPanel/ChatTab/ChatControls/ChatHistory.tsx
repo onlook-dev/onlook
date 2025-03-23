@@ -9,7 +9,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Popover, PopoverAnchor, PopoverContent } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
@@ -21,7 +21,7 @@ interface ChatHistoryProps {
     onOpenChange: (open: boolean) => void;
 }
 
-const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
+export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
     const editorEngine = useEditorEngine();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
@@ -49,17 +49,6 @@ const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
 
     return (
         <Popover open={isOpen} onOpenChange={handlePopoverOpenChange}>
-            <PopoverTrigger asChild disabled={editorEngine.chat.isWaiting}>
-                <Button
-                    variant={'ghost'}
-                    size={'icon'}
-                    className={cn('p-2 w-fit h-fit', {
-                        'bg-background-secondary text-primary': isOpen,
-                    })}
-                >
-                    <Icons.CounterClockwiseClock />
-                </Button>
-            </PopoverTrigger>
             <PopoverAnchor className="absolute -left-2 top-0" />
             <PopoverContent side="left" align="start" className="rounded-xl p-0">
                 <div className="flex flex-col select-none">
@@ -163,5 +152,3 @@ const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
         </Popover>
     );
 });
-
-export default ChatHistory;

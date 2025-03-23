@@ -1,4 +1,7 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { FOCUS_CHAT_INPUT_EVENT } from '@/lib/editor/engine/chat';
+import { EditorTabValue } from '@/lib/models';
+import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -6,35 +9,109 @@ import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import imageCompression from 'browser-image-compression';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
-import { compressImage } from '@/lib/utils';
+import type { SuggestionsRef } from './Suggestions';
+import Suggestions from './Suggestions';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
-    const [input, setInput] = useState('');
-    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
-    const inputEmpty = !input || input.trim().length === 0;
-    const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
+    const projectsManager = useProjectsManager();
+    const { t } = useTranslation();
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [inputValue, setInputValue] = useState('');
+    const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
-    const [isHandlingFile, setIsHandlingFile] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
 
+    const focusInput = () => {
+        requestAnimationFrame(() => {
+            textareaRef.current?.focus();
+        });
+    };
+
+    useEffect(() => {
+        if (textareaRef.current && !editorEngine.chat.isWaiting) {
+            focusInput();
+        }
+    }, [editorEngine.chat.conversation.current?.messages.length]);
+
+    useEffect(() => {
+        if (editorEngine.editPanelTab === EditorTabValue.CHAT) {
+            focusInput();
+        }
+    }, [editorEngine.editPanelTab]);
+
+    useEffect(() => {
+        const focusHandler = () => {
+            if (textareaRef.current && !editorEngine.chat.isWaiting) {
+                focusInput();
+            }
+        };
+
+        window.addEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
+        return () => window.removeEventListener(FOCUS_CHAT_INPUT_EVENT, focusHandler);
+    }, []);
+
+    useEffect(() => {
+        const handleGlobalKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' && suggestionRef.current?.handleEnterSelection()) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Stop the event from bubbling to the canvas
+                e.stopImmediatePropagation();
+                // Handle the suggestion selection
+                suggestionRef.current.handleEnterSelection();
+            }
+        };
+
+        // Capture phase to intercept before it reaches the canvas
+        window.addEventListener('keydown', handleGlobalKeyDown, true);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
+    }, []);
+
+    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
+    const inputEmpty = !inputValue || inputValue.trim().length === 0;
+
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        if (isComposing) {
+            return;
+        }
         e.currentTarget.style.height = 'auto';
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
 
-    function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Tab') {
+            // Always prevent default tab behavior
             e.preventDefault();
-            sendMessage();
+            e.stopPropagation();
+
+            // Only let natural tab order continue if handleTabNavigation returns false
+            const handled = suggestionRef.current?.handleTabNavigation();
+            if (!handled) {
+                // Focus the textarea
+                textareaRef.current?.focus();
+            }
+        } else if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (suggestionRef.current?.handleEnterSelection()) {
+                setTimeout(() => textareaRef.current?.focus(), 0);
+                return;
+            }
+
+            if (!inputEmpty) {
+                sendMessage();
+            }
         }
-    }
+    };
 
     function sendMessage() {
         if (inputEmpty) {
@@ -45,8 +122,8 @@ export const ChatInput = observer(() => {
             console.warn('Already waiting for response');
             return;
         }
-        editorEngine.chat.sendNewMessage(input);
-        setInput('');
+        editorEngine.chat.sendNewMessage(inputValue);
+        setInputValue('');
     }
 
     const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
@@ -57,9 +134,8 @@ export const ChatInput = observer(() => {
         editorEngine.chat.context.context = newContext;
     };
 
-    const handleOpenFileDialog = () => {
-        setImageTooltipOpen(false);
-        setIsHandlingFile(true);
+    const handleOpenFileDialog = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.currentTarget.blur(); // Removes focus from the button to prevent tooltip from showing
         const inputElement = document.createElement('input');
         inputElement.type = 'file';
         inputElement.accept = 'image/*';
@@ -68,9 +144,6 @@ export const ChatInput = observer(() => {
                 const file = inputElement.files[0];
                 const fileName = file.name;
                 handleImageEvent(file, fileName);
-                setTimeout(() => setIsHandlingFile(false), 100);
-            } else {
-                setIsHandlingFile(false);
             }
         };
         inputElement.click();
@@ -143,6 +216,8 @@ export const ChatInput = observer(() => {
         }
     };
 
+    const suggestionRef = useRef<SuggestionsRef>(null);
+
     return (
         <div
             className={cn(
@@ -165,6 +240,26 @@ export const ChatInput = observer(() => {
                 }
             }}
         >
+            <Suggestions
+                ref={suggestionRef}
+                disabled={disabled}
+                inputValue={inputValue}
+                setInput={(suggestion) => {
+                    setInputValue(suggestion);
+                    textareaRef.current?.focus();
+                    setTimeout(() => {
+                        if (textareaRef.current) {
+                            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+                        }
+                    }, 100);
+                }}
+                onSuggestionFocus={(isFocused) => {
+                    if (!isFocused) {
+                        textareaRef.current?.focus();
+                    }
+                }}
+            />
+
             <div className="flex flex-col w-full p-4">
                 <div
                     className={cn(
@@ -196,14 +291,15 @@ export const ChatInput = observer(() => {
                     </AnimatePresence>
                 </div>
                 <Textarea
+                    ref={textareaRef}
                     disabled={disabled}
                     placeholder={
                         disabled
-                            ? 'Select an element to start'
-                            : 'Ask follow up questions or provide more context...'
+                            ? t('editor.panels.edit.tabs.chat.emptyState')
+                            : t('editor.panels.edit.tabs.chat.input.placeholder')
                     }
                     className={cn(
-                        'mt-2 overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',
+                        'mt-2 overflow-auto max-h-32 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary',
                         'placeholder:text-foreground-primary/50',
                         'cursor-text',
@@ -211,11 +307,15 @@ export const ChatInput = observer(() => {
                     )}
                     rows={3}
                     style={{ resize: 'none' }}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={(e) => {
+                        setIsComposing(false);
+                    }}
                     onDragEnter={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -266,10 +366,7 @@ export const ChatInput = observer(() => {
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row justify-start gap-1.5">
-                    <Tooltip
-                        open={imageTooltipOpen && !isHandlingFile}
-                        onOpenChange={(open) => !isHandlingFile && setImageTooltipOpen(open)}
-                    >
+                    <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant={'ghost'}
@@ -291,6 +388,35 @@ export const ChatInput = observer(() => {
                         <TooltipPortal>
                             <TooltipContent side="top" sideOffset={5}>
                                 {disabled ? 'Select an element to start' : 'Upload Image Reference'}
+                            </TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
+                                onClick={() => {
+                                    editorEngine.chat.context.addScreenshotContext();
+                                }}
+                                disabled={disabled}
+                            >
+                                <Icons.Laptop
+                                    className={cn(
+                                        'w-5 h-5',
+                                        disabled
+                                            ? 'text-foreground-tertiary'
+                                            : 'group-hover:text-foreground',
+                                    )}
+                                />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                            <TooltipContent side="top" sideOffset={5}>
+                                {disabled
+                                    ? 'Select an element to start'
+                                    : 'Add screenshot of the current page'}
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>

@@ -5,13 +5,13 @@ import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 export function moveElement(domId: string, newIndex: number): DomElement | undefined {
     const el = elementFromDomId(domId) as HTMLElement | null;
     if (!el) {
-        console.error(`Move element not found: ${domId}`);
+        console.warn(`Move element not found: ${domId}`);
         return;
     }
 
     const movedEl = moveElToIndex(el, newIndex);
     if (!movedEl) {
-        console.error(`Failed to move element: ${domId}`);
+        console.warn(`Failed to move element: ${domId}`);
         return;
     }
 
@@ -22,7 +22,7 @@ export function moveElement(domId: string, newIndex: number): DomElement | undef
 export function getElementIndex(domId: string): number {
     const el = elementFromDomId(domId) as HTMLElement | null;
     if (!el) {
-        console.error(`Element not found: ${domId}`);
+        console.warn(`Element not found: ${domId}`);
         return -1;
     }
 
@@ -34,7 +34,7 @@ export function getElementIndex(domId: string): number {
 export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
     const parent = el.parentElement;
     if (!parent) {
-        console.error('Parent not found');
+        console.warn('Parent not found');
         return;
     }
 

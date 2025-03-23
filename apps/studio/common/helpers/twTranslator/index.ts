@@ -24,6 +24,7 @@ const getCustomVal = (val: string) => {
     }
     return val;
 };
+
 const isColor = (str: string, joinLinearGradient = false) => {
     const namedColors = [
         'initial',
@@ -396,10 +397,10 @@ const getFilterDefaultVal = (val: string) => {
     }[val];
 };
 
-const propertyMap: Map<string, Record<string, string> | ((val: string) => string)> = new Map<
+export const propertyMap: Map<
     string,
-    Record<string, string> | ((val: string) => string)
->([
+    Record<string, string> | ((val: string, isCustom?: boolean) => string)
+> = new Map<string, Record<string, string> | ((val: string, isCustom?: boolean) => string)>([
     [
         'align-content',
         {
@@ -607,12 +608,13 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'background-color',
-        (val) =>
+        (val, isCustom = false) =>
             ({
                 transparent: 'bg-transparent',
                 currentColor: 'bg-current',
                 currentcolor: 'bg-current',
-            })[val] ?? (isColor(val, true) ? `bg-[${getCustomVal(val)}]` : ''),
+            })[val] ??
+            (isCustom ? `bg-${val}` : isColor(val, true) ? `bg-[${getCustomVal(val)}]` : ''),
     ],
     ['background-image', (val) => ({ none: 'bg-none' })[val] ?? `bg-[${getCustomVal(val)}]`],
     [
@@ -689,7 +691,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-bottom-color',
-        (val) => (isColor(val, true) ? `[border-bottom-color:${getCustomVal(val)}]` : ''),
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-bottom-color:${val}]`
+                : isColor(val, true)
+                  ? `[border-bottom-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-bottom-left-radius',
@@ -724,12 +731,17 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-color',
-        (val) =>
+        (val, isCustom = false) =>
             ({
                 transparent: 'border-transparent',
                 currentColor: 'border-current',
                 currentcolor: 'border-current',
-            })[val] ?? (isColor(val) ? `border-[${getCustomVal(val)}]` : ''),
+            })[val] ??
+            (isCustom
+                ? `border-${val}`
+                : isColor(val, true)
+                  ? `border-[${getCustomVal(val)}]`
+                  : ''),
     ],
     ['border-image', (val) => `[border-image:${getCustomVal(val)}]`],
     ['border-image-outset', (val) => `[border-image-outset:${getCustomVal(val)}]`],
@@ -748,7 +760,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-left-color',
-        (val) => (isColor(val, true) ? `[border-left-color:${getCustomVal(val)}]` : ''),
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-left-color:${val}]`
+                : isColor(val, true)
+                  ? `[border-left-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-left-style',
@@ -798,7 +815,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-right-color',
-        (val) => (isColor(val, true) ? `[border-right-color:${getCustomVal(val)}]` : ''),
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-right-color:${val}]`
+                : isColor(val, true)
+                  ? `[border-right-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-right-style',
@@ -827,7 +849,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'border-top-color',
-        (val) => (isColor(val, true) ? `[border-top-color:${getCustomVal(val)}]` : ''),
+        (val, isCustom = false) =>
+            isCustom
+                ? `[border-top-color:${val}]`
+                : isColor(val, true)
+                  ? `[border-top-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-top-left-radius',
@@ -973,7 +1000,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ['column-rule', (val) => `[column-rule:${getCustomVal(val)}]`],
     [
         'column-rule-color',
-        (val) => (isColor(val, true) ? `[column-rule-color:${getCustomVal(val)}]` : ''),
+        (val, isCustom = false) =>
+            isCustom
+                ? `[column-rule-color:${val}]`
+                : isColor(val, true)
+                  ? `[column-rule-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'column-rule-style',
@@ -1060,9 +1092,9 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'fill',
-        (val) =>
+        (val, isCustom = false) =>
             ({ currentColor: 'fill-current', currentcolor: 'fill-current' })[val] ??
-            (isColor(val, true) ? `fill-[${getCustomVal(val)}]` : ''),
+            (isCustom ? `fill-${val}` : isColor(val, true) ? `fill-[${getCustomVal(val)}]` : ''),
     ],
     [
         'filter',
@@ -1767,7 +1799,15 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
             })[val] ?? (isUnit(val) ? `order-[${val}]` : ''),
     ],
     ['outline', (val) => `outline-[${getCustomVal(val)}]`],
-    ['outline-color', (val) => (isColor(val, true) ? `outline-[${getCustomVal(val)}]` : '')],
+    [
+        'outline-color',
+        (val, isCustom = false) =>
+            isCustom
+                ? `outline-${val}`
+                : isColor(val, true)
+                  ? `outline-[${getCustomVal(val)}]`
+                  : '',
+    ],
     ['outline-offset', (val) => (isUnit(val) ? `outline-offset-[${val}]` : '')],
     [
         'outline-style',
@@ -2039,11 +2079,15 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ['shape-outside', (val) => `[shape-outside:${getCustomVal(val)}]`],
     [
         'stroke',
-        (val) =>
-            ({
+        (val, isCustom = false) =>
+            (({
                 currentColor: 'stroke-current',
                 currentcolor: 'stroke-current',
-            })[val] ?? (isColor(val, true) ? `stroke-[${getCustomVal(val)}]` : ''),
+            })[val] ?? isCustom)
+                ? `stroke-${val}`
+                : isColor(val, true)
+                  ? `stroke-[${getCustomVal(val)}]`
+                  : '',
     ],
     ['stroke-width', (val) => (isUnit(val) ? `stroke-[${val}]` : '')],
     ['tab-size', (val) => (isUnit(val) ? `[tab-size:${val}]` : '')],
@@ -2110,7 +2154,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'text-decoration-color',
-        (val) => (isColor(val, true) ? `[text-decoration-color:${getCustomVal(val)}]` : ''),
+        (val, isCustom = false) =>
+            isCustom
+                ? `[text-decoration-color:${val}]`
+                : isColor(val, true)
+                  ? `[text-decoration-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'text-decoration-line',
@@ -2138,7 +2187,12 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     ],
     [
         'text-emphasis-color',
-        (val) => (isColor(val, true) ? `[text-emphasis-color:${getCustomVal(val)}]` : ''),
+        (val, isCustom = false) =>
+            isCustom
+                ? `[text-emphasis-color:${val}]`
+                : isColor(val, true)
+                  ? `[text-emphasis-color:${getCustomVal(val)}]`
+                  : '',
     ],
     ['text-emphasis-position', (val) => `[text-emphasis-position:${getCustomVal(val)}]`],
     ['text-emphasis-style', (val) => `[text-emphasis-style:${getCustomVal(val)}]`],

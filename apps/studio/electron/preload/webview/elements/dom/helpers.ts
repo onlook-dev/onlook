@@ -1,15 +1,15 @@
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
-import { getImmediateTextContent } from '../helpers';
+import { getDomElement, getImmediateTextContent } from '../helpers';
 import { elementFromDomId } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { CoreElementType, DynamicType } from '@onlook/models/element';
 
 export function getActionElementByDomId(domId: string): ActionElement | null {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Element not found for domId:', domId);
+        console.warn('Element not found for domId:', domId);
         return null;
     }
 
@@ -27,7 +27,7 @@ export function getActionElement(el: HTMLElement): ActionElement | null {
 
     const oid = getInstanceId(el) || getOid(el) || null;
     if (!oid) {
-        console.error('Element has no oid');
+        console.warn('Element has no oid');
         return null;
     }
 
@@ -57,7 +57,7 @@ export function getActionLocation(domId: string): ActionLocation | null {
 
     const targetOid = getInstanceId(parent) || getOid(parent);
     if (!targetOid) {
-        console.error('Parent element has no oid');
+        console.warn('Parent element has no oid');
         return null;
     }
 
@@ -113,4 +113,13 @@ export function setElementType(domId: string, dynamicType: string, coreElementTy
             el.setAttribute(EditorAttributes.DATA_ONLOOK_CORE_ELEMENT_TYPE, coreElementType);
         }
     }
+}
+
+export function getFirstOnlookElement(): DomElement | null {
+    const body = document.body;
+    const firstElement = body.querySelector(`[${EditorAttributes.DATA_ONLOOK_ID}]`);
+    if (firstElement) {
+        return getDomElement(firstElement as HTMLElement, true);
+    }
+    return null;
 }

@@ -4,7 +4,15 @@ import { CheckIcon, ChevronRightIcon, DotFilledIcon } from '@radix-ui/react-icon
 
 import { cn } from '../utils';
 
-const ContextMenu = ContextMenuPrimitive.Root;
+const ContextMenu = ({
+    ...props
+}: React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Root>) => (
+    <ContextMenuPrimitive.Root
+        modal={false} // Setting modal to false allows clicks outside the menu to dismiss it, including canvas clicks
+        {...props}
+    />
+);
+ContextMenu.displayName = ContextMenuPrimitive.Root.displayName;
 
 const ContextMenuTrigger = ContextMenuPrimitive.Trigger;
 

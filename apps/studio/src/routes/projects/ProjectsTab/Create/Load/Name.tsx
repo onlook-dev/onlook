@@ -27,7 +27,6 @@ export const LoadNameProject = ({
     }
 
     function goBack() {
-        invokeMainChannel(MainChannels.VERIFY_PROJECT, projectData.folderPath);
         prevStep();
     }
 

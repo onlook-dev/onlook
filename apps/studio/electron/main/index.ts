@@ -1,24 +1,23 @@
-import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
-import { BrowserWindow, app, shell, protocol } from 'electron';
+import { APP_NAME, APP_SCHEMA, MainChannels } from '@onlook/models/constants';
+import { BrowserWindow, app, protocol, shell } from 'electron';
 import fixPath from 'fix-path';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
-import { handleAuthCallback } from './auth';
-import { listenForIpcMessages, removeIpcListeners } from './events';
-import run from './run';
-import terminal from './run/terminal';
+import { handleAuthCallback, setupAuthAutoRefresh } from './auth';
+import { listenForIpcMessages } from './events';
+import runManager from './run';
 import { updater } from './update';
-import fs from 'node:fs';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
 fixPath();
 
 export let mainWindow: BrowserWindow | null = null;
 const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+export const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Constants
 const MAIN_DIST = path.join(__dirname, '../../dist-electron');
@@ -26,6 +25,7 @@ const RENDERER_DIST = path.join(__dirname, '../../dist');
 const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
 const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
+let cleanupComplete = false;
 
 // Environment setup
 const setupEnvironment = () => {
@@ -88,57 +88,8 @@ const initMainWindow = () => {
         }
         return { action: 'deny' };
     });
-};
 
-let isCleaningUp = false;
-
-export const cleanup = async () => {
-    if (isCleaningUp) {
-        return;
-    }
-    isCleaningUp = true;
-
-    try {
-        // Stop all processes
-        await run.stopAll();
-        await terminal.killAll();
-
-        // Clean up window
-        if (mainWindow) {
-            mainWindow.removeAllListeners();
-            mainWindow = null;
-        }
-
-        // Clean up IPC handlers
-        removeIpcListeners();
-    } catch (err) {
-        console.error('Error during cleanup:', err);
-    } finally {
-        isCleaningUp = false;
-    }
-};
-
-const cleanUpAndExit = async () => {
-    await cleanup();
-    process.exit(0);
-};
-
-const listenForExitEvents = () => {
-    process.on('before-quit', (e) => {
-        e.preventDefault();
-        cleanUpAndExit();
-    });
-    process.on('exit', cleanUpAndExit);
-    process.on('SIGTERM', cleanUpAndExit);
-    process.on('SIGINT', cleanUpAndExit);
-
-    process.on('uncaughtException', (error) => {
-        console.error('Uncaught Exception:', error);
-        sendAnalytics('uncaught exception', { error });
-        if (error instanceof TypeError || error instanceof ReferenceError) {
-            cleanup();
-        }
-    });
+    setupAuthAutoRefresh();
 };
 
 const setupAppEventListeners = () => {
@@ -147,7 +98,6 @@ const setupAppEventListeners = () => {
             const filePath = path.join(__dirname, '../preload/webview.js');
             return new Response(fs.readFileSync(filePath));
         });
-        listenForExitEvents();
         initMainWindow();
     });
 
@@ -156,9 +106,9 @@ const setupAppEventListeners = () => {
         sendAnalytics('start app');
     });
 
-    app.on('window-all-closed', () => {
-        mainWindow = null;
+    app.on('window-all-closed', async () => {
         if (process.platform !== 'darwin') {
+            mainWindow = null;
             app.quit();
         }
     });
@@ -187,7 +137,44 @@ const setupAppEventListeners = () => {
         handleAuthCallback(url);
     });
 
-    app.on('quit', () => sendAnalytics('quit app'));
+    async function cleanUp() {
+        // Timeout after 10 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Cleanup timeout')), 10000);
+        });
+
+        try {
+            await Promise.race([
+                Promise.all([
+                    mainWindow?.webContents.send(MainChannels.CLEAN_UP_BEFORE_QUIT),
+                    runManager?.stopAll(),
+                ]),
+                timeoutPromise,
+            ]);
+        } catch (error) {
+            console.error('Cleanup failed or timed out:', error);
+        }
+    }
+
+    app.on('before-quit', (event) => {
+        if (!cleanupComplete) {
+            cleanupComplete = false;
+            event.preventDefault();
+            cleanUp()
+                .catch((error) => {
+                    console.error('Cleanup failed:', error);
+                    app.quit();
+                })
+                .finally(() => {
+                    cleanupComplete = true;
+                    app.quit();
+                });
+        }
+    });
+
+    app.on('quit', () => {
+        sendAnalytics('quit app');
+    });
 };
 
 // Main function
@@ -214,6 +201,8 @@ const main = () => {
         process.exit(0);
     }
 
+    setupEnvironment();
+    configurePlatformSpecifics();
     setupProtocol();
     setupAppEventListeners();
     listenForIpcMessages();

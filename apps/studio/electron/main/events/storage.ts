@@ -1,6 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
-import type { AppState, UserSettings } from '@onlook/models/settings';
+import type { AppState, UserMetadata, UserSettings } from '@onlook/models/settings';
 import { ipcMain } from 'electron';
+import mixpanel from '../analytics';
 import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
 
@@ -11,7 +12,7 @@ export function listenForStorageMessages() {
 
     ipcMain.handle(
         MainChannels.UPDATE_USER_SETTINGS,
-        (e: Electron.IpcMainInvokeEvent, args: UserSettings) => {
+        (e: Electron.IpcMainInvokeEvent, args: Partial<UserSettings>) => {
             PersistentStorage.USER_SETTINGS.update(args);
         },
     );
@@ -20,11 +21,19 @@ export function listenForStorageMessages() {
         return PersistentStorage.USER_METADATA.read();
     });
 
+    ipcMain.handle(
+        MainChannels.UPDATE_USER_METADATA,
+        (e: Electron.IpcMainInvokeEvent, args: Partial<UserMetadata>) => {
+            PersistentStorage.USER_METADATA.update(args);
+            mixpanel.updateUserMetadata(args);
+        },
+    );
+
     ipcMain.handle(MainChannels.GET_APP_STATE, (e: Electron.IpcMainInvokeEvent) => {
         return PersistentStorage.APP_STATE.read();
     });
 
-    ipcMain.handle(MainChannels.DOES_USER_HAVE_AUTH_TOKENS, (e: Electron.IpcMainInvokeEvent) => {
+    ipcMain.handle(MainChannels.IS_USER_SIGNED_IN, (e: Electron.IpcMainInvokeEvent) => {
         return getRefreshedAuthTokens();
     });
 

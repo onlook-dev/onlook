@@ -1,6 +1,7 @@
+import type { ProjectsManager } from '@/lib/projects';
 import { sendAnalytics } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
-import type { AssistantChatMessage, CodeBlock } from '@onlook/models/chat';
+import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
@@ -12,6 +13,7 @@ export class ChatCodeManager {
     constructor(
         private chat: ChatManager,
         private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
         this.processor = new CodeBlockProcessor();
@@ -23,15 +25,17 @@ export class ChatCodeManager {
             console.error('No message found with id', messageId);
             return;
         }
-        if (message.type !== 'assistant') {
+        if (message.role !== ChatMessageRole.ASSISTANT) {
             console.error('Can only apply code to assistant messages');
             return;
         }
+
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
 
         for (const [file, codeBlocks] of fileToCodeBlocks) {
             // If file doesn't exist, we'll assume it's a new file and create it
-            const originalContent = (await this.editorEngine.code.getFileContent(file, true)) || '';
+            const originalContent =
+                (await this.editorEngine.code.getFileContent(file, false)) || '';
             if (originalContent == null) {
                 console.error('Failed to get file content', file);
                 continue;
@@ -57,6 +61,17 @@ export class ChatCodeManager {
             this.chat.conversation.saveConversationToStorage();
         }
 
+        const selectedWebviews = this.editorEngine.webviews.selected;
+        for (const webview of selectedWebviews) {
+            await this.editorEngine.ast.refreshAstDoc(webview);
+        }
+
+        this.chat.suggestions.shouldHide = false;
+
+        setTimeout(() => {
+            this.editorEngine.webviews.reloadWebviews();
+            this.editorEngine.errors.clear();
+        }, 500);
         sendAnalytics('apply code change');
     }
 
@@ -66,7 +81,7 @@ export class ChatCodeManager {
             console.error('No message found with id', messageId);
             return;
         }
-        if (message.type !== 'assistant') {
+        if (message.role !== ChatMessageRole.ASSISTANT) {
             console.error('Can only revert code to assistant messages');
             return;
         }
@@ -90,6 +105,9 @@ export class ChatCodeManager {
         message.applied = false;
         this.chat.conversation.current?.updateMessage(message);
         this.chat.conversation.saveConversationToStorage();
+        setTimeout(() => {
+            this.editorEngine.webviews.reloadWebviews();
+        }, 500);
         sendAnalytics('revert code change');
     }
 
@@ -110,8 +128,13 @@ export class ChatCodeManager {
     }
 
     getFileToCodeBlocks(message: AssistantChatMessage) {
+        // TODO: Need to handle failure cases
         const content = message.content;
-        const codeBlocks = this.processor.extractCodeBlocks(content);
+        const contentString =
+            typeof content === 'string'
+                ? content
+                : content.map((part) => (part.type === 'text' ? part.text : '')).join('');
+        const codeBlocks = this.processor.extractCodeBlocks(contentString);
         const fileToCode: Map<string, CodeBlock[]> = new Map();
         for (const codeBlock of codeBlocks) {
             if (!codeBlock.fileName) {

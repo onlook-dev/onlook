@@ -79,7 +79,6 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
     }
 
     function goBack() {
-        invokeMainChannel(MainChannels.VERIFY_PROJECT, projectData.folderPath);
         prevStep();
     }
 
@@ -88,14 +87,17 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
             setError('No project folder path found');
             return;
         }
-        if (!installCommand) {
+
+        const updatedInstallCommand = projectData.commands?.install || installCommand;
+
+        if (!updatedInstallCommand) {
             setError('Please enter a valid install command');
             return;
         }
 
         invokeMainChannel(MainChannels.INSTALL_PROJECT_DEPENDENCIES, {
             folderPath: projectData.folderPath,
-            installCommand,
+            installCommand: updatedInstallCommand,
         });
         nextStep();
     }

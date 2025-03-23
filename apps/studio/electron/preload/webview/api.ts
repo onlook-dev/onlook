@@ -3,6 +3,7 @@ import {
     getChildrenCount,
     getDomElementByDomId,
     getElementAtLoc,
+    getOffsetParent,
     getParentElement,
     updateElementInstance,
 } from './elements';
@@ -10,6 +11,7 @@ import {
     getActionElementByDomId,
     getActionLocation,
     getElementType,
+    getFirstOnlookElement,
     setElementType,
 } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
@@ -27,6 +29,7 @@ const onlookApi = {
     getComputedStyleByDomId,
     updateElementInstance,
     setWebviewId,
+    getFirstOnlookElement,
 
     // Elements
     getElementAtLoc,
@@ -35,6 +38,7 @@ const onlookApi = {
     getElementType,
     getParentElement,
     getChildrenCount,
+    getOffsetParent,
 
     // Actions
     getActionLocation,

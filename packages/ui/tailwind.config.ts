@@ -261,6 +261,11 @@ const config = {
                     '66%': { transform: 'rotate(0.5deg)' },
                     '100%': { transform: 'rotate(-0.5deg)' },
                 },
+                shine: {
+                    '0%': { 'background-position': '0% 0%' },
+                    '50%': { 'background-position': '100% 100%' },
+                    '100%': { 'background-position': '0% 0%' },
+                },
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
@@ -269,6 +274,7 @@ const config = {
                 'layer-panel-in': 'layer-panel-in 1s ease',
                 'toolbar-up': 'toolbar-up 1.25s ease',
                 wiggle: 'wiggle 0.5s cubic-bezier(0.25, 1, 0.5, 1) 7s infinite',
+                shine: 'shine var(--duration) infinite linear',
             },
         },
     },

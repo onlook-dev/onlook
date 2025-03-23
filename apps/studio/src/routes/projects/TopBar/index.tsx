@@ -1,6 +1,13 @@
-import { useAuthManager, useProjectsManager } from '@/components/Context';
+import {
+    useAuthManager,
+    useEditorEngine,
+    useProjectsManager,
+    useUserManager,
+} from '@/components/Context';
 import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
+import { SettingsTabValue } from '@/lib/models';
 import { ProjectTabs } from '@/lib/projects';
+import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -13,15 +20,14 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 export const TopBar = observer(() => {
+    const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const authManager = useAuthManager();
+    const userManager = useUserManager();
+    const plan = userManager.subscription?.plan;
 
     function signOut() {
         authManager.signOut();
-    }
-
-    function openSettings() {
-        projectsManager.projectsTab = ProjectTabs.SETTINGS;
     }
 
     function openPromptCreation() {
@@ -76,7 +82,22 @@ export const TopBar = observer(() => {
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <UserProfileDropdown>
-                    <DropdownMenuItem onSelect={openSettings}>
+                    {plan === UsagePlanType.PRO && (
+                        <DropdownMenuItem
+                            onSelect={() => {
+                                editorEngine.isPlansOpen = true;
+                            }}
+                        >
+                            <Icons.Person className="w-4 h-4 mr-2" />
+                            Subscription
+                        </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                        onSelect={() => {
+                            editorEngine.isSettingsOpen = true;
+                            editorEngine.settingsTab = SettingsTabValue.PREFERENCES;
+                        }}
+                    >
                         <Icons.Gear className="w-4 h-4 mr-2" />
                         Settings
                     </DropdownMenuItem>

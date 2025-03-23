@@ -4,3 +4,5 @@ export enum IdeType {
     ZED = 'Zed',
     WINDSURF = 'Windsurf',
 }
+
+export const DEFAULT_IDE = IdeType.CURSOR;

@@ -15,8 +15,8 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
         () => {
             editorEngine.canvas.scale = DefaultSettings.SCALE;
             editorEngine.canvas.position = {
-                x: DefaultSettings.POSITION.x,
-                y: DefaultSettings.POSITION.y,
+                x: DefaultSettings.PAN_POSITION.x,
+                y: DefaultSettings.PAN_POSITION.y,
             };
         },
         { preventDefault: true },
@@ -32,10 +32,10 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
     useHotkeys(Hotkey.ESCAPE.command, () => {
         editorEngine.mode = EditorMode.DESIGN;
-        !editorEngine.text.isEditing && editorEngine.clear();
+        !editorEngine.text.isEditing && editorEngine.clearUI();
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
-    useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
+    useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.mode = EditorMode.PREVIEW));
     useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
     useHotkeys(Hotkey.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
 
@@ -60,7 +60,13 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
-    useHotkeys(Hotkey.DUPLICATE.command, () => editorEngine.copy.duplicate());
+    useHotkeys(Hotkey.DUPLICATE.command, () => {
+        if (editorEngine.isWindowSelected) {
+            editorEngine.duplicateWindow();
+        } else {
+            editorEngine.copy.duplicate();
+        }
+    });
 
     // AI
     useHotkeys(Hotkey.ADD_AI_CHAT.command, () => (editorEngine.editPanelTab = EditorTabValue.CHAT));
@@ -72,6 +78,10 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
     // Move
     useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
     useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => editorEngine.move.moveSelected('down'));
+
+    useHotkeys(Hotkey.SHOW_HOTKEYS.command, () => {
+        editorEngine.isHotkeysOpen = !editorEngine.isHotkeysOpen;
+    });
 
     return (
         <>

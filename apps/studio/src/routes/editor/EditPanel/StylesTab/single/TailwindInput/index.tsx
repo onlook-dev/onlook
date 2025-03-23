@@ -4,6 +4,7 @@ import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { ClassParsingResult, DomElement } from '@onlook/models/element';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -187,6 +188,28 @@ const TailwindInput = observer(() => {
         }
     }
 
+    async function getPrevRootClasses(domEl: DomElement): Promise<string[]> {
+        try {
+            const newRoot = await editorEngine.ast.getTemplateNodeById(domEl.oid);
+            if (newRoot) {
+                const rootClasses: ClassParsingResult = await invokeMainChannel(
+                    MainChannels.GET_TEMPLATE_NODE_CLASS,
+                    newRoot,
+                );
+
+                if (rootClasses.type === 'error') {
+                    console.warn(rootClasses.reason);
+                }
+
+                return rootClasses.type === 'classes' ? rootClasses.value : [];
+            }
+            return [];
+        } catch (err) {
+            console.log('erpr ', err);
+            return [];
+        }
+    }
+
     const createCodeDiffRequest = async (oid: string | undefined, className: string) => {
         if (!oid) {
             console.error('No oid found for createCodeDiffRequest');
@@ -198,18 +221,94 @@ const TailwindInput = observer(() => {
             return;
         }
 
-        const request: CodeDiffRequest = {
-            oid,
-            attributes: { className },
-            textContent: null,
-            overrideClasses: true,
-            structureChanges: [],
-        };
-        const res = await editorEngine.code.getAndWriteCodeDiff([request], true);
+        const request: CodeDiffRequest[] = [];
+        const selectedElements = editorEngine.elements.selected;
+        const selectedElprevClasses = await getPrevRootClasses(selectedElements[0]);
+        const computedClass = compareClassNames(selectedElprevClasses, className.split(' '));
+
+        for (const ele of selectedElements) {
+            let computedClassName: string = '';
+            const isNonSelectedElement = ele.oid !== oid;
+
+            if (isNonSelectedElement) {
+                const prevClasses = await getPrevRootClasses(ele);
+                computedClassName = computeClassForNonSelectedElement(
+                    computedClass.added,
+                    computedClass.removed,
+                    prevClasses,
+                );
+            } else {
+                computedClassName = className;
+            }
+
+            request.push({
+                oid: ele.oid || '',
+                attributes: { className: computedClassName },
+                textContent: null,
+                overrideClasses: true,
+                structureChanges: [],
+            });
+        }
+
+        const res = await editorEngine.code.getAndWriteCodeDiff(request, true);
         if (res) {
             sendAnalytics('tailwind action');
         }
     };
+
+    function computeClassForNonSelectedElement(
+        addedClasses: string[],
+        removedClasses: string[],
+        originalClasses: string[],
+    ): string {
+        const finalClasses: string[] = [...originalClasses];
+        let classRemoved: boolean = false;
+
+        if (removedClasses.length > 0) {
+            removedClasses.forEach((cls) => {
+                const index = finalClasses.indexOf(cls);
+                if (index !== -1) {
+                    finalClasses.splice(index, 1);
+                    classRemoved = true;
+                }
+            });
+        }
+
+        if (removedClasses.length > 0 && classRemoved) {
+            addedClasses.forEach((cls) => {
+                if (!finalClasses.includes(cls)) {
+                    finalClasses.push(cls);
+                }
+            });
+        } else {
+            if (removedClasses.length === 0) {
+                addedClasses.forEach((cls) => {
+                    if (!finalClasses.includes(cls)) {
+                        finalClasses.push(cls);
+                    }
+                });
+            }
+        }
+
+        return finalClasses.join(' ');
+    }
+
+    function compareClassNames(
+        oldClasses: string[],
+        newClasses: string[],
+    ): {
+        added: string[];
+        removed: string[];
+    } {
+        const addedClasses = newClasses.filter((cls) => !oldClasses.includes(cls));
+
+        const removedClasses = oldClasses.filter((cls) => !newClasses.includes(cls));
+
+        return {
+            added: addedClasses,
+            removed: removedClasses,
+        };
+    }
 
     const handleInput = (
         e: React.FormEvent<HTMLTextAreaElement>,
@@ -365,16 +464,17 @@ const TailwindInput = observer(() => {
                         )}
                     </div>
                     {rootHistory.error ? (
-                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
-                            <button
+                        <div className="absolute bottom-1 right-1 text-xs flex items-center">
+                            <Button
+                                size="sm"
+                                variant="outline"
                                 onClick={(e) => {
                                     e.stopPropagation(); // Prevents unfocusing the textarea
                                     navigateToTemplateNode(selectedEl?.oid);
                                 }}
-                                className="underline"
                             >
-                                Go to source
-                            </button>
+                                Open <Icons.ExternalLink className="h-3 w-3 ml-1" />
+                            </Button>
                         </div>
                     ) : (
                         isRootFocused && <EnterIndicator />
@@ -465,16 +565,17 @@ const TailwindInput = observer(() => {
                         )}
                     </div>
                     {instanceHistory.error ? (
-                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
-                            <button
+                        <div className="absolute bottom-1 right-2 text-xs flex items-center">
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={(e) => {
                                     e.stopPropagation(); // Prevents unfocusing the textarea
                                     navigateToTemplateNode(selectedEl?.oid);
                                 }}
-                                className="underline"
                             >
-                                Go to source
-                            </button>
+                                Open <Icons.ExternalLink className="h-3 w-3 ml-1" />
+                            </Button>
                         </div>
                     ) : (
                         isInstanceFocused && <EnterIndicator />

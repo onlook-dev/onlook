@@ -1,12 +1,13 @@
 import { MainChannels } from '@onlook/models/constants';
-import { type ChildProcess, spawn } from 'child_process';
+import { RunState } from '@onlook/models/run';
+import * as pty from 'node-pty';
 import os from 'os';
-import treeKill from 'tree-kill';
 import { mainWindow } from '..';
+import { getBunCommand } from '../bun';
 
 class TerminalManager {
     private static instance: TerminalManager;
-    private processes: Map<string, ChildProcess>;
+    private processes: Map<string, pty.IPty>;
     private outputHistory: Map<string, string>;
 
     private constructor() {
@@ -23,26 +24,18 @@ class TerminalManager {
 
     create(id: string, options?: { cwd?: string }): boolean {
         try {
-            const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
-            const shellArgs =
-                os.platform() === 'win32' ? ['-NoLogo', '-ExecutionPolicy', 'Bypass'] : [];
-
-            const childProcess = spawn(shell, shellArgs, {
-                cwd: options?.cwd ?? process.env.HOME,
-                env: process.env,
-                shell: true,
-                detached: false,
+            const shell = os.platform() === 'win32' ? 'powershell.exe' : '/bin/sh';
+            const ptyProcess = pty.spawn(shell, [], {
+                name: 'xterm-color',
+                cwd: options?.cwd,
             });
 
-            childProcess.stdout?.on('data', (data: Buffer) => {
-                this.addTerminalMessage(id, data, false);
+            ptyProcess.onData((data: string) => {
+                this.checkTerminalState(data);
+                this.addTerminalMessage(id, data);
             });
 
-            childProcess.stderr?.on('data', (data: Buffer) => {
-                this.addTerminalMessage(id, data, true);
-            });
-
-            this.processes.set(id, childProcess);
+            this.processes.set(id, ptyProcess);
             return true;
         } catch (error) {
             console.error('Failed to create terminal.', error);
@@ -50,25 +43,98 @@ class TerminalManager {
         }
     }
 
-    addTerminalMessage(id: string, data: Buffer, isError: boolean) {
-        const currentHistory = this.getHistory(id) || '';
-        const dataString = data.toString();
-        this.outputHistory.set(id, currentHistory + dataString);
-        this.emitMessage(id, dataString, isError);
+    checkTerminalState(data: string) {
+        if (this.shouldIgnoreCheck(data)) {
+            return;
+        }
+        const errorFound = this.checkError(data);
+        if (errorFound) {
+            return;
+        }
+        this.checkSuccess(data);
     }
 
-    emitMessage(id: string, data: string, isError: boolean) {
+    shouldIgnoreCheck(data: string) {
+        const ignorePatterns = ['[webpack.cache.PackFileCacheStrategy]'];
+        return ignorePatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()));
+    }
+
+    checkError(data: string) {
+        // Critical CLI errors
+        const errorPatterns = [
+            'command not found',
+            'ENOENT:',
+            'fatal:',
+            'error:',
+
+            // Critical Node.js errors
+            'TypeError:',
+            'ReferenceError:',
+            'SyntaxError:',
+            'Cannot find module',
+            'Module not found',
+
+            // Critical React/Next.js errors
+            'Failed to compile',
+            'Build failed',
+            'Invalid hook call',
+            'Invalid configuration',
+
+            // Critical Package errors
+            'npm ERR!',
+            'yarn error',
+            'pnpm ERR!',
+            'Missing dependencies',
+
+            // Critical TypeScript errors
+            'TS2304:', // Cannot find name
+            'TS2307:', // Cannot find module
+        ];
+
+        let errorFound = false;
+        if (errorPatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()))) {
+            mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
+                state: RunState.ERROR,
+                message: `Command error detected: ${data.trim()}`,
+            });
+            errorFound = true;
+        }
+        return errorFound;
+    }
+
+    checkSuccess(data: string): boolean {
+        // Strip ANSI escape codes to get plain text
+        const stripAnsi = (str: string) => str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+
+        const plainText = stripAnsi(data).trim().toLowerCase();
+        const successPatterns = ['get / 200'];
+
+        if (successPatterns.some((pattern) => plainText.includes(pattern))) {
+            mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
+                state: RunState.RUNNING,
+                message: 'Command executed successfully.',
+            });
+            return true;
+        }
+        return false;
+    }
+
+    addTerminalMessage(id: string, data: string) {
+        const currentHistory = this.getHistory(id) || '';
+        this.outputHistory.set(id, currentHistory + data);
+        this.emitMessage(id, data);
+    }
+
+    emitMessage(id: string, data: string) {
         mainWindow?.webContents.send(MainChannels.TERMINAL_ON_DATA, {
             id,
             data,
-            isError,
         });
     }
 
     write(id: string, data: string): boolean {
         try {
-            this.processes.get(id)?.stdin?.write(data);
-            this.emitMessage(id, `$ ${data}`, false);
+            this.processes.get(id)?.write(data);
             return true;
         } catch (error) {
             console.error('Failed to write to terminal.', error);
@@ -78,7 +144,7 @@ class TerminalManager {
 
     resize(id: string, cols: number, rows: number): boolean {
         try {
-            // this.processes.get(id)?.stdin?.setWindowSize(cols, rows);
+            this.processes.get(id)?.resize(cols, rows);
             return true;
         } catch (error) {
             console.error('Failed to resize terminal.', error);
@@ -88,9 +154,9 @@ class TerminalManager {
 
     kill(id: string): boolean {
         try {
-            const childProcess = this.processes.get(id);
-            if (childProcess) {
-                treeKill(childProcess.pid!);
+            const process = this.processes.get(id);
+            if (process) {
+                process.kill();
                 this.processes.delete(id);
                 this.outputHistory.delete(id);
             }
@@ -102,19 +168,16 @@ class TerminalManager {
     }
 
     killAll(): boolean {
-        this.processes.forEach((childProcess) => {
-            if (childProcess.pid) {
-                treeKill(childProcess.pid);
-            }
-        });
+        this.processes.forEach((process) => process.kill());
         this.processes.clear();
         return true;
     }
 
     executeCommand(id: string, command: string): boolean {
         try {
+            const commandToExecute = getBunCommand(command);
             const newline = os.platform() === 'win32' ? '\r\n' : '\n';
-            return this.write(id, command + newline);
+            return this.write(id, commandToExecute + newline);
         } catch (error) {
             console.error('Failed to execute command.', error);
             return false;

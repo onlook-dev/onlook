@@ -69,10 +69,15 @@ const TreeNode = observer(
         dragHandle?: React.RefObject<HTMLDivElement> | any;
     }) => {
         const editorEngine = useEditorEngine();
+        const isWindow = node.data.tagName.toLowerCase() === 'body';
         const nodeRef = useRef<HTMLDivElement>(null);
         const isText = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
             node.data.tagName.toLowerCase(),
         );
+        const isWindowSelected =
+            isWindow &&
+            editorEngine.elements.selected.length === 0 &&
+            editorEngine.webviews.selected.some((el) => el.id === node.data.webviewId);
 
         const { hovered, selected, isParentSelected } = useMemo(
             () => ({
@@ -120,7 +125,8 @@ const TreeNode = observer(
                         rounded:
                             (hovered && !isParentSelected && !selected) ||
                             (selected && node.isLeaf) ||
-                            (selected && node.isClosed),
+                            (selected && node.isClosed) ||
+                            isWindowSelected,
                         'rounded-t': selected && node.isInternal,
                         'rounded-b': isParentSelected && parentGroupEnd(node),
                         'rounded-none': isParentSelected && node.nextSibling,
@@ -138,10 +144,20 @@ const TreeNode = observer(
                         'bg-purple-300/30 dark:bg-purple-900/30': isParentSelected?.data.instanceId,
                         'bg-purple-300/50 dark:bg-purple-900/50':
                             hovered && isParentSelected?.data.instanceId,
-                        'text-white dark:text-primary': !node.data.instanceId && selected,
+                        'text-white dark:text-primary':
+                            (!node.data.instanceId && selected) || isWindowSelected,
+                        'bg-teal-500': isWindowSelected,
                     }),
                 ),
-            [hovered, selected, isParentSelected, node.isLeaf, node.isClosed, node.nextSibling],
+            [
+                hovered,
+                selected,
+                isParentSelected,
+                node.isLeaf,
+                node.isClosed,
+                node.nextSibling,
+                isWindowSelected,
+            ],
         );
 
         function sideOffset() {
@@ -191,6 +207,11 @@ const TreeNode = observer(
                     editorEngine.elements.mouseover(el, webview);
                     break;
                 case MouseAction.MOUSE_DOWN:
+                    if (isWindow) {
+                        editorEngine.clearUI();
+                        editorEngine.webviews.select(webview);
+                        return;
+                    }
                     if (e.shiftKey) {
                         editorEngine.elements.shiftClick(el, webview);
                         break;
@@ -207,6 +228,23 @@ const TreeNode = observer(
             ]);
             editorEngine.action.updateStyle(action);
             node.data.isVisible = !node.data.isVisible;
+        }
+
+        function getNodeName() {
+            if (isWindow) {
+                return 'window';
+            }
+            return (
+                (node.data.component
+                    ? node.data.component
+                    : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
+                            node.data.tagName.toLowerCase(),
+                        )
+                      ? ''
+                      : node.data.tagName.toLowerCase()) +
+                ' ' +
+                node.data.textContent
+            );
         }
 
         return (
@@ -303,14 +341,7 @@ const TreeNode = observer(
                                     selected && 'mr-5',
                                 )}
                             >
-                                {node.data.component
-                                    ? node.data.component
-                                    : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                                            node.data.tagName.toLowerCase(),
-                                        )
-                                      ? ''
-                                      : node.data.tagName.toLowerCase()}
-                                {' ' + node.data.textContent}
+                                {getNodeName()}
                             </span>
                             {selected && (
                                 <VisibilityButton

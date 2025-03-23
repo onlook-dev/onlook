@@ -1,22 +1,26 @@
-import { MainChannels } from '@onlook/models/constants';
-import type { UserSettings } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
-import { invokeMainChannel } from '../utils';
+import { UserSettingsManager } from './settings';
+import { SubscriptionManager } from './subscription';
+import { LanguageManager } from './language';
 
 export class UserManager {
-    user: UserSettings | null = null;
+    private subscriptionManager = new SubscriptionManager();
+    private settingsManager = new UserSettingsManager();
+    private languageManager = new LanguageManager();
 
     constructor() {
         makeAutoObservable(this);
-        this.fetchUser();
     }
 
-    async fetchUser() {
-        this.user = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
+    get subscription() {
+        return this.subscriptionManager;
     }
 
-    async updateUserSettings(settings: Partial<UserSettings>) {
-        this.user = { ...this.user, ...settings };
-        await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, settings);
+    get settings() {
+        return this.settingsManager;
+    }
+
+    get language() {
+        return this.languageManager;
     }
 }

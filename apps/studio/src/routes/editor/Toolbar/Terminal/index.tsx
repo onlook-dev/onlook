@@ -82,6 +82,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             allowTransparency: true,
             disableStdin: false,
             allowProposedApi: true,
+            macOptionIsMeta: true,
         });
 
         term.open(container);
@@ -104,9 +105,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         const terminalDataListener = (message: TerminalMessage) => {
-            if (message.isError) {
-                term.write('\x1b[91m' + message.data + '\x1b[0m');
-            } else {
+            if (message.id === projectsManager.project?.id) {
                 term.write(message.data);
             }
         };
@@ -123,7 +122,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
     return (
         <div
             className={cn(
-                'bg-background rounded-lg overflow-hidden transition-all duration-300',
+                'bg-background rounded-lg overflow-auto transition-all duration-300',
                 hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
             )}
         >

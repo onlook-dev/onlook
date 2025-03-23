@@ -6,10 +6,17 @@ import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } fro
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
+import { isChildTextEditable } from '../code/diff/text';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
+import { getTemplateNodeProps } from '../code/props';
+import {
+    scanTailwindConfig,
+    updateTailwindColorConfig,
+    deleteTailwindColorGroup,
+} from '../assets/styles';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -23,8 +30,11 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.VIEW_SOURCE_FILE, (e: Electron.IpcMainInvokeEvent, args) => {
-        const filePath = args as string;
-        openFileInIde(filePath);
+        const { filePath, line } = args as {
+            filePath: string;
+            line?: number;
+        };
+        openFileInIde(filePath, line);
     });
 
     ipcMain.handle(MainChannels.GET_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -99,5 +109,43 @@ export function listenForCodeMessages() {
         }
         const result = extractComponentsFromDirectory(args);
         return result;
+    });
+
+    ipcMain.handle(
+        MainChannels.IS_CHILD_TEXT_EDITABLE,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { oid } = args as { oid: string };
+            return isChildTextEditable(oid);
+        },
+    );
+
+    ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_PROPS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const templateNode = args as TemplateNode;
+        return getTemplateNodeProps(templateNode);
+    });
+
+    ipcMain.handle(
+        MainChannels.SCAN_TAILWIND_CONFIG,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { projectRoot } = args as { projectRoot: string };
+            return scanTailwindConfig(projectRoot);
+        },
+    );
+
+    ipcMain.handle(MainChannels.UPDATE_TAILWIND_CONFIG, async (e, args) => {
+        const { projectRoot, originalKey, newColor, newName, parentName, theme } = args;
+        return updateTailwindColorConfig(
+            projectRoot,
+            originalKey,
+            newColor,
+            newName,
+            theme,
+            parentName,
+        );
+    });
+
+    ipcMain.handle(MainChannels.DELETE_TAILWIND_CONFIG, async (_, args) => {
+        const { projectRoot, groupName, colorName } = args;
+        return deleteTailwindColorGroup(projectRoot, groupName, colorName);
     });
 }

@@ -14,9 +14,9 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
+import { getValidUrl } from '@onlook/utility';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';
 
@@ -30,8 +30,11 @@ interface BrowserControlsProps {
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
     settings: FrameSettings;
     startMove: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-    deregisterWebview: () => void;
     domState: WebviewState;
+    webviewSize: {
+        width: number;
+        height: number;
+    };
 }
 
 const BrowserControls = observer(
@@ -45,13 +48,13 @@ const BrowserControls = observer(
         setDarkmode,
         settings,
         startMove,
-        deregisterWebview,
         domState,
+        webviewSize,
     }: BrowserControlsProps) => {
         const editorEngine = useEditorEngine();
         const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
         const [editingURL, setEditingURL] = useState(false);
-        const [theme, setTheme] = useState(Theme.Device);
+        const [theme, setTheme] = useState(Theme.System);
         const [state, setState] = useState<WebviewState>(WebviewState.NOT_RUNNING);
         const [editorMode, setEditorMode] = useState(EditorMode.DESIGN);
         const inputRef = useRef<HTMLInputElement>(null);
@@ -107,7 +110,7 @@ const BrowserControls = observer(
             if (!webview) {
                 return;
             }
-
+            editorEngine.errors.clear();
             webview.reload();
         }
 
@@ -121,13 +124,6 @@ const BrowserControls = observer(
             }
         }
 
-        function getValidUrl(url: string) {
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                return 'http://' + url;
-            }
-            return url;
-        }
-
         function handleKeydown(e: React.KeyboardEvent<HTMLInputElement>) {
             if (e.key === 'Enter') {
                 e.currentTarget.blur();
@@ -137,14 +133,7 @@ const BrowserControls = observer(
         }
 
         function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) {
-                return;
-            }
-
             const validUrl = getValidUrl(e.currentTarget.value);
-            webview.src = validUrl;
-            webview.loadURL(validUrl);
             setWebviewSrc(validUrl);
             setEditingURL(false);
         }
@@ -156,7 +145,7 @@ const BrowserControls = observer(
             }
 
             const themeValue =
-                theme === Theme.Device ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
+                theme === Theme.System ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
 
             webview.executeJavaScript(`window.api?.setTheme("${themeValue}")`).then((res) => {
                 setDarkmode(res);
@@ -181,49 +170,6 @@ const BrowserControls = observer(
                 return webviewRef?.current?.canGoForward();
             } catch (e) {
                 return false;
-            }
-        }
-
-        function duplicateWindow(linked: boolean = false) {
-            const currentFrame = settings;
-            const newFrame: FrameSettings = {
-                id: nanoid(),
-                url: currentFrame.url,
-                dimension: {
-                    width: currentFrame.dimension.width,
-                    height: currentFrame.dimension.height,
-                },
-                position: currentFrame.position,
-                duplicate: true,
-                linkedIds: linked ? [currentFrame.id] : [],
-                aspectRatioLocked: currentFrame.aspectRatioLocked,
-                orientation: currentFrame.orientation,
-                device: currentFrame.device,
-                theme: currentFrame.theme,
-            };
-
-            if (linked) {
-                currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
-                editorEngine.canvas.saveFrame(currentFrame.id, {
-                    linkedIds: currentFrame.linkedIds,
-                });
-            }
-
-            editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
-        }
-
-        function deleteDuplicateWindow() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
-            editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
-                (frame) => frame.id !== settings.id,
-            );
-
-            editorEngine.canvas.frames.forEach((frame) => {
-                frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
-            });
-
-            if (webview) {
-                deregisterWebview();
             }
         }
 
@@ -253,7 +199,7 @@ const BrowserControls = observer(
         }
 
         function getSelectedColor() {
-            if (editorEngine.mode === EditorMode.INTERACT) {
+            if (editorEngine.mode === EditorMode.PREVIEW) {
                 return 'text-blue-400 fill-blue-400';
             }
             if (domState === WebviewState.DOM_ONLOOK_ENABLED) {
@@ -271,21 +217,28 @@ const BrowserControls = observer(
         return (
             <div
                 className={clsx(
-                    'flex flex-row items-center backdrop-blur-sm pb-1.5 overflow-hidden',
+                    'm-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm rounded-md border-input text-foreground',
                     selected ? ' bg-active/60 ' : '',
                     hovered ? ' bg-hover/20 ' : '',
                     selected
                         ? getSelectedColor()
-                        : editorMode === EditorMode.INTERACT
+                        : editorMode === EditorMode.PREVIEW
                           ? 'text-foreground-secondary fill-foreground-secondary'
                           : 'fill-[#f7f7f7]',
                 )}
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
                 onClick={handleSelect}
+                style={{
+                    transform: `scale(${1 / editorEngine.canvas.scale})`,
+                    width: `${webviewSize.width * editorEngine.canvas.scale}px`,
+                    marginBottom: `${10 / editorEngine.canvas.scale}px`,
+                }}
             >
+                {/* Making sure the dropdown arrow is visible */}
+                <div className="absolute right-0 bottom-0 top-0 bg-gradient-to-r from-transparent dark:via-background-primary via-background-tertiary dark:to-background-primary to-background-tertiary w-20 z-50"></div>
                 <div
-                    className={`absolute left-0 flex flex-row z-50 `}
+                    className={`absolute left-0 flex flex-row z-50`}
                     style={{
                         transition: 'opacity 0.5s, transform 0.5s',
                         transform: editingURL
@@ -302,7 +255,7 @@ const BrowserControls = observer(
                         onClick={goBack}
                         disabled={!canGoBack()}
                     >
-                        <Icons.ArrowLeft className="text-inherit h-5 w-5 transition-none" />
+                        <Icons.ArrowLeft className="text-inherit h-4 w-4 transition-none" />
                     </Button>
 
                     <Button
@@ -314,13 +267,13 @@ const BrowserControls = observer(
                             display: canGoForward() ? 'flex' : 'none',
                         }}
                     >
-                        <Icons.ArrowRight className="text-inherit h-5 w-5" />
+                        <Icons.ArrowRight className="text-inherit h-4 w-4" />
                     </Button>
                     <Button size={'icon'} variant={'ghost'} onClick={reload}>
                         {webviewRef?.current?.isLoading() ? (
                             <Icons.CrossL className="text-inherit" />
                         ) : (
-                            <Icons.Reload className="text-inherit h-5 w-5" />
+                            <Icons.Reload className="text-inherit" />
                         )}
                     </Button>
                 </div>
@@ -361,40 +314,34 @@ const BrowserControls = observer(
                         setEditingURL(true);
                     }}
                 >
-                    <>
-                        <Input
-                            ref={inputRef}
-                            className={cn(
-                                'text-regular text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none',
-                                settings.linkedIds && settings.linkedIds.length > 0 && 'pr-8',
-                            )}
-                            value={urlInputValue}
-                            onChange={(e) => setUrlInputValue(e.target.value)}
-                            onKeyDown={handleKeydown}
-                            onBlur={handleBlur}
-                            style={{
-                                transition: 'display 0.5s',
-                                display: editingURL ? 'flex' : 'none',
-                            }}
-                        />
-                        <Button
-                            className="absolute right-0.5 px-1 group"
-                            size={'icon'}
-                            variant={'ghost'}
-                            onClick={() => setEditingURL(false)}
-                            style={{
-                                transition: 'transform 0.5s, visibility 0.5s, opacity 0.5s',
-                                transform: editingURL ? 'translateX(0)' : 'translateX(-5.625rem)',
-                                visibility: editingURL ? 'visible' : 'hidden',
-                                opacity: editingURL ? 1 : 0,
-                            }}
-                        >
-                            <Icons.ArrowRight className="text-foreground-secondary group-hover:text-foreground-active h-5 w-5" />
-                        </Button>
-                    </>
-
+                    <Input
+                        ref={inputRef}
+                        className="text-small text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none"
+                        value={urlInputValue}
+                        onChange={(e) => setUrlInputValue(e.target.value)}
+                        onKeyDown={handleKeydown}
+                        onBlur={handleBlur}
+                        style={{
+                            transition: 'display 0.5s',
+                            display: editingURL ? 'flex' : 'none',
+                        }}
+                    />
+                    <Button
+                        className="absolute right-0.5 px-1 group"
+                        size={'icon'}
+                        variant={'ghost'}
+                        onClick={() => setEditingURL(false)}
+                        style={{
+                            transition: 'transform 0.5s, visibility 0.5s, opacity 0.5s',
+                            transform: editingURL ? 'translateX(0)' : 'translateX(-5.625rem)',
+                            visibility: editingURL ? 'visible' : 'hidden',
+                            opacity: editingURL ? 1 : 0,
+                        }}
+                    >
+                        <Icons.ArrowRight className="text-foreground-secondary group-hover:text-foreground-active h-4 w-4" />
+                    </Button>
                     <p
-                        className="text-regular text-inherit hover:text-opacity-80 transition-colors px-0 h-auto leading-none py-0"
+                        className="text-small text-inherit hover:text-opacity-80 transition-colors px-0 h-auto leading-none py-0"
                         style={{
                             transition: 'display 0.5s',
                             display: editingURL ? 'none' : 'flex',
@@ -402,10 +349,6 @@ const BrowserControls = observer(
                     >
                         {getCleanURL(urlInputValue)}
                     </p>
-
-                    {/* {settings.linkedIds && settings.linkedIds.length > 0 && (
-                    <Icons.Link className="text-foreground-secondary absolute right-3" />
-                )} */}
                 </div>
 
                 <div
@@ -431,7 +374,7 @@ const BrowserControls = observer(
                                 size={'icon'}
                                 variant={'ghost'}
                             >
-                                <Icons.ChevronDown className="text-inherit h-5 w-5 rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
+                                <Icons.ChevronDown className="text-inherit h-4 w-4 rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="rounded-md bg-background">
@@ -439,7 +382,7 @@ const BrowserControls = observer(
                                 <Button
                                     variant={'ghost'}
                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                    onClick={() => duplicateWindow(true)}
+                                    onClick={() => editorEngine.duplicateWindow(settings.id)}
                                 >
                                     <span className="flex w-full items-center text-smallPlus">
                                         <Icons.Copy className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
@@ -488,11 +431,11 @@ const BrowserControls = observer(
                                     <Button
                                         size={'icon'}
                                         variant={'ghost'}
-                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === Theme.Device ? 'bg-background-tertiary' : ''}`}
-                                        onClick={() => changeTheme(Theme.Device)}
+                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === Theme.System ? 'bg-background-tertiary' : ''}`}
+                                        onClick={() => changeTheme(Theme.System)}
                                     >
                                         <Icons.Laptop
-                                            className={`${theme === Theme.Device ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                            className={`${theme === Theme.System ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
                                         />
                                     </Button>
                                     <Button
@@ -521,13 +464,13 @@ const BrowserControls = observer(
                                 <Button
                                     variant={'ghost'}
                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                    onClick={deleteDuplicateWindow}
-                                    disabled={!settings.duplicate}
+                                    onClick={() => editorEngine.deleteWindow(settings.id)}
+                                    disabled={!editorEngine.canDeleteWindow()}
                                 >
                                     <span className="flex w-full items-center">
                                         <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                         <span>
-                                            {settings.duplicate
+                                            {editorEngine.canDeleteWindow()
                                                 ? 'Delete Window'
                                                 : "Can't delete this!"}
                                         </span>

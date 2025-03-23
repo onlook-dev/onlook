@@ -1,6 +1,7 @@
 import type { ActionElement, ActionLocation, PasteParams } from '@onlook/models/actions';
 import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
+import { StyleChangeType } from '@onlook/models/style';
 import { twMerge } from 'tailwind-merge';
 import { getTailwindClasses } from './helpers';
 
@@ -8,9 +9,16 @@ export function getInsertedElement(
     actionElement: ActionElement,
     location: ActionLocation,
     pasteParams: PasteParams | null,
+    codeBlock: string | null,
 ): CodeInsert {
     // Generate Tailwind className from style as an attribute
-    const newClasses = getTailwindClasses(actionElement.oid, actionElement.styles);
+    const styles = Object.fromEntries(
+        Object.entries(actionElement.styles).map(([key, value]) => [
+            key,
+            { value, type: StyleChangeType.Value },
+        ]),
+    );
+    const newClasses = getTailwindClasses(actionElement.oid, styles);
     const attributes = {
         className: twMerge(
             actionElement.attributes['className'],
@@ -18,11 +26,17 @@ export function getInsertedElement(
             newClasses,
         ),
         [EditorAttributes.DATA_ONLOOK_ID]: actionElement.oid,
+        ...(actionElement.tagName.toLowerCase() === 'img' && {
+            src: actionElement.attributes['src'],
+            alt: actionElement.attributes['alt'],
+        }),
     };
 
     let children: CodeInsert[] = [];
     if (actionElement.children) {
-        children = actionElement.children.map((child) => getInsertedElement(child, location, null));
+        children = actionElement.children.map((child) =>
+            getInsertedElement(child, location, null, null),
+        );
     }
 
     const insertedElement: CodeInsert = {
@@ -34,6 +48,7 @@ export function getInsertedElement(
         textContent: actionElement.textContent,
         location,
         pasteParams,
+        codeBlock: codeBlock || null,
     };
 
     return insertedElement;

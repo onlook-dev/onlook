@@ -15,8 +15,6 @@ export interface FrameSettings {
     url: string;
     position: RectPosition;
     dimension: RectDimension;
-    linkedIds: string[] | null;
-    duplicate: boolean | null;
     orientation: Orientation | null;
     aspectRatioLocked: boolean | null;
     device: string | null;
@@ -33,6 +31,17 @@ export interface HostingSettings {
     url: string | null;
 }
 
+export enum DomainType {
+    BASE = 'base',
+    CUSTOM = 'custom',
+}
+
+export interface DomainSettings {
+    url: string;
+    type: DomainType;
+    publishedAt?: string;
+}
+
 export interface Project {
     id: string;
     name: string;
@@ -43,7 +52,13 @@ export interface Project {
     updatedAt: string;
     settings: ProjectSettings | null;
     commands: ProjectCommands | null;
-    hosting: HostingSettings | null;
+    domains: {
+        base: DomainSettings | null;
+        custom: DomainSettings | null;
+    } | null;
+
+    // deprecated
+    // hosting?: HostingSettings | null;
 }
 
 export enum WindowCommand {

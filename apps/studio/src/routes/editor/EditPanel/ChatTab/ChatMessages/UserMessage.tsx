@@ -4,6 +4,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
 import { SentContextPill } from '../ContextPills/SentContextPill';
 
@@ -11,11 +12,13 @@ interface UserMessageProps {
     message: UserChatMessageImpl;
 }
 
-const UserMessage = ({ message }: UserMessageProps) => {
+export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
+    const [isComposing, setIsComposing] = useState(false);
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
@@ -26,7 +29,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }, [isEditing, editValue]);
 
     const handleEditClick = () => {
-        setEditValue(message.content);
+        setEditValue(message.getStringContent());
         setIsEditing(true);
     };
 
@@ -41,7 +44,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
             handleSubmit();
         } else if (e.key === 'Escape') {
@@ -51,14 +54,14 @@ const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     function handleCopyClick() {
-        const text = message.content;
+        const text = message.getStringContent();
         navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     }
 
     const handleRetry = () => {
-        editorEngine.chat.resubmitMessage(message.id, message.content);
+        editorEngine.chat.resubmitMessage(message.id, message.getStringContent());
     };
 
     function renderEditingInput() {
@@ -71,6 +74,8 @@ const UserMessage = ({ message }: UserMessageProps) => {
                     className="text-small border-none resize-none px-0 mt-[-8px]"
                     rows={2}
                     onKeyDown={handleKeyDown}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={() => setIsComposing(false)}
                 />
                 <div className="flex justify-end gap-2">
                     <Button size="sm" variant={'ghost'} onClick={handleCancel}>
@@ -85,7 +90,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     function renderContent() {
-        return <div>{message.content}</div>;
+        return <div>{message.getStringContent()}</div>;
     }
 
     function renderButtons() {
@@ -102,7 +107,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             <Icons.Reload className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Retry</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Retry
+                    </TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
@@ -116,7 +123,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             <Icons.Pencil className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Edit</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Edit
+                    </TooltipContent>
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -133,7 +142,9 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             )}
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Copy</TooltipContent>
+                    <TooltipContent side="top" sideOffset={5}>
+                        Copy
+                    </TooltipContent>
                 </Tooltip>
             </div>
         );
@@ -147,7 +158,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
                     <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
                         <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
                             {message.context.map((context) => (
-                                <SentContextPill key={context.displayName} context={context} />
+                                <SentContextPill key={nanoid()} context={context} />
                             ))}
                         </div>
                     </div>
@@ -159,5 +170,3 @@ const UserMessage = ({ message }: UserMessageProps) => {
         </div>
     );
 };
-
-export default UserMessage;

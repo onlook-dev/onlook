@@ -1,36 +1,64 @@
 import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
+import { SettingsTabValue } from '@/lib/models';
+import { ProjectTabs } from '@/lib/projects';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
-import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import ProjectNameInput from './ProjectNameInput';
+import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const routeManager = useRouteManager();
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const closeTimeoutRef = useRef<Timer>();
+    const { t } = useTranslation();
+    const [isClosingProject, setIsClosingProject] = useState(false);
 
-    async function handleReturn() {
+    async function handleNavigateToProjects(tab?: ProjectTabs) {
         try {
-            await saveScreenshot();
+            setIsClosingProject(true);
+            await takeScreenshotWithTimeout();
+            await projectsManager.runner?.stop();
         } catch (error) {
             console.error('Failed to take screenshot:', error);
         }
-        projectsManager.project = null;
-        routeManager.route = Route.PROJECTS;
+        setTimeout(() => {
+            projectsManager.project = null;
+            if (tab) {
+                projectsManager.projectsTab = tab;
+            }
+            routeManager.route = Route.PROJECTS;
+            setIsClosingProject(false);
+        }, 100);
     }
+
+    const takeScreenshotWithTimeout = async () => {
+        try {
+            const screenshotPromise = saveScreenshot();
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Screenshot timeout')), 5000);
+            });
+            await Promise.race([screenshotPromise, timeoutPromise]);
+        } catch (error) {
+            console.warn('Screenshot timed out or failed, continuing anyway');
+        }
+    };
 
     const handleOpenProjectFolder = () => {
         const project = projectsManager.project;
@@ -46,63 +74,114 @@ const ProjectBreadcrumb = observer(() => {
             return;
         }
         const projectId = project.id;
-        const imageName = await editorEngine.takeScreenshot(projectId);
-        if (!imageName) {
+        const result = await editorEngine.takeActiveWebviewScreenshot(projectId, {
+            save: true,
+        });
+        if (!result || !result.name) {
             console.error('Failed to take screenshot');
             return;
         }
-        project.previewImg = imageName;
+        project.previewImg = result.name;
         project.updatedAt = new Date().toISOString();
         projectsManager.updateProject(project);
     }
 
     return (
-        <>
-            <div className="mx-2 flex flex-row items-center text-small gap-2">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant={'ghost'}
-                            className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
-                            onClick={handleReturn}
-                        >
-                            <Icons.OnlookLogo className="w-6 h-6 mr-2 hidden md:block" />
-                            {'Onlook'}
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
-                        Return to project selection
-                    </TooltipContent>
-                </Tooltip>
-                <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
-                <ProjectNameInput />
-                <DropdownMenu>
-                    <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-hover hover:bg-transparent">
-                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                            <div className="flex row center items-center group">
-                                <Icons.Directory className="mr-2 group-hover:hidden" />
-                                <Icons.DirectoryOpen className="mr-2 hidden group-hover:block" />
-                                {'Open Project Folder'}
-                            </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                            <div className="flex row center items-center group">
-                                <Icons.Gear className="mr-2 transition-transform duration-300 group-hover:rotate-[30deg]" />
-                                Project Settings
-                            </div>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <ProjectSettingsModal
-                project={projectsManager.project}
-                open={isSettingsOpen}
-                onOpenChange={setIsSettingsOpen}
-            ></ProjectSettingsModal>
-        </>
+        <div className="mx-2 flex flex-row items-center text-small gap-2">
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant={'ghost'}
+                        className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
+                    >
+                        <Icons.OnlookLogo
+                            className={cn(
+                                'w-6 h-6 hidden md:block',
+                                isClosingProject && 'animate-pulse',
+                            )}
+                        />
+                        <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
+                            {isClosingProject
+                                ? 'Stopping project...'
+                                : projectsManager.project?.name}
+                        </span>
+                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                    align="start"
+                    className="w-48"
+                    onMouseEnter={() => {
+                        if (closeTimeoutRef.current) {
+                            clearTimeout(closeTimeoutRef.current);
+                        }
+                    }}
+                    onMouseLeave={() => {
+                        closeTimeoutRef.current = setTimeout(() => {
+                            setIsDropdownOpen(false);
+                        }, 300);
+                    }}
+                >
+                    <DropdownMenuItem onClick={() => handleNavigateToProjects()}>
+                        <div className="flex row center items-center group">
+                            <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
+                            {t('projects.actions.goToAllProjects')}
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                            {t('projects.actions.newProject')}
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuItem
+                                onClick={() => handleNavigateToProjects(ProjectTabs.PROMPT_CREATE)}
+                                className={cn(
+                                    'focus:bg-blue-100 focus:text-blue-900',
+                                    'hover:bg-blue-100 hover:text-blue-900',
+                                    'dark:focus:bg-blue-900 dark:focus:text-blue-100',
+                                    'dark:hover:bg-blue-900 dark:hover:text-blue-100',
+                                )}
+                            >
+                                <Icons.FilePlus className="mr-2 h-4 w-4" />
+                                {t('projects.actions.startFromScratch')}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleNavigateToProjects(ProjectTabs.IMPORT_PROJECT)}
+                                className={cn(
+                                    'focus:bg-teal-100 focus:text-teal-900',
+                                    'hover:bg-teal-100 hover:text-teal-900',
+                                    'dark:focus:bg-teal-900 dark:focus:text-teal-100',
+                                    'dark:hover:bg-teal-900 dark:hover:text-teal-100',
+                                )}
+                            >
+                                <Icons.Download className="mr-2 h-4 w-4" />
+                                {t('projects.actions.importProject')}
+                            </DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                        {t('projects.actions.showInExplorer')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => {
+                            editorEngine.isPlansOpen = true;
+                        }}
+                    >
+                        {t('projects.actions.subscriptions')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => {
+                            editorEngine.isSettingsOpen = true;
+                            editorEngine.settingsTab = SettingsTabValue.PROJECT;
+                        }}
+                    >
+                        {t('projects.actions.settings')}
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
     );
 });
 

@@ -1,8 +1,8 @@
-import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
+import { MainChannels } from '@onlook/models/constants';
 import type { UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
 import { makeAutoObservable } from 'mobx';
-import { invokeMainChannel, sendAnalytics } from '../utils';
+import { invokeMainChannel } from '../utils';
 
 export class AuthManager {
     authenticated = false;
@@ -20,11 +20,9 @@ export class AuthManager {
             MainChannels.GET_USER_METADATA,
         )) as UserMetadata;
 
-        const tokensExist = (await invokeMainChannel(
-            MainChannels.DOES_USER_HAVE_AUTH_TOKENS,
-        )) as boolean;
+        const signedIn = (await invokeMainChannel(MainChannels.IS_USER_SIGNED_IN)) as boolean;
 
-        if (this.userMetadata && tokensExist) {
+        if (this.userMetadata && signedIn) {
             this.authenticated = true;
         }
     }
@@ -42,35 +40,10 @@ export class AuthManager {
     }
 
     async signIn(provider: 'github' | 'google') {
-        if (!supabase) {
-            throw new Error('No backend connected');
-        }
-
-        supabase.auth.signOut();
-
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider,
-            options: {
-                skipBrowserRedirect: true,
-                redirectTo: APP_SCHEMA + '://auth',
-            },
-        });
-
-        if (error) {
-            console.error('Authentication error:', error);
-            return;
-        }
-
-        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
-        sendAnalytics('sign in', { provider });
+        await invokeMainChannel(MainChannels.SIGN_IN, { provider });
     }
 
-    signOut() {
-        if (!supabase) {
-            throw new Error('No backend connected');
-        }
-        sendAnalytics('sign out');
-        supabase.auth.signOut();
-        invokeMainChannel(MainChannels.SIGN_OUT);
+    async signOut() {
+        await invokeMainChannel(MainChannels.SIGN_OUT);
     }
 }
