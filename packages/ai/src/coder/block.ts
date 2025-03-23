@@ -46,7 +46,6 @@ export class CodeBlockProcessor {
     /**
      * Applies a search/replace diff to the original text with advanced formatting handling
      * Uses multiple strategies and preprocessing options to handle complex replacements
-     * @returns The modified text if successful, or the original text if all search/replace operations failed
      */
     async applyDiff(
         originalText: string,
@@ -58,21 +57,18 @@ export class CodeBlockProcessor {
     }> {
         const searchReplaces = CodeBlockProcessor.parseDiff(diffText);
         let text = originalText;
-        let anySuccess = false;
         const failures: Array<{ search: string; error?: string }> = [];
 
         for (const { search, replace } of searchReplaces) {
             const result = await flexibleSearchAndReplace(search, replace, text);
             if (result.success && result.text) {
                 text = result.text;
-                anySuccess = true;
             } else {
                 // Fallback to simple replacement if flexible strategies fail
                 try {
                     const newText = text.replace(search, replace);
                     if (newText !== text) {
                         text = newText;
-                        anySuccess = true;
                     } else {
                         failures.push({ search, error: 'No changes made' });
                     }
@@ -87,7 +83,7 @@ export class CodeBlockProcessor {
         }
 
         return {
-            success: anySuccess,
+            success: failures.length === 0,
             text,
             ...(failures.length > 0 && { failures }),
         };

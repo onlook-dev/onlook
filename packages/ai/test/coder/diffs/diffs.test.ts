@@ -47,6 +47,23 @@ describe('Parse and Apply Code Block Diffs', () => {
         });
     });
 
+    test('should fail when any replacement fails in multiple diffs', async () => {
+        const diffText =
+            coder.createDiff('sample', 'example') +
+            '\n' +
+            coder.createDiff('non-existent', 'replacement');
+        const originalText = 'some sample text';
+
+        const result = await coder.applyDiff(originalText, diffText);
+        expect(result.success).toBe(false);
+        expect(result.text).toBe('some example text');
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures![0]).toEqual({
+            search: 'non-existent',
+            error: 'No changes made',
+        });
+    });
+
     test('should create diff correctly', () => {
         const searchContent = 'old content';
         const replaceContent = 'new content';

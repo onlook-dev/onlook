@@ -112,4 +112,20 @@ describe('CodeBlockProcessor Integration', () => {
         expect(result.text).toBe('simple new text');
         expect(result.failures).toBeUndefined();
     });
+
+    test('should mark as failed if any replacement fails', async () => {
+        const originalText = 'simple old text';
+        const diffText =
+            processor.createDiff('old', 'new') +
+            '\n' +
+            processor.createDiff('missing', 'replacement');
+        const result = await processor.applyDiff(originalText, diffText);
+        expect(result.success).toBe(false); // Should be false even though one replacement succeeded
+        expect(result.text).toBe('simple new text');
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures![0]).toEqual({
+            search: 'missing',
+            error: 'No changes made',
+        });
+    });
 });
