@@ -4,17 +4,6 @@ import { flexibleSearchAndReplace } from './search-replace';
 
 export class CodeBlockProcessor {
     /**
-     * Sequentially applies a list of diffs to the original text
-     */
-    async applyDiffs(originalText: string, diffs: string[]): Promise<string> {
-        let text = originalText;
-        for (const diff of diffs) {
-            text = await this.applyDiff(text, diff);
-        }
-        return text;
-    }
-
-    /**
      * Extracts search and replace content from a diff string using the defined fence markers
      */
     static parseDiff(diffText: string): { search: string; replace: string }[] {
@@ -58,21 +47,46 @@ export class CodeBlockProcessor {
      * Applies a search/replace diff to the original text with advanced formatting handling
      * Uses multiple strategies and preprocessing options to handle complex replacements
      */
-    async applyDiff(originalText: string, diffText: string): Promise<string> {
+    async applyDiff(
+        originalText: string,
+        diffText: string,
+    ): Promise<{
+        success: boolean;
+        text: string;
+        failures?: Array<{ search: string; error?: string }>;
+    }> {
         const searchReplaces = CodeBlockProcessor.parseDiff(diffText);
         let text = originalText;
+        const failures: Array<{ search: string; error?: string }> = [];
 
         for (const { search, replace } of searchReplaces) {
             const result = await flexibleSearchAndReplace(search, replace, text);
-            if (!result.success) {
-                // Fallback to simple replacement if flexible strategies fail
-                text = text.replace(search, replace);
-            } else if (result.text) {
+            if (result.success && result.text) {
                 text = result.text;
+            } else {
+                // Fallback to simple replacement if flexible strategies fail
+                try {
+                    const newText = text.replace(search, replace);
+                    if (newText !== text) {
+                        text = newText;
+                    } else {
+                        failures.push({ search, error: 'No changes made' });
+                    }
+                } catch (error) {
+                    failures.push({
+                        search,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    });
+                    console.warn('Simple replacement failed:', error);
+                }
             }
         }
 
-        return text;
+        return {
+            success: failures.length === 0,
+            text,
+            ...(failures.length > 0 && { failures }),
+        };
     }
 
     /**
