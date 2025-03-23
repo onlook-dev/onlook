@@ -4,57 +4,6 @@ import { flexibleSearchAndReplace } from './search-replace';
 
 export class CodeBlockProcessor {
     /**
-     * Sequentially applies a list of diffs to the original text
-     * Returns the resulting text after applying all possible diffs
-     * If a diff cannot be applied, it is skipped and the method continues with the next diff
-     * @returns An object containing the modified text and information about failed diffs
-     */
-    async applyDiffs(originalText: string, diffs: string[]): Promise<{ 
-        text: string; 
-        failures: { diffIndex: number; error: string }[] 
-    }> {
-        let text = originalText;
-        const failures: { diffIndex: number; error: string }[] = [];
-        
-        for (let i = 0; i < diffs.length; i++) {
-            try {
-                const searchReplaces = CodeBlockProcessor.parseDiff(diffs[i]);
-                if (searchReplaces.length === 0) {
-                    failures.push({ diffIndex: i, error: 'Invalid diff format - No valid fence blocks found' });
-                    continue;
-                }
-                
-                let diffApplied = false;
-                let currentText = text;
-                
-                for (const { search, replace } of searchReplaces) {
-                    const result = await flexibleSearchAndReplace(search, replace, currentText);
-                    if (result.success && result.text) {
-                        currentText = result.text;
-                        diffApplied = true;
-                    } else {
-                        failures.push({ 
-                            diffIndex: i, 
-                            error: result.error || 'Search pattern not found or other error occurred' 
-                        });
-                    }
-                }
-                
-                if (diffApplied) {
-                    text = currentText;
-                }
-            } catch (error) {
-                failures.push({ 
-                    diffIndex: i, 
-                    error: error instanceof Error ? error.message : 'Unknown error'
-                });
-            }
-        }
-        
-        return { text, failures };
-    }
-
-    /**
      * Extracts search and replace content from a diff string using the defined fence markers
      */
     static parseDiff(diffText: string): { search: string; replace: string }[] {
@@ -99,10 +48,18 @@ export class CodeBlockProcessor {
      * Uses multiple strategies and preprocessing options to handle complex replacements
      * @returns The modified text if successful, or the original text if all search/replace operations failed
      */
-    async applyDiff(originalText: string, diffText: string): Promise<string> {
+    async applyDiff(
+        originalText: string,
+        diffText: string,
+    ): Promise<{
+        success: boolean;
+        text: string;
+        failures?: Array<{ search: string; error?: string }>;
+    }> {
         const searchReplaces = CodeBlockProcessor.parseDiff(diffText);
         let text = originalText;
         let anySuccess = false;
+        const failures: Array<{ search: string; error?: string }> = [];
 
         for (const { search, replace } of searchReplaces) {
             const result = await flexibleSearchAndReplace(search, replace, text);
@@ -116,15 +73,24 @@ export class CodeBlockProcessor {
                     if (newText !== text) {
                         text = newText;
                         anySuccess = true;
+                    } else {
+                        failures.push({ search, error: 'No changes made' });
                     }
                 } catch (error) {
-                    // Continue if simple replacement fails
+                    failures.push({
+                        search,
+                        error: error instanceof Error ? error.message : 'Unknown error',
+                    });
                     console.warn('Simple replacement failed:', error);
                 }
             }
         }
 
-        return text;
+        return {
+            success: anySuccess,
+            text,
+            ...(failures.length > 0 && { failures }),
+        };
     }
 
     /**

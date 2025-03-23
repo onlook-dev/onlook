@@ -99,13 +99,17 @@ describe('CodeBlockProcessor Integration', () => {
         const originalText = '    if (x) {\n        oldFunc();\n    }';
         const diffText = processor.createDiff('    oldFunc();', '    newFunc();');
         const result = await processor.applyDiff(originalText, diffText);
-        expect(result).toBe('    if (x) {\n        newFunc();\n    }');
+        expect(result.success).toBe(true);
+        expect(result.text).toBe('    if (x) {\n        newFunc();\n    }');
+        expect(result.failures).toBeUndefined();
     });
 
     test('should fall back to simple replace if needed', async () => {
         const originalText = 'simple old text';
         const diffText = processor.createDiff('old', 'new');
         const result = await processor.applyDiff(originalText, diffText);
-        expect(result).toBe('simple new text');
+        expect(result.success).toBe(true);
+        expect(result.text).toBe('simple new text');
+        expect(result.failures).toBeUndefined();
     });
 });
