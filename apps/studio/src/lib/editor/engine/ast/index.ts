@@ -3,8 +3,8 @@ import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import { LayersManager } from './layers';
-import type { IFrameView } from '../frameview';
 
 export class AstManager {
     private layersManager: LayersManager;

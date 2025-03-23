@@ -4,7 +4,7 @@ import type { DomElement, ElementPosition } from '@onlook/models/element';
 import { toast } from '@onlook/ui/use-toast';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
-import type { IFrameView } from '../frameview';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {

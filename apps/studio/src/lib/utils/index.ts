@@ -7,8 +7,8 @@ import {
 import { jsonClone } from '@onlook/utility';
 import imageCompression from 'browser-image-compression';
 import { customAlphabet } from 'nanoid/non-secure';
+import type { IFrameView } from '../../routes/editor/WebviewArea/IFrameView';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
-import type { IFrameView } from '../editor/engine/frameview';
 
 export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';
 

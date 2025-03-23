@@ -1,10 +1,10 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import type { IFrameView } from '@/lib/editor/engine/frameview';
-import { FrameView } from '@/lib/editor/engine/frameview';
 import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
+import type { IFrameView } from '@/routes/editor/WebviewArea/IFrameView';
+import { FrameView } from '@/routes/editor/WebviewArea/IFrameView';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
@@ -240,7 +240,6 @@ const Frame = observer(
             webview.addEventListener('hashchange', handleUrlChange);
             webview.addEventListener('error', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
-            webview.addEventListener('console-message', handleConsoleMessage);
         }
 
         async function getDarkMode(webview: IFrameView) {

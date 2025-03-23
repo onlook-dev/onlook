@@ -1,5 +1,5 @@
+import type { IFrameView } from '../../routes/editor/WebviewArea/IFrameView';
 import type { EditorEngine } from './engine';
-import type { IFrameView } from './engine/frameview';
 import { WebviewEventHandler } from './eventHandler';
 
 interface WebviewContext {

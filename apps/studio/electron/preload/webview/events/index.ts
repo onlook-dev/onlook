@@ -30,7 +30,9 @@ import {
 export function listenForEvents() {
     listenForWindowEvents();
     listenForDomMutation();
-    listenForEditEvents();
+
+    // TODO: Disabled for debugging. This is listening to all events instead of specific ones.
+    // listenForEditEvents();
 }
 
 function listenForWindowEvents() {

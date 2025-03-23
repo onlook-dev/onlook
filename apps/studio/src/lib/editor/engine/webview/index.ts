@@ -2,8 +2,8 @@ import type { ProjectsManager } from '@/lib/projects';
 import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import { isOnlookInDoc } from '/common/helpers';
-import type { IFrameView } from '../frameview';
 
 export enum WebviewState {
     NOT_RUNNING,

@@ -1,14 +1,13 @@
+import { WebviewChannels } from '@onlook/models/constants';
+import type { NativeImage } from 'electron';
 import {
     forwardRef,
+    useCallback,
+    useEffect,
     useImperativeHandle,
     useRef,
     type IframeHTMLAttributes,
-    useCallback,
-    useEffect,
 } from 'react';
-import type { NativeImage } from 'electron';
-import { WebviewChannels } from '@onlook/models/constants';
-import type { TOnlookWindow } from '/electron/preload/webview/api';
 
 export type IFrameView = HTMLIFrameElement &
     Pick<
@@ -46,6 +45,11 @@ export const FrameView = forwardRef<IFrameView, IFrameViewProps>(({ preload, ...
 
         const injectPreloadScript = () => {
             try {
+                if (iframe.contentDocument?.querySelector(`script[src="${preload}"]`)) {
+                    console.log('Preload script already injected, skipping');
+                    return;
+                }
+
                 console.log('Injecting preload script', preload);
                 const script = window.document.createElement('script');
                 script.src = preload;

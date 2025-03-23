@@ -2,7 +2,7 @@ import type { MoveElementAction } from '@onlook/models/actions';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type React from 'react';
 import type { EditorEngine } from '..';
-import type { IFrameView } from '../frameview';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;

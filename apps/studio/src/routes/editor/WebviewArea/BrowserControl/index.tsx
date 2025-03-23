@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { WebviewState } from '@/lib/editor/engine/webview';
-import type { IFrameView } from '@/lib/editor/engine/frameview';
 import { EditorMode } from '@/lib/models';
+import type { IFrameView } from '@/routes/editor/WebviewArea/IFrameView';
 import { DefaultSettings, Theme } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';

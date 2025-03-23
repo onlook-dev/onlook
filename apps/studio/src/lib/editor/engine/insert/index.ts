@@ -14,9 +14,9 @@ import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import type { RectDimensions } from '../overlay/rect';
 import { getRelativeMousePositionToWebview } from '../overlay/utils';
-import type { IFrameView } from '../frameview';
 
 export class InsertManager {
     isDrawing = false;

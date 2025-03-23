@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
-import type { IFrameView } from '@/lib/editor/engine/frameview';
-import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
+import type { IFrameView } from '@/routes/editor/WebviewArea/IFrameView';
 import { DefaultSettings } from '@onlook/models/constants';
 import { ToastAction } from '@onlook/ui/toast';
 import { useToast } from '@onlook/ui/use-toast';

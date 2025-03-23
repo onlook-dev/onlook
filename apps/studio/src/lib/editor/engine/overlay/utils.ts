@@ -1,7 +1,7 @@
 import { EditorAttributes } from '@onlook/models/constants';
 import type { ElementPosition } from '@onlook/models/element';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import type { RectDimensions } from './rect';
-import type { IFrameView } from '../frameview';
 
 /**
  * Calculates the cumulative offset between an element and its ancestor,

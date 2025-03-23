@@ -3,8 +3,8 @@ import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/el
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import { adaptRectToCanvas } from '../overlay/utils';
-import type { IFrameView } from '../frameview';
 
 export class ElementManager {
     private hoveredElement: DomElement | undefined;

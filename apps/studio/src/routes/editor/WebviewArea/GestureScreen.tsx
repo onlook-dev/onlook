@@ -1,14 +1,14 @@
 import { useEditorEngine } from '@/components/Context';
 import { getRelativeMousePositionToWebview } from '@/lib/editor/engine/overlay/utils';
 import { EditorMode } from '@/lib/models';
+import type { IFrameView } from '@/routes/editor/WebviewArea/IFrameView';
 import { MouseAction } from '@onlook/models/editor';
-import type { DomElement, DropElementProperties, ElementPosition } from '@onlook/models/element';
+import type { DomElement, ElementPosition } from '@onlook/models/element';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
 import RightClickMenu from '../RightClickMenu';
-import type { IFrameView } from '@/lib/editor/engine/frameview';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<IFrameView>;

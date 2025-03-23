@@ -1,9 +1,9 @@
 import { WebviewChannels } from '@onlook/models/constants';
 import type { DomElement, LayerNode } from '@onlook/models/element';
 import { debounce } from 'lodash';
+import type { IFrameView } from '../../routes/editor/WebviewArea/IFrameView';
 import { EditorMode } from '../models';
 import type { EditorEngine } from './engine';
-import type { IFrameView } from './engine/frameview';
 
 export class WebviewEventHandler {
     private eventCallbacks: Record<string, (e: any) => void>;
