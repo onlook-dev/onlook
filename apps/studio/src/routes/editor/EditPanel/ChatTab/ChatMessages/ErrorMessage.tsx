@@ -6,6 +6,7 @@ import { observer } from 'mobx-react-lite';
 export const ErrorMessage = observer(() => {
     const editorEngine = useEditorEngine();
     const rateLimited = editorEngine.chat.stream.rateLimited;
+
     if (rateLimited) {
         const requestLimit =
             rateLimited.reason === 'daily'
