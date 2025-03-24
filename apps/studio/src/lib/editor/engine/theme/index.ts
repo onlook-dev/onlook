@@ -371,7 +371,10 @@ export class ThemeManager {
                             await webview.executeJavaScript(
                                 `window.api?.setTheme("${frame.theme}")`,
                             );
-                            await this.editorEngine.elements.refreshSelectedElements(webview);
+
+                            setTimeout(() => {
+                                this.editorEngine.elements.refreshSelectedElements(webview);
+                            }, 500);
                         }
                     }),
                 );
