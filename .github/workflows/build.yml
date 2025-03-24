@@ -30,7 +30,7 @@ jobs:
                  include:
                     - os: macos-latest
                     - os: windows-latest
-                    - os: linux-latest
+                    - os: ubuntu-latest
 
         steps:
             - name: Checkout code
