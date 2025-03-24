@@ -67,6 +67,12 @@ const config: Configuration = {
         category: 'Utility',
         executableName: 'Onlook',
         icon: 'build/icon.icns',
+        protocols: [
+            {
+                name: 'onlook',
+                schemes: ['onlook'],
+            },
+        ],
     },
     nsis: {},
     publish: {
