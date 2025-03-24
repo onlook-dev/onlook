@@ -9,6 +9,7 @@ export const ColorPopover = ({
     brandColor,
     onClose,
     onColorChange,
+    onColorChangeEnd,
     isDefaultPalette = false,
     existedName,
 }: {
@@ -16,6 +17,7 @@ export const ColorPopover = ({
     brandColor: string;
     onClose?: () => void;
     onColorChange?: (newColor: Color, newName: string) => void;
+    onColorChangeEnd?: (newColor: Color, newName: string) => void;
     isDefaultPalette?: boolean;
     existedName?: string[];
 }) => {
@@ -25,6 +27,9 @@ export const ColorPopover = ({
 
     const handleColorChange = (newColor: Color) => {
         setEditedColor(newColor);
+        if (onColorChange) {
+            onColorChange(newColor, editedName);
+        }
     };
 
     const handleSave = () => {
@@ -33,8 +38,8 @@ export const ColorPopover = ({
             return;
         }
 
-        if (onColorChange) {
-            onColorChange(editedColor, editedName);
+        if (onColorChangeEnd) {
+            onColorChangeEnd(editedColor, editedName);
         }
 
         if (onClose) {

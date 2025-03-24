@@ -335,6 +335,7 @@ export class ThemeManager {
         newName: string,
         parentName?: string,
         theme?: Theme,
+        shouldSaveToConfig: boolean = false,
     ) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
@@ -344,17 +345,40 @@ export class ThemeManager {
         try {
             // For new colors, pass empty originalKey and parentName
             const originalKey = this.brandColors[groupName]?.[index]?.originalKey || '';
-            await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
-                projectRoot,
-                originalKey,
-                newColor: newColor.toHex(),
-                newName,
-                parentName,
-                theme,
-            });
 
-            // Refresh colors after update
-            this.scanConfig();
+            // If is selected element, update the color in real-time
+            // Base on the class name, find the styles to update
+
+            // Only save to Tailwind config if explicitly requested
+            if (shouldSaveToConfig) {
+                await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
+                    projectRoot,
+                    originalKey,
+                    newColor: newColor.toHex(),
+                    newName,
+                    parentName,
+                    theme,
+                });
+
+                // Refresh colors after update
+                this.scanConfig();
+
+                // Force a theme refresh for all frames
+                await Promise.all(
+                    this.editorEngine.canvas.frames.map(async (frame) => {
+                        const webview = this.editorEngine.webviews.getWebview(frame.id);
+                        if (webview) {
+                            await webview.executeJavaScript(
+                                `window.api?.setTheme("${frame.theme}")`,
+                            );
+
+                            setTimeout(() => {
+                                this.editorEngine.elements.refreshSelectedElements(webview);
+                            }, 500);
+                        }
+                    }),
+                );
+            }
         } catch (error) {
             console.error('Error updating color:', error);
         }

@@ -43,6 +43,13 @@ interface BrandPalletGroupProps {
         newName: string,
         parentName?: string,
     ) => void;
+    onColorChangeEnd?: (
+        groupName: string,
+        colorIndex: number,
+        newColor: Color,
+        newName: string,
+        parentName?: string,
+    ) => void;
     onDuplicate?: (colorName: string) => void;
     isDefaultPalette?: boolean;
 }
@@ -54,6 +61,7 @@ export const BrandPalletGroup = ({
     onRename,
     onDelete,
     onColorChange,
+    onColorChangeEnd,
     onDuplicate,
     isDefaultPalette = false,
 }: BrandPalletGroupProps) => {
@@ -74,6 +82,17 @@ export const BrandPalletGroup = ({
     ) => {
         if (onColorChange) {
             onColorChange(title.toLowerCase(), index, newColor, newName, parentName);
+        }
+    };
+
+    const handleColorChangeEnd = (
+        index: number,
+        newColor: Color,
+        newName: string,
+        parentName?: string,
+    ) => {
+        if (onColorChangeEnd) {
+            onColorChangeEnd(title.toLowerCase(), index, newColor, newName, parentName);
         }
         setEditingColorIndex(null);
         setIsAddingNewColor(false);
@@ -232,6 +251,9 @@ export const BrandPalletGroup = ({
                                         onColorChange={(newColor, newName) =>
                                             handleColorChange(index, newColor, newName)
                                         }
+                                        onColorChangeEnd={(newColor, newName) =>
+                                            handleColorChangeEnd(index, newColor, newName)
+                                        }
                                         isDefaultPalette={isDefaultPalette}
                                         existedName={existedName}
                                     />
@@ -378,6 +400,14 @@ export const BrandPalletGroup = ({
                             onClose={() => setIsAddingNewColor(false)}
                             onColorChange={(newColor, newName) =>
                                 handleColorChange(
+                                    colors?.length || 0,
+                                    newColor,
+                                    newName,
+                                    title.toLowerCase(),
+                                )
+                            }
+                            onColorChangeEnd={(newColor, newName) =>
+                                handleColorChangeEnd(
                                     colors?.length || 0,
                                     newColor,
                                     newName,
