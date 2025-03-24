@@ -21,6 +21,8 @@ const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
 export interface FontFamilyProps {
     name: string;
     variants: string[];
+    onRemoveFont: () => void;
+    onAddFont?: () => void;
     isExpanded?: boolean; // Kept for API compatibility but not used for initial state
     isLast?: boolean;
     showDropdown?: boolean;
@@ -30,6 +32,8 @@ export interface FontFamilyProps {
 export const FontFamily = ({
     name,
     variants = [],
+    onAddFont,
+    onRemoveFont,
     isExpanded = false, // This prop is kept for API compatibility but not used for initial state
     isLast = false,
     showDropdown = false,
@@ -62,11 +66,12 @@ export const FontFamily = ({
                     )}
                 </div>
                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-100">
-                    {showAddButton && (
+                    {showAddButton && onAddFont && (
                         <Button
                             variant="secondary"
                             size="sm"
                             className="h-7 pl-2 pr-1.5 rounded-md bg-background-secondary"
+                            onClick={() => onAddFont()}
                         >
                             Add <Icons.Plus className="ml-1 h-3 w-3" />
                         </Button>
@@ -90,7 +95,10 @@ export const FontFamily = ({
                                 >
                                     <span>Set as default font</span>
                                 </DropdownMenuCheckboxItem>
-                                <DropdownMenuItem className="flex items-center">
+                                <DropdownMenuItem
+                                    className="flex items-center"
+                                    onClick={() => onRemoveFont()}
+                                >
                                     <Icons.Trash className="h-4 w-4 mr-2" />
                                     <span>Remove</span>
                                 </DropdownMenuItem>
