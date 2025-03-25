@@ -79,4 +79,13 @@ describe('camelCase', () => {
         expect(camelCase('test__case')).toBe('testCase');
         expect(camelCase('test  case')).toBe('testCase');
     });
+
+    it('should convert UPPERCASE to camelCase', () => {
+        expect(camelCase('UPPERCASE')).toBe('uppercase');
+        expect(camelCase('MULTIPLE WORDS')).toBe('multipleWords');
+    });
+    it('should convert Capitalized to camelCase', () => {
+        expect(camelCase('Capitalized')).toBe('capitalized');
+        expect(camelCase('Capitalized Words')).toBe('capitalizedWords');
+    });
 });
