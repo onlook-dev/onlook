@@ -141,9 +141,16 @@ async function createTailwindColorVariable(
 
     const newCssVarName = parentName?.length ? `${parentName}-${camelCaseName}` : camelCaseName;
 
-    // Update CSS file
-    const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
-    fs.writeFileSync(cssPath, updatedCssContent);
+    // Check if CSS variable already exists
+    const cssVariables = extractTailwindCssVariables(cssContent);
+
+    if (cssVariables.root[newCssVarName] || cssVariables.dark[newCssVarName]) {
+        return { success: false, error: `CSS variable --${newCssVarName} already exists` };
+    } else {
+        // Variable doesn't exist, add it
+        const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
+        fs.writeFileSync(cssPath, updatedCssContent);
+    }
 
     // Update config file
     const updateAst = parse(configContent, {
