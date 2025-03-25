@@ -18,7 +18,6 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DeleteImageModal from './DeleteModal';
 import RenameImageModal from './RenameModal';
-import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 
 const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -226,9 +225,7 @@ const ImagesTab = observer(() => {
     };
 
     return (
-        <div
-            className={`${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden`}
-        >
+        <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
             <input
                 type="file"
                 accept="image/*"

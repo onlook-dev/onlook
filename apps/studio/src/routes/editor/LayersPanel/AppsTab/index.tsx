@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { observer } from 'mobx-react-lite';
 import { Icons } from '@onlook/ui/icons';
-import { cn } from '@onlook/ui/utils';
 import { Input } from '@onlook/ui/input';
+import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 import AppCard from './AppCard';
 import DetailPanel from './DetailPanel';
 import InstalledAppCard from './InstalledAppCard';
@@ -206,11 +205,9 @@ const AppsTab = observer(({ onSelectApp }: AppsTabProps) => {
     return (
         <div className="w-full h-full flex flex-row text-xs text-active">
             {/* Main Apps Panel */}
-            <div
-                className={`${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} h-full flex flex-col overflow-hidden`}
-            >
+            <div className="h-full flex flex-col overflow-hidden">
                 {/* Search Bar */}
-                <div className="px-4 py-4 border-b border-border border-b-[0.5px]">
+                <div className="px-4 py-4 border-border border-b-[0.5px]">
                     <div className="relative">
                         <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                         <Input

@@ -7,7 +7,6 @@ import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
-import { PANEL_DIMENSIONS } from '@/lib/constants/ui';
 
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
@@ -127,7 +126,7 @@ const LayersTab = observer(() => {
     return (
         <div
             ref={ref}
-            className={`flex h-full w-full ${PANEL_DIMENSIONS.LAYERS_PANEL.WIDTH} overflow-hidden text-xs text-active p-3`}
+            className="flex h-full w-full overflow-hidden text-xs text-active p-3"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={handleMouseLeaveTree}
         >
