@@ -83,5 +83,6 @@ export const DefaultSettings = {
         shouldWarnDelete: true,
         ideType: DEFAULT_IDE,
         enableBunReplace: true,
+        buildFlags: '--no-lint',
     },
 };

@@ -8,11 +8,18 @@ import {
     ApiRoutes,
     BASE_API_ROUTE,
     CUSTOM_OUTPUT_DIR,
+    DefaultSettings,
     FUNCTIONS_ROUTE,
     HostingRoutes,
     MainChannels,
 } from '@onlook/models/constants';
-import { PublishStatus, type PublishRequest, type PublishResponse } from '@onlook/models/hosting';
+import {
+    PublishStatus,
+    type PublishOptions,
+    type PublishRequest,
+    type PublishResponse,
+} from '@onlook/models/hosting';
+import { isEmptyString, isNullOrUndefined } from '@onlook/utility';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -23,11 +30,11 @@ import { getRefreshedAuthTokens } from '../auth';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
-    runBuildScript,
     serializeFiles,
     updateGitignore,
     type FileRecord,
 } from './helpers';
+import { runBuildScript } from './run';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
@@ -61,7 +68,7 @@ class HostingManager {
             }
 
             // Run the build script
-            await this.runBuildStep(folderPath, buildScript, options?.skipBuild);
+            await this.runBuildStep(folderPath, buildScript, options);
             this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
             timer.log('Build completed');
 
@@ -105,7 +112,7 @@ class HostingManager {
             });
             return {
                 success: false,
-                message: 'Deployment failed with error: ' + error,
+                message: error instanceof Error ? error.message : 'Unknown error',
             };
         }
     }
@@ -136,12 +143,21 @@ class HostingManager {
         }
     }
 
-    async runBuildStep(folderPath: string, buildScript: string, skipBuild: boolean = false) {
-        const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
-        if (skipBuild) {
+    async runBuildStep(folderPath: string, buildScript: string, options?: PublishOptions) {
+        // Use default build flags if no build flags are provided
+        const buildFlagsString: string = isNullOrUndefined(options?.buildFlags)
+            ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+            : options?.buildFlags || '';
+
+        const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
+            ? buildScript
+            : `${buildScript} -- ${buildFlagsString}`;
+
+        if (options?.skipBuild) {
             console.log('Skipping build');
             return;
         }
+
         const {
             success: buildSuccess,
             error: buildError,
@@ -215,19 +231,20 @@ class HostingManager {
                 }),
             },
         );
-        if (!res.ok) {
-            throw new Error(`Failed to deploy to preview environment, error: ${res.statusText}`);
-        }
+
         const freestyleResponse = (await res.json()) as {
             success: boolean;
             message?: string;
-            error?: string;
+            error?: {
+                message: string;
+            };
             data?: FreestyleDeployWebSuccessResponse;
         };
 
-        if (!freestyleResponse.success) {
+        if (!res.ok || !freestyleResponse.success) {
+            console.log(JSON.stringify(freestyleResponse));
             throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error || freestyleResponse.message}`,
+                `${freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error'}`,
             );
         }
 

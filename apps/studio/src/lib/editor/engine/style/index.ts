@@ -1,5 +1,10 @@
-import type { Change, StyleActionTarget, UpdateStyleAction } from '@onlook/models/actions';
+import {
+    type Change,
+    type StyleActionTarget,
+    type UpdateStyleAction,
+} from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 
@@ -28,6 +33,13 @@ export class StyleManager {
         );
     }
 
+    updateCustom(style: string, value: string, domIds: string[] = []) {
+        const styleObj = { [style]: value };
+        const action = this.getUpdateStyleAction(styleObj, domIds, StyleChangeType.Custom);
+        this.editorEngine.action.run(action);
+        this.updateStyleNoAction(styleObj);
+    }
+
     update(style: string, value: string) {
         const styleObj = { [style]: value };
         const action = this.getUpdateStyleAction(styleObj);
@@ -41,20 +53,41 @@ export class StyleManager {
         this.editorEngine.action.run(action);
     }
 
-    getUpdateStyleAction(styles: Record<string, string>, domIds: string[] = []): UpdateStyleAction {
+    getUpdateStyleAction(
+        styles: Record<string, string>,
+        domIds: string[] = [],
+        type: StyleChangeType = StyleChangeType.Value,
+    ): UpdateStyleAction {
         const selected = this.editorEngine.elements.selected;
         const filteredSelected =
             domIds.length > 0 ? selected.filter((el) => domIds.includes(el.domId)) : selected;
 
         const targets: Array<StyleActionTarget> = filteredSelected.map((selectedEl) => {
-            const change: Change<Record<string, string>> = {
-                updated: styles,
+            const change: Change<Record<string, StyleChange>> = {
+                updated:
+                    type === StyleChangeType.Custom
+                        ? Object.fromEntries(
+                              Object.keys(styles).map((style) => [
+                                  style,
+                                  { value: styles[style], type: StyleChangeType.Custom },
+                              ]),
+                          )
+                        : Object.fromEntries(
+                              Object.keys(styles).map((style) => [
+                                  style,
+                                  { value: styles[style], type: StyleChangeType.Value },
+                              ]),
+                          ),
                 original: Object.fromEntries(
                     Object.keys(styles).map((style) => [
                         style,
-                        selectedEl.styles?.defined[style] ??
-                            selectedEl.styles?.computed[style] ??
-                            '',
+                        {
+                            value:
+                                selectedEl.styles?.defined[style] ??
+                                selectedEl.styles?.computed[style] ??
+                                '',
+                            type: StyleChangeType.Value,
+                        },
                     ]),
                 ),
             };

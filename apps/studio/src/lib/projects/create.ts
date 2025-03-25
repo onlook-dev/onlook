@@ -128,7 +128,7 @@ export class CreateManager {
             this.clearSlowConnectionTimer();
 
             setTimeout(() => {
-                this.projectsManager.runner?.start();
+                this.projectsManager.runner?.startIfPortAvailable();
             }, 1000);
             sendAnalytics('prompt create project success');
         } else {

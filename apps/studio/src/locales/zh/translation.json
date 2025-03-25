@@ -1,6 +1,10 @@
 {
     "projects": {
         "create": {
+            "settings": {
+                "title": "设置",
+                "tooltip": "配置新项目设置"
+            },
             "success": "项目创建成功。",
             "steps": {
                 "count": "第 {{current}} 步，共 {{total}} 步",
@@ -113,7 +117,7 @@
                     "无限制项目",
                     "每日无限制 AI 聊天消息",
                     "每月无限制聊天",
-                    "每次聊天可使用多张截图",
+                    "移除 Onlook 水印",
                     "1 个免费使用 Onlook 托管的自定义域名",
                     "优先支持"
                 ]
@@ -180,7 +184,8 @@
                     "name": "插入文本",
                     "tooltip": "添加新文本元素"
                 }
-            }
+            },
+            "versionHistory": "版本历史"
         },
         "panels": {
             "edit": {

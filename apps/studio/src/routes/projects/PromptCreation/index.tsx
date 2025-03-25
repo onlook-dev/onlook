@@ -1,7 +1,8 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
-import { useAuthManager, useProjectsManager } from '@/components/Context';
+import { useAuthManager, useEditorEngine, useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
+import { SettingsTabValue } from '@/lib/models';
 import { ProjectTabs } from '@/lib/projects';
 import { CreateState } from '@/lib/projects/create';
 import { Theme } from '@onlook/models/constants';
@@ -13,19 +14,21 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CreateErrorCard } from './CreateError';
 import { CreateLoadingCard } from './CreateLoading';
 import { PromptingCard } from './PromptingCard';
 
 export const PromptCreation = observer(({ initialScreen = false }: { initialScreen?: boolean }) => {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const editorEngine = useEditorEngine();
     const authManager = useAuthManager();
     const projectsManager = useProjectsManager();
-    const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
 
     useEffect(() => {
@@ -87,7 +90,27 @@ export const PromptCreation = observer(({ initialScreen = false }: { initialScre
             >
                 <div className="absolute inset-0 bg-background/50" />
                 <div className="relative z-10">
-                    <div className="h-fit w-fit flex group fixed top-10 right-10">
+                    <div className="h-fit w-fit flex group fixed top-10 right-10 gap-2">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="secondary"
+                                    className="w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active backdrop-blur-md bg-background/30"
+                                    onClick={() => {
+                                        editorEngine.isSettingsOpen = true;
+                                        editorEngine.settingsTab = SettingsTabValue.ADVANCED;
+                                    }}
+                                >
+                                    <Icons.Gear className="w-4 h-4 cursor-pointer" />
+                                    <p className="text-microPlus">
+                                        {t('projects.create.settings.title')}
+                                    </p>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                                <p>{t('projects.create.settings.tooltip')}</p>
+                            </TooltipContent>
+                        </Tooltip>
                         {initialScreen ? (
                             <div className="flex flex-row gap-2">
                                 <Button

@@ -1,5 +1,4 @@
 import { addNextBuildConfig } from '@onlook/foundation';
-import type { RunBunCommandResult } from '@onlook/models';
 import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import {
     appendFileSync,
@@ -12,7 +11,6 @@ import {
 } from 'fs';
 import { isBinary } from 'istextorbinary';
 import { join } from 'node:path';
-import { runBunCommand } from '../bun';
 
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
 
@@ -123,16 +121,6 @@ export function copyDir(src: string, dest: string) {
             copyFileSync(srcPath, destPath);
         }
     }
-}
-
-export async function runBuildScript(
-    folderPath: string,
-    buildScript: string,
-): Promise<RunBunCommandResult> {
-    return await runBunCommand(buildScript, {
-        cwd: folderPath,
-        env: { ...process.env, NODE_ENV: 'production' },
-    });
 }
 
 export function updateGitignore(projectDir: string, target: string): boolean {

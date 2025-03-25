@@ -72,9 +72,7 @@ jobs:
                   echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
             - name: Build foundation
-              run: |
-                  bun build:foundation
-                  bun run build
+              run: bun run ci:build
             
             - name: Build and Release 
               uses: samuelmeuli/action-electron-builder@v1

@@ -14,7 +14,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
@@ -180,8 +180,13 @@ const StyleSections = memo(() => {
 });
 StyleSections.displayName = 'StyleSections';
 
-const StylesTab = observer(() => {
+export const StylesTab = observer(() => {
     const editorEngine = useEditorEngine();
+
+    useEffect(() => {
+        editorEngine.theme.scanConfig();
+    }, []);
+
     return (
         editorEngine.elements.selected.length > 0 &&
         editorEngine.style.selectedStyle && (
@@ -196,5 +201,3 @@ const StylesTab = observer(() => {
         )
     );
 });
-
-export default StylesTab;

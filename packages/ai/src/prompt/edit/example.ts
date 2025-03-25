@@ -2,12 +2,14 @@ import { FENCE } from '../format';
 
 const user1 = 'Create a new TodoList component with basic functionality';
 const projectPath = '/path/to/your/project';
+
 export const assistant1 = `Let's create a new TodoList component with basic functionality:
 1. Create the TodoList component with state management
 2. Add the ability to toggle todo items
 3. Include basic styling
 
-Here are the *SEARCH/REPLACE* blocks:
+Here's the updated code:
+
 ${projectPath}/components/TodoList.tsx
 ${FENCE.code.start}tsx
 ${FENCE.searchReplace.start}
@@ -60,7 +62,8 @@ export const assistant2 = `Let's refactor the TodoList by extracting the TodoIte
 2. Move the item rendering logic to the new component
 3. Update the TodoList to use the new component
 
-Here are the *SEARCH/REPLACE* blocks:
+Here's the updated code:
+
 ${projectPath}/components/TodoItem.tsx
 ${FENCE.code.start}tsx
 ${FENCE.searchReplace.start}

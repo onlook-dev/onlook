@@ -28,7 +28,40 @@ describe('Parse and Apply Code Block Diffs', () => {
         const afterText = await Bun.file(path.resolve(__dirname, './data/single/after.txt')).text();
 
         const result = await coder.applyDiff(beforeText, diffText);
-        expect(result.trim()).toBe(afterText.trim());
+        expect(result.success).toBe(true);
+        expect(result.text.trim()).toBe(afterText.trim());
+        expect(result.failures).toBeUndefined();
+    });
+
+    test('should handle failed replacements', async () => {
+        const diffText = coder.createDiff('non-existent-text', 'replacement');
+        const originalText = 'some sample text';
+
+        const result = await coder.applyDiff(originalText, diffText);
+        expect(result.success).toBe(false);
+        expect(result.text).toBe(originalText);
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures![0]).toEqual({
+            search: 'non-existent-text',
+            error: 'No changes made',
+        });
+    });
+
+    test('should fail when any replacement fails in multiple diffs', async () => {
+        const diffText =
+            coder.createDiff('sample', 'example') +
+            '\n' +
+            coder.createDiff('non-existent', 'replacement');
+        const originalText = 'some sample text';
+
+        const result = await coder.applyDiff(originalText, diffText);
+        expect(result.success).toBe(false);
+        expect(result.text).toBe('some example text');
+        expect(result.failures).toHaveLength(1);
+        expect(result.failures![0]).toEqual({
+            search: 'non-existent',
+            error: 'No changes made',
+        });
     });
 
     test('should create diff correctly', () => {

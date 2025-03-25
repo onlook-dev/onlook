@@ -7,6 +7,7 @@ import type {
     ImageContentData,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
+import type { StyleChange } from '@onlook/models/style';
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
 import { groupElements, ungroupElements } from '../elements/dom/group';
@@ -42,9 +43,10 @@ function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
         const { domId, change } = data as {
             domId: string;
-            change: Change<Record<string, string>>;
+            change: Change<Record<string, StyleChange>>;
         };
         cssManager.updateStyle(domId, change.updated);
+
         publishStyleUpdate(domId);
     });
 

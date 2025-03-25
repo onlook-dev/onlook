@@ -1,3 +1,5 @@
+import type { StyleChange } from '../style';
+
 export type Change<T> = {
     updated: T;
     original: T;
@@ -10,5 +12,5 @@ export interface ActionTarget {
 }
 
 export interface StyleActionTarget extends ActionTarget {
-    change: Change<Record<string, string>>;
+    change: Change<Record<string, StyleChange>>;
 }

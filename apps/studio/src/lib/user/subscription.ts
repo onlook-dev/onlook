@@ -9,6 +9,7 @@ export class SubscriptionManager {
     constructor() {
         makeAutoObservable(this);
         this.restoreCachedPlan();
+        this.getPlanFromServer();
     }
 
     private restoreCachedPlan() {

@@ -20,7 +20,7 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
 
     const selectProject = (project: Project) => {
         projectsManager.project = project;
-        projectsManager.runner?.start();
+        projectsManager.runner?.startIfPortAvailable();
         sendAnalytics('open project', { id: project.id, url: project.url });
     };
 

@@ -61,7 +61,10 @@ export function extractObject(node: Node): Record<string, any> {
     node.properties.forEach((prop: any) => {
         if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
             if (prop.value.type === 'StringLiteral') {
-                result[prop.key.name] = prop.value.value;
+                result[prop.key.name] = {
+                    value: prop.value.value,
+                    line: prop.loc.start.line,
+                };
             } else if (prop.value.type === 'ObjectExpression') {
                 result[prop.key.name] = extractObject(prop.value);
             }
@@ -101,14 +104,6 @@ export async function initializeTailwindColorContent(
     return { configPath, cssPath, configContent, cssContent };
 }
 
-export function toCamelCase(str: string): string {
-    return str
-        .toLowerCase()
-        .replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (letter, index) =>
-            index === 0 ? letter.toLowerCase() : letter.trim() ? letter.toUpperCase() : '',
-        );
-}
-
 export function addTailwindRootColor(
     colorObj: ObjectExpression,
     newName: string,
@@ -118,7 +113,7 @@ export function addTailwindRootColor(
         type: 'ObjectProperty',
         key: {
             type: 'Identifier',
-            name: toCamelCase(newName),
+            name: newName,
         },
         value: {
             type: 'ObjectExpression',

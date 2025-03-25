@@ -1,6 +1,7 @@
 import type { ActionElement, ActionLocation, PasteParams } from '@onlook/models/actions';
 import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
+import { StyleChangeType } from '@onlook/models/style';
 import { twMerge } from 'tailwind-merge';
 import { getTailwindClasses } from './helpers';
 
@@ -11,7 +12,13 @@ export function getInsertedElement(
     codeBlock: string | null,
 ): CodeInsert {
     // Generate Tailwind className from style as an attribute
-    const newClasses = getTailwindClasses(actionElement.oid, actionElement.styles);
+    const styles = Object.fromEntries(
+        Object.entries(actionElement.styles).map(([key, value]) => [
+            key,
+            { value, type: StyleChangeType.Value },
+        ]),
+    );
+    const newClasses = getTailwindClasses(actionElement.oid, styles);
     const attributes = {
         className: twMerge(
             actionElement.attributes['className'],

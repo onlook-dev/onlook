@@ -2,7 +2,6 @@ import { existsSync, promises as fs } from 'fs';
 import * as path from 'path';
 import prettier from 'prettier';
 import writeFileAtomic from 'write-file-atomic';
-import run from '../run';
 
 export async function readFile(filePath: string): Promise<string | null> {
     try {
@@ -47,7 +46,6 @@ export async function writeFile(
 
         if (isNewFile) {
             console.log('New file created:', fullPath);
-            run.addFileToWatcher(fullPath);
         }
     } catch (error: any) {
         console.error('Error writing to file:', error);

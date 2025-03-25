@@ -40,6 +40,7 @@ export enum MainChannels {
     DELETE_FOLDER = 'delete-folder',
     IS_CHILD_TEXT_EDITABLE = 'is-child-text-editable',
     IS_PORT_AVAILABLE = 'is-port-available',
+    CLEAN_UP_BEFORE_QUIT = 'clean-up-before-quit',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
@@ -82,11 +83,13 @@ export enum MainChannels {
     UPDATE_PROJECTS = 'update-projects',
 
     // Create
+    GET_CREATE_PROJECT_PATH = 'get-create-project-path',
     CREATE_NEW_PROJECT = 'create-new-project',
     CREATE_NEW_PROJECT_CALLBACK = 'create-new-project-callback',
     SETUP_PROJECT = 'setup-project',
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
     INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',
+    REINSTALL_PROJECT_DEPENDENCIES = 'reinstall-project-dependencies',
     CREATE_NEW_PROJECT_PROMPT = 'create-new-project-prompt',
     CREATE_NEW_BLANK_PROJECT = 'create-new-blank-project',
     CREATE_NEW_PROJECT_PROMPT_CALLBACK = 'create-new-project-prompt-callback',

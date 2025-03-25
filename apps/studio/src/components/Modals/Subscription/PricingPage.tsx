@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PricingCard } from './PricingCard';
 
-export const PricingModal = observer(() => {
+export const SubscriptionModal = observer(() => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
@@ -46,7 +46,8 @@ export const PricingModal = observer(() => {
         const getPlan = async () => {
             const plan = await userManager.subscription.getPlanFromServer();
             if (plan === UsagePlanType.PRO) {
-                editorEngine.chat.stream.clear();
+                editorEngine.chat.stream.clearRateLimited();
+                editorEngine.chat.stream.clearErrorMessage();
             }
             setIsCheckingOut(null);
         };
@@ -117,6 +118,11 @@ export const PricingModal = observer(() => {
             setIsCheckingOut(null);
         } catch (error) {
             console.error('Error managing subscription:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Error managing subscription',
+                description: `${error}`,
+            });
             setIsCheckingOut(null);
         }
     };
@@ -238,5 +244,3 @@ export const PricingModal = observer(() => {
         </AnimatePresence>
     );
 });
-
-export default PricingModal;

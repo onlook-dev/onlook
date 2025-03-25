@@ -21,4 +21,49 @@ interface ClassReplacement {
     newClass: string;
 }
 
-export type { ClassReplacement, ColorUpdate, ConfigUpdateResult, UpdateResult };
+interface ThemeColors {
+    [key: string]: {
+        value: string;
+        line?: number;
+    };
+}
+
+interface ColorValue {
+    name: string;
+    lightMode: string;
+    darkMode: string;
+    line?: {
+        config?: number;
+        css?: {
+            lightMode?: number;
+            darkMode?: number;
+        };
+    };
+}
+
+interface ParsedColors {
+    [key: string]: ColorValue;
+}
+
+interface ConfigResult {
+    cssContent: string;
+    cssPath: string;
+    configPath: string;
+    configContent: any;
+}
+
+export enum Theme {
+    LIGHT = 'light',
+    DARK = 'dark',
+}
+
+export type {
+    ClassReplacement,
+    ColorUpdate,
+    ColorValue,
+    ConfigResult,
+    ConfigUpdateResult,
+    ParsedColors,
+    ThemeColors,
+    UpdateResult,
+};

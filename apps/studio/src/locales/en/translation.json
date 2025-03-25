@@ -1,6 +1,10 @@
 {
     "projects": {
         "create": {
+            "settings": {
+                "title": "Settings",
+                "tooltip": "Configure new project settings"
+            },
             "success": "Project created successfully.",
             "steps": {
                 "count": "{{current}} of {{total}}",
@@ -113,7 +117,7 @@
                     "Unlimited projects",
                     "Unlimited AI chat messages a day",
                     "Unlimited monthly chats",
-                    "Multiple screenshots per chat",
+                    "Remove built with Onlook watermark",
                     "1 free custom domain hosted with Onlook",
                     "Priority support"
                 ]
@@ -180,7 +184,8 @@
                     "name": "Insert Text",
                     "tooltip": "Add a new text element"
                 }
-            }
+            },
+            "versionHistory": "Version History"
         },
         "panels": {
             "edit": {

@@ -295,10 +295,7 @@ export const ChatInput = observer(() => {
                     disabled={disabled}
                     placeholder={
                         disabled
-                            ? projectsManager.runner?.isRunning ||
-                              projectsManager.runner?.isStarting
-                                ? t('editor.panels.edit.tabs.chat.emptyState')
-                                : t('editor.panels.edit.tabs.chat.emptyStateStart')
+                            ? t('editor.panels.edit.tabs.chat.emptyState')
                             : t('editor.panels.edit.tabs.chat.input.placeholder')
                     }
                     className={cn(

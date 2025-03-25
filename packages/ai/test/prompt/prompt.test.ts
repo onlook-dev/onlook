@@ -12,7 +12,7 @@ describe('Prompt', () => {
     const SHOULD_WRITE_USER_MESSAGE = false;
     const SHOULD_WRITE_FILE_CONTENT = false;
     const SHOULD_WRITE_HIGHLIGHTS = false;
-    const SHOULD_WRITE_SUMMARY = true;
+    const SHOULD_WRITE_SUMMARY = false;
     const SHOULD_WRITE_CREATE_PAGE_SYSTEM = false;
 
     test('System prompt should be the same', async () => {
@@ -44,39 +44,41 @@ describe('Prompt', () => {
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
 
-        const prompt = new PromptProvider().getUserMessage('test', {
-            files: [
-                {
-                    path: 'test.txt',
-                    content: 'test',
-                    type: MessageContextType.FILE,
-                    displayName: 'test.txt',
-                },
-            ],
-            highlights: [
-                {
-                    path: 'test.txt',
-                    start: 1,
-                    end: 2,
-                    content: 'test',
-                    type: MessageContextType.HIGHLIGHT,
-                    displayName: 'test.txt',
-                },
-            ],
-            errors: [
-                {
-                    content: 'test',
-                    type: MessageContextType.ERROR,
-                    displayName: 'test',
-                },
-            ],
-            project: {
+        const message = new PromptProvider().getHydratedUserMessage('test', [
+            {
+                path: 'test.txt',
+                content: 'test',
+                type: MessageContextType.FILE,
+                displayName: 'test.txt',
+            },
+
+            {
+                path: 'test.txt',
+                start: 1,
+                end: 2,
+                content: 'test',
+                type: MessageContextType.HIGHLIGHT,
+                displayName: 'test.txt',
+            },
+
+            {
+                content: 'test',
+                type: MessageContextType.ERROR,
+                displayName: 'test',
+            },
+            {
                 path: 'test',
                 type: MessageContextType.PROJECT,
                 displayName: 'test',
                 content: '',
             },
-        });
+        ]);
+
+        const prompt =
+            typeof message.content === 'string'
+                ? message.content
+                : message.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
         }
@@ -88,11 +90,12 @@ describe('Prompt', () => {
     test('User empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
-        const prompt = new PromptProvider().getUserMessage('test', {
-            files: [],
-            highlights: [],
-            errors: [],
-        });
+        const message = new PromptProvider().getHydratedUserMessage('test', []);
+        const prompt =
+            typeof message.content === 'string'
+                ? message.content
+                : message.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
         }
