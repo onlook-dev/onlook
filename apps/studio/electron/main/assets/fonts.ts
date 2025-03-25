@@ -7,8 +7,9 @@ import * as t from '@babel/types';
 import { readFile } from '../code/files';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
-import { getConfigPath, modifyTailwindConfig, toCamelCase } from './helpers';
-
+import { getConfigPath, modifyTailwindConfig } from './helpers';
+import { detectRouterType } from '../pages/helpers';
+import { camelCase } from 'lodash';
 export async function scanFonts(projectRoot: string): Promise<Font[]> {
     try {
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
@@ -195,8 +196,7 @@ async function updateTailwindFontConfig(projectRoot: string, font: Font): Promis
                                 prop.key.name === font.id,
                         );
                         if (!fontExists) {
-                            // Create the new property: fontName: ['var(--font-fontName)', 'fallback']
-                            const fontVarName = `var(${toCamelCase(font.id)})`;
+                            const fontVarName = `var(--font-${font.id})`;
                             const fallback = font.type === 'google' ? 'sans-serif' : 'monospace';
 
                             const fontArray = t.arrayExpression([
@@ -206,7 +206,7 @@ async function updateTailwindFontConfig(projectRoot: string, font: Font): Promis
 
                             // Add the new font property to fontFamily
                             fontFamilyProp.value.properties.push(
-                                t.objectProperty(t.identifier(font.id), fontArray),
+                                t.objectProperty(t.identifier(camelCase(font.id)), fontArray),
                             );
 
                             return true;
@@ -303,7 +303,7 @@ export async function addFont(projectRoot: string, font: Font) {
 
         // Convert the font family to the import name format (Pascal case, no spaces)
         const importName = font.family.replace(/\s+/g, '_');
-        const fontName = toCamelCase(font.id);
+        const fontName = camelCase(font.id);
         // Check if the import already exists
         const importRegex = new RegExp(
             `import\\s*{[^}]*${importName}[^}]*}\\s*from\\s*['"]next/font/google['"]`,
@@ -368,9 +368,191 @@ export const ${fontName} = ${importName}({
 
         // Update the Tailwind config with the new font
         await updateTailwindFontConfig(projectRoot, font);
+
+        // Add font variable to layout file (App Router) or _app.tsx (Pages Router)
+        await addFontVariableToLayout(projectRoot, fontName);
     } catch (error) {
         console.error('Error adding font:', error);
     }
+}
+
+/**
+ * Adds the font variable to the appropriate layout file based on router type
+ */
+async function addFontVariableToLayout(projectRoot: string, fontName: string): Promise<void> {
+    try {
+        const routerConfig = await detectRouterType(projectRoot);
+
+        if (!routerConfig) {
+            console.log('Could not detect Next.js router type');
+            return;
+        }
+
+        if (routerConfig.type === 'app') {
+            // App Router: Add to app/layout.tsx
+            const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+            await addFontVariableToAppLayout(layoutPath, fontName);
+        } else {
+            // Pages Router: Add to pages/_app.tsx
+            const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+            await addFontVariableToPageApp(appPath, fontName);
+        }
+    } catch (error) {
+        console.error('Error adding font variable to layout:', error);
+    }
+}
+
+async function addFontVariableToElement(
+    filePath: string,
+    fontName: string,
+    targetElements: string[],
+): Promise<void> {
+    try {
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+            console.log(`File not found: ${filePath}`);
+            return;
+        }
+
+        const content = fs.readFileSync(filePath, 'utf-8');
+
+        // Parse file with babel
+        const ast = parse(content, {
+            sourceType: 'module',
+            plugins: ['typescript', 'jsx'],
+        });
+
+        let updatedAst = false;
+        let targetElementFound = false;
+
+        // Look for target elements and add font variable
+        traverse(ast, {
+            JSXOpeningElement(path) {
+                if (
+                    !t.isJSXIdentifier(path.node.name) ||
+                    !targetElements.includes(path.node.name.name)
+                ) {
+                    return;
+                }
+
+                targetElementFound = true;
+                const classNameAttr = path.node.attributes.find(
+                    (attr): attr is t.JSXAttribute =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name) &&
+                        attr.name.name === 'className',
+                );
+
+                const fontVarExpr = t.memberExpression(
+                    t.identifier(fontName),
+                    t.identifier('variable'),
+                );
+
+                if (!classNameAttr) {
+                    // Add new className attribute
+                    path.node.attributes.push(
+                        t.jsxAttribute(
+                            t.jsxIdentifier('className'),
+                            t.jsxExpressionContainer(fontVarExpr),
+                        ),
+                    );
+                    updatedAst = true;
+                    return;
+                }
+
+                // Handle existing className
+                if (t.isStringLiteral(classNameAttr.value)) {
+                    if (!classNameAttr.value.value.includes(`${fontName}.variable`)) {
+                        classNameAttr.value = t.jsxExpressionContainer(
+                            t.templateLiteral(
+                                [
+                                    t.templateElement({ raw: '', cooked: '' }, false),
+                                    t.templateElement({ raw: ' ', cooked: ' ' }, false),
+                                    t.templateElement({ raw: '', cooked: '' }, true),
+                                ],
+                                [fontVarExpr, t.stringLiteral(classNameAttr.value.value)],
+                            ),
+                        );
+                        updatedAst = true;
+                    }
+                } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+                    const expr = classNameAttr.value.expression;
+
+                    if (t.isTemplateLiteral(expr)) {
+                        const hasFont = expr.expressions.some(
+                            (e) =>
+                                t.isMemberExpression(e) &&
+                                t.isIdentifier(e.object) &&
+                                e.object.name === fontName &&
+                                t.isIdentifier(e.property) &&
+                                e.property.name === 'variable',
+                        );
+
+                        if (!hasFont) {
+                            expr.expressions.push(fontVarExpr);
+                            expr.quasis.push(t.templateElement({ raw: ' ', cooked: ' ' }, false));
+                            updatedAst = true;
+                        }
+                    } else if (t.isIdentifier(expr) || t.isMemberExpression(expr)) {
+                        classNameAttr.value = t.jsxExpressionContainer(
+                            t.templateLiteral(
+                                [
+                                    t.templateElement({ raw: '', cooked: '' }, false),
+                                    t.templateElement({ raw: ' ', cooked: ' ' }, true),
+                                ],
+                                [expr, fontVarExpr],
+                            ),
+                        );
+                        updatedAst = true;
+                    }
+                }
+            },
+        });
+
+        if (updatedAst) {
+            const { code } = generate(ast);
+            const fontPath =
+                '@/' + DefaultSettings.FONT_FOLDER.replace(/^\.\//, '').replace(/\.ts$/, '');
+            const importRegex = new RegExp(`import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`);
+            const importMatch = content.match(importRegex);
+
+            let newContent = code;
+
+            if (importMatch) {
+                const currentImports = importMatch[1];
+                if (!currentImports.includes(fontName)) {
+                    const newImports = currentImports.trim() + `, ${fontName}`;
+                    newContent = newContent.replace(
+                        importRegex,
+                        `import { ${newImports} } from '${fontPath}'`,
+                    );
+                }
+            } else {
+                const fontImport = `import { ${fontName} } from '${fontPath}';`;
+                newContent = fontImport + '\n' + newContent;
+            }
+
+            fs.writeFileSync(filePath, newContent);
+        } else if (targetElementFound) {
+            console.log(`Font variable already exists in ${filePath}`);
+        } else {
+            console.log(
+                `Could not find target elements (${targetElements.join(', ')}) in ${filePath}`,
+            );
+        }
+    } catch (error) {
+        console.error(`Error adding font variable to ${filePath}:`, error);
+    }
+}
+
+async function addFontVariableToAppLayout(layoutPath: string, fontName: string): Promise<void> {
+    // Add to html element in app/layout.tsx
+    await addFontVariableToElement(layoutPath, fontName, ['html']);
+}
+
+async function addFontVariableToPageApp(appPath: string, fontName: string): Promise<void> {
+    // Add to common container elements in pages/_app.tsx
+    await addFontVariableToElement(appPath, fontName, ['div', 'main', 'section', 'body']);
 }
 
 export async function removeFont(projectRoot: string, font: Font) {
