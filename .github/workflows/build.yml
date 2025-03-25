@@ -29,6 +29,7 @@ jobs:
                  include:
                     - os: macos-latest
                     - os: windows-latest
+                    - os: ubuntu-latest
 
         steps:
             - name: Checkout code

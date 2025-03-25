@@ -65,9 +65,14 @@ const config: Configuration = {
         ],
         artifactName: '${productName}-${arch}.${ext}',
         category: 'Utility',
-        desktop: {
-            Name: 'Onlook',
-        },
+        executableName: 'Onlook',
+        icon: 'build/icon.icns',
+        protocols: [
+            {
+                name: 'onlook',
+                schemes: ['onlook'],
+            },
+        ],
     },
     nsis: {},
     publish: {

@@ -25,7 +25,7 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "clean": "git clean -xdf dist-electron node_modules",
-        "package": "electron-builder",
+        "package": "electron-builder --config builder-config/base.ts",
         "preview": "vite preview",
         "pree2e": "vite build --mode=test",
         "e2e": "playwright test",
