@@ -39,7 +39,6 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         newColor: Color,
         newName: string,
         parentName?: string,
-        theme?: Theme,
     ) => {
         themeManager.update(groupName, index, newColor, newName, parentName, theme, false);
     };
@@ -50,17 +49,11 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         newColor: Color,
         newName: string,
         parentName?: string,
-        theme?: Theme,
     ) => {
         themeManager.update(groupName, index, newColor, newName, parentName, theme, true);
     };
 
-    const handleDuplicate = (
-        groupName: string,
-        colorName: string,
-        isDefaultPalette?: boolean,
-        theme?: Theme,
-    ) => {
+    const handleDuplicate = (groupName: string, colorName: string, isDefaultPalette?: boolean) => {
         themeManager.duplicate(groupName, colorName, isDefaultPalette, theme);
     };
 
@@ -69,12 +62,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         setIsAddingNewGroup(false);
     };
 
-    const handleDefaultColorChange = (
-        groupName: string,
-        colorIndex: number,
-        newColor: Color,
-        theme?: Theme,
-    ) => {
+    const handleDefaultColorChange = (groupName: string, colorIndex: number, newColor: Color) => {
         themeManager.handleDefaultColorChange(groupName, colorIndex, newColor, theme);
     };
 
