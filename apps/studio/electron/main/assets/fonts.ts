@@ -7,6 +7,7 @@ import * as t from '@babel/types';
 import { readFile } from '../code/files';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
+import { getConfigPath, modifyTailwindConfig, toCamelCase } from './helpers';
 
 export async function scanFonts(projectRoot: string): Promise<Font[]> {
     try {
@@ -149,6 +150,148 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
     }
 }
 
+async function updateTailwindFontConfig(projectRoot: string, font: Font): Promise<void> {
+    try {
+        const { configPath } = getConfigPath(projectRoot);
+        if (!configPath) {
+            console.log('No Tailwind config file found');
+            return;
+        }
+
+        const configContent = fs.readFileSync(configPath, 'utf-8');
+
+        const { isUpdated, output } = modifyTailwindConfig(configContent, {
+            visitor: (path) => {
+                // Find the theme property
+                if (
+                    t.isIdentifier(path.node.key) &&
+                    path.node.key.name === 'theme' &&
+                    t.isObjectExpression(path.node.value)
+                ) {
+                    // Look for fontFamily inside theme
+                    const themeProps = path.node.value.properties;
+
+                    let fontFamilyProp = themeProps.find(
+                        (prop: any) =>
+                            t.isObjectProperty(prop) &&
+                            t.isIdentifier(prop.key) &&
+                            prop.key.name === 'fontFamily',
+                    ) as t.ObjectProperty | undefined;
+
+                    // If fontFamily doesn't exist, create it
+                    if (!fontFamilyProp) {
+                        fontFamilyProp = t.objectProperty(
+                            t.identifier('fontFamily'),
+                            t.objectExpression([]),
+                        );
+                        themeProps.push(fontFamilyProp);
+                    }
+
+                    if (t.isObjectExpression(fontFamilyProp.value)) {
+                        const fontExists = fontFamilyProp.value.properties.some(
+                            (prop) =>
+                                t.isObjectProperty(prop) &&
+                                t.isIdentifier(prop.key) &&
+                                prop.key.name === font.id,
+                        );
+                        if (!fontExists) {
+                            // Create the new property: fontName: ['var(--font-fontName)', 'fallback']
+                            const fontVarName = `var(${toCamelCase(font.id)})`;
+                            const fallback = font.type === 'google' ? 'sans-serif' : 'monospace';
+
+                            const fontArray = t.arrayExpression([
+                                t.stringLiteral(fontVarName),
+                                t.stringLiteral(fallback),
+                            ]);
+
+                            // Add the new font property to fontFamily
+                            fontFamilyProp.value.properties.push(
+                                t.objectProperty(t.identifier(font.id), fontArray),
+                            );
+
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            },
+        });
+
+        if (isUpdated) {
+            fs.writeFileSync(configPath, output);
+        } else {
+            console.log(
+                `Font ${font.id} already exists in Tailwind config or couldn't update the config`,
+            );
+        }
+    } catch (error) {
+        console.error('Error updating Tailwind config with font:', error);
+    }
+}
+
+async function removeFontFromTailwindConfig(projectRoot: string, font: Font): Promise<void> {
+    try {
+        const { configPath } = getConfigPath(projectRoot);
+        if (!configPath) {
+            console.log('No Tailwind config file found');
+            return;
+        }
+
+        const configContent = fs.readFileSync(configPath, 'utf-8');
+
+        // Use the new modifyTailwindConfig utility
+        const { isUpdated, output } = modifyTailwindConfig(configContent, {
+            visitor: (path) => {
+                // Find the theme property
+                if (
+                    t.isIdentifier(path.node.key) &&
+                    path.node.key.name === 'theme' &&
+                    t.isObjectExpression(path.node.value)
+                ) {
+                    // Look for fontFamily inside theme
+                    const themeProps = path.node.value.properties;
+
+                    const fontFamilyProp = themeProps.find(
+                        (prop: any) =>
+                            t.isObjectProperty(prop) &&
+                            t.isIdentifier(prop.key) &&
+                            prop.key.name === 'fontFamily',
+                    ) as t.ObjectProperty | undefined;
+
+                    if (fontFamilyProp && t.isObjectExpression(fontFamilyProp.value)) {
+                        // Find the font to remove
+                        const properties = fontFamilyProp.value.properties;
+                        const fontIndex = properties.findIndex(
+                            (prop: any) =>
+                                t.isObjectProperty(prop) &&
+                                t.isIdentifier(prop.key) &&
+                                prop.key.name === font.id,
+                        );
+
+                        // If the font is found, remove it
+                        if (fontIndex !== -1) {
+                            properties.splice(fontIndex, 1);
+                            return true; // Signal that we updated the config
+                        }
+                    }
+                }
+                return false;
+            },
+        });
+
+        if (isUpdated) {
+            fs.writeFileSync(configPath, output);
+            console.log(`Removed font ${font.id} from Tailwind config`);
+        } else {
+            console.log(
+                `Font ${font.id} not found in Tailwind config or couldn't update the config`,
+            );
+        }
+    } catch (error) {
+        console.error('Error removing font from Tailwind config:', error);
+    }
+}
+
 export async function addFont(projectRoot: string, font: Font) {
     try {
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
@@ -160,10 +303,7 @@ export async function addFont(projectRoot: string, font: Font) {
 
         // Convert the font family to the import name format (Pascal case, no spaces)
         const importName = font.family.replace(/\s+/g, '_');
-        const fontName = font.id
-            .split('-')
-            .map((part, i) => (i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
-            .join('');
+        const fontName = toCamelCase(font.id);
         // Check if the import already exists
         const importRegex = new RegExp(
             `import\\s*{[^}]*${importName}[^}]*}\\s*from\\s*['"]next/font/google['"]`,
@@ -206,8 +346,8 @@ export async function addFont(projectRoot: string, font: Font) {
         const fontConfig = `
 export const ${fontName} = ${importName}({
     subsets: [${font.subsets.map((s) => `'${s}'`).join(', ')}],
-    weight: [${font.weight?.join(', ')}],
-    style: [${font.styles?.join(', ')}],
+    weight: [${font.weight?.map((w) => `'${w}'`).join(', ')}],
+    style: [${font.styles?.map((s) => `'${s}'`).join(', ')}],
     variable: '${font.variable}',
     display: 'swap',
 });
@@ -225,7 +365,9 @@ export const ${fontName} = ${importName}({
         newContent += fontConfig;
 
         await fs.writeFileSync(fontPath, newContent);
-        console.log(`Added font ${font.id} to font.ts`);
+
+        // Update the Tailwind config with the new font
+        await updateTailwindFontConfig(projectRoot, font);
     } catch (error) {
         console.error('Error adding font:', error);
     }
@@ -307,8 +449,10 @@ export async function removeFont(projectRoot: string, font: Font) {
         // If we found and removed the font, generate new code
         if (removedFont) {
             const { code } = generate(ast);
+
             await fs.writeFileSync(fontPath, code);
-            console.log(`Removed font ${fontIdToRemove} from font.ts`);
+
+            await removeFontFromTailwindConfig(projectRoot, font);
         } else {
             console.log(`Font ${fontIdToRemove} not found in font.ts`);
         }

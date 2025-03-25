@@ -5,6 +5,10 @@ import fg from 'fast-glob';
 import fs from 'fs';
 import path from 'path';
 import { readFile } from '../code/files';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+import generate from '@babel/generator';
+import * as t from '@babel/types';
 
 export function getConfigPath(projectRoot: string): {
     configPath: string | null;
@@ -150,4 +154,46 @@ export async function findSourceFiles(projectRoot: string): Promise<string[]> {
                 !file.includes('.next') &&
                 !file.includes('build'),
         );
+}
+
+export interface TailwindConfigModifier {
+    visitor: (path: any) => boolean;
+}
+
+export interface ModifyTailwindConfigResult {
+    isUpdated: boolean;
+    output: string;
+}
+
+/**
+ * Generic utility to modify Tailwind config files
+ * @param configContent - The content of the tailwind config file
+ * @param modifier - A visitor function that will modify the AST
+ * @returns The modification result with updated code and whether an update was made
+ */
+export function modifyTailwindConfig(
+    configContent: string,
+    modifier: TailwindConfigModifier,
+): ModifyTailwindConfigResult {
+    const updateAst = parse(configContent, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx'],
+    });
+
+    let isUpdated = false;
+
+    traverse(updateAst, {
+        ObjectProperty(path) {
+            // Call the visitor function, which might return true if it updated anything
+            const wasUpdated = modifier.visitor(path);
+
+            // If the visitor returns true, it made an update
+            if (wasUpdated) {
+                isUpdated = true;
+            }
+        },
+    });
+
+    const output = generate(updateAst, { retainLines: true, compact: false }, configContent).code;
+    return { isUpdated, output };
 }
