@@ -104,14 +104,6 @@ export async function initializeTailwindColorContent(
     return { configPath, cssPath, configContent, cssContent };
 }
 
-export function toCamelCase(str: string): string {
-    return str
-        .toLowerCase()
-        .replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (letter, index) =>
-            index === 0 ? letter.toLowerCase() : letter.trim() ? letter.toUpperCase() : '',
-        );
-}
-
 export function addTailwindRootColor(
     colorObj: ObjectExpression,
     newName: string,
@@ -121,7 +113,7 @@ export function addTailwindRootColor(
         type: 'ObjectProperty',
         key: {
             type: 'Identifier',
-            name: toCamelCase(newName),
+            name: newName,
         },
         value: {
             type: 'ObjectExpression',
