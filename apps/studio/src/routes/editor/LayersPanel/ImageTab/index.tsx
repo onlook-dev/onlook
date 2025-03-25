@@ -331,7 +331,7 @@ const ImagesTab = observer(() => {
                                 onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
                                 onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
                             >
-                                <div className="w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move">
+                                <div className="w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border">
                                     <img
                                         className="w-full h-full object-cover"
                                         src={image.content}
