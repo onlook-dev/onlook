@@ -315,11 +315,11 @@ const ImagesTab = observer(() => {
                         No images found
                     </div>
                 ) : (
-                    <div className="w-full flex flex-wrap gap-3 p-0">
+                    <div className="w-full grid grid-cols-2 gap-3 p-0">
                         {filteredImages.map((image) => (
                             <div
                                 key={image.fileName}
-                                className="relative group flex-shrink-0 w-[116px]"
+                                className="relative group w-full"
                                 draggable
                                 onDragStart={(e) => handleImageDragStart(e, image)}
                                 onDragEnd={() => {
@@ -331,7 +331,7 @@ const ImagesTab = observer(() => {
                                 onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
                                 onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
                             >
-                                <div className="w-full h-[120px] flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move">
+                                <div className="w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border">
                                     <img
                                         className="w-full h-full object-cover"
                                         src={image.content}

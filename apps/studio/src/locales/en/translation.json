@@ -245,7 +245,8 @@
                         "name": "Windows",
                         "emptyState": "Select a window to edit its settings"
                     },
-                    "brand": "Brand"
+                    "brand": "Brand",
+                    "apps": "Apps"
                 }
             }
         },
