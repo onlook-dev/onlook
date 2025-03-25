@@ -1,8 +1,9 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { toNormalCase, toCamelCase, type Color } from '@onlook/utility';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toNormalCase, type Color } from '@onlook/utility';
+import { camelCase } from 'lodash';
 import { useEffect, useState } from 'react';
 import ColorPickerContent from '../../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 export const ColorPopover = ({
     color,
@@ -32,7 +33,7 @@ export const ColorPopover = ({
         }
     };
     const handleSave = () => {
-        const camelCaseName = toCamelCase(editedName);
+        const camelCaseName = camelCase(editedName);
 
         if (existedName?.includes(camelCaseName) && camelCaseName !== brandColor) {
             setError('Color name already exists');

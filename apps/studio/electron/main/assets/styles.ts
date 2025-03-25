@@ -10,8 +10,9 @@ import type {
 } from '@onlook/models/assets';
 import { Theme } from '@onlook/models/assets';
 import type { CodeDiffRequest } from '@onlook/models/code';
-import { parseHslValue, toCamelCase } from '@onlook/utility';
+import { parseHslValue } from '@onlook/utility';
 import fs from 'fs';
+import { camelCase } from 'lodash';
 import path from 'path';
 import type { Root, Rule } from 'postcss';
 import postcss from 'postcss';
@@ -53,7 +54,7 @@ export async function updateTailwindColorConfig(
             return { success: true };
         }
 
-        const camelCaseName = toCamelCase(newName);
+        const camelCaseName = camelCase(newName);
         return originalKey
             ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, camelCaseName, theme)
             : createTailwindColorVariable(colorUpdate, newColor, camelCaseName, parentName);
@@ -667,7 +668,7 @@ async function deleteColorGroup(
     groupName: string,
     colorName?: string,
 ): Promise<UpdateResult> {
-    const camelCaseName = toCamelCase(groupName);
+    const camelCaseName = camelCase(groupName);
 
     // Update config file
     const updateAst = parse(configContent, {

@@ -1,4 +1,5 @@
-import { toNormalCase, toCamelCase } from '@onlook/utility';
+import { toNormalCase } from '@onlook/utility';
+import { camelCase } from 'lodash';
 
 describe('toNormalCase', () => {
     it('should handle empty string', () => {
@@ -34,48 +35,48 @@ describe('toNormalCase', () => {
     });
 });
 
-describe('toCamelCase', () => {
+describe('camelCase', () => {
     it('should handle empty string', () => {
-        expect(toCamelCase('')).toBe('');
+        expect(camelCase('')).toBe('');
     });
 
     it('should handle null or undefined', () => {
-        expect(toCamelCase(null as any)).toBe('');
-        expect(toCamelCase(undefined as any)).toBe('');
+        expect(camelCase(null as any)).toBe('');
+        expect(camelCase(undefined as any)).toBe('');
     });
 
     it('should convert normal case to camelCase', () => {
-        expect(toCamelCase('normal case')).toBe('normalCase');
-        expect(toCamelCase('this is a test')).toBe('thisIsATest');
+        expect(camelCase('normal case')).toBe('normalCase');
+        expect(camelCase('this is a test')).toBe('thisIsATest');
     });
 
     it('should convert PascalCase to camelCase', () => {
-        expect(toCamelCase('PascalCase')).toBe('pascalCase');
-        expect(toCamelCase('ThisIsATest')).toBe('thisIsATest');
+        expect(camelCase('PascalCase')).toBe('pascalCase');
+        expect(camelCase('ThisIsATest')).toBe('thisIsATest');
     });
 
     it('should handle single word', () => {
-        expect(toCamelCase('test')).toBe('test');
-        expect(toCamelCase('Test')).toBe('test');
+        expect(camelCase('test')).toBe('test');
+        expect(camelCase('Test')).toBe('test');
     });
 
     it('should handle already camelCase', () => {
-        expect(toCamelCase('camelCase')).toBe('camelCase');
+        expect(camelCase('camelCase')).toBe('camelCase');
     });
 
     it('should handle mixed separators', () => {
-        expect(toCamelCase('mixed-case_with spaces')).toBe('mixedCaseWithSpaces');
-        expect(toCamelCase('mixed_case-with spaces')).toBe('mixedCaseWithSpaces');
+        expect(camelCase('mixed-case_with spaces')).toBe('mixedCaseWithSpaces');
+        expect(camelCase('mixed_case-with spaces')).toBe('mixedCaseWithSpaces');
     });
 
     it('should handle numbers', () => {
-        expect(toCamelCase('test 123')).toBe('test123');
-        expect(toCamelCase('123 test')).toBe('123Test');
+        expect(camelCase('test 123')).toBe('test123');
+        expect(camelCase('123 test')).toBe('123Test');
     });
 
     it('should handle multiple consecutive separators', () => {
-        expect(toCamelCase('test--case')).toBe('testCase');
-        expect(toCamelCase('test__case')).toBe('testCase');
-        expect(toCamelCase('test  case')).toBe('testCase');
+        expect(camelCase('test--case')).toBe('testCase');
+        expect(camelCase('test__case')).toBe('testCase');
+        expect(camelCase('test  case')).toBe('testCase');
     });
 });
