@@ -1,8 +1,9 @@
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import type { Color } from '@onlook/utility';
-import { useState } from 'react';
-import ColorPickerContent from '../../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toNormalCase, type Color } from '@onlook/utility';
+import { camelCase } from 'lodash';
+import { useEffect, useState } from 'react';
+import ColorPickerContent from '../../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
 
 export const ColorPopover = ({
     color,
@@ -31,21 +32,26 @@ export const ColorPopover = ({
             onColorChange(newColor, editedName);
         }
     };
-
     const handleSave = () => {
-        if (existedName?.includes(editedName) && editedName !== brandColor) {
+        const camelCaseName = camelCase(editedName);
+
+        if (existedName?.includes(camelCaseName) && camelCaseName !== brandColor) {
             setError('Color name already exists');
             return;
         }
 
         if (onColorChangeEnd) {
-            onColorChangeEnd(editedColor, editedName);
+            onColorChangeEnd(editedColor, camelCaseName);
         }
 
         if (onClose) {
             onClose();
         }
     };
+
+    useEffect(() => {
+        setEditedName(toNormalCase(brandColor));
+    }, [brandColor]);
 
     return (
         <Popover onOpenChange={(open) => !open && handleSave()} open={true}>
@@ -72,6 +78,11 @@ export const ColorPopover = ({
                                         error ? 'border-red-500' : 'border-white/10'
                                     } bg-background-secondary px-2 py-1 text-sm`}
                                     disabled={isDefaultPalette || editedName === 'DEFAULT'}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSave();
+                                        }
+                                    }}
                                 />
                             </TooltipTrigger>
                             {error && (
