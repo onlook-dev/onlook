@@ -2,7 +2,7 @@ export enum Language {
     English = 'en',
     Japanese = 'ja',
     Chinese = 'zh',
-    Korean = 'kr',
+    Korean = 'ko',
 }
 
 export const LANGUAGE_DISPLAY_NAMES: Record<Language, string> = {
