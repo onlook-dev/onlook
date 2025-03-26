@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import type { CompoundStyle, SingleStyle } from '@/lib/editor/styles/models';
 import { invokeMainChannel } from '@/lib/utils';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
-import { MainChannels } from '@onlook/models/constants';
+import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -126,8 +126,8 @@ const ColorInput = observer(
                     onValueChange?.(elementStyle.key, valueString);
                 } else {
                     let colorValue = newValue.originalKey;
-                    if (colorValue.endsWith('DEFAULT')) {
-                        colorValue = colorValue.split('-DEFAULT')[0];
+                    if (colorValue.endsWith(DEFAULT_COLOR_NAME)) {
+                        colorValue = colorValue.split(`-${DEFAULT_COLOR_NAME}`)[0];
                     }
                     editorEngine.style.updateCustom(elementStyle.key, colorValue);
                     onValueChange?.(elementStyle.key, colorValue);

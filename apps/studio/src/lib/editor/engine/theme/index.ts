@@ -1,7 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
-import { MainChannels } from '@onlook/models';
+import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
 import { Theme } from '@onlook/models/assets';
 import { Color } from '@onlook/utility';
@@ -74,7 +74,7 @@ export class ThemeManager {
                     ) {
                         processConfigObject(value, prefix ? `${prefix}-${key}` : key, key);
 
-                        if ('DEFAULT' in value) {
+                        if (DEFAULT_COLOR_NAME in value) {
                             const varName = extractVarName(value.DEFAULT as string);
                             if (varName) {
                                 parsed[key] = {
@@ -182,7 +182,7 @@ export class ThemeManager {
                 ungroupedKeys.forEach((key) => {
                     colorGroupsObj[key] = [
                         {
-                            name: 'DEFAULT',
+                            name: DEFAULT_COLOR_NAME,
                             originalKey: `${key}-DEFAULT`,
                             lightColor: parsed[key].lightMode,
                             darkColor: parsed[key].darkMode,
@@ -230,7 +230,7 @@ export class ThemeManager {
 
                 // Create color items for each shade in the scale
                 const colorItems: ColorItem[] = Object.entries(defaultColorScale)
-                    .filter(([shade]) => shade !== 'DEFAULT')
+                    .filter(([shade]) => shade !== DEFAULT_COLOR_NAME)
                     .map(([shade, defaultValue]) => {
                         const lightModeValue = lightModeColors[`${colorName}-${shade}`]?.value;
                         const darkModeValue = darkModeColors[`${colorName}-${shade}`]?.value;
@@ -498,8 +498,8 @@ export class ThemeManager {
 
         const brandGroup = this.brandColors[groupName];
         if (brandGroup) {
-            if (!shadeName || shadeName === 'DEFAULT') {
-                const defaultColor = brandGroup.find((color) => color.name === 'DEFAULT');
+            if (!shadeName || shadeName === DEFAULT_COLOR_NAME) {
+                const defaultColor = brandGroup.find((color) => color.name === DEFAULT_COLOR_NAME);
                 if (defaultColor?.lightColor) {
                     return defaultColor.lightColor;
                 }
