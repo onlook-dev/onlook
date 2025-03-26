@@ -54,7 +54,7 @@ export async function updateTailwindColorConfig(
             await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor, theme);
             return { success: true };
         }
-        // Skip if name is default
+
         const camelCaseName = newName === DEFAULT_COLOR_NAME ? newName : camelCase(newName);
         return originalKey
             ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, camelCaseName, theme)
