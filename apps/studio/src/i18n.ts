@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enTranslation from './locales/en/translation.json';
 import jaTranslation from './locales/ja/translation.json';
-import krTranslation from './locales/kr/translation.json';
+import koTranslation from './locales/ko/translation.json';
 import zhTranslation from './locales/zh/translation.json';
 
 const resources = {
@@ -15,8 +15,8 @@ const resources = {
     zh: {
         translation: zhTranslation,
     },
-    kr: {
-        translation: krTranslation,
+    ko: {
+        translation: koTranslation,
     },
 };
 

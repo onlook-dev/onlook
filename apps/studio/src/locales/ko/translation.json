@@ -37,7 +37,7 @@
             "close": "닫기",
             "about": "Onlook 소개",
             "signOut": "로그아웃",
-            "editApp": "앱 편집",
+            "editApp": "앱 편집하기",
             "projectSettings": "프로젝트 설정",
             "showInExplorer": "탐색기에서 보기",
             "renameProject": "프로젝트 이름 변경",
@@ -68,7 +68,7 @@
             "title": "어떤 종류의 웹사이트를 만들고 싶으신가요?",
             "description": "프로젝트에 대해 알려주세요. 최대한 자세하게 설명해주세요.",
             "input": {
-                "placeholder": "참고 스크린샷을 붙여넣거나, 자세히 작성하거나, 창의적으로 표현해보세요...",
+                "placeholder": "참고로 스크린샷을 붙여넣거나, 자세히 작성하거나, 창의적으로 표현해보세요...",
                 "imageUpload": "이미지 참조 업로드",
                 "fileReference": "파일 참조",
                 "submit": "사이트 구축 시작하기"
@@ -276,12 +276,12 @@
         "runButton": {
             "portInUse": "포트 사용 중",
             "loading": "로딩 중",
-            "play": "실행",
+            "play": "시작",
             "retry": "재시도",
             "stop": "중지"
         },
         "zoom": {
-            "level": "확대/축소 수준",
+            "level": "확대/축소",
             "in": "확대",
             "out": "축소",
             "fit": "화면에 맞춤",
