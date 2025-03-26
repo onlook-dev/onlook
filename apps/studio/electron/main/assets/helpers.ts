@@ -1,5 +1,6 @@
 import type { Node, ObjectExpression } from '@babel/types';
 import type { ColorUpdate } from '@onlook/models/assets';
+import { DEFAULT_COLOR_NAME } from '@onlook/models/constants';
 import fg from 'fast-glob';
 import fs from 'fs';
 import path from 'path';
@@ -104,14 +105,6 @@ export async function initializeTailwindColorContent(
     return { configPath, cssPath, configContent, cssContent };
 }
 
-export function toCamelCase(str: string): string {
-    return str
-        .toLowerCase()
-        .replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (letter, index) =>
-            index === 0 ? letter.toLowerCase() : letter.trim() ? letter.toUpperCase() : '',
-        );
-}
-
 export function addTailwindRootColor(
     colorObj: ObjectExpression,
     newName: string,
@@ -121,7 +114,7 @@ export function addTailwindRootColor(
         type: 'ObjectProperty',
         key: {
             type: 'Identifier',
-            name: toCamelCase(newName),
+            name: newName,
         },
         value: {
             type: 'ObjectExpression',
@@ -130,7 +123,7 @@ export function addTailwindRootColor(
                     type: 'ObjectProperty',
                     key: {
                         type: 'Identifier',
-                        name: 'DEFAULT',
+                        name: DEFAULT_COLOR_NAME,
                     },
                     value: {
                         type: 'StringLiteral',

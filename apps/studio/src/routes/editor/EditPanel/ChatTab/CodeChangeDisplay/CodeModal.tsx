@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { useState } from 'react';
@@ -31,6 +31,7 @@ export default function CodeModal({
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="min-w-[90vw] h-[80vh]">
+                <DialogTitle className="sr-only">{fileName}</DialogTitle>
                 <Tabs value={selectedTab} onValueChange={(val) => setSelectedTab(val as TabValue)}>
                     <TabsList className="bg-transparent w-full gap-2 justify-start">
                         <TabsTrigger

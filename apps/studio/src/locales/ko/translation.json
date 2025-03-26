@@ -245,7 +245,8 @@
                         "name": "윈도우",
                         "emptyState": "설정을 편집할 창(윈도우)을 선택하세요"
                     },
-                    "brand": "브랜드"
+                    "brand": "브랜드",
+                    "apps": "앱"
                 }
             }
         },
@@ -266,10 +267,10 @@
         "frame": {
             "startDesigning": {
                 "prefix": "",
-                "action": "시작 ",
+                "action": "실행",
                 "suffix": "버튼을 눌러 앱 디자인을 시작하세요"
             },
-            "playButton": "시작",
+            "playButton": "실행",
             "waitingForApp": "앱 시작을 기다리는 중..."
         },
         "runButton": {

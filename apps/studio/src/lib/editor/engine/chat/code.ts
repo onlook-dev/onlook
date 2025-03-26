@@ -3,6 +3,7 @@ import { sendAnalytics } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
 import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
+import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
 import type { EditorEngine } from '..';
@@ -42,7 +43,16 @@ export class ChatCodeManager {
             }
             let content = originalContent;
             for (const block of codeBlocks) {
-                content = await this.processor.applyDiff(content, block.content);
+                const result = await this.processor.applyDiff(content, block.content);
+                if (!result.success) {
+                    console.error('Failed to apply code block', block);
+                    toast({
+                        title: 'Failed to apply code block',
+                        variant: 'destructive',
+                        description: 'Please try again or prompt the AI to fix it.',
+                    });
+                }
+                content = result.text;
             }
 
             const success = await this.writeFileContent(file, content, originalContent);

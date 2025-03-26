@@ -26,7 +26,7 @@ const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
 );
 
 const BrandTab = observer(() => {
-    const [showColorPanel, setShowColorPanel] = useState(false);
+    const [showColorPanel, setShowColorPanel] = useState(true);
     const [showFontPanel, setShowFontPanel] = useState(false);
 
     // Sample colors for the brand palette

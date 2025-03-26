@@ -1,14 +1,18 @@
+import { DEFAULT_COLOR_NAME } from '@onlook/models/constants';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import type { Color } from '@onlook/utility';
-import { useState } from 'react';
-import ColorPickerContent from '../../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
+import { toNormalCase, type Color } from '@onlook/utility';
+import { camelCase } from 'lodash';
+import { useEffect, useState } from 'react';
+import ColorPickerContent from '../../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
 
 export const ColorPopover = ({
     color,
     brandColor,
     onClose,
     onColorChange,
+    onColorChangeEnd,
     isDefaultPalette = false,
     existedName,
 }: {
@@ -16,6 +20,7 @@ export const ColorPopover = ({
     brandColor: string;
     onClose?: () => void;
     onColorChange?: (newColor: Color, newName: string) => void;
+    onColorChangeEnd?: (newColor: Color, newName: string) => void;
     isDefaultPalette?: boolean;
     existedName?: string[];
 }) => {
@@ -25,22 +30,31 @@ export const ColorPopover = ({
 
     const handleColorChange = (newColor: Color) => {
         setEditedColor(newColor);
+        if (onColorChange) {
+            onColorChange(newColor, editedName);
+        }
     };
-
     const handleSave = () => {
-        if (existedName?.includes(editedName) && editedName !== brandColor) {
+        const camelCaseName =
+            editedName === DEFAULT_COLOR_NAME ? editedName : camelCase(editedName);
+
+        if (existedName?.includes(camelCaseName) && camelCaseName !== brandColor) {
             setError('Color name already exists');
             return;
         }
 
-        if (onColorChange) {
-            onColorChange(editedColor, editedName);
+        if (onColorChangeEnd) {
+            onColorChangeEnd(editedColor, camelCaseName);
         }
 
         if (onClose) {
             onClose();
         }
     };
+
+    useEffect(() => {
+        setEditedName(toNormalCase(brandColor));
+    }, [brandColor]);
 
     return (
         <Popover onOpenChange={(open) => !open && handleSave()} open={true}>
@@ -63,10 +77,17 @@ export const ColorPopover = ({
                                         setEditedName(e.target.value);
                                         setError(null);
                                     }}
-                                    className={`w-full rounded-md border ${
-                                        error ? 'border-red-500' : 'border-white/10'
-                                    } bg-background-secondary px-2 py-1 text-sm`}
-                                    disabled={isDefaultPalette || editedName === 'DEFAULT'}
+                                    className={cn(
+                                        'w-full rounded-md border bg-background-secondary px-2 py-1 text-sm',
+                                        error ? 'border-red-500' : 'border-white/10',
+                                    )}
+                                    disabled={isDefaultPalette || editedName === DEFAULT_COLOR_NAME}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSave();
+                                        }
+                                    }}
+                                    autoFocus
                                 />
                             </TooltipTrigger>
                             {error && (

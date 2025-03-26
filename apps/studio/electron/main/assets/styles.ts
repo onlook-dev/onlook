@@ -10,8 +10,10 @@ import type {
 } from '@onlook/models/assets';
 import { Theme } from '@onlook/models/assets';
 import type { CodeDiffRequest } from '@onlook/models/code';
+import { DEFAULT_COLOR_NAME } from '@onlook/models/constants';
 import { parseHslValue } from '@onlook/utility';
 import fs from 'fs';
+import { camelCase } from 'lodash';
 import path from 'path';
 import type { Root, Rule } from 'postcss';
 import postcss from 'postcss';
@@ -27,7 +29,6 @@ import {
     initializeTailwindColorContent,
     isColorsObjectProperty,
     isObjectExpression,
-    toCamelCase,
 } from './helpers';
 
 export async function updateTailwindColorConfig(
@@ -53,9 +54,11 @@ export async function updateTailwindColorConfig(
             await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor, theme);
             return { success: true };
         }
+
+        const camelCaseName = newName === DEFAULT_COLOR_NAME ? newName : camelCase(newName);
         return originalKey
-            ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, newName, theme)
-            : createTailwindColorVariable(colorUpdate, newColor, newName, parentName);
+            ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, camelCaseName, theme)
+            : createTailwindColorVariable(colorUpdate, newColor, camelCaseName, parentName);
     } catch (error) {
         console.error('Error updating Tailwind config:', error);
         return {
@@ -89,7 +92,7 @@ function addTailwindNestedColor(
                         type: 'ObjectProperty',
                         key: {
                             type: 'Identifier',
-                            name: 'DEFAULT',
+                            name: DEFAULT_COLOR_NAME,
                         },
                         value: {
                             type: 'StringLiteral',
@@ -102,7 +105,7 @@ function addTailwindNestedColor(
                         type: 'ObjectProperty',
                         key: {
                             type: 'Identifier',
-                            name: toCamelCase(newName),
+                            name: newName,
                         },
                         value: {
                             type: 'StringLiteral',
@@ -118,7 +121,7 @@ function addTailwindNestedColor(
                 type: 'ObjectProperty',
                 key: {
                     type: 'Identifier',
-                    name: toCamelCase(newName),
+                    name: newName,
                 },
                 value: {
                     type: 'StringLiteral',
@@ -137,13 +140,18 @@ async function createTailwindColorVariable(
     newName: string,
     parentName?: string,
 ): Promise<UpdateResult> {
-    const camelCaseName = toCamelCase(newName);
+    const newCssVarName = parentName?.length ? `${parentName}-${newName}` : newName;
 
-    const newCssVarName = parentName?.length ? `${parentName}-${camelCaseName}` : camelCaseName;
+    // Check if CSS variable already exists
+    const cssVariables = extractTailwindCssVariables(cssContent);
 
-    // Update CSS file
-    const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
-    fs.writeFileSync(cssPath, updatedCssContent);
+    if (cssVariables.root[newCssVarName] || cssVariables.dark[newCssVarName]) {
+        return { success: false, error: `CSS variable --${newCssVarName} already exists` };
+    } else {
+        // Variable doesn't exist, add it
+        const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
+        fs.writeFileSync(cssPath, updatedCssContent);
+    }
 
     // Update config file
     const updateAst = parse(configContent, {
@@ -160,9 +168,9 @@ async function createTailwindColorVariable(
                 }
 
                 if (!parentName) {
-                    addTailwindRootColor(colorObj, camelCaseName, newCssVarName);
+                    addTailwindRootColor(colorObj, newName, newCssVarName);
                 } else {
-                    addTailwindNestedColor(colorObj, parentName, camelCaseName, newCssVarName);
+                    addTailwindNestedColor(colorObj, parentName, newName, newCssVarName);
                 }
             }
         },
@@ -206,7 +214,7 @@ function updateTailwindConfigFile(
                         // If the keyName is not provided, we are renaming the root color
                         if (!keyName) {
                             if (parentKey && newName !== parentKey) {
-                                colorProp.key.name = toCamelCase(newName);
+                                colorProp.key.name = newName;
                                 keyUpdated = true;
 
                                 // Then we need to update the child css variables
@@ -219,13 +227,13 @@ function updateTailwindConfigFile(
                                         ) {
                                             // Special handling for DEFAULT
                                             const oldVarName =
-                                                nestedProp.key.name === 'DEFAULT'
+                                                nestedProp.key.name === DEFAULT_COLOR_NAME
                                                     ? parentKey
                                                     : `${parentKey}-${nestedProp.key.name}`;
                                             const newVarName =
-                                                nestedProp.key.name === 'DEFAULT'
-                                                    ? toCamelCase(newName)
-                                                    : `${toCamelCase(newName)}-${nestedProp.key.name}`;
+                                                nestedProp.key.name === DEFAULT_COLOR_NAME
+                                                    ? newName
+                                                    : `${newName}-${nestedProp.key.name}`;
 
                                             nestedProp.value.value = nestedProp.value.value.replace(
                                                 new RegExp(`--${oldVarName}`, 'g'),
@@ -247,14 +255,16 @@ function updateTailwindConfigFile(
                                     nestedProp.key.name === keyName
                                 ) {
                                     if (newName !== keyName) {
-                                        nestedProp.key.name = toCamelCase(newName);
+                                        nestedProp.key.name = newName;
                                         keyUpdated = true;
                                     }
 
                                     if (nestedProp.value.type === 'StringLiteral') {
                                         // Special handling for DEFAULT values
                                         const varName =
-                                            keyName === 'DEFAULT' ? parentKey : newCssVarName;
+                                            keyName === DEFAULT_COLOR_NAME
+                                                ? parentKey
+                                                : newCssVarName;
                                         nestedProp.value.value = `var(--${varName})`;
                                         valueUpdated = true;
                                     }
@@ -289,7 +299,7 @@ async function updateTailwindColorVariable(
         newCssVarName = newName !== parentKey ? `${newName}` : originalName;
     } else {
         // Special handling for DEFAULT
-        if (keyName === 'DEFAULT') {
+        if (keyName === DEFAULT_COLOR_NAME) {
             newCssVarName = parentKey;
             originalName = parentKey;
         } else {
@@ -661,7 +671,7 @@ async function deleteColorGroup(
     groupName: string,
     colorName?: string,
 ): Promise<UpdateResult> {
-    const camelCaseName = toCamelCase(groupName);
+    const camelCaseName = camelCase(groupName);
 
     // Update config file
     const updateAst = parse(configContent, {

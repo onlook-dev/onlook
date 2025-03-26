@@ -19,8 +19,6 @@ export class StreamResolver {
         window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args: PartialStreamResponse) => {
             const { payload } = args;
             this.resolveContent(payload);
-            this.errorMessage = null;
-            this.rateLimited = null;
         });
     }
 
@@ -65,10 +63,29 @@ export class StreamResolver {
         return null;
     }
 
-    clear() {
+    clearBeforeSend() {
         this.content = [];
         this.requestId = null;
-        this.errorMessage = null;
         this.rateLimited = null;
+        this.errorMessage = null;
+    }
+
+    clearRateLimited() {
+        this.rateLimited = null;
+    }
+
+    clearErrorMessage() {
+        this.errorMessage = null;
+    }
+
+    clearAfterSend() {
+        this.content = [];
+    }
+
+    dispose() {
+        this.content = [];
+        this.requestId = null;
+        this.rateLimited = null;
+        this.errorMessage = null;
     }
 }

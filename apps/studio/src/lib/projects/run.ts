@@ -68,6 +68,13 @@ export class RunManager {
         this._state = state;
     }
 
+    async startIfPortAvailable() {
+        const isPortAvailable = await this.portManager.checkPort();
+        if (isPortAvailable) {
+            this.start();
+        }
+    }
+
     async start() {
         this.state = RunState.SETTING_UP;
         this.startLoadingTimer();
@@ -196,5 +203,6 @@ export class RunManager {
             this.cleanupLoadingTimer();
         }
         await this.stop();
+        this.portManager.dispose();
     }
 }
