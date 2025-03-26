@@ -96,7 +96,7 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
         }
     };
     // Filter only site fonts based on search query
-    const filteredSiteFonts = fontManager.fontFamilies.filter(
+    const filteredSiteFonts = fontManager.newFonts.filter(
         (font) =>
             searchQuery === '' || font.family.toLowerCase().includes(searchQuery.toLowerCase()),
     );

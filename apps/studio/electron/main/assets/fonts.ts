@@ -4,7 +4,7 @@ import { parse, type ParseResult } from '@babel/parser';
 import traverse from '@babel/traverse';
 import generate from '@babel/generator';
 import * as t from '@babel/types';
-import { readFile } from '../code/files';
+import { readFile, writeFile } from '../code/files';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
 import { getConfigPath, modifyTailwindConfig } from './helpers';
@@ -34,10 +34,6 @@ function filterFontClasses(className: string): string[] {
     return className.split(' ').filter((c) => !c.startsWith('font-') || c.match(FONT_WEIGHT_REGEX));
 }
 
-/**
- * Scans the project's font configuration file to extract all configured fonts
- * Uses AST traversal to parse Next.js font imports and configurations
- */
 export async function scanFonts(projectRoot: string): Promise<Font[]> {
     try {
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
@@ -335,10 +331,6 @@ export async function addFont(projectRoot: string, font: Font) {
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
         const content = (await readFile(fontPath)) ?? '';
 
-        if (!content) {
-            await fs.writeFileSync(fontPath, '');
-        }
-
         // Convert the font family to the import name format (Pascal case, no spaces)
         const importName = font.family.replace(/\s+/g, '_');
         const fontName = camelCase(font.id);
@@ -399,7 +391,7 @@ export const ${fontName} = ${importName}({
 
         newContent += fontConfig;
 
-        await fs.writeFileSync(fontPath, newContent);
+        await writeFile(fontPath, newContent);
 
         await updateTailwindFontConfig(projectRoot, font);
 
@@ -495,7 +487,7 @@ async function updateFileWithImport(
         newContent = fontImport + '\n' + newContent;
     }
 
-    await fs.writeFileSync(filePath, newContent);
+    await writeFile(filePath, newContent);
 }
 
 /**
@@ -664,7 +656,7 @@ export async function removeFont(projectRoot: string, font: Font) {
 
         if (removedFont) {
             const { code } = generate(ast);
-            await fs.writeFileSync(fontPath, code);
+            await writeFile(fontPath, code);
 
             await removeFontFromTailwindConfig(projectRoot, font);
 
@@ -682,11 +674,6 @@ export async function removeFont(projectRoot: string, font: Font) {
                         'body',
                     ]);
                 }
-            }
-
-            const currentDefaultFont = await getDefaultFont(projectRoot);
-            if (currentDefaultFont === font.id) {
-                await setDefaultFont(projectRoot, null);
             }
         } else {
             console.log(`Font ${fontIdToRemove} not found in font.ts`);
@@ -734,7 +721,6 @@ async function removeFontVariableFromLayout(
                         }
                         return true;
                     });
-
                     // Clean up template literals
                     if (expressionsToKeep.length === 0) {
                         const combinedText = expr.quasis
@@ -768,6 +754,32 @@ async function removeFontVariableFromLayout(
 
                         expr.quasis = newQuasis.slice(0, expressionsToKeep.length + 1);
                     }
+                    // Remove the tailwind font class
+                    const fontClassRegex = new RegExp(`font-${fontId}\\b`);
+                    expr.quasis = expr.quasis.map((quasi, index) => {
+                        const value = quasi.value;
+                        const newRaw = value.raw.replace(fontClassRegex, '').trim();
+                        const newCooked =
+                            value.cooked?.replace(fontClassRegex, '').trim() ?? newRaw;
+
+                        if (index > 0 && index < expr.quasis.length - 1) {
+                            return t.templateElement(
+                                { raw: ' ' + newRaw + ' ', cooked: ' ' + newCooked + ' ' },
+                                false,
+                            );
+                        } else if (index === 0) {
+                            return t.templateElement(
+                                { raw: newRaw + ' ', cooked: newCooked + ' ' },
+                                false,
+                            );
+                        } else {
+                            return t.templateElement(
+                                { raw: ' ' + newRaw, cooked: ' ' + newCooked },
+                                true,
+                            );
+                        }
+                    });
+
                     updatedAst = true;
                 }
             }
@@ -788,7 +800,10 @@ async function removeFontVariableFromLayout(
                     const newImports = currentImports
                         .split(',')
                         .map((imp) => imp.trim())
-                        .filter((imp) => imp !== fontId)
+                        .filter((imp) => {
+                            const importName = imp.split(' as ')[0].trim();
+                            return importName !== fontId;
+                        })
                         .join(', ');
 
                     if (newImports) {
@@ -797,11 +812,14 @@ async function removeFontVariableFromLayout(
                             `import { ${newImports} } from '${fontPath}'`,
                         );
                     } else {
-                        newContent = newContent.replace(importRegex, '');
+                        newContent = newContent.replace(
+                            new RegExp(`${importRegex.source}\\n?`),
+                            '',
+                        );
                     }
                 }
 
-                await fs.writeFileSync(filePath, newContent);
+                await writeFile(filePath, newContent);
             }
         });
     } catch (error) {
@@ -813,7 +831,7 @@ async function removeFontVariableFromLayout(
  * Sets the default font for the project by updating the appropriate layout file
  * Handles both App Router and Pages Router configurations
  */
-export async function setDefaultFont(projectRoot: string, font: Font | null) {
+export async function setDefaultFont(projectRoot: string, font: Font) {
     try {
         const routerConfig = await detectRouterType(projectRoot);
 
@@ -824,18 +842,10 @@ export async function setDefaultFont(projectRoot: string, font: Font | null) {
 
         if (routerConfig.type === 'app') {
             const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-            if (font) {
-                await updateFontInLayout(layoutPath, font, ['html']);
-            } else {
-                await removeFontVariableFromLayout(layoutPath, '', ['html']);
-            }
+            await updateFontInLayout(layoutPath, font, ['html']);
         } else {
             const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-            if (font) {
-                await updateFontInLayout(appPath, font, ['div', 'main', 'section', 'body']);
-            } else {
-                await removeFontVariableFromLayout(appPath, '', ['div', 'main', 'section', 'body']);
-            }
+            await updateFontInLayout(appPath, font, ['div', 'main', 'section', 'body']);
         }
     } catch (error) {
         console.error('Error setting default font:', error);
@@ -886,6 +896,12 @@ async function traverseClassName(
                 );
 
                 if (!classNameAttr) {
+                    const newClassNameAttr = t.jsxAttribute(
+                        t.jsxIdentifier('className'),
+                        t.stringLiteral(''),
+                    );
+                    path.node.attributes.push(newClassNameAttr);
+                    callback(newClassNameAttr, ast);
                     return;
                 }
                 callback(classNameAttr, ast);
@@ -938,7 +954,7 @@ async function updateFontInLayout(
     });
 
     if (result) {
-        await fs.writeFileSync(filePath, result);
+        await writeFile(filePath, result);
     }
 }
 

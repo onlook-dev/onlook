@@ -53,7 +53,9 @@ export class FontManager {
                 font,
             });
 
-            await this.scanFonts();
+            setTimeout(() => {
+                this.scanFonts();
+            }, 100);
         } catch (error) {
             console.error('Error adding font:', error);
         }
@@ -71,7 +73,9 @@ export class FontManager {
                 font,
             });
 
-            await this.scanFonts();
+            setTimeout(() => {
+                this.scanFonts();
+            }, 100);
         } catch (error) {
             console.error('Error removing font:', error);
         }
@@ -88,7 +92,9 @@ export class FontManager {
                 projectRoot,
                 font,
             });
-            await this.getDefaultFont();
+            setTimeout(() => {
+                this.getDefaultFont();
+            }, 100);
         } catch (error) {
             console.error('Error setting font:', error);
         }
@@ -122,7 +128,15 @@ export class FontManager {
         return this._defaultFont;
     }
 
+    get newFonts() {
+        return this._fontFamilies.filter(
+            (fontFamily) => !this._fonts.some((font) => font.family === fontFamily.family),
+        );
+    }
+
     dispose() {
         this._fonts = [];
+        this._fontFamilies = [];
+        this._defaultFont = null;
     }
 }
