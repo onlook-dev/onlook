@@ -1,5 +1,7 @@
+import { DEFAULT_COLOR_NAME } from '@onlook/models/constants';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { toNormalCase, type Color } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import { useEffect, useState } from 'react';
@@ -33,7 +35,8 @@ export const ColorPopover = ({
         }
     };
     const handleSave = () => {
-        const camelCaseName = camelCase(editedName);
+        const camelCaseName =
+            editedName === DEFAULT_COLOR_NAME ? editedName : camelCase(editedName);
 
         if (existedName?.includes(camelCaseName) && camelCaseName !== brandColor) {
             setError('Color name already exists');
@@ -74,15 +77,17 @@ export const ColorPopover = ({
                                         setEditedName(e.target.value);
                                         setError(null);
                                     }}
-                                    className={`w-full rounded-md border ${
-                                        error ? 'border-red-500' : 'border-white/10'
-                                    } bg-background-secondary px-2 py-1 text-sm`}
-                                    disabled={isDefaultPalette || editedName === 'DEFAULT'}
+                                    className={cn(
+                                        'w-full rounded-md border bg-background-secondary px-2 py-1 text-sm',
+                                        error ? 'border-red-500' : 'border-white/10',
+                                    )}
+                                    disabled={isDefaultPalette || editedName === DEFAULT_COLOR_NAME}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             handleSave();
                                         }
                                     }}
+                                    autoFocus
                                 />
                             </TooltipTrigger>
                             {error && (

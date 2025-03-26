@@ -1,5 +1,6 @@
 import type { Node, ObjectExpression } from '@babel/types';
 import type { ColorUpdate } from '@onlook/models/assets';
+import { DEFAULT_COLOR_NAME } from '@onlook/models/constants';
 import fg from 'fast-glob';
 import fs from 'fs';
 import path from 'path';
@@ -122,7 +123,7 @@ export function addTailwindRootColor(
                     type: 'ObjectProperty',
                     key: {
                         type: 'Identifier',
-                        name: 'DEFAULT',
+                        name: DEFAULT_COLOR_NAME,
                     },
                     value: {
                         type: 'StringLiteral',

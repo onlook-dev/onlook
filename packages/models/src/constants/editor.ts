@@ -86,3 +86,5 @@ export const DefaultSettings = {
         buildFlags: '--no-lint',
     },
 };
+
+export const DEFAULT_COLOR_NAME = 'DEFAULT';

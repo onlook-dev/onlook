@@ -1,3 +1,7 @@
+import { useEditorEngine } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
+import { Theme } from '@onlook/models/assets';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -6,14 +10,10 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Color, toNormalCase } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
-import { MainChannels } from '@onlook/models/constants';
-import { invokeMainChannel } from '@/lib/utils';
-import { useEditorEngine } from '@/components/Context';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipPortal } from '@onlook/ui/tooltip';
-import { Theme } from '@onlook/models/assets';
 
 export interface ColorItem {
     name: string;
@@ -284,7 +284,7 @@ export const BrandPalletGroup = ({
                                                                                 color.name,
                                                                             )}
                                                                         </span>
-                                                                        <span className="text-xs text-muted-foreground">
+                                                                        <span className="text-xs text-background-tertiary">
                                                                             {getColorValue(color)}
                                                                         </span>
                                                                     </div>
