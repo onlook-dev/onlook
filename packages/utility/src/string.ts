@@ -16,7 +16,13 @@ export function toNormalCase(str: string): string {
         return str;
     }
 
+    // Skip if the string is fully uppercase
+    if (str === str.toUpperCase()) {
+        return str;
+    }
+
     // For other cases, convert camelCase/PascalCase to normal case
+
     return str
         .replace(/([A-Z])/g, ' $1')
         .trim()

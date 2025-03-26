@@ -33,7 +33,7 @@ export const ColorPopover = ({
         }
     };
     const handleSave = () => {
-        const camelCaseName = camelCase(editedName);
+        const camelCaseName = editedName === 'DEFAULT' ? editedName : camelCase(editedName);
 
         if (existedName?.includes(camelCaseName) && camelCaseName !== brandColor) {
             setError('Color name already exists');
@@ -83,6 +83,7 @@ export const ColorPopover = ({
                                             handleSave();
                                         }
                                     }}
+                                    autoFocus
                                 />
                             </TooltipTrigger>
                             {error && (
