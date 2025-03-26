@@ -6,12 +6,50 @@ import { useEffect, useRef, useState } from 'react';
 import { FontFamily } from './FontFamily';
 import UploadModal from './UploadModal';
 import { useEditorEngine } from '@/components/Context';
-import type { Font } from '@onlook/models/assets';
 
 interface FontVariantProps {
     name: string;
     isActive?: boolean;
 }
+
+export const FONT_VARIANTS = [
+    {
+        name: 'Thin',
+        value: '100',
+    },
+    {
+        name: 'Extra Light',
+        value: '200',
+    },
+    {
+        name: 'Light',
+        value: '300',
+    },
+    {
+        name: 'Regular',
+        value: '400',
+    },
+    {
+        name: 'Medium',
+        value: '500',
+    },
+    {
+        name: 'SemiBold',
+        value: '600',
+    },
+    {
+        name: 'Bold',
+        value: '700',
+    },
+    {
+        name: 'Extra Bold',
+        value: '800',
+    },
+    {
+        name: 'Black',
+        value: '900',
+    },
+];
 
 const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
     <div
@@ -32,13 +70,6 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
 
     const editorEngine = useEditorEngine();
     const fontManager = editorEngine.font;
-
-    console.log(fontManager.fonts);
-    console.log(fontManager.fontFamilies);
-
-    useEffect(() => {
-        fontManager.scanFonts();
-    }, []);
 
     const handleClose = () => {
         if (onClose) {
@@ -64,46 +95,6 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
             inputRef.current?.blur();
         }
     };
-
-    const variants = [
-        {
-            name: 'Thin',
-            value: '100',
-        },
-        {
-            name: 'Extra Light',
-            value: '200',
-        },
-        {
-            name: 'Light',
-            value: '300',
-        },
-        {
-            name: 'Regular',
-            value: '400',
-        },
-        {
-            name: 'Medium',
-            value: '500',
-        },
-        {
-            name: 'SemiBold',
-            value: '600',
-        },
-        {
-            name: 'Bold',
-            value: '700',
-        },
-        {
-            name: 'Extra Bold',
-            value: '800',
-        },
-        {
-            name: 'Black',
-            value: '900',
-        },
-    ];
-
     // Filter only site fonts based on search query
     const filteredSiteFonts = fontManager.fontFamilies.filter(
         (font) =>
@@ -180,14 +171,17 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                                                 variants={
                                                     font.weight?.map(
                                                         (weight) =>
-                                                            variants.find((v) => v.value === weight)
-                                                                ?.name,
+                                                            FONT_VARIANTS.find(
+                                                                (v) => v.value === weight,
+                                                            )?.name,
                                                     ) as string[]
                                                 }
                                                 isLast={index === fontManager.fonts.length - 1}
                                                 showDropdown={true}
                                                 showAddButton={false}
+                                                isDefault={font.id === fontManager.defaultFont}
                                                 onRemoveFont={() => fontManager.removeFont(font)}
+                                                onSetFont={() => fontManager.setDefaultFont(font)}
                                             />
                                         </div>
                                     </div>
@@ -217,15 +211,15 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                                             variants={
                                                 font.weight?.map(
                                                     (weight) =>
-                                                        variants.find((v) => v.value === weight)
-                                                            ?.name,
+                                                        FONT_VARIANTS.find(
+                                                            (v) => v.value === weight,
+                                                        )?.name,
                                                 ) as string[]
                                             }
                                             isLast={index === uniqueSiteFonts.length - 1}
                                             showDropdown={false}
                                             showAddButton={true}
                                             onAddFont={() => fontManager.addFont(font)}
-                                            onRemoveFont={() => fontManager.removeFont(font)}
                                         />
                                     </div>
                                 </div>

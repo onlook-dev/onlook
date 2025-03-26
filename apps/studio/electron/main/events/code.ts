@@ -17,7 +17,7 @@ import {
     updateTailwindColorConfig,
     deleteTailwindColorGroup,
 } from '../assets/styles';
-import { addFont, removeFont, scanFonts } from '../assets/fonts';
+import { addFont, removeFont, scanFonts, setDefaultFont, getDefaultFont } from '../assets/fonts';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -152,7 +152,6 @@ export function listenForCodeMessages() {
 
     ipcMain.handle(MainChannels.SCAN_FONTS, async (_, args) => {
         const { projectRoot } = args;
-        console.log('scanFonts in main', projectRoot);
 
         return scanFonts(projectRoot);
     });
@@ -165,5 +164,15 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.REMOVE_FONT, async (_, args) => {
         const { projectRoot, font } = args;
         return removeFont(projectRoot, font);
+    });
+
+    ipcMain.handle(MainChannels.SET_FONT, async (_, args) => {
+        const { projectRoot, font } = args;
+        return setDefaultFont(projectRoot, font);
+    });
+
+    ipcMain.handle(MainChannels.GET_DEFAULT_FONT, async (_, args) => {
+        const { projectRoot } = args;
+        return getDefaultFont(projectRoot);
     });
 }

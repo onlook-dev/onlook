@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as pathModule from 'path';
-import { parse } from '@babel/parser';
+import { parse, type ParseResult } from '@babel/parser';
 import traverse from '@babel/traverse';
 import generate from '@babel/generator';
 import * as t from '@babel/types';
@@ -10,6 +10,34 @@ import type { Font } from '@onlook/models/assets';
 import { getConfigPath, modifyTailwindConfig } from './helpers';
 import { detectRouterType } from '../pages/helpers';
 import { camelCase } from 'lodash';
+
+/**
+ * Regular expression to match font weight classes in Tailwind CSS
+ */
+const FONT_WEIGHT_REGEX =
+    /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;
+
+/**
+ * Extracts the font family class from a className string, excluding font weight classes
+ */
+function findFontClass(className: string): string | null {
+    const fontClass = className
+        .split(' ')
+        .find((c) => c.startsWith('font-') && !c.match(FONT_WEIGHT_REGEX));
+    return fontClass ? fontClass.replace('font-', '') : null;
+}
+
+/**
+ * Filters out font-related classes from a className string, keeping only font weight classes
+ */
+function filterFontClasses(className: string): string[] {
+    return className.split(' ').filter((c) => !c.startsWith('font-') || c.match(FONT_WEIGHT_REGEX));
+}
+
+/**
+ * Scans the project's font configuration file to extract all configured fonts
+ * Uses AST traversal to parse Next.js font imports and configurations
+ */
 export async function scanFonts(projectRoot: string): Promise<Font[]> {
     try {
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
@@ -90,12 +118,10 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
 
                                 const propName = prop.key.name;
 
-                                // Handle variable property (string)
                                 if (propName === 'variable' && t.isStringLiteral(prop.value)) {
                                     fontConfig.variable = prop.value.value;
                                 }
 
-                                // Handle subsets property (array)
                                 if (propName === 'subsets' && t.isArrayExpression(prop.value)) {
                                     fontConfig.subsets = prop.value.elements
                                         .filter((element): element is t.StringLiteral =>
@@ -104,7 +130,6 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
                                         .map((element) => element.value);
                                 }
 
-                                // Handle weight property (array)
                                 if (
                                     (propName === 'weight' || propName === 'weights') &&
                                     t.isArrayExpression(prop.value)
@@ -124,7 +149,6 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
                                         );
                                 }
 
-                                // Handle style property (array)
                                 if (
                                     (propName === 'style' || propName === 'styles') &&
                                     t.isArrayExpression(prop.value)
@@ -151,6 +175,10 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
     }
 }
 
+/**
+ * Updates the Tailwind configuration to include the new font family
+ * Adds the font variable and fallback to the theme.fontFamily configuration
+ */
 async function updateTailwindFontConfig(projectRoot: string, font: Font): Promise<void> {
     try {
         const { configPath } = getConfigPath(projectRoot);
@@ -229,6 +257,10 @@ async function updateTailwindFontConfig(projectRoot: string, font: Font): Promis
     }
 }
 
+/**
+ * Removes a font configuration from the Tailwind config file
+ * Cleans up the theme.fontFamily configuration by removing the specified font
+ */
 async function removeFontFromTailwindConfig(projectRoot: string, font: Font): Promise<void> {
     try {
         const { configPath } = getConfigPath(projectRoot);
@@ -292,13 +324,19 @@ async function removeFontFromTailwindConfig(projectRoot: string, font: Font): Pr
     }
 }
 
+/**
+ * Adds a new font to the project by:
+ * 1. Adding the font import and configuration to fonts.ts
+ * 2. Updating Tailwind config with the new font family
+ * 3. Adding the font variable to the appropriate layout file
+ */
 export async function addFont(projectRoot: string, font: Font) {
     try {
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
-        const content = await readFile(fontPath);
+        const content = (await readFile(fontPath)) ?? '';
 
         if (!content) {
-            return;
+            await fs.writeFileSync(fontPath, '');
         }
 
         // Convert the font family to the import name format (Pascal case, no spaces)
@@ -321,14 +359,12 @@ export async function addFont(projectRoot: string, font: Font) {
 
         let newContent = content;
 
-        // Add import if it doesn't exist
         if (!importExists) {
             // Check if there's already an import from next/font/google
             const googleImportRegex = /import\s*{([^}]*)}\s*from\s*['"]next\/font\/google['"]/;
             const googleImportMatch = content.match(googleImportRegex);
 
             if (googleImportMatch) {
-                // Add to existing import
                 const currentImports = googleImportMatch[1];
                 const newImport = currentImports.includes(importName)
                     ? currentImports
@@ -338,7 +374,6 @@ export async function addFont(projectRoot: string, font: Font) {
                     `import {${newImport}} from 'next/font/google'`,
                 );
             } else {
-                // Add new import at the top
                 newContent = `import { ${importName} } from 'next/font/google';\n${newContent}`;
             }
         }
@@ -366,10 +401,8 @@ export const ${fontName} = ${importName}({
 
         await fs.writeFileSync(fontPath, newContent);
 
-        // Update the Tailwind config with the new font
         await updateTailwindFontConfig(projectRoot, font);
 
-        // Add font variable to layout file (App Router) or _app.tsx (Pages Router)
         await addFontVariableToLayout(projectRoot, fontName);
     } catch (error) {
         console.error('Error adding font:', error);
@@ -377,7 +410,9 @@ export const ${fontName} = ${importName}({
 }
 
 /**
- * Adds the font variable to the appropriate layout file based on router type
+ * Adds the font variable to the appropriate layout file based on the Next.js router type
+ * For App Router: adds to app/layout.tsx
+ * For Pages Router: adds to pages/_app.tsx
  */
 async function addFontVariableToLayout(projectRoot: string, fontName: string): Promise<void> {
     try {
@@ -402,140 +437,146 @@ async function addFontVariableToLayout(projectRoot: string, fontName: string): P
     }
 }
 
+/**
+ * Creates a template literal expression that combines a font variable with existing classes
+ */
+function createTemplateLiteralWithFont(
+    fontVarExpr: t.Expression,
+    existingValue?: t.Expression,
+): t.TemplateLiteral {
+    const quasis = [
+        t.templateElement({ raw: '', cooked: '' }, false),
+        t.templateElement({ raw: ' ', cooked: ' ' }, false),
+        t.templateElement({ raw: '', cooked: '' }, true),
+    ];
+    const expressions = existingValue ? [fontVarExpr, existingValue] : [fontVarExpr];
+    return t.templateLiteral(quasis, expressions);
+}
+
+/**
+ * Creates a string literal that combines a font class with existing classes
+ */
+function createStringLiteralWithFont(
+    fontClassName: string,
+    existingClasses: string,
+): t.StringLiteral {
+    const classes = filterFontClasses(existingClasses);
+    classes.unshift(fontClassName);
+    return t.stringLiteral(classes.join(' '));
+}
+
+/**
+ * Updates a file's imports to include the new font import if needed
+ */
+async function updateFileWithImport(
+    filePath: string,
+    content: string,
+    ast: ParseResult<t.File>,
+    fontName: string,
+): Promise<void> {
+    const { code } = generate(ast);
+    const fontPath = '@/' + DefaultSettings.FONT_FOLDER.replace(/^\.\//, '').replace(/\.ts$/, '');
+    const importRegex = new RegExp(`import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`);
+    const importMatch = content.match(importRegex);
+
+    let newContent = code;
+
+    if (importMatch) {
+        const currentImports = importMatch[1];
+        if (!currentImports.includes(fontName)) {
+            const newImports = currentImports.trim() + `, ${fontName}`;
+            newContent = newContent.replace(
+                importRegex,
+                `import { ${newImports} } from '${fontPath}'`,
+            );
+        }
+    } else {
+        const fontImport = `import { ${fontName} } from '${fontPath}';`;
+        newContent = fontImport + '\n' + newContent;
+    }
+
+    await fs.writeFileSync(filePath, newContent);
+}
+
+/**
+ * Adds a font variable to specified target elements in a file
+ * Updates the className attribute to include the font variable
+ */
 async function addFontVariableToElement(
     filePath: string,
     fontName: string,
     targetElements: string[],
 ): Promise<void> {
     try {
-        // Check if file exists
         if (!fs.existsSync(filePath)) {
             console.log(`File not found: ${filePath}`);
             return;
         }
 
-        const content = fs.readFileSync(filePath, 'utf-8');
-
-        // Parse file with babel
-        const ast = parse(content, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const content = await readFile(filePath);
+        if (!content) {
+            return;
+        }
 
         let updatedAst = false;
         let targetElementFound = false;
 
-        // Look for target elements and add font variable
-        traverse(ast, {
-            JSXOpeningElement(path) {
-                if (
-                    !t.isJSXIdentifier(path.node.name) ||
-                    !targetElements.includes(path.node.name.name)
-                ) {
-                    return;
-                }
+        await traverseClassName(filePath, targetElements, async (classNameAttr, ast) => {
+            targetElementFound = true;
+            const fontVarExpr = t.memberExpression(
+                t.identifier(fontName),
+                t.identifier('variable'),
+            );
 
-                targetElementFound = true;
-                const classNameAttr = path.node.attributes.find(
-                    (attr): attr is t.JSXAttribute =>
-                        t.isJSXAttribute(attr) &&
-                        t.isJSXIdentifier(attr.name) &&
-                        attr.name.name === 'className',
+            if (t.isStringLiteral(classNameAttr.value)) {
+                classNameAttr.value = t.jsxExpressionContainer(
+                    createTemplateLiteralWithFont(
+                        fontVarExpr,
+                        t.stringLiteral(classNameAttr.value.value),
+                    ),
                 );
+                updatedAst = true;
+            } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+                const expr = classNameAttr.value.expression;
 
-                const fontVarExpr = t.memberExpression(
-                    t.identifier(fontName),
-                    t.identifier('variable'),
-                );
+                if (t.isTemplateLiteral(expr)) {
+                    const hasFont = expr.expressions.some(
+                        (e) =>
+                            t.isMemberExpression(e) &&
+                            t.isIdentifier(e.object) &&
+                            e.object.name === fontName &&
+                            t.isIdentifier(e.property) &&
+                            e.property.name === 'variable',
+                    );
 
-                if (!classNameAttr) {
-                    // Add new className attribute
-                    path.node.attributes.push(
-                        t.jsxAttribute(
-                            t.jsxIdentifier('className'),
-                            t.jsxExpressionContainer(fontVarExpr),
-                        ),
+                    if (!hasFont) {
+                        if (expr.expressions.length > 0) {
+                            const lastQuasi = expr.quasis[expr.quasis.length - 1];
+                            if (lastQuasi) {
+                                lastQuasi.value.raw = lastQuasi.value.raw + ' ';
+                                lastQuasi.value.cooked = lastQuasi.value.cooked + ' ';
+                            }
+                        }
+                        expr.expressions.push(fontVarExpr);
+                        if (expr.quasis.length <= expr.expressions.length) {
+                            expr.quasis.push(t.templateElement({ raw: '', cooked: '' }, true));
+                        }
+                        updatedAst = true;
+                    }
+                } else if (t.isIdentifier(expr) || t.isMemberExpression(expr)) {
+                    classNameAttr.value = t.jsxExpressionContainer(
+                        createTemplateLiteralWithFont(fontVarExpr, expr),
                     );
                     updatedAst = true;
-                    return;
                 }
-
-                // Handle existing className
-                if (t.isStringLiteral(classNameAttr.value)) {
-                    if (!classNameAttr.value.value.includes(`${fontName}.variable`)) {
-                        classNameAttr.value = t.jsxExpressionContainer(
-                            t.templateLiteral(
-                                [
-                                    t.templateElement({ raw: '', cooked: '' }, false),
-                                    t.templateElement({ raw: ' ', cooked: ' ' }, false),
-                                    t.templateElement({ raw: '', cooked: '' }, true),
-                                ],
-                                [fontVarExpr, t.stringLiteral(classNameAttr.value.value)],
-                            ),
-                        );
-                        updatedAst = true;
-                    }
-                } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
-                    const expr = classNameAttr.value.expression;
-
-                    if (t.isTemplateLiteral(expr)) {
-                        const hasFont = expr.expressions.some(
-                            (e) =>
-                                t.isMemberExpression(e) &&
-                                t.isIdentifier(e.object) &&
-                                e.object.name === fontName &&
-                                t.isIdentifier(e.property) &&
-                                e.property.name === 'variable',
-                        );
-
-                        if (!hasFont) {
-                            expr.expressions.push(fontVarExpr);
-                            expr.quasis.push(t.templateElement({ raw: ' ', cooked: ' ' }, false));
-                            updatedAst = true;
-                        }
-                    } else if (t.isIdentifier(expr) || t.isMemberExpression(expr)) {
-                        classNameAttr.value = t.jsxExpressionContainer(
-                            t.templateLiteral(
-                                [
-                                    t.templateElement({ raw: '', cooked: '' }, false),
-                                    t.templateElement({ raw: ' ', cooked: ' ' }, true),
-                                ],
-                                [expr, fontVarExpr],
-                            ),
-                        );
-                        updatedAst = true;
-                    }
-                }
-            },
-        });
-
-        if (updatedAst) {
-            const { code } = generate(ast);
-            const fontPath =
-                '@/' + DefaultSettings.FONT_FOLDER.replace(/^\.\//, '').replace(/\.ts$/, '');
-            const importRegex = new RegExp(`import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`);
-            const importMatch = content.match(importRegex);
-
-            let newContent = code;
-
-            if (importMatch) {
-                const currentImports = importMatch[1];
-                if (!currentImports.includes(fontName)) {
-                    const newImports = currentImports.trim() + `, ${fontName}`;
-                    newContent = newContent.replace(
-                        importRegex,
-                        `import { ${newImports} } from '${fontPath}'`,
-                    );
-                }
-            } else {
-                const fontImport = `import { ${fontName} } from '${fontPath}';`;
-                newContent = fontImport + '\n' + newContent;
             }
 
-            fs.writeFileSync(filePath, newContent);
-        } else if (targetElementFound) {
-            console.log(`Font variable already exists in ${filePath}`);
-        } else {
+            if (updatedAst) {
+                await updateFileWithImport(filePath, content, ast, fontName);
+            }
+        });
+
+        if (!targetElementFound) {
             console.log(
                 `Could not find target elements (${targetElements.join(', ')}) in ${filePath}`,
             );
@@ -546,15 +587,20 @@ async function addFontVariableToElement(
 }
 
 async function addFontVariableToAppLayout(layoutPath: string, fontName: string): Promise<void> {
-    // Add to html element in app/layout.tsx
     await addFontVariableToElement(layoutPath, fontName, ['html']);
 }
 
 async function addFontVariableToPageApp(appPath: string, fontName: string): Promise<void> {
-    // Add to common container elements in pages/_app.tsx
     await addFontVariableToElement(appPath, fontName, ['div', 'main', 'section', 'body']);
 }
 
+/**
+ * Removes a font from the project by:
+ * 1. Removing the font from fonts.ts
+ * 2. Removing the font from Tailwind config
+ * 3. Removing the font variable from the layout file
+ * 4. Updating default font if needed
+ */
 export async function removeFont(projectRoot: string, font: Font) {
     try {
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
@@ -572,36 +618,26 @@ export async function removeFont(projectRoot: string, font: Font) {
         const fontIdToRemove = font.id;
         const importToRemove = font.family.replace(/\s+/g, '_');
         let removedFont = false;
-        const remainingImports: string[] = [];
 
         // Track all imports from next/font/google to know if we should remove the import
         traverse(ast, {
             ImportDeclaration(path) {
                 if (path.node.source.value === 'next/font/google') {
-                    // Check if our font is in this import
                     const importSpecifiers = path.node.specifiers.filter((specifier) => {
                         if (t.isImportSpecifier(specifier) && t.isIdentifier(specifier.imported)) {
-                            // Add to remaining imports if not the one we're removing
-                            if (specifier.imported.name !== importToRemove) {
-                                remainingImports.push(specifier.imported.name);
-                                return true;
-                            }
-                            return false;
+                            return specifier.imported.name !== importToRemove;
                         }
                         return true;
                     });
 
-                    // If there are no other imports from next/font/google, remove the import statement
                     if (importSpecifiers.length === 0) {
                         path.remove();
                     } else if (importSpecifiers.length !== path.node.specifiers.length) {
-                        // Update the import statement with remaining imports
                         path.node.specifiers = importSpecifiers;
                     }
                 }
             },
 
-            // Find and remove the font export
             ExportNamedDeclaration(path) {
                 if (t.isVariableDeclaration(path.node.declaration)) {
                     const declarations = path.node.declaration.declarations;
@@ -613,11 +649,9 @@ export async function removeFont(projectRoot: string, font: Font) {
                             t.isIdentifier(declaration.id) &&
                             declaration.id.name === fontIdToRemove
                         ) {
-                            // If there's only one declaration, remove the entire export
                             if (declarations.length === 1) {
                                 path.remove();
                             } else {
-                                // Otherwise just remove this specific declaration
                                 declarations.splice(i, 1);
                             }
                             removedFont = true;
@@ -628,17 +662,335 @@ export async function removeFont(projectRoot: string, font: Font) {
             },
         });
 
-        // If we found and removed the font, generate new code
         if (removedFont) {
             const { code } = generate(ast);
-
             await fs.writeFileSync(fontPath, code);
 
             await removeFontFromTailwindConfig(projectRoot, font);
+
+            const routerConfig = await detectRouterType(projectRoot);
+            if (routerConfig) {
+                if (routerConfig.type === 'app') {
+                    const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+                    await removeFontVariableFromLayout(layoutPath, font.id, ['html']);
+                } else {
+                    const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+                    await removeFontVariableFromLayout(appPath, font.id, [
+                        'div',
+                        'main',
+                        'section',
+                        'body',
+                    ]);
+                }
+            }
+
+            const currentDefaultFont = await getDefaultFont(projectRoot);
+            if (currentDefaultFont === font.id) {
+                await setDefaultFont(projectRoot, null);
+            }
         } else {
             console.log(`Font ${fontIdToRemove} not found in font.ts`);
         }
     } catch (error) {
         console.error('Error removing font:', error);
+    }
+}
+
+/**
+ * Removes a font variable from specified target elements in a layout file
+ * Cleans up the className attribute and removes the font import if no longer needed
+ */
+async function removeFontVariableFromLayout(
+    filePath: string,
+    fontId: string,
+    targetElements: string[],
+): Promise<void> {
+    try {
+        if (!fs.existsSync(filePath)) {
+            console.log(`File not found: ${filePath}`);
+            return;
+        }
+
+        const content = await readFile(filePath);
+        if (!content) {
+            return;
+        }
+
+        let updatedAst = false;
+
+        await traverseClassName(filePath, targetElements, async (classNameAttr, ast) => {
+            if (t.isStringLiteral(classNameAttr.value)) {
+                const classes = filterFontClasses(classNameAttr.value.value);
+                classNameAttr.value = t.stringLiteral(classes.join(' '));
+                updatedAst = true;
+            } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+                const expr = classNameAttr.value.expression;
+                if (t.isTemplateLiteral(expr)) {
+                    // Remove the font variable from expressions and track which ones to remove
+                    const expressionsToKeep = expr.expressions.filter((e) => {
+                        if (t.isMemberExpression(e)) {
+                            const obj = e.object;
+                            return !(t.isIdentifier(obj) && obj.name === fontId);
+                        }
+                        return true;
+                    });
+
+                    // Clean up template literals
+                    if (expressionsToKeep.length === 0) {
+                        const combinedText = expr.quasis
+                            .map((quasi) => quasi.value.raw)
+                            .join('')
+                            .trim();
+                        classNameAttr.value = t.stringLiteral(combinedText);
+                    } else {
+                        expr.expressions = expressionsToKeep;
+
+                        const newQuasis = [];
+                        for (let i = 0; i < expr.quasis.length; i++) {
+                            const quasi = expr.quasis[i];
+                            const value = {
+                                raw: quasi.value.raw.trim(),
+                                cooked: quasi.value.cooked?.trim() ?? quasi.value.raw.trim(),
+                            };
+
+                            if (i > 0 && i <= expressionsToKeep.length) {
+                                value.raw = ' ' + value.raw;
+                                value.cooked = ' ' + value.cooked;
+                            }
+
+                            if (i < expressionsToKeep.length) {
+                                value.raw = value.raw + ' ';
+                                value.cooked = value.cooked + ' ';
+                            }
+
+                            newQuasis.push(t.templateElement(value, i === expr.quasis.length - 1));
+                        }
+
+                        expr.quasis = newQuasis.slice(0, expressionsToKeep.length + 1);
+                    }
+                    updatedAst = true;
+                }
+            }
+
+            if (updatedAst) {
+                // Remove the font import if it exists
+                const fontPath =
+                    '@/' + DefaultSettings.FONT_FOLDER.replace(/^\.\//, '').replace(/\.ts$/, '');
+                const importRegex = new RegExp(
+                    `import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`,
+                );
+                const importMatch = content.match(importRegex);
+
+                let newContent = generate(ast).code;
+
+                if (importMatch) {
+                    const currentImports = importMatch[1];
+                    const newImports = currentImports
+                        .split(',')
+                        .map((imp) => imp.trim())
+                        .filter((imp) => imp !== fontId)
+                        .join(', ');
+
+                    if (newImports) {
+                        newContent = newContent.replace(
+                            importRegex,
+                            `import { ${newImports} } from '${fontPath}'`,
+                        );
+                    } else {
+                        newContent = newContent.replace(importRegex, '');
+                    }
+                }
+
+                await fs.writeFileSync(filePath, newContent);
+            }
+        });
+    } catch (error) {
+        console.error(`Error removing font variable from ${filePath}:`, error);
+    }
+}
+
+/**
+ * Sets the default font for the project by updating the appropriate layout file
+ * Handles both App Router and Pages Router configurations
+ */
+export async function setDefaultFont(projectRoot: string, font: Font | null) {
+    try {
+        const routerConfig = await detectRouterType(projectRoot);
+
+        if (!routerConfig) {
+            console.log('Could not detect Next.js router type');
+            return;
+        }
+
+        if (routerConfig.type === 'app') {
+            const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+            if (font) {
+                await updateFontInLayout(layoutPath, font, ['html']);
+            } else {
+                await removeFontVariableFromLayout(layoutPath, '', ['html']);
+            }
+        } else {
+            const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+            if (font) {
+                await updateFontInLayout(appPath, font, ['div', 'main', 'section', 'body']);
+            } else {
+                await removeFontVariableFromLayout(appPath, '', ['div', 'main', 'section', 'body']);
+            }
+        }
+    } catch (error) {
+        console.error('Error setting default font:', error);
+    }
+}
+
+type TraverseCallback = (classNameAttr: t.JSXAttribute, ast: ParseResult<t.File>) => void;
+
+/**
+ * Traverses JSX elements in a file to find and modify className attributes
+ * Used for adding or removing font variables from layout files
+ */
+async function traverseClassName(
+    filePath: string,
+    targetElements: string[],
+    callback: TraverseCallback,
+): Promise<void> {
+    try {
+        if (!fs.existsSync(filePath)) {
+            console.log(`File not found: ${filePath}`);
+            return;
+        }
+
+        const content = await readFile(filePath);
+        if (!content) {
+            return;
+        }
+
+        const ast = parse(content, {
+            sourceType: 'module',
+            plugins: ['typescript', 'jsx'],
+        });
+
+        traverse(ast, {
+            JSXOpeningElement(path) {
+                if (
+                    !t.isJSXIdentifier(path.node.name) ||
+                    !targetElements.includes(path.node.name.name)
+                ) {
+                    return;
+                }
+
+                const classNameAttr = path.node.attributes.find(
+                    (attr): attr is t.JSXAttribute =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name) &&
+                        attr.name.name === 'className',
+                );
+
+                if (!classNameAttr) {
+                    return;
+                }
+                callback(classNameAttr, ast);
+            },
+        });
+    } catch (error) {
+        console.error(`Error traversing className in ${filePath}:`, error);
+    }
+}
+
+/**
+ * Updates the font in a layout file by modifying className attributes
+ * Handles both string literals and template literals in className
+ */
+async function updateFontInLayout(
+    filePath: string,
+    font: Font,
+    targetElements: string[],
+): Promise<void> {
+    let updatedAst = false;
+    const fontClassName = `font-${font.id}`;
+    let result = null;
+
+    await traverseClassName(filePath, targetElements, (classNameAttr, ast) => {
+        if (t.isStringLiteral(classNameAttr.value)) {
+            classNameAttr.value = createStringLiteralWithFont(
+                fontClassName,
+                classNameAttr.value.value,
+            );
+            updatedAst = true;
+        } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+            const expr = classNameAttr.value.expression;
+            if (t.isTemplateLiteral(expr)) {
+                const newQuasis = [
+                    t.templateElement(
+                        { raw: fontClassName + ' ', cooked: fontClassName + ' ' },
+                        false,
+                    ),
+                    ...expr.quasis.slice(1),
+                ];
+
+                expr.quasis = newQuasis;
+                updatedAst = true;
+            }
+        }
+        if (updatedAst) {
+            const { code } = generate(ast);
+            result = code;
+        }
+    });
+
+    if (result) {
+        await fs.writeFileSync(filePath, result);
+    }
+}
+
+/**
+ * Detects the current font being used in a layout file
+ * Extracts font information from className attributes
+ */
+async function detectCurrentFont(
+    filePath: string,
+    targetElements: string[],
+): Promise<string | null> {
+    let currentFont: string | null = null;
+
+    await traverseClassName(filePath, targetElements, (classNameAttr) => {
+        if (t.isStringLiteral(classNameAttr.value)) {
+            currentFont = findFontClass(classNameAttr.value.value);
+        } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+            const expr = classNameAttr.value.expression;
+            if (t.isTemplateLiteral(expr)) {
+                const firstQuasi = expr.quasis[0];
+                if (firstQuasi) {
+                    currentFont = findFontClass(firstQuasi.value.raw);
+                }
+            }
+        }
+    });
+
+    return currentFont;
+}
+
+/**
+ * Gets the current default font from the project's layout file
+ * Handles both App Router and Pages Router configurations
+ */
+export async function getDefaultFont(projectRoot: string): Promise<string | null> {
+    try {
+        const routerConfig = await detectRouterType(projectRoot);
+
+        if (!routerConfig) {
+            console.log('Could not detect Next.js router type');
+            return null;
+        }
+
+        if (routerConfig.type === 'app') {
+            const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+            return await detectCurrentFont(layoutPath, ['html']);
+        } else {
+            const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+            return await detectCurrentFont(appPath, ['div', 'main', 'section', 'body']);
+        }
+    } catch (error) {
+        console.error('Error getting current font:', error);
+        return null;
     }
 }

@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { get, makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { invokeMainChannel } from '@/lib/utils';
 import { fontFamilies, MainChannels } from '@onlook/models';
@@ -8,6 +8,7 @@ import type { Font } from '@onlook/models/assets';
 export class FontManager {
     private _fonts: Font[] = [];
     private _fontFamilies: Font[] = [];
+    private _defaultFont: string | null = null;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -52,7 +53,7 @@ export class FontManager {
                 font,
             });
 
-            this.scanFonts();
+            await this.scanFonts();
         } catch (error) {
             console.error('Error adding font:', error);
         }
@@ -70,9 +71,42 @@ export class FontManager {
                 font,
             });
 
-            this.scanFonts();
+            await this.scanFonts();
         } catch (error) {
             console.error('Error removing font:', error);
+        }
+    }
+
+    async setDefaultFont(font: Font) {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.SET_FONT, {
+                projectRoot,
+                font,
+            });
+            await this.getDefaultFont();
+        } catch (error) {
+            console.error('Error setting font:', error);
+        }
+    }
+
+    async getDefaultFont() {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
+
+        try {
+            const defaultFont = await invokeMainChannel(MainChannels.GET_DEFAULT_FONT, {
+                projectRoot,
+            });
+            this._defaultFont = defaultFont as string;
+        } catch (error) {
+            console.error('Error getting current font:', error);
         }
     }
 
@@ -82,6 +116,10 @@ export class FontManager {
 
     get fontFamilies() {
         return this._fontFamilies;
+    }
+
+    get defaultFont() {
+        return this._defaultFont;
     }
 
     dispose() {

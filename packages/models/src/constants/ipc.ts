@@ -161,6 +161,8 @@ export enum MainChannels {
     SCAN_FONTS = 'scan-fonts-config',
     ADD_FONT = 'add-font',
     REMOVE_FONT = 'remove-font',
+    SET_FONT = 'set-font',
+    GET_DEFAULT_FONT = 'get-default-font',
 }
 
 export enum GitChannels {
