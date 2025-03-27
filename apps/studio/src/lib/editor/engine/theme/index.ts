@@ -364,20 +364,7 @@ export class ThemeManager {
                 this.scanConfig();
 
                 // Force a theme refresh for all frames
-                await Promise.all(
-                    this.editorEngine.canvas.frames.map(async (frame) => {
-                        const webview = this.editorEngine.webviews.getWebview(frame.id);
-                        if (webview) {
-                            await webview.executeJavaScript(
-                                `window.api?.setTheme("${frame.theme}")`,
-                            );
-
-                            setTimeout(() => {
-                                this.editorEngine.elements.refreshSelectedElements(webview);
-                            }, 500);
-                        }
-                    }),
-                );
+                await this.editorEngine.webviews.reloadWebviews();
             }
         } catch (error) {
             console.error('Error updating color:', error);
