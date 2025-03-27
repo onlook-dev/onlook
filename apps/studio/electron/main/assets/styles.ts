@@ -56,6 +56,7 @@ export async function updateTailwindColorConfig(
         }
 
         const camelCaseName = newName === DEFAULT_COLOR_NAME ? newName : camelCase(newName);
+
         return originalKey
             ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, camelCaseName, theme)
             : createTailwindColorVariable(colorUpdate, newColor, camelCaseName, parentName);
@@ -399,18 +400,36 @@ async function updateTailwindCssVariable(
             Once(root: Root) {
                 let rootValue: string | undefined;
                 let darkValue: string | undefined;
+                let hasRootVar = false;
+                let hasDarkVar = false;
 
                 root.walkRules(':root', (rule) => {
                     rule.walkDecls(`--${originalName}`, (decl) => {
                         rootValue = decl.value;
+                        hasRootVar = true;
                     });
                 });
 
                 root.walkRules('.dark', (rule) => {
                     rule.walkDecls(`--${originalName}`, (decl) => {
                         darkValue = decl.value;
+                        hasDarkVar = true;
                     });
                 });
+
+                // Create new variables if they don't exist and we have both newVarName and newColor
+                if (newVarName && newColor) {
+                    if (!hasRootVar) {
+                        root.walkRules(':root', (rule) => {
+                            rule.append({ prop: `--${newVarName}`, value: newColor });
+                        });
+                    }
+                    if (!hasDarkVar) {
+                        root.walkRules('.dark', (rule) => {
+                            rule.append({ prop: `--${newVarName}`, value: newColor });
+                        });
+                    }
+                }
 
                 // Process both :root and .dark rules
                 root.walkRules(/^(:root|\.dark)$/, (rule) => {
@@ -636,7 +655,7 @@ async function updateClassReferences(
                             const oldClassPattern = new RegExp(`(^|-)${oldClass}(-|$)`);
                             if (oldClassPattern.test(currentClass)) {
                                 hasChanges = true;
-                                return currentClass.replace(oldClass, newClass);
+                                return newClass ? currentClass.replace(oldClass, newClass) : '';
                             }
                         }
                         return currentClass;
@@ -669,6 +688,7 @@ async function updateClassReferences(
 async function deleteColorGroup(
     { configPath, cssPath, configContent, cssContent }: ColorUpdate,
     groupName: string,
+    projectRoot: string,
     colorName?: string,
 ): Promise<UpdateResult> {
     const camelCaseName = camelCase(groupName);
@@ -757,6 +777,14 @@ async function deleteColorGroup(
     const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
     fs.writeFileSync(configPath, output.code);
 
+    // Also delete the color group in the class references
+    const replacements: ClassReplacement[] = [];
+    replacements.push({
+        oldClass: camelCaseName,
+        newClass: '',
+    });
+    await updateClassReferences(projectRoot, replacements);
+
     return { success: true };
 }
 
@@ -771,7 +799,7 @@ export async function deleteTailwindColorGroup(
             return { success: false, error: 'Failed to prepare color update' };
         }
 
-        return deleteColorGroup(colorUpdate, groupName, colorName);
+        return deleteColorGroup(colorUpdate, groupName, projectRoot, colorName);
     } catch (error) {
         return {
             success: false,

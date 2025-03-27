@@ -35,12 +35,19 @@ export const ColorPopover = ({
         }
     };
     const handleSave = () => {
-        const camelCaseName =
-            editedName === DEFAULT_COLOR_NAME ? editedName : camelCase(editedName);
+        let camelCaseName = editedName === DEFAULT_COLOR_NAME ? editedName : camelCase(editedName);
 
         if (existedName?.includes(camelCaseName) && camelCaseName !== brandColor) {
             setError('Color name already exists');
             return;
+        }
+
+        if (!editedName) {
+            if (!brandColor) {
+                setError('Color name is required');
+                return;
+            }
+            camelCaseName = brandColor;
         }
 
         if (onColorChangeEnd) {
@@ -81,7 +88,7 @@ export const ColorPopover = ({
                                         'w-full rounded-md border bg-background-secondary px-2 py-1 text-sm',
                                         error ? 'border-red-500' : 'border-white/10',
                                     )}
-                                    disabled={isDefaultPalette || editedName === DEFAULT_COLOR_NAME}
+                                    disabled={isDefaultPalette || brandColor === DEFAULT_COLOR_NAME}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             handleSave();
