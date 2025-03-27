@@ -24,5 +24,6 @@ export enum HostingRoutes {
     CREATE_DOMAIN_VERIFICATION = '/create-domain-verification',
     VERIFY_DOMAIN = '/verify-domain',
     DEPLOY_WEB = '/deploy-web',
+    DEPLOY_WEB_V2 = '/deploy-web/v2',
     OWNED_DOMAINS = '/owned-domains',
 }
