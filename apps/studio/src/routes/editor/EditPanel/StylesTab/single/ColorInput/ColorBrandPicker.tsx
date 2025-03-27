@@ -31,13 +31,20 @@ const ColorGroup = ({
     colors,
     onColorSelect,
     isDefault = false,
+    isExpanded = false,
 }: {
     name: string;
     colors: ColorItem[];
     onColorSelect: (colorKey: ColorItem) => void;
     isDefault?: boolean;
+    isExpanded?: boolean;
 }) => {
     const [expanded, setExpanded] = useState(false);
+
+    useEffect(() => {
+        setExpanded(isExpanded);
+    }, [isExpanded]);
+
     return (
         <div className="w-full group">
             <button
@@ -96,16 +103,20 @@ export const BrandPopoverPicker = memo(
 
         const filteredColorGroups = Object.entries(editorEngine.theme.colorGroups).filter(
             ([name, colors]) => {
-                return colors.some((color) =>
-                    color.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                const query = searchQuery.toLowerCase();
+                return (
+                    name.toLowerCase().includes(query) ||
+                    colors.some((color) => color.name.toLowerCase().includes(query))
                 );
             },
         );
 
         const filteredColorDefaults = Object.entries(editorEngine.theme.colorDefaults).filter(
             ([name, colors]) => {
-                return colors.some((color) =>
-                    color.name.toLowerCase().includes(searchQuery.toLowerCase()),
+                const query = searchQuery.toLowerCase();
+                return (
+                    name.toLowerCase().includes(query) ||
+                    colors.some((color) => color.name.toLowerCase().includes(query))
                 );
             },
         );
@@ -188,6 +199,7 @@ export const BrandPopoverPicker = memo(
                                             name={name}
                                             colors={colors}
                                             onColorSelect={handleColorSelect}
+                                            isExpanded={!!searchQuery}
                                         />
                                     ))}
                                     {filteredColorDefaults.map(([name, colors]) => (
@@ -197,6 +209,7 @@ export const BrandPopoverPicker = memo(
                                             colors={colors}
                                             onColorSelect={handleColorSelect}
                                             isDefault={true}
+                                            isExpanded={!!searchQuery}
                                         />
                                     ))}
                                 </div>
