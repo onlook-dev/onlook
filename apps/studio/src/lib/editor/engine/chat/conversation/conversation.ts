@@ -4,13 +4,16 @@ import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { AssistantChatMessageImpl } from '../message/assistant';
+import { ToolChatMessageImpl } from '../message/tool';
 import { UserChatMessageImpl } from '../message/user';
+
+type ChatMessageImpl = UserChatMessageImpl | AssistantChatMessageImpl | ToolChatMessageImpl;
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
     projectId: string;
     displayName: string | null = null;
-    messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
+    messages: ChatMessageImpl[];
     createdAt: string;
     updatedAt: string;
 
@@ -26,7 +29,7 @@ export class ChatConversationImpl implements ChatConversation {
         totalTokens: 0,
     };
 
-    constructor(projectId: string, messages: (UserChatMessageImpl | AssistantChatMessageImpl)[]) {
+    constructor(projectId: string, messages: ChatMessageImpl[]) {
         makeAutoObservable(this);
         this.id = nanoid();
         this.projectId = projectId;
@@ -54,7 +57,7 @@ export class ChatConversationImpl implements ChatConversation {
                     return null;
                 }
             })
-            .filter((m) => m !== null) as (UserChatMessageImpl | AssistantChatMessageImpl)[];
+            .filter((m) => m !== null) as ChatMessageImpl[];
         conversation.createdAt = data.createdAt;
         conversation.updatedAt = data.updatedAt;
 
@@ -86,7 +89,6 @@ export class ChatConversationImpl implements ChatConversation {
         } else {
             messages.push(...this.messages.map((m) => m.toCoreMessage()));
         }
-
         return messages;
     }
 
@@ -96,12 +98,12 @@ export class ChatConversationImpl implements ChatConversation {
         );
     }
 
-    appendMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+    appendMessage(message: ChatMessageImpl) {
         this.messages = [...this.messages, message];
         this.updatedAt = new Date().toISOString();
     }
 
-    removeAllMessagesAfter(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+    removeAllMessagesAfter(message: ChatMessageImpl) {
         const index = this.messages.findIndex((m) => m.id === message.id);
         this.messages = this.messages.slice(0, index + 1);
         this.updatedAt = new Date().toISOString();
@@ -117,7 +119,7 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.findLast((message) => message.role === ChatMessageRole.USER);
     }
 
-    updateMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+    updateMessage(message: ChatMessageImpl) {
         const index = this.messages.findIndex((m) => m.id === message.id);
         this.messages[index] = message;
         this.updatedAt = new Date().toISOString();
