@@ -89,7 +89,7 @@ export class ChatConversationImpl implements ChatConversation {
         } else {
             messages.push(...this.messages.map((m) => m.toCoreMessage()));
         }
-
+        console.log('messages', JSON.stringify(messages, null, 2));
         return messages;
     }
 

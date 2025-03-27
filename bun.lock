@@ -168,6 +168,7 @@
       "name": "@onlook/models",
       "version": "0.0.0",
       "dependencies": {
+        "ai": "^4.2.6",
         "type-fest": "^4.26.1",
         "zod": "^3.23.8",
       },
