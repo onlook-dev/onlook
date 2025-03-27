@@ -56,6 +56,7 @@ export async function updateTailwindColorConfig(
         }
 
         const camelCaseName = newName === DEFAULT_COLOR_NAME ? newName : camelCase(newName);
+        console.log('camelCaseName', camelCaseName);
 
         return originalKey
             ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, camelCaseName, theme)
@@ -218,7 +219,7 @@ function updateTailwindConfigFile(
                                 colorProp.key.name = newName;
                                 keyUpdated = true;
 
-                                // Then we need to update the child css variables
+                                // Then we need to update the child css variables or direct color values
                                 if (colorProp.value.type === 'ObjectExpression') {
                                     colorProp.value.properties.forEach((nestedProp) => {
                                         if (
@@ -242,6 +243,11 @@ function updateTailwindConfigFile(
                                             );
                                         }
                                     });
+                                } else if (colorProp.value.type === 'StringLiteral') {
+                                    colorProp.value.value = colorProp.value.value.replace(
+                                        new RegExp(`--${parentKey}`, 'g'),
+                                        `--${newName}`,
+                                    );
                                 }
                             }
                         } else {
@@ -431,7 +437,6 @@ async function updateTailwindCssVariable(
                     }
                 }
 
-                // Process both :root and .dark rules
                 root.walkRules(/^(:root|\.dark)$/, (rule) => {
                     const isDarkTheme = rule.selector === '.dark';
                     const shouldUpdateValue =
@@ -483,6 +488,16 @@ async function updateTailwindCssVariable(
                             }
                         }
 
+                        // Handle variable usages in other declarations
+                        if (decl.value.includes(`var(--${originalName})`)) {
+                            if (newVarName && newVarName !== originalName) {
+                                decl.value = decl.value.replace(
+                                    new RegExp(`var\\(--${originalName}\\)`, 'g'),
+                                    `var(--${newVarName})`,
+                                );
+                            }
+                        }
+
                         // Handle nested variables rename if existed
                         if (
                             newVarName &&
@@ -496,6 +511,37 @@ async function updateTailwindCssVariable(
                                 decl.remove();
                             }
                         }
+                    });
+                });
+
+                // update Tailwind classes that use the variable
+                root.walkAtRules('layer', (layerRule) => {
+                    layerRule.walkRules((rule) => {
+                        rule.nodes?.forEach((node) => {
+                            // Check if this is an @apply at-rule
+                            if (node.type === 'atrule' && 'name' in node && node.name === 'apply') {
+                                const value = 'params' in node ? node.params : '';
+
+                                const utilityPattern = new RegExp(
+                                    `[a-z-]+-${originalName}\\b`,
+                                    'g',
+                                );
+                                const hasMatch = utilityPattern.test(value);
+
+                                if (hasMatch) {
+                                    const newValue = value.replace(utilityPattern, (match) => {
+                                        const replaced = match.replace(
+                                            originalName,
+                                            newVarName || originalName,
+                                        );
+                                        return replaced;
+                                    });
+                                    if ('params' in node) {
+                                        node.params = newValue;
+                                    }
+                                }
+                            }
+                        });
                     });
                 });
             },

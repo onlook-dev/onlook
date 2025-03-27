@@ -50,7 +50,6 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
         newName: string,
         parentName?: string,
     ) => {
-        console.log('handleColorChangeEnd', groupName, index, newColor, newName, parentName);
         themeManager.update(groupName, index, newColor, newName, parentName, theme, true);
     };
 
