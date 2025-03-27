@@ -219,6 +219,11 @@ export class ChatManager {
                 if (!userMessage) {
                     console.error('Failed to add user message');
                 }
+            } else if (message.role === ChatMessageRole.TOOL) {
+                const toolMessage = this.conversation.addCoreToolMessage(message);
+                if (!toolMessage) {
+                    console.error('Failed to add tool message');
+                }
             }
         }
     }

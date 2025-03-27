@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
+import type { ToolChatMessageImpl } from '@/lib/editor/engine/chat/message/tool';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { ChatMessageRole } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
@@ -23,18 +24,24 @@ export const ChatMessages = observer(() => {
         }
     }, [editorEngine.chat.conversation.current?.messages.length]);
 
-    const renderMessage = useCallback((message: AssistantChatMessageImpl | UserChatMessageImpl) => {
-        let messageNode;
-        switch (message.role) {
-            case ChatMessageRole.ASSISTANT:
-                messageNode = <AssistantMessage message={message} />;
-                break;
-            case ChatMessageRole.USER:
-                messageNode = <UserMessage message={message} />;
-                break;
-        }
-        return <div key={message.id}>{messageNode}</div>;
-    }, []);
+    const renderMessage = useCallback(
+        (message: AssistantChatMessageImpl | UserChatMessageImpl | ToolChatMessageImpl) => {
+            let messageNode;
+            switch (message.role) {
+                case ChatMessageRole.ASSISTANT:
+                    messageNode = <AssistantMessage message={message} />;
+                    break;
+                case ChatMessageRole.USER:
+                    messageNode = <UserMessage message={message} />;
+                    break;
+                case ChatMessageRole.TOOL:
+                    // No need to render tool results messages
+                    break;
+            }
+            return <div key={message.id}>{messageNode}</div>;
+        },
+        [],
+    );
 
     // Render in reverse order to make the latest message appear at the bottom
     return (
