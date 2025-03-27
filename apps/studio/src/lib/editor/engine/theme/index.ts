@@ -8,6 +8,7 @@ import { Color } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
+import { camelCase } from 'lodash';
 
 interface ColorValue {
     value: string;
@@ -297,8 +298,8 @@ export class ThemeManager {
         try {
             await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
                 projectRoot,
-                originalKey: oldName.toLowerCase(),
-                newName: newName.toLowerCase(),
+                originalKey: oldName,
+                newName: newName,
             });
 
             // Refresh colors after rename
@@ -317,7 +318,7 @@ export class ThemeManager {
         try {
             await invokeMainChannel(MainChannels.DELETE_TAILWIND_CONFIG, {
                 projectRoot,
-                groupName: groupName.toLowerCase(),
+                groupName: groupName,
                 colorName,
             });
 
@@ -344,7 +345,10 @@ export class ThemeManager {
 
         try {
             // For new colors, pass empty originalKey and parentName
-            const originalKey = this.brandColors[groupName]?.[index]?.originalKey || '';
+            const originalGroupName = camelCase(groupName);
+            const originalParentName = camelCase(parentName);
+
+            const originalKey = this.brandColors[originalGroupName]?.[index]?.originalKey || '';
 
             // If is selected element, update the color in real-time
             // Base on the class name, find the styles to update
@@ -356,7 +360,7 @@ export class ThemeManager {
                     originalKey,
                     newColor: newColor.toHex(),
                     newName,
-                    parentName,
+                    parentName: originalParentName,
                     theme,
                 });
 
@@ -455,7 +459,15 @@ export class ThemeManager {
                         : colorToDuplicate.lightColor,
                 );
 
-                await this.update(groupName, group.length, color, newName, groupName.toLowerCase());
+                await this.update(
+                    groupName,
+                    group.length,
+                    color,
+                    newName,
+                    groupName.toLowerCase(),
+                    theme,
+                    true,
+                );
 
                 this.scanConfig();
             }

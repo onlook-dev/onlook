@@ -5,7 +5,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
-import { Color } from '@onlook/utility';
+import { Color, toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useRef, useState } from 'react';
 import { isBackgroundImageEmpty } from '.';
 import ColorButton from './ColorButton';
@@ -53,7 +53,7 @@ const ColorGroup = ({
                 onClick={() => setExpanded(!expanded)}
             >
                 <div className="flex items-center gap-1  flex-1">
-                    <span className="text-xs font-normal capitalize">{name}</span>
+                    <span className="text-xs font-normal capitalize">{toNormalCase(name)}</span>
                     {isDefault && (
                         <span className="ml-2 text-xs text-muted-foreground">Default</span>
                     )}
