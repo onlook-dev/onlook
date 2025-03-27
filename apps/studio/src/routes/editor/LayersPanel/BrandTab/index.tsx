@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ColorPanel from './ColorPanel';
 import FontPanel from './FontPanel';
-import { FontFamily } from './FontPanel/FontFamily';
 import SystemFont from './FontPanel/SystemFont';
 
 interface ColorSquareProps {
@@ -27,7 +26,7 @@ const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
 );
 
 const BrandTab = observer(() => {
-    const [showColorPanel, setShowColorPanel] = useState(true);
+    const [showColorPanel, setShowColorPanel] = useState(false);
     const [showFontPanel, setShowFontPanel] = useState(false);
 
     // Sample colors for the brand palette
