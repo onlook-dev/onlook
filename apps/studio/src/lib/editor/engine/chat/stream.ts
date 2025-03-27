@@ -51,7 +51,8 @@ export class StreamResolver {
     resolveToolCallPart(
         payload: TextStreamPart<ToolSet>,
     ): TextPart | ToolCallPart | ToolResultPart | null {
-        if (payload.type === 'tool-call') {
+        // @ts-expect-error tool-result is included
+        if (payload.type === 'tool-call' || payload.type === 'tool-result') {
             return payload;
         } else if (payload.type === 'text-delta') {
             const textPart = {
