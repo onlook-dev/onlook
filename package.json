@@ -49,8 +49,5 @@
     "devDependencies": {
         "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
-    },
-    "dependencies": {
-        "freestyle-sandboxes": "^0.0.35"
     }
 }
