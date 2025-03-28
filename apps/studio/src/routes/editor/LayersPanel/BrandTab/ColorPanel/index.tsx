@@ -117,7 +117,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                         <BrandPalletGroup
                             key={groupName}
                             theme={theme}
-                            title={groupName.charAt(0).toUpperCase() + groupName.slice(1)}
+                            title={groupName}
                             colors={colors}
                             onRename={handleRename}
                             onDelete={(colorName) => handleDelete(groupName, colorName)}
@@ -168,7 +168,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                     <BrandPalletGroup
                         key={colorName}
                         theme={theme}
-                        title={colorName.charAt(0).toUpperCase() + colorName.slice(1)}
+                        title={colorName}
                         colors={colors}
                         onRename={handleRename}
                         onDelete={(colorItem) => handleDelete(colorName, colorItem)}

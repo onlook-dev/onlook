@@ -1,4 +1,4 @@
-import type { CoreAssistantMessage, CoreSystemMessage, CoreUserMessage } from 'ai';
+import type { CoreAssistantMessage, CoreSystemMessage, CoreToolMessage, CoreUserMessage } from 'ai';
 import type { CodeDiff } from '../../code/index.ts';
 import { type ChatMessageContext } from './context.ts';
 
@@ -6,6 +6,7 @@ export enum ChatMessageRole {
     USER = 'user',
     ASSISTANT = 'assistant',
     SYSTEM = 'system',
+    TOOL = 'tool',
 }
 
 export interface UserChatMessage extends CoreUserMessage {
@@ -23,4 +24,12 @@ export interface SystemChatMessage extends CoreSystemMessage {
     id: string;
 }
 
-export type ChatMessage = UserChatMessage | AssistantChatMessage | SystemChatMessage;
+export interface ToolChatMessage extends CoreToolMessage {
+    id: string;
+}
+
+export type ChatMessage =
+    | UserChatMessage
+    | AssistantChatMessage
+    | SystemChatMessage
+    | ToolChatMessage;

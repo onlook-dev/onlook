@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { Color, toNormalCase } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
+import { camelCase } from 'lodash';
 
 export interface ColorItem {
     name: string;
@@ -81,7 +82,7 @@ export const BrandPalletGroup = ({
         parentName?: string,
     ) => {
         if (onColorChange) {
-            onColorChange(title.toLowerCase(), index, newColor, newName, parentName);
+            onColorChange(title, index, newColor, newName, parentName);
         }
     };
 
@@ -92,7 +93,7 @@ export const BrandPalletGroup = ({
         parentName?: string,
     ) => {
         if (onColorChangeEnd) {
-            onColorChangeEnd(title.toLowerCase(), index, newColor, newName, parentName);
+            onColorChangeEnd(title, index, newColor, newName, parentName);
         }
         setEditingColorIndex(null);
         setIsAddingNewColor(false);
@@ -103,12 +104,17 @@ export const BrandPalletGroup = ({
     };
 
     const handleRenameClick = () => {
-        setNewGroupName(title);
+        setNewGroupName(toNormalCase(title));
         setIsRenaming(true);
         setLocalError(null);
     };
 
     const validateName = (value: string) => {
+        // Only allow text characters, numbers, and spaces and not start with number
+        if (!/^[a-zA-Z0-9\s]+$/.test(value) || /^[0-9]/.test(value)) {
+            return 'Group name can only contain text, numbers, and spaces and not start with number';
+        }
+
         if (value.trim() === '') {
             return 'Group name cannot be empty';
         }
@@ -117,7 +123,10 @@ export const BrandPalletGroup = ({
             return null;
         }
 
-        if (Object.keys(themeManager.colorGroups).includes(value.toLowerCase())) {
+        if (
+            Object.keys(themeManager.colorGroups).includes(camelCase(value)) &&
+            camelCase(value) !== title
+        ) {
             return 'Group name already exists';
         }
 
@@ -133,7 +142,8 @@ export const BrandPalletGroup = ({
 
     const handleRenameSubmit = () => {
         if (!localError && newGroupName.trim() && newGroupName !== title) {
-            onRename(title.toLowerCase(), newGroupName.trim());
+            const newName = camelCase(newGroupName);
+            onRename(title, newName);
         }
         setIsRenaming(false);
         setLocalError(null);
@@ -192,7 +202,7 @@ export const BrandPalletGroup = ({
                     </Tooltip>
                 ) : (
                     <span className="text-small text-foreground-secondary font-normal">
-                        {title}
+                        {toNormalCase(title)}
                     </span>
                 )}
                 {!isDefaultPalette && (
@@ -402,20 +412,10 @@ export const BrandPalletGroup = ({
                             brandColor="New Color"
                             onClose={() => setIsAddingNewColor(false)}
                             onColorChange={(newColor, newName) =>
-                                handleColorChange(
-                                    colors?.length || 0,
-                                    newColor,
-                                    newName,
-                                    title.toLowerCase(),
-                                )
+                                handleColorChange(colors?.length || 0, newColor, newName, title)
                             }
                             onColorChangeEnd={(newColor, newName) =>
-                                handleColorChangeEnd(
-                                    colors?.length || 0,
-                                    newColor,
-                                    newName,
-                                    title.toLowerCase(),
-                                )
+                                handleColorChangeEnd(colors?.length || 0, newColor, newName, title)
                             }
                             existedName={existedName}
                         />

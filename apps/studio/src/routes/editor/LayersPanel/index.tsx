@@ -167,7 +167,9 @@ export const LayersPanel = observer(() => {
                     onMouseEnter={() => handleMouseEnter(TabValue.BRAND)}
                 >
                     <Icons.Brand className="w-5 h-5" />
-                    <span className="text-xs leading-tight">Brand</span>
+                    <span className="text-xs leading-tight">
+                        {t('editor.panels.layers.tabs.brand')}
+                    </span>
                 </button>
 
                 <button
