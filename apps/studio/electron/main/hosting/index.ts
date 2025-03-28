@@ -24,12 +24,18 @@ import {
     type DeploymentSource,
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
+    type FreestyleFile,
 } from 'freestyle-sandboxes';
 import { prepareDirForDeployment } from 'freestyle-sandboxes/utils';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { getRefreshedAuthTokens } from '../auth';
-import { postprocessNextBuild, preprocessNextBuild, updateGitignore } from './helpers';
+import {
+    postprocessNextBuild,
+    preprocessNextBuild,
+    updateGitignore,
+    type FileRecord,
+} from './helpers';
 import { runBuildScript } from './run';
 import { LogTimer } from '/common/helpers/timer';
 
@@ -81,12 +87,20 @@ class HostingManager {
 
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${folderPath}/${CUSTOM_OUTPUT_DIR}/standalone`;
-            const source: DeploymentSource = await prepareDirForDeployment(NEXT_BUILD_OUTPUT_PATH);
+            const source: DeploymentSource = (await prepareDirForDeployment(
+                NEXT_BUILD_OUTPUT_PATH,
+            )) as {
+                files: {
+                    [key: string]: FreestyleFile;
+                };
+                kind: 'files';
+            };
+            const files: FileRecord = source.files;
 
             this.emitState(PublishStatus.LOADING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const id = await this.sendHostingPostRequest(source, urls);
+            const id = await this.sendHostingPostRequest(files, urls);
             timer.log('Deployment completed');
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
@@ -182,7 +196,7 @@ class HostingManager {
 
     async unpublish(urls: string[]): Promise<PublishResponse> {
         try {
-            const id = await this.sendHostingPostRequest({ files: {}, kind: 'files' }, urls);
+            const id = await this.sendHostingPostRequest({}, urls);
             this.emitState(PublishStatus.UNPUBLISHED, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
@@ -206,7 +220,7 @@ class HostingManager {
         }
     }
 
-    async sendHostingPostRequest(source: DeploymentSource, urls: string[]): Promise<string> {
+    async sendHostingPostRequest(files: FileRecord, urls: string[]): Promise<string> {
         const authTokens = await getRefreshedAuthTokens();
         const config: FreestyleDeployWebConfiguration = {
             domains: urls,
@@ -214,7 +228,7 @@ class HostingManager {
         };
 
         const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.DEPLOY_WEB_V2}`,
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.DEPLOY_WEB}`,
             {
                 method: 'POST',
                 headers: {
@@ -222,7 +236,7 @@ class HostingManager {
                     Authorization: `Bearer ${authTokens.accessToken}`,
                 },
                 body: JSON.stringify({
-                    source,
+                    files,
                     config,
                 }),
             },
