@@ -2,14 +2,54 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FontFamily } from './FontFamily';
 import UploadModal from './UploadModal';
+import { useEditorEngine } from '@/components/Context';
 
 interface FontVariantProps {
     name: string;
     isActive?: boolean;
 }
+
+export const FONT_VARIANTS = [
+    {
+        name: 'Thin',
+        value: '100',
+    },
+    {
+        name: 'Extra Light',
+        value: '200',
+    },
+    {
+        name: 'Light',
+        value: '300',
+    },
+    {
+        name: 'Regular',
+        value: '400',
+    },
+    {
+        name: 'Medium',
+        value: '500',
+    },
+    {
+        name: 'SemiBold',
+        value: '600',
+    },
+    {
+        name: 'Bold',
+        value: '700',
+    },
+    {
+        name: 'Extra Bold',
+        value: '800',
+    },
+    {
+        name: 'Black',
+        value: '900',
+    },
+];
 
 const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
     <div
@@ -27,6 +67,9 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
     const [searchQuery, setSearchQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+    const editorEngine = useEditorEngine();
+    const fontManager = editorEngine.font;
 
     const handleClose = () => {
         if (onClose) {
@@ -52,43 +95,17 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
             inputRef.current?.blur();
         }
     };
-
-    // Font families data
-    const fontFamilies = [
-        { name: 'DM Sans', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Creato Display', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Fahkwang', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Roboto', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Times New Roman', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Poppins', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Red Rose', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Merriweather', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Montserrat', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Open Sans', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Lato', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Playfair Display', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Raleway', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Source Sans Pro', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Nunito', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Oswald', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Quicksand', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-        { name: 'Inter', variants: ['Light', 'Regular', 'Medium', 'SemiBold', 'Bold'] },
-    ];
-
-    // Separate system fonts and site fonts
-    const systemFonts = fontFamilies.slice(0, 4);
-    const siteFonts = fontFamilies.slice(4);
-
     // Filter only site fonts based on search query
-    const filteredSiteFonts = siteFonts.filter(
-        (font) => searchQuery === '' || font.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    const filteredSiteFonts = fontManager.newFonts.filter(
+        (font) =>
+            searchQuery === '' || font.family.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-
     // Deduplicate search results by font name
     const uniqueSiteFonts = searchQuery
         ? filteredSiteFonts.filter(
               (font, index, self) =>
-                  index === self.findIndex((f) => f.name.toLowerCase() === font.name.toLowerCase()),
+                  index ===
+                  self.findIndex((f) => f.family.toLowerCase() === font.family.toLowerCase()),
           )
         : filteredSiteFonts;
 
@@ -146,15 +163,25 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                         {/* System Font List */}
                         <div className="px-4">
                             <div className="flex flex-col divide-y divide-border">
-                                {systemFonts.map((font, index) => (
-                                    <div key={`system-${font.name}-${index}`}>
+                                {fontManager.fonts.map((font, index) => (
+                                    <div key={`system-${font.family}-${index}`}>
                                         <div className="flex justify-between items-center">
                                             <FontFamily
-                                                name={font.name}
-                                                variants={font.variants}
-                                                isLast={index === systemFonts.length - 1}
+                                                name={font.family}
+                                                variants={
+                                                    font.weight?.map(
+                                                        (weight) =>
+                                                            FONT_VARIANTS.find(
+                                                                (v) => v.value === weight,
+                                                            )?.name,
+                                                    ) as string[]
+                                                }
+                                                isLast={index === fontManager.fonts.length - 1}
                                                 showDropdown={true}
                                                 showAddButton={false}
+                                                isDefault={font.id === fontManager.defaultFont}
+                                                onRemoveFont={() => fontManager.removeFont(font)}
+                                                onSetFont={() => fontManager.setDefaultFont(font)}
                                             />
                                         </div>
                                     </div>
@@ -177,14 +204,22 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                     <div className="px-4">
                         <div className="flex flex-col divide-y divide-border">
                             {uniqueSiteFonts.map((font, index) => (
-                                <div key={`${font.name}-${index}`}>
+                                <div key={`${font.family}-${index}`}>
                                     <div className="flex justify-between items-center">
                                         <FontFamily
-                                            name={font.name}
-                                            variants={font.variants}
+                                            name={font.family}
+                                            variants={
+                                                font.weight?.map(
+                                                    (weight) =>
+                                                        FONT_VARIANTS.find(
+                                                            (v) => v.value === weight,
+                                                        )?.name,
+                                                ) as string[]
+                                            }
                                             isLast={index === uniqueSiteFonts.length - 1}
                                             showDropdown={false}
                                             showAddButton={true}
+                                            onAddFont={() => fontManager.addFont(font)}
                                         />
                                     </div>
                                 </div>

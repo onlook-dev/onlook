@@ -21,29 +21,34 @@ const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
 export interface FontFamilyProps {
     name: string;
     variants: string[];
+    onRemoveFont?: () => void;
+    onAddFont?: () => void;
+    onSetFont?: () => void;
     isExpanded?: boolean; // Kept for API compatibility but not used for initial state
     isLast?: boolean;
     showDropdown?: boolean;
     showAddButton?: boolean; // New property to control Add button visibility
+    isDefault?: boolean;
 }
 
 export const FontFamily = ({
     name,
     variants = [],
+    onAddFont,
+    onRemoveFont,
+    onSetFont,
     isExpanded = false, // This prop is kept for API compatibility but not used for initial state
     isLast = false,
     showDropdown = false,
     showAddButton = true, // Default to false
+    isDefault = false,
 }: FontFamilyProps) => {
     // Always initialize to false, ensuring all font families start closed regardless of isExpanded prop
     const [expanded, setExpanded] = useState(false);
-    // State to track if this font is set as default
-    const [isDefault, setIsDefault] = useState(false);
 
     // Toggle default font status
     const handleToggleDefault = () => {
-        setIsDefault(!isDefault);
-        // Here you would typically also update this in your global state or backend
+        onSetFont?.();
     };
 
     return (
@@ -62,11 +67,12 @@ export const FontFamily = ({
                     )}
                 </div>
                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-100">
-                    {showAddButton && (
+                    {showAddButton && onAddFont && (
                         <Button
                             variant="secondary"
                             size="sm"
                             className="h-7 pl-2 pr-1.5 rounded-md bg-background-secondary"
+                            onClick={() => onAddFont()}
                         >
                             Add <Icons.Plus className="ml-1 h-3 w-3" />
                         </Button>
@@ -90,7 +96,10 @@ export const FontFamily = ({
                                 >
                                     <span>Set as default font</span>
                                 </DropdownMenuCheckboxItem>
-                                <DropdownMenuItem className="flex items-center">
+                                <DropdownMenuItem
+                                    className="flex items-center"
+                                    onClick={() => onRemoveFont?.()}
+                                >
                                     <Icons.Trash className="h-4 w-4 mr-2" />
                                     <span>Remove</span>
                                 </DropdownMenuItem>
