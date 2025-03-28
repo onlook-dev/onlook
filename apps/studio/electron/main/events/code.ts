@@ -17,7 +17,13 @@ import {
     updateTailwindColorConfig,
     deleteTailwindColorGroup,
 } from '../assets/styles';
-import { addFont, removeFont, scanFonts, setDefaultFont, getDefaultFont } from '../assets/fonts';
+import {
+    addFont,
+    removeFont,
+    scanFonts,
+    setDefaultFont,
+    getDefaultFont,
+} from '../assets/fonts/index';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
