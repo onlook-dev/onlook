@@ -1,6 +1,7 @@
 export enum WebviewChannels {
     // To Webview
     WEBVIEW_ID = 'webview-id',
+    EXECUTE_CODE = 'execute-code',
     UPDATE_STYLE = 'update-style',
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',

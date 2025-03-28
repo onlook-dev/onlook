@@ -5,7 +5,7 @@ export function getStyles(element: HTMLElement): {
     defined: Record<string, string>;
     computed: Record<string, string>;
 } {
-    const computed = getComputedStyle(element);
+    const computed = getElementComputedStyle(element);
     const inline = getInlineStyles(element);
     const stylesheet = getStylesheetStyles(element);
 
@@ -27,10 +27,10 @@ export function getComputedStyleByDomId(domId: string): Record<string, string> {
     if (!element) {
         return {};
     }
-    return getComputedStyle(element as HTMLElement);
+    return getElementComputedStyle(element as HTMLElement);
 }
 
-function getComputedStyle(element: HTMLElement): Record<string, string> {
+function getElementComputedStyle(element: HTMLElement): Record<string, string> {
     const computedStyle = jsonClone(window.getComputedStyle(element)) as unknown as Record<
         string,
         string

@@ -1,7 +1,7 @@
 import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
-import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
+import type { TOnlookWindow } from '../api';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
@@ -46,7 +46,7 @@ export function listenForDomMutation() {
         }
 
         if (added.size > 0 || removed.size > 0) {
-            ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED, {
+            (window as TOnlookWindow).onlook.bridge.send(WebviewChannels.WINDOW_MUTATED, {
                 added: Object.fromEntries(added),
                 removed: Object.fromEntries(removed),
             });

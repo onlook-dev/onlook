@@ -1,10 +1,31 @@
-import { setApi } from './api';
+import { WebviewChannels } from '@onlook/models/constants';
+import { setApi, type TOnlookWindow } from './api';
 import { processDom } from './dom';
 import { listenForEvents } from './events';
 import cssManager from './style';
 
+// Initialize API immediately
+setApi();
+
+// Now we can safely add the message handler
+(window as TOnlookWindow).onlook.bridge.receive((event) => {
+    if (event.data.type === WebviewChannels.EXECUTE_CODE) {
+        const { code, messageId } = event.data;
+        const [port] = event.ports;
+
+        try {
+            const result = eval(code);
+            port.postMessage({ result, messageId });
+        } catch (error) {
+            port.postMessage({
+                error: error instanceof Error ? error.message : 'Unknown error',
+                messageId,
+            });
+        }
+    }
+});
+
 function handleBodyReady() {
-    setApi();
     listenForEvents();
     keepDomUpdated();
     cssManager.injectDefaultStyles();

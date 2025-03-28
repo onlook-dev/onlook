@@ -3,6 +3,7 @@ import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/el
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import { adaptRectToCanvas } from '../overlay/utils';
 
 export class ElementManager {
@@ -25,7 +26,7 @@ export class ElementManager {
         this.selectedElements = elements;
     }
 
-    mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
+    mouseover(domEl: DomElement, webview: IFrameView) {
         if (!domEl) {
             this.editorEngine.overlay.state.updateHoverRect(null);
             this.clearHoveredElement();
@@ -66,7 +67,7 @@ export class ElementManager {
         this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
     }
 
-    shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
+    shiftClick(domEl: DomElement, webview: IFrameView) {
         const selectedEls = this.selected;
         const isAlreadySelected = selectedEls.some((el) => el.domId === domEl.domId);
         let newSelectedEls: DomElement[] = [];
@@ -78,7 +79,7 @@ export class ElementManager {
         this.click(newSelectedEls, webview);
     }
 
-    click(domEls: DomElement[], webview: Electron.WebviewTag) {
+    click(domEls: DomElement[], webview: IFrameView) {
         this.editorEngine.overlay.state.removeClickRects();
         this.clearSelectedElements();
 
@@ -94,7 +95,7 @@ export class ElementManager {
         }
     }
 
-    async refreshSelectedElements(webview: Electron.WebviewTag) {
+    async refreshSelectedElements(webview: IFrameView) {
         const newSelected: DomElement[] = [];
         for (const el of this.selected) {
             const newEl: DomElement | null = await webview.executeJavaScript(
@@ -184,7 +185,7 @@ export class ElementManager {
 
     private async shouldDelete(
         selectedEl: DomElement,
-        webview: Electron.WebviewTag,
+        webview: IFrameView,
     ): Promise<{
         shouldDelete: boolean;
         error?: string;

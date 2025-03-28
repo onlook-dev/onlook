@@ -3,6 +3,8 @@ import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
+import type { IFrameView } from '@/routes/editor/WebviewArea/IFrameView';
+import { FrameView } from '@/routes/editor/WebviewArea/IFrameView';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
@@ -31,8 +33,8 @@ const Frame = observer(
         const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
+        const webviewRef = useRef<IFrameView | null>(null);
         const { t } = useTranslation();
-        const webviewRef = useRef<Electron.WebviewTag | null>(null);
         let domState = editorEngine.webviews.getState(settings.id);
         const [selected, setSelected] = useState<boolean>(
             editorEngine.webviews.isSelected(settings.id),
@@ -71,14 +73,15 @@ const Frame = observer(
             [editorEngine.canvas],
         );
 
-        const handleUrlChange = useCallback(
-            (e: any) => {
-                setWebviewSrc(e.url);
-
-                editorEngine.pages.handleWebviewUrlChange(settings.id);
-            },
-            [editorEngine.pages, settings.id],
-        );
+        const handleUrlChange = useCallback((e: Event) => {
+            const iframe = e.target as HTMLIFrameElement;
+            const url = iframe.src;
+            if (!url) {
+                console.warn('Frame.handleUrlChange: url is undefined/null, returning');
+                return;
+            }
+            setWebviewSrc(url);
+        }, []);
 
         const handleDomReady = useCallback(async () => {
             const webview = webviewRef.current;
@@ -141,10 +144,10 @@ const Frame = observer(
         useEffect(() => {
             if (projectsManager.runner?.state === RunState.STOPPING) {
                 const refresh = () => {
-                    const webview = webviewRef.current as Electron.WebviewTag | null;
+                    const webview = webviewRef.current as IFrameView | null;
                     if (webview) {
                         try {
-                            webview.reload();
+                            webview.src = settings.url;
                         } catch (error) {
                             console.error('Failed to reload webview', error);
                         }
@@ -190,7 +193,7 @@ const Frame = observer(
         }, [domFailed]);
 
         useEffect(() => {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
 
             setWebviewSize(settings.dimension);
             setWebviewPosition(settings.position);
@@ -204,7 +207,7 @@ const Frame = observer(
         }, [settings.id]);
 
         function setupFrame() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -215,37 +218,38 @@ const Frame = observer(
             return () => {
                 editorEngine.webviews.deregister(webview);
                 messageBridge.deregister(webview);
-                webview.removeEventListener('did-navigate', handleUrlChange);
+                webview.removeEventListener('load', handleUrlChange);
             };
         }
 
         function deregisterWebview() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
             if (!webview) {
                 return;
             }
             editorEngine.webviews.deregister(webview);
             messageBridge.deregister(webview);
-            webview.removeEventListener('did-navigate', handleUrlChange);
+            webview.removeEventListener('load', handleUrlChange);
         }
 
-        function setBrowserEventListeners(webview: Electron.WebviewTag) {
-            webview.addEventListener('did-navigate', handleUrlChange);
-            webview.addEventListener('did-navigate-in-page', handleUrlChange);
-            webview.addEventListener('dom-ready', handleDomReady);
-            webview.addEventListener('did-fail-load', handleDomFailed);
+        function setBrowserEventListeners(webview: IFrameView) {
+            webview.addEventListener('load', (e) => {
+                handleUrlChange(e);
+                handleDomReady();
+            });
+            webview.addEventListener('hashchange', handleUrlChange);
+            webview.addEventListener('error', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
-            webview.addEventListener('console-message', handleConsoleMessage);
         }
 
-        async function getDarkMode(webview: Electron.WebviewTag) {
+        async function getDarkMode(webview: IFrameView) {
             const darkmode = (await webview.executeJavaScript(`window.api?.getTheme()`)) || 'light';
             setDarkmode(darkmode === 'dark');
         }
 
         function handleDomFailed() {
             setDomFailed(true);
-            const webview = webviewRef.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as IFrameView | null;
             if (!webview) {
                 return;
             }
@@ -254,7 +258,7 @@ const Frame = observer(
             setTimeout(() => {
                 if (webview) {
                     try {
-                        webview.reload();
+                        webview.src = settings.url;
                     } catch (error) {
                         console.error('Failed to reload webview', error);
                     }
@@ -264,7 +268,7 @@ const Frame = observer(
 
         function handleWebviewFocus() {
             editorEngine.webviews.deselectAll();
-            editorEngine.webviews.select(webviewRef.current as Electron.WebviewTag);
+            editorEngine.webviews.select(webviewRef.current as IFrameView);
         }
 
         function handleConsoleMessage(event: Electron.ConsoleMessageEvent) {
@@ -383,7 +387,7 @@ const Frame = observer(
             );
         }
 
-        async function selectFirstElement(webview: Electron.WebviewTag) {
+        async function selectFirstElement(webview: IFrameView) {
             const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
             if (domEl) {
                 editorEngine.elements.click([domEl], webview);
@@ -421,7 +425,7 @@ const Frame = observer(
                         aspectRatioLocked={aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED}
                         webviewId={settings.id}
                     />
-                    <webview
+                    <FrameView
                         id={settings.id}
                         ref={webviewRef}
                         className={cn(
@@ -430,13 +434,13 @@ const Frame = observer(
                             selected ? getSelectedOutlineColor() : 'outline-transparent',
                         )}
                         src={settings.url}
-                        preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
-                        allowpopups={'true' as any}
+                        preload="onlook://webview-preload.js"
+                        sandbox="allow-popups allow-scripts allow-same-origin allow-forms"
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
                         }}
-                    ></webview>
+                    />
                     <GestureScreen
                         isResizing={isResizing}
                         webviewRef={webviewRef}

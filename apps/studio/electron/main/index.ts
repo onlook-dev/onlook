@@ -1,6 +1,7 @@
 import { APP_NAME, APP_SCHEMA, MainChannels } from '@onlook/models/constants';
-import { BrowserWindow, app, shell } from 'electron';
+import { BrowserWindow, app, protocol, shell } from 'electron';
 import fixPath from 'fix-path';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -93,6 +94,10 @@ const initMainWindow = () => {
 
 const setupAppEventListeners = () => {
     app.whenReady().then(() => {
+        protocol.handle('onlook', (request) => {
+            const filePath = path.join(__dirname, '../preload/webview.js');
+            return new Response(fs.readFileSync(filePath));
+        });
         initMainWindow();
     });
 
@@ -173,7 +178,24 @@ const setupAppEventListeners = () => {
 };
 
 // Main function
-const main = async () => {
+const main = () => {
+    setupEnvironment();
+    configurePlatformSpecifics();
+
+    // Register onlook protocol handler for browser-compatible preload script urls
+    protocol.registerSchemesAsPrivileged([
+        {
+            scheme: 'onlook',
+            privileges: {
+                standard: true,
+                secure: true,
+                allowServiceWorkers: true,
+                supportFetchAPI: true,
+                stream: true,
+            },
+        },
+    ]);
+
     if (!app.requestSingleInstanceLock()) {
         app.quit();
         process.exit(0);

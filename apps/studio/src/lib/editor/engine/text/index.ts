@@ -2,9 +2,9 @@ import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
 import { toast } from '@onlook/ui/use-toast';
-import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
+import type { IFrameView } from '../../../../routes/editor/WebviewArea/IFrameView';
 import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {
@@ -18,7 +18,7 @@ export class TextEditingManager {
         return this.targetDomEl !== null;
     }
 
-    async start(el: DomElement, webview: WebviewTag) {
+    async start(el: DomElement, webview: IFrameView) {
         const isEditable: boolean | null = await invokeMainChannel(
             MainChannels.IS_CHILD_TEXT_EDITABLE,
             { oid: el.oid },
@@ -112,7 +112,7 @@ export class TextEditingManager {
         this.shouldNotStartEditing = false;
     }
 
-    handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
+    handleEditedText(domEl: DomElement, newContent: string, webview: IFrameView) {
         this.editorEngine.history.push({
             type: 'edit-text',
             targets: [
@@ -153,7 +153,7 @@ export class TextEditingManager {
         this.start(domEl, webview);
     }
 
-    async editElementAtLoc(pos: ElementPosition, webview: WebviewTag) {
+    async editElementAtLoc(pos: ElementPosition, webview: IFrameView) {
         const el: DomElement = await webview.executeJavaScript(
             `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, true)`,
         );

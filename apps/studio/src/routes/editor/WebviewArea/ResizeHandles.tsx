@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
-import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
+import type { IFrameView } from '@/routes/editor/WebviewArea/IFrameView';
 import { DefaultSettings } from '@onlook/models/constants';
 import { ToastAction } from '@onlook/ui/toast';
 import { useToast } from '@onlook/ui/use-toast';
@@ -9,7 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { type MouseEvent, useRef } from 'react';
 
 interface ResizeHandleProps {
-    webviewRef: React.RefObject<Electron.WebviewTag>;
+    webviewRef: React.RefObject<IFrameView>;
     webviewSize: { width: number; height: number };
     setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
     selectedPreset: SizePreset | null;
