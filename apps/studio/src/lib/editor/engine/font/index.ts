@@ -53,9 +53,7 @@ export class FontManager {
                 font,
             });
 
-            setTimeout(() => {
-                this.scanFonts();
-            }, 100);
+            await this.scanFonts();
         } catch (error) {
             console.error('Error adding font:', error);
         }
@@ -73,9 +71,7 @@ export class FontManager {
                 font,
             });
 
-            setTimeout(() => {
-                this.scanFonts();
-            }, 100);
+            await this.scanFonts();
         } catch (error) {
             console.error('Error removing font:', error);
         }
