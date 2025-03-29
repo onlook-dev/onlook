@@ -3,10 +3,10 @@
     "display": "Base",
     "docs": "https://bun.sh/docs/typescript",
     "compilerOptions": {
-        "target": "ESNext",
+        "target": "es2023",
         "lib": [
-            "ES2023",
-            "DOM"
+            "dom",
+            "es2023"
         ],
         "module": "ESNext",
         "moduleDetection": "force",
