@@ -99,6 +99,11 @@ export class CanvasManager {
         this.notifySettingsObservers(id);
     }
 
+    saveFrames(frames: FrameSettings[]) {
+        this.webFrames = frames;
+        this.saveSettings();
+    }
+
     async applySettings(project: Project) {
         this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
         this.panPosition = project.settings?.position || this.getDefaultPanPosition();
