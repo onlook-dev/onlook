@@ -6,10 +6,6 @@ import Frame from './Frame';
 export const WebviewArea = observer(() => {
     const editorEngine = useEditorEngine();
     const messageBridge = new WebviewMessageBridge(editorEngine);
-    console.log(
-        'WebviewArea',
-        editorEngine.canvas.frames.map((frame) => frame.url),
-    );
     return (
         <div className="grid grid-flow-col gap-72">
             {editorEngine.canvas.frames.map((settings, index) => (
