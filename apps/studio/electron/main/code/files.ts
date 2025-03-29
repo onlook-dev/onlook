@@ -58,7 +58,7 @@ export async function writeFile(
     } catch (error: any) {
         const errorMessage = `Failed to write to ${filePath}: ${error.message}`;
         console.error(errorMessage);
-        throw new Error(errorMessage);
+        throw error;
     }
 }
 
