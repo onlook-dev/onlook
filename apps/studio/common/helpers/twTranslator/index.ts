@@ -979,12 +979,13 @@ export const propertyMap: Map<
     ['clip-path', (val) => `[clip-path:${getCustomVal(val)}]`],
     [
         'color',
-        (val) =>
+        (val, isCustom = false) =>
             ({
                 transparent: 'text-transparent',
                 currentColor: 'text-current',
                 currentcolor: 'text-current',
-            })[val] ?? (isColor(val, true) ? `text-[${getCustomVal(val)}]` : ''),
+            })[val] ??
+            (isCustom ? `text-${val}` : isColor(val, true) ? `text-[${getCustomVal(val)}]` : ''),
     ],
     ['color-scheme', (val) => `[color-scheme:${getCustomVal(val)}]`],
     ['column-count', (val) => `[column-count:${getCustomVal(val)}]`],
