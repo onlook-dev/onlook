@@ -23,33 +23,51 @@ export async function writeFile(
     content: string,
     encoding: 'utf8' | 'base64' = 'utf8',
 ): Promise<void> {
+    if (!filePath) {
+        throw new Error('File path is required');
+    }
+
     try {
-        if (!content || content.trim() === '') {
-            throw new Error(`New content is empty: ${filePath}`);
-        }
         const fullPath = path.resolve(filePath);
         const isNewFile = !existsSync(fullPath);
+
+        let fileContent: string | Buffer = content;
+        if (encoding === 'base64') {
+            try {
+                // Strip data URL prefix if present and validate base64
+                const base64Data = content.replace(/^data:[^,]+,/, '');
+                if (!isValidBase64(base64Data)) {
+                    throw new Error('Invalid base64 content');
+                }
+                fileContent = Buffer.from(base64Data, 'base64');
+            } catch (e: any) {
+                throw new Error(`Invalid base64 content: ${e.message}`);
+            }
+        }
 
         // Ensure parent directory exists
         const parentDir = path.dirname(fullPath);
         await fs.mkdir(parentDir, { recursive: true });
 
-        // Handle base64 encoded content
-        let fileContent = content;
-        if (encoding === 'base64') {
-            // Strip data URL prefix if present
-            const base64Data = content.replace(/^data:[^,]+,/, '');
-            fileContent = Buffer.from(base64Data, 'base64').toString('base64');
-        }
-
-        writeFileAtomic(fullPath, fileContent, encoding);
+        // Perform atomic write with proper error handling
+        await writeFileAtomic(fullPath, fileContent, { encoding });
 
         if (isNewFile) {
             console.log('New file created:', fullPath);
         }
     } catch (error: any) {
-        console.error('Error writing to file:', error);
+        const errorMessage = `Failed to write to ${filePath}: ${error.message}`;
+        console.error(errorMessage);
         throw error;
+    }
+}
+
+// Helper function to validate base64 strings
+function isValidBase64(str: string): boolean {
+    try {
+        return Buffer.from(str, 'base64').toString('base64') === str;
+    } catch {
+        return false;
     }
 }
 

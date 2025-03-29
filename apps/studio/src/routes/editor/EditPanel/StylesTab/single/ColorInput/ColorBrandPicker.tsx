@@ -72,7 +72,9 @@ const ColorGroup = ({
                             className="w-5 h-5 rounded-sm"
                             style={{ backgroundColor: color.lightColor }}
                         />
-                        <span className="text-xs font-normal truncate max-w-32">{color.name}</span>
+                        <span className="text-xs font-normal truncate max-w-32">
+                            {toNormalCase(color.name)}
+                        </span>
                     </div>
                 ))}
         </div>
