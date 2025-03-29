@@ -40,7 +40,7 @@ export async function writeFile(
                     throw new Error('Invalid base64 content');
                 }
                 fileContent = Buffer.from(base64Data, 'base64');
-            } catch (e) {
+            } catch (e: any) {
                 throw new Error(`Invalid base64 content: ${e.message}`);
             }
         }
@@ -58,7 +58,7 @@ export async function writeFile(
     } catch (error: any) {
         const errorMessage = `Failed to write to ${filePath}: ${error.message}`;
         console.error(errorMessage);
-        throw new Error(errorMessage);
+        throw error;
     }
 }
 
