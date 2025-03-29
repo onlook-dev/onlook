@@ -7,6 +7,7 @@ import {
     type HighlightMessageContext,
     type ImageMessageContext,
     type ProjectMessageContext,
+    type RelatedFileMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
 import type { ParsedError } from '@onlook/utility';
@@ -150,13 +151,70 @@ export class ChatContext {
         }
     }
 
-    getProjectContext(): ProjectMessageContext[] {
+    async getProjectContext(): Promise<(ProjectMessageContext | RelatedFileMessageContext)[]> {
         const folderPath = this.projectsManager.project?.folderPath;
         if (!folderPath) {
             return [];
         }
 
-        return [
+        // Get selected elements
+        const selected = this.editorEngine.elements.selected;
+        if (selected.length === 0) {
+            return [
+                {
+                    type: MessageContextType.PROJECT,
+                    content: '',
+                    displayName: 'Project',
+                    path: folderPath,
+                },
+            ];
+        }
+
+        // Get related files from templateNodes using oid or instanceId of children
+        const relatedFiles = new Set<string>();
+
+        // Process each selected element
+        for (const element of selected) {
+            // Get the layer node for the selected element
+            const layerNode = this.editorEngine.ast.mappings.getLayerNode(
+                element.webviewId,
+                element.domId,
+            );
+            if (!layerNode || !layerNode.children) {
+                continue;
+            }
+
+            // Process each child
+            for (const childId of layerNode.children) {
+                const childLayerNode = this.editorEngine.ast.mappings.getLayerNode(
+                    element.webviewId,
+                    childId,
+                );
+                if (!childLayerNode) {
+                    continue;
+                }
+
+                // Try to get templateNode using oid
+                if (childLayerNode.oid) {
+                    const templateNode = await this.editorEngine.ast.getTemplateNodeById(
+                        childLayerNode.oid,
+                    );
+                    if (templateNode && templateNode.path) {
+                        relatedFiles.add(templateNode.path);
+                    }
+                }
+
+                // Try to get templateNode using instanceId
+                if (childLayerNode.instanceId) {
+                    // For now, we'll just log that we found an instanceId
+                    console.log(`Found child with instanceId: ${childLayerNode.instanceId}`);
+                    // Additional logic could be added here to retrieve related files using instanceId
+                }
+            }
+        }
+
+        // Create project context with related files
+        const projectContext: (ProjectMessageContext | RelatedFileMessageContext)[] = [
             {
                 type: MessageContextType.PROJECT,
                 content: '',
@@ -164,6 +222,23 @@ export class ChatContext {
                 path: folderPath,
             },
         ];
+
+        // Add related files to project context
+        for (const filePath of relatedFiles) {
+            const fileContent = await this.editorEngine.code.getFileContent(filePath, true);
+            if (fileContent === null) {
+                continue;
+            }
+
+            projectContext.push({
+                type: MessageContextType.RELATED_FILE,
+                content: fileContent,
+                displayName: `Related: ${filePath}`,
+                path: filePath,
+            });
+        }
+
+        return projectContext;
     }
 
     getMessageContext(errors: ParsedError[]): ErrorMessageContext[] {
