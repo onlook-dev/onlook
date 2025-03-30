@@ -3,11 +3,15 @@
     "display": "Vite React",
     "extends": "./base.json",
     "compilerOptions": {
-      "target": "ES2020",
-      "lib": ["ES2020", "DOM", "DOM.Iterable"],
-      "useDefineForClassFields": true,
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "jsx": "react-jsx"
+        "target": "ES2023",
+        "lib": [
+            "ES2023",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "useDefineForClassFields": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "jsx": "react-jsx"
     }
-  }
+}

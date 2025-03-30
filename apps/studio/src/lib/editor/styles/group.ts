@@ -245,7 +245,7 @@ export const TextGroup = [
     new SingleStyleImpl('textTransform', 'none', 'Transform', StyleType.Select, {
         options: ['none', 'capitalize', 'uppercase', 'lowercase'],
     }),
-    
+
     new SingleStyleImpl('color', '#000000', 'Color', StyleType.Color),
 
     new SingleStyleImpl('fontSize', '16px', 'Size', StyleType.Number, {
