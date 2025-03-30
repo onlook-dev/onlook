@@ -145,8 +145,8 @@ export class CreateManager {
         const projectUrl = 'http://localhost:3000';
         const projectCommands = {
             install: 'npm install',
-            run: 'npm run dev',
-            build: 'npm run build',
+            run: 'npx next dev -p 3000',
+            build: 'npx next build -p 3000',
         };
 
         return this.projectsManager.createProject(

@@ -37,6 +37,11 @@ const ProjectTab = observer(() => {
     const handleUpdateUrl = (url: string) => {
         projectsManager.updatePartialProject({
             url,
+            commands: {
+                ...project?.commands,
+                run: 'npx next dev -p ' + url.split(':').pop(),
+                build: 'npx next build -p ' + url.split(':').pop(),
+            },
         });
         projectsManager.editorEngine?.canvas.saveFrames(
             projectsManager.editorEngine?.canvas.frames.map((frame) => ({
@@ -70,6 +75,7 @@ const ProjectTab = observer(() => {
                             id="url"
                             value={url}
                             onChange={(e) => handleUpdateUrl(e.target.value)}
+                            onBlur={() => projectsManager.runner?.restart()}
                             className="w-2/3"
                         />
                     </div>
