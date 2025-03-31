@@ -6,7 +6,7 @@ function extractFontName(fileName: string): string {
     // Remove file extension
     let name = fileName.replace(/\.[^/.]+$/, '');
 
-    // Common weight terms that might appear in font names
+    // Define common font weight and style terms
     const weightTerms = [
         'thin',
         'hairline',
@@ -34,50 +34,57 @@ function extractFontName(fileName: string): string {
         'extra black',
         'ultrablack',
         'ultra black',
-        'lightitalic',
-        'light italic',
-        'bolditalic',
-        'bold italic',
-        'mediumitalic',
-        'medium italic',
-        'blackitalic',
-        'black italic',
-        'extralightitalic',
-        'extrabolditalic',
     ];
 
-    // Common style terms
-    const styleTerms = ['italic', 'oblique', 'slanted', 'kursiv', 'mediumitalic', 'medium italic'];
+    const styleTerms = ['italic', 'oblique', 'slanted', 'kursiv'];
 
-    // Create a regex pattern for all weight and style terms
-    const allTerms = [...new Set([...weightTerms, ...styleTerms])].map((term) =>
-        term.replace(/\s+/g, '\\s+'),
-    );
-    const termPattern = new RegExp(`[-_\\s]+(${allTerms.join('|')})(?:[-_\\s]+|$)`, 'gi');
+    // Special case: If the name contains spaces without hyphens or underscores, return as title case
+    if (/\s/.test(name) && !/[-_]/.test(name)) {
+        return toTitleCase(name);
+    }
 
-    // Remove weight and style terms
-    name = name.replace(termPattern, '');
+    const parts = name.split(/[-_\s]+/);
 
-    // Remove numeric weights (100, 200, 300, etc.)
-    name = name.replace(/[-_\\s]+\d+(?:wt|weight)?(?:[-_\\s]+|$)/gi, '');
-    name = name.replace(/\s*\d+\s*$/g, '');
+    // Filter out weight terms, style terms, and numeric weights
+    const filteredParts = parts.filter((part) => {
+        const lowerPart = part.toLowerCase();
+        // Check if part is a weight term or style term
+        if (weightTerms.includes(lowerPart) || styleTerms.includes(lowerPart)) {
+            return false;
+        }
 
-    // Remove any trailing hyphens, underscores, or spaces
-    name = name.replace(/[-_\s]+$/g, '');
+        // Check for combined terms like "BoldItalic"
+        for (const weightTerm of weightTerms) {
+            for (const styleTerm of styleTerms) {
+                const combined = weightTerm + styleTerm;
+                if (lowerPart === combined) {
+                    return false;
+                }
+            }
+        }
 
-    // Replace hyphens and underscores with spaces
-    name = name.replace(/[-_]+/g, ' ');
+        // Check for numeric weights (e.g., 100, 300, 700)
+        if (/^\d+(?:wt|weight)?$/.test(part)) {
+            return false;
+        }
 
-    // Handle camelCase conversion
+        return true;
+    });
+
+    // Join the filtered parts with spaces
+    name = filteredParts.join(' ');
+
+    // Handle camelCase in the final name
     name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
 
-    // Capitalize each word
-    name = name
+    return toTitleCase(name.trim());
+}
+
+function toTitleCase(str: string): string {
+    return str
         .split(' ')
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join(' ');
-
-    return name.trim();
 }
 
 /**
@@ -100,7 +107,7 @@ function getFontFileName(baseName: string, weight: string, style: string): strin
     const styleName =
         style.toLowerCase() === 'normal' ? '' : style.charAt(0).toUpperCase() + style.slice(1);
 
-    return `${baseName}${weightName}${styleName}`;
+    return `${baseName.replace(/\s+/g, '')}${weightName}${styleName}`;
 }
 
 export { extractFontName, getFontFileName };

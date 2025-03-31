@@ -16,6 +16,7 @@ import { detectRouterType } from '../../pages';
 import { readFile } from '../../code/files';
 import fs from 'fs';
 import { extractFontName, getFontFileName } from '@onlook/utility';
+
 /**
  * Adds a new font to the project by:
  * 1. Adding the font import and configuration to fonts.ts
@@ -87,7 +88,7 @@ export const ${fontName} = ${importName}({
 
         newContent += fontConfig;
 
-        await fs.writeFileSync(fontPath, newContent);
+        fs.writeFileSync(fontPath, newContent);
 
         await updateTailwindFontConfig(projectRoot, font);
 
@@ -112,6 +113,7 @@ export const ${fontName} = ${importName}({
  * 2. Removing the font from Tailwind config
  * 3. Removing the font variable from the layout file
  * 4. Updating default font if needed
+ * 5. Deleting the font files from the fonts directory
  */
 export async function removeFont(projectRoot: string, font: Font) {
     try {
@@ -130,6 +132,7 @@ export async function removeFont(projectRoot: string, font: Font) {
         const fontIdToRemove = font.id;
         const importToRemove = font.family.replace(/\s+/g, '_');
         let removedFont = false;
+        const fontFilesToDelete: string[] = [];
 
         // Track all imports from next/font/google to know if we should remove the import
         traverse(ast, {
@@ -161,6 +164,54 @@ export async function removeFont(projectRoot: string, font: Font) {
                             t.isIdentifier(declaration.id) &&
                             declaration.id.name === fontIdToRemove
                         ) {
+                            // Extract font file paths from the local font configuration
+                            if (
+                                t.isCallExpression(declaration.init) &&
+                                t.isIdentifier(declaration.init.callee) &&
+                                declaration.init.callee.name === 'localFont' &&
+                                declaration.init.arguments.length > 0 &&
+                                t.isObjectExpression(declaration.init.arguments[0])
+                            ) {
+                                const fontConfig = declaration.init.arguments[0];
+                                const srcProp = fontConfig.properties.find(
+                                    (prop) =>
+                                        t.isObjectProperty(prop) &&
+                                        t.isIdentifier(prop.key) &&
+                                        prop.key.name === 'src',
+                                );
+
+                                if (
+                                    srcProp &&
+                                    t.isObjectProperty(srcProp) &&
+                                    t.isArrayExpression(srcProp.value)
+                                ) {
+                                    // Loop through the src array to find font file paths
+                                    srcProp.value.elements.forEach((element) => {
+                                        if (t.isObjectExpression(element)) {
+                                            const pathProp = element.properties.find(
+                                                (prop) =>
+                                                    t.isObjectProperty(prop) &&
+                                                    t.isIdentifier(prop.key) &&
+                                                    prop.key.name === 'path',
+                                            );
+
+                                            if (
+                                                pathProp &&
+                                                t.isObjectProperty(pathProp) &&
+                                                t.isStringLiteral(pathProp.value)
+                                            ) {
+                                                // Get the path value
+                                                let fontFilePath = pathProp.value.value;
+                                                if (fontFilePath.startsWith('../')) {
+                                                    fontFilePath = fontFilePath.substring(3); // Remove '../' prefix
+                                                }
+                                                fontFilesToDelete.push(fontFilePath);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+
                             if (declarations.length === 1) {
                                 path.remove();
                             } else {
@@ -193,6 +244,23 @@ export async function removeFont(projectRoot: string, font: Font) {
                         'section',
                         'body',
                     ]);
+                }
+            }
+
+            // Delete font files if found
+            if (fontFilesToDelete.length > 0) {
+                for (const fileRelativePath of fontFilesToDelete) {
+                    const absoluteFilePath = pathModule.join(projectRoot, fileRelativePath);
+                    if (fs.existsSync(absoluteFilePath)) {
+                        try {
+                            fs.unlinkSync(absoluteFilePath);
+                            console.log(`Deleted font file: ${absoluteFilePath}`);
+                        } catch (error) {
+                            console.error(`Error deleting font file ${absoluteFilePath}:`, error);
+                        }
+                    } else {
+                        console.log(`Font file not found: ${absoluteFilePath}`);
+                    }
                 }
             }
         } else {
@@ -282,7 +350,7 @@ export const ${fontName} = localFont({
         ${fontConfigs
             .map(
                 (config) => `{
-            path: '${config.path}',
+            path: '../${config.path}',
             weight: '${config.weight}',
             style: '${config.style}'
         }`,
@@ -311,7 +379,7 @@ export const ${fontName} = localFont({
 
         newContent += fontConfig;
 
-        await fs.writeFileSync(fontPath, newContent);
+        fs.writeFileSync(fontPath, newContent);
 
         // Update Tailwind config
         const font: Font = {
