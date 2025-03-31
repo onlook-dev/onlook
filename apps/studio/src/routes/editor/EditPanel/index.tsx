@@ -236,9 +236,7 @@ export const EditPanel = observer(() => {
                 >
                     <div
                         id="dev-panel"
-                        className={cn(
-                            'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/95 overflow-hidden h-full',
-                        )}
+                        className="rounded-tl-xl transition-width duration-300 opacity-100 bg-background/95 overflow-hidden h-full"
                     >
                         <div
                             className={cn(
