@@ -220,7 +220,12 @@ export const EditPanel = observer(() => {
     }
 
     return (
-        <div className="flex flex-row h-full">
+        <div
+            className={cn(
+                'flex flex-row h-full',
+                editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
+            )}
+        >
             {isDevPanelOpen && (
                 <ResizablePanel
                     side="right"
@@ -233,7 +238,6 @@ export const EditPanel = observer(() => {
                         id="dev-panel"
                         className={cn(
                             'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/95 overflow-hidden h-full',
-                            editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
                         )}
                     >
                         <div
