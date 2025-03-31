@@ -195,7 +195,7 @@ class RunManager {
         await this.clearSubscription();
         this.runningDirs.clear();
         this.mapping.clear();
-        this.selfModified.clear(); // Clear the selfModified set when stopping
+        this.selfModified.clear();
     }
 
     async cleanProjectDir(folderPath: string): Promise<void> {
