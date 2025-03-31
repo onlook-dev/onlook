@@ -114,6 +114,7 @@ export const ${fontName} = ${importName}({
  * 3. Removing the font variable from the layout file
  * 4. Updating default font if needed
  * 5. Deleting the font files from the fonts directory
+ * 6. Removing localFont import if no longer used
  */
 export async function removeFont(projectRoot: string, font: Font) {
     try {
@@ -133,6 +134,8 @@ export async function removeFont(projectRoot: string, font: Font) {
         const importToRemove = font.family.replace(/\s+/g, '_');
         let removedFont = false;
         const fontFilesToDelete: string[] = [];
+        // Track if any localFont declarations remain after removal
+        let hasRemainingLocalFonts = false;
 
         // Track all imports from next/font/google to know if we should remove the import
         traverse(ast, {
@@ -159,6 +162,17 @@ export async function removeFont(projectRoot: string, font: Font) {
 
                     for (let i = 0; i < declarations.length; i++) {
                         const declaration = declarations[i];
+
+                        // Check if this is a localFont declaration (not the one being removed)
+                        if (
+                            t.isIdentifier(declaration.id) &&
+                            declaration.id.name !== fontIdToRemove &&
+                            t.isCallExpression(declaration.init) &&
+                            t.isIdentifier(declaration.init.callee) &&
+                            declaration.init.callee.name === 'localFont'
+                        ) {
+                            hasRemainingLocalFonts = true;
+                        }
 
                         if (
                             t.isIdentifier(declaration.id) &&
@@ -226,7 +240,15 @@ export async function removeFont(projectRoot: string, font: Font) {
         });
 
         if (removedFont) {
-            const { code } = generate(ast);
+            let { code } = generate(ast);
+
+            // Remove localFont import if no localFont declarations remain
+            if (!hasRemainingLocalFonts) {
+                const localFontImportRegex =
+                    /import\s+localFont\s+from\s+['"]next\/font\/local['"];\n?/g;
+                code = code.replace(localFontImportRegex, '');
+            }
+
             await fs.writeFileSync(fontPath, code);
 
             await removeFontFromTailwindConfig(projectRoot, font);
