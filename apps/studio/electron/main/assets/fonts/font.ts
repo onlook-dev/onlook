@@ -15,6 +15,7 @@ import { removeFontFromTailwindConfig, updateTailwindFontConfig } from './tailwi
 import { detectRouterType } from '../../pages';
 import { readFile } from '../../code/files';
 import fs from 'fs';
+import { extractFontName, getFontFileName } from '@onlook/utility';
 /**
  * Adds a new font to the project by:
  * 1. Adding the font import and configuration to fonts.ts
@@ -23,7 +24,7 @@ import fs from 'fs';
  */
 export async function addFont(projectRoot: string, font: Font) {
     try {
-        const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
+        const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_CONFIG);
         const content = (await readFile(fontPath)) ?? '';
 
         // Convert the font family to the import name format (Pascal case, no spaces)
@@ -114,7 +115,7 @@ export const ${fontName} = ${importName}({
  */
 export async function removeFont(projectRoot: string, font: Font) {
     try {
-        const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
+        const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_CONFIG);
         const content = await readFile(fontPath);
 
         if (!content) {
@@ -205,5 +206,141 @@ export async function removeFont(projectRoot: string, font: Font) {
 export async function addFonts(projectRoot: string, fonts: Font[]) {
     for (const font of fonts) {
         await addFont(projectRoot, font);
+    }
+}
+
+/**
+ * Adds a local font to the project by:
+ * 1. Saving the font files to the fonts folder
+ * 2. Adding the font configuration to fonts.ts using next/font/local
+ * 3. Updating Tailwind config with the new font family
+ * 4. Adding the font variable to the appropriate layout file
+ */
+export async function addLocalFont(
+    projectRoot: string,
+    fontFiles: {
+        file: { name: string; buffer: number[] };
+        name: string;
+        weight: string;
+        style: string;
+    }[],
+) {
+    try {
+        const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_CONFIG);
+        const content = (await readFile(fontPath)) ?? '';
+
+        // Check if the localFont import already exists
+        const localFontImportRegex = /import\s+localFont\s+from\s+['"]next\/font\/local['"]/;
+        const localFontImportExists = localFontImportRegex.test(content);
+
+        // Create fonts directory if it doesn't exist
+        const fontsDir = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
+        if (!fs.existsSync(fontsDir)) {
+            fs.mkdirSync(fontsDir, { recursive: true });
+        }
+
+        // Extract the base font name from the first file
+        const baseFontName = extractFontName(fontFiles[0].file.name);
+        const fontName = camelCase(`custom-${baseFontName}`);
+        // check if the font name already exists
+        const fontNameExists = content.includes(`export const ${fontName} = localFont({`);
+        if (fontNameExists) {
+            console.log(`Font ${fontName} already exists in font.ts`);
+            return;
+        }
+
+        // Save font files and prepare font configuration
+        const fontConfigs = await Promise.all(
+            fontFiles.map(async (fontFile) => {
+                const weight = fontFile.weight;
+                const style = fontFile.style.toLowerCase();
+                const fileName = getFontFileName(baseFontName, weight, style);
+                const filePath = pathModule.join(
+                    fontsDir,
+                    `${fileName}.${fontFile.file.name.split('.').pop()}`,
+                );
+
+                // Save the file
+                const buffer = Buffer.from(fontFile.file.buffer);
+                fs.writeFileSync(filePath, buffer);
+
+                return {
+                    path: pathModule.join(
+                        DefaultSettings.FONT_FOLDER,
+                        `${fileName}.${fontFile.file.name.split('.').pop()}`,
+                    ),
+                    weight,
+                    style,
+                };
+            }),
+        );
+
+        // Generate the font configuration
+        const fontConfig = `
+export const ${fontName} = localFont({
+    src: [
+        ${fontConfigs
+            .map(
+                (config) => `{
+            path: '${config.path}',
+            weight: '${config.weight}',
+            style: '${config.style}'
+        }`,
+            )
+            .join(',\n        ')}
+    ],
+    variable: '--font-${fontName}',
+    display: 'swap',
+});
+`;
+
+        // Add a blank line before the new font if the file doesn't end with blank lines
+        let newContent = content;
+        if (!newContent.endsWith('\n\n')) {
+            if (newContent.endsWith('\n')) {
+                newContent += '\n';
+            } else {
+                newContent += '\n\n';
+            }
+        }
+
+        // Add the localFont import if it doesn't exist
+        if (!localFontImportExists) {
+            newContent = `import localFont from 'next/font/local';\n${newContent}`;
+        }
+
+        newContent += fontConfig;
+
+        await fs.writeFileSync(fontPath, newContent);
+
+        // Update Tailwind config
+        const font: Font = {
+            id: fontName,
+            family: baseFontName,
+            subsets: ['latin'],
+            weight: fontConfigs.map((config) => config.weight),
+            styles: fontConfigs.map((config) => config.style),
+            variable: `--font-${fontName}`,
+            type: 'local',
+        };
+
+        await updateTailwindFontConfig(projectRoot, font);
+
+        // Update layout file
+        const routerConfig = await detectRouterType(projectRoot);
+        if (routerConfig) {
+            if (routerConfig.type === 'app') {
+                const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+                await addFontVariableToAppLayout(layoutPath, fontName);
+            } else {
+                const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+                await addFontVariableToPageApp(appPath, fontName);
+            }
+        }
+
+        return fontName;
+    } catch (error) {
+        console.error('Error adding local font:', error);
+        throw error;
     }
 }

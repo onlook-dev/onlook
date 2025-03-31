@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FontFamily } from './FontFamily';
 import UploadModal from './UploadModal';
 import { useEditorEngine } from '@/components/Context';
+import type { FontFile } from './FontFiles';
 
 interface FontVariantProps {
     name: string;
@@ -34,7 +35,7 @@ export const FONT_VARIANTS = [
         value: '500',
     },
     {
-        name: 'SemiBold',
+        name: 'Semi Bold',
         value: '600',
     },
     {
@@ -81,12 +82,10 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
         setIsUploadModalOpen(true);
     };
 
-    const handleFontUpload = (
-        fonts: { name: string; file: File; weight: string; style: string }[],
-    ) => {
-        // Implement font upload logic
-        console.log('Uploaded fonts:', fonts);
-        // Here you would typically process the fonts and add them to your font system
+    const handleFontUpload = (fonts: FontFile[]) => {
+        console.log('fonts', fonts);
+
+        fontManager.uploadFonts(fonts);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -23,6 +23,7 @@ import {
     scanFonts,
     setDefaultFont,
     getDefaultFont,
+    addLocalFont,
 } from '../assets/fonts/index';
 
 export function listenForCodeMessages() {
@@ -180,5 +181,10 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.GET_DEFAULT_FONT, async (_, args) => {
         const { projectRoot } = args;
         return getDefaultFont(projectRoot);
+    });
+
+    ipcMain.handle(MainChannels.UPLOAD_FONTS, async (_, args) => {
+        const { projectRoot, fontFiles } = args;
+        return addLocalFont(projectRoot, fontFiles);
     });
 }

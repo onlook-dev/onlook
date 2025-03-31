@@ -18,7 +18,7 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
             await addFonts(projectRoot, existedFonts);
         }
 
-        const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
+        const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_CONFIG);
         const content = await readFile(fontPath);
 
         if (!content) {
@@ -35,7 +35,7 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
         const fontImports: Record<string, string> = {};
 
         traverse(ast, {
-            // Extract font imports from 'next/font/google'
+            // Extract font imports from 'next/font/google' and 'next/font/local'
             ImportDeclaration(path) {
                 const source = path.node.source.value;
                 if (source === 'next/font/google') {
@@ -43,6 +43,15 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
                         if (t.isImportSpecifier(specifier) && t.isIdentifier(specifier.imported)) {
                             // Map the imported name to itself (for matching constructors later)
                             fontImports[specifier.imported.name] = specifier.imported.name;
+                        }
+                    });
+                } else if (source === 'next/font/local') {
+                    path.node.specifiers.forEach((specifier) => {
+                        if (
+                            t.isImportDefaultSpecifier(specifier) &&
+                            t.isIdentifier(specifier.local)
+                        ) {
+                            fontImports[specifier.local.name] = 'localFont';
                         }
                     });
                 }
@@ -80,8 +89,9 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
                             // Extract configuration properties
                             const fontConfig: Record<string, any> = {
                                 id: fontId,
-                                family: fontType.replace(/_/g, ' '),
-                                type: 'google',
+                                family:
+                                    fontType === 'localFont' ? fontId : fontType.replace(/_/g, ' '),
+                                type: fontType === 'localFont' ? 'local' : 'google',
                                 subsets: [],
                                 weight: [],
                                 styles: [],
@@ -137,6 +147,42 @@ export async function scanFonts(projectRoot: string): Promise<Font[]> {
                                         )
                                         .map((element) => element.value);
                                 }
+
+                                // Handle local font src property
+                                if (
+                                    propName === 'src' &&
+                                    t.isArrayExpression(prop.value) &&
+                                    fontType === 'localFont'
+                                ) {
+                                    const srcConfigs = prop.value.elements
+                                        .filter((element): element is t.ObjectExpression =>
+                                            t.isObjectExpression(element),
+                                        )
+                                        .map((element) => {
+                                            const srcConfig: Record<string, string> = {};
+                                            element.properties.forEach((srcProp) => {
+                                                if (
+                                                    t.isObjectProperty(srcProp) &&
+                                                    t.isIdentifier(srcProp.key)
+                                                ) {
+                                                    const srcPropName = srcProp.key.name;
+                                                    if (t.isStringLiteral(srcProp.value)) {
+                                                        srcConfig[srcPropName] =
+                                                            srcProp.value.value;
+                                                    }
+                                                }
+                                            });
+                                            return srcConfig;
+                                        });
+
+                                    // Extract weights and styles from src config
+                                    fontConfig.weight = [
+                                        ...new Set(srcConfigs.map((config) => config.weight)),
+                                    ];
+                                    fontConfig.styles = [
+                                        ...new Set(srcConfigs.map((config) => config.style)),
+                                    ];
+                                }
                             });
 
                             fonts.push(fontConfig as Font);
@@ -187,6 +233,16 @@ export async function scanExistingFonts(projectRoot: string): Promise<Font[] | u
                             path.remove();
                         }
                     });
+                } else if (source === 'next/font/local') {
+                    path.node.specifiers.forEach((specifier) => {
+                        if (
+                            t.isImportDefaultSpecifier(specifier) &&
+                            t.isIdentifier(specifier.local)
+                        ) {
+                            fontImports[specifier.local.name] = 'localFont';
+                            path.remove();
+                        }
+                    });
                 }
             },
 
@@ -195,7 +251,6 @@ export async function scanExistingFonts(projectRoot: string): Promise<Font[] | u
                     if (!t.isIdentifier(declarator.id) || !declarator.init) {
                         return;
                     }
-                    // Check if it's a font constructor call
 
                     if (t.isCallExpression(declarator.init)) {
                         const callee = declarator.init.callee;
@@ -207,8 +262,11 @@ export async function scanExistingFonts(projectRoot: string): Promise<Font[] | u
                             if (t.isObjectExpression(configArg)) {
                                 const fontConfig: Record<string, any> = {
                                     id: declarator.id.name,
-                                    family: fontType.replace(/_/g, ' '),
-                                    type: 'google',
+                                    family:
+                                        fontType === 'localFont'
+                                            ? declarator.id.name
+                                            : fontType.replace(/_/g, ' '),
+                                    type: fontType === 'localFont' ? 'local' : 'google',
                                     subsets: [],
                                     weight: [],
                                     styles: [],
@@ -256,6 +314,42 @@ export async function scanExistingFonts(projectRoot: string): Promise<Font[] | u
                                                 t.isStringLiteral(element),
                                             )
                                             .map((element) => element.value);
+                                    }
+
+                                    // Handle local font src property
+                                    if (
+                                        propName === 'src' &&
+                                        t.isArrayExpression(prop.value) &&
+                                        fontType === 'localFont'
+                                    ) {
+                                        const srcConfigs = prop.value.elements
+                                            .filter((element): element is t.ObjectExpression =>
+                                                t.isObjectExpression(element),
+                                            )
+                                            .map((element) => {
+                                                const srcConfig: Record<string, string> = {};
+                                                element.properties.forEach((srcProp) => {
+                                                    if (
+                                                        t.isObjectProperty(srcProp) &&
+                                                        t.isIdentifier(srcProp.key)
+                                                    ) {
+                                                        const srcPropName = srcProp.key.name;
+                                                        if (t.isStringLiteral(srcProp.value)) {
+                                                            srcConfig[srcPropName] =
+                                                                srcProp.value.value;
+                                                        }
+                                                    }
+                                                });
+                                                return srcConfig;
+                                            });
+
+                                        // Extract weights and styles from src config
+                                        fontConfig.weight = [
+                                            ...new Set(srcConfigs.map((config) => config.weight)),
+                                        ];
+                                        fontConfig.styles = [
+                                            ...new Set(srcConfigs.map((config) => config.style)),
+                                        ];
                                     }
                                 });
 

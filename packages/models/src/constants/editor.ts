@@ -73,7 +73,8 @@ export const DefaultSettings = {
     },
     IMAGE_FOLDER: 'public/images',
     IMAGE_DIMENSION: { width: '100px', height: '100px' },
-    FONT_FOLDER: 'app/fonts.ts',
+    FONT_FOLDER: 'public/fonts',
+    FONT_CONFIG: 'app/fonts.ts',
     CHAT_SETTINGS: {
         showSuggestions: true,
         autoApplyCode: true,

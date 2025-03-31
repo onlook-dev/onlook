@@ -85,7 +85,7 @@ async function updateFileWithImport(
     fontName: string,
 ): Promise<void> {
     const { code } = generate(ast);
-    const fontPath = '@/' + DefaultSettings.FONT_FOLDER.replace(/^\.\//, '').replace(/\.ts$/, '');
+    const fontPath = '@/' + DefaultSettings.FONT_CONFIG.replace(/^\.\//, '').replace(/\.ts$/, '');
     const importRegex = new RegExp(`import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`);
     const importMatch = content.match(importRegex);
 
@@ -240,7 +240,7 @@ export async function removeFontVariableFromLayout(
         if (updatedAst && ast) {
             // Remove the font import if it exists
             const fontPath =
-                '@/' + DefaultSettings.FONT_FOLDER.replace(/^\.\//, '').replace(/\.ts$/, '');
+                '@/' + DefaultSettings.FONT_CONFIG.replace(/^\.\//, '').replace(/\.ts$/, '');
             const importRegex = new RegExp(`import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`);
             const importMatch = content.match(importRegex);
 

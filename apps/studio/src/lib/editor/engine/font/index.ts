@@ -4,6 +4,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import { fontFamilies, MainChannels } from '@onlook/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { Font } from '@onlook/models/assets';
+import type { FontFile } from '@/routes/editor/LayersPanel/BrandTab/FontPanel/FontFiles';
 
 export class FontManager {
     private _fonts: Font[] = [];
@@ -109,6 +110,23 @@ export class FontManager {
             this._defaultFont = defaultFont as string;
         } catch (error) {
             console.error('Error getting current font:', error);
+        }
+    }
+
+    async uploadFonts(fontFiles: FontFile[]) {
+        const projectRoot = this.projectsManager.project?.folderPath;
+        if (!projectRoot) {
+            return;
+        }
+
+        try {
+            await invokeMainChannel(MainChannels.UPLOAD_FONTS, {
+                projectRoot,
+                fontFiles,
+            });
+            await this.scanFonts();
+        } catch (error) {
+            console.error('Error uploading fonts:', error);
         }
     }
 

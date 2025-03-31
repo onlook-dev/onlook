@@ -163,6 +163,7 @@ export enum MainChannels {
     REMOVE_FONT = 'remove-font',
     SET_FONT = 'set-font',
     GET_DEFAULT_FONT = 'get-default-font',
+    UPLOAD_FONTS = 'upload-fonts',
 }
 
 export enum GitChannels {
