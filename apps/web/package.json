@@ -1,12 +1,24 @@
 {
+    "productName": "Onlook",
     "name": "@onlook/web",
     "version": "0.1.0",
     "private": true,
+    "homepage": "https://onlook.com",
+    "description": "The first-ever devtool for designers",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
     "type": "module",
     "scripts": {
         "build": "next build",
         "check": "next lint && tsc --noEmit",
-        "dev": "next dev --turbo",
+        "dev": "next dev",
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
         "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
         "lint": "next lint",
@@ -16,6 +28,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@supabase/ssr": "^0.6.1",
         "@t3-oss/env-nextjs": "^0.12.0",
         "@tanstack/react-query": "^5.69.0",
         "@trpc/client": "^11.0.0",
@@ -29,6 +42,7 @@
         "zod": "^3.24.2"
     },
     "devDependencies": {
+        "@onlook/typescript": "*",
         "@eslint/eslintrc": "^3.3.1",
         "@tailwindcss/postcss": "^4.0.15",
         "@types/node": "^20.14.10",
