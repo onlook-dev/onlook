@@ -25,6 +25,9 @@ import {
     getDefaultFont,
     addLocalFont,
 } from '../assets/fonts/index';
+import { FontFileWatcher } from '../assets/fonts/watcher';
+
+const fontFileWatcher = new FontFileWatcher();
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -186,5 +189,10 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.UPLOAD_FONTS, async (_, args) => {
         const { projectRoot, fontFiles } = args;
         return addLocalFont(projectRoot, fontFiles);
+    });
+
+    ipcMain.handle(MainChannels.WATCH_FONT_FILE, async (_, args) => {
+        const { projectRoot } = args;
+        return fontFileWatcher.watch(projectRoot);
     });
 }

@@ -82,6 +82,9 @@ export enum MainChannels {
     REPLACE_APP_STATE = 'replace-app-state',
     UPDATE_PROJECTS = 'update-projects',
 
+    // Fonts
+    WATCH_FONT_FILE = 'watch-font-file',
+
     // Create
     GET_CREATE_PROJECT_PATH = 'get-create-project-path',
     CREATE_NEW_PROJECT = 'create-new-project',

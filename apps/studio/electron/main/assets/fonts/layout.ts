@@ -4,7 +4,7 @@ import { parse, type ParseResult } from '@babel/parser';
 import traverse from '@babel/traverse';
 import generate from '@babel/generator';
 import * as pathModule from 'path';
-import { readFile, writeFile } from '../../code/files';
+import { readFile } from '../../code/files';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
 import { detectRouterType } from '../../pages/helpers';
@@ -12,7 +12,6 @@ import {
     createStringLiteralWithFont,
     createTemplateLiteralWithFont,
     findFontClass,
-    filterFontClasses,
     removeFontsFromClassName,
 } from './utils';
 import type { TraverseCallback } from './types';
@@ -105,7 +104,7 @@ async function updateFileWithImport(
         newContent = fontImport + '\n' + newContent;
     }
 
-    await writeFile(filePath, newContent);
+    fs.writeFileSync(filePath, newContent);
 }
 
 /**
@@ -196,15 +195,17 @@ export async function addFontVariableToElement(
     }
 }
 
-export async function addFontVariableToAppLayout(
-    layoutPath: string,
-    fontName: string,
-): Promise<void> {
-    await addFontVariableToElement(layoutPath, fontName, ['html']);
-}
-
-export async function addFontVariableToPageApp(appPath: string, fontName: string): Promise<void> {
-    await addFontVariableToElement(appPath, fontName, ['div', 'main', 'section', 'body']);
+export async function addFontVariableToLayout(projectRoot: string, fontName: string) {
+    const routerConfig = await detectRouterType(projectRoot);
+    if (routerConfig) {
+        if (routerConfig.type === 'app') {
+            const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+            await addFontVariableToElement(layoutPath, fontName, ['html']);
+        } else {
+            const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+            await addFontVariableToElement(appPath, fontName, ['div', 'main', 'section', 'body']);
+        }
+    }
 }
 
 /**
@@ -267,7 +268,7 @@ export async function removeFontVariableFromLayout(
                 }
             }
 
-            await writeFile(filePath, newContent);
+            fs.writeFileSync(filePath, newContent);
         }
     } catch (error) {
         console.error(`Error removing font variable from ${filePath}:`, error);
@@ -316,7 +317,7 @@ export async function updateFontInLayout(
     });
 
     if (result) {
-        await writeFile(filePath, result);
+        fs.writeFileSync(filePath, result);
     }
 }
 

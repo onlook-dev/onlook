@@ -1,4 +1,4 @@
-import { get, makeAutoObservable } from 'mobx';
+import { get, makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { invokeMainChannel } from '@/lib/utils';
 import { fontFamilies, MainChannels } from '@onlook/models';
@@ -10,6 +10,7 @@ export class FontManager {
     private _fonts: Font[] = [];
     private _fontFamilies: Font[] = [];
     private _defaultFont: string | null = null;
+    private disposers: Array<() => void> = [];
 
     constructor(
         private editorEngine: EditorEngine,
@@ -17,6 +18,20 @@ export class FontManager {
     ) {
         makeAutoObservable(this);
         this.convertFont();
+
+        // Watch for project changes and set up watcher when a project is selected
+        const disposer = reaction(
+            () => this.projectsManager.project?.folderPath,
+            (folderPath) => {
+                console.log('Project path changed, setting up font watcher:', folderPath);
+                if (folderPath) {
+                    this.watchFontFile(folderPath);
+                }
+            },
+            { fireImmediately: true }, // Run immediately if there's already a project
+        );
+
+        this.disposers.push(disposer);
     }
 
     private convertFont() {
@@ -26,6 +41,24 @@ export class FontManager {
             styles: font.styles.map((style) => style.toString()),
             variable: `--font-${font.id}`,
         }));
+    }
+
+    private async watchFontFile(projectRoot: string) {
+        console.log('Setting up font file watcher for path:', projectRoot);
+        if (!projectRoot) {
+            console.log('No project root provided, skipping font file watcher setup');
+            return;
+        }
+
+        try {
+            console.log('Invoking WATCH_FONT_FILE with project root:', projectRoot);
+            await invokeMainChannel(MainChannels.WATCH_FONT_FILE, {
+                projectRoot,
+            });
+            console.log('Font file watcher setup complete');
+        } catch (error) {
+            console.error('Error setting up font file watcher:', error);
+        }
     }
 
     async scanFonts() {
@@ -152,5 +185,9 @@ export class FontManager {
         this._fonts = [];
         this._fontFamilies = [];
         this._defaultFont = null;
+
+        // Clean up all reactions
+        this.disposers.forEach((disposer) => disposer());
+        this.disposers = [];
     }
 }

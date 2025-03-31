@@ -2,17 +2,10 @@ import * as pathModule from 'path';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
 import { camelCase } from 'lodash';
-import {
-    addFontVariableToAppLayout,
-    addFontVariableToPageApp,
-    removeFontVariableFromLayout,
-} from './layout';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
-import { removeFontFromTailwindConfig, updateTailwindFontConfig } from './tailwind';
-import { detectRouterType } from '../../pages';
 import { readFile } from '../../code/files';
 import fs from 'fs';
 import { extractFontName, getFontFileName } from '@onlook/utility';
@@ -89,19 +82,6 @@ export const ${fontName} = ${importName}({
         newContent += fontConfig;
 
         fs.writeFileSync(fontPath, newContent);
-
-        await updateTailwindFontConfig(projectRoot, font);
-
-        const routerConfig = await detectRouterType(projectRoot);
-        if (routerConfig) {
-            if (routerConfig.type === 'app') {
-                const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-                await addFontVariableToAppLayout(layoutPath, fontName);
-            } else {
-                const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-                await addFontVariableToPageApp(appPath, fontName);
-            }
-        }
     } catch (error) {
         console.error('Error adding font:', error);
     }
@@ -251,24 +231,6 @@ export async function removeFont(projectRoot: string, font: Font) {
 
             await fs.writeFileSync(fontPath, code);
 
-            await removeFontFromTailwindConfig(projectRoot, font);
-
-            const routerConfig = await detectRouterType(projectRoot);
-            if (routerConfig) {
-                if (routerConfig.type === 'app') {
-                    const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-                    await removeFontVariableFromLayout(layoutPath, font.id, ['html']);
-                } else {
-                    const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-                    await removeFontVariableFromLayout(appPath, font.id, [
-                        'div',
-                        'main',
-                        'section',
-                        'body',
-                    ]);
-                }
-            }
-
             // Delete font files if found
             if (fontFilesToDelete.length > 0) {
                 for (const fileRelativePath of fontFilesToDelete) {
@@ -303,8 +265,6 @@ export async function addFonts(projectRoot: string, fonts: Font[]) {
  * Adds a local font to the project by:
  * 1. Saving the font files to the fonts folder
  * 2. Adding the font configuration to fonts.ts using next/font/local
- * 3. Updating Tailwind config with the new font family
- * 4. Adding the font variable to the appropriate layout file
  */
 export async function addLocalFont(
     projectRoot: string,
@@ -402,31 +362,6 @@ export const ${fontName} = localFont({
         newContent += fontConfig;
 
         fs.writeFileSync(fontPath, newContent);
-
-        // Update Tailwind config
-        const font: Font = {
-            id: fontName,
-            family: baseFontName,
-            subsets: ['latin'],
-            weight: fontConfigs.map((config) => config.weight),
-            styles: fontConfigs.map((config) => config.style),
-            variable: `--font-${fontName}`,
-            type: 'local',
-        };
-
-        await updateTailwindFontConfig(projectRoot, font);
-
-        // Update layout file
-        const routerConfig = await detectRouterType(projectRoot);
-        if (routerConfig) {
-            if (routerConfig.type === 'app') {
-                const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-                await addFontVariableToAppLayout(layoutPath, fontName);
-            } else {
-                const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-                await addFontVariableToPageApp(appPath, fontName);
-            }
-        }
 
         return fontName;
     } catch (error) {
