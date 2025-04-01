@@ -166,7 +166,8 @@ async function createTailwindColorVariable(
     } else {
         // Variable doesn't exist, add it
         const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
-        fs.writeFileSync(cssPath, updatedCssContent);
+        const formattedContent = await formatContent(cssPath, updatedCssContent);
+        await writeFile(cssPath, formattedContent);
     }
 
     // Update config file
@@ -192,8 +193,9 @@ async function createTailwindColorVariable(
         },
     });
 
-    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
-    fs.writeFileSync(configPath, output.code);
+    const output = generate(updateAst, { compact: false }, configContent);
+    const formattedOutput = await formatContent(configPath, output.code);
+    await writeFile(configPath, formattedOutput);
 
     return { success: true };
 }
@@ -845,7 +847,7 @@ async function deleteColorGroup(
     const formattedCssContent = await formatContent(cssPath, updatedCssContent);
     await writeFile(cssPath, formattedCssContent);
 
-    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
+    const output = generate(updateAst, {}, configContent);
     const formattedContent = await formatContent(configPath, output.code);
     await writeFile(configPath, formattedContent);
 
@@ -1004,7 +1006,7 @@ async function updateDefaultTailwindColor(
         },
     });
 
-    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
+    const output = generate(updateAst, {}, configContent);
     const formattedContent = await formatContent(configPath, output.code);
     await writeFile(configPath, formattedContent);
 

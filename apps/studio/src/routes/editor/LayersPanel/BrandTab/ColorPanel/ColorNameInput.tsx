@@ -31,7 +31,7 @@ const ColorNameInput = ({
     }, [initialName]);
 
     const validateName = (value: string): string | null => {
-        if (value.trim() === '') {
+        if (value === '') {
             return 'Color name cannot be empty';
         }
 
@@ -63,7 +63,7 @@ const ColorNameInput = ({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         setInputValue(newValue);
-        setError(validateName(newValue));
+        setError(validateName(newValue.trim()));
     };
 
     const handleSubmit = () => {
