@@ -31,6 +31,7 @@ import {
     isObjectExpression,
     modifyTailwindConfig,
 } from './helpers';
+import colors from 'tailwindcss/colors';
 
 export async function updateTailwindColorConfig(
     projectRoot: string,
@@ -46,13 +47,12 @@ export async function updateTailwindColorConfig(
             return { success: false, error: 'Failed to prepare color update' };
         }
         // Check if this is a default color update
-        const defaultColorMatch = originalKey && originalKey.match(/^([a-z]+)-(\d+)$/);
+        const [parentKey, keyName] = originalKey.split('-');
+        const isDefaultColor = colors[parentKey as keyof typeof colors];
+        if (isDefaultColor) {
+            const colorIndex = parseInt(keyName) / 100;
 
-        if (defaultColorMatch) {
-            const [, colorFamily, indexStr] = defaultColorMatch;
-            const colorIndex = parseInt(indexStr) / 100;
-
-            await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor, theme);
+            await updateDefaultTailwindColor(colorUpdate, parentKey, colorIndex, newColor, theme);
             return { success: true };
         }
 
@@ -253,14 +253,24 @@ function updateTailwindConfigFile(
                             nestedObj.properties.forEach((nestedProp) => {
                                 if (
                                     nestedProp.type === 'ObjectProperty' &&
-                                    nestedProp.key.type === 'Identifier' &&
-                                    nestedProp.key.name === keyName
+                                    (nestedProp.key.type === 'Identifier' ||
+                                        nestedProp.key.type === 'NumericLiteral') &&
+                                    ((nestedProp.key.type === 'Identifier' &&
+                                        nestedProp.key.name === keyName) ||
+                                        (nestedProp.key.type === 'NumericLiteral' &&
+                                            String(nestedProp.key.value) === keyName))
                                 ) {
                                     if (newName !== keyName) {
-                                        nestedProp.key.name = newName;
+                                        if (nestedProp.key.type === 'Identifier') {
+                                            nestedProp.key.name = newName;
+                                        } else if (nestedProp.key.type === 'NumericLiteral') {
+                                            nestedProp.key = {
+                                                type: 'Identifier',
+                                                name: newName,
+                                            };
+                                        }
                                         keyUpdated = true;
                                     }
-
                                     if (nestedProp.value.type === 'StringLiteral') {
                                         // Special handling for DEFAULT values
                                         const varName =

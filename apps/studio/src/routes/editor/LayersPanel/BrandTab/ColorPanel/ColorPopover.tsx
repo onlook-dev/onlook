@@ -30,15 +30,17 @@ export const ColorPopover = ({
 
     const handleColorChange = (newColor: Color) => {
         setEditedColor(newColor);
-        if (onColorChange) {
-            onColorChange(newColor, editedName);
-        }
     };
     const handleSave = () => {
         let camelCaseName = editedName === DEFAULT_COLOR_NAME ? editedName : camelCase(editedName);
 
         if (existedName?.includes(camelCaseName) && camelCaseName !== brandColor) {
             setError('Color name already exists');
+            return;
+        }
+        // Color name should not contain any special characters
+        if (!/^[a-zA-Z0-9\s]+$/.test(editedName)) {
+            setError('Color name should not contain any special characters');
             return;
         }
 
