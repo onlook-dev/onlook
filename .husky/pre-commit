@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-bun run lint:precommit && bun run format:precommit && git add .
+bun run lint && bun run format && git add .

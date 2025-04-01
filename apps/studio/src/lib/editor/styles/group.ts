@@ -40,7 +40,7 @@ export const PositionGroup = [
     new CompoundStyleImpl(
         CompoundStyleKey.Position,
         new SingleStyleImpl('position', 'relative', 'Position', StyleType.Select, {
-            options: ['relative', 'absolute', 'fixed', 'static'],
+            options: ['relative', 'absolute', 'fixed', 'static', 'sticky'],
         }),
         [
             new SingleStyleImpl('top', '', 'Top', StyleType.Number, {
