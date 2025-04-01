@@ -8,6 +8,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
 
 interface FontVariantProps {
     name: string;
@@ -61,7 +62,18 @@ export const FontFamily = ({
                     <Icons.ChevronRight
                         className={`h-4 w-4 mr-2 transition-transform ${expanded ? 'rotate-90' : ''}`}
                     />
-                    <span className="text-sm font-normal">{name}</span>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="text-sm font-normal truncate max-w-40">
+                                    {name}
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{name}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                     {isDefault && (
                         <span className="ml-2 text-xs text-muted-foreground">(Default)</span>
                     )}

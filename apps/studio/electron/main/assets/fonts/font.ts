@@ -6,7 +6,7 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
-import { readFile, writeFile } from '../../code/files';
+import { formatContent, readFile, writeFile } from '../../code/files';
 import fs from 'fs';
 import { extractFontName, getFontFileName } from '@onlook/utility';
 
@@ -24,64 +24,112 @@ export async function addFont(projectRoot: string, font: Font) {
         // Convert the font family to the import name format (Pascal case, no spaces)
         const importName = font.family.replace(/\s+/g, '_');
         const fontName = camelCase(font.id);
-        // Check if the import already exists
-        const importRegex = new RegExp(
-            `import\\s*{[^}]*${importName}[^}]*}\\s*from\\s*['"]next/font/google['"]`,
-        );
-        const importExists = importRegex.test(content);
 
-        // Check if the font export already exists
-        const exportRegex = new RegExp(`export\\s+const\\s+${fontName}\\s*=`);
-        const exportExists = exportRegex.test(content);
+        // Parse the file content using Babel
+        const ast = parse(content, {
+            sourceType: 'module',
+            plugins: ['typescript', 'jsx'],
+        });
 
-        if (exportExists) {
+        let hasGoogleFontImport = false;
+        let hasImportName = false;
+        let hasFontExport = false;
+
+        // Check if import and export already exists
+        traverse(ast, {
+            ImportDeclaration(path) {
+                if (path.node.source.value === 'next/font/google') {
+                    hasGoogleFontImport = true;
+
+                    // Check if this specific font is already imported
+                    path.node.specifiers.forEach((specifier) => {
+                        if (
+                            t.isImportSpecifier(specifier) &&
+                            t.isIdentifier(specifier.imported) &&
+                            specifier.imported.name === importName
+                        ) {
+                            hasImportName = true;
+                        }
+                    });
+                }
+            },
+
+            ExportNamedDeclaration(path) {
+                if (
+                    t.isVariableDeclaration(path.node.declaration) &&
+                    path.node.declaration.declarations.some(
+                        (declaration) =>
+                            t.isIdentifier(declaration.id) && declaration.id.name === fontName,
+                    )
+                ) {
+                    hasFontExport = true;
+                }
+            },
+        });
+
+        if (hasFontExport) {
             console.log(`Font ${fontName} already exists in font.ts`);
             return;
         }
 
-        let newContent = content;
+        // Create the AST nodes for the new font
+        const fontConfigObject = t.objectExpression([
+            t.objectProperty(
+                t.identifier('subsets'),
+                t.arrayExpression(font.subsets.map((s) => t.stringLiteral(s))),
+            ),
+            t.objectProperty(
+                t.identifier('weight'),
+                t.arrayExpression((font.weight || []).map((w) => t.stringLiteral(w))),
+            ),
+            t.objectProperty(
+                t.identifier('style'),
+                t.arrayExpression((font.styles || []).map((s) => t.stringLiteral(s))),
+            ),
+            t.objectProperty(t.identifier('variable'), t.stringLiteral(font.variable)),
+            t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
+        ]);
 
-        if (!importExists) {
-            // Check if there's already an import from next/font/google
-            const googleImportRegex = /import\s*{([^}]*)}\s*from\s*['"]next\/font\/google['"]/;
-            const googleImportMatch = content.match(googleImportRegex);
+        const fontDeclaration = t.variableDeclaration('const', [
+            t.variableDeclarator(
+                t.identifier(fontName),
+                t.callExpression(t.identifier(importName), [fontConfigObject]),
+            ),
+        ]);
 
-            if (googleImportMatch) {
-                const currentImports = googleImportMatch[1];
-                const newImport = currentImports.includes(importName)
-                    ? currentImports
-                    : `${currentImports}, ${importName}`;
-                newContent = newContent.replace(
-                    googleImportRegex,
-                    `import {${newImport}} from 'next/font/google'`,
-                );
-            } else {
-                newContent = `import { ${importName} } from 'next/font/google';\n${newContent}`;
-            }
+        const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
+
+        // Add the export declaration to the end of the file
+        ast.program.body.push(exportDeclaration);
+
+        // Add or update the import if needed
+        if (!hasGoogleFontImport) {
+            // Add new import from next/font/google
+            const importDeclaration = t.importDeclaration(
+                [t.importSpecifier(t.identifier(importName), t.identifier(importName))],
+                t.stringLiteral('next/font/google'),
+            );
+
+            ast.program.body.unshift(importDeclaration);
+        } else if (!hasImportName) {
+            // Update existing import to include the new font
+            traverse(ast, {
+                ImportDeclaration(path) {
+                    if (path.node.source.value === 'next/font/google') {
+                        path.node.specifiers.push(
+                            t.importSpecifier(t.identifier(importName), t.identifier(importName)),
+                        );
+                    }
+                },
+            });
         }
 
-        const fontConfig = `
-export const ${fontName} = ${importName}({
-    subsets: [${font.subsets.map((s) => `'${s}'`).join(', ')}],
-    weight: [${font.weight?.map((w) => `'${w}'`).join(', ')}],
-    style: [${font.styles?.map((s) => `'${s}'`).join(', ')}],
-    variable: '${font.variable}',
-    display: 'swap',
-});
-`;
+        // Generate the new code from the AST
+        const { code } = generate(ast);
 
-        // Add a blank line before the new font if the file doesn't end with blank lines
-        if (!newContent.endsWith('\n\n')) {
-            if (newContent.endsWith('\n')) {
-                newContent += '\n';
-            } else {
-                newContent += '\n\n';
-            }
-        }
-
-        newContent += fontConfig;
-
-        fs.writeFileSync(fontPath, newContent);
+        // Write the updated content back to the file
+        const formattedCode = await formatContent(fontPath, code);
+        await writeFile(fontPath, formattedCode);
     } catch (error) {
         console.error('Error adding font:', error);
     }
@@ -228,8 +276,8 @@ export async function removeFont(projectRoot: string, font: Font) {
                     /import\s+localFont\s+from\s+['"]next\/font\/local['"];\n?/g;
                 code = code.replace(localFontImportRegex, '');
             }
-
-            await writeFile(fontPath, code);
+            const formattedCode = await formatContent(fontPath, code);
+            await writeFile(fontPath, formattedCode);
 
             // Delete font files if found
             if (fontFilesToDelete.length > 0) {
