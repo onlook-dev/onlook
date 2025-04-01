@@ -1,4 +1,5 @@
 "use client";
+import { Routes } from "@/utils/constants";
 import { createClient } from "@/utils/supabase/client";
 import { type User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
@@ -16,6 +17,11 @@ export default function Main() {
         fetchUser();
     }, []);
 
+    const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        redirect(Routes.LOGIN);
+    }
+
     return (
         <main className="flex min-h-screen flex-col items-center justify-center relative">
             {/* Top bar */}
@@ -24,12 +30,12 @@ export default function Main() {
                 {user ? (
                     <div className="flex items-center gap-2">
                         <p>{user.user_metadata.name}</p>
-                        <button onClick={() => supabase.auth.signOut()}>
+                        <button onClick={handleSignOut}>
                             Sign Out
                         </button>
                     </div>
                 ) : (
-                    <button onClick={() => redirect("/login")}>
+                    <button onClick={() => redirect(Routes.LOGIN)}>
                         Sign In
                     </button>
                 )}

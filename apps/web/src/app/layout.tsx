@@ -1,9 +1,10 @@
 import "~/styles/globals.css";
 
+import { TRPCReactProvider } from "@/trpc/react";
 import { type Metadata } from "next";
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
 import { Geist } from "next/font/google";
-
-import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
     title: "Onlook",
@@ -16,14 +17,29 @@ const geist = Geist({
     variable: "--font-geist-sans",
 });
 
-export default function RootLayout({
-    children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({
+    children
+}: {
+    children: React.ReactNode;
+}) {
+    const locale = await getLocale();
+
     return (
-        <html lang="en" className={`${geist.variable}`}>
+        <html lang={locale} className={`${geist.variable}`}>
             <body>
-                <TRPCReactProvider>{children}</TRPCReactProvider>
+                <TRPCReactProvider>
+                    <NextIntlClientProvider>
+                        {/* <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme"> */}
+                        {/* <TooltipProvider> */}
+                        {/* @ts-expect-error - children is a ReactNode */}
+                        {children}
+                        {/* <Modals /> */}
+                        {/* <Toaster /> */}
+                        {/* </TooltipProvider> */}
+                        {/* </ThemeProvider> */}
+                    </NextIntlClientProvider>
+                </TRPCReactProvider>
             </body>
-        </html>
+        </html >
     );
 }
