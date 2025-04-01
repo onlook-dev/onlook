@@ -7,7 +7,7 @@ import type { Color } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { BrandPalletGroup } from './ColorPalletGroup';
-import GroupNameInput from './GroupNameInput';
+import ColorNameInput from './ColorNameInput';
 import { camelCase } from 'lodash';
 
 interface ColorPanelProps {
@@ -131,7 +131,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                 </div>
                 {isAddingNewGroup ? (
                     <div className="flex flex-col gap-1">
-                        <GroupNameInput
+                        <ColorNameInput
                             initialName=""
                             onSubmit={handleAddNewGroup}
                             onCancel={() => setIsAddingNewGroup(false)}

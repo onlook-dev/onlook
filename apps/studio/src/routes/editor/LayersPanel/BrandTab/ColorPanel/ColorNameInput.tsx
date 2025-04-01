@@ -4,23 +4,23 @@ import { useState, useEffect } from 'react';
 import { toNormalCase } from '@onlook/utility';
 import { useEditorEngine } from '@/components/Context';
 
-interface GroupNameInputProps {
+interface ColorNameInputProps {
     initialName: string;
     onSubmit: (newName: string) => void;
     onCancel: () => void;
     existingNames?: string[];
     autoFocus?: boolean;
-    customValidate?: (name: string) => string | null;
+    disabled?: boolean;
 }
 
-const GroupNameInput = ({
+const ColorNameInput = ({
     initialName,
     onSubmit,
     onCancel,
     existingNames = [],
     autoFocus = true,
-    customValidate,
-}: GroupNameInputProps) => {
+    disabled = false,
+}: ColorNameInputProps) => {
     const [inputValue, setInputValue] = useState(toNormalCase(initialName));
     const [error, setError] = useState<string | null>(null);
     const editorEngine = useEditorEngine();
@@ -31,20 +31,16 @@ const GroupNameInput = ({
     }, [initialName]);
 
     const validateName = (value: string): string | null => {
-        // If custom validation function is provided, use it first
-        if (customValidate) {
-            const customError = customValidate(value);
-            if (customError) {
-                return customError;
-            }
-        }
         if (value.trim() === '') {
-            return 'Group name cannot be empty';
+            return 'Color name cannot be empty';
         }
 
-        // Only allow text characters, numbers, and spaces and not start with number
-        if (!/^[a-zA-Z0-9\s]+$/.test(value) || /^[0-9]/.test(value)) {
-            return 'Group name can only contain text, numbers, spaces and not start with number';
+        // Allow full numbers (e.g. "123") but not allow names starting with numbers (e.g. "1abc")
+        if (!/^[a-zA-Z0-9\s]+$/.test(value)) {
+            return 'Color name can only contain text, numbers, and spaces';
+        }
+        if (/^[0-9]/.test(value) && !/^[0-9]+$/.test(value)) {
+            return 'Color name cannot start with a number';
         }
 
         // Skip this check if we're editing the same name
@@ -58,7 +54,7 @@ const GroupNameInput = ({
             themeManagerNames.includes(camelCase(value)) ||
             existingNames.includes(camelCase(value))
         ) {
-            return 'Group name already exists';
+            return 'Color name already exists';
         }
 
         return null;
@@ -97,9 +93,10 @@ const GroupNameInput = ({
                     onKeyDown={handleKeyDown}
                     className={`text-sm font-normal w-full rounded-md border ${
                         error ? 'border-red-500' : 'border-white/10'
-                    } bg-background-secondary px-2 py-1`}
+                    } bg-background-secondary px-2 py-1 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     placeholder="Enter group name"
                     autoFocus={autoFocus}
+                    disabled={disabled}
                 />
             </TooltipTrigger>
             <TooltipPortal>
@@ -111,4 +108,4 @@ const GroupNameInput = ({
     );
 };
 
-export default GroupNameInput;
+export default ColorNameInput;

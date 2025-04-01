@@ -14,8 +14,7 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { Color, toNormalCase } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
-import { camelCase } from 'lodash';
-import GroupNameInput from './GroupNameInput';
+import ColorNameInput from './ColorNameInput';
 
 export interface ColorItem {
     name: string;
@@ -128,7 +127,7 @@ export const BrandPalletGroup = ({
         <div className="flex flex-col gap-1 group/palette">
             <div className="flex justify-between items-center">
                 {!isDefaultPalette && isRenaming ? (
-                    <GroupNameInput
+                    <ColorNameInput
                         initialName={title}
                         onSubmit={(newName) => {
                             onRename(title, newName);
