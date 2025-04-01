@@ -1,8 +1,8 @@
+import { FONT_VARIANTS } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { extractFontName } from '@onlook/utility';
+import { extractFontParts } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { FONT_VARIANTS } from '.';
 
 export interface FontFile {
     name: string;
@@ -37,7 +37,7 @@ const FontFiles = observer(
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col">
                                 <span className="text-sm font-normal">
-                                    {extractFontName(font.file.name)}
+                                    {extractFontParts(font.file.name).family}
                                 </span>
                                 <span className="text-xs text-muted-foreground">
                                     {font.file.name}

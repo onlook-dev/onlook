@@ -8,7 +8,7 @@ import * as t from '@babel/types';
 import generate from '@babel/generator';
 import { formatContent, readFile, writeFile } from '../../code/files';
 import fs from 'fs';
-import { extractFontName, getFontFileName } from '@onlook/utility';
+import { extractFontParts, getFontFileName } from '@onlook/utility';
 
 /**
  * Adds a new font to the project by:
@@ -327,21 +327,47 @@ export async function addLocalFont(
         const fontPath = pathModule.join(projectRoot, DefaultSettings.FONT_CONFIG);
         const content = (await readFile(fontPath)) ?? '';
 
+        const ast = parse(content, {
+            sourceType: 'module',
+            plugins: ['typescript', 'jsx'],
+        });
+
         // Check if the localFont import already exists
-        const localFontImportRegex = /import\s+localFont\s+from\s+['"]next\/font\/local['"]/;
-        const localFontImportExists = localFontImportRegex.test(content);
+        let hasLocalFontImport = false;
+
+        traverse(ast, {
+            ImportDeclaration(path) {
+                if (path.node.source.value === 'next/font/local') {
+                    hasLocalFontImport = true;
+                }
+            },
+        });
 
         // Create fonts directory if it doesn't exist
         const fontsDir = pathModule.join(projectRoot, DefaultSettings.FONT_FOLDER);
         if (!fs.existsSync(fontsDir)) {
             fs.mkdirSync(fontsDir, { recursive: true });
         }
-
         // Extract the base font name from the first file
-        const baseFontName = extractFontName(fontFiles[0].file.name);
+        const baseFontName = extractFontParts(fontFiles[0].file.name)?.family;
         const fontName = camelCase(`custom-${baseFontName}`);
-        // check if the font name already exists
-        const fontNameExists = content.includes(`export const ${fontName} = localFont({`);
+
+        let fontNameExists = false;
+
+        traverse(ast, {
+            ExportNamedDeclaration(path) {
+                if (
+                    t.isVariableDeclaration(path.node.declaration) &&
+                    path.node.declaration.declarations.some(
+                        (declaration) =>
+                            t.isIdentifier(declaration.id) && declaration.id.name === fontName,
+                    )
+                ) {
+                    fontNameExists = true;
+                }
+            },
+        });
+
         if (fontNameExists) {
             console.log(`Font ${fontName} already exists in font.ts`);
             return;
@@ -373,43 +399,42 @@ export async function addLocalFont(
             }),
         );
 
-        // Generate the font configuration
-        const fontConfig = `
-export const ${fontName} = localFont({
-    src: [
-        ${fontConfigs
-            .map(
-                (config) => `{
-            path: '../${config.path}',
-            weight: '${config.weight}',
-            style: '${config.style}'
-        }`,
-            )
-            .join(',\n        ')}
-    ],
-    variable: '--font-${fontName}',
-    display: 'swap',
-});
-`;
+        const srcArrayElements = fontConfigs.map((config) =>
+            t.objectExpression([
+                t.objectProperty(t.identifier('path'), t.stringLiteral(`../${config.path}`)),
+                t.objectProperty(t.identifier('weight'), t.stringLiteral(config.weight)),
+                t.objectProperty(t.identifier('style'), t.stringLiteral(config.style)),
+            ]),
+        );
 
-        // Add a blank line before the new font if the file doesn't end with blank lines
-        let newContent = content;
-        if (!newContent.endsWith('\n\n')) {
-            if (newContent.endsWith('\n')) {
-                newContent += '\n';
-            } else {
-                newContent += '\n\n';
-            }
+        const fontConfigObject = t.objectExpression([
+            t.objectProperty(t.identifier('src'), t.arrayExpression(srcArrayElements)),
+            t.objectProperty(t.identifier('variable'), t.stringLiteral(`--font-${fontName}`)),
+            t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
+        ]);
+
+        const fontDeclaration = t.variableDeclaration('const', [
+            t.variableDeclarator(
+                t.identifier(fontName),
+                t.callExpression(t.identifier('localFont'), [fontConfigObject]),
+            ),
+        ]);
+
+        const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
+
+        ast.program.body.push(exportDeclaration);
+
+        if (!hasLocalFontImport) {
+            const importDeclaration = t.importDeclaration(
+                [t.importDefaultSpecifier(t.identifier('localFont'))],
+                t.stringLiteral('next/font/local'),
+            );
+            ast.program.body.unshift(importDeclaration);
         }
 
-        // Add the localFont import if it doesn't exist
-        if (!localFontImportExists) {
-            newContent = `import localFont from 'next/font/local';\n${newContent}`;
-        }
-
-        newContent += fontConfig;
-
-        await writeFile(fontPath, newContent);
+        const { code } = generate(ast);
+        const formattedCode = await formatContent(fontPath, code);
+        await writeFile(fontPath, formattedCode);
 
         return fontName;
     } catch (error) {

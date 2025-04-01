@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
 import { FontFamily } from './FontFamily';
 import { observer } from 'mobx-react-lite';
-import { FONT_VARIANTS } from '.';
 import { useEffect } from 'react';
+import { FONT_VARIANTS } from '@onlook/models/constants';
 
 const SystemFont = observer(() => {
     const editorEngine = useEditorEngine();

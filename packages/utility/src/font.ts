@@ -1,46 +1,60 @@
+import { FONT_VARIANTS } from '@onlook/models/constants';
+
 /**
  * Extracts the actual font name from a font file name
  * Removes file extensions, weight/style indicators, and other common suffixes
  */
-function extractFontName(fileName: string): string {
+
+interface FontParts {
+    family: string;
+    weight: string;
+    style: string;
+}
+
+function extractFontParts(fileName: string): FontParts {
     // Remove file extension
     let name = fileName.replace(/\.[^/.]+$/, '');
 
     // Define common font weight and style terms
     const weightTerms = [
-        'thin',
-        'hairline',
-        'extralight',
         'extra light',
-        'ultralight',
         'ultra light',
-        'light',
-        'regular',
-        'normal',
-        'book',
-        'medium',
-        'semibold',
-        'semi bold',
-        'demibold',
-        'demi bold',
-        'bold',
-        'extrabold',
+        'extra black',
+        'ultra black',
+        'extralight',
+        'ultralight',
         'extra bold',
-        'ultrabold',
         'ultra bold',
+        'extrablack',
+        'ultrablack',
+        'semi bold',
+        'demi bold',
+        'extrabold',
+        'ultrabold',
+        'hairline',
+        'semibold',
+        'demibold',
+        'regular',
+        'medium',
+        'normal',
+        'light',
         'black',
         'heavy',
-        'extrablack',
-        'extra black',
-        'ultrablack',
-        'ultra black',
+        'thin',
+        'bold',
+        'book',
     ];
 
     const styleTerms = ['italic', 'oblique', 'slanted', 'kursiv'];
 
+    let family = '';
+    let weight = '';
+    let style = '';
+
     // Special case: If the name contains spaces without hyphens or underscores, return as title case
     if (/\s/.test(name) && !/[-_]/.test(name)) {
-        return toTitleCase(name);
+        family = toTitleCase(name);
+        return { family, weight: '', style: '' }; // Exit early for names with spaces but no delimiters
     }
 
     const parts = name.split(/[-_\s]+/);
@@ -49,7 +63,13 @@ function extractFontName(fileName: string): string {
     const filteredParts = parts.filter((part) => {
         const lowerPart = part.toLowerCase();
         // Check if part is a weight term or style term
-        if (weightTerms.includes(lowerPart) || styleTerms.includes(lowerPart)) {
+        if (weightTerms.includes(lowerPart)) {
+            weight = lowerPart;
+            return false;
+        }
+
+        if (styleTerms.includes(lowerPart)) {
+            style = lowerPart;
             return false;
         }
 
@@ -58,6 +78,8 @@ function extractFontName(fileName: string): string {
             for (const styleTerm of styleTerms) {
                 const combined = weightTerm + styleTerm;
                 if (lowerPart === combined) {
+                    weight = weightTerm;
+                    style = styleTerm;
                     return false;
                 }
             }
@@ -65,19 +87,59 @@ function extractFontName(fileName: string): string {
 
         // Check for numeric weights (e.g., 100, 300, 700)
         if (/^\d+(?:wt|weight)?$/.test(part)) {
+            weight = part.replace(/[^\d]/g, '');
             return false;
         }
 
         return true;
     });
 
-    // Join the filtered parts with spaces
-    name = filteredParts.join(' ');
+    if (!family) {
+        family = filteredParts.join(' ');
+        family = family.replace(/([a-z])([A-Z])/g, '$1 $2');
+        family = toTitleCase(family);
+    }
 
-    // Handle camelCase in the final name
-    name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+    // Convert weight to numeric value
+    if (weight) {
+        let match = FONT_VARIANTS.find(
+            (variant) => variant.name.toLowerCase() === weight.toLowerCase(),
+        );
 
-    return toTitleCase(name.trim());
+        if (!match && /^\d+$/.test(weight)) {
+            match = FONT_VARIANTS.find((variant) => variant.value === weight);
+        }
+
+        if (!match) {
+            const weightLower = weight.toLowerCase();
+            const weightNormalized = weightLower.replace(/\s+/g, '');
+
+            // First try to find exact matches (normalized for spaces)
+            match = FONT_VARIANTS.find((variant) => {
+                const variantLower = variant.name.toLowerCase();
+                const variantNormalized = variantLower.replace(/\s+/g, '');
+
+                return weightNormalized === variantNormalized || weightLower === variantLower;
+            });
+
+            // If no exact match found, then try partial matches
+            if (!match) {
+                match = FONT_VARIANTS.find((variant) => {
+                    const variantLower = variant.name.toLowerCase();
+
+                    return (
+                        weightLower.includes(variantLower) &&
+                        // Only allow partial matches for single-word variants
+                        !variantLower.includes(' ')
+                    );
+                });
+            }
+        }
+
+        weight = match?.value || weight;
+    }
+
+    return { family, weight, style };
 }
 
 function toTitleCase(str: string): string {
@@ -110,4 +172,4 @@ function getFontFileName(baseName: string, weight: string, style: string): strin
     return `${baseName.replace(/\s+/g, '')}${weightName}${styleName}`;
 }
 
-export { extractFontName, getFontFileName };
+export { extractFontParts, getFontFileName };

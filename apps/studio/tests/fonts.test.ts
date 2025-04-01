@@ -1,41 +1,113 @@
-import { extractFontName, getFontFileName } from '@onlook/utility';
+import { extractFontParts, getFontFileName } from '@onlook/utility';
 
 describe('Font Utilities', () => {
-    describe('extractFontName', () => {
-        it('should extract clean font names from various file formats', () => {
-            expect(extractFontName('Roboto.ttf')).toBe('Roboto');
-            expect(extractFontName('OpenSans.woff2')).toBe('Open Sans');
-            expect(extractFontName('Montserrat-Regular.otf')).toBe('Montserrat');
+    describe('extractFontParts', () => {
+        it('should extract font parts from various file formats', () => {
+            expect(extractFontParts('Roboto.ttf')).toEqual({
+                family: 'Roboto',
+                weight: '',
+                style: '',
+            });
+            expect(extractFontParts('OpenSans.woff2')).toEqual({
+                family: 'Open Sans',
+                weight: '',
+                style: '',
+            });
+            expect(extractFontParts('Montserrat-Regular.otf')).toEqual({
+                family: 'Montserrat',
+                weight: '400',
+                style: '',
+            });
         });
 
         it('should handle weight indicators', () => {
-            expect(extractFontName('Roboto-Bold.ttf')).toBe('Roboto');
-            expect(extractFontName('OpenSans-ExtraLight.woff2')).toBe('Open Sans');
-            expect(extractFontName('Montserrat-BlackItalic.otf')).toBe('Montserrat');
+            expect(extractFontParts('Roboto-Bold.ttf')).toEqual({
+                family: 'Roboto',
+                weight: '700',
+                style: '',
+            });
+            expect(extractFontParts('OpenSans-ExtraLight.woff2')).toEqual({
+                family: 'Open Sans',
+                weight: '200',
+                style: '',
+            });
+            expect(extractFontParts('Montserrat-BlackItalic.otf')).toEqual({
+                family: 'Montserrat',
+                weight: '900',
+                style: 'italic',
+            });
         });
 
         it('should handle numeric weights', () => {
-            expect(extractFontName('Roboto-700.ttf')).toBe('Roboto');
-            expect(extractFontName('OpenSans-300wt.woff2')).toBe('Open Sans');
-            expect(extractFontName('Montserrat-400weight.otf')).toBe('Montserrat');
+            expect(extractFontParts('Roboto-700.ttf')).toEqual({
+                family: 'Roboto',
+                weight: '700',
+                style: '',
+            });
+            expect(extractFontParts('OpenSans-300wt.woff2')).toEqual({
+                family: 'Open Sans',
+                weight: '300',
+                style: '',
+            });
+            expect(extractFontParts('Montserrat-400weight.otf')).toEqual({
+                family: 'Montserrat',
+                weight: '400',
+                style: '',
+            });
         });
 
         it('should handle style indicators', () => {
-            expect(extractFontName('Roboto-Italic.ttf')).toBe('Roboto');
-            expect(extractFontName('OpenSans-Oblique.woff2')).toBe('Open Sans');
-            expect(extractFontName('Montserrat-Slanted.otf')).toBe('Montserrat');
+            expect(extractFontParts('Roboto-Italic.ttf')).toEqual({
+                family: 'Roboto',
+                weight: '',
+                style: 'italic',
+            });
+            expect(extractFontParts('OpenSans-Oblique.woff2')).toEqual({
+                family: 'Open Sans',
+                weight: '',
+                style: 'oblique',
+            });
+            expect(extractFontParts('Montserrat-Slanted.otf')).toEqual({
+                family: 'Montserrat',
+                weight: '',
+                style: 'slanted',
+            });
         });
 
         it('should handle complex combinations', () => {
-            expect(extractFontName('Roboto-BoldItalic-700.ttf')).toBe('Roboto');
-            expect(extractFontName('OpenSans-ExtraLightOblique-200.woff2')).toBe('Open Sans');
-            expect(extractFontName('Montserrat-BlackItalic-900weight.otf')).toBe('Montserrat');
+            expect(extractFontParts('Roboto-BoldItalic-700.ttf')).toEqual({
+                family: 'Roboto',
+                weight: '700',
+                style: 'italic',
+            });
+            expect(extractFontParts('OpenSans-ExtraLightOblique-200.woff2')).toEqual({
+                family: 'Open Sans',
+                weight: '200',
+                style: 'oblique',
+            });
+            expect(extractFontParts('Montserrat-BlackItalic-900weight.otf')).toEqual({
+                family: 'Montserrat',
+                weight: '900',
+                style: 'italic',
+            });
         });
 
         it('should handle various separators', () => {
-            expect(extractFontName('Roboto_Bold.ttf')).toBe('Roboto');
-            expect(extractFontName('Open Sans Extra Light.woff2')).toBe('Open Sans Extra Light');
-            expect(extractFontName('Montserrat-Black_Italic.otf')).toBe('Montserrat');
+            expect(extractFontParts('Roboto_Bold.ttf')).toEqual({
+                family: 'Roboto',
+                weight: '700',
+                style: '',
+            });
+            expect(extractFontParts('Open Sans Extra Light.woff2')).toEqual({
+                family: 'Open Sans Extra Light',
+                weight: '',
+                style: '',
+            });
+            expect(extractFontParts('Montserrat-Black_Italic.otf')).toEqual({
+                family: 'Montserrat',
+                weight: '900',
+                style: 'italic',
+            });
         });
     });
 

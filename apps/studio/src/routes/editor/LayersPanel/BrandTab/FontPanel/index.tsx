@@ -7,50 +7,12 @@ import { FontFamily } from './FontFamily';
 import UploadModal from './UploadModal';
 import { useEditorEngine } from '@/components/Context';
 import type { FontFile } from './FontFiles';
+import { FONT_VARIANTS } from '@onlook/models/constants';
 
 interface FontVariantProps {
     name: string;
     isActive?: boolean;
 }
-
-export const FONT_VARIANTS = [
-    {
-        name: 'Thin',
-        value: '100',
-    },
-    {
-        name: 'Extra Light',
-        value: '200',
-    },
-    {
-        name: 'Light',
-        value: '300',
-    },
-    {
-        name: 'Regular',
-        value: '400',
-    },
-    {
-        name: 'Medium',
-        value: '500',
-    },
-    {
-        name: 'Semi Bold',
-        value: '600',
-    },
-    {
-        name: 'Bold',
-        value: '700',
-    },
-    {
-        name: 'Extra Bold',
-        value: '800',
-    },
-    {
-        name: 'Black',
-        value: '900',
-    },
-];
 
 const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
     <div
@@ -83,8 +45,6 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
     };
 
     const handleFontUpload = (fonts: FontFile[]) => {
-        console.log('fonts', fonts);
-
         fontManager.uploadFonts(fonts);
     };
 

@@ -9,6 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import type { FontFile } from './FontFiles';
 import FontFiles from './FontFiles';
+import { extractFontParts } from '@onlook/utility';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -24,14 +25,15 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
             const newFiles = await Promise.all(
                 Array.from(event.target.files).map(async (file) => {
                     const buffer = await file.arrayBuffer();
+                    const parts = extractFontParts(file.name);
                     return {
-                        name: file.name.split('.')[0],
+                        name: parts.family,
                         file: {
                             name: file.name,
                             buffer: Array.from(new Uint8Array(buffer)),
                         },
-                        weight: '400',
-                        style: 'Regular',
+                        weight: parts.weight,
+                        style: parts.style,
                     };
                 }),
             );
@@ -45,14 +47,15 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
             const newFiles = await Promise.all(
                 Array.from(event.dataTransfer.files).map(async (file) => {
                     const buffer = await file.arrayBuffer();
+                    const parts = extractFontParts(file.name);
                     return {
-                        name: file.name.split('.')[0],
+                        name: parts.family,
                         file: {
                             name: file.name,
                             buffer: Array.from(new Uint8Array(buffer)),
                         },
-                        weight: '400',
-                        style: 'Regular',
+                        weight: parts.weight,
+                        style: parts.style,
                     };
                 }),
             );

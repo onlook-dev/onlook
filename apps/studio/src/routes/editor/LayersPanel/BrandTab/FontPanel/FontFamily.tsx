@@ -8,7 +8,8 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 
 interface FontVariantProps {
     name: string;
@@ -62,18 +63,23 @@ export const FontFamily = ({
                     <Icons.ChevronRight
                         className={`h-4 w-4 mr-2 transition-transform ${expanded ? 'rotate-90' : ''}`}
                     />
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="text-sm font-normal truncate max-w-40">
-                                    {name}
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>{name}</p>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-sm font-normal truncate max-w-40">{name}</span>
+                        </TooltipTrigger>
+                        <TooltipPortal container={document.getElementById('style-panel')}>
+                            <TooltipContent
+                                side="right"
+                                align="center"
+                                sideOffset={10}
+                                className="animation-none max-w-[200px] shadow"
+                            >
+                                {' '}
+                                <TooltipArrow className="fill-foreground" />
+                                <p className="break-words">{name}</p>
                             </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                        </TooltipPortal>
+                    </Tooltip>
                     {isDefault && (
                         <span className="ml-2 text-xs text-muted-foreground">(Default)</span>
                     )}
