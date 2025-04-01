@@ -35,12 +35,21 @@ const ProjectTab = observer(() => {
     };
 
     const handleUpdateUrl = (url: string) => {
+        let port = url.split(':').pop();
+
+        try {
+            const parsedUrl = new URL(url);
+            port = parsedUrl.port;
+        } catch (error) {
+            console.error('Invalid URL');
+            return;
+        }
         projectsManager.updatePartialProject({
             url,
             commands: {
                 ...project?.commands,
-                run: 'npx next dev -p ' + url.split(':').pop(),
-                build: 'npx next build -p ' + url.split(':').pop(),
+                run: 'npx next dev -p ' + port,
+                build: 'npx next build -p ' + port,
             },
         });
         projectsManager.editorEngine?.canvas.saveFrames(
