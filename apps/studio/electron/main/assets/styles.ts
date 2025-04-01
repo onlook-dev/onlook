@@ -20,7 +20,7 @@ import postcss from 'postcss';
 import { getNodeClasses } from '../code/classes';
 import { getOidFromJsxElement } from '../code/diff/helpers';
 import { transformAst } from '../code/diff/transform';
-import { readFile } from '../code/files';
+import { formatContent, readFile, writeFile } from '../code/files';
 import {
     addTailwindRootColor,
     extractObject,
@@ -47,20 +47,34 @@ export async function updateTailwindColorConfig(
             return { success: false, error: 'Failed to prepare color update' };
         }
         // Check if this is a default color update
-        const [parentKey, keyName] = originalKey.split('-');
-        const isDefaultColor = colors[parentKey as keyof typeof colors];
-        if (isDefaultColor) {
-            const colorIndex = parseInt(keyName) / 100;
-
-            await updateDefaultTailwindColor(colorUpdate, parentKey, colorIndex, newColor, theme);
-            return { success: true };
-        }
-
         const camelCaseName = newName === DEFAULT_COLOR_NAME ? newName : camelCase(newName);
 
-        return originalKey
-            ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, camelCaseName, theme)
-            : createTailwindColorVariable(colorUpdate, newColor, camelCaseName, parentName);
+        if (originalKey) {
+            const [parentKey, keyName] = originalKey.split('-');
+
+            const isDefaultColor = parentKey && colors[parentKey as keyof typeof colors];
+            if (isDefaultColor) {
+                const colorIndex = parseInt(keyName) / 100;
+
+                await updateDefaultTailwindColor(
+                    colorUpdate,
+                    parentKey,
+                    colorIndex,
+                    newColor,
+                    theme,
+                );
+                return { success: true };
+            }
+            return updateTailwindColorVariable(
+                colorUpdate,
+                originalKey,
+                newColor,
+                camelCaseName,
+                theme,
+            );
+        } else {
+            return createTailwindColorVariable(colorUpdate, newColor, camelCaseName, parentName);
+        }
     } catch (error) {
         console.error('Error updating Tailwind config:', error);
         return {
@@ -330,7 +344,8 @@ async function updateTailwindColorVariable(
         theme,
     );
 
-    fs.writeFileSync(cssPath, updatedCssContent);
+    const formattedContent = await formatContent(cssPath, updatedCssContent);
+    await writeFile(cssPath, formattedContent);
 
     // Update config file
     const { keyUpdated, valueUpdated, output } = updateTailwindConfigFile(
@@ -342,7 +357,8 @@ async function updateTailwindColorVariable(
     );
 
     if (keyUpdated || valueUpdated) {
-        fs.writeFileSync(configPath, output);
+        const formattedContent = await formatContent(configPath, output);
+        await writeFile(configPath, formattedContent);
 
         // Update class references if the name changed
         if (keyUpdated) {
@@ -732,7 +748,8 @@ async function updateClassReferences(
             if (updates.size > 0) {
                 transformAst(ast, updates);
                 const output = generate(ast, { retainLines: true }, content);
-                await fs.promises.writeFile(file, output.code, 'utf8');
+                const formattedContent = await formatContent(file, output.code);
+                await writeFile(file, formattedContent);
             }
         }),
     );
@@ -825,10 +842,12 @@ async function deleteColorGroup(
         return shouldKeep;
     });
     const updatedCssContent = updatedCssLines.join('\n');
+    const formattedCssContent = await formatContent(cssPath, updatedCssContent);
+    await writeFile(cssPath, formattedCssContent);
 
-    fs.writeFileSync(cssPath, updatedCssContent);
     const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
-    fs.writeFileSync(configPath, output.code);
+    const formattedContent = await formatContent(configPath, output.code);
+    await writeFile(configPath, formattedContent);
 
     // Also delete the color group in the class references
     const replacements: ClassReplacement[] = [];
@@ -986,12 +1005,14 @@ async function updateDefaultTailwindColor(
     });
 
     const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
-    fs.writeFileSync(configPath, output.code);
+    const formattedContent = await formatContent(configPath, output.code);
+    await writeFile(configPath, formattedContent);
 
     if (!isUpdated) {
         const newCssVarName = `${colorFamily}-${shadeKey}`;
         const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
-        fs.writeFileSync(cssPath, updatedCssContent);
+        const formattedCssContent = await formatContent(cssPath, updatedCssContent);
+        await writeFile(cssPath, formattedCssContent);
     } else {
         // Update the CSS file
         const originalName = `${colorFamily}-${shadeKey}`;
@@ -1002,7 +1023,8 @@ async function updateDefaultTailwindColor(
             newColor,
             theme,
         );
-        fs.writeFileSync(cssPath, updatedCssContent);
+        const formattedCssContent = await formatContent(cssPath, updatedCssContent);
+        await writeFile(cssPath, formattedCssContent);
     }
 
     return isUpdated;

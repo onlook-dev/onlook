@@ -38,14 +38,13 @@ const GroupNameInput = ({
                 return customError;
             }
         }
+        if (value.trim() === '') {
+            return 'Group name cannot be empty';
+        }
 
         // Only allow text characters, numbers, and spaces and not start with number
         if (!/^[a-zA-Z0-9\s]+$/.test(value) || /^[0-9]/.test(value)) {
-            return 'Group name can only contain text, numbers, and spaces and not start with number';
-        }
-
-        if (value.trim() === '') {
-            return 'Group name cannot be empty';
+            return 'Group name can only contain text, numbers, spaces and not start with number';
         }
 
         // Skip this check if we're editing the same name
@@ -104,7 +103,7 @@ const GroupNameInput = ({
                 />
             </TooltipTrigger>
             <TooltipPortal>
-                <TooltipContent side="top" className="text-white bg-red-500">
+                <TooltipContent side="top" className="text-white bg-red-500 max-w-xs">
                     {error}
                 </TooltipContent>
             </TooltipPortal>
