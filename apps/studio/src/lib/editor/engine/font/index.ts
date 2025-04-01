@@ -44,18 +44,15 @@ export class FontManager {
     }
 
     private async watchFontFile(projectRoot: string) {
-        console.log('Setting up font file watcher for path:', projectRoot);
         if (!projectRoot) {
-            console.log('No project root provided, skipping font file watcher setup');
+            console.error('No project root provided, skipping font file watcher setup');
             return;
         }
 
         try {
-            console.log('Invoking WATCH_FONT_FILE with project root:', projectRoot);
             await invokeMainChannel(MainChannels.WATCH_FONT_FILE, {
                 projectRoot,
             });
-            console.log('Font file watcher setup complete');
         } catch (error) {
             console.error('Error setting up font file watcher:', error);
         }

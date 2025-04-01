@@ -3,6 +3,7 @@ import * as t from '@babel/types';
 import { getConfigPath, modifyTailwindConfig } from '../helpers';
 import type { Font } from '@onlook/models/assets';
 import { camelCase } from 'lodash';
+import { writeFile } from '../../code/files';
 
 /**
  * Updates the Tailwind configuration to include the new font family
@@ -75,7 +76,7 @@ export async function updateTailwindFontConfig(projectRoot: string, font: Font):
         });
 
         if (isUpdated) {
-            fs.writeFileSync(configPath, output);
+            await writeFile(configPath, output);
         } else {
             console.log(
                 `Font ${font.id} already exists in Tailwind config or couldn't update the config`,
@@ -141,7 +142,7 @@ export async function removeFontFromTailwindConfig(projectRoot: string, font: Fo
         });
 
         if (isUpdated) {
-            fs.writeFileSync(configPath, output);
+            await writeFile(configPath, output);
             console.log(`Removed font ${font.id} from Tailwind config`);
         } else {
             console.log(

@@ -4,7 +4,7 @@ import { parse, type ParseResult } from '@babel/parser';
 import traverse from '@babel/traverse';
 import generate from '@babel/generator';
 import * as pathModule from 'path';
-import { readFile } from '../../code/files';
+import { readFile, writeFile } from '../../code/files';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
 import { detectRouterType } from '../../pages/helpers';
@@ -138,12 +138,22 @@ export async function addFontVariableToElement(
             );
 
             if (t.isStringLiteral(classNameAttr.value)) {
-                classNameAttr.value = t.jsxExpressionContainer(
-                    createTemplateLiteralWithFont(
-                        fontVarExpr,
-                        t.stringLiteral(classNameAttr.value.value),
-                    ),
-                );
+                if (classNameAttr.value.value === '') {
+                    const quasis = [
+                        t.templateElement({ raw: '', cooked: '' }, false),
+                        t.templateElement({ raw: '', cooked: '' }, true),
+                    ];
+                    classNameAttr.value = t.jsxExpressionContainer(
+                        t.templateLiteral(quasis, [fontVarExpr]),
+                    );
+                } else {
+                    classNameAttr.value = t.jsxExpressionContainer(
+                        createTemplateLiteralWithFont(
+                            fontVarExpr,
+                            t.stringLiteral(classNameAttr.value.value),
+                        ),
+                    );
+                }
                 updatedAst = true;
             } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
                 const expr = classNameAttr.value.expression;

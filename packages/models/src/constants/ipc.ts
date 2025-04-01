@@ -82,9 +82,6 @@ export enum MainChannels {
     REPLACE_APP_STATE = 'replace-app-state',
     UPDATE_PROJECTS = 'update-projects',
 
-    // Fonts
-    WATCH_FONT_FILE = 'watch-font-file',
-
     // Create
     GET_CREATE_PROJECT_PATH = 'get-create-project-path',
     CREATE_NEW_PROJECT = 'create-new-project',
@@ -167,6 +164,7 @@ export enum MainChannels {
     SET_FONT = 'set-font',
     GET_DEFAULT_FONT = 'get-default-font',
     UPLOAD_FONTS = 'upload-fonts',
+    WATCH_FONT_FILE = 'watch-font-file',
 }
 
 export enum GitChannels {

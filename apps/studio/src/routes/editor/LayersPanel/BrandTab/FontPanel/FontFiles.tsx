@@ -47,7 +47,7 @@ const FontFiles = observer(
                             <div className="flex items-center gap-2">
                                 <div className="relative">
                                     <select
-                                        className="appearance-none bg-black/20 border border-white/10 rounded-md text-sm p-2 pr-8 text-white"
+                                        className="appearance-none bg-black/20 border border-white/10 rounded-md text-sm p-2 pr-8 text-white cursor-pointer hover:bg-background-hover hover:text-accent-foreground hover:border-border-hover"
                                         value={font.weight}
                                         onChange={(e) => onWeightChange(index, e.target.value)}
                                     >

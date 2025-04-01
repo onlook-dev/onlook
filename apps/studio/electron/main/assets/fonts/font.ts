@@ -6,7 +6,7 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import generate from '@babel/generator';
-import { readFile } from '../../code/files';
+import { readFile, writeFile } from '../../code/files';
 import fs from 'fs';
 import { extractFontName, getFontFileName } from '@onlook/utility';
 
@@ -229,7 +229,7 @@ export async function removeFont(projectRoot: string, font: Font) {
                 code = code.replace(localFontImportRegex, '');
             }
 
-            await fs.writeFileSync(fontPath, code);
+            await writeFile(fontPath, code);
 
             // Delete font files if found
             if (fontFilesToDelete.length > 0) {
@@ -312,7 +312,7 @@ export async function addLocalFont(
 
                 // Save the file
                 const buffer = Buffer.from(fontFile.file.buffer);
-                fs.writeFileSync(filePath, buffer);
+                await writeFile(filePath, buffer.toString('base64'));
 
                 return {
                     path: pathModule.join(
@@ -361,7 +361,7 @@ export const ${fontName} = localFont({
 
         newContent += fontConfig;
 
-        fs.writeFileSync(fontPath, newContent);
+        await writeFile(fontPath, newContent);
 
         return fontName;
     } catch (error) {
