@@ -2,9 +2,8 @@ import type { Config } from 'tailwindcss';
 import { colors, fontSize } from './tokens';
 
 const config = {
-    darkMode: ['class'],
+    darkMode: ['class', '[data-mode="dark"]'],
     content: ['./src/**/*.{ts,tsx}'],
-    safelist: ['dark', 'light'],
     prefix: '',
     theme: {
         container: {

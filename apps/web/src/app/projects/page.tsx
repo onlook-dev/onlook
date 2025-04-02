@@ -1,3 +1,4 @@
+import { SelectProject } from './_components/projects-select';
 import { TopBar } from './_components/top-bar';
 
 // import { useProjectsManager } from '@/components/Context';
@@ -35,7 +36,7 @@ const Projects = () => {
         <div className="w-full h-full">
             <TopBar />
             <div className="flex justify-center overflow-hidden w-full">
-                {renderTab()}
+                <SelectProject />
             </div>
         </div>
     );
