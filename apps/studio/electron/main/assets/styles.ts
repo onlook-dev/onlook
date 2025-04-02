@@ -547,10 +547,7 @@ async function updateTailwindCssVariable(
                             if (node.type === 'atrule' && 'name' in node && node.name === 'apply') {
                                 const value = 'params' in node ? node.params : '';
 
-                                const utilityPattern = new RegExp(
-                                    `[a-z-]+-${originalName}\\b`,
-                                    'g',
-                                );
+                                const utilityPattern = new RegExp(`-${originalName}\\b`, 'g');
                                 const hasMatch = utilityPattern.test(value);
 
                                 if (hasMatch) {

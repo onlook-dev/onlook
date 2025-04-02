@@ -134,6 +134,10 @@ export const BrandPalletGroup = ({
                             setIsRenaming(false);
                         }}
                         onCancel={() => setIsRenaming(false)}
+                        onBlur={(newName) => {
+                            onRename(title, newName);
+                            setIsRenaming(false);
+                        }}
                     />
                 ) : (
                     <span className="text-small text-foreground-secondary font-normal">

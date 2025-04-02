@@ -11,6 +11,7 @@ interface ColorNameInputProps {
     existingNames?: string[];
     autoFocus?: boolean;
     disabled?: boolean;
+    onBlur?: (value: string) => void;
 }
 
 const ColorNameInput = ({
@@ -20,6 +21,7 @@ const ColorNameInput = ({
     existingNames = [],
     autoFocus = true,
     disabled = false,
+    onBlur,
 }: ColorNameInputProps) => {
     const [inputValue, setInputValue] = useState(toNormalCase(initialName));
     const [error, setError] = useState<string | null>(null);
@@ -89,8 +91,8 @@ const ColorNameInput = ({
                     type="text"
                     value={inputValue}
                     onChange={handleChange}
-                    onBlur={handleSubmit}
                     onKeyDown={handleKeyDown}
+                    onBlur={() => onBlur?.(inputValue)}
                     className={`text-sm font-normal w-full rounded-md border ${
                         error ? 'border-red-500' : 'border-white/10'
                     } bg-background-secondary px-2 py-1 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
