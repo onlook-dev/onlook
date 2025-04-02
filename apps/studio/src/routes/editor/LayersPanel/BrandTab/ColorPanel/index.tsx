@@ -7,8 +7,7 @@ import type { Color } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { BrandPalletGroup } from './ColorPalletGroup';
-import ColorNameInput from './ColorNameInput';
-import { camelCase } from 'lodash';
+import { ColorNameInput } from './ColorNameInput';
 
 interface ColorPanelProps {
     onClose: () => void;

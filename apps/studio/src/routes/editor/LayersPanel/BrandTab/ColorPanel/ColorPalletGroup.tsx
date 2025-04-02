@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { Color, toNormalCase } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
-import ColorNameInput from './ColorNameInput';
+import { ColorNameInput } from './ColorNameInput';
 
 export interface ColorItem {
     name: string;

@@ -3,7 +3,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { toNormalCase, type Color } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 import ColorPickerContent from '../../../EditPanel/StylesTab/single/ColorInput/ColorPicker';
-import ColorNameInput from './ColorNameInput';
+import { ColorNameInput } from './ColorNameInput';
 
 export const ColorPopover = ({
     color,

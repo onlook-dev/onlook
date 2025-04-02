@@ -14,7 +14,7 @@ interface ColorNameInputProps {
     onBlur?: (value: string) => void;
 }
 
-const ColorNameInput = ({
+export const ColorNameInput = ({
     initialName,
     onSubmit,
     onCancel,
@@ -46,7 +46,7 @@ const ColorNameInput = ({
         }
 
         // Skip this check if we're editing the same name
-        if (camelCase(value) === initialName) {
+        if (camelCase(value) === camelCase(initialName)) {
             return null;
         }
 
@@ -109,5 +109,3 @@ const ColorNameInput = ({
         </Tooltip>
     );
 };
-
-export default ColorNameInput;
