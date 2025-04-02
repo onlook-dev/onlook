@@ -1,0 +1,73 @@
+{
+    "productName": "Onlook",
+    "name": "@onlook/web",
+    "version": "0.1.0",
+    "private": true,
+    "homepage": "https://onlook.com",
+    "description": "The first-ever devtool for designers",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "type": "module",
+    "scripts": {
+        "build": "next build",
+        "check": "next lint && tsc --noEmit",
+        "dev": "next dev",
+        "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
+        "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
+        "lint": "next lint",
+        "lint:fix": "next lint --fix",
+        "preview": "next build && next start",
+        "start": "next start",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@radix-ui/react-slot": "^1.1.2",
+        "@supabase/ssr": "^0.6.1",
+        "@t3-oss/env-nextjs": "^0.12.0",
+        "@tanstack/react-query": "^5.69.0",
+        "@trpc/client": "^11.0.0",
+        "@trpc/react-query": "^11.0.0",
+        "@trpc/server": "^11.0.0",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "i18next": "^24.2.3",
+        "lucide-react": "^0.486.0",
+        "next": "^15.2.3",
+        "next-i18next": "^15.4.2",
+        "next-intl": "^4.0.2",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "react-i18next": "^15.4.1",
+        "server-only": "^0.0.1",
+        "superjson": "^2.2.1",
+        "tailwind-merge": "^3.1.0",
+        "tw-animate-css": "^1.2.5",
+        "zod": "^3.24.2"
+    },
+    "devDependencies": {
+        "@onlook/typescript": "*",
+        "@eslint/eslintrc": "^3.3.1",
+        "@tailwindcss/postcss": "^4.0.15",
+        "@types/node": "^20.14.10",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "eslint": "^9.23.0",
+        "eslint-config-next": "^15.2.3",
+        "postcss": "^8.5.3",
+        "prettier": "^3.5.3",
+        "prettier-plugin-tailwindcss": "^0.6.11",
+        "tailwindcss": "^4.0.15",
+        "typescript": "^5.8.2",
+        "typescript-eslint": "^8.27.0"
+    },
+    "ct3aMetadata": {
+        "initVersion": "7.39.2"
+    }
+}

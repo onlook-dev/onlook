@@ -11,7 +11,7 @@
     },
     "workspaces": [
         "packages/*",
-        "apps/studio",
+        "apps/*",
         "tooling/*"
     ],
     "scripts": {
@@ -27,6 +27,7 @@
         "build": "bun --filter '*' build",
         "ci:build": "bun run build:foundation && bun --filter '*' build",
         "dev": "bun --filter '*' dev",
+        "dev:web": "bun --filter @onlook/web dev",
         "test": "bun --filter '*' test",
         "format": "bun --filter '*' format",
         "lint": "bun --filter @onlook/studio lint",
