@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 // import EmblaCarousel from './Carousel';
-// import ProjectInfo from './Info';
+import ProjectInfo from './info';
 import type { Project } from '@onlook/models/projects';
 import Carousel from './carousel';
 
@@ -62,7 +62,7 @@ export const SelectProject = observer(() => {
                 <Carousel slides={projects} onSlideChange={handleProjectChange} />
             </div>
             <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
-                {/* <ProjectInfo project={projects[currentProjectIndex]} direction={direction} /> */}
+                <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
             </div>
         </div>
     );

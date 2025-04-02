@@ -2,12 +2,12 @@ import type { Project } from '@onlook/models/projects';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import { useTranslation } from 'react-i18next';
-import { EditAppButton } from './EditAppButton';
-import ProjectSettingsButton from './ProjectSettingsButton';
+import { useTranslations } from 'next-intl';
+import { EditAppButton } from './edit-app';
+// import ProjectSettingsButton from './project-settings';
 
 const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
-    const { t } = useTranslation();
+    const t = useTranslations();
     const variants = {
         enter: (direction: number) => ({
             y: direction > 0 ? 20 : -20,
@@ -50,7 +50,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
                     <EditAppButton project={project} />
-                    <ProjectSettingsButton project={project} />
+                    {/* <ProjectSettingsButton project={project} /> */}
                 </div>
             </>
         )
