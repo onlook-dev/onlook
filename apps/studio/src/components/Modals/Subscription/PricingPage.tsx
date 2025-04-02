@@ -244,7 +244,7 @@ export const SubscriptionModal = observer(() => {
                                             transition={{ delay: 0.05 }}
                                         >
                                             <div className="flex flex-row gap-2 w-full justify-between">
-                                                <h1 className="text-title2 text-foreground-primary">
+                                                <h1 className="text-title1 font-medium text-foreground-primary">
                                                     {userManager.subscription.plan ===
                                                     UsagePlanType.PRO
                                                         ? t('pricing.titles.proMember')
