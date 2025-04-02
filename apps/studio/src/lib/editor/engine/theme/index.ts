@@ -450,8 +450,10 @@ export class ThemeManager {
                 if (!colorToDuplicate) {
                     throw new Error('Color not found');
                 }
-
-                const newName = `${colorName}Copy`;
+                // If the color name is a number, we need to add a suffix to the new color name
+                const newName = isNaN(Number(colorName))
+                    ? `${colorName}Copy`
+                    : `${colorName}${group.length + 1}`;
 
                 const color = Color.from(
                     theme === Theme.DARK
