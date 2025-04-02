@@ -31,7 +31,7 @@ export function ThemeProvider({
     ...props
 }: ThemeProviderProps) {
     const [theme, setTheme] = useState<Theme>(
-        () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
+        () => (localStorage?.getItem(storageKey) as Theme) || defaultTheme,
     );
 
     const [nextTheme, setNextTheme] = useState<Theme>('dark');
@@ -71,7 +71,7 @@ export function ThemeProvider({
         theme,
         nextTheme,
         setTheme: (newTheme: Theme) => {
-            localStorage.setItem(storageKey, newTheme);
+            localStorage?.setItem(storageKey, newTheme);
             setTheme(newTheme);
         },
     };

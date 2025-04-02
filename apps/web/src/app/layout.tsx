@@ -4,7 +4,8 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { type Metadata } from "next";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import { Geist } from "next/font/google";
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from "./_components/theme";
 
 export const metadata: Metadata = {
     title: "Onlook",
@@ -12,9 +13,9 @@ export const metadata: Metadata = {
     icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-const geist = Geist({
+const inter = Inter({
     subsets: ["latin"],
-    variable: "--font-geist-sans",
+    variable: "--font-inter",
 });
 
 export default async function RootLayout({
@@ -25,18 +26,17 @@ export default async function RootLayout({
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={`${geist.variable} dark`}>
+        <html lang={locale} className={`${inter.variable}`}>
             <body>
                 <TRPCReactProvider>
                     <NextIntlClientProvider>
-                        {/* <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme"> */}
-                        {/* <TooltipProvider> */}
-                        {/* @ts-expect-error - children is a ReactNode */}
-                        {children}
-                        {/* <Modals /> */}
-                        {/* <Toaster /> */}
-                        {/* </TooltipProvider> */}
-                        {/* </ThemeProvider> */}
+                        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+                            {/* <TooltipProvider> */}
+                            {children}
+                            {/* <Modals /> */}
+                            {/* <Toaster /> */}
+                            {/* </TooltipProvider> */}
+                        </ThemeProvider>
                     </NextIntlClientProvider>
                 </TRPCReactProvider>
             </body>
