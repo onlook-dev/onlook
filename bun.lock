@@ -132,6 +132,7 @@
         "clsx": "^2.1.1",
         "i18next": "^24.2.3",
         "lucide-react": "^0.486.0",
+        "mobx-react-lite": "^4.1.0",
         "next": "^15.2.3",
         "next-i18next": "^15.4.2",
         "next-intl": "^4.0.2",

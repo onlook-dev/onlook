@@ -1,42 +1,40 @@
-import {
-    useAuthManager,
-    useEditorEngine,
-    useProjectsManager,
-    useUserManager,
-} from '@/components/Context';
-import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
-import { SettingsTabValue } from '@/lib/models';
-import { ProjectTabs } from '@/lib/projects';
-import { UsagePlanType } from '@onlook/models/usage';
-import { Button } from '@onlook/ui/button';
+// import {
+//     useAuthManager,
+//     useEditorEngine,
+//     useProjectsManager,
+//     useUserManager,
+// } from '@/components/Context';
+// import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
+// import { SettingsTabValue } from '@/lib/models';
+// import { ProjectTabs } from '@/lib/projects';
+import { Button } from '@onlook/ui-v4/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@onlook/ui/dropdown-menu';
-import { Icons } from '@onlook/ui/icons';
-import { cn } from '@onlook/ui/utils';
-import { observer } from 'mobx-react-lite';
+} from '@onlook/ui-v4/dropdown-menu';
+import { Icons } from '@onlook/ui-v4/icons';
+import { cn } from '@onlook/ui-v4/utils';
 
-export const TopBar = observer(() => {
-    const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
-    const authManager = useAuthManager();
-    const userManager = useUserManager();
-    const plan = userManager.subscription?.plan;
+export const TopBar = () => {
+    // const editorEngine = useEditorEngine();
+    // const projectsManager = useProjectsManager();
+    // const authManager = useAuthManager();
+    // const userManager = useUserManager();
+    // const plan = userManager.subscription?.plan;
 
-    function signOut() {
-        authManager.signOut();
-    }
+    // function signOut() {
+    //     authManager.signOut();
+    // }
 
-    function openPromptCreation() {
-        projectsManager.projectsTab = ProjectTabs.PROMPT_CREATE;
-    }
+    // function openPromptCreation() {
+    //     projectsManager.projectsTab = ProjectTabs.PROMPT_CREATE;
+    // }
 
-    function openImportProject() {
-        projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT;
-    }
+    // function openImportProject() {
+    //     projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT;
+    // }
 
     return (
         <div className="flex flex-row h-12 px-12 items-center">
@@ -62,7 +60,7 @@ export const TopBar = observer(() => {
                                 'dark:focus:bg-blue-900 dark:focus:text-blue-100',
                                 'dark:hover:bg-blue-900 dark:hover:text-blue-100',
                             )}
-                            onSelect={openPromptCreation}
+                        // onSelect={openPromptCreation}
                         >
                             <Icons.FilePlus className="w-4 h-4 mr-2" />
                             Start from scratch
@@ -74,14 +72,14 @@ export const TopBar = observer(() => {
                                 'dark:focus:bg-teal-900 dark:focus:text-teal-100',
                                 'dark:hover:bg-teal-900 dark:hover:text-teal-100',
                             )}
-                            onSelect={openImportProject}
+                        // onSelect={openImportProject}
                         >
                             <Icons.Download className="w-4 h-4 mr-2" />
                             Import existing project
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <UserProfileDropdown>
+                {/* <UserProfileDropdown>
                     {plan === UsagePlanType.PRO && (
                         <DropdownMenuItem
                             onSelect={() => {
@@ -105,8 +103,8 @@ export const TopBar = observer(() => {
                         <Icons.Exit className="w-4 h-4 mr-2" />
                         Sign out
                     </DropdownMenuItem>
-                </UserProfileDropdown>
+                </UserProfileDropdown> */}
             </div>
         </div>
     );
-});
+};

@@ -27,6 +27,9 @@ export default function Main() {
         <main className="flex min-h-screen flex-col items-center justify-center relative">
             {/* Top bar */}
             <div className="absolute flex top-0 left-0 w-full h-12 items-center justify-end p-2">
+                <Button variant="outline" onClick={() => redirect(Routes.PROJECTS)}>
+                    Projects
+                </Button>
                 {user ? (
                     <div className="flex items-center gap-2">
                         <p>{user.user_metadata.name}</p>
@@ -35,9 +38,9 @@ export default function Main() {
                         </Button>
                     </div>
                 ) : (
-                    <button onClick={() => redirect(Routes.LOGIN)}>
+                    <Button onClick={() => redirect(Routes.LOGIN)}>
                         Sign In
-                    </button>
+                    </Button>
                 )}
             </div>
             <div className="flex flex-col items-center justify-center">
