@@ -353,6 +353,7 @@ export async function addLocalFont(
         const fontName = camelCase(`custom-${baseFontName}`);
 
         let fontNameExists = false;
+        let existingFontNode: t.ExportNamedDeclaration | null = null;
 
         traverse(ast, {
             ExportNamedDeclaration(path) {
@@ -364,14 +365,10 @@ export async function addLocalFont(
                     )
                 ) {
                     fontNameExists = true;
+                    existingFontNode = path.node;
                 }
             },
         });
-
-        if (fontNameExists) {
-            console.log(`Font ${fontName} already exists in font.ts`);
-            return;
-        }
 
         // Save font files and prepare font configuration
         const fontConfigs = await Promise.all(
@@ -407,29 +404,69 @@ export async function addLocalFont(
             ]),
         );
 
-        const fontConfigObject = t.objectExpression([
-            t.objectProperty(t.identifier('src'), t.arrayExpression(srcArrayElements)),
-            t.objectProperty(t.identifier('variable'), t.stringLiteral(`--font-${fontName}`)),
-            t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
-        ]);
+        if (fontNameExists && existingFontNode) {
+            // Merge new font configurations with existing ones
+            traverse(ast, {
+                ExportNamedDeclaration(path) {
+                    if (path.node === existingFontNode) {
+                        const declaration = path.node.declaration;
+                        if (t.isVariableDeclaration(declaration)) {
+                            const declarator = declaration.declarations[0];
+                            if (
+                                t.isIdentifier(declarator.id) &&
+                                declarator.id.name === fontName &&
+                                t.isCallExpression(declarator.init) &&
+                                t.isIdentifier(declarator.init.callee) &&
+                                declarator.init.callee.name === 'localFont' &&
+                                declarator.init.arguments.length > 0 &&
+                                t.isObjectExpression(declarator.init.arguments[0])
+                            ) {
+                                const configObject = declarator.init.arguments[0];
+                                const srcProp = configObject.properties.find(
+                                    (prop) =>
+                                        t.isObjectProperty(prop) &&
+                                        t.isIdentifier(prop.key) &&
+                                        prop.key.name === 'src',
+                                );
 
-        const fontDeclaration = t.variableDeclaration('const', [
-            t.variableDeclarator(
-                t.identifier(fontName),
-                t.callExpression(t.identifier('localFont'), [fontConfigObject]),
-            ),
-        ]);
+                                if (
+                                    srcProp &&
+                                    t.isObjectProperty(srcProp) &&
+                                    t.isArrayExpression(srcProp.value)
+                                ) {
+                                    srcProp.value.elements.push(...srcArrayElements);
+                                }
+                            }
+                        }
+                    }
+                },
+            });
+        } else {
+            // Create a new font configuration
+            const fontConfigObject = t.objectExpression([
+                t.objectProperty(t.identifier('src'), t.arrayExpression(srcArrayElements)),
+                t.objectProperty(t.identifier('variable'), t.stringLiteral(`--font-${fontName}`)),
+                t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
+            ]);
 
-        const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
+            const fontDeclaration = t.variableDeclaration('const', [
+                t.variableDeclarator(
+                    t.identifier(fontName),
+                    t.callExpression(t.identifier('localFont'), [fontConfigObject]),
+                ),
+            ]);
 
-        ast.program.body.push(exportDeclaration);
+            const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
 
-        if (!hasLocalFontImport) {
-            const importDeclaration = t.importDeclaration(
-                [t.importDefaultSpecifier(t.identifier('localFont'))],
-                t.stringLiteral('next/font/local'),
-            );
-            ast.program.body.unshift(importDeclaration);
+            ast.program.body.push(exportDeclaration);
+
+            if (!hasLocalFontImport) {
+                const importDeclaration = t.importDeclaration(
+                    [t.importDefaultSpecifier(t.identifier('localFont'))],
+                    t.stringLiteral('next/font/local'),
+                );
+                ast.program.body.unshift(importDeclaration);
+            }
         }
 
         const { code } = generate(ast);

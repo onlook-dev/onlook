@@ -1,4 +1,4 @@
-import { get, makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { invokeMainChannel } from '@/lib/utils';
 import { fontFamilies, MainChannels } from '@onlook/models';
@@ -61,6 +61,7 @@ export class FontManager {
     async scanFonts() {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
+            console.error('No project root provided, skipping font file watcher setup');
             return;
         }
 
@@ -75,6 +76,7 @@ export class FontManager {
     async addFont(font: Font) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
+            console.error('No project root provided, skipping font file watcher setup');
             return;
         }
 
@@ -93,6 +95,7 @@ export class FontManager {
     async removeFont(font: Font) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
+            console.error('No project root provided, skipping font file watcher setup');
             return;
         }
 
@@ -111,6 +114,7 @@ export class FontManager {
     async setDefaultFont(font: Font) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
+            console.error('No project root provided, skipping font file watcher setup');
             return;
         }
 
@@ -130,6 +134,7 @@ export class FontManager {
     async getDefaultFont() {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
+            console.error('No project root provided, skipping font file watcher setup');
             return;
         }
 
