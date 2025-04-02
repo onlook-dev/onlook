@@ -1,9 +1,11 @@
+import { Routes } from '@/utils/constants';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui-v4/button';
 import { Icons } from '@onlook/ui-v4/icons';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { redirect } from 'next/navigation';
 import type { ComponentProps } from 'react';
 
 const ButtonMotion = motion.create(Button);
@@ -14,11 +16,9 @@ interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
 
 export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps) => {
     const t = useTranslations();
-    // const projectsManager = useProjectsManager();
 
     const selectProject = (project: Project) => {
-        // projectsManager.project = project;
-        // projectsManager.runner?.startIfPortAvailable();
+        redirect(`${Routes.PROJECT}/${project.id}`);
         // sendAnalytics('open project', { id: project.id, url: project.url });
     };
 

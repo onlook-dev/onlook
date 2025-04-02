@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { EditAppButton } from './edit-app';
-// import ProjectSettingsButton from './project-settings';
+import { Settings } from './settings';
 
 const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
     const t = useTranslations();
@@ -50,7 +50,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
                     <EditAppButton project={project} />
-                    {/* <ProjectSettingsButton project={project} /> */}
+                    <Settings project={project} />
                 </div>
             </>
         )

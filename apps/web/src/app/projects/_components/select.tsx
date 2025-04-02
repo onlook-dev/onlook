@@ -1,11 +1,10 @@
 "use client"
 
 // import { useProjectsManager } from '@/components/Context';
+import type { Project } from '@onlook/models/projects';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-// import EmblaCarousel from './Carousel';
-import type { Project } from '@onlook/models/projects';
 import Carousel from './carousel';
 import ProjectInfo from './info';
 
@@ -17,14 +16,14 @@ export const SelectProject = observer(() => {
     const [direction, setDirection] = useState(0);
 
     // TODO: remove this
-    const projects: Project[] = [{
+    const mockProjects: Project[] = [{
         id: '1',
         name: 'Project 1',
         folderPath: 'Project 1',
         url: 'https://www.google.com',
         previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
-        createdAt: '2021-01-01',
-        updatedAt: '2021-01-01',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
+        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
         settings: null,
         commands: null,
         domains: null,
@@ -35,8 +34,8 @@ export const SelectProject = observer(() => {
         folderPath: 'Project 2',
         url: 'https://www.google.com',
         previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
-        createdAt: '2021-01-01',
-        updatedAt: '2021-01-01',
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
         settings: null,
         commands: null,
         domains: null,
@@ -47,6 +46,8 @@ export const SelectProject = observer(() => {
             (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
         );
     }
+
+    const projects = sortProjects(mockProjects);
 
     const handleProjectChange: (index: number) => void = (index: number) => {
         if (currentProjectIndex === index) {
