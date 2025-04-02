@@ -1,7 +1,7 @@
 import * as pathModule from 'path';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
-import { camelCase } from 'lodash';
+import { camelCase, kebabCase } from 'lodash';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
@@ -445,7 +445,10 @@ export async function addLocalFont(
             // Create a new font configuration
             const fontConfigObject = t.objectExpression([
                 t.objectProperty(t.identifier('src'), t.arrayExpression(srcArrayElements)),
-                t.objectProperty(t.identifier('variable'), t.stringLiteral(`--font-${fontName}`)),
+                t.objectProperty(
+                    t.identifier('variable'),
+                    t.stringLiteral(`--font-${kebabCase(fontName)}`),
+                ),
                 t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
             ]);
 

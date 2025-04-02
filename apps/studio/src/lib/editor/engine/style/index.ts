@@ -7,6 +7,7 @@ import type { DomElement } from '@onlook/models/element';
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
+import type { Font } from '@onlook/models/assets';
 
 export interface SelectedStyle {
     styles: Record<string, string>;
@@ -38,6 +39,15 @@ export class StyleManager {
         const action = this.getUpdateStyleAction(styleObj, domIds, StyleChangeType.Custom);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(styleObj);
+    }
+
+    updateFontFamily(style: string, value: Font) {
+        const styleObj = { [style]: value.id };
+        const action = this.getUpdateStyleAction(styleObj);
+        this.editorEngine.action.run(action);
+        this.updateStyleNoAction({
+            [style]: value.family,
+        });
     }
 
     update(style: string, value: string) {
