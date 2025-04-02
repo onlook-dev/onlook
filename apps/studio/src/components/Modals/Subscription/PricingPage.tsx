@@ -281,15 +281,14 @@ export const SubscriptionModal = observer(() => {
                                                 featuresPrefixText="Everything in Free plus:"
                                             />
                                             <PricingCard
-                                                plan="Launch"
-                                                price="$50/month"
-                                                description="Perfect for startups and growing teams"
-                                                features={[
-                                                    'Unlimited daily messages',
-                                                    'Priority support',
-                                                    'Advanced integrations',
-                                                    'Team collaboration features',
-                                                ]}
+                                                plan={t('pricing.plans.launch.name')}
+                                                price={t('pricing.plans.launch.price')}
+                                                description={t('pricing.plans.launch.description')}
+                                                features={
+                                                    t('pricing.plans.launch.features', {
+                                                        returnObjects: true,
+                                                    }) as string[]
+                                                }
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.LAUNCH
@@ -310,16 +309,14 @@ export const SubscriptionModal = observer(() => {
                                                 isRecommended={true}
                                             />
                                             <PricingCard
-                                                plan="Scale"
-                                                price="$100/month"
-                                                description="Enterprise-grade features for large teams"
-                                                features={[
-                                                    'Everything in Launch plan',
-                                                    'Dedicated account manager',
-                                                    'Custom integrations',
-                                                    'Advanced analytics',
-                                                    '24/7 premium support',
-                                                ]}
+                                                plan={t('pricing.plans.scale.name')}
+                                                price={t('pricing.plans.scale.price')}
+                                                description={t('pricing.plans.scale.description')}
+                                                features={
+                                                    t('pricing.plans.scale.features', {
+                                                        returnObjects: true,
+                                                    }) as string[]
+                                                }
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.SCALE

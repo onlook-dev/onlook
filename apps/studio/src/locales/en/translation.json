@@ -121,6 +121,29 @@
                     "1 free custom domain hosted with Onlook",
                     "Priority support"
                 ]
+            },
+            "launch": {
+                "name": "Launch",
+                "price": "$50/month",
+                "description": "Perfect for startups and growing teams",
+                "features": [
+                    "Unlimited daily messages",
+                    "Priority support",
+                    "Advanced integrations",
+                    "Team collaboration features"
+                ]
+            },
+            "scale": {
+                "name": "Scale",
+                "price": "$100/month",
+                "description": "Enterprise-grade features for large teams",
+                "features": [
+                    "Everything in Launch plan",
+                    "Dedicated account manager",
+                    "Custom integrations",
+                    "Advanced analytics",
+                    "24/7 premium support"
+                ]
             }
         },
         "titles": {
