@@ -2,8 +2,6 @@
 
 // import { useEditorEngine } from '@/components/Context';
 // import Publish from './Publish';
-// import { Hotkey } from '/common/hotkeys';
-// import { ProjectBreadcrumb } from './project-breadcrumb';
 // import { SettingsTabValue } from '@onlook/models/editor';
 import { Hotkey } from '@/components/hotkey';
 import { Button } from '@onlook/ui-v4/button';
@@ -13,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui-v4/tooltip';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { ModeToggle } from './mode-toggle';
+import { ProjectBreadcrumb } from './project-breadcrumb';
 
 export const EditorTopBar = () => {
     // const editorEngine = useEditorEngine();
@@ -21,22 +20,30 @@ export const EditorTopBar = () => {
     const UNDO_REDO_BUTTONS = [
         {
             // click: () => editorEngine.action.undo(),
+            // isDisabled: !editorEngine.history.canUndo,
             hotkey: Hotkey.UNDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1" />,
-            // isDisabled: !editorEngine.history.canUndo,
+            click: () => {
+                console.log('undo');
+            },
+            isDisabled: false,
         },
         {
             // click: () => editorEngine.action.redo(),
+            // isDisabled: !editorEngine.history.canRedo,
             hotkey: Hotkey.REDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
-            // isDisabled: !editorEngine.history.canRedo,
+            click: () => {
+                console.log('redo');
+            },
+            isDisabled: false,
         },
     ];
 
     return (
         <div className="bg-background-onlook/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
-                {/* <ProjectBreadcrumb /> */}
+                <ProjectBreadcrumb />
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2">
