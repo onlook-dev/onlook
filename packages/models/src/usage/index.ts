@@ -1,5 +1,7 @@
 export enum UsagePlanType {
     BASIC = 'basic',
+    LAUNCH = 'launch',
+    SCALE = 'scale',
     PRO = 'pro',
 }
 

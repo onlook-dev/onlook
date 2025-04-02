@@ -45,7 +45,11 @@ export const SubscriptionModal = observer(() => {
 
         const getPlan = async () => {
             const plan = await userManager.subscription.getPlanFromServer();
-            if (plan === UsagePlanType.PRO) {
+            if (
+                plan === UsagePlanType.PRO ||
+                plan === UsagePlanType.LAUNCH ||
+                plan === UsagePlanType.SCALE
+            ) {
                 editorEngine.chat.stream.clearRateLimited();
                 editorEngine.chat.stream.clearErrorMessage();
             }
@@ -74,7 +78,78 @@ export const SubscriptionModal = observer(() => {
                       success: boolean;
                       error?: string;
                   }
-                | undefined = await invokeMainChannel(MainChannels.CREATE_STRIPE_CHECKOUT);
+                | undefined = await invokeMainChannel(
+                MainChannels.CREATE_STRIPE_CHECKOUT,
+                UsagePlanType.PRO,
+            );
+            if (res?.success) {
+                toast({
+                    variant: 'default',
+                    title: t('pricing.toasts.checkingOut.title'),
+                    description: t('pricing.toasts.checkingOut.description'),
+                });
+            } else {
+                throw new Error('No checkout URL received');
+            }
+            setIsCheckingOut(null);
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: t('pricing.toasts.error.title'),
+                description: t('pricing.toasts.error.description'),
+            });
+            console.error('Payment error:', error);
+            setIsCheckingOut(null);
+        }
+    };
+
+    const startLaunchCheckout = async () => {
+        sendAnalytics('start launch checkout');
+        try {
+            setIsCheckingOut(UsagePlanType.LAUNCH);
+            const res:
+                | {
+                      success: boolean;
+                      error?: string;
+                  }
+                | undefined = await invokeMainChannel(
+                MainChannels.CREATE_STRIPE_CHECKOUT,
+                UsagePlanType.LAUNCH,
+            );
+            if (res?.success) {
+                toast({
+                    variant: 'default',
+                    title: t('pricing.toasts.checkingOut.title'),
+                    description: t('pricing.toasts.checkingOut.description'),
+                });
+            } else {
+                throw new Error('No checkout URL received');
+            }
+            setIsCheckingOut(null);
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: t('pricing.toasts.error.title'),
+                description: t('pricing.toasts.error.description'),
+            });
+            console.error('Payment error:', error);
+            setIsCheckingOut(null);
+        }
+    };
+
+    const startScaleCheckout = async () => {
+        sendAnalytics('start scale checkout');
+        try {
+            setIsCheckingOut(UsagePlanType.SCALE);
+            const res:
+                | {
+                      success: boolean;
+                      error?: string;
+                  }
+                | undefined = await invokeMainChannel(
+                MainChannels.CREATE_STRIPE_CHECKOUT,
+                UsagePlanType.SCALE,
+            );
             if (res?.success) {
                 toast({
                     variant: 'default',
@@ -131,46 +206,139 @@ export const SubscriptionModal = observer(() => {
         <AnimatePresence>
             {editorEngine.isPlansOpen && (
                 <motion.div
-                    className="fixed inset-0"
+                    className="fixed inset-0 overflow-y-auto"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                 >
                     <div
-                        className="relative w-full h-full flex items-center justify-center"
+                        className="min-h-screen w-full pb-16"
                         style={{
                             backgroundImage: `url(${backgroundImage})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                         }}
                     >
-                        <div className="absolute inset-0 bg-background/50" />
-                        <Button
-                            variant="ghost"
-                            onClick={() => (editorEngine.isPlansOpen = false)}
-                            className="fixed top-8 right-10 text-foreground-secondary"
-                        >
-                            <Icons.CrossL className="h-4 w-4" />
-                        </Button>
-                        <div className="relative z-10">
-                            <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
-                                <motion.div className="flex flex-col items-center gap-3">
-                                    <motion.div
-                                        className="flex flex-col gap-2 text-center mb-4"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.05 }}
-                                    >
-                                        <div className="flex flex-row gap-2 w-[46rem] justify-between">
-                                            <h1 className="text-title2 text-foreground-primary">
-                                                {userManager.subscription.plan === UsagePlanType.PRO
-                                                    ? t('pricing.titles.proMember')
-                                                    : t('pricing.titles.choosePlan')}
-                                            </h1>
+                        <div className="absolute inset-0 bg-background/50 fixed" />
+                        <div className="sticky top-0 right-0 w-full bg-transparent z-20 pt-8 pr-10 flex justify-end">
+                            <Button
+                                variant="ghost"
+                                onClick={() => (editorEngine.isPlansOpen = false)}
+                                className="text-foreground-secondary"
+                            >
+                                <Icons.CrossL className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="relative z-10 w-full flex flex-col items-center justify-center pt-16">
+                            <div className="w-full max-w-[1200px] mx-auto">
+                                <MotionConfig
+                                    transition={{ duration: 0.5, type: 'spring', bounce: 0 }}
+                                >
+                                    <motion.div className="flex flex-col items-center gap-5 px-4">
+                                        <motion.div
+                                            className="flex flex-col gap-2 text-center mb-10"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.05 }}
+                                        >
+                                            <div className="flex flex-row gap-2 w-full justify-between">
+                                                <h1 className="text-title2 text-foreground-primary">
+                                                    {userManager.subscription.plan ===
+                                                    UsagePlanType.PRO
+                                                        ? t('pricing.titles.proMember')
+                                                        : t('pricing.titles.choosePlan')}
+                                                </h1>
+                                            </div>
+                                        </motion.div>
+                                        <div className="flex flex-row gap-4 w-full justify-center pb-4">
+                                            <PricingCard
+                                                plan={t('pricing.plans.pro.name')}
+                                                price={t('pricing.plans.pro.price')}
+                                                description={t('pricing.plans.pro.description')}
+                                                features={
+                                                    t('pricing.plans.pro.features', {
+                                                        returnObjects: true,
+                                                    }) as string[]
+                                                }
+                                                buttonText={
+                                                    userManager.subscription.plan ===
+                                                    UsagePlanType.PRO
+                                                        ? t('pricing.buttons.currentPlan')
+                                                        : t('pricing.buttons.getPro')
+                                                }
+                                                buttonProps={{
+                                                    onClick: startProCheckout,
+                                                    disabled:
+                                                        userManager.subscription.plan ===
+                                                            UsagePlanType.PRO ||
+                                                        isCheckingOut === UsagePlanType.PRO,
+                                                }}
+                                                delay={0.1}
+                                                isLoading={isCheckingOut === UsagePlanType.PRO}
+                                                showFeaturesPrefix={true}
+                                                featuresPrefixText="Everything in Free plus:"
+                                            />
+                                            <PricingCard
+                                                plan="Launch"
+                                                price="$50/month"
+                                                description="Perfect for startups and growing teams"
+                                                features={[
+                                                    'Unlimited daily messages',
+                                                    'Priority support',
+                                                    'Advanced integrations',
+                                                    'Team collaboration features',
+                                                ]}
+                                                buttonText={
+                                                    userManager.subscription.plan ===
+                                                    UsagePlanType.LAUNCH
+                                                        ? t('pricing.buttons.currentPlan')
+                                                        : 'Get Launch'
+                                                }
+                                                buttonProps={{
+                                                    onClick: startLaunchCheckout,
+                                                    disabled:
+                                                        userManager.subscription.plan ===
+                                                            UsagePlanType.LAUNCH ||
+                                                        isCheckingOut === UsagePlanType.LAUNCH,
+                                                }}
+                                                delay={0.15}
+                                                isLoading={isCheckingOut === UsagePlanType.LAUNCH}
+                                                showFeaturesPrefix={true}
+                                                featuresPrefixText="Everything in Pro plus:"
+                                                isRecommended={true}
+                                            />
+                                            <PricingCard
+                                                plan="Scale"
+                                                price="$100/month"
+                                                description="Enterprise-grade features for large teams"
+                                                features={[
+                                                    'Everything in Launch plan',
+                                                    'Dedicated account manager',
+                                                    'Custom integrations',
+                                                    'Advanced analytics',
+                                                    '24/7 premium support',
+                                                ]}
+                                                buttonText={
+                                                    userManager.subscription.plan ===
+                                                    UsagePlanType.SCALE
+                                                        ? t('pricing.buttons.currentPlan')
+                                                        : 'Get Scale'
+                                                }
+                                                buttonProps={{
+                                                    onClick: startScaleCheckout,
+                                                    disabled:
+                                                        userManager.subscription.plan ===
+                                                            UsagePlanType.SCALE ||
+                                                        isCheckingOut === UsagePlanType.SCALE,
+                                                }}
+                                                delay={0.17}
+                                                isLoading={isCheckingOut === UsagePlanType.SCALE}
+                                                showFeaturesPrefix={true}
+                                                featuresPrefixText="Everything in Launch plus:"
+                                            />
                                         </div>
-                                    </motion.div>
-                                    <div className="flex gap-4">
                                         <PricingCard
                                             plan={t('pricing.plans.basic.name')}
                                             price={t('pricing.plans.basic.price')}
@@ -195,48 +363,25 @@ export const SubscriptionModal = observer(() => {
                                                 disabled:
                                                     userManager.subscription.plan ===
                                                         UsagePlanType.BASIC ||
-                                                    isCheckingOut === 'basic',
+                                                    isCheckingOut === UsagePlanType.BASIC,
                                             }}
                                             delay={0.1}
-                                            isLoading={isCheckingOut === 'basic'}
+                                            isLoading={isCheckingOut === UsagePlanType.BASIC}
+                                            className="hidden"
                                         />
-                                        <PricingCard
-                                            plan={t('pricing.plans.pro.name')}
-                                            price={t('pricing.plans.pro.price')}
-                                            description={t('pricing.plans.pro.description')}
-                                            features={
-                                                t('pricing.plans.pro.features', {
-                                                    returnObjects: true,
-                                                }) as string[]
-                                            }
-                                            buttonText={
-                                                userManager.subscription.plan === UsagePlanType.PRO
-                                                    ? t('pricing.buttons.currentPlan')
-                                                    : t('pricing.buttons.getPro')
-                                            }
-                                            buttonProps={{
-                                                onClick: startProCheckout,
-                                                disabled:
-                                                    userManager.subscription.plan ===
-                                                        UsagePlanType.PRO ||
-                                                    isCheckingOut === 'pro',
-                                            }}
-                                            delay={0.2}
-                                            isLoading={isCheckingOut === 'pro'}
-                                        />
-                                    </div>
-                                    <motion.div
-                                        className="flex flex-col gap-2 text-center"
-                                        initial={{ opacity: 0, y: 5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 }}
-                                    >
-                                        <p className="text-foreground-secondary/60 text-small text-balance">
-                                            {t('pricing.footer.unusedMessages')}
-                                        </p>
+                                        <motion.div
+                                            className="flex flex-col gap-2 text-center"
+                                            initial={{ opacity: 0, y: 5 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.3 }}
+                                        >
+                                            <p className="text-foreground-secondary/60 text-small text-balance">
+                                                {t('pricing.footer.unusedMessages')}
+                                            </p>
+                                        </motion.div>
                                     </motion.div>
-                                </motion.div>
-                            </MotionConfig>
+                                </MotionConfig>
+                            </div>
                         </div>
                     </div>
                 </motion.div>

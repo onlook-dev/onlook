@@ -4,6 +4,21 @@ import { MotionCard } from '@onlook/ui/motion-card';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
+interface PricingCardProps {
+    plan: string;
+    price: string;
+    description: string;
+    features: string[];
+    buttonText: string;
+    buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
+    delay: number;
+    isLoading?: boolean;
+    className?: string;
+    showFeaturesPrefix?: boolean;
+    featuresPrefixText?: string;
+    isRecommended?: boolean;
+}
+
 export const PricingCard = ({
     plan,
     price,
@@ -13,59 +28,81 @@ export const PricingCard = ({
     buttonProps,
     delay,
     isLoading,
-}: {
-    plan: string;
-    price: string;
-    description: string;
-    features: string[];
-    buttonText: string;
-    buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
-    delay: number;
-    isLoading?: boolean;
-}) => {
+    className,
+    showFeaturesPrefix = false,
+    featuresPrefixText = 'Everything in Pro plus:',
+    isRecommended = false,
+}: PricingCardProps) => {
     const { t } = useTranslation();
 
     return (
-        <MotionCard
-            className="w-[360px]"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay }}
-        >
-            <motion.div className="p-6 flex flex-col h-full">
-                <div className="space-y-1">
-                    <h2 className="text-title2">{plan}</h2>
-                    <p className="text-foreground-onlook text-largePlus">{price}</p>
+        <div className="relative">
+            {isRecommended && (
+                <div className="absolute -top-8 left-5 right-5">
+                    <div
+                        className="w-full py-1.5 text-center text-sm font-medium rounded-t-lg relative"
+                        style={{
+                            backdropFilter: 'blur(12px)',
+                            backgroundColor: 'hsl(var(--background) /0.6)',
+                            boxShadow: '0px 0px 0px 0.5px hsl(var(--foreground) /0.2)',
+                            color: 'var(--card-foreground)',
+                        }}
+                    >
+                        Recommended
+                    </div>
                 </div>
-                <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <p className="text-foreground-primary text-title3 text-balance">{description}</p>
-                <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <div className="space-y-4 mb-6">
-                    {features.map((feature, i) => (
-                        <div
-                            key={feature}
-                            className="flex items-center gap-3 text-sm text-foreground-secondary/80"
-                        >
-                            <Icons.Check className="w-5 h-5 text-foreground-secondary/80" />
-                            <span>{feature}</span>
-                        </div>
-                    ))}
-                </div>
-                <Button
-                    className="mt-auto w-full"
-                    {...buttonProps}
-                    disabled={isLoading || buttonProps.disabled}
-                >
-                    {isLoading ? (
-                        <div className="flex items-center gap-2">
-                            <Icons.Shadow className="w-4 h-4 animate-spin" />
-                            <span>{t('pricing.loading.checkingPayment')}</span>
-                        </div>
-                    ) : (
-                        buttonText
-                    )}
-                </Button>
-            </motion.div>
-        </MotionCard>
+            )}
+            <MotionCard
+                className={`max-w-[380px] min-h-[600px] flex-shrink-0 flex ${className || ''}`}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay }}
+            >
+                <motion.div className="p-5 pb-8 flex flex-col w-full h-full">
+                    <div>
+                        <h2 className="text-[18px] font-medium">{plan}</h2>
+                        <p className="text-[40px] font-medium flex items-baseline">
+                            <span>{price.split('/')[0]}</span>
+                            <span className="text-[18px] font-normal ml-1 text-muted-foreground">
+                                /month
+                            </span>
+                        </p>
+                    </div>
+                    <p className="text-title3 font-normal text-balance text-muted-foreground mt-2">
+                        {description}
+                    </p>
+                    <Button
+                        className="w-full text-base font-medium mt-6 mb-2 h-12"
+                        size="default"
+                        {...buttonProps}
+                        disabled={isLoading || buttonProps.disabled}
+                    >
+                        {isLoading ? (
+                            <div className="flex items-center gap-2">
+                                <Icons.Shadow className="w-4 h-4 animate-spin" />
+                                <span>{t('pricing.loading.checkingPayment')}</span>
+                            </div>
+                        ) : (
+                            buttonText
+                        )}
+                    </Button>
+                    <div className="h-[0.5px] bg-white/20 -mx-5 my-5" />
+                    <div className="space-y-3 flex-grow">
+                        {showFeaturesPrefix && (
+                            <p className="text-base font-medium mb-2">{featuresPrefixText}</p>
+                        )}
+                        {features.map((feature, i) => (
+                            <div
+                                key={feature}
+                                className="flex items-start gap-2 text-base text-foreground-secondary/80"
+                            >
+                                <Icons.Check className="w-4 h-4 text-foreground-secondary/80 flex-shrink-0 mt-0.5" />
+                                <span className="text-balance">{feature}</span>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            </MotionCard>
+        </div>
     );
 };

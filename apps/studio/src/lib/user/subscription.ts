@@ -35,7 +35,26 @@ export class SubscriptionManager {
             if (!res?.success) {
                 throw new Error(res?.error || 'Error checking premium status');
             }
-            const newPlan = res.data.name === 'pro' ? UsagePlanType.PRO : UsagePlanType.BASIC;
+
+            // Determine plan type based on API response
+            let newPlan = UsagePlanType.BASIC;
+
+            if (res.data && res.data.name) {
+                switch (res.data.name) {
+                    case 'pro':
+                        newPlan = UsagePlanType.PRO;
+                        break;
+                    case 'launch':
+                        newPlan = UsagePlanType.LAUNCH;
+                        break;
+                    case 'scale':
+                        newPlan = UsagePlanType.SCALE;
+                        break;
+                    default:
+                        newPlan = UsagePlanType.BASIC;
+                }
+            }
+
             await this.updatePlan(newPlan);
             return newPlan;
         } catch (error) {
