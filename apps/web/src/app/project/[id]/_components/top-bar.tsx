@@ -1,16 +1,16 @@
 "use client"
 
 // import { useEditorEngine } from '@/components/Context';
-// import { SettingsTabValue } from '@/lib/models';
-// import ModeToggle from './ModeToggle';
-// import ProjectBreadcrumb from './ProjectSelect';
 // import Publish from './Publish';
 // import { Hotkey } from '/common/hotkeys';
+// import { ProjectBreadcrumb } from './project-breadcrumb';
+// import { SettingsTabValue } from '@onlook/models/editor';
 import { Button } from '@onlook/ui-v4/button';
 import { Icons } from '@onlook/ui-v4/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui-v4/tooltip';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { ModeToggle } from './mode-toggle';
 
 export const EditorTopBar = () => {
     // const editorEngine = useEditorEngine();
@@ -36,7 +36,7 @@ export const EditorTopBar = () => {
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 {/* <ProjectBreadcrumb /> */}
             </div>
-            {/* <ModeToggle /> */}
+            <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2">
                 <div className="flex flex-row items-center layout">
                     <motion.div
@@ -49,7 +49,7 @@ export const EditorTopBar = () => {
                             delay: 0,
                         }}
                     >
-                        {/* {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
+                        {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                             <Tooltip key={hotkey.description}>
                                 <TooltipTrigger asChild>
                                     <span>
@@ -65,10 +65,10 @@ export const EditorTopBar = () => {
                                     </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom">
-                                    <HotkeyLabel hotkey={hotkey} />
+                                    {/* <HotkeyLabel hotkey={hotkey} /> */}
                                 </TooltipContent>
                             </Tooltip>
-                        ))} */}
+                        ))}
                     </motion.div>
                     <Tooltip>
                         <TooltipTrigger asChild>
