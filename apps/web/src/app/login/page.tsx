@@ -19,7 +19,7 @@ export default function LoginPage() {
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        const lastSignInMethod = localStorage.getItem(LAST_SIGN_IN_METHOD_KEY) as SignInMethod | null;
+        const lastSignInMethod = localStorage?.getItem(LAST_SIGN_IN_METHOD_KEY) as SignInMethod | null;
         if (lastSignInMethod) {
             setLastSignInMethod(lastSignInMethod);
         }
@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     const handleLogin = (method: SignInMethod) => {
         login(method);
-        localStorage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
+        localStorage?.setItem(LAST_SIGN_IN_METHOD_KEY, method);
     }
 
     return (
