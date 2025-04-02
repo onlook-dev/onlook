@@ -1,4 +1,4 @@
-import { SelectProject } from './_components/projects-select';
+import { SelectProject } from './_components/select';
 import { TopBar } from './_components/top-bar';
 
 // import { useProjectsManager } from '@/components/Context';

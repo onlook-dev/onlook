@@ -24,7 +24,7 @@ const numberWithinRange = (number: number, min: number, max: number): number =>
 
 const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
     const WHEEL_SENSITIVITY = 13;
-    const SCROLL_COOLDOWN = 100;
+    const SCROLL_COOLDOWN = 50;
     const TWEEN_FACTOR_BASE = 0.3;
 
     const tweenFactor = useRef(0);
@@ -256,7 +256,7 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
                     {slides.map((slide, index) => (
                         <div
                             key={slide.id}
-                            className="embla__slide relative flex items-center justify-center select-none max-h-[70vh]"
+                            className="embla__slide flex items-center justify-center select-none max-h-[70vh]"
                             style={{
                                 flex: '0 0 80%',
                                 minWidth: 0,

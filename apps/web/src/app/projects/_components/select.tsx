@@ -5,9 +5,9 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 // import EmblaCarousel from './Carousel';
-import ProjectInfo from './info';
 import type { Project } from '@onlook/models/projects';
 import Carousel from './carousel';
+import ProjectInfo from './info';
 
 export const SelectProject = observer(() => {
     const { t } = useTranslation();
@@ -22,7 +22,7 @@ export const SelectProject = observer(() => {
         name: 'Project 1',
         folderPath: 'Project 1',
         url: 'https://www.google.com',
-        previewImg: 'https://www.google.com',
+        previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
         createdAt: '2021-01-01',
         updatedAt: '2021-01-01',
         settings: null,
@@ -34,7 +34,7 @@ export const SelectProject = observer(() => {
         name: 'Project 2',
         folderPath: 'Project 2',
         url: 'https://www.google.com',
-        previewImg: 'https://www.google.com',
+        previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
         createdAt: '2021-01-01',
         updatedAt: '2021-01-01',
         settings: null,
@@ -62,7 +62,9 @@ export const SelectProject = observer(() => {
                 <Carousel slides={projects} onSlideChange={handleProjectChange} />
             </div>
             <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
-                <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
+                {projects[currentProjectIndex] && (
+                    <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
+                )}
             </div>
         </div>
     );
