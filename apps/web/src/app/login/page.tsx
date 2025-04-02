@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@onlook/ui/button';
+import { Button } from '@/components/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
