@@ -1,6 +1,7 @@
 'use client'
 
-import { Button } from '@/components/ui/button';
+import { Dunes } from '@/components/ui/dunes';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -100,7 +101,7 @@ export default function LoginPage() {
                     <p>{t('welcome.version', { version: '1.0.0' })}</p>
                 </div>
             </div>
-            {/* <Dunes /> */}
+            <Dunes />
         </div>
     )
 }

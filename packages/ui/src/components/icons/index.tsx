@@ -1367,10 +1367,10 @@ export const Icons = {
                     y2="100.5"
                     gradientUnits="userSpaceOnUse"
                 >
-                    <stop className="[stop-color:theme(colors.gray.50)] dark:[stop-color:theme(colors.gray.700)]" />
+                    <stop className="[stop-color:var(--color-gray-50)] dark:[stop-color:var(--color-gray-700)]" />
                     <stop
                         offset="1"
-                        className="[stop-color:theme(colors.gray.200)] dark:[stop-color:theme(colors.gray.900)]"
+                        className="[stop-color:var(--color-gray-200)] dark:[stop-color:var(--color-gray-900)]"
                     />
                 </linearGradient>
                 <filter

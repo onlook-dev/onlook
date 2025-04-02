@@ -25,7 +25,7 @@ export default async function RootLayout({
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={`${geist.variable}`}>
+        <html lang={locale} className={`${geist.variable} dark`}>
             <body>
                 <TRPCReactProvider>
                     <NextIntlClientProvider>
