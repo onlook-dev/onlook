@@ -231,12 +231,12 @@ export const SubscriptionModal = observer(() => {
                             </Button>
                         </div>
 
-                        <div className="relative z-10 w-full flex flex-col items-center justify-center pt-16">
-                            <div className="w-full max-w-[1200px] mx-auto">
+                        <div className="relative z-10 w-full flex flex-col items-center justify-center pt-16 flex-grow">
+                            <div className="w-full max-w-[1200px] mx-auto h-full">
                                 <MotionConfig
                                     transition={{ duration: 0.5, type: 'spring', bounce: 0 }}
                                 >
-                                    <motion.div className="flex flex-col items-center gap-5 px-4">
+                                    <motion.div className="flex flex-col items-center gap-5 px-4 h-full">
                                         <motion.div
                                             className="flex flex-col gap-2 text-center mb-10"
                                             initial={{ opacity: 0, y: 20 }}
@@ -252,7 +252,7 @@ export const SubscriptionModal = observer(() => {
                                                 </h1>
                                             </div>
                                         </motion.div>
-                                        <div className="flex flex-row gap-4 w-full justify-center pb-4">
+                                        <div className="flex flex-row gap-6 w-full justify-center pb-4 flex-grow">
                                             <PricingCard
                                                 plan={t('pricing.plans.pro.name')}
                                                 price={t('pricing.plans.pro.price')}
