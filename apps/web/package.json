@@ -40,6 +40,7 @@
         "clsx": "^2.1.1",
         "lucide-react": "^0.486.0",
         "mobx-react-lite": "^4.1.0",
+        "motion": "^12.6.3",
         "next": "^15.2.3",
         "next-intl": "^4.0.2",
         "react": "^19.0.0",
