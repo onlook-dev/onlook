@@ -1,4 +1,4 @@
-import { FONT_VARIANTS } from '@onlook/models/constants';
+import { DEFAULT_FONT_STYLE, DEFAULT_FONT_WEIGHT, FONT_VARIANTS } from '@onlook/models/constants';
 
 /**
  * Extracts the actual font name from a font file name
@@ -137,6 +137,14 @@ function extractFontParts(fileName: string): FontParts {
         }
 
         weight = match?.value || weight;
+    }
+
+    if (!style) {
+        style = DEFAULT_FONT_STYLE;
+    }
+
+    if (!weight) {
+        weight = DEFAULT_FONT_WEIGHT;
     }
 
     return { family, weight, style };

@@ -1,3 +1,5 @@
+export const DEFAULT_FONT_WEIGHT = '400';
+export const DEFAULT_FONT_STYLE = 'normal';
 export const FONT_VARIANTS = [
     {
         name: 'Thin',

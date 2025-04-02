@@ -105,6 +105,10 @@ export class FontManager {
                 font,
             });
 
+            if (font.id === this.defaultFont) {
+                this._defaultFont = null;
+            }
+
             await this.scanFonts();
         } catch (error) {
             console.error('Error removing font:', error);
@@ -123,9 +127,8 @@ export class FontManager {
                 projectRoot,
                 font,
             });
-            setTimeout(() => {
-                this.getDefaultFont();
-            }, 100);
+
+            await this.getDefaultFont();
         } catch (error) {
             console.error('Error setting font:', error);
         }
