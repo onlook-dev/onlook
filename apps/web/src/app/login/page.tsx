@@ -1,8 +1,8 @@
 'use client'
 
 import { Dunes } from '@/components/ui/dunes';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui-v4/button';
+import { Icons } from '@onlook/ui-v4/icons';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { login } from './actions';

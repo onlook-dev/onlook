@@ -1,6 +1,6 @@
 {
-    "name": "@onlook/ui",
-    "description": "A ui library for Onlook",
+    "name": "@onlook/ui-v4",
+    "description": "A tailwind v4 ui library for Onlook",
     "version": "0.0.0",
     "private": true,
     "type": "module",
