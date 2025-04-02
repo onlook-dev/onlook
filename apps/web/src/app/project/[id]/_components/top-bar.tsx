@@ -5,7 +5,9 @@
 // import { Hotkey } from '/common/hotkeys';
 // import { ProjectBreadcrumb } from './project-breadcrumb';
 // import { SettingsTabValue } from '@onlook/models/editor';
+import { Hotkey } from '@/components/hotkey';
 import { Button } from '@onlook/ui-v4/button';
+import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
 import { Icons } from '@onlook/ui-v4/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui-v4/tooltip';
 import { motion } from 'motion/react';
@@ -17,18 +19,18 @@ export const EditorTopBar = () => {
     const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [
-        // {
-        //     click: () => editorEngine.action.undo(),
-        //     hotkey: Hotkey.UNDO,
-        //     icon: <Icons.Reset className="h-4 w-4 mr-1" />,
-        //     isDisabled: !editorEngine.history.canUndo,
-        // },
-        // {
-        //     click: () => editorEngine.action.redo(),
-        //     hotkey: Hotkey.REDO,
-        //     icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
-        //     isDisabled: !editorEngine.history.canRedo,
-        // },
+        {
+            // click: () => editorEngine.action.undo(),
+            hotkey: Hotkey.UNDO,
+            icon: <Icons.Reset className="h-4 w-4 mr-1" />,
+            // isDisabled: !editorEngine.history.canUndo,
+        },
+        {
+            // click: () => editorEngine.action.redo(),
+            hotkey: Hotkey.REDO,
+            icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
+            // isDisabled: !editorEngine.history.canRedo,
+        },
     ];
 
     return (
@@ -65,7 +67,7 @@ export const EditorTopBar = () => {
                                     </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom">
-                                    {/* <HotkeyLabel hotkey={hotkey} /> */}
+                                    <HotkeyLabel hotkey={hotkey} />
                                 </TooltipContent>
                             </Tooltip>
                         ))}
