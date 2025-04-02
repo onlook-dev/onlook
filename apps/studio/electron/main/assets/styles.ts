@@ -217,13 +217,23 @@ function updateTailwindConfigFile(
                 colorObj.properties.forEach((colorProp) => {
                     if (
                         colorProp.type === 'ObjectProperty' &&
-                        colorProp.key.type === 'Identifier' &&
-                        colorProp.key.name === parentKey
+                        (colorProp.key.type === 'Identifier' ||
+                            colorProp.key.type === 'NumericLiteral') &&
+                        (colorProp.key.type === 'Identifier'
+                            ? colorProp.key.name === parentKey
+                            : String(colorProp.key.value) === parentKey)
                     ) {
                         // If the keyName is not provided, we are renaming the root color
                         if (!keyName) {
                             if (parentKey && newName !== parentKey) {
-                                colorProp.key.name = newName;
+                                if (colorProp.key.type === 'Identifier') {
+                                    colorProp.key.name = newName;
+                                } else {
+                                    colorProp.key = {
+                                        type: 'Identifier',
+                                        name: newName,
+                                    };
+                                }
                                 keyUpdated = true;
 
                                 // Then we need to update the child css variables or direct color values
@@ -231,18 +241,24 @@ function updateTailwindConfigFile(
                                     colorProp.value.properties.forEach((nestedProp) => {
                                         if (
                                             nestedProp.type === 'ObjectProperty' &&
-                                            nestedProp.key.type === 'Identifier' &&
+                                            (nestedProp.key.type === 'Identifier' ||
+                                                nestedProp.key.type === 'NumericLiteral') &&
                                             nestedProp.value.type === 'StringLiteral'
                                         ) {
                                             // Special handling for DEFAULT
+                                            const keyValue =
+                                                nestedProp.key.type === 'Identifier'
+                                                    ? nestedProp.key.name
+                                                    : String(nestedProp.key.value);
+
                                             const oldVarName =
-                                                nestedProp.key.name === DEFAULT_COLOR_NAME
+                                                keyValue === DEFAULT_COLOR_NAME
                                                     ? parentKey
-                                                    : `${parentKey}-${nestedProp.key.name}`;
+                                                    : `${parentKey}-${keyValue}`;
                                             const newVarName =
-                                                nestedProp.key.name === DEFAULT_COLOR_NAME
+                                                keyValue === DEFAULT_COLOR_NAME
                                                     ? newName
-                                                    : `${newName}-${nestedProp.key.name}`;
+                                                    : `${newName}-${keyValue}`;
 
                                             nestedProp.value.value = nestedProp.value.value.replace(
                                                 new RegExp(`--${oldVarName}`, 'g'),
