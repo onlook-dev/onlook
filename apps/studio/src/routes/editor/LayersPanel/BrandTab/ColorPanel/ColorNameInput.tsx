@@ -41,7 +41,7 @@ export const ColorNameInput = ({
         if (!/^[a-zA-Z0-9\s]+$/.test(value)) {
             return 'Color name can only contain text, numbers, and spaces';
         }
-        if (/^[0-9]/.test(value) && !/^[0-9]+$/.test(value)) {
+        if (/^[0-9]/.test(value) && !/^[0-9\s]+$/.test(value)) {
             return 'Color name cannot start with a number';
         }
 
@@ -96,7 +96,7 @@ export const ColorNameInput = ({
                     className={`text-sm font-normal w-full rounded-md border ${
                         error ? 'border-red-500' : 'border-white/10'
                     } bg-background-secondary px-2 py-1 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    placeholder="Enter group name"
+                    placeholder="Enter color name"
                     autoFocus={autoFocus}
                     disabled={disabled}
                 />

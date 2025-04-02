@@ -348,7 +348,7 @@ export const BrandPalletGroup = ({
                     {isAddingNewColor ? (
                         <ColorPopover
                             color={Color.from('#FFFFFF')}
-                            brandColor="New Color"
+                            brandColor={`${title} ${colors?.length || 0}`}
                             onClose={() => setIsAddingNewColor(false)}
                             onColorChange={(newColor, newName) =>
                                 handleColorChange(colors?.length || 0, newColor, newName, title)

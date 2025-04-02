@@ -1,7 +1,7 @@
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import type { ObjectExpression, ObjectProperty } from '@babel/types';
+import type { ObjectExpression, ObjectMethod, ObjectProperty, SpreadElement } from '@babel/types';
 import type {
     ClassReplacement,
     ColorUpdate,
@@ -90,12 +90,8 @@ function addTailwindNestedColor(
     newName: string,
     newCssVarName: string,
 ) {
-    const parentColorObj = colorObj.properties.find(
-        (prop): prop is ObjectProperty =>
-            prop.type === 'ObjectProperty' &&
-            'key' in prop &&
-            prop.key.type === 'Identifier' &&
-            prop.key.name === parentName,
+    const parentColorObj = colorObj.properties.find((prop): prop is ObjectProperty =>
+        isValidTailwindConfigProperty(prop, parentName),
     );
 
     if (parentColorObj) {
@@ -777,24 +773,16 @@ async function deleteColorGroup(
                 }
 
                 // Find the group
-                const groupProp = colorObj.properties.find(
-                    (prop) =>
-                        prop.type === 'ObjectProperty' &&
-                        'key' in prop &&
-                        prop.key.type === 'Identifier' &&
-                        prop.key.name === camelCaseName,
+                const groupProp = colorObj.properties.find((prop) =>
+                    isValidTailwindConfigProperty(prop, camelCaseName),
                 );
 
                 if (groupProp && 'value' in groupProp) {
                     if (isObjectExpression(groupProp.value)) {
                         if (colorName) {
                             // Delete specific color within group
-                            const colorIndex = groupProp.value.properties.findIndex(
-                                (prop) =>
-                                    prop.type === 'ObjectProperty' &&
-                                    'key' in prop &&
-                                    prop.key.type === 'Identifier' &&
-                                    prop.key.name === colorName,
+                            const colorIndex = groupProp.value.properties.findIndex((prop) =>
+                                isValidTailwindConfigProperty(prop, colorName),
                             );
 
                             if (colorIndex !== -1) {
@@ -827,7 +815,7 @@ async function deleteColorGroup(
         const trimmedLine = line.trim();
         if (colorName) {
             // Only remove the specific color variable
-            const shouldKeep = !trimmedLine.startsWith(`--${camelCaseName}-${colorName}`);
+            const shouldKeep = !trimmedLine.endsWith(`--${camelCaseName}-${colorName}`);
             if (!shouldKeep) {
                 console.log('Removing CSS variable:', trimmedLine);
             }
@@ -1027,4 +1015,24 @@ async function updateDefaultTailwindColor(
     }
 
     return isUpdated;
+}
+
+/**
+ * Check if the property is a valid tailwind config property
+ * @param prop - The property to check
+ * @param keyName - The key name to check against (can be a string or a number)
+ * @returns True if the property is a valid tailwind config property, false otherwise
+ */
+function isValidTailwindConfigProperty(
+    prop: ObjectProperty | ObjectMethod | SpreadElement,
+    keyName: string,
+): boolean {
+    return (
+        prop.type === 'ObjectProperty' &&
+        'key' in prop &&
+        (prop.key.type === 'Identifier' || prop.key.type === 'NumericLiteral') &&
+        (prop.key.type === 'Identifier'
+            ? prop.key.name === keyName
+            : String(prop.key.value) === keyName)
+    );
 }
