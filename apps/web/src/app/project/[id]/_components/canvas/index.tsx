@@ -22,12 +22,8 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
-    // const scale = editorEngine.canvas.scale;
-    // const position = editorEngine.canvas.position;
-
-    // TODO: Remove this
-    const scale = 1;
-    const position = { x: 0, y: 0 };
+    const scale = editorEngine.canvas.scale;
+    const position = editorEngine.canvas.position;
 
     const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
         if (event.target !== containerRef.current) {

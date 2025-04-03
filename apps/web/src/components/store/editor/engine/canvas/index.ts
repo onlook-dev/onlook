@@ -1,4 +1,4 @@
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings, Orientation, Theme } from '@onlook/models/constants';
 import type {
     FrameSettings,
     Project,
@@ -27,12 +27,22 @@ type SettingsObserver = (settings: FrameSettings) => void;
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
     private panPosition: RectPosition = DefaultSettings.PAN_POSITION;
-    private webFrames: FrameSettings[] = [];
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
+    private _frames: FrameSettings[] = [];
 
     constructor() {
         makeAutoObservable(this);
         this.panPosition = this.getDefaultPanPosition();
+        this.frames = [{
+            id: '1',
+            url: 'https://www.tailwindcss.com',
+            position: { x: 0, y: 0 },
+            dimension: { width: 1000, height: 1000 },
+            device: 'Desktop',
+            theme: Theme.Light,
+            orientation: Orientation.Potrait,
+            aspectRatioLocked: false,
+        }];
     }
 
     getDefaultPanPosition(): RectPosition {
@@ -74,32 +84,32 @@ export class CanvasManager {
     }
 
     get frames() {
-        return this.webFrames;
+        return this._frames;
     }
 
     set frames(frames: FrameSettings[]) {
-        this.webFrames = frames;
+        this._frames = frames;
         this.saveSettings();
     }
 
     getFrame(id: string) {
-        return this.webFrames.find((f) => f.id === id);
+        return this.frames.find((f) => f.id === id);
     }
 
     saveFrame(id: string, newSettings: Partial<FrameSettings>) {
-        let frame = this.webFrames.find((f) => f.id === id);
+        let frame = this.frames.find((f) => f.id === id);
         if (!frame) {
             return;
         }
 
         frame = { ...frame, ...newSettings };
-        this.webFrames = this.webFrames.map((f) => (f.id === id ? frame : f));
+        this.frames = this.frames.map((f) => (f.id === id ? frame : f));
         this.saveSettings();
         this.notifySettingsObservers(id);
     }
 
     saveFrames(frames: FrameSettings[]) {
-        this.webFrames = frames;
+        this.frames = frames;
         this.saveSettings();
     }
 
@@ -108,7 +118,7 @@ export class CanvasManager {
         this.panPosition = project.settings?.position || this.getDefaultPanPosition();
 
         if (project.settings?.frames && project.settings.frames.length) {
-            this.webFrames = project.settings.frames;
+            this.frames = project.settings.frames;
         } else {
             // Find desktop and mobile presets
             const desktopPreset = SIZE_PRESETS.find((preset) => preset.name === 'Desktop');
@@ -133,12 +143,12 @@ export class CanvasManager {
                 device: 'Mobile',
             });
 
-            this.webFrames = [desktopFrame, mobileFrame];
+            this.frames = [desktopFrame, mobileFrame];
         }
     }
 
     clear() {
-        this.webFrames = [];
+        this.frames = [];
         this.zoomScale = DefaultSettings.SCALE;
         this.panPosition = DefaultSettings.PAN_POSITION;
     }

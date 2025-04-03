@@ -1,5 +1,5 @@
 
-// import { WebviewArea } from './_components/canvas/webview-area';
+import { Frames } from './_components/canvas/frames';
 
 // import { EditPanel } from './EditPanel';
 // import { HotkeysModal } from './HotkeysModal';
@@ -14,7 +14,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     return (
         <div className="h-screen w-screen relative flex flex-row select-none">
             <Canvas>
-                {/* <WebviewArea /> */}
+                <Frames />
             </Canvas>
 
             <div className="fixed top-20 left-0 animate-layer-panel-in">
