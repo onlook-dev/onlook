@@ -8,12 +8,13 @@ import { Button } from '@onlook/ui-v4/button';
 import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
 import { Icons } from '@onlook/ui-v4/icons';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui-v4/tooltip';
+import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 
-export const EditorTopBar = () => {
+export const EditorTopBar = observer(() => {
     // const editorEngine = useEditorEngine();
     const t = useTranslations();
 
@@ -104,4 +105,4 @@ export const EditorTopBar = () => {
             </div>
         </TooltipProvider>
     );
-};
+});

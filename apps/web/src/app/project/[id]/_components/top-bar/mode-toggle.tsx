@@ -1,40 +1,34 @@
-// import { useEditorEngine } from '@/components/Context';
-// import { EditorMode } from '@/lib/models';
 import { Hotkey } from '@/components/hotkey';
+import { useEditorEngine } from '@/components/store';
 import { EditorMode } from '@onlook/models/editor';
 import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui-v4/toggle-group';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui-v4/tooltip';
+import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 
-export const ModeToggle = () => {
-    // const editorEngine = useEditorEngine();
+const MODE_TOGGLE_ITEMS: {
+    mode: EditorMode;
+    hotkey: Hotkey;
+}[] = [
+        {
+            mode: EditorMode.DESIGN,
+            hotkey: Hotkey.SELECT,
+        },
+        {
+            mode: EditorMode.PREVIEW,
+            hotkey: Hotkey.PREVIEW,
+        },
+    ];
+
+export const ModeToggle = observer(() => {
     const t = useTranslations();
-    // TODO: Use editorEngine.mode
-    const [mode, setMode] = useState<EditorMode>(getMode(EditorMode.DESIGN));
+    const editorEngine = useEditorEngine();
+    const mode: EditorMode.DESIGN | EditorMode.PREVIEW = getNormalizedMode(editorEngine.state.editorMode);
 
-    // useEffect(() => {
-    //     setMode(makeDesignMode(editorEngine.mode));
-    // }, [editorEngine.mode]);
-
-    const MODE_TOGGLE_ITEMS: {
-        mode: EditorMode;
-        hotkey: Hotkey;
-    }[] = [
-            {
-                mode: EditorMode.DESIGN,
-                hotkey: Hotkey.SELECT,
-            },
-            {
-                mode: EditorMode.PREVIEW,
-                hotkey: Hotkey.PREVIEW,
-            },
-        ];
-
-    function getMode(mode: EditorMode) {
-        return mode === EditorMode.PREVIEW ? EditorMode.PREVIEW : EditorMode.DESIGN;
+    function getNormalizedMode(unnormalizedMode: EditorMode) {
+        return unnormalizedMode === EditorMode.PREVIEW ? EditorMode.PREVIEW : EditorMode.DESIGN;
     }
 
     return (
@@ -46,8 +40,7 @@ export const ModeToggle = () => {
                     value={mode}
                     onValueChange={(value) => {
                         if (value) {
-                            // editorEngine.mode = value as EditorMode;
-                            setMode(value as EditorMode);
+                            editorEngine.state.editorMode = value as EditorMode;
                         }
                     }}
                 >
@@ -88,4 +81,4 @@ export const ModeToggle = () => {
             </div>
         </TooltipProvider>
     );
-};
+});

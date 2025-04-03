@@ -3,8 +3,10 @@ import { EditorMode } from '@onlook/models/editor';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HotkeysArea } from './hotkeys';
-// import Overlay from './Overlay';
-// import PanOverlay from './PanOverlay';
+import { PanOverlay } from './overlay/pan';
+
+// import { Overlay } from './overlay';
+// import { EditorAttributes } from '@onlook/models/constants';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -22,6 +24,8 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const [isPanning, setIsPanning] = useState(false);
     // const scale = editorEngine.canvas.scale;
     // const position = editorEngine.canvas.position;
+
+    // TODO: Remove this
     const scale = 1;
     const position = { x: 0, y: 0 };
 
@@ -49,7 +53,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
             const deltaX = (x - position.x) * zoomFactor;
             const deltaY = (y - position.y) * zoomFactor;
 
-            // editorEngine.canvas.scale = lintedScale;
+            editorEngine.canvas.scale = lintedScale;
 
             if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
                 return;
@@ -166,12 +170,12 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                     <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
                         {children}
                     </div>
-                </Overlay>
+                </Overlay> */}
                 <PanOverlay
-                    clampPosition={(position) => clampPosition(position, scale)}
+                    clampPosition={(position: { x: number; y: number }) => clampPosition(position, scale)}
                     isPanning={isPanning}
                     setIsPanning={setIsPanning}
-                /> */}
+                />
             </div>
         </HotkeysArea>
     );
