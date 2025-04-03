@@ -3,10 +3,10 @@ import { EditorMode, EditorTabValue } from '@/lib/models';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import DeleteKey from './Delete';
+import { DeleteKey } from './Delete';
 import { Hotkey } from '/common/hotkeys';
 
-const HotkeysArea = ({ children }: { children: ReactNode }) => {
+export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
 
     // Zoom
@@ -90,5 +90,3 @@ const HotkeysArea = ({ children }: { children: ReactNode }) => {
         </>
     );
 };
-
-export default HotkeysArea;

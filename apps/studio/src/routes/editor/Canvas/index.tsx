@@ -3,9 +3,9 @@ import { EditorMode } from '@/lib/models';
 import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import HotkeysArea from './Hotkeys';
-import Overlay from './Overlay';
-import PanOverlay from './PanOverlay';
+import { HotkeysArea } from './Hotkeys';
+import { Overlay } from './Overlay';
+import { PanOverlay } from './PanOverlay';
 
 export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;

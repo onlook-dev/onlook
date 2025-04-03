@@ -3,7 +3,7 @@ import { EditorMode } from '@onlook/models/editor';
 import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-// import HotkeysArea from './Hotkeys';
+import { HotkeysArea } from './hotkeys';
 // import Overlay from './Overlay';
 // import PanOverlay from './PanOverlay';
 
