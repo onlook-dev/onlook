@@ -26,7 +26,7 @@
         "dev:studio": "bun --filter @onlook/studio dev",
         "build": "bun --filter '*' build",
         "ci:build": "bun run build:foundation && bun --filter '*' build",
-        "dev": "bun --filter '*' dev",
+        "dev": "bun --filter '!@onlook/web' dev",
         "dev:web": "bun --filter @onlook/web dev",
         "test": "bun --filter '*' test",
         "format": "bun --filter '*' format",
