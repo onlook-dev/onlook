@@ -39,7 +39,20 @@ export const SelectProject = observer(() => {
         settings: null,
         commands: null,
         domains: null,
-    }]
+    },
+    {
+        id: '3',
+        name: 'Project 3',
+        folderPath: 'Project 3',
+        url: 'https://www.google.com',
+        previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+        createdAt: new Date(Date.now() - 1000 * 60).toISOString(),
+        updatedAt: new Date(Date.now() - 1000 * 60).toISOString(),
+        settings: null,
+        commands: null,
+        domains: null,
+    },
+    ];
 
     const sortProjects = (unsortedProjects: Project[]) => {
         return unsortedProjects.sort(

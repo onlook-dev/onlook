@@ -44,7 +44,6 @@ export class EditorEngine {
     readonly window: WindowManager = new WindowManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
     // readonly action: ActionManager = new ActionManager(this);
-
     // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
     // readonly elements: ElementsManager = new ElementsManager(this);
     // readonly text: TextEditingManager = new TextEditingManager(this);
@@ -60,7 +59,7 @@ export class EditorEngine {
         // private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        this.canvas = new CanvasManager(this.projectsManager);
+        this.canvas = new CanvasManager();
         // this.chat = new ChatManager(this, this.projectsManager, this.userManager);
         // this.webview = new WebviewManager(this, this.projectsManager);
         // this.code = new CodeManager(this, this.projectsManager);
