@@ -41,6 +41,7 @@ export enum MainChannels {
     IS_CHILD_TEXT_EDITABLE = 'is-child-text-editable',
     IS_PORT_AVAILABLE = 'is-port-available',
     CLEAN_UP_BEFORE_QUIT = 'clean-up-before-quit',
+    MOVE_PROJECT_FOLDER = 'move-project-folder',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',

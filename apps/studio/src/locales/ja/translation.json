@@ -245,7 +245,8 @@
             "startFromScratch": "新規作成",
             "importProject": "プロジェクトをインポート",
             "subscriptions": "サブスクリプション",
-            "settings": "設定"
+            "settings": "設定",
+            "confirm": "確認"
         },
         "dialogs": {
             "delete": {
@@ -257,6 +258,12 @@
                 "title": "プロジェクトの名前変更",
                 "label": "プロジェクト名",
                 "error": "プロジェクト名は空にできません"
+            },
+            "updatePath" : {
+                "title":"パスを更新",
+                "description":"プロジェクトの場所を更新してもよろしいですか？",
+                "toast": "プロジェクトのパスが更新されました。",
+                "error": "プロジェクトの移動に失敗しました"
             }
         },
         "prompt": {

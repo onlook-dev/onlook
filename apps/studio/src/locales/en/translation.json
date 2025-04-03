@@ -50,7 +50,8 @@
             "startFromScratch": "Start from scratch",
             "importProject": "Import a project",
             "subscriptions": "Subscriptions",
-            "settings": "Settings"
+            "settings": "Settings",
+            "confirm": "Confirm"
         },
         "dialogs": {
             "delete": {
@@ -62,6 +63,12 @@
                 "title": "Rename Project",
                 "label": "Project Name",
                 "error": "Project name can't be empty"
+            },
+            "updatePath": {
+                "title": "Update Path",
+                "description": "Are you sure you want to update project location?",
+                "success": "Path for the project has been updated",
+                "error": "Failed to move your project"
             }
         },
         "prompt": {
