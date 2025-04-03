@@ -381,9 +381,9 @@ export async function addLocalFont(
                     `${fileName}.${fontFile.file.name.split('.').pop()}`,
                 );
 
-                // Save the file
+                // Save the file as binary data
                 const buffer = Buffer.from(fontFile.file.buffer);
-                await writeFile(filePath, buffer.toString('base64'));
+                fs.writeFileSync(filePath, buffer);
 
                 return {
                     path: pathModule.join(
@@ -450,7 +450,10 @@ export async function addLocalFont(
                     t.stringLiteral(`--font-${kebabCase(fontName)}`),
                 ),
                 t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
-                t.objectProperty(t.identifier('fallback'), t.stringLiteral('sans-serif')),
+                t.objectProperty(
+                    t.identifier('fallback'),
+                    t.arrayExpression([t.stringLiteral('system-ui'), t.stringLiteral('san-serif')]),
+                ),
                 t.objectProperty(t.identifier('preload'), t.booleanLiteral(true)),
             ]);
 
