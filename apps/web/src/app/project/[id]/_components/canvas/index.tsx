@@ -6,16 +6,16 @@ import { HotkeysArea } from './hotkeys';
 // import Overlay from './Overlay';
 // import PanOverlay from './PanOverlay';
 
-export const Canvas = observer(({ children }: { children: ReactNode }) => {
-    const ZOOM_SENSITIVITY = 0.006;
-    const PAN_SENSITIVITY = 0.52;
-    const MIN_ZOOM = 0.1;
-    const MAX_ZOOM = 3;
-    const MAX_X = 10000;
-    const MAX_Y = 10000;
-    const MIN_X = -5000;
-    const MIN_Y = -5000;
+const ZOOM_SENSITIVITY = 0.006;
+const PAN_SENSITIVITY = 0.52;
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 3;
+const MAX_X = 10000;
+const MAX_Y = 10000;
+const MIN_X = -5000;
+const MIN_Y = -5000;
 
+export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
