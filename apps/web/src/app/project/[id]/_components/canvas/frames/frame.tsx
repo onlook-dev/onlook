@@ -1,9 +1,8 @@
-import { useEditorEngine } from "@/components/store";
 import type { FrameSettings } from "@onlook/models/projects";
 import { cn } from "@onlook/ui-v4/utils";
 import { observer } from "mobx-react-lite";
-import { useRef, useState } from "react";
-import { ResizeHandles } from "./resize-handles";
+import { useRef } from "react";
+import { ResizeHandles } from './resize-handles';
 
 export const Frame = observer(
     ({
@@ -11,8 +10,6 @@ export const Frame = observer(
     }: {
         settings: FrameSettings;
     }) => {
-        const editorEngine = useEditorEngine();
-        const [hovered, setHovered] = useState(false);
         const position = settings.position;
         const iframeRef = useRef<HTMLIFrameElement>(null);
 
