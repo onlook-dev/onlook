@@ -29,6 +29,7 @@ import {
     initializeTailwindColorContent,
     isColorsObjectProperty,
     isObjectExpression,
+    modifyTailwindConfig,
 } from './helpers';
 
 export async function updateTailwindColorConfig(
@@ -190,20 +191,15 @@ function updateTailwindConfigFile(
     newName: string,
     newCssVarName: string,
 ): ConfigUpdateResult {
-    const updateAst = parse(configContent, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
-
     let keyUpdated = false;
     let valueUpdated = false;
 
-    traverse(updateAst, {
-        ObjectProperty(path) {
+    const { output } = modifyTailwindConfig(configContent, {
+        visitor: (path) => {
             if (isColorsObjectProperty(path)) {
                 const colorObj = path.node.value;
                 if (!isObjectExpression(colorObj)) {
-                    return;
+                    return false;
                 }
 
                 colorObj.properties.forEach((colorProp) => {
@@ -252,7 +248,7 @@ function updateTailwindConfigFile(
                         } else {
                             const nestedObj = colorProp.value;
                             if (!isObjectExpression(nestedObj)) {
-                                return;
+                                return false;
                             }
                             nestedObj.properties.forEach((nestedProp) => {
                                 if (
@@ -279,11 +275,13 @@ function updateTailwindConfigFile(
                         }
                     }
                 });
+
+                return keyUpdated || valueUpdated;
             }
+            return false;
         },
     });
 
-    const output = generate(updateAst, { retainLines: true, compact: false }, configContent).code;
     return { keyUpdated, valueUpdated, output };
 }
 

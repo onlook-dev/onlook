@@ -156,6 +156,15 @@ export enum MainChannels {
     SCAN_TAILWIND_CONFIG = 'scan-tailwind-config',
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
     DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
+
+    // Fonts
+    SCAN_FONTS = 'scan-fonts-config',
+    ADD_FONT = 'add-font',
+    REMOVE_FONT = 'remove-font',
+    SET_FONT = 'set-font',
+    GET_DEFAULT_FONT = 'get-default-font',
+    UPLOAD_FONTS = 'upload-fonts',
+    WATCH_FONT_FILE = 'watch-font-file',
 }
 
 export enum GitChannels {

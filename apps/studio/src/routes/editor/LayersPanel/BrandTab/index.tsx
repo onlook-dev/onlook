@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ColorPanel from './ColorPanel';
 import FontPanel from './FontPanel';
-import { FontFamily } from './FontPanel/FontFamily';
+import SystemFont from './FontPanel/SystemFont';
 
 interface ColorSquareProps {
     color: string;
@@ -26,7 +26,7 @@ const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
 );
 
 const BrandTab = observer(() => {
-    const [showColorPanel, setShowColorPanel] = useState(true);
+    const [showColorPanel, setShowColorPanel] = useState(false);
     const [showFontPanel, setShowFontPanel] = useState(false);
 
     // Sample colors for the brand palette
@@ -100,34 +100,7 @@ const BrandTab = observer(() => {
                     <div className="flex justify-between items-center">
                         <span className="text-base font-normal">Site Fonts</span>
                     </div>
-
-                    <div className="flex flex-col divide-y divide-border">
-                        <FontFamily
-                            name="Poppins"
-                            variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
-                            showDropdown={true}
-                            showAddButton={false}
-                        />
-                        <FontFamily
-                            name="Switzer"
-                            variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
-                            showDropdown={true}
-                            showAddButton={false}
-                        />
-                        <FontFamily
-                            name="DM Sans"
-                            variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
-                            showDropdown={true}
-                            showAddButton={false}
-                        />
-                        <FontFamily
-                            name="Roboto"
-                            variants={['Light', 'Regular', 'Medium', 'SemiBold', 'Bold']}
-                            isLast={true}
-                            showDropdown={true}
-                            showAddButton={false}
-                        />
-                    </div>
+                    <SystemFont />
                 </div>
                 <Button
                     variant="ghost"
