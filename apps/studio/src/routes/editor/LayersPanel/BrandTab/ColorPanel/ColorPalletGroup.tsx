@@ -16,7 +16,6 @@ import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
 import { ColorNameInput } from './ColorNameInput';
 import { customAlphabet } from 'nanoid/non-secure';
-import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
 export interface ColorItem {
     name: string;
