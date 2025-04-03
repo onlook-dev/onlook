@@ -43,7 +43,7 @@ export const fontFamilies = [
     {
         id: 'abeezee',
         family: 'ABeeZee',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -55,7 +55,7 @@ export const fontFamilies = [
     {
         id: 'adlam-display',
         family: 'ADLaM Display',
-        subsets: ['adlam', 'latin', 'latin-ext'],
+        subsets: ['adlam', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'adlam',
@@ -67,7 +67,7 @@ export const fontFamilies = [
     {
         id: 'ar-one-sans',
         family: 'AR One Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -91,7 +91,7 @@ export const fontFamilies = [
     {
         id: 'abhaya-libre',
         family: 'Abhaya Libre',
-        subsets: ['latin', 'latin-ext', 'sinhala'],
+        subsets: ['latin', , 'sinhala'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -103,7 +103,7 @@ export const fontFamilies = [
     {
         id: 'aboreto',
         family: 'Aboreto',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -115,7 +115,7 @@ export const fontFamilies = [
     {
         id: 'abril-fatface',
         family: 'Abril Fatface',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -127,7 +127,7 @@ export const fontFamilies = [
     {
         id: 'abyssinica-sil',
         family: 'Abyssinica SIL',
-        subsets: ['ethiopic', 'latin', 'latin-ext'],
+        subsets: ['ethiopic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'ethiopic',
@@ -139,7 +139,7 @@ export const fontFamilies = [
     {
         id: 'aclonica',
         family: 'Aclonica',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -187,7 +187,7 @@ export const fontFamilies = [
     {
         id: 'advent-pro',
         family: 'Advent Pro',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -199,7 +199,7 @@ export const fontFamilies = [
     {
         id: 'afacad',
         family: 'Afacad',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic-ext',
@@ -211,7 +211,7 @@ export const fontFamilies = [
     {
         id: 'afacad-flux',
         family: 'Afacad Flux',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -223,7 +223,7 @@ export const fontFamilies = [
     {
         id: 'agbalumo',
         family: 'Agbalumo',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -235,7 +235,7 @@ export const fontFamilies = [
     {
         id: 'agdasima',
         family: 'Agdasima',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -247,7 +247,7 @@ export const fontFamilies = [
     {
         id: 'agu-display',
         family: 'Agu Display',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -259,7 +259,7 @@ export const fontFamilies = [
     {
         id: 'aguafina-script',
         family: 'Aguafina Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -271,7 +271,7 @@ export const fontFamilies = [
     {
         id: 'akatab',
         family: 'Akatab',
-        subsets: ['latin', 'latin-ext', 'tifinagh'],
+        subsets: ['latin', , 'tifinagh'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -283,7 +283,7 @@ export const fontFamilies = [
     {
         id: 'akaya-kanadaka',
         family: 'Akaya Kanadaka',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -295,7 +295,7 @@ export const fontFamilies = [
     {
         id: 'akaya-telivigala',
         family: 'Akaya Telivigala',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -307,7 +307,7 @@ export const fontFamilies = [
     {
         id: 'akronim',
         family: 'Akronim',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -319,7 +319,7 @@ export const fontFamilies = [
     {
         id: 'akshar',
         family: 'Akshar',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -331,7 +331,7 @@ export const fontFamilies = [
     {
         id: 'aladin',
         family: 'Aladin',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -343,7 +343,7 @@ export const fontFamilies = [
     {
         id: 'alata',
         family: 'Alata',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -355,7 +355,7 @@ export const fontFamilies = [
     {
         id: 'alatsi',
         family: 'Alatsi',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -367,7 +367,7 @@ export const fontFamilies = [
     {
         id: 'albert-sans',
         family: 'Albert Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -391,7 +391,7 @@ export const fontFamilies = [
     {
         id: 'alef',
         family: 'Alef',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -403,15 +403,7 @@ export const fontFamilies = [
     {
         id: 'alegreya',
         family: 'Alegreya',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -423,15 +415,7 @@ export const fontFamilies = [
     {
         id: 'alegreya-sc',
         family: 'Alegreya SC',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['400', '500', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -443,15 +427,7 @@ export const fontFamilies = [
     {
         id: 'alegreya-sans',
         family: 'Alegreya Sans',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '300', '400', '500', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -463,15 +439,7 @@ export const fontFamilies = [
     {
         id: 'alegreya-sans-sc',
         family: 'Alegreya Sans SC',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '300', '400', '500', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -483,7 +451,7 @@ export const fontFamilies = [
     {
         id: 'aleo',
         family: 'Aleo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -495,7 +463,7 @@ export const fontFamilies = [
     {
         id: 'alex-brush',
         family: 'Alex Brush',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -507,7 +475,7 @@ export const fontFamilies = [
     {
         id: 'alexandria',
         family: 'Alexandria',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -519,7 +487,7 @@ export const fontFamilies = [
     {
         id: 'alfa-slab-one',
         family: 'Alfa Slab One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -531,7 +499,7 @@ export const fontFamilies = [
     {
         id: 'alice',
         family: 'Alice',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -543,7 +511,7 @@ export const fontFamilies = [
     {
         id: 'alike',
         family: 'Alike',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -555,7 +523,7 @@ export const fontFamilies = [
     {
         id: 'alike-angular',
         family: 'Alike Angular',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -567,7 +535,7 @@ export const fontFamilies = [
     {
         id: 'alkalami',
         family: 'Alkalami',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -579,7 +547,7 @@ export const fontFamilies = [
     {
         id: 'alkatra',
         family: 'Alkatra',
-        subsets: ['bengali', 'devanagari', 'latin', 'latin-ext', 'oriya'],
+        subsets: ['bengali', 'devanagari', 'latin', , 'oriya'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -591,7 +559,7 @@ export const fontFamilies = [
     {
         id: 'allan',
         family: 'Allan',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -627,7 +595,7 @@ export const fontFamilies = [
     {
         id: 'allison',
         family: 'Allison',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -639,7 +607,7 @@ export const fontFamilies = [
     {
         id: 'allura',
         family: 'Allura',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -663,7 +631,7 @@ export const fontFamilies = [
     {
         id: 'almendra',
         family: 'Almendra',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -675,7 +643,7 @@ export const fontFamilies = [
     {
         id: 'almendra-display',
         family: 'Almendra Display',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -699,7 +667,7 @@ export const fontFamilies = [
     {
         id: 'alumni-sans',
         family: 'Alumni Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -711,7 +679,7 @@ export const fontFamilies = [
     {
         id: 'alumni-sans-collegiate-one',
         family: 'Alumni Sans Collegiate One',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -723,7 +691,7 @@ export const fontFamilies = [
     {
         id: 'alumni-sans-inline-one',
         family: 'Alumni Sans Inline One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -735,7 +703,7 @@ export const fontFamilies = [
     {
         id: 'alumni-sans-pinstripe',
         family: 'Alumni Sans Pinstripe',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -747,7 +715,7 @@ export const fontFamilies = [
     {
         id: 'amarante',
         family: 'Amarante',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -771,7 +739,7 @@ export const fontFamilies = [
     {
         id: 'amatic-sc',
         family: 'Amatic SC',
-        subsets: ['cyrillic', 'hebrew', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'hebrew', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -795,7 +763,7 @@ export const fontFamilies = [
     {
         id: 'amiko',
         family: 'Amiko',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -807,7 +775,7 @@ export const fontFamilies = [
     {
         id: 'amiri',
         family: 'Amiri',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'arabic',
@@ -831,7 +799,7 @@ export const fontFamilies = [
     {
         id: 'amita',
         family: 'Amita',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -843,7 +811,7 @@ export const fontFamilies = [
     {
         id: 'anaheim',
         family: 'Anaheim',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -855,7 +823,7 @@ export const fontFamilies = [
     {
         id: 'andada-pro',
         family: 'Andada Pro',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -867,7 +835,7 @@ export const fontFamilies = [
     {
         id: 'andika',
         family: 'Andika',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -879,7 +847,7 @@ export const fontFamilies = [
     {
         id: 'anek-bangla',
         family: 'Anek Bangla',
-        subsets: ['bengali', 'latin', 'latin-ext'],
+        subsets: ['bengali', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -891,7 +859,7 @@ export const fontFamilies = [
     {
         id: 'anek-devanagari',
         family: 'Anek Devanagari',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -903,7 +871,7 @@ export const fontFamilies = [
     {
         id: 'anek-gujarati',
         family: 'Anek Gujarati',
-        subsets: ['gujarati', 'latin', 'latin-ext'],
+        subsets: ['gujarati', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -915,7 +883,7 @@ export const fontFamilies = [
     {
         id: 'anek-gurmukhi',
         family: 'Anek Gurmukhi',
-        subsets: ['gurmukhi', 'latin', 'latin-ext'],
+        subsets: ['gurmukhi', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -927,7 +895,7 @@ export const fontFamilies = [
     {
         id: 'anek-kannada',
         family: 'Anek Kannada',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -939,7 +907,7 @@ export const fontFamilies = [
     {
         id: 'anek-latin',
         family: 'Anek Latin',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -951,7 +919,7 @@ export const fontFamilies = [
     {
         id: 'anek-malayalam',
         family: 'Anek Malayalam',
-        subsets: ['latin', 'latin-ext', 'malayalam'],
+        subsets: ['latin', , 'malayalam'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -963,7 +931,7 @@ export const fontFamilies = [
     {
         id: 'anek-odia',
         family: 'Anek Odia',
-        subsets: ['latin', 'latin-ext', 'oriya'],
+        subsets: ['latin', , 'oriya'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -975,7 +943,7 @@ export const fontFamilies = [
     {
         id: 'anek-tamil',
         family: 'Anek Tamil',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -987,7 +955,7 @@ export const fontFamilies = [
     {
         id: 'anek-telugu',
         family: 'Anek Telugu',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1011,7 +979,7 @@ export const fontFamilies = [
     {
         id: 'annapurna-sil',
         family: 'Annapurna SIL',
-        subsets: ['devanagari', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['devanagari', 'latin', , 'math', 'symbols'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -1023,7 +991,7 @@ export const fontFamilies = [
     {
         id: 'annie-use-your-telescope',
         family: 'Annie Use Your Telescope',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1035,7 +1003,7 @@ export const fontFamilies = [
     {
         id: 'anonymous-pro',
         family: 'Anonymous Pro',
-        subsets: ['cyrillic', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -1047,7 +1015,7 @@ export const fontFamilies = [
     {
         id: 'anta',
         family: 'Anta',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1095,7 +1063,7 @@ export const fontFamilies = [
     {
         id: 'anton',
         family: 'Anton',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1107,7 +1075,7 @@ export const fontFamilies = [
     {
         id: 'anton-sc',
         family: 'Anton SC',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1119,7 +1087,7 @@ export const fontFamilies = [
     {
         id: 'antonio',
         family: 'Antonio',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1131,7 +1099,7 @@ export const fontFamilies = [
     {
         id: 'anuphan',
         family: 'Anuphan',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1143,7 +1111,7 @@ export const fontFamilies = [
     {
         id: 'anybody',
         family: 'Anybody',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1155,7 +1123,7 @@ export const fontFamilies = [
     {
         id: 'aoboshi-one',
         family: 'Aoboshi One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -1179,7 +1147,7 @@ export const fontFamilies = [
     {
         id: 'arbutus',
         family: 'Arbutus',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1191,7 +1159,7 @@ export const fontFamilies = [
     {
         id: 'arbutus-slab',
         family: 'Arbutus Slab',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1203,7 +1171,7 @@ export const fontFamilies = [
     {
         id: 'architects-daughter',
         family: 'Architects Daughter',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1215,7 +1183,7 @@ export const fontFamilies = [
     {
         id: 'archivo',
         family: 'Archivo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1227,7 +1195,7 @@ export const fontFamilies = [
     {
         id: 'archivo-black',
         family: 'Archivo Black',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1239,7 +1207,7 @@ export const fontFamilies = [
     {
         id: 'archivo-narrow',
         family: 'Archivo Narrow',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1251,7 +1219,7 @@ export const fontFamilies = [
     {
         id: 'are-you-serious',
         family: 'Are You Serious',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1263,7 +1231,7 @@ export const fontFamilies = [
     {
         id: 'aref-ruqaa',
         family: 'Aref Ruqaa',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -1275,7 +1243,7 @@ export const fontFamilies = [
     {
         id: 'aref-ruqaa-ink',
         family: 'Aref Ruqaa Ink',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -1287,7 +1255,7 @@ export const fontFamilies = [
     {
         id: 'arima',
         family: 'Arima',
-        subsets: ['greek', 'greek-ext', 'latin', 'latin-ext', 'malayalam', 'tamil', 'vietnamese'],
+        subsets: ['greek', 'greek-ext', 'latin', , 'malayalam', 'tamil', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'greek',
@@ -1306,7 +1274,7 @@ export const fontFamilies = [
             'greek-ext',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['400', '500', '600', '700'],
@@ -1320,7 +1288,7 @@ export const fontFamilies = [
     {
         id: 'arizonia',
         family: 'Arizonia',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1332,7 +1300,7 @@ export const fontFamilies = [
     {
         id: 'armata',
         family: 'Armata',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1344,7 +1312,7 @@ export const fontFamilies = [
     {
         id: 'arsenal',
         family: 'Arsenal',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -1356,7 +1324,7 @@ export const fontFamilies = [
     {
         id: 'arsenal-sc',
         family: 'Arsenal SC',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -1392,7 +1360,7 @@ export const fontFamilies = [
     {
         id: 'arya',
         family: 'Arya',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -1404,7 +1372,7 @@ export const fontFamilies = [
     {
         id: 'asap',
         family: 'Asap',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1416,7 +1384,7 @@ export const fontFamilies = [
     {
         id: 'asap-condensed',
         family: 'Asap Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1428,7 +1396,7 @@ export const fontFamilies = [
     {
         id: 'asar',
         family: 'Asar',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -1440,7 +1408,7 @@ export const fontFamilies = [
     {
         id: 'asset',
         family: 'Asset',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic-ext', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -1452,7 +1420,7 @@ export const fontFamilies = [
     {
         id: 'assistant',
         family: 'Assistant',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -1488,7 +1456,7 @@ export const fontFamilies = [
     {
         id: 'athiti',
         family: 'Athiti',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1500,7 +1468,7 @@ export const fontFamilies = [
     {
         id: 'atkinson-hyperlegible',
         family: 'Atkinson Hyperlegible',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1512,7 +1480,7 @@ export const fontFamilies = [
     {
         id: 'atma',
         family: 'Atma',
-        subsets: ['bengali', 'latin', 'latin-ext'],
+        subsets: ['bengali', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -1524,7 +1492,7 @@ export const fontFamilies = [
     {
         id: 'atomic-age',
         family: 'Atomic Age',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1548,7 +1516,7 @@ export const fontFamilies = [
     {
         id: 'audiowide',
         family: 'Audiowide',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1560,7 +1528,7 @@ export const fontFamilies = [
     {
         id: 'autour-one',
         family: 'Autour One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1572,7 +1540,7 @@ export const fontFamilies = [
     {
         id: 'average',
         family: 'Average',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1584,7 +1552,7 @@ export const fontFamilies = [
     {
         id: 'average-sans',
         family: 'Average Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1596,7 +1564,7 @@ export const fontFamilies = [
     {
         id: 'averia-gruesa-libre',
         family: 'Averia Gruesa Libre',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1644,7 +1612,7 @@ export const fontFamilies = [
     {
         id: 'azeret-mono',
         family: 'Azeret Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1680,7 +1648,7 @@ export const fontFamilies = [
     {
         id: 'biz-udgothic',
         family: 'BIZ UDGothic',
-        subsets: ['cyrillic', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -1692,7 +1660,7 @@ export const fontFamilies = [
     {
         id: 'biz-udmincho',
         family: 'BIZ UDMincho',
-        subsets: ['cyrillic', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -1704,7 +1672,7 @@ export const fontFamilies = [
     {
         id: 'biz-udpgothic',
         family: 'BIZ UDPGothic',
-        subsets: ['cyrillic', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -1716,7 +1684,7 @@ export const fontFamilies = [
     {
         id: 'biz-udpmincho',
         family: 'BIZ UDPMincho',
-        subsets: ['cyrillic', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -1728,7 +1696,7 @@ export const fontFamilies = [
     {
         id: 'babylonica',
         family: 'Babylonica',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1740,7 +1708,7 @@ export const fontFamilies = [
     {
         id: 'bacasime-antique',
         family: 'Bacasime Antique',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1752,7 +1720,7 @@ export const fontFamilies = [
     {
         id: 'bad-script',
         family: 'Bad Script',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -1764,7 +1732,7 @@ export const fontFamilies = [
     {
         id: 'badeen-display',
         family: 'Badeen Display',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -1776,7 +1744,7 @@ export const fontFamilies = [
     {
         id: 'bagel-fat-one',
         family: 'Bagel Fat One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -1788,7 +1756,7 @@ export const fontFamilies = [
     {
         id: 'bahiana',
         family: 'Bahiana',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1800,7 +1768,7 @@ export const fontFamilies = [
     {
         id: 'bahianita',
         family: 'Bahianita',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1812,7 +1780,7 @@ export const fontFamilies = [
     {
         id: 'bai-jamjuree',
         family: 'Bai Jamjuree',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -1824,7 +1792,7 @@ export const fontFamilies = [
     {
         id: 'bakbak-one',
         family: 'Bakbak One',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -1836,7 +1804,7 @@ export const fontFamilies = [
     {
         id: 'ballet',
         family: 'Ballet',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1848,7 +1816,7 @@ export const fontFamilies = [
     {
         id: 'baloo-2',
         family: 'Baloo 2',
-        subsets: ['devanagari', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['devanagari', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -1860,7 +1828,7 @@ export const fontFamilies = [
     {
         id: 'baloo-bhai-2',
         family: 'Baloo Bhai 2',
-        subsets: ['gujarati', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['gujarati', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -1872,7 +1840,7 @@ export const fontFamilies = [
     {
         id: 'baloo-bhaijaan-2',
         family: 'Baloo Bhaijaan 2',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -1884,7 +1852,7 @@ export const fontFamilies = [
     {
         id: 'baloo-bhaina-2',
         family: 'Baloo Bhaina 2',
-        subsets: ['latin', 'latin-ext', 'oriya', 'vietnamese'],
+        subsets: ['latin', , 'oriya', 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1896,7 +1864,7 @@ export const fontFamilies = [
     {
         id: 'baloo-chettan-2',
         family: 'Baloo Chettan 2',
-        subsets: ['latin', 'latin-ext', 'malayalam', 'vietnamese'],
+        subsets: ['latin', , 'malayalam', 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1908,7 +1876,7 @@ export const fontFamilies = [
     {
         id: 'baloo-da-2',
         family: 'Baloo Da 2',
-        subsets: ['bengali', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['bengali', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -1920,7 +1888,7 @@ export const fontFamilies = [
     {
         id: 'baloo-paaji-2',
         family: 'Baloo Paaji 2',
-        subsets: ['gurmukhi', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['gurmukhi', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -1932,7 +1900,7 @@ export const fontFamilies = [
     {
         id: 'baloo-tamma-2',
         family: 'Baloo Tamma 2',
-        subsets: ['kannada', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['kannada', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -1944,7 +1912,7 @@ export const fontFamilies = [
     {
         id: 'baloo-tammudu-2',
         family: 'Baloo Tammudu 2',
-        subsets: ['latin', 'latin-ext', 'telugu', 'vietnamese'],
+        subsets: ['latin', , 'telugu', 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1956,7 +1924,7 @@ export const fontFamilies = [
     {
         id: 'baloo-thambi-2',
         family: 'Baloo Thambi 2',
-        subsets: ['latin', 'latin-ext', 'tamil', 'vietnamese'],
+        subsets: ['latin', , 'tamil', 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -1968,7 +1936,7 @@ export const fontFamilies = [
     {
         id: 'balsamiq-sans',
         family: 'Balsamiq Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -1992,7 +1960,7 @@ export const fontFamilies = [
     {
         id: 'bangers',
         family: 'Bangers',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2004,7 +1972,7 @@ export const fontFamilies = [
     {
         id: 'barlow',
         family: 'Barlow',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2016,7 +1984,7 @@ export const fontFamilies = [
     {
         id: 'barlow-condensed',
         family: 'Barlow Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2028,7 +1996,7 @@ export const fontFamilies = [
     {
         id: 'barlow-semi-condensed',
         family: 'Barlow Semi Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2040,7 +2008,7 @@ export const fontFamilies = [
     {
         id: 'barriecito',
         family: 'Barriecito',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2052,7 +2020,7 @@ export const fontFamilies = [
     {
         id: 'barrio',
         family: 'Barrio',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2064,7 +2032,7 @@ export const fontFamilies = [
     {
         id: 'basic',
         family: 'Basic',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2076,7 +2044,7 @@ export const fontFamilies = [
     {
         id: 'baskervville',
         family: 'Baskervville',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2088,7 +2056,7 @@ export const fontFamilies = [
     {
         id: 'baskervville-sc',
         family: 'Baskervville SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2136,7 +2104,7 @@ export const fontFamilies = [
     {
         id: 'be-vietnam-pro',
         family: 'Be Vietnam Pro',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2148,7 +2116,7 @@ export const fontFamilies = [
     {
         id: 'beau-rivage',
         family: 'Beau Rivage',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2160,7 +2128,7 @@ export const fontFamilies = [
     {
         id: 'bebas-neue',
         family: 'Bebas Neue',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2172,7 +2140,7 @@ export const fontFamilies = [
     {
         id: 'beiruti',
         family: 'Beiruti',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -2184,7 +2152,7 @@ export const fontFamilies = [
     {
         id: 'belanosima',
         family: 'Belanosima',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2208,7 +2176,7 @@ export const fontFamilies = [
     {
         id: 'bellefair',
         family: 'Bellefair',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -2220,7 +2188,7 @@ export const fontFamilies = [
     {
         id: 'belleza',
         family: 'Belleza',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2232,7 +2200,7 @@ export const fontFamilies = [
     {
         id: 'bellota',
         family: 'Bellota',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['300', '400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -2244,7 +2212,7 @@ export const fontFamilies = [
     {
         id: 'bellota-text',
         family: 'Bellota Text',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['300', '400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -2256,7 +2224,7 @@ export const fontFamilies = [
     {
         id: 'benchnine',
         family: 'BenchNine',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2268,7 +2236,7 @@ export const fontFamilies = [
     {
         id: 'benne',
         family: 'Benne',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -2280,7 +2248,7 @@ export const fontFamilies = [
     {
         id: 'bentham',
         family: 'Bentham',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2292,7 +2260,7 @@ export const fontFamilies = [
     {
         id: 'berkshire-swash',
         family: 'Berkshire Swash',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2304,7 +2272,7 @@ export const fontFamilies = [
     {
         id: 'besley',
         family: 'Besley',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2328,7 +2296,7 @@ export const fontFamilies = [
     {
         id: 'bevan',
         family: 'Bevan',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2340,7 +2308,7 @@ export const fontFamilies = [
     {
         id: 'bhutuka-expanded-one',
         family: 'BhuTuka Expanded One',
-        subsets: ['gurmukhi', 'latin', 'latin-ext'],
+        subsets: ['gurmukhi', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -2352,7 +2320,7 @@ export const fontFamilies = [
     {
         id: 'bigelow-rules',
         family: 'Bigelow Rules',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2376,7 +2344,7 @@ export const fontFamilies = [
     {
         id: 'bilbo',
         family: 'Bilbo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2388,7 +2356,7 @@ export const fontFamilies = [
     {
         id: 'bilbo-swash-caps',
         family: 'Bilbo Swash Caps',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2400,7 +2368,7 @@ export const fontFamilies = [
     {
         id: 'biorhyme',
         family: 'BioRhyme',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2412,7 +2380,7 @@ export const fontFamilies = [
     {
         id: 'biorhyme-expanded',
         family: 'BioRhyme Expanded',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2424,7 +2392,7 @@ export const fontFamilies = [
     {
         id: 'birthstone',
         family: 'Birthstone',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2436,7 +2404,7 @@ export const fontFamilies = [
     {
         id: 'birthstone-bounce',
         family: 'Birthstone Bounce',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2448,7 +2416,7 @@ export const fontFamilies = [
     {
         id: 'biryani',
         family: 'Biryani',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['200', '300', '400', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -2460,7 +2428,7 @@ export const fontFamilies = [
     {
         id: 'bitter',
         family: 'Bitter',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -2496,7 +2464,7 @@ export const fontFamilies = [
     {
         id: 'black-ops-one',
         family: 'Black Ops One',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -2508,7 +2476,7 @@ export const fontFamilies = [
     {
         id: 'blaka',
         family: 'Blaka',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -2520,7 +2488,7 @@ export const fontFamilies = [
     {
         id: 'blaka-hollow',
         family: 'Blaka Hollow',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -2532,7 +2500,7 @@ export const fontFamilies = [
     {
         id: 'blaka-ink',
         family: 'Blaka Ink',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -2544,7 +2512,7 @@ export const fontFamilies = [
     {
         id: 'blinker',
         family: 'Blinker',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2556,7 +2524,7 @@ export const fontFamilies = [
     {
         id: 'bodoni-moda',
         family: 'Bodoni Moda',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2568,7 +2536,7 @@ export const fontFamilies = [
     {
         id: 'bodoni-moda-sc',
         family: 'Bodoni Moda SC',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2592,15 +2560,7 @@ export const fontFamilies = [
     {
         id: 'bona-nova',
         family: 'Bona Nova',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'hebrew',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'hebrew', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -2612,15 +2572,7 @@ export const fontFamilies = [
     {
         id: 'bona-nova-sc',
         family: 'Bona Nova SC',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'hebrew',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'hebrew', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -2644,7 +2596,7 @@ export const fontFamilies = [
     {
         id: 'bonheur-royale',
         family: 'Bonheur Royale',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2668,7 +2620,7 @@ export const fontFamilies = [
     {
         id: 'borel',
         family: 'Borel',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2692,7 +2644,7 @@ export const fontFamilies = [
     {
         id: 'bowlby-one-sc',
         family: 'Bowlby One SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2704,7 +2656,7 @@ export const fontFamilies = [
     {
         id: 'braah-one',
         family: 'Braah One',
-        subsets: ['gurmukhi', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['gurmukhi', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -2728,7 +2680,7 @@ export const fontFamilies = [
     {
         id: 'bree-serif',
         family: 'Bree Serif',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2740,7 +2692,7 @@ export const fontFamilies = [
     {
         id: 'bricolage-grotesque',
         family: 'Bricolage Grotesque',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2752,7 +2704,7 @@ export const fontFamilies = [
     {
         id: 'bruno-ace',
         family: 'Bruno Ace',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2764,7 +2716,7 @@ export const fontFamilies = [
     {
         id: 'bruno-ace-sc',
         family: 'Bruno Ace SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2776,7 +2728,7 @@ export const fontFamilies = [
     {
         id: 'brygada-1918',
         family: 'Brygada 1918',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -2788,7 +2740,7 @@ export const fontFamilies = [
     {
         id: 'bubblegum-sans',
         family: 'Bubblegum Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2800,7 +2752,7 @@ export const fontFamilies = [
     {
         id: 'bubbler-one',
         family: 'Bubbler One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2824,7 +2776,7 @@ export const fontFamilies = [
     {
         id: 'buenard',
         family: 'Buenard',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2836,7 +2788,7 @@ export const fontFamilies = [
     {
         id: 'bungee',
         family: 'Bungee',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2848,7 +2800,7 @@ export const fontFamilies = [
     {
         id: 'bungee-hairline',
         family: 'Bungee Hairline',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2860,7 +2812,7 @@ export const fontFamilies = [
     {
         id: 'bungee-inline',
         family: 'Bungee Inline',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2872,7 +2824,7 @@ export const fontFamilies = [
     {
         id: 'bungee-outline',
         family: 'Bungee Outline',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2884,7 +2836,7 @@ export const fontFamilies = [
     {
         id: 'bungee-shade',
         family: 'Bungee Shade',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2896,7 +2848,7 @@ export const fontFamilies = [
     {
         id: 'bungee-spice',
         family: 'Bungee Spice',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2908,7 +2860,7 @@ export const fontFamilies = [
     {
         id: 'bungee-tint',
         family: 'Bungee Tint',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2920,7 +2872,7 @@ export const fontFamilies = [
     {
         id: 'butcherman',
         family: 'Butcherman',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2932,7 +2884,7 @@ export const fontFamilies = [
     {
         id: 'butterfly-kids',
         family: 'Butterfly Kids',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2944,7 +2896,7 @@ export const fontFamilies = [
     {
         id: 'cabin',
         family: 'Cabin',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -2956,7 +2908,7 @@ export const fontFamilies = [
     {
         id: 'cabin-condensed',
         family: 'Cabin Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -2980,7 +2932,7 @@ export const fontFamilies = [
     {
         id: 'cactus-classical-serif',
         family: 'Cactus Classical Serif',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'chinese-hongkong',
@@ -3016,7 +2968,7 @@ export const fontFamilies = [
     {
         id: 'cairo',
         family: 'Cairo',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -3028,7 +2980,7 @@ export const fontFamilies = [
     {
         id: 'cairo-play',
         family: 'Cairo Play',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -3040,7 +2992,7 @@ export const fontFamilies = [
     {
         id: 'caladea',
         family: 'Caladea',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -3052,7 +3004,7 @@ export const fontFamilies = [
     {
         id: 'calistoga',
         family: 'Calistoga',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3076,7 +3028,7 @@ export const fontFamilies = [
     {
         id: 'cambay',
         family: 'Cambay',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'devanagari',
@@ -3088,7 +3040,7 @@ export const fontFamilies = [
     {
         id: 'cambo',
         family: 'Cambo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3112,7 +3064,7 @@ export const fontFamilies = [
     {
         id: 'cantarell',
         family: 'Cantarell',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -3124,7 +3076,7 @@ export const fontFamilies = [
     {
         id: 'cantata-one',
         family: 'Cantata One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3136,7 +3088,7 @@ export const fontFamilies = [
     {
         id: 'cantora-one',
         family: 'Cantora One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3148,7 +3100,7 @@ export const fontFamilies = [
     {
         id: 'caprasimo',
         family: 'Caprasimo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3160,7 +3112,7 @@ export const fontFamilies = [
     {
         id: 'capriola',
         family: 'Capriola',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3172,7 +3124,7 @@ export const fontFamilies = [
     {
         id: 'caramel',
         family: 'Caramel',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3184,7 +3136,7 @@ export const fontFamilies = [
     {
         id: 'carattere',
         family: 'Carattere',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3196,7 +3148,7 @@ export const fontFamilies = [
     {
         id: 'cardo',
         family: 'Cardo',
-        subsets: ['greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['greek', 'greek-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'greek',
@@ -3208,15 +3160,7 @@ export const fontFamilies = [
     {
         id: 'carlito',
         family: 'Carlito',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -3276,7 +3220,7 @@ export const fontFamilies = [
     {
         id: 'castoro',
         family: 'Castoro',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -3288,7 +3232,7 @@ export const fontFamilies = [
     {
         id: 'castoro-titling',
         family: 'Castoro Titling',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3300,7 +3244,7 @@ export const fontFamilies = [
     {
         id: 'catamaran',
         family: 'Catamaran',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3312,7 +3256,7 @@ export const fontFamilies = [
     {
         id: 'caudex',
         family: 'Caudex',
-        subsets: ['greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['greek', 'greek-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'greek',
@@ -3324,7 +3268,7 @@ export const fontFamilies = [
     {
         id: 'caveat',
         family: 'Caveat',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -3336,7 +3280,7 @@ export const fontFamilies = [
     {
         id: 'caveat-brush',
         family: 'Caveat Brush',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3360,7 +3304,7 @@ export const fontFamilies = [
     {
         id: 'ceviche-one',
         family: 'Ceviche One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3372,7 +3316,7 @@ export const fontFamilies = [
     {
         id: 'chakra-petch',
         family: 'Chakra Petch',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -3384,7 +3328,7 @@ export const fontFamilies = [
     {
         id: 'changa',
         family: 'Changa',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -3408,7 +3352,7 @@ export const fontFamilies = [
     {
         id: 'chango',
         family: 'Chango',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3420,7 +3364,7 @@ export const fontFamilies = [
     {
         id: 'charis-sil',
         family: 'Charis SIL',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -3432,7 +3376,7 @@ export const fontFamilies = [
     {
         id: 'charm',
         family: 'Charm',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3444,7 +3388,7 @@ export const fontFamilies = [
     {
         id: 'charmonman',
         family: 'Charmonman',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3468,7 +3412,7 @@ export const fontFamilies = [
     {
         id: 'chau-philomene-one',
         family: 'Chau Philomene One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -3480,7 +3424,7 @@ export const fontFamilies = [
     {
         id: 'chela-one',
         family: 'Chela One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3492,7 +3436,7 @@ export const fontFamilies = [
     {
         id: 'chelsea-market',
         family: 'Chelsea Market',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3516,7 +3460,7 @@ export const fontFamilies = [
     {
         id: 'cherish',
         family: 'Cherish',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3528,7 +3472,7 @@ export const fontFamilies = [
     {
         id: 'cherry-bomb-one',
         family: 'Cherry Bomb One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -3552,7 +3496,7 @@ export const fontFamilies = [
     {
         id: 'cherry-swash',
         family: 'Cherry Swash',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3576,7 +3520,7 @@ export const fontFamilies = [
     {
         id: 'chicle',
         family: 'Chicle',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3588,7 +3532,7 @@ export const fontFamilies = [
     {
         id: 'chilanka',
         family: 'Chilanka',
-        subsets: ['latin', 'latin-ext', 'malayalam'],
+        subsets: ['latin', , 'malayalam'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3600,7 +3544,7 @@ export const fontFamilies = [
     {
         id: 'chivo',
         family: 'Chivo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -3612,7 +3556,7 @@ export const fontFamilies = [
     {
         id: 'chivo-mono',
         family: 'Chivo Mono',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -3624,7 +3568,7 @@ export const fontFamilies = [
     {
         id: 'chocolate-classical-sans',
         family: 'Chocolate Classical Sans',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'chinese-hongkong',
@@ -3636,7 +3580,7 @@ export const fontFamilies = [
     {
         id: 'chokokutai',
         family: 'Chokokutai',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -3648,7 +3592,7 @@ export const fontFamilies = [
     {
         id: 'chonburi',
         family: 'Chonburi',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3660,7 +3604,7 @@ export const fontFamilies = [
     {
         id: 'cinzel',
         family: 'Cinzel',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3672,7 +3616,7 @@ export const fontFamilies = [
     {
         id: 'cinzel-decorative',
         family: 'Cinzel Decorative',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3684,7 +3628,7 @@ export const fontFamilies = [
     {
         id: 'clicker-script',
         family: 'Clicker Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3696,7 +3640,7 @@ export const fontFamilies = [
     {
         id: 'climate-crisis',
         family: 'Climate Crisis',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3708,7 +3652,7 @@ export const fontFamilies = [
     {
         id: 'coda',
         family: 'Coda',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3720,7 +3664,7 @@ export const fontFamilies = [
     {
         id: 'codystar',
         family: 'Codystar',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3732,7 +3676,7 @@ export const fontFamilies = [
     {
         id: 'coiny',
         family: 'Coiny',
-        subsets: ['latin', 'latin-ext', 'tamil', 'vietnamese'],
+        subsets: ['latin', , 'tamil', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3744,7 +3688,7 @@ export const fontFamilies = [
     {
         id: 'combo',
         family: 'Combo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3756,7 +3700,7 @@ export const fontFamilies = [
     {
         id: 'comfortaa',
         family: 'Comfortaa',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -3768,7 +3712,7 @@ export const fontFamilies = [
     {
         id: 'comforter',
         family: 'Comforter',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -3780,7 +3724,7 @@ export const fontFamilies = [
     {
         id: 'comforter-brush',
         family: 'Comforter Brush',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -3816,7 +3760,7 @@ export const fontFamilies = [
     {
         id: 'comme',
         family: 'Comme',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3828,7 +3772,7 @@ export const fontFamilies = [
     {
         id: 'commissioner',
         family: 'Commissioner',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -3840,7 +3784,7 @@ export const fontFamilies = [
     {
         id: 'concert-one',
         family: 'Concert One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3852,7 +3796,7 @@ export const fontFamilies = [
     {
         id: 'condiment',
         family: 'Condiment',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3888,7 +3832,7 @@ export const fontFamilies = [
     {
         id: 'convergence',
         family: 'Convergence',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3924,7 +3868,7 @@ export const fontFamilies = [
     {
         id: 'corben',
         family: 'Corben',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3936,7 +3880,7 @@ export const fontFamilies = [
     {
         id: 'corinthia',
         family: 'Corinthia',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -3948,7 +3892,7 @@ export const fontFamilies = [
     {
         id: 'cormorant',
         family: 'Cormorant',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -3960,7 +3904,7 @@ export const fontFamilies = [
     {
         id: 'cormorant-garamond',
         family: 'Cormorant Garamond',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -3972,7 +3916,7 @@ export const fontFamilies = [
     {
         id: 'cormorant-infant',
         family: 'Cormorant Infant',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -3984,7 +3928,7 @@ export const fontFamilies = [
     {
         id: 'cormorant-sc',
         family: 'Cormorant SC',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -3996,7 +3940,7 @@ export const fontFamilies = [
     {
         id: 'cormorant-unicase',
         family: 'Cormorant Unicase',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -4008,7 +3952,7 @@ export const fontFamilies = [
     {
         id: 'cormorant-upright',
         family: 'Cormorant Upright',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4020,7 +3964,7 @@ export const fontFamilies = [
     {
         id: 'courgette',
         family: 'Courgette',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4032,7 +3976,7 @@ export const fontFamilies = [
     {
         id: 'courier-prime',
         family: 'Courier Prime',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4051,7 +3995,7 @@ export const fontFamilies = [
             'greek-ext',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['400', '700'],
@@ -4077,7 +4021,7 @@ export const fontFamilies = [
     {
         id: 'covered-by-your-grace',
         family: 'Covered By Your Grace',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4113,7 +4057,7 @@ export const fontFamilies = [
     {
         id: 'crete-round',
         family: 'Crete Round',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4125,7 +4069,7 @@ export const fontFamilies = [
     {
         id: 'crimson-pro',
         family: 'Crimson Pro',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4137,7 +4081,7 @@ export const fontFamilies = [
     {
         id: 'crimson-text',
         family: 'Crimson Text',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4149,7 +4093,7 @@ export const fontFamilies = [
     {
         id: 'croissant-one',
         family: 'Croissant One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4161,7 +4105,7 @@ export const fontFamilies = [
     {
         id: 'crushed',
         family: 'Crushed',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4173,7 +4117,7 @@ export const fontFamilies = [
     {
         id: 'cuprum',
         family: 'Cuprum',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -4197,7 +4141,7 @@ export const fontFamilies = [
     {
         id: 'cutive',
         family: 'Cutive',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4209,7 +4153,7 @@ export const fontFamilies = [
     {
         id: 'cutive-mono',
         family: 'Cutive Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4221,7 +4165,7 @@ export const fontFamilies = [
     {
         id: 'dm-mono',
         family: 'DM Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4233,7 +4177,7 @@ export const fontFamilies = [
     {
         id: 'dm-sans',
         family: 'DM Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4245,7 +4189,7 @@ export const fontFamilies = [
     {
         id: 'dm-serif-display',
         family: 'DM Serif Display',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4257,7 +4201,7 @@ export const fontFamilies = [
     {
         id: 'dm-serif-text',
         family: 'DM Serif Text',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4269,7 +4213,7 @@ export const fontFamilies = [
     {
         id: 'dai-banna-sil',
         family: 'Dai Banna SIL',
-        subsets: ['latin', 'latin-ext', 'new-tai-lue'],
+        subsets: ['latin', , 'new-tai-lue'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4281,7 +4225,7 @@ export const fontFamilies = [
     {
         id: 'damion',
         family: 'Damion',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4293,7 +4237,7 @@ export const fontFamilies = [
     {
         id: 'dancing-script',
         family: 'Dancing Script',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4305,7 +4249,7 @@ export const fontFamilies = [
     {
         id: 'danfo',
         family: 'Danfo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4329,7 +4273,7 @@ export const fontFamilies = [
     {
         id: 'darker-grotesque',
         family: 'Darker Grotesque',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4341,7 +4285,7 @@ export const fontFamilies = [
     {
         id: 'darumadrop-one',
         family: 'Darumadrop One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -4353,7 +4297,7 @@ export const fontFamilies = [
     {
         id: 'david-libre',
         family: 'David Libre',
-        subsets: ['hebrew', 'latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['hebrew', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400', '500', '700'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -4389,7 +4333,7 @@ export const fontFamilies = [
     {
         id: 'dekko',
         family: 'Dekko',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -4401,7 +4345,7 @@ export const fontFamilies = [
     {
         id: 'dela-gothic-one',
         family: 'Dela Gothic One',
-        subsets: ['cyrillic', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'greek', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -4413,7 +4357,7 @@ export const fontFamilies = [
     {
         id: 'delicious-handrawn',
         family: 'Delicious Handrawn',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4473,7 +4417,7 @@ export const fontFamilies = [
     {
         id: 'denk-one',
         family: 'Denk One',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -4485,7 +4429,7 @@ export const fontFamilies = [
     {
         id: 'devonshire',
         family: 'Devonshire',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4509,7 +4453,7 @@ export const fontFamilies = [
     {
         id: 'didact-gothic',
         family: 'Didact Gothic',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -4521,7 +4465,7 @@ export const fontFamilies = [
     {
         id: 'diphylleia',
         family: 'Diphylleia',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -4533,7 +4477,7 @@ export const fontFamilies = [
     {
         id: 'diplomata',
         family: 'Diplomata',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4545,7 +4489,7 @@ export const fontFamilies = [
     {
         id: 'diplomata-sc',
         family: 'Diplomata SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4581,7 +4525,7 @@ export const fontFamilies = [
     {
         id: 'domine',
         family: 'Domine',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4593,7 +4537,7 @@ export const fontFamilies = [
     {
         id: 'donegal-one',
         family: 'Donegal One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4605,7 +4549,7 @@ export const fontFamilies = [
     {
         id: 'dongle',
         family: 'Dongle',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -4617,7 +4561,7 @@ export const fontFamilies = [
     {
         id: 'doppio-one',
         family: 'Doppio One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4641,7 +4585,7 @@ export const fontFamilies = [
     {
         id: 'dosis',
         family: 'Dosis',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4653,7 +4597,7 @@ export const fontFamilies = [
     {
         id: 'dotgothic16',
         family: 'DotGothic16',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -4665,7 +4609,7 @@ export const fontFamilies = [
     {
         id: 'doto',
         family: 'Doto',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4677,7 +4621,7 @@ export const fontFamilies = [
     {
         id: 'dr-sugiyama',
         family: 'Dr Sugiyama',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4689,7 +4633,7 @@ export const fontFamilies = [
     {
         id: 'duru-sans',
         family: 'Duru Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4701,7 +4645,7 @@ export const fontFamilies = [
     {
         id: 'dynapuff',
         family: 'DynaPuff',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic-ext', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -4713,7 +4657,7 @@ export const fontFamilies = [
     {
         id: 'dynalight',
         family: 'Dynalight',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4725,15 +4669,7 @@ export const fontFamilies = [
     {
         id: 'eb-garamond',
         family: 'EB Garamond',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -4745,7 +4681,7 @@ export const fontFamilies = [
     {
         id: 'eagle-lake',
         family: 'Eagle Lake',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4769,7 +4705,7 @@ export const fontFamilies = [
     {
         id: 'eater',
         family: 'Eater',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4781,7 +4717,7 @@ export const fontFamilies = [
     {
         id: 'economica',
         family: 'Economica',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -4793,7 +4729,7 @@ export const fontFamilies = [
     {
         id: 'eczar',
         family: 'Eczar',
-        subsets: ['devanagari', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'greek', 'greek-ext', 'latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -4805,7 +4741,7 @@ export const fontFamilies = [
     {
         id: 'edu-au-vic-wa-nt-arrows',
         family: 'Edu AU VIC WA NT Arrows',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4817,7 +4753,7 @@ export const fontFamilies = [
     {
         id: 'edu-au-vic-wa-nt-dots',
         family: 'Edu AU VIC WA NT Dots',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4829,7 +4765,7 @@ export const fontFamilies = [
     {
         id: 'edu-au-vic-wa-nt-guides',
         family: 'Edu AU VIC WA NT Guides',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4841,7 +4777,7 @@ export const fontFamilies = [
     {
         id: 'edu-au-vic-wa-nt-hand',
         family: 'Edu AU VIC WA NT Hand',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4853,7 +4789,7 @@ export const fontFamilies = [
     {
         id: 'edu-au-vic-wa-nt-pre',
         family: 'Edu AU VIC WA NT Pre',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4925,7 +4861,7 @@ export const fontFamilies = [
     {
         id: 'el-messiri',
         family: 'El Messiri',
-        subsets: ['arabic', 'cyrillic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'cyrillic', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -4949,7 +4885,7 @@ export const fontFamilies = [
     {
         id: 'elsie',
         family: 'Elsie',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4961,7 +4897,7 @@ export const fontFamilies = [
     {
         id: 'elsie-swash-caps',
         family: 'Elsie Swash Caps',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4973,7 +4909,7 @@ export const fontFamilies = [
     {
         id: 'emblema-one',
         family: 'Emblema One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4985,7 +4921,7 @@ export const fontFamilies = [
     {
         id: 'emilys-candy',
         family: 'Emilys Candy',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -4997,7 +4933,7 @@ export const fontFamilies = [
     {
         id: 'encode-sans',
         family: 'Encode Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5009,7 +4945,7 @@ export const fontFamilies = [
     {
         id: 'encode-sans-condensed',
         family: 'Encode Sans Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5021,7 +4957,7 @@ export const fontFamilies = [
     {
         id: 'encode-sans-expanded',
         family: 'Encode Sans Expanded',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5033,7 +4969,7 @@ export const fontFamilies = [
     {
         id: 'encode-sans-sc',
         family: 'Encode Sans SC',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5045,7 +4981,7 @@ export const fontFamilies = [
     {
         id: 'encode-sans-semi-condensed',
         family: 'Encode Sans Semi Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5057,7 +4993,7 @@ export const fontFamilies = [
     {
         id: 'encode-sans-semi-expanded',
         family: 'Encode Sans Semi Expanded',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5069,7 +5005,7 @@ export const fontFamilies = [
     {
         id: 'engagement',
         family: 'Engagement',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5081,7 +5017,7 @@ export const fontFamilies = [
     {
         id: 'englebert',
         family: 'Englebert',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5093,7 +5029,7 @@ export const fontFamilies = [
     {
         id: 'enriqueta',
         family: 'Enriqueta',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5105,7 +5041,7 @@ export const fontFamilies = [
     {
         id: 'ephesis',
         family: 'Ephesis',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5117,7 +5053,7 @@ export const fontFamilies = [
     {
         id: 'epilogue',
         family: 'Epilogue',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5129,7 +5065,7 @@ export const fontFamilies = [
     {
         id: 'erica-one',
         family: 'Erica One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5141,7 +5077,7 @@ export const fontFamilies = [
     {
         id: 'esteban',
         family: 'Esteban',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5153,7 +5089,7 @@ export const fontFamilies = [
     {
         id: 'estonia',
         family: 'Estonia',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5165,7 +5101,7 @@ export const fontFamilies = [
     {
         id: 'euphoria-script',
         family: 'Euphoria Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5177,7 +5113,7 @@ export const fontFamilies = [
     {
         id: 'ewert',
         family: 'Ewert',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5189,7 +5125,7 @@ export const fontFamilies = [
     {
         id: 'exo',
         family: 'Exo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5201,7 +5137,7 @@ export const fontFamilies = [
     {
         id: 'exo-2',
         family: 'Exo 2',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -5213,7 +5149,7 @@ export const fontFamilies = [
     {
         id: 'expletus-sans',
         family: 'Expletus Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5225,7 +5161,7 @@ export const fontFamilies = [
     {
         id: 'explora',
         family: 'Explora',
-        subsets: ['cherokee', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cherokee', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cherokee',
@@ -5237,7 +5173,7 @@ export const fontFamilies = [
     {
         id: 'faculty-glyphic',
         family: 'Faculty Glyphic',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5249,7 +5185,7 @@ export const fontFamilies = [
     {
         id: 'fahkwang',
         family: 'Fahkwang',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5261,7 +5197,7 @@ export const fontFamilies = [
     {
         id: 'familjen-grotesk',
         family: 'Familjen Grotesk',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5273,7 +5209,7 @@ export const fontFamilies = [
     {
         id: 'fanwood-text',
         family: 'Fanwood Text',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5285,7 +5221,7 @@ export const fontFamilies = [
     {
         id: 'farro',
         family: 'Farro',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5297,7 +5233,7 @@ export const fontFamilies = [
     {
         id: 'farsan',
         family: 'Farsan',
-        subsets: ['gujarati', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['gujarati', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -5309,7 +5245,7 @@ export const fontFamilies = [
     {
         id: 'fascinate',
         family: 'Fascinate',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5321,7 +5257,7 @@ export const fontFamilies = [
     {
         id: 'fascinate-inline',
         family: 'Fascinate Inline',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5333,7 +5269,7 @@ export const fontFamilies = [
     {
         id: 'faster-one',
         family: 'Faster One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5357,7 +5293,7 @@ export const fontFamilies = [
     {
         id: 'fauna-one',
         family: 'Fauna One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5369,7 +5305,7 @@ export const fontFamilies = [
     {
         id: 'faustina',
         family: 'Faustina',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5405,7 +5341,7 @@ export const fontFamilies = [
     {
         id: 'felipa',
         family: 'Felipa',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5417,7 +5353,7 @@ export const fontFamilies = [
     {
         id: 'fenix',
         family: 'Fenix',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5429,7 +5365,7 @@ export const fontFamilies = [
     {
         id: 'festive',
         family: 'Festive',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5441,7 +5377,7 @@ export const fontFamilies = [
     {
         id: 'figtree',
         family: 'Figtree',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5465,7 +5401,7 @@ export const fontFamilies = [
     {
         id: 'finlandica',
         family: 'Finlandica',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -5477,7 +5413,7 @@ export const fontFamilies = [
     {
         id: 'fira-code',
         family: 'Fira Code',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -5489,7 +5425,7 @@ export const fontFamilies = [
     {
         id: 'fira-mono',
         family: 'Fira Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['400', '500', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -5501,15 +5437,7 @@ export const fontFamilies = [
     {
         id: 'fira-sans',
         family: 'Fira Sans',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -5521,15 +5449,7 @@ export const fontFamilies = [
     {
         id: 'fira-sans-condensed',
         family: 'Fira Sans Condensed',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -5541,15 +5461,7 @@ export const fontFamilies = [
     {
         id: 'fira-sans-extra-condensed',
         family: 'Fira Sans Extra Condensed',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -5561,7 +5473,7 @@ export const fontFamilies = [
     {
         id: 'fjalla-one',
         family: 'Fjalla One',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -5597,7 +5509,7 @@ export const fontFamilies = [
     {
         id: 'flavors',
         family: 'Flavors',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5609,7 +5521,7 @@ export const fontFamilies = [
     {
         id: 'fleur-de-leah',
         family: 'Fleur De Leah',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5621,7 +5533,7 @@ export const fontFamilies = [
     {
         id: 'flow-block',
         family: 'Flow Block',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -5633,7 +5545,7 @@ export const fontFamilies = [
     {
         id: 'flow-circular',
         family: 'Flow Circular',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -5645,7 +5557,7 @@ export const fontFamilies = [
     {
         id: 'flow-rounded',
         family: 'Flow Rounded',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -5657,7 +5569,7 @@ export const fontFamilies = [
     {
         id: 'foldit',
         family: 'Foldit',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5669,7 +5581,7 @@ export const fontFamilies = [
     {
         id: 'fondamento',
         family: 'Fondamento',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5693,7 +5605,7 @@ export const fontFamilies = [
     {
         id: 'forum',
         family: 'Forum',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -5705,7 +5617,7 @@ export const fontFamilies = [
     {
         id: 'fragment-mono',
         family: 'Fragment Mono',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic-ext',
@@ -5717,7 +5629,7 @@ export const fontFamilies = [
     {
         id: 'francois-one',
         family: 'Francois One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5729,7 +5641,7 @@ export const fontFamilies = [
     {
         id: 'frank-ruhl-libre',
         family: 'Frank Ruhl Libre',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -5741,7 +5653,7 @@ export const fontFamilies = [
     {
         id: 'fraunces',
         family: 'Fraunces',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5753,7 +5665,7 @@ export const fontFamilies = [
     {
         id: 'freckle-face',
         family: 'Freckle Face',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5765,7 +5677,7 @@ export const fontFamilies = [
     {
         id: 'fredericka-the-great',
         family: 'Fredericka the Great',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5777,7 +5689,7 @@ export const fontFamilies = [
     {
         id: 'fredoka',
         family: 'Fredoka',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -5801,7 +5713,7 @@ export const fontFamilies = [
     {
         id: 'freeman',
         family: 'Freeman',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5813,7 +5725,7 @@ export const fontFamilies = [
     {
         id: 'fresca',
         family: 'Fresca',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5837,7 +5749,7 @@ export const fontFamilies = [
     {
         id: 'fruktur',
         family: 'Fruktur',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic-ext',
@@ -5861,7 +5773,7 @@ export const fontFamilies = [
     {
         id: 'fuggles',
         family: 'Fuggles',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5873,7 +5785,7 @@ export const fontFamilies = [
     {
         id: 'funnel-display',
         family: 'Funnel Display',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5885,7 +5797,7 @@ export const fontFamilies = [
     {
         id: 'funnel-sans',
         family: 'Funnel Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -5897,7 +5809,7 @@ export const fontFamilies = [
     {
         id: 'fustat',
         family: 'Fustat',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -5909,7 +5821,7 @@ export const fontFamilies = [
     {
         id: 'fuzzy-bubbles',
         family: 'Fuzzy Bubbles',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5945,7 +5857,7 @@ export const fontFamilies = [
     {
         id: 'ga-maamli',
         family: 'Ga Maamli',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5957,7 +5869,7 @@ export const fontFamilies = [
     {
         id: 'gabarito',
         family: 'Gabarito',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -5969,7 +5881,7 @@ export const fontFamilies = [
     {
         id: 'gabriela',
         family: 'Gabriela',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -5993,7 +5905,7 @@ export const fontFamilies = [
     {
         id: 'gafata',
         family: 'Gafata',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6005,7 +5917,7 @@ export const fontFamilies = [
     {
         id: 'gajraj-one',
         family: 'Gajraj One',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -6041,7 +5953,7 @@ export const fontFamilies = [
     {
         id: 'galindo',
         family: 'Galindo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6065,7 +5977,7 @@ export const fontFamilies = [
     {
         id: 'gantari',
         family: 'Gantari',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -6077,7 +5989,7 @@ export const fontFamilies = [
     {
         id: 'gasoek-one',
         family: 'Gasoek One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -6101,7 +6013,7 @@ export const fontFamilies = [
     {
         id: 'geist',
         family: 'Geist',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6113,7 +6025,7 @@ export const fontFamilies = [
     {
         id: 'geist-mono',
         family: 'Geist Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6125,7 +6037,7 @@ export const fontFamilies = [
     {
         id: 'gelasio',
         family: 'Gelasio',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -6137,7 +6049,7 @@ export const fontFamilies = [
     {
         id: 'gemunu-libre',
         family: 'Gemunu Libre',
-        subsets: ['latin', 'latin-ext', 'sinhala'],
+        subsets: ['latin', , 'sinhala'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6149,7 +6061,7 @@ export const fontFamilies = [
     {
         id: 'genos',
         family: 'Genos',
-        subsets: ['cherokee', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cherokee', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cherokee',
@@ -6161,15 +6073,7 @@ export const fontFamilies = [
     {
         id: 'gentium-book-plus',
         family: 'Gentium Book Plus',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -6181,15 +6085,7 @@ export const fontFamilies = [
     {
         id: 'gentium-plus',
         family: 'Gentium Plus',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -6213,7 +6109,7 @@ export const fontFamilies = [
     {
         id: 'geologica',
         family: 'Geologica',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -6225,7 +6121,7 @@ export const fontFamilies = [
     {
         id: 'georama',
         family: 'Georama',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -6273,7 +6169,7 @@ export const fontFamilies = [
     {
         id: 'gideon-roman',
         family: 'Gideon Roman',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6285,7 +6181,7 @@ export const fontFamilies = [
     {
         id: 'gidugu',
         family: 'Gidugu',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6297,7 +6193,7 @@ export const fontFamilies = [
     {
         id: 'gilda-display',
         family: 'Gilda Display',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6309,7 +6205,7 @@ export const fontFamilies = [
     {
         id: 'girassol',
         family: 'Girassol',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6321,7 +6217,7 @@ export const fontFamilies = [
     {
         id: 'give-you-glory',
         family: 'Give You Glory',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6333,7 +6229,7 @@ export const fontFamilies = [
     {
         id: 'glass-antiqua',
         family: 'Glass Antiqua',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6345,7 +6241,7 @@ export const fontFamilies = [
     {
         id: 'glegoo',
         family: 'Glegoo',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -6357,7 +6253,7 @@ export const fontFamilies = [
     {
         id: 'gloock',
         family: 'Gloock',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -6369,7 +6265,7 @@ export const fontFamilies = [
     {
         id: 'gloria-hallelujah',
         family: 'Gloria Hallelujah',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6381,7 +6277,7 @@ export const fontFamilies = [
     {
         id: 'glory',
         family: 'Glory',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -6393,7 +6289,7 @@ export const fontFamilies = [
     {
         id: 'gluten',
         family: 'Gluten',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6429,7 +6325,7 @@ export const fontFamilies = [
     {
         id: 'goldman',
         family: 'Goldman',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6441,7 +6337,7 @@ export const fontFamilies = [
     {
         id: 'golos-text',
         family: 'Golos Text',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -6465,15 +6361,7 @@ export const fontFamilies = [
     {
         id: 'gothic-a1',
         family: 'Gothic A1',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -6485,7 +6373,7 @@ export const fontFamilies = [
     {
         id: 'gotu',
         family: 'Gotu',
-        subsets: ['devanagari', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['devanagari', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -6509,7 +6397,7 @@ export const fontFamilies = [
     {
         id: 'gowun-batang',
         family: 'Gowun Batang',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -6521,7 +6409,7 @@ export const fontFamilies = [
     {
         id: 'gowun-dodum',
         family: 'Gowun Dodum',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -6545,7 +6433,7 @@ export const fontFamilies = [
     {
         id: 'grand-hotel',
         family: 'Grand Hotel',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6557,7 +6445,7 @@ export const fontFamilies = [
     {
         id: 'grandiflora-one',
         family: 'Grandiflora One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -6569,7 +6457,7 @@ export const fontFamilies = [
     {
         id: 'grandstander',
         family: 'Grandstander',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -6581,7 +6469,7 @@ export const fontFamilies = [
     {
         id: 'grape-nuts',
         family: 'Grape Nuts',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6605,7 +6493,7 @@ export const fontFamilies = [
     {
         id: 'great-vibes',
         family: 'Great Vibes',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -6617,7 +6505,7 @@ export const fontFamilies = [
     {
         id: 'grechen-fuemen',
         family: 'Grechen Fuemen',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6629,7 +6517,7 @@ export const fontFamilies = [
     {
         id: 'grenze',
         family: 'Grenze',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -6641,7 +6529,7 @@ export const fontFamilies = [
     {
         id: 'grenze-gotisch',
         family: 'Grenze Gotisch',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6653,7 +6541,7 @@ export const fontFamilies = [
     {
         id: 'grey-qo',
         family: 'Grey Qo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6665,7 +6553,7 @@ export const fontFamilies = [
     {
         id: 'griffy',
         family: 'Griffy',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6677,7 +6565,7 @@ export const fontFamilies = [
     {
         id: 'gruppo',
         family: 'Gruppo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6689,7 +6577,7 @@ export const fontFamilies = [
     {
         id: 'gudea',
         family: 'Gudea',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -6713,7 +6601,7 @@ export const fontFamilies = [
     {
         id: 'gulzar',
         family: 'Gulzar',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -6737,7 +6625,7 @@ export const fontFamilies = [
     {
         id: 'gurajada',
         family: 'Gurajada',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6749,7 +6637,7 @@ export const fontFamilies = [
     {
         id: 'gwendolyn',
         family: 'Gwendolyn',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6761,7 +6649,7 @@ export const fontFamilies = [
     {
         id: 'habibi',
         family: 'Habibi',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6773,7 +6661,7 @@ export const fontFamilies = [
     {
         id: 'hachi-maru-pop',
         family: 'Hachi Maru Pop',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -6785,7 +6673,7 @@ export const fontFamilies = [
     {
         id: 'hahmlet',
         family: 'Hahmlet',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -6797,7 +6685,7 @@ export const fontFamilies = [
     {
         id: 'halant',
         family: 'Halant',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -6809,7 +6697,7 @@ export const fontFamilies = [
     {
         id: 'hammersmith-one',
         family: 'Hammersmith One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6821,7 +6709,7 @@ export const fontFamilies = [
     {
         id: 'hanalei',
         family: 'Hanalei',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6833,7 +6721,7 @@ export const fontFamilies = [
     {
         id: 'hanalei-fill',
         family: 'Hanalei Fill',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6853,7 +6741,7 @@ export const fontFamilies = [
             'greek',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
@@ -6879,7 +6767,7 @@ export const fontFamilies = [
     {
         id: 'hanken-grotesk',
         family: 'Hanken Grotesk',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic-ext',
@@ -6903,7 +6791,7 @@ export const fontFamilies = [
     {
         id: 'happy-monkey',
         family: 'Happy Monkey',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6915,7 +6803,7 @@ export const fontFamilies = [
     {
         id: 'harmattan',
         family: 'Harmattan',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -6927,7 +6815,7 @@ export const fontFamilies = [
     {
         id: 'headland-one',
         family: 'Headland One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6939,7 +6827,7 @@ export const fontFamilies = [
     {
         id: 'hedvig-letters-sans',
         family: 'Hedvig Letters Sans',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6951,7 +6839,7 @@ export const fontFamilies = [
     {
         id: 'hedvig-letters-serif',
         family: 'Hedvig Letters Serif',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6963,7 +6851,7 @@ export const fontFamilies = [
     {
         id: 'heebo',
         family: 'Heebo',
-        subsets: ['hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['hebrew', 'latin', , 'math', 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -6987,7 +6875,7 @@ export const fontFamilies = [
     {
         id: 'hepta-slab',
         family: 'Hepta Slab',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -6999,7 +6887,7 @@ export const fontFamilies = [
     {
         id: 'herr-von-muellerhoff',
         family: 'Herr Von Muellerhoff',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7023,7 +6911,7 @@ export const fontFamilies = [
     {
         id: 'hina-mincho',
         family: 'Hina Mincho',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -7035,7 +6923,7 @@ export const fontFamilies = [
     {
         id: 'hind',
         family: 'Hind',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -7047,7 +6935,7 @@ export const fontFamilies = [
     {
         id: 'hind-guntur',
         family: 'Hind Guntur',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7059,7 +6947,7 @@ export const fontFamilies = [
     {
         id: 'hind-madurai',
         family: 'Hind Madurai',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7071,7 +6959,7 @@ export const fontFamilies = [
     {
         id: 'hind-mysuru',
         family: 'Hind Mysuru',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -7083,7 +6971,7 @@ export const fontFamilies = [
     {
         id: 'hind-siliguri',
         family: 'Hind Siliguri',
-        subsets: ['bengali', 'latin', 'latin-ext'],
+        subsets: ['bengali', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -7095,7 +6983,7 @@ export const fontFamilies = [
     {
         id: 'hind-vadodara',
         family: 'Hind Vadodara',
-        subsets: ['gujarati', 'latin', 'latin-ext'],
+        subsets: ['gujarati', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -7107,7 +6995,7 @@ export const fontFamilies = [
     {
         id: 'holtwood-one-sc',
         family: 'Holtwood One SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7143,7 +7031,7 @@ export const fontFamilies = [
     {
         id: 'honk',
         family: 'Honk',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7155,7 +7043,7 @@ export const fontFamilies = [
     {
         id: 'host-grotesk',
         family: 'Host Grotesk',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7167,7 +7055,7 @@ export const fontFamilies = [
     {
         id: 'hubballi',
         family: 'Hubballi',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -7179,7 +7067,7 @@ export const fontFamilies = [
     {
         id: 'hubot-sans',
         family: 'Hubot Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7191,7 +7079,7 @@ export const fontFamilies = [
     {
         id: 'hurricane',
         family: 'Hurricane',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7203,7 +7091,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-mono',
         family: 'IBM Plex Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -7215,7 +7103,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans',
         family: 'IBM Plex Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -7227,7 +7115,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-arabic',
         family: 'IBM Plex Sans Arabic',
-        subsets: ['arabic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'cyrillic-ext', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -7239,7 +7127,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-condensed',
         family: 'IBM Plex Sans Condensed',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic-ext',
@@ -7251,7 +7139,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-devanagari',
         family: 'IBM Plex Sans Devanagari',
-        subsets: ['cyrillic-ext', 'devanagari', 'latin', 'latin-ext'],
+        subsets: ['cyrillic-ext', 'devanagari', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -7263,7 +7151,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-hebrew',
         family: 'IBM Plex Sans Hebrew',
-        subsets: ['cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic-ext', 'hebrew', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -7275,7 +7163,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-jp',
         family: 'IBM Plex Sans JP',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -7287,7 +7175,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-kr',
         family: 'IBM Plex Sans KR',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -7299,7 +7187,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-thai',
         family: 'IBM Plex Sans Thai',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'thai'],
+        subsets: ['cyrillic-ext', 'latin', , 'thai'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -7311,7 +7199,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-sans-thai-looped',
         family: 'IBM Plex Sans Thai Looped',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'thai'],
+        subsets: ['cyrillic-ext', 'latin', , 'thai'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -7323,7 +7211,7 @@ export const fontFamilies = [
     {
         id: 'ibm-plex-serif',
         family: 'IBM Plex Serif',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -7455,7 +7343,7 @@ export const fontFamilies = [
     {
         id: 'ibarra-real-nova',
         family: 'Ibarra Real Nova',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7491,7 +7379,7 @@ export const fontFamilies = [
     {
         id: 'imbue',
         family: 'Imbue',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7503,7 +7391,7 @@ export const fontFamilies = [
     {
         id: 'imperial-script',
         family: 'Imperial Script',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7515,7 +7403,7 @@ export const fontFamilies = [
     {
         id: 'imprima',
         family: 'Imprima',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7527,7 +7415,7 @@ export const fontFamilies = [
     {
         id: 'inclusive-sans',
         family: 'Inclusive Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7539,7 +7427,7 @@ export const fontFamilies = [
     {
         id: 'inconsolata',
         family: 'Inconsolata',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7551,7 +7439,7 @@ export const fontFamilies = [
     {
         id: 'inder',
         family: 'Inder',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7563,7 +7451,7 @@ export const fontFamilies = [
     {
         id: 'indie-flower',
         family: 'Indie Flower',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7575,7 +7463,7 @@ export const fontFamilies = [
     {
         id: 'ingrid-darling',
         family: 'Ingrid Darling',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7587,7 +7475,7 @@ export const fontFamilies = [
     {
         id: 'inika',
         family: 'Inika',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7599,7 +7487,7 @@ export const fontFamilies = [
     {
         id: 'inknut-antiqua',
         family: 'Inknut Antiqua',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -7611,7 +7499,7 @@ export const fontFamilies = [
     {
         id: 'inria-sans',
         family: 'Inria Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7623,7 +7511,7 @@ export const fontFamilies = [
     {
         id: 'inria-serif',
         family: 'Inria Serif',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7635,7 +7523,7 @@ export const fontFamilies = [
     {
         id: 'inspiration',
         family: 'Inspiration',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7647,7 +7535,7 @@ export const fontFamilies = [
     {
         id: 'instrument-sans',
         family: 'Instrument Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7659,7 +7547,7 @@ export const fontFamilies = [
     {
         id: 'instrument-serif',
         family: 'Instrument Serif',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -7671,15 +7559,7 @@ export const fontFamilies = [
     {
         id: 'inter',
         family: 'Inter',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -7691,15 +7571,7 @@ export const fontFamilies = [
     {
         id: 'inter-tight',
         family: 'Inter Tight',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -7723,7 +7595,7 @@ export const fontFamilies = [
     {
         id: 'island-moments',
         family: 'Island Moments',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7735,7 +7607,7 @@ export const fontFamilies = [
     {
         id: 'istok-web',
         family: 'Istok Web',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -7759,7 +7631,7 @@ export const fontFamilies = [
     {
         id: 'italianno',
         family: 'Italianno',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7771,7 +7643,7 @@ export const fontFamilies = [
     {
         id: 'itim',
         family: 'Itim',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7783,7 +7655,7 @@ export const fontFamilies = [
     {
         id: 'jacquard-12',
         family: 'Jacquard 12',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7795,7 +7667,7 @@ export const fontFamilies = [
     {
         id: 'jacquard-12-charted',
         family: 'Jacquard 12 Charted',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7807,7 +7679,7 @@ export const fontFamilies = [
     {
         id: 'jacquard-24',
         family: 'Jacquard 24',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7819,7 +7691,7 @@ export const fontFamilies = [
     {
         id: 'jacquard-24-charted',
         family: 'Jacquard 24 Charted',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7831,7 +7703,7 @@ export const fontFamilies = [
     {
         id: 'jacquarda-bastarda-9',
         family: 'Jacquarda Bastarda 9',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7843,7 +7715,7 @@ export const fontFamilies = [
     {
         id: 'jacquarda-bastarda-9-charted',
         family: 'Jacquarda Bastarda 9 Charted',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7879,7 +7751,7 @@ export const fontFamilies = [
     {
         id: 'jaini',
         family: 'Jaini',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -7891,7 +7763,7 @@ export const fontFamilies = [
     {
         id: 'jaini-purva',
         family: 'Jaini Purva',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -7903,7 +7775,7 @@ export const fontFamilies = [
     {
         id: 'jaldi',
         family: 'Jaldi',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -7915,7 +7787,7 @@ export const fontFamilies = [
     {
         id: 'jaro',
         family: 'Jaro',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7927,7 +7799,7 @@ export const fontFamilies = [
     {
         id: 'jersey-10',
         family: 'Jersey 10',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7939,7 +7811,7 @@ export const fontFamilies = [
     {
         id: 'jersey-10-charted',
         family: 'Jersey 10 Charted',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7951,7 +7823,7 @@ export const fontFamilies = [
     {
         id: 'jersey-15',
         family: 'Jersey 15',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7963,7 +7835,7 @@ export const fontFamilies = [
     {
         id: 'jersey-15-charted',
         family: 'Jersey 15 Charted',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7975,7 +7847,7 @@ export const fontFamilies = [
     {
         id: 'jersey-20',
         family: 'Jersey 20',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7987,7 +7859,7 @@ export const fontFamilies = [
     {
         id: 'jersey-20-charted',
         family: 'Jersey 20 Charted',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -7999,7 +7871,7 @@ export const fontFamilies = [
     {
         id: 'jersey-25',
         family: 'Jersey 25',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8011,7 +7883,7 @@ export const fontFamilies = [
     {
         id: 'jersey-25-charted',
         family: 'Jersey 25 Charted',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8023,7 +7895,7 @@ export const fontFamilies = [
     {
         id: 'jetbrains-mono',
         family: 'JetBrains Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -8035,7 +7907,7 @@ export const fontFamilies = [
     {
         id: 'jim-nightshade',
         family: 'Jim Nightshade',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8047,7 +7919,7 @@ export const fontFamilies = [
     {
         id: 'joan',
         family: 'Joan',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8059,7 +7931,7 @@ export const fontFamilies = [
     {
         id: 'jockey-one',
         family: 'Jockey One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8071,7 +7943,7 @@ export const fontFamilies = [
     {
         id: 'jolly-lodger',
         family: 'Jolly Lodger',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8083,7 +7955,7 @@ export const fontFamilies = [
     {
         id: 'jomhuria',
         family: 'Jomhuria',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8107,7 +7979,7 @@ export const fontFamilies = [
     {
         id: 'josefin-sans',
         family: 'Josefin Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8131,7 +8003,7 @@ export const fontFamilies = [
     {
         id: 'jost',
         family: 'Jost',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -8143,7 +8015,7 @@ export const fontFamilies = [
     {
         id: 'joti-one',
         family: 'Joti One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8167,7 +8039,7 @@ export const fontFamilies = [
     {
         id: 'judson',
         family: 'Judson',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8179,7 +8051,7 @@ export const fontFamilies = [
     {
         id: 'julee',
         family: 'Julee',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8191,7 +8063,7 @@ export const fontFamilies = [
     {
         id: 'julius-sans-one',
         family: 'Julius Sans One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8222,7 +8094,7 @@ export const fontFamilies = [
             'greek-ext',
             'kayah-li',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['300', '400', '500', '600', '700'],
@@ -8236,7 +8108,7 @@ export const fontFamilies = [
     {
         id: 'just-another-hand',
         family: 'Just Another Hand',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8248,7 +8120,7 @@ export const fontFamilies = [
     {
         id: 'just-me-again-down-here',
         family: 'Just Me Again Down Here',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8260,7 +8132,7 @@ export const fontFamilies = [
     {
         id: 'k2d',
         family: 'K2D',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8272,7 +8144,7 @@ export const fontFamilies = [
     {
         id: 'kablammo',
         family: 'Kablammo',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8284,7 +8156,7 @@ export const fontFamilies = [
     {
         id: 'kadwa',
         family: 'Kadwa',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -8296,7 +8168,7 @@ export const fontFamilies = [
     {
         id: 'kaisei-decol',
         family: 'Kaisei Decol',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400', '500', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8308,7 +8180,7 @@ export const fontFamilies = [
     {
         id: 'kaisei-harunoumi',
         family: 'Kaisei HarunoUmi',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400', '500', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8320,7 +8192,7 @@ export const fontFamilies = [
     {
         id: 'kaisei-opti',
         family: 'Kaisei Opti',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400', '500', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8332,7 +8204,7 @@ export const fontFamilies = [
     {
         id: 'kaisei-tokumin',
         family: 'Kaisei Tokumin',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400', '500', '700', '800'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8344,7 +8216,7 @@ export const fontFamilies = [
     {
         id: 'kalam',
         family: 'Kalam',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -8356,7 +8228,7 @@ export const fontFamilies = [
     {
         id: 'kalnia',
         family: 'Kalnia',
-        subsets: ['latin', 'latin-ext', 'math'],
+        subsets: ['latin', , 'math'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8368,7 +8240,7 @@ export const fontFamilies = [
     {
         id: 'kalnia-glaze',
         family: 'Kalnia Glaze',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8380,7 +8252,7 @@ export const fontFamilies = [
     {
         id: 'kameron',
         family: 'Kameron',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8392,7 +8264,7 @@ export const fontFamilies = [
     {
         id: 'kanit',
         family: 'Kanit',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8404,7 +8276,7 @@ export const fontFamilies = [
     {
         id: 'kantumruy-pro',
         family: 'Kantumruy Pro',
-        subsets: ['khmer', 'latin', 'latin-ext'],
+        subsets: ['khmer', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'khmer',
@@ -8416,7 +8288,7 @@ export const fontFamilies = [
     {
         id: 'karantina',
         family: 'Karantina',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -8428,7 +8300,7 @@ export const fontFamilies = [
     {
         id: 'karla',
         family: 'Karla',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8464,7 +8336,7 @@ export const fontFamilies = [
     {
         id: 'karma',
         family: 'Karma',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -8476,7 +8348,7 @@ export const fontFamilies = [
     {
         id: 'katibeh',
         family: 'Katibeh',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -8488,7 +8360,7 @@ export const fontFamilies = [
     {
         id: 'kaushan-script',
         family: 'Kaushan Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8500,7 +8372,7 @@ export const fontFamilies = [
     {
         id: 'kavivanar',
         family: 'Kavivanar',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8512,7 +8384,7 @@ export const fontFamilies = [
     {
         id: 'kavoon',
         family: 'Kavoon',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8524,7 +8396,7 @@ export const fontFamilies = [
     {
         id: 'kay-pho-du',
         family: 'Kay Pho Du',
-        subsets: ['kayah-li', 'latin', 'latin-ext'],
+        subsets: ['kayah-li', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'kayah-li',
@@ -8536,7 +8408,7 @@ export const fontFamilies = [
     {
         id: 'kdam-thmor-pro',
         family: 'Kdam Thmor Pro',
-        subsets: ['khmer', 'latin', 'latin-ext'],
+        subsets: ['khmer', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'khmer',
@@ -8548,7 +8420,7 @@ export const fontFamilies = [
     {
         id: 'keania-one',
         family: 'Keania One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8560,7 +8432,7 @@ export const fontFamilies = [
     {
         id: 'kelly-slab',
         family: 'Kelly Slab',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8584,7 +8456,7 @@ export const fontFamilies = [
     {
         id: 'khand',
         family: 'Khand',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -8608,7 +8480,7 @@ export const fontFamilies = [
     {
         id: 'khula',
         family: 'Khula',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -8620,7 +8492,7 @@ export const fontFamilies = [
     {
         id: 'kings',
         family: 'Kings',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8644,7 +8516,7 @@ export const fontFamilies = [
     {
         id: 'kite-one',
         family: 'Kite One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8656,7 +8528,7 @@ export const fontFamilies = [
     {
         id: 'kiwi-maru',
         family: 'Kiwi Maru',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['300', '400', '500'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8668,7 +8540,7 @@ export const fontFamilies = [
     {
         id: 'klee-one',
         family: 'Klee One',
-        subsets: ['cyrillic', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek-ext', 'latin'],
         weights: ['400', '600'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8680,7 +8552,7 @@ export const fontFamilies = [
     {
         id: 'knewave',
         family: 'Knewave',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8692,7 +8564,7 @@ export const fontFamilies = [
     {
         id: 'koho',
         family: 'KoHo',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8704,7 +8576,7 @@ export const fontFamilies = [
     {
         id: 'kodchasan',
         family: 'Kodchasan',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8716,7 +8588,7 @@ export const fontFamilies = [
     {
         id: 'kode-mono',
         family: 'Kode Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8740,7 +8612,7 @@ export const fontFamilies = [
     {
         id: 'kolker-brush',
         family: 'Kolker Brush',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8752,7 +8624,7 @@ export const fontFamilies = [
     {
         id: 'konkhmer-sleokchher',
         family: 'Konkhmer Sleokchher',
-        subsets: ['khmer', 'latin', 'latin-ext'],
+        subsets: ['khmer', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'khmer',
@@ -8764,7 +8636,7 @@ export const fontFamilies = [
     {
         id: 'kosugi',
         family: 'Kosugi',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8776,7 +8648,7 @@ export const fontFamilies = [
     {
         id: 'kosugi-maru',
         family: 'Kosugi Maru',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8788,7 +8660,7 @@ export const fontFamilies = [
     {
         id: 'kotta-one',
         family: 'Kotta One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8824,7 +8696,7 @@ export const fontFamilies = [
     {
         id: 'kreon',
         family: 'Kreon',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8848,7 +8720,7 @@ export const fontFamilies = [
     {
         id: 'krona-one',
         family: 'Krona One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8860,7 +8732,7 @@ export const fontFamilies = [
     {
         id: 'krub',
         family: 'Krub',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8872,7 +8744,7 @@ export const fontFamilies = [
     {
         id: 'kufam',
         family: 'Kufam',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'arabic',
@@ -8884,7 +8756,7 @@ export const fontFamilies = [
     {
         id: 'kulim-park',
         family: 'Kulim Park',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -8896,7 +8768,7 @@ export const fontFamilies = [
     {
         id: 'kumar-one',
         family: 'Kumar One',
-        subsets: ['gujarati', 'latin', 'latin-ext'],
+        subsets: ['gujarati', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -8908,7 +8780,7 @@ export const fontFamilies = [
     {
         id: 'kumar-one-outline',
         family: 'Kumar One Outline',
-        subsets: ['gujarati', 'latin', 'latin-ext'],
+        subsets: ['gujarati', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -8920,7 +8792,7 @@ export const fontFamilies = [
     {
         id: 'kumbh-sans',
         family: 'Kumbh Sans',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8932,7 +8804,7 @@ export const fontFamilies = [
     {
         id: 'kurale',
         family: 'Kurale',
-        subsets: ['cyrillic', 'cyrillic-ext', 'devanagari', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -8950,7 +8822,7 @@ export const fontFamilies = [
             'greek',
             'greek-ext',
             'latin',
-            'latin-ext',
+            ,
             'lisu',
             'vietnamese',
         ],
@@ -8971,7 +8843,7 @@ export const fontFamilies = [
             'greek',
             'greek-ext',
             'latin',
-            'latin-ext',
+            ,
             'lisu',
             'vietnamese',
         ],
@@ -8986,7 +8858,7 @@ export const fontFamilies = [
     {
         id: 'la-belle-aurore',
         family: 'La Belle Aurore',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -8998,7 +8870,7 @@ export const fontFamilies = [
     {
         id: 'labrada',
         family: 'Labrada',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9022,7 +8894,7 @@ export const fontFamilies = [
     {
         id: 'laila',
         family: 'Laila',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -9046,7 +8918,7 @@ export const fontFamilies = [
     {
         id: 'lalezar',
         family: 'Lalezar',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -9058,7 +8930,7 @@ export const fontFamilies = [
     {
         id: 'lancelot',
         family: 'Lancelot',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9070,7 +8942,7 @@ export const fontFamilies = [
     {
         id: 'langar',
         family: 'Langar',
-        subsets: ['gurmukhi', 'latin', 'latin-ext'],
+        subsets: ['gurmukhi', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -9082,7 +8954,7 @@ export const fontFamilies = [
     {
         id: 'lateef',
         family: 'Lateef',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -9094,7 +8966,7 @@ export const fontFamilies = [
     {
         id: 'lato',
         family: 'Lato',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '300', '400', '700', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9106,7 +8978,7 @@ export const fontFamilies = [
     {
         id: 'lavishly-yours',
         family: 'Lavishly Yours',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9118,7 +8990,7 @@ export const fontFamilies = [
     {
         id: 'league-gothic',
         family: 'League Gothic',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9142,7 +9014,7 @@ export const fontFamilies = [
     {
         id: 'league-spartan',
         family: 'League Spartan',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9166,7 +9038,7 @@ export const fontFamilies = [
     {
         id: 'ledger',
         family: 'Ledger',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -9178,7 +9050,7 @@ export const fontFamilies = [
     {
         id: 'lekton',
         family: 'Lekton',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9190,7 +9062,7 @@ export const fontFamilies = [
     {
         id: 'lemon',
         family: 'Lemon',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9202,7 +9074,7 @@ export const fontFamilies = [
     {
         id: 'lemonada',
         family: 'Lemonada',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -9214,7 +9086,7 @@ export const fontFamilies = [
     {
         id: 'lexend',
         family: 'Lexend',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9226,7 +9098,7 @@ export const fontFamilies = [
     {
         id: 'lexend-deca',
         family: 'Lexend Deca',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9238,7 +9110,7 @@ export const fontFamilies = [
     {
         id: 'lexend-exa',
         family: 'Lexend Exa',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9250,7 +9122,7 @@ export const fontFamilies = [
     {
         id: 'lexend-giga',
         family: 'Lexend Giga',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9262,7 +9134,7 @@ export const fontFamilies = [
     {
         id: 'lexend-mega',
         family: 'Lexend Mega',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9274,7 +9146,7 @@ export const fontFamilies = [
     {
         id: 'lexend-peta',
         family: 'Lexend Peta',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9286,7 +9158,7 @@ export const fontFamilies = [
     {
         id: 'lexend-tera',
         family: 'Lexend Tera',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9298,7 +9170,7 @@ export const fontFamilies = [
     {
         id: 'lexend-zetta',
         family: 'Lexend Zetta',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9394,7 +9266,7 @@ export const fontFamilies = [
     {
         id: 'libre-baskerville',
         family: 'Libre Baskerville',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9406,7 +9278,7 @@ export const fontFamilies = [
     {
         id: 'libre-bodoni',
         family: 'Libre Bodoni',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9418,7 +9290,7 @@ export const fontFamilies = [
     {
         id: 'libre-caslon-display',
         family: 'Libre Caslon Display',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9430,7 +9302,7 @@ export const fontFamilies = [
     {
         id: 'libre-caslon-text',
         family: 'Libre Caslon Text',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9442,7 +9314,7 @@ export const fontFamilies = [
     {
         id: 'libre-franklin',
         family: 'Libre Franklin',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -9454,7 +9326,7 @@ export const fontFamilies = [
     {
         id: 'licorice',
         family: 'Licorice',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9466,7 +9338,7 @@ export const fontFamilies = [
     {
         id: 'life-savers',
         family: 'Life Savers',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9478,7 +9350,7 @@ export const fontFamilies = [
     {
         id: 'lilita-one',
         family: 'Lilita One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9490,7 +9362,7 @@ export const fontFamilies = [
     {
         id: 'lily-script-one',
         family: 'Lily Script One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9502,7 +9374,7 @@ export const fontFamilies = [
     {
         id: 'limelight',
         family: 'Limelight',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9514,7 +9386,7 @@ export const fontFamilies = [
     {
         id: 'linden-hill',
         family: 'Linden Hill',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9538,7 +9410,7 @@ export const fontFamilies = [
     {
         id: 'lisu-bosa',
         family: 'Lisu Bosa',
-        subsets: ['latin', 'latin-ext', 'lisu'],
+        subsets: ['latin', , 'lisu'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9550,15 +9422,7 @@ export const fontFamilies = [
     {
         id: 'literata',
         family: 'Literata',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -9582,7 +9446,7 @@ export const fontFamilies = [
     {
         id: 'livvic',
         family: 'Livvic',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -9594,7 +9458,7 @@ export const fontFamilies = [
     {
         id: 'lobster',
         family: 'Lobster',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -9678,15 +9542,7 @@ export const fontFamilies = [
     {
         id: 'lora',
         family: 'Lora',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'latin',
-            'latin-ext',
-            'math',
-            'symbols',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -9698,7 +9554,7 @@ export const fontFamilies = [
     {
         id: 'love-light',
         family: 'Love Light',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9710,7 +9566,7 @@ export const fontFamilies = [
     {
         id: 'love-ya-like-a-sister',
         family: 'Love Ya Like A Sister',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9722,7 +9578,7 @@ export const fontFamilies = [
     {
         id: 'loved-by-the-king',
         family: 'Loved by the King',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9734,7 +9590,7 @@ export const fontFamilies = [
     {
         id: 'lovers-quarrel',
         family: 'Lovers Quarrel',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9746,7 +9602,7 @@ export const fontFamilies = [
     {
         id: 'luckiest-guy',
         family: 'Luckiest Guy',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9758,7 +9614,7 @@ export const fontFamilies = [
     {
         id: 'lugrasimo',
         family: 'Lugrasimo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9770,7 +9626,7 @@ export const fontFamilies = [
     {
         id: 'lumanosimo',
         family: 'Lumanosimo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9789,7 +9645,7 @@ export const fontFamilies = [
             'greek-ext',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['400', '700'],
@@ -9827,7 +9683,7 @@ export const fontFamilies = [
     {
         id: 'luxurious-roman',
         family: 'Luxurious Roman',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9839,7 +9695,7 @@ export const fontFamilies = [
     {
         id: 'luxurious-script',
         family: 'Luxurious Script',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9851,7 +9707,7 @@ export const fontFamilies = [
     {
         id: 'm-plus-1',
         family: 'M PLUS 1',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -9863,7 +9719,7 @@ export const fontFamilies = [
     {
         id: 'm-plus-1-code',
         family: 'M PLUS 1 Code',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -9882,7 +9738,7 @@ export const fontFamilies = [
             'greek-ext',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['100', '300', '400', '500', '700', '800', '900'],
@@ -9896,7 +9752,7 @@ export const fontFamilies = [
     {
         id: 'm-plus-2',
         family: 'M PLUS 2',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -9908,7 +9764,7 @@ export const fontFamilies = [
     {
         id: 'm-plus-code-latin',
         family: 'M PLUS Code Latin',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -9927,7 +9783,7 @@ export const fontFamilies = [
             'greek-ext',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['100', '300', '400', '500', '700', '800', '900'],
@@ -9977,7 +9833,7 @@ export const fontFamilies = [
     {
         id: 'mada',
         family: 'Mada',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -9989,7 +9845,7 @@ export const fontFamilies = [
     {
         id: 'madimi-one',
         family: 'Madimi One',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10001,7 +9857,7 @@ export const fontFamilies = [
     {
         id: 'magra',
         family: 'Magra',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10013,7 +9869,7 @@ export const fontFamilies = [
     {
         id: 'maiden-orange',
         family: 'Maiden Orange',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10025,7 +9881,7 @@ export const fontFamilies = [
     {
         id: 'maitree',
         family: 'Maitree',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10037,7 +9893,7 @@ export const fontFamilies = [
     {
         id: 'major-mono-display',
         family: 'Major Mono Display',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10049,7 +9905,7 @@ export const fontFamilies = [
     {
         id: 'mako',
         family: 'Mako',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10061,7 +9917,7 @@ export const fontFamilies = [
     {
         id: 'mali',
         family: 'Mali',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -10085,7 +9941,7 @@ export const fontFamilies = [
     {
         id: 'maname',
         family: 'Maname',
-        subsets: ['latin', 'latin-ext', 'sinhala', 'vietnamese'],
+        subsets: ['latin', , 'sinhala', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10109,7 +9965,7 @@ export const fontFamilies = [
     {
         id: 'manjari',
         family: 'Manjari',
-        subsets: ['latin', 'latin-ext', 'malayalam'],
+        subsets: ['latin', , 'malayalam'],
         weights: ['100', '400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10121,7 +9977,7 @@ export const fontFamilies = [
     {
         id: 'manrope',
         family: 'Manrope',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -10133,7 +9989,7 @@ export const fontFamilies = [
     {
         id: 'mansalva',
         family: 'Mansalva',
-        subsets: ['greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['greek', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'greek',
@@ -10145,7 +10001,7 @@ export const fontFamilies = [
     {
         id: 'manuale',
         family: 'Manuale',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -10157,7 +10013,7 @@ export const fontFamilies = [
     {
         id: 'marcellus',
         family: 'Marcellus',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10169,7 +10025,7 @@ export const fontFamilies = [
     {
         id: 'marcellus-sc',
         family: 'Marcellus SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10181,7 +10037,7 @@ export const fontFamilies = [
     {
         id: 'marck-script',
         family: 'Marck Script',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -10193,7 +10049,7 @@ export const fontFamilies = [
     {
         id: 'margarine',
         family: 'Margarine',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10205,7 +10061,7 @@ export const fontFamilies = [
     {
         id: 'marhey',
         family: 'Marhey',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -10217,7 +10073,7 @@ export const fontFamilies = [
     {
         id: 'markazi-text',
         family: 'Markazi Text',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -10241,7 +10097,7 @@ export const fontFamilies = [
     {
         id: 'marmelad',
         family: 'Marmelad',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -10253,7 +10109,7 @@ export const fontFamilies = [
     {
         id: 'martel',
         family: 'Martel',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['200', '300', '400', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -10265,7 +10121,7 @@ export const fontFamilies = [
     {
         id: 'martel-sans',
         family: 'Martel Sans',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['200', '300', '400', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -10277,7 +10133,7 @@ export const fontFamilies = [
     {
         id: 'martian-mono',
         family: 'Martian Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -10301,7 +10157,7 @@ export const fontFamilies = [
     {
         id: 'mate',
         family: 'Mate',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -10313,7 +10169,7 @@ export const fontFamilies = [
     {
         id: 'mate-sc',
         family: 'Mate SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10325,7 +10181,7 @@ export const fontFamilies = [
     {
         id: 'matemasie',
         family: 'Matemasie',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10337,7 +10193,7 @@ export const fontFamilies = [
     {
         id: 'maven-pro',
         family: 'Maven Pro',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10349,7 +10205,7 @@ export const fontFamilies = [
     {
         id: 'mclaren',
         family: 'McLaren',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10361,7 +10217,7 @@ export const fontFamilies = [
     {
         id: 'mea-culpa',
         family: 'Mea Culpa',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10373,7 +10229,7 @@ export const fontFamilies = [
     {
         id: 'meddon',
         family: 'Meddon',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10385,7 +10241,7 @@ export const fontFamilies = [
     {
         id: 'medievalsharp',
         family: 'MedievalSharp',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10421,7 +10277,7 @@ export const fontFamilies = [
     {
         id: 'megrim',
         family: 'Megrim',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10433,7 +10289,7 @@ export const fontFamilies = [
     {
         id: 'meie-script',
         family: 'Meie Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10445,7 +10301,7 @@ export const fontFamilies = [
     {
         id: 'meow-script',
         family: 'Meow Script',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10457,7 +10313,7 @@ export const fontFamilies = [
     {
         id: 'merienda',
         family: 'Merienda',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10469,7 +10325,7 @@ export const fontFamilies = [
     {
         id: 'merriweather',
         family: 'Merriweather',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -10481,7 +10337,7 @@ export const fontFamilies = [
     {
         id: 'merriweather-sans',
         family: 'Merriweather Sans',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic-ext',
@@ -10505,7 +10361,7 @@ export const fontFamilies = [
     {
         id: 'metal-mania',
         family: 'Metal Mania',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10517,7 +10373,7 @@ export const fontFamilies = [
     {
         id: 'metamorphous',
         family: 'Metamorphous',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10529,7 +10385,7 @@ export const fontFamilies = [
     {
         id: 'metrophobic',
         family: 'Metrophobic',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10541,7 +10397,7 @@ export const fontFamilies = [
     {
         id: 'michroma',
         family: 'Michroma',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10553,7 +10409,7 @@ export const fontFamilies = [
     {
         id: 'micro-5',
         family: 'Micro 5',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10565,7 +10421,7 @@ export const fontFamilies = [
     {
         id: 'micro-5-charted',
         family: 'Micro 5 Charted',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10577,7 +10433,7 @@ export const fontFamilies = [
     {
         id: 'milonga',
         family: 'Milonga',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10613,7 +10469,7 @@ export const fontFamilies = [
     {
         id: 'mina',
         family: 'Mina',
-        subsets: ['bengali', 'latin', 'latin-ext'],
+        subsets: ['bengali', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -10625,7 +10481,7 @@ export const fontFamilies = [
     {
         id: 'mingzat',
         family: 'Mingzat',
-        subsets: ['latin', 'latin-ext', 'lepcha'],
+        subsets: ['latin', , 'lepcha'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10649,7 +10505,7 @@ export const fontFamilies = [
     {
         id: 'miriam-libre',
         family: 'Miriam Libre',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -10661,7 +10517,7 @@ export const fontFamilies = [
     {
         id: 'mirza',
         family: 'Mirza',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -10673,7 +10529,7 @@ export const fontFamilies = [
     {
         id: 'miss-fajardose',
         family: 'Miss Fajardose',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10685,7 +10541,7 @@ export const fontFamilies = [
     {
         id: 'mitr',
         family: 'Mitr',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10721,7 +10577,7 @@ export const fontFamilies = [
     {
         id: 'modak',
         family: 'Modak',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -10733,7 +10589,7 @@ export const fontFamilies = [
     {
         id: 'modern-antiqua',
         family: 'Modern Antiqua',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10745,7 +10601,7 @@ export const fontFamilies = [
     {
         id: 'moderustic',
         family: 'Moderustic',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -10757,7 +10613,7 @@ export const fontFamilies = [
     {
         id: 'mogra',
         family: 'Mogra',
-        subsets: ['gujarati', 'latin', 'latin-ext'],
+        subsets: ['gujarati', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -10769,7 +10625,7 @@ export const fontFamilies = [
     {
         id: 'mohave',
         family: 'Mohave',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -10781,7 +10637,7 @@ export const fontFamilies = [
     {
         id: 'moirai-one',
         family: 'Moirai One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -10793,7 +10649,7 @@ export const fontFamilies = [
     {
         id: 'molengo',
         family: 'Molengo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10805,7 +10661,7 @@ export const fontFamilies = [
     {
         id: 'molle',
         family: 'Molle',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: [],
         styles: ['italic'],
         defSubset: 'latin',
@@ -10817,7 +10673,7 @@ export const fontFamilies = [
     {
         id: 'mona-sans',
         family: 'Mona Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -10829,7 +10685,7 @@ export const fontFamilies = [
     {
         id: 'monda',
         family: 'Monda',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10841,7 +10697,7 @@ export const fontFamilies = [
     {
         id: 'monofett',
         family: 'Monofett',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10853,7 +10709,7 @@ export const fontFamilies = [
     {
         id: 'monomaniac-one',
         family: 'Monomaniac One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -10865,7 +10721,7 @@ export const fontFamilies = [
     {
         id: 'monoton',
         family: 'Monoton',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10877,7 +10733,7 @@ export const fontFamilies = [
     {
         id: 'monsieur-la-doulaise',
         family: 'Monsieur La Doulaise',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10901,7 +10757,7 @@ export const fontFamilies = [
     {
         id: 'montagu-slab',
         family: 'Montagu Slab',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10913,7 +10769,7 @@ export const fontFamilies = [
     {
         id: 'montecarlo',
         family: 'MonteCarlo',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10925,7 +10781,7 @@ export const fontFamilies = [
     {
         id: 'montez',
         family: 'Montez',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10937,7 +10793,7 @@ export const fontFamilies = [
     {
         id: 'montserrat',
         family: 'Montserrat',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -10949,7 +10805,7 @@ export const fontFamilies = [
     {
         id: 'montserrat-alternates',
         family: 'Montserrat Alternates',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -10961,7 +10817,7 @@ export const fontFamilies = [
     {
         id: 'montserrat-underline',
         family: 'Montserrat Underline',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -10973,7 +10829,7 @@ export const fontFamilies = [
     {
         id: 'moo-lah-lah',
         family: 'Moo Lah Lah',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10985,7 +10841,7 @@ export const fontFamilies = [
     {
         id: 'mooli',
         family: 'Mooli',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -10997,7 +10853,7 @@ export const fontFamilies = [
     {
         id: 'moon-dance',
         family: 'Moon Dance',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11045,7 +10901,7 @@ export const fontFamilies = [
     {
         id: 'mouse-memoirs',
         family: 'Mouse Memoirs',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11057,7 +10913,7 @@ export const fontFamilies = [
     {
         id: 'mr-bedfort',
         family: 'Mr Bedfort',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11069,7 +10925,7 @@ export const fontFamilies = [
     {
         id: 'mr-dafoe',
         family: 'Mr Dafoe',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11081,7 +10937,7 @@ export const fontFamilies = [
     {
         id: 'mr-de-haviland',
         family: 'Mr De Haviland',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11093,7 +10949,7 @@ export const fontFamilies = [
     {
         id: 'mrs-saint-delafield',
         family: 'Mrs Saint Delafield',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11105,7 +10961,7 @@ export const fontFamilies = [
     {
         id: 'mrs-sheppards',
         family: 'Mrs Sheppards',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11117,7 +10973,7 @@ export const fontFamilies = [
     {
         id: 'ms-madi',
         family: 'Ms Madi',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11129,7 +10985,7 @@ export const fontFamilies = [
     {
         id: 'mukta',
         family: 'Mukta',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -11141,7 +10997,7 @@ export const fontFamilies = [
     {
         id: 'mukta-mahee',
         family: 'Mukta Mahee',
-        subsets: ['gurmukhi', 'latin', 'latin-ext'],
+        subsets: ['gurmukhi', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -11153,7 +11009,7 @@ export const fontFamilies = [
     {
         id: 'mukta-malar',
         family: 'Mukta Malar',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11165,7 +11021,7 @@ export const fontFamilies = [
     {
         id: 'mukta-vaani',
         family: 'Mukta Vaani',
-        subsets: ['gujarati', 'latin', 'latin-ext'],
+        subsets: ['gujarati', 'latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -11177,7 +11033,7 @@ export const fontFamilies = [
     {
         id: 'mulish',
         family: 'Mulish',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -11189,7 +11045,7 @@ export const fontFamilies = [
     {
         id: 'murecho',
         family: 'Murecho',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -11201,7 +11057,7 @@ export const fontFamilies = [
     {
         id: 'museomoderno',
         family: 'MuseoModerno',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -11213,7 +11069,7 @@ export const fontFamilies = [
     {
         id: 'my-soul',
         family: 'My Soul',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11225,7 +11081,7 @@ export const fontFamilies = [
     {
         id: 'mynerve',
         family: 'Mynerve',
-        subsets: ['greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['greek', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'greek',
@@ -11237,7 +11093,7 @@ export const fontFamilies = [
     {
         id: 'mystery-quest',
         family: 'Mystery Quest',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11261,7 +11117,7 @@ export const fontFamilies = [
     {
         id: 'nabla',
         family: 'Nabla',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'math', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'math', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -11273,7 +11129,7 @@ export const fontFamilies = [
     {
         id: 'namdhinggo',
         family: 'Namdhinggo',
-        subsets: ['latin', 'latin-ext', 'limbu'],
+        subsets: ['latin', , 'limbu'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11345,7 +11201,7 @@ export const fontFamilies = [
     {
         id: 'narnoor',
         family: 'Narnoor',
-        subsets: ['gunjala-gondi', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['gunjala-gondi', 'latin', , 'math', 'symbols'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'gunjala-gondi',
@@ -11357,7 +11213,7 @@ export const fontFamilies = [
     {
         id: 'neonderthaw',
         family: 'Neonderthaw',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11369,7 +11225,7 @@ export const fontFamilies = [
     {
         id: 'nerko-one',
         family: 'Nerko One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11393,7 +11249,7 @@ export const fontFamilies = [
     {
         id: 'neuton',
         family: 'Neuton',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -11405,7 +11261,7 @@ export const fontFamilies = [
     {
         id: 'new-amsterdam',
         family: 'New Amsterdam',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11417,7 +11273,7 @@ export const fontFamilies = [
     {
         id: 'new-rocker',
         family: 'New Rocker',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11429,7 +11285,7 @@ export const fontFamilies = [
     {
         id: 'new-tegomin',
         family: 'New Tegomin',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -11441,7 +11297,7 @@ export const fontFamilies = [
     {
         id: 'news-cycle',
         family: 'News Cycle',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11453,7 +11309,7 @@ export const fontFamilies = [
     {
         id: 'newsreader',
         family: 'Newsreader',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -11465,7 +11321,7 @@ export const fontFamilies = [
     {
         id: 'niconne',
         family: 'Niconne',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11477,7 +11333,7 @@ export const fontFamilies = [
     {
         id: 'niramit',
         family: 'Niramit',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -11501,7 +11357,7 @@ export const fontFamilies = [
     {
         id: 'nobile',
         family: 'Nobile',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -11525,7 +11381,7 @@ export const fontFamilies = [
     {
         id: 'norican',
         family: 'Norican',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11537,7 +11393,7 @@ export const fontFamilies = [
     {
         id: 'nosifer',
         family: 'Nosifer',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11573,7 +11429,7 @@ export const fontFamilies = [
     {
         id: 'noticia-text',
         family: 'Noticia Text',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -11609,7 +11465,7 @@ export const fontFamilies = [
     {
         id: 'noto-kufi-arabic',
         family: 'Noto Kufi Arabic',
-        subsets: ['arabic', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['arabic', 'latin', , 'math', 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -11621,7 +11477,7 @@ export const fontFamilies = [
     {
         id: 'noto-music',
         family: 'Noto Music',
-        subsets: ['latin', 'latin-ext', 'music'],
+        subsets: ['latin', , 'music'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -11633,7 +11489,7 @@ export const fontFamilies = [
     {
         id: 'noto-naskh-arabic',
         family: 'Noto Naskh Arabic',
-        subsets: ['arabic', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['arabic', 'latin', , 'math', 'symbols'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -11645,7 +11501,7 @@ export const fontFamilies = [
     {
         id: 'noto-nastaliq-urdu',
         family: 'Noto Nastaliq Urdu',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -11657,7 +11513,7 @@ export const fontFamilies = [
     {
         id: 'noto-rashi-hebrew',
         family: 'Noto Rashi Hebrew',
-        subsets: ['greek-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['greek-ext', 'hebrew', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'greek-ext',
@@ -11676,7 +11532,7 @@ export const fontFamilies = [
             'greek',
             'greek-ext',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
@@ -11690,7 +11546,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-adlam',
         family: 'Noto Sans Adlam',
-        subsets: ['adlam', 'latin', 'latin-ext'],
+        subsets: ['adlam', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'adlam',
@@ -11702,7 +11558,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-adlam-unjoined',
         family: 'Noto Sans Adlam Unjoined',
-        subsets: ['adlam', 'latin', 'latin-ext'],
+        subsets: ['adlam', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'adlam',
@@ -11714,7 +11570,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-anatolian-hieroglyphs',
         family: 'Noto Sans Anatolian Hieroglyphs',
-        subsets: ['anatolian-hieroglyphs', 'latin', 'latin-ext'],
+        subsets: ['anatolian-hieroglyphs', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'anatolian-hieroglyphs',
@@ -11738,7 +11594,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-armenian',
         family: 'Noto Sans Armenian',
-        subsets: ['armenian', 'latin', 'latin-ext'],
+        subsets: ['armenian', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'armenian',
@@ -11750,7 +11606,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-avestan',
         family: 'Noto Sans Avestan',
-        subsets: ['avestan', 'latin', 'latin-ext'],
+        subsets: ['avestan', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'avestan',
@@ -11762,7 +11618,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-balinese',
         family: 'Noto Sans Balinese',
-        subsets: ['balinese', 'latin', 'latin-ext'],
+        subsets: ['balinese', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'balinese',
@@ -11774,7 +11630,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-bamum',
         family: 'Noto Sans Bamum',
-        subsets: ['bamum', 'latin', 'latin-ext'],
+        subsets: ['bamum', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'bamum',
@@ -11786,7 +11642,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-bassa-vah',
         family: 'Noto Sans Bassa Vah',
-        subsets: ['bassa-vah', 'latin', 'latin-ext'],
+        subsets: ['bassa-vah', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'bassa-vah',
@@ -11798,7 +11654,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-batak',
         family: 'Noto Sans Batak',
-        subsets: ['batak', 'latin', 'latin-ext'],
+        subsets: ['batak', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'batak',
@@ -11810,7 +11666,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-bengali',
         family: 'Noto Sans Bengali',
-        subsets: ['bengali', 'latin', 'latin-ext'],
+        subsets: ['bengali', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -11822,7 +11678,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-bhaiksuki',
         family: 'Noto Sans Bhaiksuki',
-        subsets: ['bhaiksuki', 'latin', 'latin-ext'],
+        subsets: ['bhaiksuki', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'bhaiksuki',
@@ -11834,7 +11690,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-brahmi',
         family: 'Noto Sans Brahmi',
-        subsets: ['brahmi', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['brahmi', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'brahmi',
@@ -11846,7 +11702,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-buginese',
         family: 'Noto Sans Buginese',
-        subsets: ['buginese', 'latin', 'latin-ext'],
+        subsets: ['buginese', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'buginese',
@@ -11858,7 +11714,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-buhid',
         family: 'Noto Sans Buhid',
-        subsets: ['buhid', 'latin', 'latin-ext'],
+        subsets: ['buhid', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'buhid',
@@ -11870,7 +11726,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-canadian-aboriginal',
         family: 'Noto Sans Canadian Aboriginal',
-        subsets: ['canadian-aboriginal', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['canadian-aboriginal', 'latin', , 'math', 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'canadian-aboriginal',
@@ -11882,7 +11738,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-carian',
         family: 'Noto Sans Carian',
-        subsets: ['carian', 'latin', 'latin-ext'],
+        subsets: ['carian', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'carian',
@@ -11894,7 +11750,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-caucasian-albanian',
         family: 'Noto Sans Caucasian Albanian',
-        subsets: ['caucasian-albanian', 'latin', 'latin-ext'],
+        subsets: ['caucasian-albanian', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'caucasian-albanian',
@@ -11906,7 +11762,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-chakma',
         family: 'Noto Sans Chakma',
-        subsets: ['chakma', 'latin', 'latin-ext'],
+        subsets: ['chakma', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'chakma',
@@ -11918,7 +11774,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-cham',
         family: 'Noto Sans Cham',
-        subsets: ['cham', 'latin', 'latin-ext'],
+        subsets: ['cham', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cham',
@@ -11930,7 +11786,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-cherokee',
         family: 'Noto Sans Cherokee',
-        subsets: ['cherokee', 'latin', 'latin-ext'],
+        subsets: ['cherokee', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cherokee',
@@ -11942,7 +11798,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-chorasmian',
         family: 'Noto Sans Chorasmian',
-        subsets: ['chorasmian', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['chorasmian', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'chorasmian',
@@ -11954,7 +11810,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-coptic',
         family: 'Noto Sans Coptic',
-        subsets: ['coptic', 'latin', 'latin-ext'],
+        subsets: ['coptic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'coptic',
@@ -11966,7 +11822,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-cuneiform',
         family: 'Noto Sans Cuneiform',
-        subsets: ['cuneiform', 'latin', 'latin-ext'],
+        subsets: ['cuneiform', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cuneiform',
@@ -11978,7 +11834,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-cypriot',
         family: 'Noto Sans Cypriot',
-        subsets: ['cypriot', 'latin', 'latin-ext'],
+        subsets: ['cypriot', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cypriot',
@@ -11990,7 +11846,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-cypro-minoan',
         family: 'Noto Sans Cypro Minoan',
-        subsets: ['cypro-minoan', 'latin', 'latin-ext'],
+        subsets: ['cypro-minoan', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cypro-minoan',
@@ -12002,7 +11858,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-deseret',
         family: 'Noto Sans Deseret',
-        subsets: ['deseret', 'latin', 'latin-ext'],
+        subsets: ['deseret', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'deseret',
@@ -12014,7 +11870,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-devanagari',
         family: 'Noto Sans Devanagari',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -12026,15 +11882,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-display',
         family: 'Noto Sans Display',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -12046,7 +11894,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-duployan',
         family: 'Noto Sans Duployan',
-        subsets: ['duployan', 'latin', 'latin-ext'],
+        subsets: ['duployan', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'duployan',
@@ -12058,7 +11906,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-egyptian-hieroglyphs',
         family: 'Noto Sans Egyptian Hieroglyphs',
-        subsets: ['egyptian-hieroglyphs', 'latin', 'latin-ext'],
+        subsets: ['egyptian-hieroglyphs', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'egyptian-hieroglyphs',
@@ -12070,7 +11918,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-elbasan',
         family: 'Noto Sans Elbasan',
-        subsets: ['elbasan', 'latin', 'latin-ext'],
+        subsets: ['elbasan', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'elbasan',
@@ -12082,7 +11930,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-elymaic',
         family: 'Noto Sans Elymaic',
-        subsets: ['elymaic', 'latin', 'latin-ext'],
+        subsets: ['elymaic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'elymaic',
@@ -12094,7 +11942,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-ethiopic',
         family: 'Noto Sans Ethiopic',
-        subsets: ['ethiopic', 'latin', 'latin-ext'],
+        subsets: ['ethiopic', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'ethiopic',
@@ -12106,7 +11954,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-georgian',
         family: 'Noto Sans Georgian',
-        subsets: ['cyrillic-ext', 'georgian', 'greek-ext', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic-ext', 'georgian', 'greek-ext', 'latin', , 'math', 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -12118,7 +11966,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-glagolitic',
         family: 'Noto Sans Glagolitic',
-        subsets: ['cyrillic-ext', 'glagolitic', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic-ext', 'glagolitic', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -12130,7 +11978,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-gothic',
         family: 'Noto Sans Gothic',
-        subsets: ['gothic', 'latin', 'latin-ext'],
+        subsets: ['gothic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gothic',
@@ -12142,7 +11990,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-grantha',
         family: 'Noto Sans Grantha',
-        subsets: ['grantha', 'latin', 'latin-ext'],
+        subsets: ['grantha', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'grantha',
@@ -12154,7 +12002,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-gujarati',
         family: 'Noto Sans Gujarati',
-        subsets: ['gujarati', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['gujarati', 'latin', , 'math', 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -12166,7 +12014,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-gunjala-gondi',
         family: 'Noto Sans Gunjala Gondi',
-        subsets: ['gunjala-gondi', 'latin', 'latin-ext'],
+        subsets: ['gunjala-gondi', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'gunjala-gondi',
@@ -12178,7 +12026,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-gurmukhi',
         family: 'Noto Sans Gurmukhi',
-        subsets: ['gurmukhi', 'latin', 'latin-ext'],
+        subsets: ['gurmukhi', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -12190,7 +12038,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-hk',
         family: 'Noto Sans HK',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'chinese-hongkong',
@@ -12202,7 +12050,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-hanifi-rohingya',
         family: 'Noto Sans Hanifi Rohingya',
-        subsets: ['hanifi-rohingya', 'latin', 'latin-ext'],
+        subsets: ['hanifi-rohingya', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'hanifi-rohingya',
@@ -12214,7 +12062,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-hanunoo',
         family: 'Noto Sans Hanunoo',
-        subsets: ['hanunoo', 'latin', 'latin-ext'],
+        subsets: ['hanunoo', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'hanunoo',
@@ -12226,7 +12074,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-hatran',
         family: 'Noto Sans Hatran',
-        subsets: ['hatran', 'latin', 'latin-ext'],
+        subsets: ['hatran', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'hatran',
@@ -12238,7 +12086,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-hebrew',
         family: 'Noto Sans Hebrew',
-        subsets: ['cyrillic-ext', 'greek-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic-ext', 'greek-ext', 'hebrew', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -12250,7 +12098,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-imperial-aramaic',
         family: 'Noto Sans Imperial Aramaic',
-        subsets: ['imperial-aramaic', 'latin', 'latin-ext'],
+        subsets: ['imperial-aramaic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'imperial-aramaic',
@@ -12262,7 +12110,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-indic-siyaq-numbers',
         family: 'Noto Sans Indic Siyaq Numbers',
-        subsets: ['indic-siyaq-numbers', 'latin', 'latin-ext'],
+        subsets: ['indic-siyaq-numbers', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'indic-siyaq-numbers',
@@ -12274,7 +12122,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-inscriptional-pahlavi',
         family: 'Noto Sans Inscriptional Pahlavi',
-        subsets: ['inscriptional-pahlavi', 'latin', 'latin-ext'],
+        subsets: ['inscriptional-pahlavi', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'inscriptional-pahlavi',
@@ -12286,7 +12134,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-inscriptional-parthian',
         family: 'Noto Sans Inscriptional Parthian',
-        subsets: ['inscriptional-parthian', 'latin', 'latin-ext'],
+        subsets: ['inscriptional-parthian', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'inscriptional-parthian',
@@ -12298,7 +12146,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-jp',
         family: 'Noto Sans JP',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -12310,7 +12158,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-javanese',
         family: 'Noto Sans Javanese',
-        subsets: ['javanese', 'latin', 'latin-ext'],
+        subsets: ['javanese', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'javanese',
@@ -12322,7 +12170,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-kr',
         family: 'Noto Sans KR',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -12334,7 +12182,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-kaithi',
         family: 'Noto Sans Kaithi',
-        subsets: ['kaithi', 'latin', 'latin-ext'],
+        subsets: ['kaithi', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'kaithi',
@@ -12346,7 +12194,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-kannada',
         family: 'Noto Sans Kannada',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -12358,7 +12206,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-kawi',
         family: 'Noto Sans Kawi',
-        subsets: ['kawi', 'latin', 'latin-ext'],
+        subsets: ['kawi', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'kawi',
@@ -12370,7 +12218,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-kayah-li',
         family: 'Noto Sans Kayah Li',
-        subsets: ['kayah-li', 'latin', 'latin-ext'],
+        subsets: ['kayah-li', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'kayah-li',
@@ -12382,7 +12230,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-kharoshthi',
         family: 'Noto Sans Kharoshthi',
-        subsets: ['kharoshthi', 'latin', 'latin-ext'],
+        subsets: ['kharoshthi', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'kharoshthi',
@@ -12394,7 +12242,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-khmer',
         family: 'Noto Sans Khmer',
-        subsets: ['khmer', 'latin', 'latin-ext'],
+        subsets: ['khmer', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'khmer',
@@ -12406,7 +12254,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-khojki',
         family: 'Noto Sans Khojki',
-        subsets: ['khojki', 'latin', 'latin-ext'],
+        subsets: ['khojki', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'khojki',
@@ -12418,7 +12266,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-khudawadi',
         family: 'Noto Sans Khudawadi',
-        subsets: ['khudawadi', 'latin', 'latin-ext'],
+        subsets: ['khudawadi', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'khudawadi',
@@ -12430,7 +12278,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-lao',
         family: 'Noto Sans Lao',
-        subsets: ['lao', 'latin', 'latin-ext'],
+        subsets: ['lao', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'lao',
@@ -12442,7 +12290,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-lao-looped',
         family: 'Noto Sans Lao Looped',
-        subsets: ['lao', 'latin', 'latin-ext'],
+        subsets: ['lao', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'lao',
@@ -12454,7 +12302,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-lepcha',
         family: 'Noto Sans Lepcha',
-        subsets: ['latin', 'latin-ext', 'lepcha'],
+        subsets: ['latin', , 'lepcha'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12466,7 +12314,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-limbu',
         family: 'Noto Sans Limbu',
-        subsets: ['latin', 'latin-ext', 'limbu'],
+        subsets: ['latin', , 'limbu'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12478,7 +12326,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-linear-a',
         family: 'Noto Sans Linear A',
-        subsets: ['latin', 'latin-ext', 'linear-a'],
+        subsets: ['latin', , 'linear-a'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12490,7 +12338,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-linear-b',
         family: 'Noto Sans Linear B',
-        subsets: ['latin', 'latin-ext', 'linear-b'],
+        subsets: ['latin', , 'linear-b'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12502,7 +12350,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-lisu',
         family: 'Noto Sans Lisu',
-        subsets: ['latin', 'latin-ext', 'lisu'],
+        subsets: ['latin', , 'lisu'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12526,7 +12374,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-lydian',
         family: 'Noto Sans Lydian',
-        subsets: ['latin', 'latin-ext', 'lydian'],
+        subsets: ['latin', , 'lydian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12538,7 +12386,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-mahajani',
         family: 'Noto Sans Mahajani',
-        subsets: ['latin', 'latin-ext', 'mahajani'],
+        subsets: ['latin', , 'mahajani'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12550,7 +12398,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-malayalam',
         family: 'Noto Sans Malayalam',
-        subsets: ['latin', 'latin-ext', 'malayalam'],
+        subsets: ['latin', , 'malayalam'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12562,7 +12410,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-mandaic',
         family: 'Noto Sans Mandaic',
-        subsets: ['latin', 'latin-ext', 'mandaic'],
+        subsets: ['latin', , 'mandaic'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12574,7 +12422,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-manichaean',
         family: 'Noto Sans Manichaean',
-        subsets: ['latin', 'latin-ext', 'manichaean'],
+        subsets: ['latin', , 'manichaean'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12586,7 +12434,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-marchen',
         family: 'Noto Sans Marchen',
-        subsets: ['latin', 'latin-ext', 'marchen'],
+        subsets: ['latin', , 'marchen'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12598,7 +12446,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-masaram-gondi',
         family: 'Noto Sans Masaram Gondi',
-        subsets: ['latin', 'latin-ext', 'masaram-gondi'],
+        subsets: ['latin', , 'masaram-gondi'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12622,7 +12470,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-mayan-numerals',
         family: 'Noto Sans Mayan Numerals',
-        subsets: ['latin', 'latin-ext', 'mayan-numerals'],
+        subsets: ['latin', , 'mayan-numerals'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12634,7 +12482,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-medefaidrin',
         family: 'Noto Sans Medefaidrin',
-        subsets: ['latin', 'latin-ext', 'medefaidrin'],
+        subsets: ['latin', , 'medefaidrin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12646,7 +12494,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-meetei-mayek',
         family: 'Noto Sans Meetei Mayek',
-        subsets: ['latin', 'latin-ext', 'meetei-mayek'],
+        subsets: ['latin', , 'meetei-mayek'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12658,7 +12506,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-mende-kikakui',
         family: 'Noto Sans Mende Kikakui',
-        subsets: ['latin', 'latin-ext', 'mende-kikakui'],
+        subsets: ['latin', , 'mende-kikakui'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12670,7 +12518,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-meroitic',
         family: 'Noto Sans Meroitic',
-        subsets: ['latin', 'latin-ext', 'meroitic', 'meroitic-cursive', 'meroitic-hieroglyphs'],
+        subsets: ['latin', , 'meroitic', 'meroitic-cursive', 'meroitic-hieroglyphs'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12682,7 +12530,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-miao',
         family: 'Noto Sans Miao',
-        subsets: ['latin', 'latin-ext', 'miao'],
+        subsets: ['latin', , 'miao'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12694,7 +12542,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-modi',
         family: 'Noto Sans Modi',
-        subsets: ['latin', 'latin-ext', 'modi'],
+        subsets: ['latin', , 'modi'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12706,7 +12554,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-mongolian',
         family: 'Noto Sans Mongolian',
-        subsets: ['latin', 'latin-ext', 'math', 'mongolian', 'symbols'],
+        subsets: ['latin', , 'math', 'mongolian', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12718,15 +12566,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-mono',
         family: 'Noto Sans Mono',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -12738,7 +12578,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-mro',
         family: 'Noto Sans Mro',
-        subsets: ['latin', 'latin-ext', 'mro'],
+        subsets: ['latin', , 'mro'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12750,7 +12590,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-multani',
         family: 'Noto Sans Multani',
-        subsets: ['latin', 'latin-ext', 'multani'],
+        subsets: ['latin', , 'multani'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12774,7 +12614,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-nko',
         family: 'Noto Sans NKo',
-        subsets: ['latin', 'latin-ext', 'nko'],
+        subsets: ['latin', , 'nko'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12786,7 +12626,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-nko-unjoined',
         family: 'Noto Sans NKo Unjoined',
-        subsets: ['latin', 'latin-ext', 'nko'],
+        subsets: ['latin', , 'nko'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12798,7 +12638,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-nabataean',
         family: 'Noto Sans Nabataean',
-        subsets: ['latin', 'latin-ext', 'nabataean'],
+        subsets: ['latin', , 'nabataean'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12810,7 +12650,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-nag-mundari',
         family: 'Noto Sans Nag Mundari',
-        subsets: ['latin', 'latin-ext', 'nag-mundari'],
+        subsets: ['latin', , 'nag-mundari'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12822,7 +12662,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-nandinagari',
         family: 'Noto Sans Nandinagari',
-        subsets: ['latin', 'latin-ext', 'nandinagari'],
+        subsets: ['latin', , 'nandinagari'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12834,7 +12674,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-new-tai-lue',
         family: 'Noto Sans New Tai Lue',
-        subsets: ['latin', 'latin-ext', 'new-tai-lue'],
+        subsets: ['latin', , 'new-tai-lue'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12846,7 +12686,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-newa',
         family: 'Noto Sans Newa',
-        subsets: ['latin', 'latin-ext', 'newa'],
+        subsets: ['latin', , 'newa'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12858,7 +12698,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-nushu',
         family: 'Noto Sans Nushu',
-        subsets: ['latin', 'latin-ext', 'nushu'],
+        subsets: ['latin', , 'nushu'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12870,7 +12710,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-ogham',
         family: 'Noto Sans Ogham',
-        subsets: ['latin', 'latin-ext', 'ogham'],
+        subsets: ['latin', , 'ogham'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12882,7 +12722,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-ol-chiki',
         family: 'Noto Sans Ol Chiki',
-        subsets: ['latin', 'latin-ext', 'ol-chiki'],
+        subsets: ['latin', , 'ol-chiki'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12894,7 +12734,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-hungarian',
         family: 'Noto Sans Old Hungarian',
-        subsets: ['latin', 'latin-ext', 'old-hungarian'],
+        subsets: ['latin', , 'old-hungarian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12906,7 +12746,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-italic',
         family: 'Noto Sans Old Italic',
-        subsets: ['latin', 'latin-ext', 'old-italic'],
+        subsets: ['latin', , 'old-italic'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12918,7 +12758,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-north-arabian',
         family: 'Noto Sans Old North Arabian',
-        subsets: ['latin', 'latin-ext', 'old-north-arabian'],
+        subsets: ['latin', , 'old-north-arabian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12930,7 +12770,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-permic',
         family: 'Noto Sans Old Permic',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'old-permic'],
+        subsets: ['cyrillic-ext', 'latin', , 'old-permic'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -12942,7 +12782,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-persian',
         family: 'Noto Sans Old Persian',
-        subsets: ['latin', 'latin-ext', 'old-persian'],
+        subsets: ['latin', , 'old-persian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12954,7 +12794,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-sogdian',
         family: 'Noto Sans Old Sogdian',
-        subsets: ['latin', 'latin-ext', 'old-sogdian'],
+        subsets: ['latin', , 'old-sogdian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12966,7 +12806,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-south-arabian',
         family: 'Noto Sans Old South Arabian',
-        subsets: ['latin', 'latin-ext', 'old-south-arabian'],
+        subsets: ['latin', , 'old-south-arabian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12978,7 +12818,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-old-turkic',
         family: 'Noto Sans Old Turkic',
-        subsets: ['latin', 'latin-ext', 'old-turkic'],
+        subsets: ['latin', , 'old-turkic'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -12990,7 +12830,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-oriya',
         family: 'Noto Sans Oriya',
-        subsets: ['latin', 'latin-ext', 'oriya'],
+        subsets: ['latin', , 'oriya'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13002,7 +12842,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-osage',
         family: 'Noto Sans Osage',
-        subsets: ['latin', 'latin-ext', 'osage'],
+        subsets: ['latin', , 'osage'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13014,7 +12854,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-osmanya',
         family: 'Noto Sans Osmanya',
-        subsets: ['latin', 'latin-ext', 'osmanya'],
+        subsets: ['latin', , 'osmanya'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13026,7 +12866,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-pahawh-hmong',
         family: 'Noto Sans Pahawh Hmong',
-        subsets: ['latin', 'latin-ext', 'pahawh-hmong'],
+        subsets: ['latin', , 'pahawh-hmong'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13038,7 +12878,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-palmyrene',
         family: 'Noto Sans Palmyrene',
-        subsets: ['latin', 'latin-ext', 'palmyrene'],
+        subsets: ['latin', , 'palmyrene'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13050,7 +12890,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-pau-cin-hau',
         family: 'Noto Sans Pau Cin Hau',
-        subsets: ['latin', 'latin-ext', 'pau-cin-hau'],
+        subsets: ['latin', , 'pau-cin-hau'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13062,7 +12902,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-phagspa',
         family: 'Noto Sans PhagsPa',
-        subsets: ['latin', 'latin-ext', 'math', 'phags-pa', 'symbols'],
+        subsets: ['latin', , 'math', 'phags-pa', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13074,7 +12914,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-phoenician',
         family: 'Noto Sans Phoenician',
-        subsets: ['latin', 'latin-ext', 'phoenician'],
+        subsets: ['latin', , 'phoenician'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13086,7 +12926,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-psalter-pahlavi',
         family: 'Noto Sans Psalter Pahlavi',
-        subsets: ['latin', 'latin-ext', 'psalter-pahlavi'],
+        subsets: ['latin', , 'psalter-pahlavi'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13098,7 +12938,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-rejang',
         family: 'Noto Sans Rejang',
-        subsets: ['latin', 'latin-ext', 'rejang'],
+        subsets: ['latin', , 'rejang'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13110,7 +12950,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-runic',
         family: 'Noto Sans Runic',
-        subsets: ['latin', 'latin-ext', 'runic'],
+        subsets: ['latin', , 'runic'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13122,7 +12962,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-sc',
         family: 'Noto Sans SC',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'chinese-simplified',
@@ -13134,7 +12974,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-samaritan',
         family: 'Noto Sans Samaritan',
-        subsets: ['latin', 'latin-ext', 'samaritan'],
+        subsets: ['latin', , 'samaritan'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13146,7 +12986,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-saurashtra',
         family: 'Noto Sans Saurashtra',
-        subsets: ['latin', 'latin-ext', 'saurashtra'],
+        subsets: ['latin', , 'saurashtra'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13158,7 +12998,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-sharada',
         family: 'Noto Sans Sharada',
-        subsets: ['latin', 'latin-ext', 'sharada'],
+        subsets: ['latin', , 'sharada'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13170,7 +13010,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-shavian',
         family: 'Noto Sans Shavian',
-        subsets: ['latin', 'latin-ext', 'shavian'],
+        subsets: ['latin', , 'shavian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13182,7 +13022,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-siddham',
         family: 'Noto Sans Siddham',
-        subsets: ['latin', 'latin-ext', 'siddham'],
+        subsets: ['latin', , 'siddham'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13194,7 +13034,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-signwriting',
         family: 'Noto Sans SignWriting',
-        subsets: ['latin', 'latin-ext', 'signwriting'],
+        subsets: ['latin', , 'signwriting'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13206,7 +13046,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-sinhala',
         family: 'Noto Sans Sinhala',
-        subsets: ['latin', 'latin-ext', 'sinhala'],
+        subsets: ['latin', , 'sinhala'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13218,7 +13058,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-sogdian',
         family: 'Noto Sans Sogdian',
-        subsets: ['latin', 'latin-ext', 'sogdian'],
+        subsets: ['latin', , 'sogdian'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13230,7 +13070,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-sora-sompeng',
         family: 'Noto Sans Sora Sompeng',
-        subsets: ['latin', 'latin-ext', 'sora-sompeng'],
+        subsets: ['latin', , 'sora-sompeng'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13242,7 +13082,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-soyombo',
         family: 'Noto Sans Soyombo',
-        subsets: ['latin', 'latin-ext', 'soyombo'],
+        subsets: ['latin', , 'soyombo'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13254,7 +13094,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-sundanese',
         family: 'Noto Sans Sundanese',
-        subsets: ['latin', 'latin-ext', 'sundanese'],
+        subsets: ['latin', , 'sundanese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13266,7 +13106,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-syloti-nagri',
         family: 'Noto Sans Syloti Nagri',
-        subsets: ['latin', 'latin-ext', 'syloti-nagri'],
+        subsets: ['latin', , 'syloti-nagri'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13278,7 +13118,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-symbols',
         family: 'Noto Sans Symbols',
-        subsets: ['latin', 'latin-ext', 'symbols'],
+        subsets: ['latin', , 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13290,7 +13130,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-symbols-2',
         family: 'Noto Sans Symbols 2',
-        subsets: ['braille', 'latin', 'latin-ext', 'math', 'mayan-numerals', 'symbols'],
+        subsets: ['braille', 'latin', , 'math', 'mayan-numerals', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'braille',
@@ -13302,7 +13142,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-syriac',
         family: 'Noto Sans Syriac',
-        subsets: ['latin', 'latin-ext', 'syriac'],
+        subsets: ['latin', , 'syriac'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13314,7 +13154,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-syriac-eastern',
         family: 'Noto Sans Syriac Eastern',
-        subsets: ['latin', 'latin-ext', 'syriac'],
+        subsets: ['latin', , 'syriac'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13326,7 +13166,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tc',
         family: 'Noto Sans TC',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'chinese-traditional',
@@ -13338,7 +13178,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tagalog',
         family: 'Noto Sans Tagalog',
-        subsets: ['latin', 'latin-ext', 'tagalog'],
+        subsets: ['latin', , 'tagalog'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13350,7 +13190,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tagbanwa',
         family: 'Noto Sans Tagbanwa',
-        subsets: ['latin', 'latin-ext', 'tagbanwa'],
+        subsets: ['latin', , 'tagbanwa'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13362,7 +13202,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tai-le',
         family: 'Noto Sans Tai Le',
-        subsets: ['latin', 'latin-ext', 'tai-le'],
+        subsets: ['latin', , 'tai-le'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13374,7 +13214,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tai-tham',
         family: 'Noto Sans Tai Tham',
-        subsets: ['latin', 'latin-ext', 'tai-tham'],
+        subsets: ['latin', , 'tai-tham'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13386,7 +13226,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tai-viet',
         family: 'Noto Sans Tai Viet',
-        subsets: ['latin', 'latin-ext', 'tai-viet'],
+        subsets: ['latin', , 'tai-viet'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13398,7 +13238,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-takri',
         family: 'Noto Sans Takri',
-        subsets: ['latin', 'latin-ext', 'takri'],
+        subsets: ['latin', , 'takri'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13410,7 +13250,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tamil',
         family: 'Noto Sans Tamil',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13422,7 +13262,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tamil-supplement',
         family: 'Noto Sans Tamil Supplement',
-        subsets: ['latin', 'latin-ext', 'tamil-supplement'],
+        subsets: ['latin', , 'tamil-supplement'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13434,7 +13274,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tangsa',
         family: 'Noto Sans Tangsa',
-        subsets: ['latin', 'latin-ext', 'tangsa'],
+        subsets: ['latin', , 'tangsa'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13446,7 +13286,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-telugu',
         family: 'Noto Sans Telugu',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13458,7 +13298,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-thaana',
         family: 'Noto Sans Thaana',
-        subsets: ['latin', 'latin-ext', 'thaana'],
+        subsets: ['latin', , 'thaana'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13470,7 +13310,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-thai',
         family: 'Noto Sans Thai',
-        subsets: ['latin', 'latin-ext', 'thai'],
+        subsets: ['latin', , 'thai'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13482,7 +13322,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-thai-looped',
         family: 'Noto Sans Thai Looped',
-        subsets: ['latin', 'latin-ext', 'thai'],
+        subsets: ['latin', , 'thai'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13494,7 +13334,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tifinagh',
         family: 'Noto Sans Tifinagh',
-        subsets: ['latin', 'latin-ext', 'tifinagh'],
+        subsets: ['latin', , 'tifinagh'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13506,7 +13346,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-tirhuta',
         family: 'Noto Sans Tirhuta',
-        subsets: ['latin', 'latin-ext', 'tirhuta'],
+        subsets: ['latin', , 'tirhuta'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13518,7 +13358,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-ugaritic',
         family: 'Noto Sans Ugaritic',
-        subsets: ['latin', 'latin-ext', 'ugaritic'],
+        subsets: ['latin', , 'ugaritic'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13530,7 +13370,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-vai',
         family: 'Noto Sans Vai',
-        subsets: ['latin', 'latin-ext', 'vai'],
+        subsets: ['latin', , 'vai'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13542,7 +13382,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-vithkuqi',
         family: 'Noto Sans Vithkuqi',
-        subsets: ['latin', 'latin-ext', 'vithkuqi'],
+        subsets: ['latin', , 'vithkuqi'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13554,7 +13394,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-wancho',
         family: 'Noto Sans Wancho',
-        subsets: ['latin', 'latin-ext', 'wancho'],
+        subsets: ['latin', , 'wancho'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13566,7 +13406,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-warang-citi',
         family: 'Noto Sans Warang Citi',
-        subsets: ['latin', 'latin-ext', 'warang-citi'],
+        subsets: ['latin', , 'warang-citi'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13578,7 +13418,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-yi',
         family: 'Noto Sans Yi',
-        subsets: ['latin', 'latin-ext', 'yi'],
+        subsets: ['latin', , 'yi'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13590,7 +13430,7 @@ export const fontFamilies = [
     {
         id: 'noto-sans-zanabazar-square',
         family: 'Noto Sans Zanabazar Square',
-        subsets: ['latin', 'latin-ext', 'zanabazar-square'],
+        subsets: ['latin', , 'zanabazar-square'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13602,15 +13442,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif',
         family: 'Noto Serif',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -13622,7 +13454,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-ahom',
         family: 'Noto Serif Ahom',
-        subsets: ['ahom', 'latin', 'latin-ext'],
+        subsets: ['ahom', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'ahom',
@@ -13634,7 +13466,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-armenian',
         family: 'Noto Serif Armenian',
-        subsets: ['armenian', 'latin', 'latin-ext'],
+        subsets: ['armenian', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'armenian',
@@ -13646,7 +13478,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-balinese',
         family: 'Noto Serif Balinese',
-        subsets: ['balinese', 'latin', 'latin-ext'],
+        subsets: ['balinese', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'balinese',
@@ -13658,7 +13490,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-bengali',
         family: 'Noto Serif Bengali',
-        subsets: ['bengali', 'latin', 'latin-ext'],
+        subsets: ['bengali', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'bengali',
@@ -13670,7 +13502,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-devanagari',
         family: 'Noto Serif Devanagari',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -13682,15 +13514,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-display',
         family: 'Noto Serif Display',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -13702,7 +13526,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-dogra',
         family: 'Noto Serif Dogra',
-        subsets: ['dogra', 'latin', 'latin-ext'],
+        subsets: ['dogra', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'dogra',
@@ -13714,7 +13538,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-ethiopic',
         family: 'Noto Serif Ethiopic',
-        subsets: ['ethiopic', 'latin', 'latin-ext'],
+        subsets: ['ethiopic', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'ethiopic',
@@ -13726,7 +13550,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-georgian',
         family: 'Noto Serif Georgian',
-        subsets: ['georgian', 'latin', 'latin-ext'],
+        subsets: ['georgian', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'georgian',
@@ -13738,7 +13562,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-grantha',
         family: 'Noto Serif Grantha',
-        subsets: ['grantha', 'latin', 'latin-ext'],
+        subsets: ['grantha', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'grantha',
@@ -13750,7 +13574,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-gujarati',
         family: 'Noto Serif Gujarati',
-        subsets: ['gujarati', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['gujarati', 'latin', , 'math', 'symbols'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -13762,7 +13586,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-gurmukhi',
         family: 'Noto Serif Gurmukhi',
-        subsets: ['gurmukhi', 'latin', 'latin-ext'],
+        subsets: ['gurmukhi', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'gurmukhi',
@@ -13774,7 +13598,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-hk',
         family: 'Noto Serif HK',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'chinese-hongkong',
@@ -13786,7 +13610,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-hebrew',
         family: 'Noto Serif Hebrew',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -13798,7 +13622,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-jp',
         family: 'Noto Serif JP',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -13810,7 +13634,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-kr',
         family: 'Noto Serif KR',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -13822,7 +13646,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-kannada',
         family: 'Noto Serif Kannada',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -13834,7 +13658,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-khitan-small-script',
         family: 'Noto Serif Khitan Small Script',
-        subsets: ['khitan-small-script', 'latin', 'latin-ext'],
+        subsets: ['khitan-small-script', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'khitan-small-script',
@@ -13846,7 +13670,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-khmer',
         family: 'Noto Serif Khmer',
-        subsets: ['khmer', 'latin', 'latin-ext'],
+        subsets: ['khmer', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'khmer',
@@ -13858,7 +13682,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-khojki',
         family: 'Noto Serif Khojki',
-        subsets: ['khojki', 'latin', 'latin-ext'],
+        subsets: ['khojki', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'khojki',
@@ -13870,7 +13694,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-lao',
         family: 'Noto Serif Lao',
-        subsets: ['lao', 'latin', 'latin-ext'],
+        subsets: ['lao', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'lao',
@@ -13882,7 +13706,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-makasar',
         family: 'Noto Serif Makasar',
-        subsets: ['latin', 'latin-ext', 'makasar'],
+        subsets: ['latin', , 'makasar'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13894,7 +13718,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-malayalam',
         family: 'Noto Serif Malayalam',
-        subsets: ['latin', 'latin-ext', 'malayalam'],
+        subsets: ['latin', , 'malayalam'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13930,7 +13754,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-old-uyghur',
         family: 'Noto Serif Old Uyghur',
-        subsets: ['latin', 'latin-ext', 'old-uyghur'],
+        subsets: ['latin', , 'old-uyghur'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13942,7 +13766,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-oriya',
         family: 'Noto Serif Oriya',
-        subsets: ['latin', 'latin-ext', 'oriya'],
+        subsets: ['latin', , 'oriya'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13954,7 +13778,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-ottoman-siyaq',
         family: 'Noto Serif Ottoman Siyaq',
-        subsets: ['latin', 'latin-ext', 'ottoman-siyaq-numbers'],
+        subsets: ['latin', , 'ottoman-siyaq-numbers'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13966,7 +13790,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-sc',
         family: 'Noto Serif SC',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'chinese-simplified',
@@ -13978,7 +13802,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-sinhala',
         family: 'Noto Serif Sinhala',
-        subsets: ['latin', 'latin-ext', 'sinhala'],
+        subsets: ['latin', , 'sinhala'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -13990,7 +13814,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-tc',
         family: 'Noto Serif TC',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'chinese-traditional',
@@ -14002,7 +13826,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-tamil',
         family: 'Noto Serif Tamil',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -14014,7 +13838,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-tangut',
         family: 'Noto Serif Tangut',
-        subsets: ['latin', 'latin-ext', 'tangut'],
+        subsets: ['latin', , 'tangut'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14026,7 +13850,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-telugu',
         family: 'Noto Serif Telugu',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14038,7 +13862,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-thai',
         family: 'Noto Serif Thai',
-        subsets: ['latin', 'latin-ext', 'thai'],
+        subsets: ['latin', , 'thai'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14050,7 +13874,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-tibetan',
         family: 'Noto Serif Tibetan',
-        subsets: ['latin', 'latin-ext', 'tibetan'],
+        subsets: ['latin', , 'tibetan'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14062,7 +13886,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-toto',
         family: 'Noto Serif Toto',
-        subsets: ['latin', 'latin-ext', 'toto'],
+        subsets: ['latin', , 'toto'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14074,7 +13898,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-vithkuqi',
         family: 'Noto Serif Vithkuqi',
-        subsets: ['latin', 'latin-ext', 'vithkuqi'],
+        subsets: ['latin', , 'vithkuqi'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14086,7 +13910,7 @@ export const fontFamilies = [
     {
         id: 'noto-serif-yezidi',
         family: 'Noto Serif Yezidi',
-        subsets: ['latin', 'latin-ext', 'yezidi'],
+        subsets: ['latin', , 'yezidi'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14098,7 +13922,7 @@ export const fontFamilies = [
     {
         id: 'noto-traditional-nushu',
         family: 'Noto Traditional Nushu',
-        subsets: ['latin', 'latin-ext', 'nushu'],
+        subsets: ['latin', , 'nushu'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14110,7 +13934,7 @@ export const fontFamilies = [
     {
         id: 'noto-znamenny-musical-notation',
         family: 'Noto Znamenny Musical Notation',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'znamenny'],
+        subsets: ['latin', , 'math', 'symbols', 'znamenny'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14122,7 +13946,7 @@ export const fontFamilies = [
     {
         id: 'nova-cut',
         family: 'Nova Cut',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14134,7 +13958,7 @@ export const fontFamilies = [
     {
         id: 'nova-flat',
         family: 'Nova Flat',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14146,7 +13970,7 @@ export const fontFamilies = [
     {
         id: 'nova-mono',
         family: 'Nova Mono',
-        subsets: ['greek', 'latin', 'latin-ext'],
+        subsets: ['greek', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'greek',
@@ -14158,7 +13982,7 @@ export const fontFamilies = [
     {
         id: 'nova-oval',
         family: 'Nova Oval',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14170,7 +13994,7 @@ export const fontFamilies = [
     {
         id: 'nova-round',
         family: 'Nova Round',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14182,7 +14006,7 @@ export const fontFamilies = [
     {
         id: 'nova-script',
         family: 'Nova Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14194,7 +14018,7 @@ export const fontFamilies = [
     {
         id: 'nova-slim',
         family: 'Nova Slim',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14206,7 +14030,7 @@ export const fontFamilies = [
     {
         id: 'nova-square',
         family: 'Nova Square',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14230,7 +14054,7 @@ export const fontFamilies = [
     {
         id: 'nunito',
         family: 'Nunito',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -14242,7 +14066,7 @@ export const fontFamilies = [
     {
         id: 'nunito-sans',
         family: 'Nunito Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -14254,7 +14078,7 @@ export const fontFamilies = [
     {
         id: 'nuosu-sil',
         family: 'Nuosu SIL',
-        subsets: ['latin', 'latin-ext', 'yi'],
+        subsets: ['latin', , 'yi'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14290,7 +14114,7 @@ export const fontFamilies = [
     {
         id: 'offside',
         family: 'Offside',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14302,16 +14126,7 @@ export const fontFamilies = [
     {
         id: 'oi',
         family: 'Oi',
-        subsets: [
-            'arabic',
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'latin',
-            'latin-ext',
-            'tamil',
-            'vietnamese',
-        ],
+        subsets: ['arabic', 'cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'tamil', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -14323,7 +14138,7 @@ export const fontFamilies = [
     {
         id: 'ojuju',
         family: 'Ojuju',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14335,7 +14150,7 @@ export const fontFamilies = [
     {
         id: 'old-standard-tt',
         family: 'Old Standard TT',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -14347,7 +14162,7 @@ export const fontFamilies = [
     {
         id: 'oldenburg',
         family: 'Oldenburg',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14359,7 +14174,7 @@ export const fontFamilies = [
     {
         id: 'ole',
         family: 'Ole',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14371,7 +14186,7 @@ export const fontFamilies = [
     {
         id: 'oleo-script',
         family: 'Oleo Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14383,7 +14198,7 @@ export const fontFamilies = [
     {
         id: 'oleo-script-swash-caps',
         family: 'Oleo Script Swash Caps',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14395,7 +14210,7 @@ export const fontFamilies = [
     {
         id: 'onest',
         family: 'Onest',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14407,7 +14222,7 @@ export const fontFamilies = [
     {
         id: 'oooh-baby',
         family: 'Oooh Baby',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14426,7 +14241,7 @@ export const fontFamilies = [
             'greek-ext',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'math',
             'symbols',
             'vietnamese',
@@ -14442,7 +14257,7 @@ export const fontFamilies = [
     {
         id: 'oranienbaum',
         family: 'Oranienbaum',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14454,7 +14269,7 @@ export const fontFamilies = [
     {
         id: 'orbit',
         family: 'Orbit',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'korean',
@@ -14478,7 +14293,7 @@ export const fontFamilies = [
     {
         id: 'oregano',
         family: 'Oregano',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -14490,7 +14305,7 @@ export const fontFamilies = [
     {
         id: 'orelega-one',
         family: 'Orelega One',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14502,7 +14317,7 @@ export const fontFamilies = [
     {
         id: 'orienta',
         family: 'Orienta',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14514,7 +14329,7 @@ export const fontFamilies = [
     {
         id: 'original-surfer',
         family: 'Original Surfer',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14526,7 +14341,7 @@ export const fontFamilies = [
     {
         id: 'oswald',
         family: 'Oswald',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14538,7 +14353,7 @@ export const fontFamilies = [
     {
         id: 'outfit',
         family: 'Outfit',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14550,7 +14365,7 @@ export const fontFamilies = [
     {
         id: 'over-the-rainbow',
         family: 'Over the Rainbow',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14562,7 +14377,7 @@ export const fontFamilies = [
     {
         id: 'overlock',
         family: 'Overlock',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -14574,7 +14389,7 @@ export const fontFamilies = [
     {
         id: 'overlock-sc',
         family: 'Overlock SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14586,7 +14401,7 @@ export const fontFamilies = [
     {
         id: 'overpass',
         family: 'Overpass',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -14598,7 +14413,7 @@ export const fontFamilies = [
     {
         id: 'overpass-mono',
         family: 'Overpass Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14622,7 +14437,7 @@ export const fontFamilies = [
     {
         id: 'oxanium',
         family: 'Oxanium',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14634,7 +14449,7 @@ export const fontFamilies = [
     {
         id: 'oxygen',
         family: 'Oxygen',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14646,7 +14461,7 @@ export const fontFamilies = [
     {
         id: 'oxygen-mono',
         family: 'Oxygen Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14658,7 +14473,7 @@ export const fontFamilies = [
     {
         id: 'pt-mono',
         family: 'PT Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14670,7 +14485,7 @@ export const fontFamilies = [
     {
         id: 'pt-sans',
         family: 'PT Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -14682,7 +14497,7 @@ export const fontFamilies = [
     {
         id: 'pt-sans-caption',
         family: 'PT Sans Caption',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14694,7 +14509,7 @@ export const fontFamilies = [
     {
         id: 'pt-sans-narrow',
         family: 'PT Sans Narrow',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14706,7 +14521,7 @@ export const fontFamilies = [
     {
         id: 'pt-serif',
         family: 'PT Serif',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -14718,7 +14533,7 @@ export const fontFamilies = [
     {
         id: 'pt-serif-caption',
         family: 'PT Serif Caption',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -14730,7 +14545,7 @@ export const fontFamilies = [
     {
         id: 'pacifico',
         family: 'Pacifico',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14742,7 +14557,7 @@ export const fontFamilies = [
     {
         id: 'padauk',
         family: 'Padauk',
-        subsets: ['latin', 'latin-ext', 'myanmar'],
+        subsets: ['latin', , 'myanmar'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14754,7 +14569,7 @@ export const fontFamilies = [
     {
         id: 'padyakke-expanded-one',
         family: 'Padyakke Expanded One',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'kannada',
@@ -14766,7 +14581,7 @@ export const fontFamilies = [
     {
         id: 'palanquin',
         family: 'Palanquin',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -14778,7 +14593,7 @@ export const fontFamilies = [
     {
         id: 'palanquin-dark',
         family: 'Palanquin Dark',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -14802,7 +14617,7 @@ export const fontFamilies = [
     {
         id: 'pangolin',
         family: 'Pangolin',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14814,7 +14629,7 @@ export const fontFamilies = [
     {
         id: 'paprika',
         family: 'Paprika',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14826,7 +14641,7 @@ export const fontFamilies = [
     {
         id: 'parisienne',
         family: 'Parisienne',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14838,7 +14653,7 @@ export const fontFamilies = [
     {
         id: 'parkinsans',
         family: 'Parkinsans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14850,7 +14665,7 @@ export const fontFamilies = [
     {
         id: 'passero-one',
         family: 'Passero One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14862,7 +14677,7 @@ export const fontFamilies = [
     {
         id: 'passion-one',
         family: 'Passion One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14874,7 +14689,7 @@ export const fontFamilies = [
     {
         id: 'passions-conflict',
         family: 'Passions Conflict',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14886,7 +14701,7 @@ export const fontFamilies = [
     {
         id: 'pathway-extreme',
         family: 'Pathway Extreme',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -14898,7 +14713,7 @@ export const fontFamilies = [
     {
         id: 'pathway-gothic-one',
         family: 'Pathway Gothic One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14910,7 +14725,7 @@ export const fontFamilies = [
     {
         id: 'patrick-hand',
         family: 'Patrick Hand',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14922,7 +14737,7 @@ export const fontFamilies = [
     {
         id: 'patrick-hand-sc',
         family: 'Patrick Hand SC',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14934,7 +14749,7 @@ export const fontFamilies = [
     {
         id: 'pattaya',
         family: 'Pattaya',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'thai', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -14958,7 +14773,7 @@ export const fontFamilies = [
     {
         id: 'pavanam',
         family: 'Pavanam',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14970,7 +14785,7 @@ export const fontFamilies = [
     {
         id: 'paytone-one',
         family: 'Paytone One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -14994,7 +14809,7 @@ export const fontFamilies = [
     {
         id: 'peralta',
         family: 'Peralta',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15018,7 +14833,7 @@ export const fontFamilies = [
     {
         id: 'petemoss',
         family: 'Petemoss',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15030,7 +14845,7 @@ export const fontFamilies = [
     {
         id: 'petit-formal-script',
         family: 'Petit Formal Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15042,7 +14857,7 @@ export const fontFamilies = [
     {
         id: 'petrona',
         family: 'Petrona',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -15066,7 +14881,7 @@ export const fontFamilies = [
     {
         id: 'philosopher',
         family: 'Philosopher',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -15078,7 +14893,7 @@ export const fontFamilies = [
     {
         id: 'phudu',
         family: 'Phudu',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -15090,15 +14905,7 @@ export const fontFamilies = [
     {
         id: 'piazzolla',
         family: 'Piazzolla',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -15110,7 +14917,7 @@ export const fontFamilies = [
     {
         id: 'piedra',
         family: 'Piedra',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15122,7 +14929,7 @@ export const fontFamilies = [
     {
         id: 'pinyon-script',
         family: 'Pinyon Script',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15134,7 +14941,7 @@ export const fontFamilies = [
     {
         id: 'pirata-one',
         family: 'Pirata One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15146,7 +14953,7 @@ export const fontFamilies = [
     {
         id: 'pixelify-sans',
         family: 'Pixelify Sans',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -15158,7 +14965,7 @@ export const fontFamilies = [
     {
         id: 'plaster',
         family: 'Plaster',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15170,7 +14977,7 @@ export const fontFamilies = [
     {
         id: 'platypi',
         family: 'Platypi',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -15182,7 +14989,7 @@ export const fontFamilies = [
     {
         id: 'play',
         family: 'Play',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -15194,7 +15001,7 @@ export const fontFamilies = [
     {
         id: 'playball',
         family: 'Playball',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -15206,7 +15013,7 @@ export const fontFamilies = [
     {
         id: 'playfair',
         family: 'Playfair',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -15218,7 +15025,7 @@ export const fontFamilies = [
     {
         id: 'playfair-display',
         family: 'Playfair Display',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -15230,7 +15037,7 @@ export const fontFamilies = [
     {
         id: 'playfair-display-sc',
         family: 'Playfair Display SC',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400', '700', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -15242,7 +15049,7 @@ export const fontFamilies = [
     {
         id: 'playpen-sans',
         family: 'Playpen Sans',
-        subsets: ['emoji', 'latin', 'latin-ext', 'math', 'vietnamese'],
+        subsets: ['emoji', 'latin', , 'math', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'emoji',
@@ -16478,7 +16285,7 @@ export const fontFamilies = [
     {
         id: 'plus-jakarta-sans',
         family: 'Plus Jakarta Sans',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic-ext',
@@ -16490,7 +16297,7 @@ export const fontFamilies = [
     {
         id: 'podkova',
         family: 'Podkova',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -16502,7 +16309,7 @@ export const fontFamilies = [
     {
         id: 'poetsen-one',
         family: 'Poetsen One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16514,7 +16321,7 @@ export const fontFamilies = [
     {
         id: 'poiret-one',
         family: 'Poiret One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -16538,7 +16345,7 @@ export const fontFamilies = [
     {
         id: 'poltawski-nowy',
         family: 'Poltawski Nowy',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -16550,7 +16357,7 @@ export const fontFamilies = [
     {
         id: 'poly',
         family: 'Poly',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -16586,7 +16393,7 @@ export const fontFamilies = [
     {
         id: 'pontano-sans',
         family: 'Pontano Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16610,7 +16417,7 @@ export const fontFamilies = [
     {
         id: 'poppins',
         family: 'Poppins',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -16646,7 +16453,7 @@ export const fontFamilies = [
     {
         id: 'potta-one',
         family: 'Potta One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -16658,7 +16465,7 @@ export const fontFamilies = [
     {
         id: 'pragati-narrow',
         family: 'Pragati Narrow',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -16670,7 +16477,7 @@ export const fontFamilies = [
     {
         id: 'praise',
         family: 'Praise',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16706,7 +16513,7 @@ export const fontFamilies = [
     {
         id: 'press-start-2p',
         family: 'Press Start 2P',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -16718,7 +16525,7 @@ export const fontFamilies = [
     {
         id: 'pridi',
         family: 'Pridi',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16730,7 +16537,7 @@ export const fontFamilies = [
     {
         id: 'princess-sofia',
         family: 'Princess Sofia',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16754,7 +16561,7 @@ export const fontFamilies = [
     {
         id: 'prompt',
         family: 'Prompt',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -16766,7 +16573,7 @@ export const fontFamilies = [
     {
         id: 'prosto-one',
         family: 'Prosto One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -16778,7 +16585,7 @@ export const fontFamilies = [
     {
         id: 'protest-guerrilla',
         family: 'Protest Guerrilla',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16790,7 +16597,7 @@ export const fontFamilies = [
     {
         id: 'protest-revolution',
         family: 'Protest Revolution',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16802,7 +16609,7 @@ export const fontFamilies = [
     {
         id: 'protest-riot',
         family: 'Protest Riot',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16814,7 +16621,7 @@ export const fontFamilies = [
     {
         id: 'protest-strike',
         family: 'Protest Strike',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16826,7 +16633,7 @@ export const fontFamilies = [
     {
         id: 'proza-libre',
         family: 'Proza Libre',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -16838,7 +16645,7 @@ export const fontFamilies = [
     {
         id: 'public-sans',
         family: 'Public Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -16850,7 +16657,7 @@ export const fontFamilies = [
     {
         id: 'puppies-play',
         family: 'Puppies Play',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16874,7 +16681,7 @@ export const fontFamilies = [
     {
         id: 'purple-purse',
         family: 'Purple Purse',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16898,7 +16705,7 @@ export const fontFamilies = [
     {
         id: 'quando',
         family: 'Quando',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16922,7 +16729,7 @@ export const fontFamilies = [
     {
         id: 'quattrocento',
         family: 'Quattrocento',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16934,7 +16741,7 @@ export const fontFamilies = [
     {
         id: 'quattrocento-sans',
         family: 'Quattrocento Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -16946,7 +16753,7 @@ export const fontFamilies = [
     {
         id: 'questrial',
         family: 'Questrial',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16958,7 +16765,7 @@ export const fontFamilies = [
     {
         id: 'quicksand',
         family: 'Quicksand',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16970,7 +16777,7 @@ export const fontFamilies = [
     {
         id: 'quintessential',
         family: 'Quintessential',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16982,7 +16789,7 @@ export const fontFamilies = [
     {
         id: 'qwigley',
         family: 'Qwigley',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -16994,7 +16801,7 @@ export const fontFamilies = [
     {
         id: 'qwitcher-grypen',
         family: 'Qwitcher Grypen',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17006,7 +16813,7 @@ export const fontFamilies = [
     {
         id: 'rem',
         family: 'REM',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17018,7 +16825,7 @@ export const fontFamilies = [
     {
         id: 'racing-sans-one',
         family: 'Racing Sans One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17030,7 +16837,7 @@ export const fontFamilies = [
     {
         id: 'radio-canada',
         family: 'Radio Canada',
-        subsets: ['canadian-aboriginal', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['canadian-aboriginal', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'canadian-aboriginal',
@@ -17042,7 +16849,7 @@ export const fontFamilies = [
     {
         id: 'radio-canada-big',
         family: 'Radio Canada Big',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17054,7 +16861,7 @@ export const fontFamilies = [
     {
         id: 'radley',
         family: 'Radley',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17066,7 +16873,7 @@ export const fontFamilies = [
     {
         id: 'rajdhani',
         family: 'Rajdhani',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -17078,7 +16885,7 @@ export const fontFamilies = [
     {
         id: 'rakkas',
         family: 'Rakkas',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -17090,7 +16897,7 @@ export const fontFamilies = [
     {
         id: 'raleway',
         family: 'Raleway',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -17102,7 +16909,7 @@ export const fontFamilies = [
     {
         id: 'raleway-dots',
         family: 'Raleway Dots',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17138,7 +16945,7 @@ export const fontFamilies = [
     {
         id: 'rambla',
         family: 'Rambla',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17150,7 +16957,7 @@ export const fontFamilies = [
     {
         id: 'rammetto-one',
         family: 'Rammetto One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17162,7 +16969,7 @@ export const fontFamilies = [
     {
         id: 'rampart-one',
         family: 'Rampart One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17174,7 +16981,7 @@ export const fontFamilies = [
     {
         id: 'ranchers',
         family: 'Ranchers',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17198,7 +17005,7 @@ export const fontFamilies = [
     {
         id: 'ranga',
         family: 'Ranga',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -17210,7 +17017,7 @@ export const fontFamilies = [
     {
         id: 'rasa',
         family: 'Rasa',
-        subsets: ['gujarati', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['gujarati', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'gujarati',
@@ -17246,7 +17053,7 @@ export const fontFamilies = [
     {
         id: 'readex-pro',
         family: 'Readex Pro',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -17258,7 +17065,7 @@ export const fontFamilies = [
     {
         id: 'recursive',
         family: 'Recursive',
-        subsets: ['cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic-ext',
@@ -17270,7 +17077,7 @@ export const fontFamilies = [
     {
         id: 'red-hat-display',
         family: 'Red Hat Display',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17282,7 +17089,7 @@ export const fontFamilies = [
     {
         id: 'red-hat-mono',
         family: 'Red Hat Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17294,7 +17101,7 @@ export const fontFamilies = [
     {
         id: 'red-hat-text',
         family: 'Red Hat Text',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17306,7 +17113,7 @@ export const fontFamilies = [
     {
         id: 'red-rose',
         family: 'Red Rose',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17318,7 +17125,7 @@ export const fontFamilies = [
     {
         id: 'redacted',
         family: 'Redacted',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17330,7 +17137,7 @@ export const fontFamilies = [
     {
         id: 'redacted-script',
         family: 'Redacted Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17342,7 +17149,7 @@ export const fontFamilies = [
     {
         id: 'reddit-mono',
         family: 'Reddit Mono',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17354,7 +17161,7 @@ export const fontFamilies = [
     {
         id: 'reddit-sans',
         family: 'Reddit Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17366,7 +17173,7 @@ export const fontFamilies = [
     {
         id: 'reddit-sans-condensed',
         family: 'Reddit Sans Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17378,7 +17185,7 @@ export const fontFamilies = [
     {
         id: 'redressed',
         family: 'Redressed',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17390,7 +17197,7 @@ export const fontFamilies = [
     {
         id: 'reem-kufi',
         family: 'Reem Kufi',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -17402,7 +17209,7 @@ export const fontFamilies = [
     {
         id: 'reem-kufi-fun',
         family: 'Reem Kufi Fun',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -17414,7 +17221,7 @@ export const fontFamilies = [
     {
         id: 'reem-kufi-ink',
         family: 'Reem Kufi Ink',
-        subsets: ['arabic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['arabic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -17438,7 +17245,7 @@ export const fontFamilies = [
     {
         id: 'reggae-one',
         family: 'Reggae One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17450,7 +17257,7 @@ export const fontFamilies = [
     {
         id: 'rethink-sans',
         family: 'Rethink Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17462,7 +17269,7 @@ export const fontFamilies = [
     {
         id: 'revalia',
         family: 'Revalia',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17474,7 +17281,7 @@ export const fontFamilies = [
     {
         id: 'rhodium-libre',
         family: 'Rhodium Libre',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -17486,7 +17293,7 @@ export const fontFamilies = [
     {
         id: 'ribeye',
         family: 'Ribeye',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17498,7 +17305,7 @@ export const fontFamilies = [
     {
         id: 'ribeye-marrow',
         family: 'Ribeye Marrow',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17510,7 +17317,7 @@ export const fontFamilies = [
     {
         id: 'righteous',
         family: 'Righteous',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17522,7 +17329,7 @@ export const fontFamilies = [
     {
         id: 'risque',
         family: 'Risque',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17534,7 +17341,7 @@ export const fontFamilies = [
     {
         id: 'road-rage',
         family: 'Road Rage',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17552,7 +17359,7 @@ export const fontFamilies = [
             'greek',
             'greek-ext',
             'latin',
-            'latin-ext',
+            ,
             'math',
             'symbols',
             'vietnamese',
@@ -17568,15 +17375,7 @@ export const fontFamilies = [
     {
         id: 'roboto-condensed',
         family: 'Roboto Condensed',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -17588,7 +17387,7 @@ export const fontFamilies = [
     {
         id: 'roboto-flex',
         family: 'Roboto Flex',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17600,7 +17399,7 @@ export const fontFamilies = [
     {
         id: 'roboto-mono',
         family: 'Roboto Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -17612,7 +17411,7 @@ export const fontFamilies = [
     {
         id: 'roboto-serif',
         family: 'Roboto Serif',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -17624,15 +17423,7 @@ export const fontFamilies = [
     {
         id: 'roboto-slab',
         family: 'Roboto Slab',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17680,7 +17471,7 @@ export const fontFamilies = [
     {
         id: 'rocknroll-one',
         family: 'RocknRoll One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -17692,7 +17483,7 @@ export const fontFamilies = [
     {
         id: 'rokkitt',
         family: 'Rokkitt',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17704,7 +17495,7 @@ export const fontFamilies = [
     {
         id: 'romanesco',
         family: 'Romanesco',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17716,7 +17507,7 @@ export const fontFamilies = [
     {
         id: 'ropa-sans',
         family: 'Ropa Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17728,7 +17519,7 @@ export const fontFamilies = [
     {
         id: 'rosario',
         family: 'Rosario',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17740,7 +17531,7 @@ export const fontFamilies = [
     {
         id: 'rosarivo',
         family: 'Rosarivo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -17764,7 +17555,7 @@ export const fontFamilies = [
     {
         id: 'rowdies',
         family: 'Rowdies',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -17776,7 +17567,7 @@ export const fontFamilies = [
     {
         id: 'rozha-one',
         family: 'Rozha One',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -17788,7 +17579,7 @@ export const fontFamilies = [
     {
         id: 'rubik',
         family: 'Rubik',
-        subsets: ['arabic', 'cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'arabic',
@@ -17800,7 +17591,7 @@ export const fontFamilies = [
     {
         id: 'rubik-80s-fade',
         family: 'Rubik 80s Fade',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17812,7 +17603,7 @@ export const fontFamilies = [
     {
         id: 'rubik-beastly',
         family: 'Rubik Beastly',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17824,7 +17615,7 @@ export const fontFamilies = [
     {
         id: 'rubik-broken-fax',
         family: 'Rubik Broken Fax',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17836,7 +17627,7 @@ export const fontFamilies = [
     {
         id: 'rubik-bubbles',
         family: 'Rubik Bubbles',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17848,7 +17639,7 @@ export const fontFamilies = [
     {
         id: 'rubik-burned',
         family: 'Rubik Burned',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17860,7 +17651,7 @@ export const fontFamilies = [
     {
         id: 'rubik-dirt',
         family: 'Rubik Dirt',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17872,7 +17663,7 @@ export const fontFamilies = [
     {
         id: 'rubik-distressed',
         family: 'Rubik Distressed',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17884,7 +17675,7 @@ export const fontFamilies = [
     {
         id: 'rubik-doodle-shadow',
         family: 'Rubik Doodle Shadow',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17896,7 +17687,7 @@ export const fontFamilies = [
     {
         id: 'rubik-doodle-triangles',
         family: 'Rubik Doodle Triangles',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17908,7 +17699,7 @@ export const fontFamilies = [
     {
         id: 'rubik-gemstones',
         family: 'Rubik Gemstones',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17920,7 +17711,7 @@ export const fontFamilies = [
     {
         id: 'rubik-glitch',
         family: 'Rubik Glitch',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17932,7 +17723,7 @@ export const fontFamilies = [
     {
         id: 'rubik-glitch-pop',
         family: 'Rubik Glitch Pop',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17944,7 +17735,7 @@ export const fontFamilies = [
     {
         id: 'rubik-iso',
         family: 'Rubik Iso',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17956,7 +17747,7 @@ export const fontFamilies = [
     {
         id: 'rubik-lines',
         family: 'Rubik Lines',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17968,7 +17759,7 @@ export const fontFamilies = [
     {
         id: 'rubik-maps',
         family: 'Rubik Maps',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17980,7 +17771,7 @@ export const fontFamilies = [
     {
         id: 'rubik-marker-hatch',
         family: 'Rubik Marker Hatch',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -17992,7 +17783,7 @@ export const fontFamilies = [
     {
         id: 'rubik-maze',
         family: 'Rubik Maze',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18004,7 +17795,7 @@ export const fontFamilies = [
     {
         id: 'rubik-microbe',
         family: 'Rubik Microbe',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18016,7 +17807,7 @@ export const fontFamilies = [
     {
         id: 'rubik-mono-one',
         family: 'Rubik Mono One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18028,7 +17819,7 @@ export const fontFamilies = [
     {
         id: 'rubik-moonrocks',
         family: 'Rubik Moonrocks',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18040,7 +17831,7 @@ export const fontFamilies = [
     {
         id: 'rubik-pixels',
         family: 'Rubik Pixels',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18052,7 +17843,7 @@ export const fontFamilies = [
     {
         id: 'rubik-puddles',
         family: 'Rubik Puddles',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18064,7 +17855,7 @@ export const fontFamilies = [
     {
         id: 'rubik-scribble',
         family: 'Rubik Scribble',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18076,7 +17867,7 @@ export const fontFamilies = [
     {
         id: 'rubik-spray-paint',
         family: 'Rubik Spray Paint',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18088,7 +17879,7 @@ export const fontFamilies = [
     {
         id: 'rubik-storm',
         family: 'Rubik Storm',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18100,7 +17891,7 @@ export const fontFamilies = [
     {
         id: 'rubik-vinyl',
         family: 'Rubik Vinyl',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18112,7 +17903,7 @@ export const fontFamilies = [
     {
         id: 'rubik-wet-paint',
         family: 'Rubik Wet Paint',
-        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18124,7 +17915,7 @@ export const fontFamilies = [
     {
         id: 'ruda',
         family: 'Ruda',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18136,7 +17927,7 @@ export const fontFamilies = [
     {
         id: 'rufina',
         family: 'Rufina',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18148,7 +17939,7 @@ export const fontFamilies = [
     {
         id: 'ruge-boogie',
         family: 'Ruge Boogie',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18160,7 +17951,7 @@ export const fontFamilies = [
     {
         id: 'ruluko',
         family: 'Ruluko',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18172,7 +17963,7 @@ export const fontFamilies = [
     {
         id: 'rum-raisin',
         family: 'Rum Raisin',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18184,7 +17975,7 @@ export const fontFamilies = [
     {
         id: 'ruslan-display',
         family: 'Ruslan Display',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['cyrillic', 'latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18196,7 +17987,7 @@ export const fontFamilies = [
     {
         id: 'russo-one',
         family: 'Russo One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18208,7 +17999,7 @@ export const fontFamilies = [
     {
         id: 'ruthie',
         family: 'Ruthie',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18220,7 +18011,7 @@ export const fontFamilies = [
     {
         id: 'ruwudu',
         family: 'Ruwudu',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -18232,7 +18023,7 @@ export const fontFamilies = [
     {
         id: 'rye',
         family: 'Rye',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18244,7 +18035,7 @@ export const fontFamilies = [
     {
         id: 'stix-two-text',
         family: 'STIX Two Text',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -18256,7 +18047,7 @@ export const fontFamilies = [
     {
         id: 'suse',
         family: 'SUSE',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18268,7 +18059,7 @@ export const fontFamilies = [
     {
         id: 'sacramento',
         family: 'Sacramento',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18280,7 +18071,7 @@ export const fontFamilies = [
     {
         id: 'sahitya',
         family: 'Sahitya',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -18292,7 +18083,7 @@ export const fontFamilies = [
     {
         id: 'sail',
         family: 'Sail',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18304,7 +18095,7 @@ export const fontFamilies = [
     {
         id: 'saira',
         family: 'Saira',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -18316,7 +18107,7 @@ export const fontFamilies = [
     {
         id: 'saira-condensed',
         family: 'Saira Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18328,7 +18119,7 @@ export const fontFamilies = [
     {
         id: 'saira-extra-condensed',
         family: 'Saira Extra Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18340,7 +18131,7 @@ export const fontFamilies = [
     {
         id: 'saira-semi-condensed',
         family: 'Saira Semi Condensed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18352,7 +18143,7 @@ export const fontFamilies = [
     {
         id: 'saira-stencil-one',
         family: 'Saira Stencil One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18376,7 +18167,7 @@ export const fontFamilies = [
     {
         id: 'sanchez',
         family: 'Sanchez',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -18388,7 +18179,7 @@ export const fontFamilies = [
     {
         id: 'sancreek',
         family: 'Sancreek',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18400,7 +18191,7 @@ export const fontFamilies = [
     {
         id: 'sankofa-display',
         family: 'Sankofa Display',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18412,7 +18203,7 @@ export const fontFamilies = [
     {
         id: 'sansita',
         family: 'Sansita',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -18424,7 +18215,7 @@ export const fontFamilies = [
     {
         id: 'sansita-swashed',
         family: 'Sansita Swashed',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18436,7 +18227,7 @@ export const fontFamilies = [
     {
         id: 'sarabun',
         family: 'Sarabun',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -18448,7 +18239,7 @@ export const fontFamilies = [
     {
         id: 'sarala',
         family: 'Sarala',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -18460,7 +18251,7 @@ export const fontFamilies = [
     {
         id: 'sarina',
         family: 'Sarina',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18472,7 +18263,7 @@ export const fontFamilies = [
     {
         id: 'sarpanch',
         family: 'Sarpanch',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -18484,7 +18275,7 @@ export const fontFamilies = [
     {
         id: 'sassy-frass',
         family: 'Sassy Frass',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18508,7 +18299,7 @@ export const fontFamilies = [
     {
         id: 'sawarabi-gothic',
         family: 'Sawarabi Gothic',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18520,7 +18311,7 @@ export const fontFamilies = [
     {
         id: 'sawarabi-mincho',
         family: 'Sawarabi Mincho',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -18532,7 +18323,7 @@ export const fontFamilies = [
     {
         id: 'scada',
         family: 'Scada',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -18544,7 +18335,7 @@ export const fontFamilies = [
     {
         id: 'scheherazade-new',
         family: 'Scheherazade New',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -18556,7 +18347,7 @@ export const fontFamilies = [
     {
         id: 'schibsted-grotesk',
         family: 'Schibsted Grotesk',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -18580,7 +18371,7 @@ export const fontFamilies = [
     {
         id: 'scope-one',
         family: 'Scope One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18592,7 +18383,7 @@ export const fontFamilies = [
     {
         id: 'seaweed-script',
         family: 'Seaweed Script',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18604,7 +18395,7 @@ export const fontFamilies = [
     {
         id: 'secular-one',
         family: 'Secular One',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -18616,7 +18407,7 @@ export const fontFamilies = [
     {
         id: 'sedan',
         family: 'Sedan',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -18628,7 +18419,7 @@ export const fontFamilies = [
     {
         id: 'sedan-sc',
         family: 'Sedan SC',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18640,7 +18431,7 @@ export const fontFamilies = [
     {
         id: 'sedgwick-ave',
         family: 'Sedgwick Ave',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18652,7 +18443,7 @@ export const fontFamilies = [
     {
         id: 'sedgwick-ave-display',
         family: 'Sedgwick Ave Display',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18664,7 +18455,7 @@ export const fontFamilies = [
     {
         id: 'sen',
         family: 'Sen',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18676,7 +18467,7 @@ export const fontFamilies = [
     {
         id: 'send-flowers',
         family: 'Send Flowers',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18688,7 +18479,7 @@ export const fontFamilies = [
     {
         id: 'sevillana',
         family: 'Sevillana',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18700,7 +18491,7 @@ export const fontFamilies = [
     {
         id: 'seymour-one',
         family: 'Seymour One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -18712,7 +18503,7 @@ export const fontFamilies = [
     {
         id: 'shadows-into-light',
         family: 'Shadows Into Light',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18724,7 +18515,7 @@ export const fontFamilies = [
     {
         id: 'shadows-into-light-two',
         family: 'Shadows Into Light Two',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18736,7 +18527,7 @@ export const fontFamilies = [
     {
         id: 'shalimar',
         family: 'Shalimar',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18748,7 +18539,7 @@ export const fontFamilies = [
     {
         id: 'shantell-sans',
         family: 'Shantell Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -18760,7 +18551,7 @@ export const fontFamilies = [
     {
         id: 'shanti',
         family: 'Shanti',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18772,7 +18563,7 @@ export const fontFamilies = [
     {
         id: 'share',
         family: 'Share',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -18808,7 +18599,7 @@ export const fontFamilies = [
     {
         id: 'shippori-antique',
         family: 'Shippori Antique',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -18820,7 +18611,7 @@ export const fontFamilies = [
     {
         id: 'shippori-antique-b1',
         family: 'Shippori Antique B1',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -18832,7 +18623,7 @@ export const fontFamilies = [
     {
         id: 'shippori-mincho',
         family: 'Shippori Mincho',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -18844,7 +18635,7 @@ export const fontFamilies = [
     {
         id: 'shippori-mincho-b1',
         family: 'Shippori Mincho B1',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -18868,7 +18659,7 @@ export const fontFamilies = [
     {
         id: 'shojumaru',
         family: 'Shojumaru',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18892,7 +18683,7 @@ export const fontFamilies = [
     {
         id: 'shrikhand',
         family: 'Shrikhand',
-        subsets: ['gujarati', 'latin', 'latin-ext'],
+        subsets: ['gujarati', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'gujarati',
@@ -18916,7 +18707,7 @@ export const fontFamilies = [
     {
         id: 'sigmar',
         family: 'Sigmar',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18928,7 +18719,7 @@ export const fontFamilies = [
     {
         id: 'sigmar-one',
         family: 'Sigmar One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18940,7 +18731,7 @@ export const fontFamilies = [
     {
         id: 'signika',
         family: 'Signika',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18952,7 +18743,7 @@ export const fontFamilies = [
     {
         id: 'signika-negative',
         family: 'Signika Negative',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18964,7 +18755,7 @@ export const fontFamilies = [
     {
         id: 'silkscreen',
         family: 'Silkscreen',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -18976,7 +18767,7 @@ export const fontFamilies = [
     {
         id: 'simonetta',
         family: 'Simonetta',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -19000,7 +18791,7 @@ export const fontFamilies = [
     {
         id: 'sintony',
         family: 'Sintony',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19024,7 +18815,7 @@ export const fontFamilies = [
     {
         id: 'six-caps',
         family: 'Six Caps',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19036,7 +18827,7 @@ export const fontFamilies = [
     {
         id: 'sixtyfour',
         family: 'Sixtyfour',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19048,7 +18839,7 @@ export const fontFamilies = [
     {
         id: 'sixtyfour-convergence',
         family: 'Sixtyfour Convergence',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols'],
+        subsets: ['latin', , 'math', 'symbols'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19060,7 +18851,7 @@ export const fontFamilies = [
     {
         id: 'skranji',
         family: 'Skranji',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19072,7 +18863,7 @@ export const fontFamilies = [
     {
         id: 'slabo-13px',
         family: 'Slabo 13px',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19084,7 +18875,7 @@ export const fontFamilies = [
     {
         id: 'slabo-27px',
         family: 'Slabo 27px',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19108,7 +18899,7 @@ export const fontFamilies = [
     {
         id: 'slackside-one',
         family: 'Slackside One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -19120,7 +18911,7 @@ export const fontFamilies = [
     {
         id: 'smokum',
         family: 'Smokum',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19132,7 +18923,7 @@ export const fontFamilies = [
     {
         id: 'smooch',
         family: 'Smooch',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19144,7 +18935,7 @@ export const fontFamilies = [
     {
         id: 'smooch-sans',
         family: 'Smooch Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19168,7 +18959,7 @@ export const fontFamilies = [
     {
         id: 'sniglet',
         family: 'Sniglet',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19192,7 +18983,7 @@ export const fontFamilies = [
     {
         id: 'snowburst-one',
         family: 'Snowburst One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19228,7 +19019,7 @@ export const fontFamilies = [
     {
         id: 'sofia-sans',
         family: 'Sofia Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19240,7 +19031,7 @@ export const fontFamilies = [
     {
         id: 'sofia-sans-condensed',
         family: 'Sofia Sans Condensed',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19252,7 +19043,7 @@ export const fontFamilies = [
     {
         id: 'sofia-sans-extra-condensed',
         family: 'Sofia Sans Extra Condensed',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19264,7 +19055,7 @@ export const fontFamilies = [
     {
         id: 'sofia-sans-semi-condensed',
         family: 'Sofia Sans Semi Condensed',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19276,7 +19067,7 @@ export const fontFamilies = [
     {
         id: 'solitreo',
         family: 'Solitreo',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -19300,7 +19091,7 @@ export const fontFamilies = [
     {
         id: 'sometype-mono',
         family: 'Sometype Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -19324,7 +19115,7 @@ export const fontFamilies = [
     {
         id: 'sono',
         family: 'Sono',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19336,7 +19127,7 @@ export const fontFamilies = [
     {
         id: 'sonsie-one',
         family: 'Sonsie One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19348,7 +19139,7 @@ export const fontFamilies = [
     {
         id: 'sora',
         family: 'Sora',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19360,7 +19151,7 @@ export const fontFamilies = [
     {
         id: 'sorts-mill-goudy',
         family: 'Sorts Mill Goudy',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -19372,7 +19163,7 @@ export const fontFamilies = [
     {
         id: 'sour-gummy',
         family: 'Sour Gummy',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -19384,15 +19175,7 @@ export const fontFamilies = [
     {
         id: 'source-code-pro',
         family: 'Source Code Pro',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19404,15 +19187,7 @@ export const fontFamilies = [
     {
         id: 'source-sans-3',
         family: 'Source Sans 3',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'greek-ext',
-            'latin',
-            'latin-ext',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19424,7 +19199,7 @@ export const fontFamilies = [
     {
         id: 'source-serif-4',
         family: 'Source Serif 4',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19436,7 +19211,7 @@ export const fontFamilies = [
     {
         id: 'space-grotesk',
         family: 'Space Grotesk',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19448,7 +19223,7 @@ export const fontFamilies = [
     {
         id: 'space-mono',
         family: 'Space Mono',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -19460,7 +19235,7 @@ export const fontFamilies = [
     {
         id: 'special-elite',
         family: 'Special Elite',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19472,7 +19247,7 @@ export const fontFamilies = [
     {
         id: 'spectral',
         family: 'Spectral',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19484,7 +19259,7 @@ export const fontFamilies = [
     {
         id: 'spectral-sc',
         family: 'Spectral SC',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -19496,7 +19271,7 @@ export const fontFamilies = [
     {
         id: 'spicy-rice',
         family: 'Spicy Rice',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19508,7 +19283,7 @@ export const fontFamilies = [
     {
         id: 'spinnaker',
         family: 'Spinnaker',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19532,7 +19307,7 @@ export const fontFamilies = [
     {
         id: 'splash',
         family: 'Splash',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19544,7 +19319,7 @@ export const fontFamilies = [
     {
         id: 'spline-sans',
         family: 'Spline Sans',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19556,7 +19331,7 @@ export const fontFamilies = [
     {
         id: 'spline-sans-mono',
         family: 'Spline Sans Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -19580,7 +19355,7 @@ export const fontFamilies = [
     {
         id: 'square-peg',
         family: 'Square Peg',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19604,7 +19379,7 @@ export const fontFamilies = [
     {
         id: 'sriracha',
         family: 'Sriracha',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19616,7 +19391,7 @@ export const fontFamilies = [
     {
         id: 'srisakdi',
         family: 'Srisakdi',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19628,7 +19403,7 @@ export const fontFamilies = [
     {
         id: 'staatliches',
         family: 'Staatliches',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19640,7 +19415,7 @@ export const fontFamilies = [
     {
         id: 'stalemate',
         family: 'Stalemate',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19652,7 +19427,7 @@ export const fontFamilies = [
     {
         id: 'stalinist-one',
         family: 'Stalinist One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -19676,7 +19451,7 @@ export const fontFamilies = [
     {
         id: 'stick',
         family: 'Stick',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -19688,7 +19463,7 @@ export const fontFamilies = [
     {
         id: 'stick-no-bills',
         family: 'Stick No Bills',
-        subsets: ['latin', 'latin-ext', 'sinhala'],
+        subsets: ['latin', , 'sinhala'],
         weights: ['200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19700,7 +19475,7 @@ export const fontFamilies = [
     {
         id: 'stint-ultra-condensed',
         family: 'Stint Ultra Condensed',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19712,7 +19487,7 @@ export const fontFamilies = [
     {
         id: 'stint-ultra-expanded',
         family: 'Stint Ultra Expanded',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19724,7 +19499,7 @@ export const fontFamilies = [
     {
         id: 'stoke',
         family: 'Stoke',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19736,7 +19511,7 @@ export const fontFamilies = [
     {
         id: 'strait',
         family: 'Strait',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19748,7 +19523,7 @@ export const fontFamilies = [
     {
         id: 'style-script',
         family: 'Style Script',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19784,7 +19559,7 @@ export const fontFamilies = [
     {
         id: 'suez-one',
         family: 'Suez One',
-        subsets: ['hebrew', 'latin', 'latin-ext'],
+        subsets: ['hebrew', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -19796,7 +19571,7 @@ export const fontFamilies = [
     {
         id: 'sulphur-point',
         family: 'Sulphur Point',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19808,7 +19583,7 @@ export const fontFamilies = [
     {
         id: 'sumana',
         family: 'Sumana',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -19844,7 +19619,7 @@ export const fontFamilies = [
     {
         id: 'supermercado-one',
         family: 'Supermercado One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19856,7 +19631,7 @@ export const fontFamilies = [
     {
         id: 'sura',
         family: 'Sura',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -19904,7 +19679,7 @@ export const fontFamilies = [
     {
         id: 'swanky-and-moo-moo',
         family: 'Swanky and Moo Moo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19916,7 +19691,7 @@ export const fontFamilies = [
     {
         id: 'syncopate',
         family: 'Syncopate',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19928,7 +19703,7 @@ export const fontFamilies = [
     {
         id: 'syne',
         family: 'Syne',
-        subsets: ['greek', 'latin', 'latin-ext'],
+        subsets: ['greek', 'latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'greek',
@@ -19940,7 +19715,7 @@ export const fontFamilies = [
     {
         id: 'syne-mono',
         family: 'Syne Mono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19952,7 +19727,7 @@ export const fontFamilies = [
     {
         id: 'syne-tactile',
         family: 'Syne Tactile',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19964,7 +19739,7 @@ export const fontFamilies = [
     {
         id: 'tac-one',
         family: 'Tac One',
-        subsets: ['latin', 'latin-ext', 'math', 'symbols', 'vietnamese'],
+        subsets: ['latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -19976,7 +19751,7 @@ export const fontFamilies = [
     {
         id: 'tai-heritage-pro',
         family: 'Tai Heritage Pro',
-        subsets: ['latin', 'latin-ext', 'tai-viet', 'vietnamese'],
+        subsets: ['latin', , 'tai-viet', 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20012,7 +19787,7 @@ export const fontFamilies = [
     {
         id: 'tapestry',
         family: 'Tapestry',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20036,7 +19811,7 @@ export const fontFamilies = [
     {
         id: 'tauri',
         family: 'Tauri',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20048,7 +19823,7 @@ export const fontFamilies = [
     {
         id: 'taviraj',
         family: 'Taviraj',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20060,7 +19835,7 @@ export const fontFamilies = [
     {
         id: 'teachers',
         family: 'Teachers',
-        subsets: ['greek-ext', 'latin', 'latin-ext'],
+        subsets: ['greek-ext', 'latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'greek-ext',
@@ -20072,7 +19847,7 @@ export const fontFamilies = [
     {
         id: 'teko',
         family: 'Teko',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -20084,7 +19859,7 @@ export const fontFamilies = [
     {
         id: 'tektur',
         family: 'Tektur',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20096,7 +19871,7 @@ export const fontFamilies = [
     {
         id: 'telex',
         family: 'Telex',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20120,7 +19895,7 @@ export const fontFamilies = [
     {
         id: 'tenor-sans',
         family: 'Tenor Sans',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20132,7 +19907,7 @@ export const fontFamilies = [
     {
         id: 'text-me-one',
         family: 'Text Me One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20144,7 +19919,7 @@ export const fontFamilies = [
     {
         id: 'texturina',
         family: 'Texturina',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20156,7 +19931,7 @@ export const fontFamilies = [
     {
         id: 'thasadith',
         family: 'Thasadith',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20168,7 +19943,7 @@ export const fontFamilies = [
     {
         id: 'the-girl-next-door',
         family: 'The Girl Next Door',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20180,7 +19955,7 @@ export const fontFamilies = [
     {
         id: 'the-nautigal',
         family: 'The Nautigal',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20204,7 +19979,7 @@ export const fontFamilies = [
     {
         id: 'tillana',
         family: 'Tillana',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -20216,7 +19991,7 @@ export const fontFamilies = [
     {
         id: 'tilt-neon',
         family: 'Tilt Neon',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20228,7 +20003,7 @@ export const fontFamilies = [
     {
         id: 'tilt-prism',
         family: 'Tilt Prism',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20240,7 +20015,7 @@ export const fontFamilies = [
     {
         id: 'tilt-warp',
         family: 'Tilt Warp',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20271,7 +20046,7 @@ export const fontFamilies = [
             'greek-ext',
             'hebrew',
             'latin',
-            'latin-ext',
+            ,
             'vietnamese',
         ],
         weights: ['400', '700'],
@@ -20285,7 +20060,7 @@ export const fontFamilies = [
     {
         id: 'tiny5',
         family: 'Tiny5',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20297,7 +20072,7 @@ export const fontFamilies = [
     {
         id: 'tiro-bangla',
         family: 'Tiro Bangla',
-        subsets: ['bengali', 'latin', 'latin-ext'],
+        subsets: ['bengali', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'bengali',
@@ -20309,7 +20084,7 @@ export const fontFamilies = [
     {
         id: 'tiro-devanagari-hindi',
         family: 'Tiro Devanagari Hindi',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'devanagari',
@@ -20321,7 +20096,7 @@ export const fontFamilies = [
     {
         id: 'tiro-devanagari-marathi',
         family: 'Tiro Devanagari Marathi',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'devanagari',
@@ -20333,7 +20108,7 @@ export const fontFamilies = [
     {
         id: 'tiro-devanagari-sanskrit',
         family: 'Tiro Devanagari Sanskrit',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'devanagari',
@@ -20345,7 +20120,7 @@ export const fontFamilies = [
     {
         id: 'tiro-gurmukhi',
         family: 'Tiro Gurmukhi',
-        subsets: ['gurmukhi', 'latin', 'latin-ext'],
+        subsets: ['gurmukhi', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'gurmukhi',
@@ -20357,7 +20132,7 @@ export const fontFamilies = [
     {
         id: 'tiro-kannada',
         family: 'Tiro Kannada',
-        subsets: ['kannada', 'latin', 'latin-ext'],
+        subsets: ['kannada', 'latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'kannada',
@@ -20369,7 +20144,7 @@ export const fontFamilies = [
     {
         id: 'tiro-tamil',
         family: 'Tiro Tamil',
-        subsets: ['latin', 'latin-ext', 'tamil'],
+        subsets: ['latin', , 'tamil'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20381,7 +20156,7 @@ export const fontFamilies = [
     {
         id: 'tiro-telugu',
         family: 'Tiro Telugu',
-        subsets: ['latin', 'latin-ext', 'telugu'],
+        subsets: ['latin', , 'telugu'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20393,7 +20168,7 @@ export const fontFamilies = [
     {
         id: 'titan-one',
         family: 'Titan One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20405,7 +20180,7 @@ export const fontFamilies = [
     {
         id: 'titillium-web',
         family: 'Titillium Web',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '600', '700', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20417,7 +20192,7 @@ export const fontFamilies = [
     {
         id: 'tomorrow',
         family: 'Tomorrow',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20429,7 +20204,7 @@ export const fontFamilies = [
     {
         id: 'tourney',
         family: 'Tourney',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20453,7 +20228,7 @@ export const fontFamilies = [
     {
         id: 'train-one',
         family: 'Train One',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20465,7 +20240,7 @@ export const fontFamilies = [
     {
         id: 'trirong',
         family: 'Trirong',
-        subsets: ['latin', 'latin-ext', 'thai', 'vietnamese'],
+        subsets: ['latin', , 'thai', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20477,7 +20252,7 @@ export const fontFamilies = [
     {
         id: 'trispace',
         family: 'Trispace',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20489,7 +20264,7 @@ export const fontFamilies = [
     {
         id: 'trocchi',
         family: 'Trocchi',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20513,7 +20288,7 @@ export const fontFamilies = [
     {
         id: 'truculenta',
         family: 'Truculenta',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20525,7 +20300,7 @@ export const fontFamilies = [
     {
         id: 'trykker',
         family: 'Trykker',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20537,7 +20312,7 @@ export const fontFamilies = [
     {
         id: 'tsukimi-rounded',
         family: 'Tsukimi Rounded',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -20561,7 +20336,7 @@ export const fontFamilies = [
     {
         id: 'turret-road',
         family: 'Turret Road',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['200', '300', '400', '500', '700', '800'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20573,7 +20348,7 @@ export const fontFamilies = [
     {
         id: 'twinkle-star',
         family: 'Twinkle Star',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20585,7 +20360,7 @@ export const fontFamilies = [
     {
         id: 'ubuntu',
         family: 'Ubuntu',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['300', '400', '500', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -20597,7 +20372,7 @@ export const fontFamilies = [
     {
         id: 'ubuntu-condensed',
         family: 'Ubuntu Condensed',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20609,7 +20384,7 @@ export const fontFamilies = [
     {
         id: 'ubuntu-mono',
         family: 'Ubuntu Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -20621,7 +20396,7 @@ export const fontFamilies = [
     {
         id: 'ubuntu-sans',
         family: 'Ubuntu Sans',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -20633,7 +20408,7 @@ export const fontFamilies = [
     {
         id: 'ubuntu-sans-mono',
         family: 'Ubuntu Sans Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'greek-ext', 'latin'],
         weights: ['400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -20657,7 +20432,7 @@ export const fontFamilies = [
     {
         id: 'ultra',
         family: 'Ultra',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20669,7 +20444,7 @@ export const fontFamilies = [
     {
         id: 'unbounded',
         family: 'Unbounded',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20681,7 +20456,7 @@ export const fontFamilies = [
     {
         id: 'uncial-antiqua',
         family: 'Uncial Antiqua',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20693,7 +20468,7 @@ export const fontFamilies = [
     {
         id: 'underdog',
         family: 'Underdog',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20705,7 +20480,7 @@ export const fontFamilies = [
     {
         id: 'unica-one',
         family: 'Unica One',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20753,7 +20528,7 @@ export const fontFamilies = [
     {
         id: 'unlock',
         family: 'Unlock',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20765,7 +20540,7 @@ export const fontFamilies = [
     {
         id: 'unna',
         family: 'Unna',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20777,7 +20552,7 @@ export const fontFamilies = [
     {
         id: 'updock',
         family: 'Updock',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20789,7 +20564,7 @@ export const fontFamilies = [
     {
         id: 'urbanist',
         family: 'Urbanist',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -20801,7 +20576,7 @@ export const fontFamilies = [
     {
         id: 'vt323',
         family: 'VT323',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20813,7 +20588,7 @@ export const fontFamilies = [
     {
         id: 'vampiro-one',
         family: 'Vampiro One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20825,7 +20600,7 @@ export const fontFamilies = [
     {
         id: 'varela',
         family: 'Varela',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20837,7 +20612,7 @@ export const fontFamilies = [
     {
         id: 'varela-round',
         family: 'Varela Round',
-        subsets: ['hebrew', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['hebrew', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'hebrew',
@@ -20849,7 +20624,7 @@ export const fontFamilies = [
     {
         id: 'varta',
         family: 'Varta',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20873,7 +20648,7 @@ export const fontFamilies = [
     {
         id: 'vazirmatn',
         family: 'Vazirmatn',
-        subsets: ['arabic', 'latin', 'latin-ext'],
+        subsets: ['arabic', 'latin'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'arabic',
@@ -20885,7 +20660,7 @@ export const fontFamilies = [
     {
         id: 'vesper-libre',
         family: 'Vesper Libre',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400', '500', '700', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -20897,7 +20672,7 @@ export const fontFamilies = [
     {
         id: 'viaoda-libre',
         family: 'Viaoda Libre',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -20933,7 +20708,7 @@ export const fontFamilies = [
     {
         id: 'victor-mono',
         family: 'Victor Mono',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -20957,7 +20732,7 @@ export const fontFamilies = [
     {
         id: 'viga',
         family: 'Viga',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20969,7 +20744,7 @@ export const fontFamilies = [
     {
         id: 'vina-sans',
         family: 'Vina Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -20981,7 +20756,7 @@ export const fontFamilies = [
     {
         id: 'voces',
         family: 'Voces',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21005,7 +20780,7 @@ export const fontFamilies = [
     {
         id: 'vollkorn',
         family: 'Vollkorn',
-        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -21017,7 +20792,7 @@ export const fontFamilies = [
     {
         id: 'vollkorn-sc',
         family: 'Vollkorn SC',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '600', '700', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21029,7 +20804,7 @@ export const fontFamilies = [
     {
         id: 'voltaire',
         family: 'Voltaire',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21041,7 +20816,7 @@ export const fontFamilies = [
     {
         id: 'vujahday-script',
         family: 'Vujahday Script',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21053,7 +20828,7 @@ export const fontFamilies = [
     {
         id: 'waiting-for-the-sunrise',
         family: 'Waiting for the Sunrise',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21089,7 +20864,7 @@ export const fontFamilies = [
     {
         id: 'warnes',
         family: 'Warnes',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21101,7 +20876,7 @@ export const fontFamilies = [
     {
         id: 'water-brush',
         family: 'Water Brush',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21113,7 +20888,7 @@ export const fontFamilies = [
     {
         id: 'waterfall',
         family: 'Waterfall',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21137,7 +20912,7 @@ export const fontFamilies = [
     {
         id: 'wellfleet',
         family: 'Wellfleet',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21149,7 +20924,7 @@ export const fontFamilies = [
     {
         id: 'wendy-one',
         family: 'Wendy One',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21161,7 +20936,7 @@ export const fontFamilies = [
     {
         id: 'whisper',
         family: 'Whisper',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21173,7 +20948,7 @@ export const fontFamilies = [
     {
         id: 'windsong',
         family: 'WindSong',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400', '500'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21197,7 +20972,7 @@ export const fontFamilies = [
     {
         id: 'wittgenstein',
         family: 'Wittgenstein',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -21209,7 +20984,7 @@ export const fontFamilies = [
     {
         id: 'wix-madefor-display',
         family: 'Wix Madefor Display',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21221,7 +20996,7 @@ export const fontFamilies = [
     {
         id: 'wix-madefor-text',
         family: 'Wix Madefor Text',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400', '500', '600', '700', '800'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -21233,7 +21008,7 @@ export const fontFamilies = [
     {
         id: 'work-sans',
         family: 'Work Sans',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -21257,7 +21032,7 @@ export const fontFamilies = [
     {
         id: 'xanh-mono',
         family: 'Xanh Mono',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -21269,7 +21044,7 @@ export const fontFamilies = [
     {
         id: 'yaldevi',
         family: 'Yaldevi',
-        subsets: ['latin', 'latin-ext', 'sinhala'],
+        subsets: ['latin', , 'sinhala'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21281,15 +21056,7 @@ export const fontFamilies = [
     {
         id: 'yanone-kaffeesatz',
         family: 'Yanone Kaffeesatz',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'latin',
-            'latin-ext',
-            'math',
-            'symbols',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['200', '300', '400', '500', '600', '700'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21301,7 +21068,7 @@ export const fontFamilies = [
     {
         id: 'yantramanav',
         family: 'Yantramanav',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['100', '300', '400', '500', '700', '900'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -21361,7 +21128,7 @@ export const fontFamilies = [
     {
         id: 'yatra-one',
         family: 'Yatra One',
-        subsets: ['devanagari', 'latin', 'latin-ext'],
+        subsets: ['devanagari', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'devanagari',
@@ -21373,7 +21140,7 @@ export const fontFamilies = [
     {
         id: 'yellowtail',
         family: 'Yellowtail',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21397,7 +21164,7 @@ export const fontFamilies = [
     {
         id: 'yeseva-one',
         family: 'Yeseva One',
-        subsets: ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'cyrillic-ext', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21409,7 +21176,7 @@ export const fontFamilies = [
     {
         id: 'yesteryear',
         family: 'Yesteryear',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21421,7 +21188,7 @@ export const fontFamilies = [
     {
         id: 'yomogi',
         family: 'Yomogi',
-        subsets: ['cyrillic', 'latin', 'latin-ext', 'vietnamese'],
+        subsets: ['cyrillic', 'latin', , 'vietnamese'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21433,7 +21200,7 @@ export const fontFamilies = [
     {
         id: 'young-serif',
         family: 'Young Serif',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21445,7 +21212,7 @@ export const fontFamilies = [
     {
         id: 'yrsa',
         family: 'Yrsa',
-        subsets: ['latin', 'latin-ext', 'vietnamese'],
+        subsets: ['latin', , 'vietnamese'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -21457,16 +21224,7 @@ export const fontFamilies = [
     {
         id: 'ysabeau',
         family: 'Ysabeau',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'latin',
-            'latin-ext',
-            'math',
-            'symbols',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -21478,16 +21236,7 @@ export const fontFamilies = [
     {
         id: 'ysabeau-infant',
         family: 'Ysabeau Infant',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'latin',
-            'latin-ext',
-            'math',
-            'symbols',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -21499,16 +21248,7 @@ export const fontFamilies = [
     {
         id: 'ysabeau-office',
         family: 'Ysabeau Office',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'latin',
-            'latin-ext',
-            'math',
-            'symbols',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal', 'italic'],
         defSubset: 'cyrillic',
@@ -21520,16 +21260,7 @@ export const fontFamilies = [
     {
         id: 'ysabeau-sc',
         family: 'Ysabeau SC',
-        subsets: [
-            'cyrillic',
-            'cyrillic-ext',
-            'greek',
-            'latin',
-            'latin-ext',
-            'math',
-            'symbols',
-            'vietnamese',
-        ],
+        subsets: ['cyrillic', 'cyrillic-ext', 'greek', 'latin', , 'math', 'symbols', 'vietnamese'],
         weights: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21541,7 +21272,7 @@ export const fontFamilies = [
     {
         id: 'yuji-boku',
         family: 'Yuji Boku',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21553,7 +21284,7 @@ export const fontFamilies = [
     {
         id: 'yuji-hentaigana-akari',
         family: 'Yuji Hentaigana Akari',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -21565,7 +21296,7 @@ export const fontFamilies = [
     {
         id: 'yuji-hentaigana-akebono',
         family: 'Yuji Hentaigana Akebono',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -21577,7 +21308,7 @@ export const fontFamilies = [
     {
         id: 'yuji-mai',
         family: 'Yuji Mai',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21589,7 +21320,7 @@ export const fontFamilies = [
     {
         id: 'yuji-syuku',
         family: 'Yuji Syuku',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21601,7 +21332,7 @@ export const fontFamilies = [
     {
         id: 'yusei-magic',
         family: 'Yusei Magic',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'japanese',
@@ -21661,7 +21392,7 @@ export const fontFamilies = [
     {
         id: 'zen-antique',
         family: 'Zen Antique',
-        subsets: ['cyrillic', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21673,7 +21404,7 @@ export const fontFamilies = [
     {
         id: 'zen-antique-soft',
         family: 'Zen Antique Soft',
-        subsets: ['cyrillic', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21685,7 +21416,7 @@ export const fontFamilies = [
     {
         id: 'zen-dots',
         family: 'Zen Dots',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21697,7 +21428,7 @@ export const fontFamilies = [
     {
         id: 'zen-kaku-gothic-antique',
         family: 'Zen Kaku Gothic Antique',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['300', '400', '500', '700', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21709,7 +21440,7 @@ export const fontFamilies = [
     {
         id: 'zen-kaku-gothic-new',
         family: 'Zen Kaku Gothic New',
-        subsets: ['cyrillic', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'latin'],
         weights: ['300', '400', '500', '700', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21721,7 +21452,7 @@ export const fontFamilies = [
     {
         id: 'zen-kurenaido',
         family: 'Zen Kurenaido',
-        subsets: ['cyrillic', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek', 'latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21733,7 +21464,7 @@ export const fontFamilies = [
     {
         id: 'zen-loop',
         family: 'Zen Loop',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -21745,7 +21476,7 @@ export const fontFamilies = [
     {
         id: 'zen-maru-gothic',
         family: 'Zen Maru Gothic',
-        subsets: ['cyrillic', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek', 'latin'],
         weights: ['300', '400', '500', '700', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21757,7 +21488,7 @@ export const fontFamilies = [
     {
         id: 'zen-old-mincho',
         family: 'Zen Old Mincho',
-        subsets: ['cyrillic', 'greek', 'latin', 'latin-ext'],
+        subsets: ['cyrillic', 'greek', 'latin'],
         weights: ['400', '500', '600', '700', '900'],
         styles: ['normal'],
         defSubset: 'cyrillic',
@@ -21769,7 +21500,7 @@ export const fontFamilies = [
     {
         id: 'zen-tokyo-zoo',
         family: 'Zen Tokyo Zoo',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21781,7 +21512,7 @@ export const fontFamilies = [
     {
         id: 'zeyada',
         family: 'Zeyada',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400'],
         styles: ['normal'],
         defSubset: 'latin',
@@ -21805,7 +21536,7 @@ export const fontFamilies = [
     {
         id: 'zilla-slab',
         family: 'Zilla Slab',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['300', '400', '500', '600', '700'],
         styles: ['normal', 'italic'],
         defSubset: 'latin',
@@ -21817,7 +21548,7 @@ export const fontFamilies = [
     {
         id: 'zilla-slab-highlight',
         family: 'Zilla Slab Highlight',
-        subsets: ['latin', 'latin-ext'],
+        subsets: ['latin'],
         weights: ['400', '700'],
         styles: ['normal'],
         defSubset: 'latin',

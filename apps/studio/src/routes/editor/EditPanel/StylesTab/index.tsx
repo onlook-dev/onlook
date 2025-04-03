@@ -188,6 +188,7 @@ export const StylesTab = observer(() => {
 
     useEffect(() => {
         editorEngine.theme.scanConfig();
+        editorEngine.font.scanFonts();
     }, []);
 
     return (

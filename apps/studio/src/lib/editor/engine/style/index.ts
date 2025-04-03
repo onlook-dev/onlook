@@ -45,9 +45,7 @@ export class StyleManager {
         const styleObj = { [style]: value.id };
         const action = this.getUpdateStyleAction(styleObj);
         this.editorEngine.action.run(action);
-        this.updateStyleNoAction({
-            [style]: value.family,
-        });
+        this.editorEngine.webviews.reloadWebviews();
     }
 
     update(style: string, value: string) {
