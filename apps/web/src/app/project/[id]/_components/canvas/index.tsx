@@ -24,15 +24,15 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const scale = 1;
     const position = { x: 0, y: 0 };
 
-    // const handleCanvasMouseDown = useCallback(
-    //     (event: React.MouseEvent<HTMLDivElement>) => {
-    //         if (event.target !== containerRef.current) {
-    //             return;
-    //         }
-    //         editorEngine.clearUI();
-    //     },
-    //     [editorEngine],
-    // );
+    const handleCanvasMouseDown = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            if (event.target !== containerRef.current) {
+                return;
+            }
+            editorEngine.clearUI();
+        },
+        [editorEngine],
+    );
 
     const handleZoom = useCallback(
         (event: WheelEvent) => {
