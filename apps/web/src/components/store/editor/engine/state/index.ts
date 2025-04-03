@@ -1,7 +1,7 @@
+import { sendAnalytics } from "@/utils/analytics";
 import { EditorMode, EditorTabValue, SettingsTabValue } from "@onlook/models";
 import { makeAutoObservable } from "mobx";
 import { EditorEngine } from "../index";
-
 export class StateManager {
     private _plansOpen: boolean = false;
     settingsOpen: boolean = false;
@@ -21,7 +21,7 @@ export class StateManager {
     set plansOpen(open: boolean) {
         this._plansOpen = open;
         if (open) {
-            // sendAnalytics('open pro checkout');
+            sendAnalytics('open pro checkout');
         }
     }
 

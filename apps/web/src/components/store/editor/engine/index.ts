@@ -1,24 +1,24 @@
 import { makeAutoObservable } from 'mobx';
-import { ActionManager } from './action';
-import { AstManager } from './ast';
+// import { ActionManager } from './action';
+// import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
-import { CopyManager } from './copy';
-import { ElementsManager } from './element';
+// import { CopyManager } from './copy';
+// import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
-import { GroupManager } from './group';
-import { HistoryManager } from './history';
+// import { GroupManager } from './group';
+// import { HistoryManager } from './history';
 import { ImageManager } from './image';
-import { InsertManager } from './insert';
-import { MoveManager } from './move';
+// import { InsertManager } from './insert';
+// import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
-import { ProjectInfoManager } from './projectinfo';
+// import { ProjectInfoManager } from './projectinfo';
 import { StateManager } from './state';
-import { StyleManager } from './style';
-import { TextEditingManager } from './text';
+// import { StyleManager } from './style';
+// import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { WebviewManager } from './webview';
 import { WindowManager } from './window';
@@ -26,7 +26,8 @@ import { WindowManager } from './window';
 // import { nanoid } from 'nanoid/non-secure';
 // import type { ProjectsManager } from '@/lib/projects';
 // import type { UserManager } from '@/lib/user';
-// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+// import { invokeMainChannel } from '@/lib/utils';
+
 export class EditorEngine {
     readonly canvas: CanvasManager;
     readonly chat: ChatManager;
@@ -41,17 +42,17 @@ export class EditorEngine {
     readonly overlay: OverlayManager = new OverlayManager(this);
     readonly state: StateManager = new StateManager(this);
     readonly window: WindowManager = new WindowManager(this);
-    readonly ast: AstManager = new AstManager(this);
-    readonly history: HistoryManager = new HistoryManager(this);
-    readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
-    readonly elements: ElementsManager = new ElementsManager(this);
-    readonly text: TextEditingManager = new TextEditingManager(this);
-    readonly action: ActionManager = new ActionManager(this);
-    readonly insert: InsertManager = new InsertManager(this);
-    readonly move: MoveManager = new MoveManager(this);
-    readonly style: StyleManager = new StyleManager(this);
-    readonly copy: CopyManager = new CopyManager(this);
-    readonly group: GroupManager = new GroupManager(this);
+    // readonly ast: AstManager = new AstManager(this);
+    // readonly history: HistoryManager = new HistoryManager(this);
+    // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
+    // readonly elements: ElementsManager = new ElementsManager(this);
+    // readonly text: TextEditingManager = new TextEditingManager(this);
+    // readonly action: ActionManager = new ActionManager(this);
+    // readonly insert: InsertManager = new InsertManager(this);
+    // readonly move: MoveManager = new MoveManager(this);
+    // readonly style: StyleManager = new StyleManager(this);
+    // readonly copy: CopyManager = new CopyManager(this);
+    // readonly group: GroupManager = new GroupManager(this);
 
     constructor(
         // private projectsManager: ProjectsManager,

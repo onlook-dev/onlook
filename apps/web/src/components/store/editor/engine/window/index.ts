@@ -1,3 +1,4 @@
+import { sendAnalytics } from "@/utils/analytics";
 import { makeAutoObservable } from "mobx";
 import type { EditorEngine } from "..";
 
@@ -102,7 +103,7 @@ export class WindowManager {
         // if (webview) {
         //     this.webviews.deregister(webview);
         // }
-        // sendAnalytics('window delete');
+        sendAnalytics('window delete');
     }
 
     duplicateWindow(id?: string) {
@@ -138,6 +139,6 @@ export class WindowManager {
         // };
 
         // this.canvas.frames = [...this.canvas.frames, newFrame];
-        // sendAnalytics('window duplicate');
+        sendAnalytics('window duplicate');
     }
 }

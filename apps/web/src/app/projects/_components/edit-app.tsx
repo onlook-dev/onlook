@@ -1,3 +1,4 @@
+import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui-v4/button';
@@ -18,8 +19,8 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
     const t = useTranslations();
 
     const selectProject = (project: Project) => {
+        sendAnalytics('open project', { id: project.id, url: project.url });
         redirect(`${Routes.PROJECT}/${project.id}`);
-        // sendAnalytics('open project', { id: project.id, url: project.url });
     };
 
     return (
