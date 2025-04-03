@@ -64,14 +64,26 @@ export function extractObject(node: Node): Record<string, any> {
 
     const result: Record<string, any> = {};
     node.properties.forEach((prop: any) => {
-        if (prop.type === 'ObjectProperty' && prop.key.type === 'Identifier') {
+        if (prop.type === 'ObjectProperty') {
+            let key: string;
+
+            if (prop.key.type === 'Identifier') {
+                key = prop.key.name;
+            } else if (prop.key.type === 'NumericLiteral') {
+                key = prop.key.value.toString();
+            } else if (prop.key.type === 'StringLiteral') {
+                key = prop.key.value;
+            } else {
+                return;
+            }
+
             if (prop.value.type === 'StringLiteral') {
-                result[prop.key.name] = {
+                result[key] = {
                     value: prop.value.value,
-                    line: prop.loc.start.line,
+                    line: prop.loc?.start?.line,
                 };
             } else if (prop.value.type === 'ObjectExpression') {
-                result[prop.key.name] = extractObject(prop.value);
+                result[key] = extractObject(prop.value);
             }
         }
     });

@@ -7,6 +7,7 @@ import type { Color } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { BrandPalletGroup } from './ColorPalletGroup';
+import { ColorNameInput } from './ColorNameInput';
 
 interface ColorPanelProps {
     onClose: () => void;
@@ -129,25 +130,10 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
                 </div>
                 {isAddingNewGroup ? (
                     <div className="flex flex-col gap-1">
-                        <input
-                            type="text"
-                            autoFocus
-                            placeholder="Enter group name"
-                            className="w-full rounded-md border border-white/10 bg-background-secondary px-2 py-1 text-sm"
-                            onBlur={(e) => {
-                                if (e.target.value.trim()) {
-                                    handleAddNewGroup(e.target.value);
-                                } else {
-                                    setIsAddingNewGroup(false);
-                                }
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                    handleAddNewGroup(e.currentTarget.value);
-                                } else if (e.key === 'Escape') {
-                                    setIsAddingNewGroup(false);
-                                }
-                            }}
+                        <ColorNameInput
+                            initialName=""
+                            onSubmit={handleAddNewGroup}
+                            onCancel={() => setIsAddingNewGroup(false)}
                         />
                     </div>
                 ) : (

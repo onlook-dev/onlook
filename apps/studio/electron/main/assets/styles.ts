@@ -1,7 +1,7 @@
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import type { ObjectExpression, ObjectProperty } from '@babel/types';
+import type { ObjectExpression, ObjectMethod, ObjectProperty, SpreadElement } from '@babel/types';
 import type {
     ClassReplacement,
     ColorUpdate,
@@ -20,7 +20,7 @@ import postcss from 'postcss';
 import { getNodeClasses } from '../code/classes';
 import { getOidFromJsxElement } from '../code/diff/helpers';
 import { transformAst } from '../code/diff/transform';
-import { readFile } from '../code/files';
+import { formatContent, readFile, writeFile } from '../code/files';
 import {
     addTailwindRootColor,
     extractObject,
@@ -31,6 +31,7 @@ import {
     isObjectExpression,
     modifyTailwindConfig,
 } from './helpers';
+import colors from 'tailwindcss/colors';
 
 export async function updateTailwindColorConfig(
     projectRoot: string,
@@ -46,21 +47,34 @@ export async function updateTailwindColorConfig(
             return { success: false, error: 'Failed to prepare color update' };
         }
         // Check if this is a default color update
-        const defaultColorMatch = originalKey && originalKey.match(/^([a-z]+)-(\d+)$/);
-
-        if (defaultColorMatch) {
-            const [, colorFamily, indexStr] = defaultColorMatch;
-            const colorIndex = parseInt(indexStr) / 100;
-
-            await updateDefaultTailwindColor(colorUpdate, colorFamily, colorIndex, newColor, theme);
-            return { success: true };
-        }
-
         const camelCaseName = newName === DEFAULT_COLOR_NAME ? newName : camelCase(newName);
 
-        return originalKey
-            ? updateTailwindColorVariable(colorUpdate, originalKey, newColor, camelCaseName, theme)
-            : createTailwindColorVariable(colorUpdate, newColor, camelCaseName, parentName);
+        if (originalKey) {
+            const [parentKey, keyName] = originalKey.split('-');
+
+            const isDefaultColor = parentKey && colors[parentKey as keyof typeof colors];
+            if (isDefaultColor) {
+                const colorIndex = parseInt(keyName) / 100;
+
+                await updateDefaultTailwindColor(
+                    colorUpdate,
+                    parentKey,
+                    colorIndex,
+                    newColor,
+                    theme,
+                );
+                return { success: true };
+            }
+            return updateTailwindColorVariable(
+                colorUpdate,
+                originalKey,
+                newColor,
+                camelCaseName,
+                theme,
+            );
+        } else {
+            return createTailwindColorVariable(colorUpdate, newColor, camelCaseName, parentName);
+        }
     } catch (error) {
         console.error('Error updating Tailwind config:', error);
         return {
@@ -76,12 +90,8 @@ function addTailwindNestedColor(
     newName: string,
     newCssVarName: string,
 ) {
-    const parentColorObj = colorObj.properties.find(
-        (prop): prop is ObjectProperty =>
-            prop.type === 'ObjectProperty' &&
-            'key' in prop &&
-            prop.key.type === 'Identifier' &&
-            prop.key.name === parentName,
+    const parentColorObj = colorObj.properties.find((prop): prop is ObjectProperty =>
+        isValidTailwindConfigProperty(prop, parentName),
     );
 
     if (parentColorObj) {
@@ -152,7 +162,8 @@ async function createTailwindColorVariable(
     } else {
         // Variable doesn't exist, add it
         const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
-        fs.writeFileSync(cssPath, updatedCssContent);
+        const formattedContent = await formatContent(cssPath, updatedCssContent);
+        await writeFile(cssPath, formattedContent);
     }
 
     // Update config file
@@ -178,8 +189,9 @@ async function createTailwindColorVariable(
         },
     });
 
-    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
-    fs.writeFileSync(configPath, output.code);
+    const output = generate(updateAst, { compact: false }, configContent);
+    const formattedOutput = await formatContent(configPath, output.code);
+    await writeFile(configPath, formattedOutput);
 
     return { success: true };
 }
@@ -205,13 +217,23 @@ function updateTailwindConfigFile(
                 colorObj.properties.forEach((colorProp) => {
                     if (
                         colorProp.type === 'ObjectProperty' &&
-                        colorProp.key.type === 'Identifier' &&
-                        colorProp.key.name === parentKey
+                        (colorProp.key.type === 'Identifier' ||
+                            colorProp.key.type === 'NumericLiteral') &&
+                        (colorProp.key.type === 'Identifier'
+                            ? colorProp.key.name === parentKey
+                            : String(colorProp.key.value) === parentKey)
                     ) {
                         // If the keyName is not provided, we are renaming the root color
                         if (!keyName) {
                             if (parentKey && newName !== parentKey) {
-                                colorProp.key.name = newName;
+                                if (colorProp.key.type === 'Identifier') {
+                                    colorProp.key.name = newName;
+                                } else {
+                                    colorProp.key = {
+                                        type: 'Identifier',
+                                        name: newName,
+                                    };
+                                }
                                 keyUpdated = true;
 
                                 // Then we need to update the child css variables or direct color values
@@ -219,18 +241,24 @@ function updateTailwindConfigFile(
                                     colorProp.value.properties.forEach((nestedProp) => {
                                         if (
                                             nestedProp.type === 'ObjectProperty' &&
-                                            nestedProp.key.type === 'Identifier' &&
+                                            (nestedProp.key.type === 'Identifier' ||
+                                                nestedProp.key.type === 'NumericLiteral') &&
                                             nestedProp.value.type === 'StringLiteral'
                                         ) {
                                             // Special handling for DEFAULT
+                                            const keyValue =
+                                                nestedProp.key.type === 'Identifier'
+                                                    ? nestedProp.key.name
+                                                    : String(nestedProp.key.value);
+
                                             const oldVarName =
-                                                nestedProp.key.name === DEFAULT_COLOR_NAME
+                                                keyValue === DEFAULT_COLOR_NAME
                                                     ? parentKey
-                                                    : `${parentKey}-${nestedProp.key.name}`;
+                                                    : `${parentKey}-${keyValue}`;
                                             const newVarName =
-                                                nestedProp.key.name === DEFAULT_COLOR_NAME
+                                                keyValue === DEFAULT_COLOR_NAME
                                                     ? newName
-                                                    : `${newName}-${nestedProp.key.name}`;
+                                                    : `${newName}-${keyValue}`;
 
                                             nestedProp.value.value = nestedProp.value.value.replace(
                                                 new RegExp(`--${oldVarName}`, 'g'),
@@ -253,14 +281,24 @@ function updateTailwindConfigFile(
                             nestedObj.properties.forEach((nestedProp) => {
                                 if (
                                     nestedProp.type === 'ObjectProperty' &&
-                                    nestedProp.key.type === 'Identifier' &&
-                                    nestedProp.key.name === keyName
+                                    (nestedProp.key.type === 'Identifier' ||
+                                        nestedProp.key.type === 'NumericLiteral') &&
+                                    ((nestedProp.key.type === 'Identifier' &&
+                                        nestedProp.key.name === keyName) ||
+                                        (nestedProp.key.type === 'NumericLiteral' &&
+                                            String(nestedProp.key.value) === keyName))
                                 ) {
                                     if (newName !== keyName) {
-                                        nestedProp.key.name = newName;
+                                        if (nestedProp.key.type === 'Identifier') {
+                                            nestedProp.key.name = newName;
+                                        } else if (nestedProp.key.type === 'NumericLiteral') {
+                                            nestedProp.key = {
+                                                type: 'Identifier',
+                                                name: newName,
+                                            };
+                                        }
                                         keyUpdated = true;
                                     }
-
                                     if (nestedProp.value.type === 'StringLiteral') {
                                         // Special handling for DEFAULT values
                                         const varName =
@@ -320,7 +358,8 @@ async function updateTailwindColorVariable(
         theme,
     );
 
-    fs.writeFileSync(cssPath, updatedCssContent);
+    const formattedContent = await formatContent(cssPath, updatedCssContent);
+    await writeFile(cssPath, formattedContent);
 
     // Update config file
     const { keyUpdated, valueUpdated, output } = updateTailwindConfigFile(
@@ -332,7 +371,8 @@ async function updateTailwindColorVariable(
     );
 
     if (keyUpdated || valueUpdated) {
-        fs.writeFileSync(configPath, output);
+        const formattedContent = await formatContent(configPath, output);
+        await writeFile(configPath, formattedContent);
 
         // Update class references if the name changed
         if (keyUpdated) {
@@ -519,10 +559,7 @@ async function updateTailwindCssVariable(
                             if (node.type === 'atrule' && 'name' in node && node.name === 'apply') {
                                 const value = 'params' in node ? node.params : '';
 
-                                const utilityPattern = new RegExp(
-                                    `[a-z-]+-${originalName}\\b`,
-                                    'g',
-                                );
+                                const utilityPattern = new RegExp(`-${originalName}\\b`, 'g');
                                 const hasMatch = utilityPattern.test(value);
 
                                 if (hasMatch) {
@@ -722,7 +759,8 @@ async function updateClassReferences(
             if (updates.size > 0) {
                 transformAst(ast, updates);
                 const output = generate(ast, { retainLines: true }, content);
-                await fs.promises.writeFile(file, output.code, 'utf8');
+                const formattedContent = await formatContent(file, output.code);
+                await writeFile(file, formattedContent);
             }
         }),
     );
@@ -751,24 +789,16 @@ async function deleteColorGroup(
                 }
 
                 // Find the group
-                const groupProp = colorObj.properties.find(
-                    (prop) =>
-                        prop.type === 'ObjectProperty' &&
-                        'key' in prop &&
-                        prop.key.type === 'Identifier' &&
-                        prop.key.name === camelCaseName,
+                const groupProp = colorObj.properties.find((prop) =>
+                    isValidTailwindConfigProperty(prop, camelCaseName),
                 );
 
                 if (groupProp && 'value' in groupProp) {
                     if (isObjectExpression(groupProp.value)) {
                         if (colorName) {
                             // Delete specific color within group
-                            const colorIndex = groupProp.value.properties.findIndex(
-                                (prop) =>
-                                    prop.type === 'ObjectProperty' &&
-                                    'key' in prop &&
-                                    prop.key.type === 'Identifier' &&
-                                    prop.key.name === colorName,
+                            const colorIndex = groupProp.value.properties.findIndex((prop) =>
+                                isValidTailwindConfigProperty(prop, colorName),
                             );
 
                             if (colorIndex !== -1) {
@@ -801,7 +831,7 @@ async function deleteColorGroup(
         const trimmedLine = line.trim();
         if (colorName) {
             // Only remove the specific color variable
-            const shouldKeep = !trimmedLine.startsWith(`--${camelCaseName}-${colorName}`);
+            const shouldKeep = !trimmedLine.endsWith(`--${camelCaseName}-${colorName}`);
             if (!shouldKeep) {
                 console.log('Removing CSS variable:', trimmedLine);
             }
@@ -815,10 +845,12 @@ async function deleteColorGroup(
         return shouldKeep;
     });
     const updatedCssContent = updatedCssLines.join('\n');
+    const formattedCssContent = await formatContent(cssPath, updatedCssContent);
+    await writeFile(cssPath, formattedCssContent);
 
-    fs.writeFileSync(cssPath, updatedCssContent);
-    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
-    fs.writeFileSync(configPath, output.code);
+    const output = generate(updateAst, {}, configContent);
+    const formattedContent = await formatContent(configPath, output.code);
+    await writeFile(configPath, formattedContent);
 
     // Also delete the color group in the class references
     const replacements: ClassReplacement[] = [];
@@ -975,13 +1007,15 @@ async function updateDefaultTailwindColor(
         },
     });
 
-    const output = generate(updateAst, { retainLines: true, compact: false }, configContent);
-    fs.writeFileSync(configPath, output.code);
+    const output = generate(updateAst, {}, configContent);
+    const formattedContent = await formatContent(configPath, output.code);
+    await writeFile(configPath, formattedContent);
 
     if (!isUpdated) {
         const newCssVarName = `${colorFamily}-${shadeKey}`;
         const updatedCssContent = await addTailwindCssVariable(cssContent, newCssVarName, newColor);
-        fs.writeFileSync(cssPath, updatedCssContent);
+        const formattedCssContent = await formatContent(cssPath, updatedCssContent);
+        await writeFile(cssPath, formattedCssContent);
     } else {
         // Update the CSS file
         const originalName = `${colorFamily}-${shadeKey}`;
@@ -992,8 +1026,29 @@ async function updateDefaultTailwindColor(
             newColor,
             theme,
         );
-        fs.writeFileSync(cssPath, updatedCssContent);
+        const formattedCssContent = await formatContent(cssPath, updatedCssContent);
+        await writeFile(cssPath, formattedCssContent);
     }
 
     return isUpdated;
+}
+
+/**
+ * Check if the property is a valid tailwind config property
+ * @param prop - The property to check
+ * @param keyName - The key name to check against (can be a string or a number)
+ * @returns True if the property is a valid tailwind config property, false otherwise
+ */
+function isValidTailwindConfigProperty(
+    prop: ObjectProperty | ObjectMethod | SpreadElement,
+    keyName: string,
+): boolean {
+    return (
+        prop.type === 'ObjectProperty' &&
+        'key' in prop &&
+        (prop.key.type === 'Identifier' || prop.key.type === 'NumericLiteral') &&
+        (prop.key.type === 'Identifier'
+            ? prop.key.name === keyName
+            : String(prop.key.value) === keyName)
+    );
 }
