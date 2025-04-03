@@ -81,7 +81,6 @@ export class EditorEngine {
     // }
 
     dispose() {
-        this.overlay.clear();
         this.elements.clear();
         this.history.clear();
         this.action.dispose();
