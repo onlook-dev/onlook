@@ -1,9 +1,10 @@
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import ColorPanel from './ColorPanel';
 import FontPanel from './FontPanel';
 import SystemFont from './FontPanel/SystemFont';
+import { useEditorEngine } from '@/components/Context';
+import { LayersPanelTabValue } from '@/lib/models';
 
 interface ColorSquareProps {
     color: string;
@@ -26,8 +27,7 @@ const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
 );
 
 const BrandTab = observer(() => {
-    const [showColorPanel, setShowColorPanel] = useState(false);
-    const [showFontPanel, setShowFontPanel] = useState(false);
+    const editorEngine = useEditorEngine();
 
     // Sample colors for the brand palette
     const brandColors = [
@@ -49,23 +49,29 @@ const BrandTab = observer(() => {
 
     // Toggle color panel visibility
     const handleToggleColorPanel = () => {
-        setShowColorPanel(!showColorPanel);
-        setShowFontPanel(false);
+        if (editorEngine.layersPanelTab === LayersPanelTabValue.COLORS) {
+            editorEngine.layersPanelTab = LayersPanelTabValue.BRAND;
+        } else {
+            editorEngine.layersPanelTab = LayersPanelTabValue.COLORS;
+        }
     };
 
     // Toggle font panel visibility
     const handleToggleFontPanel = () => {
-        setShowFontPanel(!showFontPanel);
-        setShowColorPanel(false);
+        if (editorEngine.layersPanelTab === LayersPanelTabValue.FONTS) {
+            editorEngine.layersPanelTab = LayersPanelTabValue.BRAND;
+        } else {
+            editorEngine.layersPanelTab = LayersPanelTabValue.FONTS;
+        }
     };
 
     // If color panel is visible, show it instead of the main content
-    if (showColorPanel) {
+    if (editorEngine.layersPanelTab === LayersPanelTabValue.COLORS) {
         return <ColorPanel onClose={handleToggleColorPanel} />;
     }
 
     // If font panel is visible, show it instead of the main content
-    if (showFontPanel) {
+    if (editorEngine.layersPanelTab === LayersPanelTabValue.FONTS) {
         return <FontPanel onClose={handleToggleFontPanel} />;
     }
 

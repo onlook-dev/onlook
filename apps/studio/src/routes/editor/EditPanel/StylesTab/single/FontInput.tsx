@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import type { Font } from '@onlook/models/assets';
 import { camelCase } from 'lodash';
 import { toNormalCase } from '@onlook/utility';
+import { LayersPanelTabValue } from '@/lib/models';
 
 /**
  * Converts a font string like "__Advent_Pro_[hash], __Advent_Pro_Fallback_[hash], sans-serif" to "adventPro"
@@ -54,8 +55,7 @@ export const FontInput = observer(
         };
 
         const handleAddNewFont = () => {
-            // TODO: Implement add new font functionality
-            console.log('Add new font clicked');
+            editorEngine.layersPanelTab = LayersPanelTabValue.FONTS;
         };
 
         return (

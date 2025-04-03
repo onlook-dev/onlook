@@ -450,6 +450,8 @@ export async function addLocalFont(
                     t.stringLiteral(`--font-${kebabCase(fontName)}`),
                 ),
                 t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
+                t.objectProperty(t.identifier('fallback'), t.stringLiteral('sans-serif')),
+                t.objectProperty(t.identifier('preload'), t.booleanLiteral(true)),
             ]);
 
             const fontDeclaration = t.variableDeclaration('const', [

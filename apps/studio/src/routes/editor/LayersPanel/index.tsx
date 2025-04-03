@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
-import { EditorMode } from '@/lib/models';
+import { EditorMode, LayersPanelTabValue } from '@/lib/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppsTab from './AppsTab';
 import BrandTab from './BrandTab';
@@ -22,20 +22,11 @@ export const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
 
-    enum TabValue {
-        PAGES = 'pages',
-        LAYERS = 'layers',
-        COMPONENTS = 'components',
-        IMAGES = 'images',
-        WINDOWS = 'windows',
-        BRAND = 'brand',
-        APPS = 'apps',
-    }
-    const [selectedTab, setSelectedTab] = useState<TabValue>(TabValue.LAYERS);
+    const [selectedTab, setSelectedTab] = useState<LayersPanelTabValue>(LayersPanelTabValue.LAYERS);
     const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
 
-    const handleMouseEnter = (tab: TabValue) => {
+    const handleMouseEnter = (tab: LayersPanelTabValue) => {
         if (isLocked) {
             return;
         }
@@ -71,16 +62,30 @@ export const LayersPanel = observer(() => {
         }
     };
 
-    const handleClick = (tab: TabValue) => {
+    const handleClick = (tab: LayersPanelTabValue) => {
         if (selectedTab === tab && isLocked) {
             setIsLocked(false);
             setIsContentPanelOpen(false);
         } else {
-            setSelectedTab(tab);
-            setIsContentPanelOpen(true);
-            setIsLocked(true);
+            tabChange(tab);
         }
     };
+
+    function tabChange(value: LayersPanelTabValue) {
+        setSelectedTab(value);
+        editorEngine.layersPanelTab = value;
+        setIsContentPanelOpen(true);
+        setIsLocked(true);
+    }
+
+    useEffect(() => {
+        tabChange(editorEngine.layersPanelTab);
+    }, [editorEngine.layersPanelTab]);
+
+    const isBrandTab =
+        selectedTab === LayersPanelTabValue.COLORS ||
+        selectedTab === LayersPanelTabValue.FONTS ||
+        selectedTab === LayersPanelTabValue.BRAND;
 
     return (
         <div
@@ -95,12 +100,12 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        selectedTab === TabValue.LAYERS && isLocked
+                        selectedTab === LayersPanelTabValue.LAYERS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
-                    onClick={() => handleClick(TabValue.LAYERS)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.LAYERS)}
+                    onClick={() => handleClick(LayersPanelTabValue.LAYERS)}
+                    onMouseEnter={() => handleMouseEnter(LayersPanelTabValue.LAYERS)}
                 >
                     <Icons.Layers className="w-5 h-5" />
                     <span className="text-xs leading-tight">
@@ -111,12 +116,12 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        selectedTab === TabValue.PAGES && isLocked
+                        selectedTab === LayersPanelTabValue.PAGES && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
-                    onClick={() => handleClick(TabValue.PAGES)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.PAGES)}
+                    onClick={() => handleClick(LayersPanelTabValue.PAGES)}
+                    onMouseEnter={() => handleMouseEnter(LayersPanelTabValue.PAGES)}
                 >
                     <Icons.File className="w-5 h-5" />
                     <span className="text-xs leading-tight">
@@ -127,12 +132,12 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        selectedTab === TabValue.IMAGES && isLocked
+                        selectedTab === LayersPanelTabValue.IMAGES && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
-                    onClick={() => handleClick(TabValue.IMAGES)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.IMAGES)}
+                    onClick={() => handleClick(LayersPanelTabValue.IMAGES)}
+                    onMouseEnter={() => handleMouseEnter(LayersPanelTabValue.IMAGES)}
                 >
                     <Icons.Image className="w-5 h-5" />
                     <span className="text-xs leading-tight">
@@ -143,12 +148,12 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        selectedTab === TabValue.WINDOWS && isLocked
+                        selectedTab === LayersPanelTabValue.WINDOWS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
-                    onClick={() => handleClick(TabValue.WINDOWS)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.WINDOWS)}
+                    onClick={() => handleClick(LayersPanelTabValue.WINDOWS)}
+                    onMouseEnter={() => handleMouseEnter(LayersPanelTabValue.WINDOWS)}
                 >
                     <Icons.Desktop className="w-5 h-5" />
                     <span className="text-xs leading-tight">
@@ -159,12 +164,12 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        selectedTab === TabValue.BRAND && isLocked
+                        isBrandTab && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                     )}
-                    onClick={() => handleClick(TabValue.BRAND)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.BRAND)}
+                    onClick={() => handleClick(LayersPanelTabValue.BRAND)}
+                    onMouseEnter={() => handleMouseEnter(LayersPanelTabValue.BRAND)}
                 >
                     <Icons.Brand className="w-5 h-5" />
                     <span className="text-xs leading-tight">
@@ -175,12 +180,12 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
-                        selectedTab === TabValue.APPS && isLocked
+                        selectedTab === LayersPanelTabValue.APPS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground',
                     )}
-                    onClick={() => handleClick(TabValue.APPS)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.APPS)}
+                    onClick={() => handleClick(LayersPanelTabValue.APPS)}
+                    onMouseEnter={() => handleMouseEnter(LayersPanelTabValue.APPS)}
                 >
                     <Icons.ViewGrid className="w-5 h-5" />
                     <span className="text-xs leading-tight">
@@ -191,12 +196,12 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 hidden',
-                        selectedTab === TabValue.COMPONENTS && isLocked
+                        selectedTab === LayersPanelTabValue.COMPONENTS && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                     )}
-                    onClick={() => handleClick(TabValue.COMPONENTS)}
-                    onMouseEnter={() => handleMouseEnter(TabValue.COMPONENTS)}
+                    onClick={() => handleClick(LayersPanelTabValue.COMPONENTS)}
+                    onMouseEnter={() => handleMouseEnter(LayersPanelTabValue.COMPONENTS)}
                 >
                     <Icons.Component className="w-5 h-5" />
                     <span className="text-xs leading-tight">Elements</span>
@@ -217,8 +222,8 @@ export const LayersPanel = observer(() => {
                         onMouseEnter={() => setIsContentPanelOpen(true)}
                     >
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
-                            {selectedTab === TabValue.LAYERS && <LayersTab />}
-                            {selectedTab === TabValue.COMPONENTS &&
+                            {selectedTab === LayersPanelTabValue.LAYERS && <LayersTab />}
+                            {selectedTab === LayersPanelTabValue.COMPONENTS &&
                                 (COMPONENT_DISCOVERY_ENABLED ? (
                                     <ComponentsTab
                                         components={editorEngine.projectInfo.components}
@@ -228,11 +233,11 @@ export const LayersPanel = observer(() => {
                                         Coming soon
                                     </div>
                                 ))}
-                            {selectedTab === TabValue.PAGES && <PagesTab />}
-                            {selectedTab === TabValue.IMAGES && <ImagesTab />}
-                            {selectedTab === TabValue.WINDOWS && <WindowsTab />}
-                            {selectedTab === TabValue.BRAND && <BrandTab />}
-                            {selectedTab === TabValue.APPS && <AppsTab />}
+                            {selectedTab === LayersPanelTabValue.PAGES && <PagesTab />}
+                            {selectedTab === LayersPanelTabValue.IMAGES && <ImagesTab />}
+                            {selectedTab === LayersPanelTabValue.WINDOWS && <WindowsTab />}
+                            {isBrandTab && <BrandTab />}
+                            {selectedTab === LayersPanelTabValue.APPS && <AppsTab />}
                         </div>
                     </div>
 
