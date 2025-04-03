@@ -16,6 +16,7 @@ const MIN_X = -5000;
 const MIN_Y = -5000;
 
 export const Canvas = observer(({ children }: { children: ReactNode }) => {
+
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
