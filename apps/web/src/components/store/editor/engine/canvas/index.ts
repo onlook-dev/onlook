@@ -1,5 +1,3 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { SIZE_PRESETS } from '@/lib/sizePresets';
 import { DefaultSettings } from '@onlook/models/constants';
 import type {
     FrameSettings,
@@ -7,21 +5,33 @@ import type {
     ProjectSettings,
     RectPosition,
 } from '@onlook/models/projects';
+import { Icons, type IconProps } from '@onlook/ui-v4/icons/index';
 import { debounce } from 'lodash';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 
-type SettingsObserver = (settings: FrameSettings) => void;
+export interface SizePreset {
+    name: string;
+    width: number;
+    height: number;
+    icon: React.FC<IconProps>;
+}
 
+export const SIZE_PRESETS: SizePreset[] = [
+    { name: 'Desktop', width: 1440, height: 1024, icon: Icons.Desktop },
+    { name: 'Laptop', width: 1280, height: 832, icon: Icons.Laptop },
+    { name: 'Mobile', width: 320, height: 568, icon: Icons.Mobile },
+];
+
+type SettingsObserver = (settings: FrameSettings) => void;
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
     private panPosition: RectPosition = DefaultSettings.PAN_POSITION;
     private webFrames: FrameSettings[] = [];
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
-    constructor(private projects: ProjectsManager) {
+    constructor() {
         makeAutoObservable(this);
-        this.listenToProjectChange();
         this.panPosition = this.getDefaultPanPosition();
     }
 
@@ -43,17 +53,6 @@ export class CanvasManager {
         }
 
         return { x, y };
-    }
-
-    listenToProjectChange() {
-        reaction(
-            () => this.projects.project,
-            (project) => {
-                if (project) {
-                    this.applySettings(project);
-                }
-            },
-        );
     }
 
     get scale() {
@@ -199,9 +198,9 @@ export class CanvasManager {
             frames: Array.from(this.frames.values()),
         };
 
-        if (this.projects.project) {
-            this.projects.project.settings = settings;
-            this.projects.updateProject(this.projects.project);
-        }
+        // if (this.projects.project) {
+        //     this.projects.project.settings = settings;
+        //     this.projects.updateProject(this.projects.project);
+        // }
     }
 }

@@ -6,7 +6,6 @@ import { type Metadata } from "next";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
-import { ThemeProvider } from "./_components/theme";
 
 export const metadata: Metadata = {
     title: "Onlook",
@@ -29,15 +28,12 @@ export default async function RootLayout({
     return (
         <html lang={locale} className={`${inter.variable}`}>
             <body>
-                <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-                    <TRPCReactProvider>
-                        <NextIntlClientProvider>
-                            {children as any}
-                            {/* <Modals /> */}
-                        </NextIntlClientProvider>
-                    </TRPCReactProvider>
-                </ThemeProvider>
-
+                <TRPCReactProvider>
+                    <NextIntlClientProvider>
+                        {children as any}
+                        {/* <Modals /> */}
+                    </NextIntlClientProvider>
+                </TRPCReactProvider>
             </body>
         </html >
     );

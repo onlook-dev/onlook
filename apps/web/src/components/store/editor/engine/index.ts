@@ -9,7 +9,7 @@ import { CodeManager } from './code';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
 // import { GroupManager } from './group';
-// import { HistoryManager } from './history';
+import { HistoryManager } from './history';
 import { ImageManager } from './image';
 // import { InsertManager } from './insert';
 // import { MoveManager } from './move';
@@ -42,24 +42,25 @@ export class EditorEngine {
     readonly overlay: OverlayManager = new OverlayManager(this);
     readonly state: StateManager = new StateManager(this);
     readonly window: WindowManager = new WindowManager(this);
-    // readonly ast: AstManager = new AstManager(this);
-    // readonly history: HistoryManager = new HistoryManager(this);
+    readonly history: HistoryManager = new HistoryManager(this);
+    // readonly action: ActionManager = new ActionManager(this);
+
     // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
     // readonly elements: ElementsManager = new ElementsManager(this);
     // readonly text: TextEditingManager = new TextEditingManager(this);
-    // readonly action: ActionManager = new ActionManager(this);
     // readonly insert: InsertManager = new InsertManager(this);
     // readonly move: MoveManager = new MoveManager(this);
     // readonly style: StyleManager = new StyleManager(this);
     // readonly copy: CopyManager = new CopyManager(this);
     // readonly group: GroupManager = new GroupManager(this);
+    // readonly ast: AstManager = new AstManager(this);
 
     constructor(
         // private projectsManager: ProjectsManager,
         // private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        // this.canvas = new CanvasManager(this.projectsManager);
+        this.canvas = new CanvasManager(this.projectsManager);
         // this.chat = new ChatManager(this, this.projectsManager, this.userManager);
         // this.webview = new WebviewManager(this, this.projectsManager);
         // this.code = new CodeManager(this, this.projectsManager);

@@ -1,9 +1,8 @@
 "use client"
 
-// import { useEditorEngine } from '@/components/Context';
-// import Publish from './Publish';
-// import { SettingsTabValue } from '@onlook/models/editor';
 import { Hotkey } from '@/components/hotkey';
+import { useEditorEngine } from '@/components/store';
+import { SettingsTabValue } from '@onlook/models/editor';
 import { Button } from '@onlook/ui-v4/button';
 import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
 import { Icons } from '@onlook/ui-v4/icons';
@@ -15,29 +14,21 @@ import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 
 export const EditorTopBar = observer(() => {
-    // const editorEngine = useEditorEngine();
+    const editorEngine = useEditorEngine();
     const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [
         {
-            // click: () => editorEngine.action.undo(),
-            // isDisabled: !editorEngine.history.canUndo,
+            click: () => editorEngine.action.undo(),
+            isDisabled: !editorEngine.history.canUndo,
             hotkey: Hotkey.UNDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1" />,
-            click: () => {
-                console.log('undo');
-            },
-            isDisabled: false,
         },
         {
-            // click: () => editorEngine.action.redo(),
-            // isDisabled: !editorEngine.history.canRedo,
+            click: () => editorEngine.action.redo(),
+            isDisabled: !editorEngine.history.canRedo,
             hotkey: Hotkey.REDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
-            click: () => {
-                console.log('redo');
-            },
-            isDisabled: false,
         },
     ];
 
@@ -87,10 +78,10 @@ export const EditorTopBar = observer(() => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8"
-                                // onClick={() => {
-                                //     editorEngine.settingsTab = SettingsTabValue.VERSIONS;
-                                //     editorEngine.isSettingsOpen = true;
-                                // }}
+                                    onClick={() => {
+                                        editorEngine.state.settingsTab = SettingsTabValue.VERSIONS;
+                                        editorEngine.state.settingsOpen = true;
+                                    }}
                                 >
                                     <Icons.CounterClockwiseClock className="h-4 w-4" />
                                 </Button>
