@@ -717,7 +717,7 @@ export type Database = {
         };
         Enums: {
             usage_limit_reason: 'none' | 'daily' | 'monthly';
-            usage_plan_values: 'basic' | 'pro';
+            usage_plan_values: 'free' | 'pro';
         };
         CompositeTypes: {
             [_ in never]: never;

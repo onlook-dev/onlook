@@ -37,7 +37,7 @@ export class SubscriptionManager {
             }
 
             // Determine plan type based on API response
-            let newPlan = UsagePlanType.BASIC;
+            let newPlan = UsagePlanType.FREE;
 
             if (res.data && res.data.name) {
                 switch (res.data.name) {
@@ -51,7 +51,7 @@ export class SubscriptionManager {
                         newPlan = UsagePlanType.SCALE;
                         break;
                     default:
-                        newPlan = UsagePlanType.BASIC;
+                        newPlan = UsagePlanType.FREE;
                 }
             }
 
@@ -59,7 +59,7 @@ export class SubscriptionManager {
             return newPlan;
         } catch (error) {
             console.error('Error checking premium status:', error);
-            return UsagePlanType.BASIC;
+            return UsagePlanType.FREE;
         }
     }
 }

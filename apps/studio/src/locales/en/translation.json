@@ -96,6 +96,18 @@
     },
     "pricing": {
         "plans": {
+            "free": {
+                "name": "Free",
+                "price": "$0/month",
+                "description": "Prototype and experiment in code with ease.",
+                "features": [
+                    "Visual code editor access",
+                    "Unlimited projects",
+                    "{{dailyMessages}} AI chat messages a day",
+                    "{{monthlyMessages}} AI messages a month",
+                    "Limited to 1 screenshot per chat"
+                ]
+            },
             "basic": {
                 "name": "Onlook Basic",
                 "price": "$0/month",
@@ -156,7 +168,7 @@
             "currentPlan": "Current Plan",
             "getPro": "Get Pro",
             "manageSubscription": "Manage Subscription",
-            "downgradeToBasic": "Downgrade to Basic",
+            "downgradeToFree": "Downgrade to Free",
             "downgradeToLaunch": "Downgrade to Launch",
             "downgradeToPro": "Downgrade to Pro"
         },

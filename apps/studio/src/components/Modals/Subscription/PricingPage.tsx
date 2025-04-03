@@ -173,7 +173,7 @@ export const SubscriptionModal = observer(() => {
 
     const manageSubscription = async () => {
         try {
-            setIsCheckingOut(UsagePlanType.BASIC);
+            setIsCheckingOut(UsagePlanType.FREE);
             const res:
                 | {
                       success: boolean;
@@ -232,7 +232,7 @@ export const SubscriptionModal = observer(() => {
                         </div>
 
                         <div className="relative z-10 w-full flex flex-col items-center justify-center pt-16 flex-grow">
-                            <div className="w-full max-w-[1200px] mx-auto h-full">
+                            <div className="w-full max-w-[1400px] mx-auto h-full">
                                 <MotionConfig
                                     transition={{ duration: 0.5, type: 'spring', bounce: 0 }}
                                 >
@@ -268,7 +268,36 @@ export const SubscriptionModal = observer(() => {
                                                 </h1>
                                             </div>
                                         </motion.div>
-                                        <div className="flex flex-row gap-6 w-full justify-center pb-4 flex-grow">
+                                        <div className="flex flex-row gap-4 w-full justify-center pb-4 flex-grow">
+                                            <PricingCard
+                                                plan={t('pricing.plans.free.name')}
+                                                price={t('pricing.plans.free.price')}
+                                                description={t('pricing.plans.free.description')}
+                                                features={
+                                                    t('pricing.plans.free.features', {
+                                                        returnObjects: true,
+                                                        dailyMessages: 5,
+                                                        monthlyMessages: 50,
+                                                    }) as string[]
+                                                }
+                                                buttonText={
+                                                    userManager.subscription.plan ===
+                                                    UsagePlanType.FREE
+                                                        ? `You are on ${t('pricing.plans.free.name')}`
+                                                        : `Downgrade to ${t('pricing.plans.free.name')}`
+                                                }
+                                                buttonProps={{
+                                                    onClick: () => {
+                                                        manageSubscription();
+                                                    },
+                                                    disabled:
+                                                        userManager.subscription.plan ===
+                                                            UsagePlanType.FREE ||
+                                                        isCheckingOut === UsagePlanType.FREE,
+                                                }}
+                                                delay={0.1}
+                                                isLoading={isCheckingOut === UsagePlanType.FREE}
+                                            />
                                             <PricingCard
                                                 plan={t('pricing.plans.pro.name')}
                                                 price={t('pricing.plans.pro.price')}
@@ -281,12 +310,18 @@ export const SubscriptionModal = observer(() => {
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.PRO
-                                                        ? t('pricing.buttons.downgradeToBasic')
-                                                        : t('pricing.buttons.getPro')
+                                                        ? `You are on ${t('pricing.plans.pro.name')}`
+                                                        : userManager.subscription.plan ===
+                                                            UsagePlanType.FREE
+                                                          ? t('pricing.buttons.getPro')
+                                                          : `Downgrade to ${t('pricing.plans.pro.name')}`
                                                 }
                                                 buttonProps={{
                                                     onClick: startProCheckout,
-                                                    disabled: isCheckingOut === UsagePlanType.PRO,
+                                                    disabled:
+                                                        userManager.subscription.plan ===
+                                                            UsagePlanType.PRO ||
+                                                        isCheckingOut === UsagePlanType.PRO,
                                                 }}
                                                 delay={0.1}
                                                 isLoading={isCheckingOut === UsagePlanType.PRO}
@@ -309,12 +344,17 @@ export const SubscriptionModal = observer(() => {
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.LAUNCH
-                                                        ? t('pricing.buttons.downgradeToPro')
-                                                        : 'Get Launch'
+                                                        ? `You are on ${t('pricing.plans.launch.name')}`
+                                                        : userManager.subscription.plan ===
+                                                            UsagePlanType.SCALE
+                                                          ? `Downgrade to ${t('pricing.plans.launch.name')}`
+                                                          : 'Get Launch'
                                                 }
                                                 buttonProps={{
                                                     onClick: startLaunchCheckout,
                                                     disabled:
+                                                        userManager.subscription.plan ===
+                                                            UsagePlanType.LAUNCH ||
                                                         isCheckingOut === UsagePlanType.LAUNCH,
                                                 }}
                                                 delay={0.15}
@@ -338,12 +378,15 @@ export const SubscriptionModal = observer(() => {
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.SCALE
-                                                        ? t('pricing.buttons.downgradeToLaunch')
+                                                        ? `You are on ${t('pricing.plans.scale.name')}`
                                                         : 'Get Scale'
                                                 }
                                                 buttonProps={{
                                                     onClick: startScaleCheckout,
-                                                    disabled: isCheckingOut === UsagePlanType.SCALE,
+                                                    disabled:
+                                                        userManager.subscription.plan ===
+                                                            UsagePlanType.SCALE ||
+                                                        isCheckingOut === UsagePlanType.SCALE,
                                                 }}
                                                 delay={0.17}
                                                 isLoading={isCheckingOut === UsagePlanType.SCALE}
@@ -355,36 +398,6 @@ export const SubscriptionModal = observer(() => {
                                                 }
                                             />
                                         </div>
-                                        <PricingCard
-                                            plan={t('pricing.plans.basic.name')}
-                                            price={t('pricing.plans.basic.price')}
-                                            description={t('pricing.plans.basic.description')}
-                                            features={
-                                                t('pricing.plans.basic.features', {
-                                                    returnObjects: true,
-                                                    dailyMessages: 5,
-                                                    monthlyMessages: 50,
-                                                }) as string[]
-                                            }
-                                            buttonText={
-                                                userManager.subscription.plan ===
-                                                UsagePlanType.BASIC
-                                                    ? t('pricing.buttons.currentPlan')
-                                                    : t('pricing.buttons.manageSubscription')
-                                            }
-                                            buttonProps={{
-                                                onClick: () => {
-                                                    manageSubscription();
-                                                },
-                                                disabled:
-                                                    userManager.subscription.plan ===
-                                                        UsagePlanType.BASIC ||
-                                                    isCheckingOut === UsagePlanType.BASIC,
-                                            }}
-                                            delay={0.1}
-                                            isLoading={isCheckingOut === UsagePlanType.BASIC}
-                                            className="hidden"
-                                        />
                                         <motion.div
                                             className="flex flex-col gap-2 text-center"
                                             initial={{ opacity: 0, y: 5 }}

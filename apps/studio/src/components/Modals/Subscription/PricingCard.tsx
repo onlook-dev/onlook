@@ -61,10 +61,10 @@ export const PricingCard = ({
                     </div>
                 )}
                 <MotionCard
-                    className={`max-w-[380px] min-h-[630px] flex-shrink-0 flex ${className || ''}`}
+                    className={`max-w-[420px] h-[680px] flex-shrink-0 flex ${className || ''}`}
                 >
                     <motion.div className="p-5 pb-8 flex flex-col w-full h-full">
-                        <div>
+                        <div className="flex-shrink-0">
                             <h2 className="text-[18px] font-medium">{plan}</h2>
                             <p className="text-[40px] font-medium flex items-baseline">
                                 <span>{price.split('/')[0]}</span>
@@ -73,11 +73,11 @@ export const PricingCard = ({
                                 </span>
                             </p>
                         </div>
-                        <p className="text-title3 font-normal text-balance text-muted-foreground mt-2">
+                        <p className="text-title3 font-normal text-balance text-muted-foreground mt-2 flex-shrink-0">
                             {description}
                         </p>
                         <Button
-                            className={`w-full text-base font-medium mt-6 mb-2 h-12 ${
+                            className={`w-full text-base font-medium mt-6 mb-2 h-12 flex-shrink-0 ${
                                 isCurrentPlan ? 'bg-white/75' : ''
                             }`}
                             size="default"
@@ -93,8 +93,8 @@ export const PricingCard = ({
                                 buttonText
                             )}
                         </Button>
-                        <div className="h-[0.5px] bg-white/20 -mx-5 my-5" />
-                        <div className="space-y-3 mt-1 flex-grow">
+                        <div className="h-[0.5px] bg-white/20 -mx-5 my-5 flex-shrink-0" />
+                        <div className="space-y-3 mt-1 flex-grow overflow-y-auto">
                             {showFeaturesPrefix && (
                                 <p className="text-base font-medium mb-2">{featuresPrefixText}</p>
                             )}
