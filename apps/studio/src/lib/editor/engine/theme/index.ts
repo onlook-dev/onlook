@@ -453,8 +453,9 @@ export class ThemeManager {
                 }
                 // If the color name is a number, we need to add a suffix to the new color name
                 const randomId = customAlphabet('0123456789', 5)();
+                const randomText = customAlphabet('abcdefghijklmnopqrstuvwxyz', 5)();
                 const newName = isNaN(Number(colorName))
-                    ? `${colorName}Copy`
+                    ? `${colorName}Copy${randomText}`
                     : `${colorName}${randomId}`;
 
                 const color = Color.from(

@@ -125,7 +125,7 @@ export const BrandPalletGroup = ({
     };
 
     const generateUniqueColorName = () => {
-        const randomIdText = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 5)();
+        const randomIdText = customAlphabet('abcdefghijklmnopqrstuvwxyz', 5)();
         const randomIdNumber = customAlphabet('0123456789', 5)();
         const randomId = isNaN(Number(title)) ? randomIdText : randomIdNumber;
         return `${title} ${randomId}`;

@@ -51,12 +51,17 @@ export const ColorNameInput = ({
         }
 
         // Check if name already exists in theme manager or in provided list
-        const themeManagerNames = Object.keys(themeManager.colorGroups);
-        if (
-            themeManagerNames.includes(camelCase(value)) ||
-            existingNames.includes(camelCase(value))
-        ) {
-            return 'Color name already exists';
+        // Check in provided list first
+        if (existingNames.length > 0) {
+            if (existingNames.includes(camelCase(value))) {
+                return 'Color name already exists';
+            }
+        } else {
+            // Check in theme manager
+            const themeManagerNames = Object.keys(themeManager.colorGroups);
+            if (themeManagerNames.includes(camelCase(value))) {
+                return 'Color name already exists';
+            }
         }
 
         return null;
