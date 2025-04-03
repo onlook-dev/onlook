@@ -1,5 +1,6 @@
 import { EditorMode, EditorTabValue, SettingsTabValue } from "@onlook/models";
 import { makeAutoObservable } from "mobx";
+import { EditorEngine } from "../index";
 
 export class StateManager {
     private _plansOpen: boolean = false;
@@ -10,7 +11,7 @@ export class StateManager {
     editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
 
-    constructor() {
+    constructor(private readonly engine: EditorEngine) {
         makeAutoObservable(this);
     }
 

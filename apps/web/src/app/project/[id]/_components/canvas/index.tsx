@@ -1,12 +1,13 @@
+"use client"
+
 import { useEditorEngine } from '@/components/store';
+import { EditorAttributes } from '@onlook/models/constants';
 import { EditorMode } from '@onlook/models/editor';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HotkeysArea } from './hotkeys';
 import { PanOverlay } from './overlay/pan';
-
 // import { Overlay } from './overlay';
-// import { EditorAttributes } from '@onlook/models/constants';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -18,7 +19,6 @@ const MIN_X = -5000;
 const MIN_Y = -5000;
 
 export const Canvas = observer(({ children }: { children: ReactNode }) => {
-
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
@@ -65,7 +65,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                 },
                 lintedScale,
             );
-            // editorEngine.canvas.position = newPosition;
+            editorEngine.canvas.position = newPosition;
         },
         [scale, position, editorEngine.canvas],
     );
@@ -166,11 +166,11 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
             >
-                {/* <Overlay>
-                    <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                        {children}
-                    </div>
-                </Overlay> */}
+                {/* <Overlay> */}
+                <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
+                    {children}
+                </div>
+                {/* </Overlay> */}
                 <PanOverlay
                     clampPosition={(position: { x: number; y: number }) => clampPosition(position, scale)}
                     isPanning={isPanning}

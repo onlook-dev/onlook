@@ -6,15 +6,16 @@
 // import { LayersPanel } from './LayersPanel';
 // import { Toolbar } from './Toolbar';
 
+import { Canvas } from "./_components/canvas";
 import { EditorTopBar } from "./_components/top-bar";
 
 export default async function Page({ params }: { params: { id: string } }) {
     const id = (await params).id
     return (
         <div className="h-screen w-screen relative flex flex-row select-none">
-            {/* <Canvas> */}
-            {/* <WebviewArea /> */}
-            {/* </Canvas> */}
+            <Canvas>
+                {/* <WebviewArea /> */}
+            </Canvas>
 
             <div className="fixed top-20 left-0 animate-layer-panel-in">
                 {/* <LayersPanel /> */}

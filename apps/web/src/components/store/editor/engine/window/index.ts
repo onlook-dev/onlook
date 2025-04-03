@@ -7,7 +7,7 @@ export class WindowManager {
     }
 
     get isWindowSelected() {
-        // return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+        return this.editorEngine.elements.selected.length > 0 && this.editorEngine.elements.selected.length === 0;
     }
 
     // async takeActiveWebviewScreenshot(
