@@ -1,10 +1,13 @@
-import "~/styles/globals.css";
+import "@/styles/globals.css";
+import '@onlook/ui-v4/globals.css';
 
 import { TRPCReactProvider } from "@/trpc/react";
+import { TooltipProvider } from "@onlook/ui-v4/tooltip";
 import { type Metadata } from "next";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import { Geist } from "next/font/google";
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from "./_components/theme";
 
 export const metadata: Metadata = {
     title: "Onlook",
@@ -12,9 +15,9 @@ export const metadata: Metadata = {
     icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-const geist = Geist({
+const inter = Inter({
     subsets: ["latin"],
-    variable: "--font-geist-sans",
+    variable: "--font-inter",
 });
 
 export default async function RootLayout({
@@ -25,20 +28,22 @@ export default async function RootLayout({
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={`${geist.variable} dark`}>
+        <html lang={locale} className={`${inter.variable}`}>
             <body>
-                <TRPCReactProvider>
-                    <NextIntlClientProvider>
-                        {/* <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme"> */}
-                        {/* <TooltipProvider> */}
-                        {/* @ts-expect-error - children is a ReactNode */}
-                        {children}
-                        {/* <Modals /> */}
-                        {/* <Toaster /> */}
-                        {/* </TooltipProvider> */}
-                        {/* </ThemeProvider> */}
-                    </NextIntlClientProvider>
-                </TRPCReactProvider>
+                <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+
+                    <TRPCReactProvider>
+                        <NextIntlClientProvider>
+                            <TooltipProvider>
+                                {/* @ts-expect-error - Children is ReactNode */}
+                                {children}
+                                {/* <Modals /> */}
+                                {/* <Toaster /> */}
+                            </TooltipProvider>
+                        </NextIntlClientProvider>
+                    </TRPCReactProvider>
+                </ThemeProvider>
+
             </body>
         </html >
     );
