@@ -15,6 +15,8 @@ import { Color, toNormalCase } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
 import { ColorNameInput } from './ColorNameInput';
+import { customAlphabet } from 'nanoid/non-secure';
+import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
 export interface ColorItem {
     name: string;
@@ -121,6 +123,11 @@ export const BrandPalletGroup = ({
             filePath: themeManager.tailwindCssPath,
             line,
         });
+    };
+
+    const generateUniqueColorName = () => {
+        const randomId = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 5)();
+        return `${title} ${randomId}`;
     };
 
     return (
@@ -348,7 +355,7 @@ export const BrandPalletGroup = ({
                     {isAddingNewColor ? (
                         <ColorPopover
                             color={Color.from('#FFFFFF')}
-                            brandColor={`${title} ${colors?.length || 0}`}
+                            brandColor={generateUniqueColorName()}
                             onClose={() => setIsAddingNewColor(false)}
                             onColorChange={(newColor, newName) =>
                                 handleColorChange(colors?.length || 0, newColor, newName, title)
