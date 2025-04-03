@@ -4,7 +4,7 @@ import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
 
 export class SubscriptionManager {
-    plan: UsagePlanType = UsagePlanType.BASIC;
+    plan: UsagePlanType = UsagePlanType.PRO;
 
     constructor() {
         makeAutoObservable(this);
@@ -14,7 +14,7 @@ export class SubscriptionManager {
 
     private restoreCachedPlan() {
         const cachedPlan = localStorage.getItem('currentPlan');
-        this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
+        this.plan = UsagePlanType.PRO;
     }
 
     async updatePlan(plan: UsagePlanType) {

@@ -17,6 +17,7 @@ interface PricingCardProps {
     showFeaturesPrefix?: boolean;
     featuresPrefixText?: string;
     isRecommended?: boolean;
+    isCurrentPlan?: boolean;
 }
 
 export const PricingCard = ({
@@ -32,6 +33,7 @@ export const PricingCard = ({
     showFeaturesPrefix = false,
     featuresPrefixText = 'Everything in Pro plus:',
     isRecommended = false,
+    isCurrentPlan = false,
 }: PricingCardProps) => {
     const { t } = useTranslation();
 
@@ -75,7 +77,9 @@ export const PricingCard = ({
                             {description}
                         </p>
                         <Button
-                            className="w-full text-base font-medium mt-6 mb-2 h-12"
+                            className={`w-full text-base font-medium mt-6 mb-2 h-12 ${
+                                isCurrentPlan ? 'bg-white/75' : ''
+                            }`}
                             size="default"
                             {...buttonProps}
                             disabled={isLoading || buttonProps.disabled}

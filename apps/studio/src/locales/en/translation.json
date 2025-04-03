@@ -148,12 +148,17 @@
         },
         "titles": {
             "choosePlan": "Choose your plan",
-            "proMember": "Thanks for being a Pro member!"
+            "proMember": "Thanks for being a Pro member!",
+            "launchMember": "Thanks for being a Launch member!",
+            "scaleMember": "Thanks for being a Scale member!"
         },
         "buttons": {
             "currentPlan": "Current Plan",
             "getPro": "Get Pro",
-            "manageSubscription": "Manage Subscription"
+            "manageSubscription": "Manage Subscription",
+            "downgradeToBasic": "Downgrade to Basic",
+            "downgradeToLaunch": "Downgrade to Launch",
+            "downgradeToPro": "Downgrade to Pro"
         },
         "loading": {
             "checkingPayment": "Checking for payment..."

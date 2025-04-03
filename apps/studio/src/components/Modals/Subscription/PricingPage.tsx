@@ -245,10 +245,26 @@ export const SubscriptionModal = observer(() => {
                                         >
                                             <div className="flex flex-row gap-2 w-full justify-between">
                                                 <h1 className="text-title1 font-medium text-foreground-primary">
-                                                    {userManager.subscription.plan ===
-                                                    UsagePlanType.PRO
-                                                        ? t('pricing.titles.proMember')
-                                                        : t('pricing.titles.choosePlan')}
+                                                    {(() => {
+                                                        switch (userManager.subscription.plan) {
+                                                            case UsagePlanType.PRO:
+                                                                return t(
+                                                                    'pricing.titles.proMember',
+                                                                );
+                                                            case UsagePlanType.LAUNCH:
+                                                                return t(
+                                                                    'pricing.titles.launchMember',
+                                                                );
+                                                            case UsagePlanType.SCALE:
+                                                                return t(
+                                                                    'pricing.titles.scaleMember',
+                                                                );
+                                                            default:
+                                                                return t(
+                                                                    'pricing.titles.choosePlan',
+                                                                );
+                                                        }
+                                                    })()}
                                                 </h1>
                                             </div>
                                         </motion.div>
@@ -265,20 +281,21 @@ export const SubscriptionModal = observer(() => {
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.PRO
-                                                        ? t('pricing.buttons.currentPlan')
+                                                        ? t('pricing.buttons.downgradeToBasic')
                                                         : t('pricing.buttons.getPro')
                                                 }
                                                 buttonProps={{
                                                     onClick: startProCheckout,
-                                                    disabled:
-                                                        userManager.subscription.plan ===
-                                                            UsagePlanType.PRO ||
-                                                        isCheckingOut === UsagePlanType.PRO,
+                                                    disabled: isCheckingOut === UsagePlanType.PRO,
                                                 }}
                                                 delay={0.1}
                                                 isLoading={isCheckingOut === UsagePlanType.PRO}
                                                 showFeaturesPrefix={true}
                                                 featuresPrefixText="Everything in Free plus:"
+                                                isCurrentPlan={
+                                                    userManager.subscription.plan ===
+                                                    UsagePlanType.PRO
+                                                }
                                             />
                                             <PricingCard
                                                 plan={t('pricing.plans.launch.name')}
@@ -292,21 +309,22 @@ export const SubscriptionModal = observer(() => {
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.LAUNCH
-                                                        ? t('pricing.buttons.currentPlan')
+                                                        ? t('pricing.buttons.downgradeToPro')
                                                         : 'Get Launch'
                                                 }
                                                 buttonProps={{
                                                     onClick: startLaunchCheckout,
                                                     disabled:
-                                                        userManager.subscription.plan ===
-                                                            UsagePlanType.LAUNCH ||
                                                         isCheckingOut === UsagePlanType.LAUNCH,
                                                 }}
                                                 delay={0.15}
                                                 isLoading={isCheckingOut === UsagePlanType.LAUNCH}
                                                 showFeaturesPrefix={true}
                                                 featuresPrefixText="Everything in Pro plus:"
-                                                isRecommended={true}
+                                                isCurrentPlan={
+                                                    userManager.subscription.plan ===
+                                                    UsagePlanType.LAUNCH
+                                                }
                                             />
                                             <PricingCard
                                                 plan={t('pricing.plans.scale.name')}
@@ -320,20 +338,21 @@ export const SubscriptionModal = observer(() => {
                                                 buttonText={
                                                     userManager.subscription.plan ===
                                                     UsagePlanType.SCALE
-                                                        ? t('pricing.buttons.currentPlan')
+                                                        ? t('pricing.buttons.downgradeToLaunch')
                                                         : 'Get Scale'
                                                 }
                                                 buttonProps={{
                                                     onClick: startScaleCheckout,
-                                                    disabled:
-                                                        userManager.subscription.plan ===
-                                                            UsagePlanType.SCALE ||
-                                                        isCheckingOut === UsagePlanType.SCALE,
+                                                    disabled: isCheckingOut === UsagePlanType.SCALE,
                                                 }}
                                                 delay={0.17}
                                                 isLoading={isCheckingOut === UsagePlanType.SCALE}
                                                 showFeaturesPrefix={true}
                                                 featuresPrefixText="Everything in Launch plus:"
+                                                isCurrentPlan={
+                                                    userManager.subscription.plan ===
+                                                    UsagePlanType.SCALE
+                                                }
                                             />
                                         </div>
                                         <PricingCard
