@@ -23,15 +23,12 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const scale = editorEngine.canvas.scale;
     const position = editorEngine.canvas.position;
 
-    const handleCanvasMouseDown = useCallback(
-        (event: React.MouseEvent<HTMLDivElement>) => {
-            if (event.target !== containerRef.current) {
-                return;
-            }
-            editorEngine.clearUI();
-        },
-        [editorEngine],
-    );
+    const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.target !== containerRef.current) {
+            return;
+        }
+        editorEngine.clearUI();
+    };
 
     const handleZoom = useCallback(
         (event: WheelEvent) => {
@@ -115,29 +112,23 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
         [handleZoom, handlePan],
     );
 
-    const middleMouseButtonDown = useCallback(
-        (e: MouseEvent) => {
-            if (e.button === 1) {
-                editorEngine.mode = EditorMode.PAN;
-                setIsPanning(true);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        },
-        [editorEngine],
-    );
+    const middleMouseButtonDown = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.mode = EditorMode.PAN;
+            setIsPanning(true);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
 
-    const middleMouseButtonUp = useCallback(
-        (e: MouseEvent) => {
-            if (e.button === 1) {
-                editorEngine.mode = EditorMode.DESIGN;
-                setIsPanning(false);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        },
-        [editorEngine],
-    );
+    const middleMouseButtonUp = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.mode = EditorMode.DESIGN;
+            setIsPanning(false);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
 
     const transformStyle = useMemo(
         () => ({
