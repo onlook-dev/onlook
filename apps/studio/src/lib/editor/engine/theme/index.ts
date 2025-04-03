@@ -464,15 +464,7 @@ export class ThemeManager {
                         : colorToDuplicate.lightColor,
                 );
 
-                await this.update(
-                    groupName,
-                    group.length,
-                    color,
-                    newName,
-                    groupName.toLowerCase(),
-                    theme,
-                    true,
-                );
+                await this.update(groupName, group.length, color, newName, groupName, theme, true);
 
                 this.scanConfig();
             }
