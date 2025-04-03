@@ -6,3 +6,4 @@ export * from './null';
 export * from './string';
 export * from './time';
 export * from './urls';
+export * from './font';

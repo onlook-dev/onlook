@@ -52,6 +52,16 @@ interface ConfigResult {
     configContent: any;
 }
 
+interface Font {
+    id: string;
+    family: string;
+    subsets: string[];
+    variable: string;
+    weight?: string[];
+    styles?: string[];
+    type: string;
+}
+
 export enum Theme {
     LIGHT = 'light',
     DARK = 'dark',
@@ -66,4 +76,5 @@ export type {
     ParsedColors,
     ThemeColors,
     UpdateResult,
+    Font,
 };

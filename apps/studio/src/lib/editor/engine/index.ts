@@ -27,6 +27,7 @@ import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { WebviewManager } from './webview';
+import { FontManager } from './font';
 
 export class EditorEngine {
     private _plansOpen: boolean = false;
@@ -47,6 +48,7 @@ export class EditorEngine {
     private errorManager: ErrorManager;
     private imageManager: ImageManager;
     private themeManager: ThemeManager;
+    private fontManager: FontManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
@@ -74,6 +76,7 @@ export class EditorEngine {
         this.errorManager = new ErrorManager(this, this.projectsManager);
         this.imageManager = new ImageManager(this, this.projectsManager);
         this.themeManager = new ThemeManager(this, this.projectsManager);
+        this.fontManager = new FontManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -132,6 +135,9 @@ export class EditorEngine {
     }
     get theme() {
         return this.themeManager;
+    }
+    get font() {
+        return this.fontManager;
     }
     get editPanelTab() {
         return this._editorPanelTab;
@@ -213,6 +219,7 @@ export class EditorEngine {
         this.canvasManager?.clear();
         this.imageManager?.dispose();
         this.themeManager?.dispose();
+        this.fontManager?.dispose();
         this._settingsOpen = false;
         this._plansOpen = false;
     }
