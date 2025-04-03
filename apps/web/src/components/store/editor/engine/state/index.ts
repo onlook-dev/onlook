@@ -4,12 +4,12 @@ import type { EditorEngine } from "..";
 
 export class StateManager {
     private _plansOpen: boolean = false;
-    private settingsOpen: boolean = false;
-    private hotkeysOpen: boolean = false;
-    private publishOpen: boolean = false;
-    private editorMode: EditorMode = EditorMode.DESIGN;
-    private editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
+    settingsOpen: boolean = false;
+    hotkeysOpen: boolean = false;
+    publishOpen: boolean = false;
+    editorMode: EditorMode = EditorMode.DESIGN;
+    editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
+    settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);

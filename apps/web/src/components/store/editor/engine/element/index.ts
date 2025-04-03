@@ -1,11 +1,11 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui-v4/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { adaptRectToCanvas } from '../overlay/utils';
 
-export class ElementManager {
+export class ElementsManager {
     private hoveredElement: DomElement | undefined;
     private selectedElements: DomElement[] = [];
 

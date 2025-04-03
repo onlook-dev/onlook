@@ -6,6 +6,10 @@ export class WindowManager {
         makeAutoObservable(this);
     }
 
+    get isWindowSelected() {
+        // return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+    }
+
     // async takeActiveWebviewScreenshot(
     //     name: string,
     //     options?: {

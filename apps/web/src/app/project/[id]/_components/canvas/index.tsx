@@ -1,6 +1,5 @@
-// import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine } from '@/components/store';
 import { EditorMode } from '@onlook/models/editor';
-import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HotkeysArea } from './hotkeys';
@@ -17,7 +16,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const MIN_X = -5000;
     const MIN_Y = -5000;
 
-    // const editorEngine = useEditorEngine();
+    const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
     // const scale = editorEngine.canvas.scale;
@@ -120,7 +119,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const middleMouseButtonDown = useCallback(
         (e: MouseEvent) => {
             if (e.button === 1) {
-                editorEngine.mode = EditorMode.PAN;
+                editorEngine.state.editorMode = EditorMode.PAN;
                 setIsPanning(true);
                 e.preventDefault();
                 e.stopPropagation();
@@ -132,7 +131,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
     const middleMouseButtonUp = useCallback(
         (e: MouseEvent) => {
             if (e.button === 1) {
-                editorEngine.mode = EditorMode.DESIGN;
+                editorEngine.state.editorMode = EditorMode.DESIGN;
                 setIsPanning(false);
                 e.preventDefault();
                 e.stopPropagation();
@@ -171,7 +170,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
             >
-                <Overlay>
+                {/* <Overlay>
                     <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
                         {children}
                     </div>
@@ -180,7 +179,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                     clampPosition={(position) => clampPosition(position, scale)}
                     isPanning={isPanning}
                     setIsPanning={setIsPanning}
-                />
+                /> */}
             </div>
         </HotkeysArea>
     );
