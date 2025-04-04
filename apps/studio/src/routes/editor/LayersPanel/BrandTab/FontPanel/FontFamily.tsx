@@ -16,7 +16,7 @@ interface FontVariantProps {
     isActive?: boolean;
 }
 
-const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
+const FontVariant = ({ name }: FontVariantProps) => (
     <div className="text-sm font-normal text-muted-foreground">{name}</div>
 );
 
@@ -26,8 +26,6 @@ export interface FontFamilyProps {
     onRemoveFont?: () => void;
     onAddFont?: () => void;
     onSetFont?: () => void;
-    isExpanded?: boolean; // Kept for API compatibility but not used for initial state
-    isLast?: boolean;
     showDropdown?: boolean;
     showAddButton?: boolean; // New property to control Add button visibility
     isDefault?: boolean;
@@ -39,16 +37,12 @@ export const FontFamily = ({
     onAddFont,
     onRemoveFont,
     onSetFont,
-    isExpanded = false, // This prop is kept for API compatibility but not used for initial state
-    isLast = false,
     showDropdown = false,
-    showAddButton = true, // Default to false
+    showAddButton = true,
     isDefault = false,
 }: FontFamilyProps) => {
-    // Always initialize to false, ensuring all font families start closed regardless of isExpanded prop
     const [expanded, setExpanded] = useState(false);
 
-    // Toggle default font status
     const handleToggleDefault = () => {
         onSetFont?.();
     };
@@ -57,7 +51,7 @@ export const FontFamily = ({
         <div className="w-full group">
             <div className="flex justify-between items-center py-3">
                 <div
-                    className="flex items-center cursor-pointer"
+                    className="flex flex-1 items-center cursor-pointer max-w-52"
                     onClick={() => setExpanded(!expanded)}
                 >
                     <Icons.ChevronRight
@@ -65,7 +59,14 @@ export const FontFamily = ({
                     />
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="text-sm font-normal truncate max-w-40">{name}</span>
+                            <span
+                                className={`text-sm truncate transition-opacity duration-200`}
+                                style={{
+                                    fontFamily: name,
+                                }}
+                            >
+                                {name}
+                            </span>
                         </TooltipTrigger>
                         <TooltipPortal container={document.getElementById('style-panel')}>
                             <TooltipContent
@@ -74,7 +75,6 @@ export const FontFamily = ({
                                 sideOffset={10}
                                 className="animation-none max-w-[200px] shadow"
                             >
-                                {' '}
                                 <TooltipArrow className="fill-foreground" />
                                 <p className="break-words">{name}</p>
                             </TooltipContent>
@@ -130,11 +130,7 @@ export const FontFamily = ({
             {expanded && variants.length > 0 && (
                 <div className="pl-7 flex flex-col gap-2 pb-6">
                     {variants.map((variant) => (
-                        <FontVariant
-                            key={`${name}-${variant}`}
-                            name={variant}
-                            isActive={variant === 'SemiBold' || variant === 'Bold'}
-                        />
+                        <FontVariant key={`${name}-${variant}`} name={variant} />
                     ))}
                 </div>
             )}

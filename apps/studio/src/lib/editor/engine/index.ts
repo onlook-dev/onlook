@@ -1,4 +1,4 @@
-import { EditorMode, EditorTabValue, SettingsTabValue } from '@/lib/models';
+import { EditorMode, EditorTabValue, LayersPanelTabValue, SettingsTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
@@ -38,6 +38,7 @@ export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
+    private _layersPanelTab: LayersPanelTabValue = LayersPanelTabValue.PAGES;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -145,6 +146,9 @@ export class EditorEngine {
     get settingsTab() {
         return this._settingsTab;
     }
+    get layersPanelTab() {
+        return this._layersPanelTab;
+    }
     get isPlansOpen() {
         return this._plansOpen;
     }
@@ -177,6 +181,10 @@ export class EditorEngine {
 
     set settingsTab(tab: SettingsTabValue) {
         this._settingsTab = tab;
+    }
+
+    set layersPanelTab(tab: LayersPanelTabValue) {
+        this._layersPanelTab = tab;
     }
 
     set isPlansOpen(open: boolean) {

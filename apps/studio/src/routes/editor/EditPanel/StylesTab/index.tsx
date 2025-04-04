@@ -28,6 +28,7 @@ import SelectInput from './single/SelectInput';
 import TagDetails from './single/TagDetails';
 import TailwindInput from './single/TailwindInput';
 import TextInput from './single/TextInput';
+import { FontInput } from './single/FontInput';
 
 const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
@@ -47,6 +48,8 @@ const SingleInput = memo(({ style }: { style: SingleStyle }) => {
         return <NumberUnitInput elementStyle={style} />;
     } else if (style.type === StyleType.Text) {
         return <TextInput elementStyle={style} />;
+    } else if (style.type === StyleType.Font) {
+        return <FontInput elementStyle={style} />;
     }
     return (
         <div className="flex flex-row items-center">
@@ -185,6 +188,7 @@ export const StylesTab = observer(() => {
 
     useEffect(() => {
         editorEngine.theme.scanConfig();
+        editorEngine.font.scanFonts();
     }, []);
 
     return (
