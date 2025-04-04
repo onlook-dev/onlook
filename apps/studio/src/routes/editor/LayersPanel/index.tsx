@@ -82,11 +82,6 @@ export const LayersPanel = observer(() => {
         tabChange(editorEngine.layersPanelTab);
     }, [editorEngine.layersPanelTab]);
 
-    const isBrandTab =
-        selectedTab === LayersPanelTabValue.COLORS ||
-        selectedTab === LayersPanelTabValue.FONTS ||
-        selectedTab === LayersPanelTabValue.BRAND;
-
     return (
         <div
             className={cn(
@@ -164,7 +159,7 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        isBrandTab && isLocked
+                        selectedTab === LayersPanelTabValue.BRAND && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                     )}
@@ -236,7 +231,7 @@ export const LayersPanel = observer(() => {
                             {selectedTab === LayersPanelTabValue.PAGES && <PagesTab />}
                             {selectedTab === LayersPanelTabValue.IMAGES && <ImagesTab />}
                             {selectedTab === LayersPanelTabValue.WINDOWS && <WindowsTab />}
-                            {isBrandTab && <BrandTab />}
+                            {selectedTab === LayersPanelTabValue.BRAND && <BrandTab />}
                             {selectedTab === LayersPanelTabValue.APPS && <AppsTab />}
                         </div>
                     </div>
