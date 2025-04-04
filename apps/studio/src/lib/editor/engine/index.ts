@@ -1,4 +1,10 @@
-import { EditorMode, EditorTabValue, LayersPanelTabValue, SettingsTabValue } from '@/lib/models';
+import {
+    BrandTabValue,
+    EditorMode,
+    EditorTabValue,
+    LayersPanelTabValue,
+    SettingsTabValue,
+} from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
@@ -39,6 +45,7 @@ export class EditorEngine {
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
     private _layersPanelTab: LayersPanelTabValue | null = null;
+    private _brandTab: BrandTabValue | null = null;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -161,6 +168,9 @@ export class EditorEngine {
     get isHotkeysOpen() {
         return this._hotkeysOpen;
     }
+    get brandTab() {
+        return this._brandTab;
+    }
     get errors() {
         return this.errorManager;
     }
@@ -204,6 +214,10 @@ export class EditorEngine {
 
     set isPublishOpen(open: boolean) {
         this._publishOpen = open;
+    }
+
+    set brandTab(tab: BrandTabValue | null) {
+        this._brandTab = tab;
     }
 
     dispose() {
