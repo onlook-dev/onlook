@@ -1,6 +1,7 @@
 "use client";
 import { Routes } from "@/utils/constants";
 import { createClient } from "@/utils/supabase/client";
+import { Button } from "@onlook/ui-v4/button";
 import { type User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -25,19 +26,21 @@ export default function Main() {
     return (
         <main className="flex min-h-screen flex-col items-center justify-center relative">
             {/* Top bar */}
-            <div className="absolute flex top-0 left-0 w-full h-12 bg-gray-100 items-center justify-end p-2">
-
+            <div className="absolute flex top-0 left-0 w-full h-12 items-center justify-end p-2">
+                <Button variant="outline" onClick={() => redirect(Routes.PROJECTS)}>
+                    Projects
+                </Button>
                 {user ? (
                     <div className="flex items-center gap-2">
                         <p>{user.user_metadata.name}</p>
-                        <button onClick={handleSignOut}>
+                        <Button onClick={handleSignOut}>
                             Sign Out
-                        </button>
+                        </Button>
                     </div>
                 ) : (
-                    <button onClick={() => redirect(Routes.LOGIN)}>
+                    <Button onClick={() => redirect(Routes.LOGIN)}>
                         Sign In
-                    </button>
+                    </Button>
                 )}
             </div>
             <div className="flex flex-col items-center justify-center">

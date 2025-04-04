@@ -8,8 +8,8 @@ import { OverlayChat } from './Chat';
 import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
 import { InsertRect } from './InsertRect';
-import { TextEditor } from './TextEditor';
 import { MeasurementOverlay } from './MeasurementOverlay';
+import { TextEditor } from './TextEditor';
 
 // Memoize child components
 const MemoizedInsertRect = memo(InsertRect);
@@ -18,7 +18,7 @@ const MemoizedTextEditor = memo(TextEditor);
 const MemoizedChat = memo(OverlayChat);
 const MemoizedMeasurementOverlay = memo(MeasurementOverlay);
 
-const Overlay = observer(({ children }: { children: React.ReactNode }) => {
+export const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
 
     // Memoize overlay state values
@@ -99,5 +99,3 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
         </>
     );
 });
-
-export default Overlay;

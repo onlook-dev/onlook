@@ -110,5 +110,3 @@ export const TopBar = observer(() => {
         </div>
     );
 });
-
-export default TopBar;

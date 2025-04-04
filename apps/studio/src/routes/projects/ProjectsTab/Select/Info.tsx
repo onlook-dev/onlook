@@ -1,10 +1,10 @@
 import type { Project } from '@onlook/models/projects';
+import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { EditAppButton } from './EditAppButton';
 import ProjectSettingsButton from './ProjectSettingsButton';
-import { timeSince } from '/common/helpers';
 
 const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
     const { t } = useTranslation();
@@ -43,7 +43,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                 <div className="text-foreground-onlook flex flex-col md:flex-row gap-2 md:gap-7 text-small">
                     <p>
                         {t('projects.select.lastEdited', {
-                            time: timeSince(new Date(project.updatedAt)),
+                            time: timeAgo(new Date(project.updatedAt).toISOString()),
                         })}
                     </p>
                     <p>{project.url}</p>

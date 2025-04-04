@@ -4,8 +4,8 @@ import { type Metadata } from "next"
 import { redirect } from "next/navigation"
 
 export const metadata: Metadata = {
-    title: "Projects",
-    description: "Projects",
+    title: "Onlook",
+    description: "Onlook – Projects",
 }
 
 export default async function Layout({
