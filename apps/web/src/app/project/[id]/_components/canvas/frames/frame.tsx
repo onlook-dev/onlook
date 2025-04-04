@@ -12,6 +12,8 @@ export const Frame = observer(
     }) => {
         const position = settings.position;
         const iframeRef = useRef<HTMLIFrameElement>(null);
+
+        // TODO: Dimensions need to be structured in a way where Yjs can track changes. Abstract a FrameState interface.
         const [dimensions, setDimensions] = useState(settings.dimension);
 
         return (
