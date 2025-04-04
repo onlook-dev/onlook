@@ -4,7 +4,7 @@ import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
 
 export class SubscriptionManager {
-    plan: UsagePlanType = UsagePlanType.BASIC;
+    plan: UsagePlanType = UsagePlanType.PRO;
 
     constructor() {
         makeAutoObservable(this);
@@ -14,7 +14,7 @@ export class SubscriptionManager {
 
     private restoreCachedPlan() {
         const cachedPlan = localStorage.getItem('currentPlan');
-        this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
+        this.plan = UsagePlanType.PRO;
     }
 
     async updatePlan(plan: UsagePlanType) {
@@ -35,12 +35,31 @@ export class SubscriptionManager {
             if (!res?.success) {
                 throw new Error(res?.error || 'Error checking premium status');
             }
-            const newPlan = res.data.name === 'pro' ? UsagePlanType.PRO : UsagePlanType.BASIC;
+
+            // Determine plan type based on API response
+            let newPlan = UsagePlanType.FREE;
+
+            if (res.data && res.data.name) {
+                switch (res.data.name) {
+                    case 'pro':
+                        newPlan = UsagePlanType.PRO;
+                        break;
+                    case 'launch':
+                        newPlan = UsagePlanType.LAUNCH;
+                        break;
+                    case 'scale':
+                        newPlan = UsagePlanType.SCALE;
+                        break;
+                    default:
+                        newPlan = UsagePlanType.FREE;
+                }
+            }
+
             await this.updatePlan(newPlan);
             return newPlan;
         } catch (error) {
             console.error('Error checking premium status:', error);
-            return UsagePlanType.BASIC;
+            return UsagePlanType.FREE;
         }
     }
 }

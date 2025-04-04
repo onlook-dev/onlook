@@ -1,14 +1,17 @@
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE } from '@onlook/models/constants';
 import type { AuthTokens } from '@onlook/models/settings';
+import { UsagePlanType } from '@onlook/models/usage';
 import { shell } from 'electron';
 import { getRefreshedAuthTokens } from '../auth';
 
-export const checkoutWithStripe = async (): Promise<{
+export const checkoutWithStripe = async (
+    plan: UsagePlanType = UsagePlanType.PRO,
+): Promise<{
     success: boolean;
     error?: string;
 }> => {
     try {
-        const checkoutUrl = await createCheckoutSession();
+        const checkoutUrl = await createCheckoutSession(plan);
         shell.openExternal(checkoutUrl);
         return { success: true };
     } catch (error) {
@@ -16,7 +19,7 @@ export const checkoutWithStripe = async (): Promise<{
     }
 };
 
-const createCheckoutSession = async () => {
+const createCheckoutSession = async (plan: UsagePlanType = UsagePlanType.PRO) => {
     const authTokens: AuthTokens = await getRefreshedAuthTokens();
     if (!authTokens) {
         throw new Error('No auth tokens found');
@@ -30,6 +33,7 @@ const createCheckoutSession = async () => {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${authTokens.accessToken}`,
             },
+            body: JSON.stringify({ plan }),
         },
     );
 

@@ -96,6 +96,18 @@
     },
     "pricing": {
         "plans": {
+            "free": {
+                "name": "免费版",
+                "price": "$0/月",
+                "description": "轻松在代码中进行原型设计和实验。",
+                "features": [
+                    "可视化代码编辑器访问",
+                    "无限制项目",
+                    "每天 {{dailyMessages}} 条 AI 聊天消息",
+                    "每月 {{monthlyMessages}} 条 AI 消息",
+                    "每次聊天限 1 张截图"
+                ]
+            },
             "basic": {
                 "name": "Onlook Basic",
                 "price": "$0/月",
@@ -130,7 +142,8 @@
         "buttons": {
             "currentPlan": "当前方案",
             "getPro": "升级到 Pro",
-            "manageSubscription": "管理订阅"
+            "manageSubscription": "管理订阅",
+            "downgradeToFree": "降级到免费版"
         },
         "loading": {
             "checkingPayment": "正在检查付款..."
