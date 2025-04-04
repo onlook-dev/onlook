@@ -5,19 +5,38 @@ import { fontFamilies, MainChannels } from '@onlook/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { Font } from '@onlook/models/assets';
 import type { FontFile } from '@/routes/editor/LayersPanel/BrandTab/FontPanel/FontFiles';
+import WebFont from 'webfontloader';
+
+interface RawFont {
+    id: string;
+    family: string;
+    subsets: string[];
+    weights: string[];
+    styles: string[];
+    defSubset: string;
+    variable: boolean;
+    lastModified: string;
+    category: string;
+    type: string;
+}
 
 export class FontManager {
     private _fonts: Font[] = [];
-    private _fontFamilies: Font[] = [];
+    private _systemFonts: Font[] = [];
+    private _searchResults: Font[] = [];
+    private _allFontFamilies: RawFont[] = fontFamilies as RawFont[];
     private _defaultFont: string | null = null;
     private disposers: Array<() => void> = [];
+    private _currentFontIndex = 0;
+    private _batchSize = 20;
+    private _isFetching = false;
 
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
-        this.convertFont();
+        this.loadInitialFonts();
 
         // Watch for project changes and set up watcher when a project is selected
         const disposer = reaction(
@@ -28,19 +47,52 @@ export class FontManager {
                     this.watchFontFile(folderPath);
                 }
             },
-            { fireImmediately: true }, // Run immediately if there's already a project
+            { fireImmediately: true },
         );
 
         this.disposers.push(disposer);
     }
 
-    private convertFont() {
-        this._fontFamilies = fontFamilies.map((font) => ({
+    private convertFont(font: RawFont): Font {
+        return {
             ...font,
-            weight: font.weights.map((weight) => weight.toString()),
-            styles: font.styles.map((style) => style.toString()),
+            weight: font.weights,
+            styles: font.styles || [],
             variable: `--font-${font.id}`,
-        }));
+        };
+    }
+
+    private async loadInitialFonts() {
+        const initialFonts = this._allFontFamilies.slice(0, this._batchSize);
+        const convertedFonts = initialFonts.map((font) => this.convertFont(font));
+        this._systemFonts = convertedFonts;
+        this._currentFontIndex = this._batchSize;
+
+        try {
+            await this.loadFontBatch(convertedFonts);
+            console.log(`Initial ${convertedFonts.length} fonts loaded successfully`);
+        } catch (error) {
+            console.error('Failed to load initial fonts:', error);
+        }
+    }
+
+    private async loadFontBatch(fonts: Font[]) {
+        return new Promise<void>((resolve, reject) => {
+            WebFont.load({
+                google: {
+                    families: fonts.map((font) => font.family),
+                },
+                active: () => {
+                    console.log(`Batch of fonts loaded successfully`);
+                    resolve();
+                },
+                inactive: () => {
+                    console.warn(`Failed to load font batch`);
+                    reject(new Error('Font loading failed'));
+                },
+                timeout: 30000, // 30 second timeout
+            });
+        });
     }
 
     private async watchFontFile(projectRoot: string) {
@@ -168,28 +220,116 @@ export class FontManager {
         }
     }
 
+    async fetchNextFontBatch(): Promise<{ fonts: Font[]; hasMore: boolean }> {
+        if (this._isFetching) {
+            console.log('Already fetching fonts, please wait...');
+            return { fonts: [], hasMore: this._currentFontIndex < this._allFontFamilies.length };
+        }
+
+        this._isFetching = true;
+
+        try {
+            const start = this._currentFontIndex;
+            const end = Math.min(start + this._batchSize, this._allFontFamilies.length);
+
+            if (start >= this._allFontFamilies.length) {
+                return { fonts: [], hasMore: false };
+            }
+
+            const batchFonts = this._allFontFamilies
+                .slice(start, end)
+                .map((font) => this.convertFont(font));
+
+            await this.loadFontBatch(batchFonts);
+            this._systemFonts.push(...batchFonts);
+            this._currentFontIndex = end;
+
+            return {
+                fonts: batchFonts,
+                hasMore: end < this._allFontFamilies.length,
+            };
+        } catch (error) {
+            console.error('Error fetching font batch:', error);
+            throw error;
+        } finally {
+            this._isFetching = false;
+        }
+    }
+
+    async searchFonts(query: string): Promise<Font[]> {
+        if (!query) {
+            return [];
+        }
+
+        const searchResults = this._allFontFamilies
+            .filter(
+                (font) =>
+                    font.family.toLowerCase().includes(query.toLowerCase()) &&
+                    !this._fonts.some((f) => f.family === font.family),
+            )
+            .map((font) => this.convertFont(font));
+
+        if (searchResults.length === 0) {
+            this._searchResults = [];
+            return [];
+        }
+
+        try {
+            await this.loadFontBatch(searchResults);
+            this._searchResults = searchResults;
+            return searchResults;
+        } catch (error) {
+            console.error('Error loading search results:', error);
+            return [];
+        }
+    }
+
+    resetFontFetching() {
+        this._currentFontIndex = 0;
+        this._isFetching = false;
+    }
+
     get fonts() {
         return this._fonts;
     }
 
-    get fontFamilies() {
-        return this._fontFamilies;
+    get systemFonts() {
+        return this._systemFonts.filter(
+            (fontFamily) => !this._fonts.some((font) => font.family === fontFamily.family),
+        );
     }
 
     get defaultFont() {
         return this._defaultFont;
     }
 
-    get newFonts() {
-        return this._fontFamilies.filter(
+    get searchResults() {
+        return this._searchResults.filter(
             (fontFamily) => !this._fonts.some((font) => font.family === fontFamily.family),
         );
     }
 
+    get isFetching() {
+        return this._isFetching;
+    }
+
+    get currentFontIndex() {
+        return this._currentFontIndex;
+    }
+
+    get hasMoreFonts() {
+        return this._currentFontIndex < this._allFontFamilies.length;
+    }
+
     dispose() {
         this._fonts = [];
-        this._fontFamilies = [];
+        this._systemFonts = [];
+        this._searchResults = [];
         this._defaultFont = null;
+        this._allFontFamilies = [];
+        this._currentFontIndex = 0;
+        this._batchSize = 20;
+        this._isFetching = false;
 
         // Clean up all reactions
         this.disposers.forEach((disposer) => disposer());
