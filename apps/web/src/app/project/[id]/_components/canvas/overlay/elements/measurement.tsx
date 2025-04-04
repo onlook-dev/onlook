@@ -404,7 +404,6 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
-            {/* Distance lines and labels */}
 
             {/* Distance lines and labels */}
             {distances.map((distance, index) => {

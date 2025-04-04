@@ -1,10 +1,9 @@
-import { colors } from '@onlook/ui/tokens';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { RectDimensions } from '../../../../lib/editor/engine/overlay/rect';
-import React, { memo, useMemo } from 'react';
-import { BaseRect } from './BaseRect';
 import { useEditorEngine } from '@/components/Context';
 import { adaptRectToCanvas, adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
+import { colors } from '@onlook/ui/tokens';
+import React, { memo, useMemo } from 'react';
+import type { RectDimensions } from '../../../../lib/editor/engine/overlay/rect';
+import { BaseRect } from './BaseRect';
 
 interface Point {
     x: number;
@@ -405,7 +404,6 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
-            {/* Distance lines and labels */}
 
             {/* Distance lines and labels */}
             {distances.map((distance, index) => {

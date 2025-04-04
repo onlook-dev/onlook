@@ -61,7 +61,7 @@ export const Overlay = observer(({ children }: { children: React.ReactNode }) =>
     return (
         <>
             {children}
-            < div
+            <div
                 style={containerStyle as React.CSSProperties}
                 id={EditorAttributes.OVERLAY_CONTAINER_ID}
             >
