@@ -6,8 +6,8 @@ import { EditorMode } from '@onlook/models/editor';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HotkeysArea } from './hotkeys';
+import { Overlay } from './overlay';
 import { PanOverlay } from './overlay/pan';
-// import { Overlay } from './overlay';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -162,11 +162,11 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
             >
-                {/* <Overlay> */}
-                <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                    {children}
-                </div>
-                {/* </Overlay> */}
+                <Overlay>
+                    <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
+                        {children}
+                    </div>
+                </Overlay>
                 <PanOverlay
                     clampPosition={(position: { x: number; y: number }) => clampPosition(position, scale)}
                     isPanning={isPanning}

@@ -5,7 +5,7 @@ import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
 // import { CopyManager } from './copy';
-// import { ElementsManager } from './element';
+import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
 // import { GroupManager } from './group';
@@ -45,7 +45,7 @@ export class EditorEngine {
     readonly history: HistoryManager = new HistoryManager(this);
     // readonly action: ActionManager = new ActionManager(this);
     // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
-    // readonly elements: ElementsManager = new ElementsManager(this);
+    readonly elements: ElementsManager = new ElementsManager(this);
     // readonly text: TextEditingManager = new TextEditingManager(this);
     // readonly insert: InsertManager = new InsertManager(this);
     // readonly move: MoveManager = new MoveManager(this);
