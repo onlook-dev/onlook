@@ -54,7 +54,7 @@ export const FontInput = observer(
                     </button>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-64 bg-background-onlook"
+                    className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-56"
                     side="left"
                     align="start"
                 >
@@ -93,7 +93,7 @@ export const FontInput = observer(
                         <div className="p-2 border-t border-border">
                             <button
                                 onClick={handleAddNewFont}
-                                className="w-full p-2 text-sm text-center rounded-md hover:bg-background-secondary text-muted-foreground hover:text-foreground transition-colors"
+                                className="w-full p-2 text-sm text-center rounded-md bg-background-onlook hover:bg-background-secondary text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 Add a new font
                             </button>

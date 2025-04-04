@@ -116,9 +116,11 @@ export async function addFont(projectRoot: string, font: Font) {
             traverse(ast, {
                 ImportDeclaration(path) {
                     if (path.node.source.value === 'next/font/google') {
-                        path.node.specifiers.push(
+                        const newSpecifiers = [...path.node.specifiers];
+                        newSpecifiers.push(
                             t.importSpecifier(t.identifier(importName), t.identifier(importName)),
                         );
+                        path.node.specifiers = newSpecifiers;
                     }
                 },
             });
