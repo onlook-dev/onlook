@@ -454,7 +454,10 @@ export async function addLocalFont(
                 t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
                 t.objectProperty(
                     t.identifier('fallback'),
-                    t.arrayExpression([t.stringLiteral('system-ui'), t.stringLiteral('san-serif')]),
+                    t.arrayExpression([
+                        t.stringLiteral('system-ui'),
+                        t.stringLiteral('sans-serif'),
+                    ]),
                 ),
                 t.objectProperty(t.identifier('preload'), t.booleanLiteral(true)),
             ]);
