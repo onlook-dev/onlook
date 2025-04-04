@@ -6,6 +6,7 @@
 // import { LayersPanel } from './LayersPanel';
 // import { Toolbar } from './Toolbar';
 
+import { EditorBar } from "./_components/editor-bar";
 import { EditorTopBar } from "./_components/top-bar";
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -30,6 +31,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 
             <div className="absolute top-0 w-full">
                 <EditorTopBar />
+            </div>
+
+            <div className="absolute top-10 w-full">
+                <EditorBar />
             </div>
             {/* <HotkeysModal /> */}
         </div>
