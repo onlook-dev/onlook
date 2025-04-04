@@ -57,7 +57,7 @@ export const FontFamily = ({
         <div className="w-full group">
             <div className="flex justify-between items-center py-3">
                 <div
-                    className="flex items-center cursor-pointer"
+                    className="flex flex-1 items-center cursor-pointer  max-w-52"
                     onClick={() => setExpanded(!expanded)}
                 >
                     <Icons.ChevronRight
@@ -65,7 +65,7 @@ export const FontFamily = ({
                     />
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="text-sm font-normal truncate max-w-40">{name}</span>
+                            <span className="text-sm font-normal truncate">{name}</span>
                         </TooltipTrigger>
                         <TooltipPortal container={document.getElementById('style-panel')}>
                             <TooltipContent
