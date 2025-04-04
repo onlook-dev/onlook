@@ -46,8 +46,8 @@ export const FontInput = observer(
         };
 
         const font = useMemo(
-            () => editorEngine.font.fonts.find((val) => val.id === value),
-            [value],
+            () => editorEngine.font.fonts?.find((val) => val.id === value),
+            [value, editorEngine.font.fonts],
         );
         return (
             <Popover open={isOpen} onOpenChange={setIsOpen}>

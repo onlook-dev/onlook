@@ -2,7 +2,8 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
+import debounce from 'lodash/debounce';
 import { FontFamily } from './FontFamily';
 import UploadModal from './UploadModal';
 import { useEditorEngine } from '@/components/Context';
@@ -36,18 +37,38 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
         fontManager.uploadFonts(fonts);
     };
 
-    const handleSearch = async (value: string) => {
-        setSearchQuery(value);
-        if (value.length >= 2) {
-            setIsLoading(true);
-            try {
-                await fontManager.searchFonts(value);
-            } catch (error) {
-                console.error('Failed to search fonts:', error);
-            } finally {
-                setIsLoading(false);
+    const performSearch = useCallback(
+        async (value: string) => {
+            if (value.length > 0) {
+                setIsLoading(true);
+                try {
+                    await fontManager.searchFonts(value);
+                } catch (error) {
+                    console.error('Failed to search fonts:', error);
+                } finally {
+                    setIsLoading(false);
+                }
             }
-        }
+        },
+        [fontManager],
+    );
+
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            performSearch(value);
+        }, 300),
+        [performSearch],
+    );
+
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel();
+        };
+    }, [debouncedSearch]);
+
+    const handleSearch = (value: string) => {
+        setSearchQuery(value);
+        debouncedSearch(value);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -133,28 +154,40 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                         {/* System Font List */}
                         <div className="px-4">
                             <div className="flex flex-col divide-y divide-border">
-                                {fontManager.fonts.map((font, index) => (
-                                    <div key={`system-${font.family}-${index}`}>
-                                        <div className="flex justify-between items-center">
-                                            <FontFamily
-                                                name={font.family}
-                                                variants={
-                                                    font.weight?.map(
-                                                        (weight) =>
-                                                            FONT_VARIANTS.find(
-                                                                (v) => v.value === weight,
-                                                            )?.name,
-                                                    ) as string[]
-                                                }
-                                                showDropdown={true}
-                                                showAddButton={false}
-                                                isDefault={font.id === fontManager.defaultFont}
-                                                onRemoveFont={() => fontManager.removeFont(font)}
-                                                onSetFont={() => fontManager.setDefaultFont(font)}
-                                            />
-                                        </div>
+                                {!fontManager.fonts.length ? (
+                                    <div className="flex justify-center items-center border-dashed border-default border-2 rounded-lg h-20 my-2">
+                                        <span className="text-sm text-muted-foreground">
+                                            No fonts added
+                                        </span>
                                     </div>
-                                ))}
+                                ) : (
+                                    fontManager.fonts.map((font, index) => (
+                                        <div key={`system-${font.family}-${index}`}>
+                                            <div className="flex justify-between items-center">
+                                                <FontFamily
+                                                    name={font.family}
+                                                    variants={
+                                                        font.weight?.map(
+                                                            (weight) =>
+                                                                FONT_VARIANTS.find(
+                                                                    (v) => v.value === weight,
+                                                                )?.name,
+                                                        ) as string[]
+                                                    }
+                                                    showDropdown={true}
+                                                    showAddButton={false}
+                                                    isDefault={font.id === fontManager.defaultFont}
+                                                    onRemoveFont={() =>
+                                                        fontManager.removeFont(font)
+                                                    }
+                                                    onSetFont={() =>
+                                                        fontManager.setDefaultFont(font)
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
@@ -172,26 +205,34 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
                     {/* Site Font List */}
                     <div className="px-4">
                         <div className="flex flex-col divide-y divide-border">
-                            {uniqueSiteFonts.map((font, index) => (
-                                <div key={`${font.family}-${index}`}>
-                                    <div className="flex justify-between items-center">
-                                        <FontFamily
-                                            name={font.family}
-                                            variants={
-                                                font.weight?.map(
-                                                    (weight) =>
-                                                        FONT_VARIANTS.find(
-                                                            (v) => v.value === weight,
-                                                        )?.name,
-                                                ) as string[]
-                                            }
-                                            showDropdown={false}
-                                            showAddButton={true}
-                                            onAddFont={() => fontManager.addFont(font)}
-                                        />
+                            {uniqueSiteFonts.length > 0 ? (
+                                uniqueSiteFonts.map((font, index) => (
+                                    <div key={`${font.family}-${index}`}>
+                                        <div className="flex justify-between items-center">
+                                            <FontFamily
+                                                name={font.family}
+                                                variants={
+                                                    font.weight?.map(
+                                                        (weight) =>
+                                                            FONT_VARIANTS.find(
+                                                                (v) => v.value === weight,
+                                                            )?.name,
+                                                    ) as string[]
+                                                }
+                                                showDropdown={false}
+                                                showAddButton={true}
+                                                onAddFont={() => fontManager.addFont(font)}
+                                            />
+                                        </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="flex justify-center items-center h-20 my-2">
+                                    <span className="text-sm text-muted-foreground">
+                                        No results were found
+                                    </span>
                                 </div>
-                            ))}
+                            )}
                         </div>
                         {/* Load More Button */}
                         {fontManager.hasMoreFonts && !searchQuery && (

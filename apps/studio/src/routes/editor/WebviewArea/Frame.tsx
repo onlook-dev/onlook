@@ -97,11 +97,14 @@ const Frame = observer(
             const state = editorEngine.webviews.computeState(body);
             editorEngine.webviews.setState(webview, state);
 
-            // if (state === WebviewState.DOM_ONLOOK_ENABLED) {
-            //     setTimeout(() => {
-            //         selectFirstElement(webview);
-            //     }, 1000);
-            // }
+            if (
+                state === WebviewState.DOM_ONLOOK_ENABLED &&
+                editorEngine.elements.selected.length === 0
+            ) {
+                setTimeout(() => {
+                    selectFirstElement(webview);
+                }, 1000);
+            }
 
             setTimeout(() => {
                 getDarkMode(webview);
@@ -384,12 +387,12 @@ const Frame = observer(
             );
         }
 
-        // async function selectFirstElement(webview: Electron.WebviewTag) {
-        //     const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
-        //     if (domEl) {
-        //         editorEngine.elements.click([domEl], webview);
-        //     }
-        // }
+        async function selectFirstElement(webview: Electron.WebviewTag) {
+            const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
+            if (domEl) {
+                editorEngine.elements.click([domEl], webview);
+            }
+        }
 
         return (
             <div
