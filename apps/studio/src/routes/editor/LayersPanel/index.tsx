@@ -22,7 +22,7 @@ export const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
 
-    const [selectedTab, setSelectedTab] = useState<LayersPanelTabValue>(LayersPanelTabValue.LAYERS);
+    const [selectedTab, setSelectedTab] = useState<LayersPanelTabValue | null>(null);
     const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
     const [isLocked, setIsLocked] = useState(false);
 
@@ -71,7 +71,7 @@ export const LayersPanel = observer(() => {
         }
     };
 
-    function tabChange(value: LayersPanelTabValue) {
+    function tabChange(value: LayersPanelTabValue | null) {
         setSelectedTab(value);
         editorEngine.layersPanelTab = value;
         setIsContentPanelOpen(true);

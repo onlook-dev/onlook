@@ -15,6 +15,7 @@ import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
+import { FontManager } from './font';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
 import { ImageManager } from './image';
@@ -27,7 +28,6 @@ import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { WebviewManager } from './webview';
-import { FontManager } from './font';
 
 export class EditorEngine {
     private _plansOpen: boolean = false;
@@ -38,7 +38,7 @@ export class EditorEngine {
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
-    private _layersPanelTab: LayersPanelTabValue = LayersPanelTabValue.PAGES;
+    private _layersPanelTab: LayersPanelTabValue | null = null;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -183,7 +183,7 @@ export class EditorEngine {
         this._settingsTab = tab;
     }
 
-    set layersPanelTab(tab: LayersPanelTabValue) {
+    set layersPanelTab(tab: LayersPanelTabValue | null) {
         this._layersPanelTab = tab;
     }
 
