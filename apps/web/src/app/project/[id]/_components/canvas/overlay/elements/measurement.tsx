@@ -1,9 +1,9 @@
-import { useEditorEngine } from '@/components/Context';
-import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
-import { adaptRectToCanvas, adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
+import { useEditorEngine } from '@/components/store';
+import type { RectDimensions } from '@/components/store/editor/engine/overlay/rect';
+import { adaptRectToCanvas, adaptValueToCanvas } from '@/components/store/editor/engine/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import React, { memo, useMemo } from 'react';
-import { BaseRect } from './BaseRect';
+import { BaseRect } from './rect/base';
 
 interface Point {
     x: number;

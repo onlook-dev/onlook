@@ -1,6 +1,6 @@
-import { useEditorEngine, useUserManager } from '@/components/Context';
-import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
-import { EditorMode, EditorTabValue } from '@/lib/models';
+import { useEditorEngine, useUserManager } from '@/components/store';
+import type { ClickRectState } from '@/components/store/editor/engine/overlay/state';
+import { EditorMode, EditorTabValue } from '@onlook/models/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
@@ -27,18 +27,6 @@ const ANIMATION = {
     TRANSITION_DURATION: 100, // ms
 };
 
-const getOffsets = (isMultiline: boolean) => {
-    const chatButtonHeight = DIMENSIONS.buttonHeight + SPACING.padding;
-    const inputHeight = isMultiline
-        ? DIMENSIONS.singleLineHeight * (DIMENSIONS.multiLineRows - 1) + SPACING.padding
-        : DIMENSIONS.singleLineHeight + SPACING.padding;
-
-    return {
-        chatButton: chatButtonHeight,
-        input: chatButtonHeight + inputHeight,
-    };
-};
-
 const DEFAULT_INPUT_STATE = {
     value: '',
     isVisible: false,
@@ -50,7 +38,7 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const userManager = useUserManager();
-        const isPreviewMode = editorEngine.mode === EditorMode.PREVIEW;
+        const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -68,7 +56,6 @@ export const OverlayChat = observer(
             setInputState(DEFAULT_INPUT_STATE);
         }, [elementId]);
 
-        // Get current chat position
         const chatPosition = {
             x: elementId
                 ? (document.getElementById(elementId)?.getBoundingClientRect().left ?? 0)
@@ -82,8 +69,7 @@ export const OverlayChat = observer(
             prevChatPositionRef.current = chatPosition;
         }, [chatPosition.x, chatPosition.y]);
 
-        const animationClass =
-            'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200';
+        const animationClass = 'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200'
 
         useEffect(() => {
             if (elementId) {
@@ -103,7 +89,7 @@ export const OverlayChat = observer(
 
         const handleSubmit = async () => {
             const messageToSend = inputState.value;
-            editorEngine.editPanelTab = EditorTabValue.CHAT;
+            editorEngine.state.editorPanelTab = EditorTabValue.CHAT;
             await editorEngine.chat.sendNewMessage(messageToSend);
             setInputState(DEFAULT_INPUT_STATE);
         };

@@ -1,38 +1,36 @@
+"use client"
+
 import { useEditorEngine } from '@/components/store';
+import { EditorAttributes } from '@onlook/models/constants';
 import { EditorMode } from '@onlook/models/editor';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HotkeysArea } from './hotkeys';
-// import Overlay from './Overlay';
-// import PanOverlay from './PanOverlay';
+import { Overlay } from './overlay';
+import { PanOverlay } from './overlay/pan';
+
+const ZOOM_SENSITIVITY = 0.006;
+const PAN_SENSITIVITY = 0.52;
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 3;
+const MAX_X = 10000;
+const MAX_Y = 10000;
+const MIN_X = -5000;
+const MIN_Y = -5000;
 
 export const Canvas = observer(({ children }: { children: ReactNode }) => {
-    const ZOOM_SENSITIVITY = 0.006;
-    const PAN_SENSITIVITY = 0.52;
-    const MIN_ZOOM = 0.1;
-    const MAX_ZOOM = 3;
-    const MAX_X = 10000;
-    const MAX_Y = 10000;
-    const MIN_X = -5000;
-    const MIN_Y = -5000;
-
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
-    // const scale = editorEngine.canvas.scale;
-    // const position = editorEngine.canvas.position;
-    const scale = 1;
-    const position = { x: 0, y: 0 };
+    const scale = editorEngine.canvas.scale;
+    const position = editorEngine.canvas.position;
 
-    // const handleCanvasMouseDown = useCallback(
-    //     (event: React.MouseEvent<HTMLDivElement>) => {
-    //         if (event.target !== containerRef.current) {
-    //             return;
-    //         }
-    //         editorEngine.clearUI();
-    //     },
-    //     [editorEngine],
-    // );
+    const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.target !== containerRef.current) {
+            return;
+        }
+        editorEngine.clearUI();
+    }
 
     const handleZoom = useCallback(
         (event: WheelEvent) => {
@@ -51,7 +49,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
             const deltaX = (x - position.x) * zoomFactor;
             const deltaY = (y - position.y) * zoomFactor;
 
-            // editorEngine.canvas.scale = lintedScale;
+            editorEngine.canvas.scale = lintedScale;
 
             if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
                 return;
@@ -63,7 +61,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                 },
                 lintedScale,
             );
-            // editorEngine.canvas.position = newPosition;
+            editorEngine.canvas.position = newPosition;
         },
         [scale, position, editorEngine.canvas],
     );
@@ -116,29 +114,23 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
         [handleZoom, handlePan],
     );
 
-    const middleMouseButtonDown = useCallback(
-        (e: MouseEvent) => {
-            if (e.button === 1) {
-                editorEngine.state.editorMode = EditorMode.PAN;
-                setIsPanning(true);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        },
-        [editorEngine],
-    );
+    const middleMouseButtonDown = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.state.editorMode = EditorMode.PAN;
+            setIsPanning(true);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
 
-    const middleMouseButtonUp = useCallback(
-        (e: MouseEvent) => {
-            if (e.button === 1) {
-                editorEngine.state.editorMode = EditorMode.DESIGN;
-                setIsPanning(false);
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        },
-        [editorEngine],
-    );
+    const middleMouseButtonUp = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.state.editorMode = EditorMode.DESIGN;
+            setIsPanning(false);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
 
     const transformStyle = useMemo(
         () => ({
@@ -170,16 +162,16 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
             >
-                {/* <Overlay>
+                <Overlay>
                     <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
                         {children}
                     </div>
                 </Overlay>
                 <PanOverlay
-                    clampPosition={(position) => clampPosition(position, scale)}
+                    clampPosition={(position: { x: number; y: number }) => clampPosition(position, scale)}
                     isPanning={isPanning}
                     setIsPanning={setIsPanning}
-                /> */}
+                />
             </div>
         </HotkeysArea>
     );

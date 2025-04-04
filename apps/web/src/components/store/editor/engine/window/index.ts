@@ -1,3 +1,4 @@
+import { sendAnalytics } from "@/utils/analytics";
 import { makeAutoObservable } from "mobx";
 import type { EditorEngine } from "..";
 
@@ -7,7 +8,7 @@ export class WindowManager {
     }
 
     get isWindowSelected() {
-        // return this.webviews.selected.length > 0 && this.elements.selected.length === 0;
+        return this.editorEngine.elements.selected.length > 0 && this.editorEngine.elements.selected.length === 0;
     }
 
     // async takeActiveWebviewScreenshot(
@@ -102,7 +103,7 @@ export class WindowManager {
         // if (webview) {
         //     this.webviews.deregister(webview);
         // }
-        // sendAnalytics('window delete');
+        sendAnalytics('window delete');
     }
 
     duplicateWindow(id?: string) {
@@ -138,6 +139,6 @@ export class WindowManager {
         // };
 
         // this.canvas.frames = [...this.canvas.frames, newFrame];
-        // sendAnalytics('window duplicate');
+        sendAnalytics('window duplicate');
     }
 }

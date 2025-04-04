@@ -24,6 +24,5 @@ export async function login(provider: 'github' | 'google') {
         redirect('/error')
     }
 
-    console.log(data)
     redirect(data.url)
 }
