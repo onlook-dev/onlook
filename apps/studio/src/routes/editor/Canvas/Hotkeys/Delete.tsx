@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Hotkey } from '/common/hotkeys';
 
-const DeleteKey = () => {
+export const DeleteKey = () => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -80,5 +80,3 @@ const DeleteKey = () => {
         </AlertDialog>
     );
 };
-
-export default DeleteKey;

@@ -9,45 +9,45 @@ interface PanOverlayProps {
     clampPosition: (position: { x: number; y: number }) => { x: number; y: number };
 }
 
-const PanOverlay = observer(({ isPanning, setIsPanning, clampPosition }: PanOverlayProps) => {
-    const editorEngine = useEditorEngine();
+export const PanOverlay = observer(
+    ({ isPanning, setIsPanning, clampPosition }: PanOverlayProps) => {
+        const editorEngine = useEditorEngine();
 
-    const startPan = (event: React.MouseEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsPanning(true);
-    };
+        const startPan = (event: React.MouseEvent<HTMLDivElement>) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setIsPanning(true);
+        };
 
-    const pan = (event: React.MouseEvent<HTMLDivElement>) => {
-        if (!isPanning) {
-            return;
-        }
+        const pan = (event: React.MouseEvent<HTMLDivElement>) => {
+            if (!isPanning) {
+                return;
+            }
 
-        const deltaX = -event.movementX;
-        const deltaY = -event.movementY;
-        editorEngine.canvas.position = clampPosition({
-            x: editorEngine.canvas.position.x - deltaX,
-            y: editorEngine.canvas.position.y - deltaY,
-        });
-    };
+            const deltaX = -event.movementX;
+            const deltaY = -event.movementY;
+            editorEngine.canvas.position = clampPosition({
+                x: editorEngine.canvas.position.x - deltaX,
+                y: editorEngine.canvas.position.y - deltaY,
+            });
+        };
 
-    const endPan = () => {
-        setIsPanning(false);
-    };
+        const endPan = () => {
+            setIsPanning(false);
+        };
 
-    return (
-        <div
-            className={cn(
-                'absolute w-full h-full cursor-grab',
-                editorEngine.mode === EditorMode.PAN ? 'visible ' : 'hidden',
-                isPanning ? 'cursor-grabbing' : 'cursor-grab',
-            )}
-            onMouseDown={startPan}
-            onMouseMove={pan}
-            onMouseUp={endPan}
-            onMouseLeave={endPan}
-        ></div>
-    );
-});
-
-export default PanOverlay;
+        return (
+            <div
+                className={cn(
+                    'absolute w-full h-full cursor-grab',
+                    editorEngine.mode === EditorMode.PAN ? 'visible ' : 'hidden',
+                    isPanning ? 'cursor-grabbing' : 'cursor-grab',
+                )}
+                onMouseDown={startPan}
+                onMouseMove={pan}
+                onMouseUp={endPan}
+                onMouseLeave={endPan}
+            ></div>
+        );
+    },
+);

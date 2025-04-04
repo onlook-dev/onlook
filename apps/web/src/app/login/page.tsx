@@ -1,8 +1,8 @@
 'use client'
 
 import { Dunes } from '@/components/ui/dunes';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui-v4/button';
+import { Icons } from '@onlook/ui-v4/icons';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { login } from './actions';
@@ -19,7 +19,7 @@ export default function LoginPage() {
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        const lastSignInMethod = localStorage.getItem(LAST_SIGN_IN_METHOD_KEY) as SignInMethod | null;
+        const lastSignInMethod = localStorage?.getItem(LAST_SIGN_IN_METHOD_KEY) as SignInMethod | null;
         if (lastSignInMethod) {
             setLastSignInMethod(lastSignInMethod);
         }
@@ -27,7 +27,7 @@ export default function LoginPage() {
 
     const handleLogin = (method: SignInMethod) => {
         login(method);
-        localStorage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
+        localStorage?.setItem(LAST_SIGN_IN_METHOD_KEY, method);
     }
 
     return (

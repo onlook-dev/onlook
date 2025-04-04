@@ -28,3 +28,7 @@ export function toNormalCase(str: string): string {
         .trim()
         .replace(/^\w/, (c) => c.toUpperCase());
 }
+
+export function capitalizeFirstLetter(string: string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
