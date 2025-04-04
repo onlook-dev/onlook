@@ -1312,6 +1312,25 @@ export const Icons = {
     TextAlignCenter: TextAlignCenterIcon,
     TextAlignLeft: TextAlignLeftIcon,
     TextAlignRight: TextAlignRightIcon,
+    TextAlignJustified: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M3.75 4.75H20.25M3.75 12H20.25M3.75 19.25H20.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
     Trash: TrashIcon,
     Tokens: TokensIcon,
     Upload: UploadIcon,
