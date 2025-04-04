@@ -1465,4 +1465,22 @@ export const Icons = {
             </defs>
         </svg>
     ),
+    TextColorSymbol: ({ className, ...props }: IconProps) => (
+        <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M7.78056 0.966376C7.63595 0.666883 7.3327 0.476562 7.00012 0.476562C6.66754 0.476562 6.36429 0.666883 6.21968 0.966376L1.00048 11.7751C0.792354 12.2061 0.973047 12.7242 1.40407 12.9324C1.8351 13.1405 2.35324 12.9598 2.56137 12.5288L4.28366 8.96199H9.71658L11.4389 12.5288C11.647 12.9598 12.1651 13.1405 12.5962 12.9324C13.0272 12.7242 13.2079 12.2061 12.9998 11.7751L7.78056 0.966376ZM8.94399 7.36199L7.00012 3.33634L5.05626 7.36199H8.94399Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
 } satisfies { [key: string]: React.FC<IconProps> };

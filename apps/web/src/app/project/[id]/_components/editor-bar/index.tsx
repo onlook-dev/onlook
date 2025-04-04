@@ -21,7 +21,7 @@ export const EditorBar = () => {
     const [selectedFont, setSelectedFont] = useState("Creato Display");
     const [fontSize, setFontSize] = useState(18);
     const [fontWeight, setFontWeight] = useState<"Light" | "Normal" | "Medium" | "Bold" | "Extra Bold">("Medium");
-    const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
+    const [textAlign, setTextAlign] = useState<"left" | "center" | "right" | "justify">("left");
 
     const adjustFontSize = (amount: number) => {
         setFontSize(prev => Math.max(1, prev + amount));
@@ -160,54 +160,59 @@ export const EditorBar = () => {
                     </Button>
                 </div>
                 <div className="h-6 w-[1px] bg-border" />
+                <Button
+                            variant="ghost"
+                            size="icon"
+                            className="flex items-center justify-center flex-col gap-0.5 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border min-w-9 max-w-9 px-2 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                        >
+                            <Icons.TextColorSymbol className="h-3.5 w-3.5" />
+                            <div className="h-[2.5px] w-5.5 bg-current rounded-full" />
+                        </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-9 px-2 data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border"
+                            className="flex items-center justify-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border min-w-9 max-w-9 px-2 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
                         >
                             {textAlign === "left" && <Icons.TextAlignLeft className="h-4 w-4" />}
                             {textAlign === "center" && <Icons.TextAlignCenter className="h-4 w-4" />}
                             {textAlign === "right" && <Icons.TextAlignRight className="h-4 w-4" />}
+                            {textAlign === "justify" && <Icons.TextAlignJustified className="h-4 w-4" />}
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="min-w-[120px] mt-2 p-1 rounded-lg">
+                    <DropdownMenuContent align="center" className="flex min-w-fit mt-2 p-1 rounded-lg gap-1">
                         <DropdownMenuItem 
                             onClick={() => setTextAlign("left")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
                                 textAlign === "left" ? "bg-background-tertiary/20 border border-border text-white" : ""
                             }`}
                         >
-                            <div className="flex items-center gap-2">
-                                <Icons.TextAlignLeft className="h-4 w-4" />
-                                <span>Left</span>
-                            </div>
-                            {textAlign === "left" && <Icons.Check className="h-4 w-4 ml-2" />}
+                            <Icons.TextAlignLeft className="h-4 w-4" />
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                             onClick={() => setTextAlign("center")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
                                 textAlign === "center" ? "bg-background-tertiary/20 border border-border text-white" : ""
                             }`}
                         >
-                            <div className="flex items-center gap-2">
-                                <Icons.TextAlignCenter className="h-4 w-4" />
-                                <span>Center</span>
-                            </div>
-                            {textAlign === "center" && <Icons.Check className="h-4 w-4 ml-2" />}
+                            <Icons.TextAlignCenter className="h-4 w-4" />
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                             onClick={() => setTextAlign("right")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
                                 textAlign === "right" ? "bg-background-tertiary/20 border border-border text-white" : ""
                             }`}
                         >
-                            <div className="flex items-center gap-2">
-                                <Icons.TextAlignRight className="h-4 w-4" />
-                                <span>Right</span>
-                            </div>
-                            {textAlign === "right" && <Icons.Check className="h-4 w-4 ml-2" />}
+                            <Icons.TextAlignRight className="h-4 w-4" />
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => setTextAlign("justify")}
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                                textAlign === "justify" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                            }`}
+                        >
+                            <Icons.TextAlignJustified className="h-4 w-4" />
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
