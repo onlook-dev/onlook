@@ -1,22 +1,22 @@
-import { extractFontParts, getFontFileName } from '@onlook/utility';
+import { extractFontParts, getFontFileName, convertFontString } from '@onlook/utility';
 
 describe('Font Utilities', () => {
     describe('extractFontParts', () => {
         it('should extract font parts from various file formats', () => {
             expect(extractFontParts('Roboto.ttf')).toEqual({
                 family: 'Roboto',
-                weight: '',
-                style: '',
+                weight: '400',
+                style: 'normal',
             });
             expect(extractFontParts('OpenSans.woff2')).toEqual({
                 family: 'Open Sans',
-                weight: '',
-                style: '',
+                weight: '400',
+                style: 'normal',
             });
             expect(extractFontParts('Montserrat-Regular.otf')).toEqual({
                 family: 'Montserrat',
                 weight: '400',
-                style: '',
+                style: 'normal',
             });
         });
 
@@ -24,12 +24,12 @@ describe('Font Utilities', () => {
             expect(extractFontParts('Roboto-Bold.ttf')).toEqual({
                 family: 'Roboto',
                 weight: '700',
-                style: '',
+                style: 'normal',
             });
             expect(extractFontParts('OpenSans-ExtraLight.woff2')).toEqual({
                 family: 'Open Sans',
                 weight: '200',
-                style: '',
+                style: 'normal',
             });
             expect(extractFontParts('Montserrat-BlackItalic.otf')).toEqual({
                 family: 'Montserrat',
@@ -42,34 +42,34 @@ describe('Font Utilities', () => {
             expect(extractFontParts('Roboto-700.ttf')).toEqual({
                 family: 'Roboto',
                 weight: '700',
-                style: '',
+                style: 'normal',
             });
             expect(extractFontParts('OpenSans-300wt.woff2')).toEqual({
                 family: 'Open Sans',
                 weight: '300',
-                style: '',
+                style: 'normal',
             });
             expect(extractFontParts('Montserrat-400weight.otf')).toEqual({
                 family: 'Montserrat',
                 weight: '400',
-                style: '',
+                style: 'normal',
             });
         });
 
         it('should handle style indicators', () => {
             expect(extractFontParts('Roboto-Italic.ttf')).toEqual({
                 family: 'Roboto',
-                weight: '',
+                weight: '400',
                 style: 'italic',
             });
             expect(extractFontParts('OpenSans-Oblique.woff2')).toEqual({
                 family: 'Open Sans',
-                weight: '',
+                weight: '400',
                 style: 'oblique',
             });
             expect(extractFontParts('Montserrat-Slanted.otf')).toEqual({
                 family: 'Montserrat',
-                weight: '',
+                weight: '400',
                 style: 'slanted',
             });
         });
@@ -96,7 +96,7 @@ describe('Font Utilities', () => {
             expect(extractFontParts('Roboto_Bold.ttf')).toEqual({
                 family: 'Roboto',
                 weight: '700',
-                style: '',
+                style: 'normal',
             });
             expect(extractFontParts('Open Sans Extra Light.woff2')).toEqual({
                 family: 'Open Sans Extra Light',
@@ -137,6 +137,32 @@ describe('Font Utilities', () => {
         it('should handle unknown weights', () => {
             expect(getFontFileName('Roboto', '450', 'normal')).toBe('Roboto450');
             expect(getFontFileName('OpenSans', '550', 'italic')).toBe('OpenSans550Italic');
+        });
+    });
+
+    describe('convertFontString', () => {
+        it('should handle empty string', () => {
+            expect(convertFontString('')).toBe('');
+        });
+
+        it('should convert basic font strings', () => {
+            expect(convertFontString('__Advent_Pro_bf3a91')).toBe('adventPro');
+            expect(convertFontString('__Open_Sans_1a2b3c')).toBe('openSans');
+            expect(convertFontString('__Roboto_Mono_def456')).toBe('robotoMono');
+        });
+
+        it('should handle font strings with fallback', () => {
+            expect(
+                convertFontString('__Advent_Pro_abc123, __Advent_Pro_Fallback_abc123, sans-serif'),
+            ).toBe('adventPro');
+            expect(
+                convertFontString('__Open_Sans_92fcab, __Open_Sans_Fallback_92fcab, system-ui'),
+            ).toBe('openSans');
+        });
+
+        it('should handle font strings with special characters', () => {
+            expect(convertFontString('__Noto_Sans_JP_abc123')).toBe('notoSansJp');
+            expect(convertFontString('__Source_Code_Pro_7e4f1a')).toBe('sourceCodePro');
         });
     });
 });

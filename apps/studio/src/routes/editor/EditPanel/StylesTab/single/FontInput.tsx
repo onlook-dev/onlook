@@ -9,6 +9,7 @@ import { convertFontString } from '@onlook/utility';
 import { LayersPanelTabValue } from '@/lib/models';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { camelCase } from 'lodash';
 
 export const FontInput = observer(
     ({
@@ -46,7 +47,7 @@ export const FontInput = observer(
         };
 
         const font = useMemo(
-            () => editorEngine.font.fonts?.find((val) => val.id === value),
+            () => editorEngine.font.fonts?.find((val) => camelCase(val.family) === value),
             [value, editorEngine.font.fonts],
         );
         return (
