@@ -1,4 +1,4 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
@@ -18,6 +18,7 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { useState } from 'react';
+import { RunState } from '@onlook/models';
 
 type MoveProjectFolderResponse = {
     success: boolean;
@@ -35,6 +36,7 @@ const ProjectTab = observer(() => {
     const name = project?.name || '';
     const url = project?.url || '';
 
+    const runner = projectsManager.runner;
     const [showPathUpdateAlert, setShowPathUpdateAlert] = useState<boolean>(false);
     const [copyPath, setCopyPath] = useState<string>('');
     const { t } = useTranslation();
@@ -50,12 +52,6 @@ const ProjectTab = observer(() => {
         }
         setCopyPath(path);
         setShowPathUpdateAlert(true);
-
-        // console.log(
-        //     'This is the current path of the project folder on the frontend : ',
-        //     project?.folderPath,
-        // );
-        // console.log('This is the path from the frontend : ', path);
     };
 
     const cancelUpdatePath = async () => {
@@ -65,6 +61,11 @@ const ProjectTab = observer(() => {
 
     const confirmUpdatePath = async () => {
         try {
+            if (runner?.state === RunState.RUNNING || runner?.state === RunState.SETTING_UP) {
+                runner?.stop();
+                return;
+            }
+
             const result: MoveProjectFolderResponse = await invokeMainChannel(
                 MainChannels.MOVE_PROJECT_FOLDER,
                 {
@@ -241,11 +242,11 @@ const ProjectTab = observer(() => {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <Button variant={'ghost'} onClick={confirmUpdatePath}>
-                            {t('projects.actions.confirm')}
-                        </Button>
-                        <Button variant={'destructive'} onClick={cancelUpdatePath}>
+                        <Button variant={'ghost'} onClick={cancelUpdatePath}>
                             {t('projects.actions.cancel')}
+                        </Button>
+                        <Button variant={'destructive'} onClick={confirmUpdatePath}>
+                            {t('projects.actions.confirm')}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>

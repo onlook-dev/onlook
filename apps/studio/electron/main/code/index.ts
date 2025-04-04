@@ -104,12 +104,12 @@ export function pickDirectory() {
 
 export async function moveFolder(source: string, destination: string) {
     try {
-        fs.cpSync(source, destination, { recursive: true });
-        fs.rmSync(source, { recursive: true, force: true });
-        console.log(`✅ Folder moved from ${source} to ${destination}`);
+        await fs.mkdir(destination, { recursive: true }, err => { throw err });
+        await fs.cp(source, destination, { recursive: true }, err => { throw err });
+
         return { success: true, message: 'Folder moved successfully' };
     } catch (error: any) {
-        console.error('❌ Move failed:', error);
+        console.error('Move failed:', error);
         return { success: false, message: error.message };
     }
 }
