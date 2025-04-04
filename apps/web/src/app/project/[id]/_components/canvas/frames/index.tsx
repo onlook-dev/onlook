@@ -8,8 +8,8 @@ export const Frames = observer(() => {
     const editorEngine = useEditorEngine();
     return (
         <div className="grid grid-flow-col gap-72">
-            {editorEngine.canvas.frames.map((settings, index) => (
-                <Frame key={index} settings={settings} />
+            {editorEngine.canvas.frames.map((settings) => (
+                <Frame key={settings.id} settings={settings} />
             ))}
         </div>
     );

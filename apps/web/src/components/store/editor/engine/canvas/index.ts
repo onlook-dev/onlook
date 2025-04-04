@@ -40,7 +40,7 @@ export class CanvasManager {
             dimension: { width: 1000, height: 1000 },
             device: 'Desktop',
             theme: Theme.Light,
-            orientation: Orientation.Potrait,
+            orientation: Orientation.Portrait,
             aspectRatioLocked: false,
         }];
     }
