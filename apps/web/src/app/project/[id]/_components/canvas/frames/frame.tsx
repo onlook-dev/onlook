@@ -1,7 +1,7 @@
 import type { FrameSettings } from "@onlook/models/projects";
 import { cn } from "@onlook/ui-v4/utils";
 import { observer } from "mobx-react-lite";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ResizeHandles } from './resize-handles';
 
 export const Frame = observer(
@@ -12,6 +12,7 @@ export const Frame = observer(
     }) => {
         const position = settings.position;
         const iframeRef = useRef<HTMLIFrameElement>(null);
+        const [dimensions, setDimensions] = useState(settings.dimension);
 
         return (
             <div
@@ -32,7 +33,7 @@ export const Frame = observer(
                     webviewSize={webviewSize}
                 /> */}
                 <div className="relative">
-                    <ResizeHandles settings={settings} />
+                    <ResizeHandles settings={settings} dimensions={dimensions} onResize={setDimensions} />
                     <iframe
                         id={settings.id}
                         ref={iframeRef}
@@ -44,10 +45,10 @@ export const Frame = observer(
                         src={settings.url}
                         sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
                         allow="geolocation; microphone; camera; midi; encrypted-media"
-                    // style={{
-                    //     width: clampedDimensions.width,
-                    //     height: clampedDimensions.height,
-                    // }}
+                        style={{
+                            width: dimensions.width,
+                            height: dimensions.height,
+                        }}
                     />
                     {/* <GestureScreen
                         isResizing={isResizing}

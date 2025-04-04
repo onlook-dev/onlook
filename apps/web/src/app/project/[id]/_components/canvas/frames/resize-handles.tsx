@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store';
 import type { SizePreset } from '@/components/store/editor/engine/canvas';
 import { DefaultSettings } from '@onlook/models/constants';
-import type { FrameSettings } from '@onlook/models/projects';
+import type { FrameSettings, RectDimension } from '@onlook/models/projects';
 import { ToastAction } from '@onlook/ui/toast';
 import { useToast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
@@ -16,15 +16,18 @@ enum HandleType {
 export const ResizeHandles = observer(
     ({
         settings,
+        dimensions,
+        onResize,
     }: {
         settings: FrameSettings;
+        dimensions: RectDimension;
+        onResize: (dimensions: RectDimension) => void;
     }) => {
         const editorEngine = useEditorEngine();
         const resizeHandleRef = useRef(null);
         const { toast } = useToast();
 
         // TODO: Move these to the store
-        const [size, setSize] = useState(settings.dimension);
         const [isResizing, setIsResizing] = useState<boolean>(false);
         const [aspectRatioLocked, setAspectRatioLocked] = useState(
             settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
@@ -43,8 +46,8 @@ export const ResizeHandles = observer(
 
             const startX = e.clientX;
             const startY = e.clientY;
-            const startWidth = size.width;
-            const startHeight = size.height;
+            const startWidth = dimensions.width;
+            const startHeight = dimensions.height;
             const aspectRatio = startWidth / startHeight;
 
             const resize: any = (e: MouseEvent) => {
@@ -95,7 +98,7 @@ export const ResizeHandles = observer(
                     }
                 }
 
-                setSize({
+                onResize({
                     width: Math.floor(currentWidth),
                     height: Math.floor(currentHeight),
                 });
