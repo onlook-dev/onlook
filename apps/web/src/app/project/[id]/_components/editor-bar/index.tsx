@@ -42,14 +42,14 @@ export const EditorBar = () => {
             <div className="flex items-center gap-1">
                 <Button
                     variant="ghost"
-                    className="flex items-center justify-between text-muted-foreground border border-border/0 hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border min-w-[120px] max-w-[120px] px-2"
+                    className="flex items-center justify-between text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border min-w-[120px] max-w-[120px] px-3"
                 >
                     <span className="text-sm truncate">{selectedFont}</span>
                 </Button>
                 <div className="h-6 w-[1px] bg-border" />
                 <Button
                     variant="ghost"
-                    className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border min-w-[120px] max-w-[120px] px-2"
+                    className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border min-w-[120px] max-w-[120px] px-3"
                 >
                     <span className="text-sm">Medium</span>
                     <Icons.ChevronDown className="h-4 w-4 opacity-50" />
@@ -60,7 +60,7 @@ export const EditorBar = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => adjustFontSize(-1)}
-                        className="border border-border/0 hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-9"
+                        className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-8 px-2"
                     >
                         <Icons.Minus className="h-4 w-4" />
                     </Button>
@@ -101,7 +101,7 @@ export const EditorBar = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => adjustFontSize(1)}
-                        className="border border-border/0 hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-9"
+                        className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-8 px-2"
                     >
                         <Icons.Plus className="h-4 w-4" />
                     </Button>
@@ -110,7 +110,7 @@ export const EditorBar = () => {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="border border-border/0 hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-9"
+                    className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-9 px-2"
                 >
                     <Icons.Text className="h-4 w-4" />
                 </Button>
