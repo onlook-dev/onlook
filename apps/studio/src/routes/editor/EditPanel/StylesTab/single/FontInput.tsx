@@ -46,7 +46,7 @@ export const FontInput = observer(
             editorEngine.layersPanelTab = LayersPanelTabValue.FONTS;
         };
 
-        const font = useMemo(
+        const selectedFont = useMemo(
             () => editorEngine.font.fonts?.find((val) => camelCase(val.family) === value),
             [value, editorEngine.font.fonts],
         );
@@ -56,8 +56,11 @@ export const FontInput = observer(
                     <button className="p-[6px] w-32 px-2 text-start rounded border-none text-xs text-active bg-background-onlook/75 appearance-none focus:outline-none focus:ring-0 flex items-center justify-between">
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <span className="truncate" style={{ fontFamily: font?.family }}>
-                                    {font?.family || 'Select font'}
+                                <span
+                                    className="truncate"
+                                    style={{ fontFamily: selectedFont?.family }}
+                                >
+                                    {selectedFont?.family || 'Select font'}
                                 </span>
                             </TooltipTrigger>
                             <TooltipPortal container={document.getElementById('style-panel')}>
@@ -68,7 +71,9 @@ export const FontInput = observer(
                                     className="animation-none max-w-[200px] shadow"
                                 >
                                     <TooltipArrow className="fill-foreground" />
-                                    <p className="break-words">{font?.family || 'Select font'}</p>
+                                    <p className="break-words">
+                                        {selectedFont?.family || 'Select font'}
+                                    </p>
                                 </TooltipContent>
                             </TooltipPortal>
                         </Tooltip>
@@ -120,7 +125,7 @@ export const FontInput = observer(
                                                 </TooltipContent>
                                             </TooltipPortal>
                                         </Tooltip>
-                                        {value === font.id && (
+                                        {selectedFont?.id === font.id && (
                                             <Icons.Check className="h-4 w-4 text-foreground-active" />
                                         )}
                                     </button>
