@@ -1,15 +1,15 @@
 import { useEditorEngine } from '@/components/Context';
-import { observer } from 'mobx-react-lite';
-import React, { useEffect, useState, useMemo } from 'react';
-import { Icons } from '@onlook/ui/icons';
 import type { SingleStyle } from '@/lib/editor/styles/models';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { BrandTabValue, LayersPanelTabValue } from '@/lib/models';
 import type { Font } from '@onlook/models/assets';
-import { convertFontString } from '@onlook/utility';
-import { LayersPanelTabValue } from '@/lib/models';
+import { Icons } from '@onlook/ui/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { convertFontString } from '@onlook/utility';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { camelCase } from 'lodash';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useMemo, useState } from 'react';
 
 export const FontInput = observer(
     ({
@@ -43,7 +43,9 @@ export const FontInput = observer(
         };
 
         const handleAddNewFont = () => {
-            editorEngine.layersPanelTab = LayersPanelTabValue.FONTS;
+            editorEngine.layersPanelTab = LayersPanelTabValue.BRAND;
+            editorEngine.brandTab = BrandTabValue.FONTS;
+            editorEngine.isLayersPanelLocked = true;
         };
 
         const selectedFont = useMemo(

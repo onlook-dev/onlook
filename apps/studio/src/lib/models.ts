@@ -34,7 +34,10 @@ export enum LayersPanelTabValue {
     IMAGES = 'images',
     WINDOWS = 'windows',
     BRAND = 'brand',
+    APPS = 'apps',
+}
+
+export enum BrandTabValue {
     COLORS = 'colors',
     FONTS = 'fonts',
-    APPS = 'apps',
 }

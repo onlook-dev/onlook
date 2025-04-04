@@ -3,7 +3,6 @@ import { EditorMode, LayersPanelTabValue } from '@/lib/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppsTab from './AppsTab';
 import BrandTab from './BrandTab';
@@ -16,22 +15,17 @@ import PagesTab from './PageTab';
 import WindowsTab from './WindowsTab';
 import ZoomControls from './ZoomControls';
 
-const COMPONENT_DISCOVERY_ENABLED = false;
-
 export const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
-
-    const [selectedTab, setSelectedTab] = useState<LayersPanelTabValue>(LayersPanelTabValue.LAYERS);
-    const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
-    const [isLocked, setIsLocked] = useState(false);
+    const isLocked = editorEngine.isLayersPanelLocked;
+    const selectedTab = editorEngine.layersPanelTab;
 
     const handleMouseEnter = (tab: LayersPanelTabValue) => {
         if (isLocked) {
             return;
         }
-        setSelectedTab(tab);
-        setIsContentPanelOpen(true);
+        editorEngine.layersPanelTab = tab;
     };
 
     const isMouseInContentPanel = (e: React.MouseEvent<HTMLDivElement>): boolean => {
@@ -51,41 +45,25 @@ export const LayersPanel = observer(() => {
         if (!isLocked) {
             // This is to handle things like dropdown where the mouse is still in the content panel
             if (!isMouseInContentPanel(e)) {
-                setIsContentPanelOpen(false);
+                editorEngine.layersPanelTab = null;
             } else {
                 // TODO: Since mouse leave won't trigger anymore, we need to listen and check
                 //  if the mouse actually left the content panel and then close the content panel
             }
         } else {
             // If we're locked, return to the locked tab when mouse leaves
-            setSelectedTab(selectedTab);
+            editorEngine.layersPanelTab = selectedTab;
         }
     };
 
     const handleClick = (tab: LayersPanelTabValue) => {
         if (selectedTab === tab && isLocked) {
-            setIsLocked(false);
-            setIsContentPanelOpen(false);
+            editorEngine.isLayersPanelLocked = false;
         } else {
-            tabChange(tab);
+            editorEngine.layersPanelTab = tab;
+            editorEngine.isLayersPanelLocked = true;
         }
     };
-
-    function tabChange(value: LayersPanelTabValue) {
-        setSelectedTab(value);
-        editorEngine.layersPanelTab = value;
-        setIsContentPanelOpen(true);
-        setIsLocked(true);
-    }
-
-    useEffect(() => {
-        tabChange(editorEngine.layersPanelTab);
-    }, [editorEngine.layersPanelTab]);
-
-    const isBrandTab =
-        selectedTab === LayersPanelTabValue.COLORS ||
-        selectedTab === LayersPanelTabValue.FONTS ||
-        selectedTab === LayersPanelTabValue.BRAND;
 
     return (
         <div
@@ -164,7 +142,7 @@ export const LayersPanel = observer(() => {
                 <button
                     className={cn(
                         'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                        isBrandTab && isLocked
+                        selectedTab === LayersPanelTabValue.BRAND && isLocked
                             ? 'bg-accent text-foreground border-[0.5px] border-foreground/20'
                             : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
                     )}
@@ -215,39 +193,24 @@ export const LayersPanel = observer(() => {
             </div>
 
             {/* Content panel */}
-            {isContentPanelOpen && (
+            {editorEngine.layersPanelTab && (
                 <>
-                    <div
-                        className="flex-1 w-[280px] bg-background/95 rounded-xl"
-                        onMouseEnter={() => setIsContentPanelOpen(true)}
-                    >
+                    <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
                             {selectedTab === LayersPanelTabValue.LAYERS && <LayersTab />}
-                            {selectedTab === LayersPanelTabValue.COMPONENTS &&
-                                (COMPONENT_DISCOVERY_ENABLED ? (
-                                    <ComponentsTab
-                                        components={editorEngine.projectInfo.components}
-                                    />
-                                ) : (
-                                    <div className="w-[260px] pt-96 text-center opacity-70">
-                                        Coming soon
-                                    </div>
-                                ))}
+                            {selectedTab === LayersPanelTabValue.COMPONENTS && (
+                                <ComponentsTab components={editorEngine.projectInfo.components} />
+                            )}
                             {selectedTab === LayersPanelTabValue.PAGES && <PagesTab />}
                             {selectedTab === LayersPanelTabValue.IMAGES && <ImagesTab />}
                             {selectedTab === LayersPanelTabValue.WINDOWS && <WindowsTab />}
-                            {isBrandTab && <BrandTab />}
+                            {selectedTab === LayersPanelTabValue.BRAND && <BrandTab />}
                             {selectedTab === LayersPanelTabValue.APPS && <AppsTab />}
                         </div>
                     </div>
 
                     {/* Invisible padding area that maintains hover state */}
-                    {!isLocked && (
-                        <div
-                            className="w-24 h-full"
-                            onMouseEnter={() => setIsContentPanelOpen(true)}
-                        />
-                    )}
+                    {!isLocked && <div className="w-24 h-full" />}
                 </>
             )}
         </div>
