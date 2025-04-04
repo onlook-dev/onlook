@@ -1,4 +1,3 @@
-
 // import { WebviewArea } from './_components/canvas/webview-area';
 
 // import { EditPanel } from './EditPanel';
@@ -29,11 +28,11 @@ export default async function Page({ params }: { params: { id: string } }) {
                 {/* <Toolbar /> */}
             </div>
 
-            <div className="absolute top-0 w-full">
+            <div className="absolute top-0 w-full z-20">
                 <EditorTopBar />
             </div>
 
-            <div className="absolute top-10 w-full">
+            <div className="absolute top-10 w-full z-10">
                 <EditorBar />
             </div>
             {/* <HotkeysModal /> */}

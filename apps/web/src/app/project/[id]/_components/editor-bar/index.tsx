@@ -20,6 +20,7 @@ const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 export const EditorBar = () => {
     const [selectedFont, setSelectedFont] = useState("Creato Display");
     const [fontSize, setFontSize] = useState(18);
+    const [fontWeight, setFontWeight] = useState<"Light" | "Normal" | "Medium" | "Bold" | "Extra Bold">("Medium");
 
     const adjustFontSize = (amount: number) => {
         setFontSize(prev => Math.max(1, prev + amount));
@@ -47,20 +48,71 @@ export const EditorBar = () => {
                     <span className="text-sm truncate">{selectedFont}</span>
                 </Button>
                 <div className="h-6 w-[1px] bg-border" />
-                <Button
-                    variant="ghost"
-                    className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border min-w-[120px] max-w-[120px] px-3"
-                >
-                    <span className="text-sm">Medium</span>
-                    <Icons.ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border min-w-[120px] max-w-[120px] px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                        >
+                            <span className="text-sm">{fontWeight}</span>
+                            <Icons.ChevronDown className="h-4 w-4 opacity-50" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="min-w-[120px] p-1 rounded-lg">
+                        <DropdownMenuItem 
+                            onClick={() => setFontWeight("Light")}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                                fontWeight === "Light" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                            }`}
+                        >
+                            Light
+                            {fontWeight === "Light" && <Icons.Check className="h-4 w-4 ml-2" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => setFontWeight("Normal")}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                                fontWeight === "Normal" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                            }`}
+                        >
+                            Normal
+                            {fontWeight === "Normal" && <Icons.Check className="h-4 w-4 ml-2" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => setFontWeight("Medium")}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                                fontWeight === "Medium" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                            }`}
+                        >
+                            Medium
+                            {fontWeight === "Medium" && <Icons.Check className="h-4 w-4 ml-2" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => setFontWeight("Bold")}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                                fontWeight === "Bold" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                            }`}
+                        >
+                            Bold
+                            {fontWeight === "Bold" && <Icons.Check className="h-4 w-4 ml-2" />}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => setFontWeight("Extra Bold")}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
+                                fontWeight === "Extra Bold" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                            }`}
+                        >
+                            Extra Bold
+                            {fontWeight === "Extra Bold" && <Icons.Check className="h-4 w-4 ml-2" />}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
                 <div className="h-6 w-[1px] bg-border" />
                 <div className="flex items-center gap-0.5">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => adjustFontSize(-1)}
-                        className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-8 px-2"
+                        className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-8 px-2 data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border"
                     >
                         <Icons.Minus className="h-4 w-4" />
                     </Button>
@@ -101,7 +153,7 @@ export const EditorBar = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => adjustFontSize(1)}
-                        className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-8 px-2"
+                        className="border border-border/0 rounded-lg cursor-pointer hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border text-muted-foreground h-8 w-8 px-2 data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border"
                     >
                         <Icons.Plus className="h-4 w-4" />
                     </Button>
