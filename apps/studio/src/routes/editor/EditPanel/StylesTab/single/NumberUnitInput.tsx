@@ -93,10 +93,13 @@ const NumberUnitInput = observer(
 
         const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
             if (e.currentTarget.value !== prevNumberValue) {
-                const value = parsedValueToString(
-                    Number.parseFloat(numberValue).toString(),
-                    unitValue,
-                );
+                const min = elementStyle.params?.min ?? -Infinity;
+                const max = elementStyle.params?.max ?? Infinity;
+
+                const parsedValue = Number.parseFloat(numberValue);
+                const clampedValue = Math.min(Math.max(parsedValue, min), max);
+
+                const value = parsedValueToString(clampedValue.toString(), unitValue);
                 sendStyleUpdate(value);
             }
             editorEngine.history.commitTransaction();
