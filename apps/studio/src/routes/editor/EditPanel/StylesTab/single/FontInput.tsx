@@ -5,24 +5,8 @@ import { Icons } from '@onlook/ui/icons';
 import type { SingleStyle } from '@/lib/editor/styles/models';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import type { Font } from '@onlook/models/assets';
-import { camelCase } from 'lodash';
-import { toNormalCase } from '@onlook/utility';
+import { convertFontString, toNormalCase } from '@onlook/utility';
 import { LayersPanelTabValue } from '@/lib/models';
-
-/**
- * Converts a font string like "__Advent_Pro_[hash], __Advent_Pro_Fallback_[hash], sans-serif" to "adventPro"
- */
-function convertFontString(fontString: string): string {
-    if (!fontString) {
-        return '';
-    }
-
-    const firstFont = fontString.split(',')[0].trim();
-    const cleanFont = firstFont.replace(/^__/, '').replace(/_[a-f0-9]+$/, '');
-    const withoutFallback = cleanFont.replace(/_Fallback$/, '');
-
-    return camelCase(withoutFallback);
-}
 
 export const FontInput = observer(
     ({
@@ -50,7 +34,8 @@ export const FontInput = observer(
             }
             setValue(newValue.id);
             editorEngine.style.updateFontFamily(elementStyle.key, newValue);
-            onValueChange && onValueChange(elementStyle.key, newValue.id);
+
+            onValueChange?.(elementStyle.key, newValue.id);
             setIsOpen(false);
         };
 
