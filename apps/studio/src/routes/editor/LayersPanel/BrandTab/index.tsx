@@ -1,10 +1,10 @@
+import { useEditorEngine } from '@/components/Context';
+import { BrandTabValue } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
 import ColorPanel from './ColorPanel';
 import FontPanel from './FontPanel';
 import SystemFont from './FontPanel/SystemFont';
-import { useEditorEngine } from '@/components/Context';
-import { LayersPanelTabValue } from '@/lib/models';
 
 interface ColorSquareProps {
     color: string;
@@ -47,32 +47,14 @@ const BrandTab = observer(() => {
         '#ffd8de', // Pale Pink
     ];
 
-    // Toggle color panel visibility
-    const handleToggleColorPanel = () => {
-        if (editorEngine.layersPanelTab === LayersPanelTabValue.COLORS) {
-            editorEngine.layersPanelTab = LayersPanelTabValue.BRAND;
-        } else {
-            editorEngine.layersPanelTab = LayersPanelTabValue.COLORS;
-        }
-    };
-
-    // Toggle font panel visibility
-    const handleToggleFontPanel = () => {
-        if (editorEngine.layersPanelTab === LayersPanelTabValue.FONTS) {
-            editorEngine.layersPanelTab = LayersPanelTabValue.BRAND;
-        } else {
-            editorEngine.layersPanelTab = LayersPanelTabValue.FONTS;
-        }
-    };
-
     // If color panel is visible, show it instead of the main content
-    if (editorEngine.layersPanelTab === LayersPanelTabValue.COLORS) {
-        return <ColorPanel onClose={handleToggleColorPanel} />;
+    if (editorEngine.brandTab === BrandTabValue.COLORS) {
+        return <ColorPanel />;
     }
 
     // If font panel is visible, show it instead of the main content
-    if (editorEngine.layersPanelTab === LayersPanelTabValue.FONTS) {
-        return <FontPanel onClose={handleToggleFontPanel} />;
+    if (editorEngine.brandTab === BrandTabValue.FONTS) {
+        return <FontPanel />;
     }
 
     return (
@@ -94,7 +76,7 @@ const BrandTab = observer(() => {
                 <Button
                     variant="ghost"
                     className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
-                    onClick={handleToggleColorPanel}
+                    onClick={() => (editorEngine.brandTab = BrandTabValue.COLORS)}
                 >
                     Manage brand colors
                 </Button>
@@ -111,7 +93,7 @@ const BrandTab = observer(() => {
                 <Button
                     variant="ghost"
                     className="w-full h-10 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
-                    onClick={handleToggleFontPanel}
+                    onClick={() => (editorEngine.brandTab = BrandTabValue.FONTS)}
                 >
                     Manage site fonts
                 </Button>

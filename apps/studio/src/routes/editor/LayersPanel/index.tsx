@@ -3,7 +3,6 @@ import { EditorMode, LayersPanelTabValue } from '@/lib/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AppsTab from './AppsTab';
 import BrandTab from './BrandTab';
@@ -19,7 +18,7 @@ import ZoomControls from './ZoomControls';
 export const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const { t } = useTranslation();
-    const [isLocked, setIsLocked] = useState(false);
+    const isLocked = editorEngine.isLayersPanelLocked;
     const selectedTab = editorEngine.layersPanelTab;
 
     const handleMouseEnter = (tab: LayersPanelTabValue) => {
@@ -59,10 +58,10 @@ export const LayersPanel = observer(() => {
 
     const handleClick = (tab: LayersPanelTabValue) => {
         if (selectedTab === tab && isLocked) {
-            setIsLocked(false);
+            editorEngine.isLayersPanelLocked = false;
         } else {
             editorEngine.layersPanelTab = tab;
-            setIsLocked(true);
+            editorEngine.isLayersPanelLocked = true;
         }
     };
 

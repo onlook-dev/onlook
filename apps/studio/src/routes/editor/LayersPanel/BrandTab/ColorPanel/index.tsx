@@ -9,11 +9,7 @@ import { useEffect, useState } from 'react';
 import { BrandPalletGroup } from './ColorPalletGroup';
 import { ColorNameInput } from './ColorNameInput';
 
-interface ColorPanelProps {
-    onClose: () => void;
-}
-
-const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
+const ColorPanel = observer(() => {
     const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
     const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
 
@@ -68,7 +64,7 @@ const ColorPanel = observer(({ onClose }: ColorPanelProps) => {
     };
 
     const handleClose = () => {
-        onClose();
+        editorEngine.brandTab = null;
     };
 
     return (

@@ -1,20 +1,16 @@
+import { useEditorEngine } from '@/components/Context';
+import { FONT_VARIANTS } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { observer } from 'mobx-react-lite';
-import { useRef, useState, useCallback, useEffect } from 'react';
 import debounce from 'lodash/debounce';
+import { observer } from 'mobx-react-lite';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FontFamily } from './FontFamily';
-import UploadModal from './UploadModal';
-import { useEditorEngine } from '@/components/Context';
 import type { FontFile } from './FontFiles';
-import { FONT_VARIANTS } from '@onlook/models/constants';
+import UploadModal from './UploadModal';
 
-interface FontPanelProps {
-    onClose?: () => void;
-}
-
-const FontPanel = observer(({ onClose }: FontPanelProps) => {
+const FontPanel = observer(() => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -24,9 +20,7 @@ const FontPanel = observer(({ onClose }: FontPanelProps) => {
     const fontManager = editorEngine.font;
 
     const handleClose = () => {
-        if (onClose) {
-            onClose();
-        }
+        editorEngine.brandTab = null;
     };
 
     const handleUploadFont = () => {

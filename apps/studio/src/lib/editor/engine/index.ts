@@ -40,6 +40,7 @@ export class EditorEngine {
     private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
     private _publishOpen: boolean = false;
+    private _isLayersPanelLocked: boolean = false;
 
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
@@ -179,6 +180,13 @@ export class EditorEngine {
     }
     get pages() {
         return this.pagesManager;
+    }
+    get isLayersPanelLocked() {
+        return this._isLayersPanelLocked;
+    }
+
+    set isLayersPanelLocked(value: boolean) {
+        this._isLayersPanelLocked = value;
     }
 
     set mode(mode: EditorMode) {
