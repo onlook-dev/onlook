@@ -63,7 +63,6 @@ const ProjectTab = observer(() => {
         try {
             if (runner?.state === RunState.RUNNING || runner?.state === RunState.SETTING_UP) {
                 runner?.stop();
-                return;
             }
 
             const result: MoveProjectFolderResponse = await invokeMainChannel(
@@ -90,8 +89,6 @@ const ProjectTab = observer(() => {
             });
 
             setShowPathUpdateAlert(false);
-            console.log('Your control is now in the confirmUpdatePath function ;)');
-            console.log('Keep going');
         } catch (error) {
             toast({
                 title: `${t('projects.dialogs.updatePath.error')}`,
