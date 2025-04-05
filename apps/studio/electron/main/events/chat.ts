@@ -2,7 +2,7 @@ import type { ChatConversation, ProjectSuggestions } from '@onlook/models/chat';
 import { StreamRequestType } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { SampleFeedbackType } from '@trainloop/sdk';
-import type { CoreMessage, Message } from 'ai';
+import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
 import Chat from '../chat';
 import trainloop from '../chat/trainloop';
@@ -74,7 +74,7 @@ export function listenForChatMessages() {
     });
 
     ipcMain.handle(MainChannels.SAVE_APPLY_RESULT, (e, args) => {
-        const { type, messages } = args as { type: SampleFeedbackType; messages: Message[] };
+        const { type, messages } = args as { messages: CoreMessage[]; type: SampleFeedbackType };
         return trainloop.saveApplyResult(messages, type);
     });
 }

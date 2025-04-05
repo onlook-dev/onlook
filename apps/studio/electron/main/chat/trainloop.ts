@@ -1,5 +1,6 @@
 import { BASE_PROXY_ROUTE, FUNCTIONS_ROUTE, ProxyRoutes } from '@onlook/models/constants';
-import { Client, SampleFeedbackType, type Message } from '@trainloop/sdk';
+import { Client, type SampleFeedbackType } from '@trainloop/sdk';
+import type { CoreMessage } from 'ai';
 import { getRefreshedAuthTokens } from '../auth';
 
 class TrainLoopManager {
@@ -23,9 +24,13 @@ class TrainLoopManager {
         return TrainLoopManager.instance;
     }
 
-    public async saveApplyResult(messages: Message[], type: SampleFeedbackType) {
+    public async saveApplyResult(messages: CoreMessage[], type: SampleFeedbackType) {
         const client = await this.getClient();
-        await client.sendData(messages, type as string, 'onlook-apply-set');
+        await client.sendData(
+            messages as unknown as Record<string, string>[],
+            type,
+            'onlook-apply-set',
+        );
     }
 }
 

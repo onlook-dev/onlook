@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/studio",
-    "version": "0.2.24",
+    "version": "0.2.25",
     "homepage": "https://onlook.com",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -46,7 +46,7 @@
         "@parcel/watcher": "^2.5.1",
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
-        "@trainloop/sdk": "^0.1.5",
+        "@trainloop/sdk": "^0.1.8",
         "@types/webfontloader": "^1.6.38",
         "@xterm/xterm": "^5.6.0-beta.98",
         "ai": "^4.2.6",
