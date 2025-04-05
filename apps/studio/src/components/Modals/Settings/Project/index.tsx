@@ -99,27 +99,49 @@ const ProjectTab = observer(() => {
         }
     };
 
+    const handleUpdateUrl = (url: string) => {
+        projectsManager.updatePartialProject({
+            url,
+        });
+        projectsManager.editorEngine?.canvas.saveFrames(
+            projectsManager.editorEngine?.canvas.frames.map((frame) => ({
+                ...frame,
+                url,
+            })),
+        );
+    };
+
     return (
         <>
-            <div className="text-sm">
-                <div className="flex flex-col gap-4 p-6">
-                    <h2 className="text-lg">Metadata</h2>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <p className=" text-muted-foreground">Name</p>
-                            <Input
-                                id="name"
-                                value={name}
-                                onChange={(e) =>
-                                    projectsManager.updatePartialProject({
-                                        name: e.target.value,
-                                    })
-                                }
-                                className="w-2/3"
-                            />
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <p className=" text-muted-foreground">URL</p>
+        <div className="text-sm">
+            <div className="flex flex-col gap-4 p-6">
+                <h2 className="text-lg">Metadata</h2>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <p className=" text-muted-foreground">Name</p>
+                        <Input
+                            id="name"
+                            value={name}
+                            onChange={(e) =>
+                                projectsManager.updatePartialProject({
+                                    name: e.target.value,
+                                })
+                            }
+                            className="w-2/3"
+                        />
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <p className=" text-muted-foreground">URL</p>
+                        <Input
+                            id="url"
+                            value={url}
+                            onChange={(e) => handleUpdateUrl(e.target.value)}
+                            className="w-2/3"
+                        />
+                    </div>
+                    <div className="flex justify-between items-center">
+                        <p className=" text-muted-foreground">Path</p>
+                        <div className="flex items-center gap-2 w-2/3">
                             <Input
                                 id="url"
                                 value={url}

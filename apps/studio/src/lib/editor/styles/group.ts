@@ -40,7 +40,7 @@ export const PositionGroup = [
     new CompoundStyleImpl(
         CompoundStyleKey.Position,
         new SingleStyleImpl('position', 'relative', 'Position', StyleType.Select, {
-            options: ['relative', 'absolute', 'fixed', 'static'],
+            options: ['relative', 'absolute', 'fixed', 'static', 'sticky'],
         }),
         [
             new SingleStyleImpl('top', '', 'Top', StyleType.Number, {
@@ -242,6 +242,12 @@ export const StyleGroup = [
 ];
 
 export const TextGroup = [
+    new SingleStyleImpl('fontFamily', '', 'Font', StyleType.Font),
+
+    new SingleStyleImpl('textTransform', 'none', 'Transform', StyleType.Select, {
+        options: ['none', 'capitalize', 'uppercase', 'lowercase'],
+    }),
+
     new SingleStyleImpl('color', '#000000', 'Color', StyleType.Color),
 
     new SingleStyleImpl('fontSize', '16px', 'Size', StyleType.Number, {

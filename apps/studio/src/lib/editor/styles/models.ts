@@ -32,6 +32,7 @@ export enum StyleType {
     Select = 'select',
     Color = 'color',
     Image = 'image',
+    Font = 'font',
 }
 
 export enum CompoundStyleKey {

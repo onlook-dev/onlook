@@ -9,6 +9,7 @@ import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
 import { camelCase } from 'lodash';
+import { customAlphabet } from 'nanoid/non-secure';
 
 interface ColorValue {
     value: string;
@@ -450,8 +451,12 @@ export class ThemeManager {
                 if (!colorToDuplicate) {
                     throw new Error('Color not found');
                 }
-
-                const newName = `${colorName}Copy`;
+                // If the color name is a number, we need to add a suffix to the new color name
+                const randomId = customAlphabet('0123456789', 5)();
+                const randomText = customAlphabet('abcdefghijklmnopqrstuvwxyz', 5)();
+                const newName = isNaN(Number(colorName))
+                    ? `${colorName}Copy${randomText}`
+                    : `${colorName}${randomId}`;
 
                 const color = Color.from(
                     theme === Theme.DARK
@@ -459,15 +464,7 @@ export class ThemeManager {
                         : colorToDuplicate.lightColor,
                 );
 
-                await this.update(
-                    groupName,
-                    group.length,
-                    color,
-                    newName,
-                    groupName.toLowerCase(),
-                    theme,
-                    true,
-                );
+                await this.update(groupName, group.length, color, newName, groupName, theme, true);
 
                 this.scanConfig();
             }
