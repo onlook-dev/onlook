@@ -1,7 +1,7 @@
 import * as pathModule from 'path';
 import { DefaultSettings } from '@onlook/models/constants';
 import type { Font } from '@onlook/models/assets';
-import { camelCase } from 'lodash';
+import { camelCase, kebabCase } from 'lodash';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
@@ -116,9 +116,11 @@ export async function addFont(projectRoot: string, font: Font) {
             traverse(ast, {
                 ImportDeclaration(path) {
                     if (path.node.source.value === 'next/font/google') {
-                        path.node.specifiers.push(
+                        const newSpecifiers = [...path.node.specifiers];
+                        newSpecifiers.push(
                             t.importSpecifier(t.identifier(importName), t.identifier(importName)),
                         );
+                        path.node.specifiers = newSpecifiers;
                     }
                 },
             });
@@ -381,9 +383,9 @@ export async function addLocalFont(
                     `${fileName}.${fontFile.file.name.split('.').pop()}`,
                 );
 
-                // Save the file
+                // Save the file as binary data
                 const buffer = Buffer.from(fontFile.file.buffer);
-                await writeFile(filePath, buffer.toString('base64'));
+                fs.writeFileSync(filePath, buffer);
 
                 return {
                     path: pathModule.join(
@@ -445,8 +447,19 @@ export async function addLocalFont(
             // Create a new font configuration
             const fontConfigObject = t.objectExpression([
                 t.objectProperty(t.identifier('src'), t.arrayExpression(srcArrayElements)),
-                t.objectProperty(t.identifier('variable'), t.stringLiteral(`--font-${fontName}`)),
+                t.objectProperty(
+                    t.identifier('variable'),
+                    t.stringLiteral(`--font-${kebabCase(fontName)}`),
+                ),
                 t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
+                t.objectProperty(
+                    t.identifier('fallback'),
+                    t.arrayExpression([
+                        t.stringLiteral('system-ui'),
+                        t.stringLiteral('sans-serif'),
+                    ]),
+                ),
+                t.objectProperty(t.identifier('preload'), t.booleanLiteral(true)),
             ]);
 
             const fontDeclaration = t.variableDeclaration('const', [

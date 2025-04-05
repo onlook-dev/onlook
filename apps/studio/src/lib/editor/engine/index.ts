@@ -1,4 +1,10 @@
-import { EditorMode, EditorTabValue, SettingsTabValue } from '@/lib/models';
+import {
+    BrandTabValue,
+    EditorMode,
+    EditorTabValue,
+    LayersPanelTabValue,
+    SettingsTabValue,
+} from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
@@ -15,6 +21,7 @@ import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
+import { FontManager } from './font';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
 import { ImageManager } from './image';
@@ -27,17 +34,19 @@ import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { WebviewManager } from './webview';
-import { FontManager } from './font';
 
 export class EditorEngine {
     private _plansOpen: boolean = false;
     private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
     private _publishOpen: boolean = false;
+    private _isLayersPanelLocked: boolean = false;
 
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
+    private _layersPanelTab: LayersPanelTabValue | null = null;
+    private _brandTab: BrandTabValue | null = null;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -145,6 +154,9 @@ export class EditorEngine {
     get settingsTab() {
         return this._settingsTab;
     }
+    get layersPanelTab() {
+        return this._layersPanelTab;
+    }
     get isPlansOpen() {
         return this._plansOpen;
     }
@@ -157,6 +169,9 @@ export class EditorEngine {
     get isHotkeysOpen() {
         return this._hotkeysOpen;
     }
+    get brandTab() {
+        return this._brandTab;
+    }
     get errors() {
         return this.errorManager;
     }
@@ -165,6 +180,13 @@ export class EditorEngine {
     }
     get pages() {
         return this.pagesManager;
+    }
+    get isLayersPanelLocked() {
+        return this._isLayersPanelLocked;
+    }
+
+    set isLayersPanelLocked(value: boolean) {
+        this._isLayersPanelLocked = value;
     }
 
     set mode(mode: EditorMode) {
@@ -177,6 +199,10 @@ export class EditorEngine {
 
     set settingsTab(tab: SettingsTabValue) {
         this._settingsTab = tab;
+    }
+
+    set layersPanelTab(tab: LayersPanelTabValue | null) {
+        this._layersPanelTab = tab;
     }
 
     set isPlansOpen(open: boolean) {
@@ -196,6 +222,10 @@ export class EditorEngine {
 
     set isPublishOpen(open: boolean) {
         this._publishOpen = open;
+    }
+
+    set brandTab(tab: BrandTabValue | null) {
+        this._brandTab = tab;
     }
 
     dispose() {

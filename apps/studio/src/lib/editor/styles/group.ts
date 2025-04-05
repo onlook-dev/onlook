@@ -242,6 +242,8 @@ export const StyleGroup = [
 ];
 
 export const TextGroup = [
+    new SingleStyleImpl('fontFamily', '', 'Font', StyleType.Font),
+
     new SingleStyleImpl('textTransform', 'none', 'Transform', StyleType.Select, {
         options: ['none', 'capitalize', 'uppercase', 'lowercase'],
     }),
