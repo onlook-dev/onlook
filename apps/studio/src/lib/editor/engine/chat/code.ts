@@ -1,9 +1,11 @@
 import type { ProjectsManager } from '@/lib/projects';
-import { sendAnalytics } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
 import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
+import { MainChannels } from '@onlook/models/constants';
 import { toast } from '@onlook/ui/use-toast';
+import { SampleFeedbackType, type Message } from '@trainloop/sdk';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
 import type { EditorEngine } from '..';
@@ -32,7 +34,7 @@ export class ChatCodeManager {
         }
 
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
-
+        let applySuccess = true;
         for (const [file, codeBlocks] of fileToCodeBlocks) {
             // If file doesn't exist, we'll assume it's a new file and create it
             const originalContent =
@@ -45,6 +47,7 @@ export class ChatCodeManager {
             for (const block of codeBlocks) {
                 const result = await this.processor.applyDiff(content, block.content);
                 if (!result.success) {
+                    applySuccess = false;
                     console.error('Failed to apply code block', block);
                     toast({
                         title: 'Failed to apply code block',
@@ -77,12 +80,20 @@ export class ChatCodeManager {
         }
 
         this.chat.suggestions.shouldHide = false;
+        this.saveApplyResult(
+            message,
+            applySuccess ? SampleFeedbackType.GOOD : SampleFeedbackType.BAD,
+        );
 
         setTimeout(() => {
             this.editorEngine.webviews.reloadWebviews();
             this.editorEngine.errors.clear();
         }, 500);
         sendAnalytics('apply code change');
+    }
+
+    saveApplyResult(message: Message, type: SampleFeedbackType) {
+        invokeMainChannel(MainChannels.SAVE_APPLY_RESULT, { type, messages: [message] });
     }
 
     async revertCode(messageId: string) {
