@@ -96,6 +96,18 @@
     },
     "pricing": {
         "plans": {
+            "free": {
+                "name": "Free",
+                "price": "$0/month",
+                "description": "Prototype and experiment in code with ease.",
+                "features": [
+                    "Visual code editor access",
+                    "Unlimited projects",
+                    "{{dailyMessages}} AI chat messages a day",
+                    "{{monthlyMessages}} AI messages a month",
+                    "Limited to 1 screenshot per chat"
+                ]
+            },
             "basic": {
                 "name": "Onlook Basic",
                 "price": "$0/month",
@@ -109,7 +121,7 @@
                 ]
             },
             "pro": {
-                "name": "Onlook Pro",
+                "name": "Pro",
                 "price": "$20/month",
                 "description": "Creativity – unconstrained. Build stunning sites with AI.",
                 "features": [
@@ -121,16 +133,44 @@
                     "1 free custom domain hosted with Onlook",
                     "Priority support"
                 ]
+            },
+            "launch": {
+                "name": "Launch",
+                "price": "$50/month",
+                "description": "Perfect for startups and growing teams",
+                "features": [
+                    "Unlimited daily messages",
+                    "Priority support",
+                    "Advanced integrations",
+                    "Team collaboration features"
+                ]
+            },
+            "scale": {
+                "name": "Scale",
+                "price": "$100/month",
+                "description": "Ready to grow features for large teams",
+                "features": [
+                    "Everything in Launch plan",
+                    "Dedicated account manager",
+                    "Custom integrations",
+                    "Advanced analytics",
+                    "24/7 premium support"
+                ]
             }
         },
         "titles": {
             "choosePlan": "Choose your plan",
-            "proMember": "Thanks for being a Pro member!"
+            "proMember": "Thanks for being a Pro member!",
+            "launchMember": "Thanks for being a Launch member!",
+            "scaleMember": "Thanks for being a Scale member!"
         },
         "buttons": {
             "currentPlan": "Current Plan",
             "getPro": "Get Pro",
-            "manageSubscription": "Manage Subscription"
+            "manageSubscription": "Manage Subscription",
+            "downgradeToFree": "Downgrade to Free",
+            "downgradeToLaunch": "Downgrade to Launch",
+            "downgradeToPro": "Downgrade to Pro"
         },
         "loading": {
             "checkingPayment": "Checking for payment..."
