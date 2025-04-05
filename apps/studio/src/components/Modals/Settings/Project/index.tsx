@@ -35,8 +35,22 @@ const ProjectTab = observer(() => {
     };
 
     const handleUpdateUrl = (url: string) => {
+        let port = url.split(':').pop();
+
+        try {
+            const parsedUrl = new URL(url);
+            port = parsedUrl.port;
+        } catch (error) {
+            console.error('Invalid URL');
+            return;
+        }
         projectsManager.updatePartialProject({
             url,
+            commands: {
+                ...project?.commands,
+                run: 'npx next dev -p ' + port,
+                build: 'npx next build -p ' + port,
+            },
         });
         projectsManager.editorEngine?.canvas.saveFrames(
             projectsManager.editorEngine?.canvas.frames.map((frame) => ({
@@ -70,6 +84,7 @@ const ProjectTab = observer(() => {
                             id="url"
                             value={url}
                             onChange={(e) => handleUpdateUrl(e.target.value)}
+                            onBlur={() => projectsManager.runner?.restart()}
                             className="w-2/3"
                         />
                     </div>
