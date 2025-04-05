@@ -1,13 +1,14 @@
 import type { CodeDiff } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
-import { DEFAULT_IDE } from '@onlook/models/ide';
-import { dialog, shell } from 'electron';
+import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
+import { dialog, ipcMain, shell } from 'electron';
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
 import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
+import { MainChannels } from '@onlook/models/constants';
 
 export async function readCodeBlock(
     templateNode: TemplateNode,
@@ -85,12 +86,33 @@ function getIdeFromUserSettings(): IDE {
 export function openInIde(templateNode: TemplateNode) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeCommand(templateNode);
+
+    if (ide.type === IdeType.ONLOOK) {
+        ipcMain.emit(MainChannels.VIEW_CODE_IN_ONLOOK, null, {
+            filePath: templateNode.path,
+            startLine: templateNode.startTag.start.line,
+            startColumn: templateNode.startTag.start.column,
+            endLine: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+            endColumn: templateNode.endTag?.end.column || templateNode.startTag.start.column,
+        });
+        return;
+    }
+
     shell.openExternal(command);
 }
 
 export function openFileInIde(filePath: string, line?: number) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeFileCommand(filePath, line);
+
+    if (ide.type === IdeType.ONLOOK) {
+        ipcMain.emit(MainChannels.VIEW_CODE_IN_ONLOOK, null, {
+            filePath,
+            line,
+        });
+        return;
+    }
+
     shell.openExternal(command);
 }
 

@@ -1,6 +1,6 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -27,13 +27,10 @@ const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
     [EditorTabValue.PROPS]: 295,
     [EditorTabValue.STYLES]: 240,
+    [EditorTabValue.DEV]: 700,
 };
-
-const DEV_PANEL_WIDTH = 500;
 const DEV_PANEL_MIN_WIDTH = 300;
 const DEV_PANEL_MAX_WIDTH = 1000;
-const isDevPanelOpen = false;
-
 export const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
@@ -42,12 +39,27 @@ export const EditPanel = observer(() => {
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
+    const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab] || EDIT_PANEL_WIDTHS[EditorTabValue.CHAT];
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
     }, [editorEngine.editPanelTab]);
+
+    // Listens for SHOW_EDITOR_TAB event to switch to DevTab when files are opened via Onlook IDE
+    useEffect(() => {
+        const handleShowEditorTab = (_event: any, tabValue: string) => {
+            if (tabValue === EditorTabValue.DEV) {
+                tabChange(EditorTabValue.DEV);
+            }
+        };
+
+        window.api.on(MainChannels.SHOW_EDITOR_TAB, handleShowEditorTab);
+
+        return () => {
+            window.api.removeListener(MainChannels.SHOW_EDITOR_TAB, handleShowEditorTab);
+        };
+    }, []);
 
     function renderEmptyState() {
         return (
@@ -195,6 +207,13 @@ export const EditPanel = observer(() => {
                             <Icons.MixerHorizontal className="mr-1.5 mb-0.5" />
                             Props
                         </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover"
+                            value={EditorTabValue.DEV}
+                        >
+                            <Icons.Code className="mr-1.5 h-4 w-4" />
+                            Code
+                        </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
@@ -214,6 +233,9 @@ export const EditPanel = observer(() => {
                             renderEmptyState()
                         )}
                     </TabsContent>
+                    <TabsContent value={EditorTabValue.DEV} className="h-full">
+                        <DevTab />
+                    </TabsContent>
                 </div>
             </Tabs>
         );
@@ -221,45 +243,19 @@ export const EditPanel = observer(() => {
 
     return (
         <div className="flex flex-row h-full">
-            {isDevPanelOpen && (
-                <ResizablePanel
-                    side="right"
-                    defaultWidth={DEV_PANEL_WIDTH}
-                    forceWidth={DEV_PANEL_WIDTH}
-                    minWidth={DEV_PANEL_MIN_WIDTH}
-                    maxWidth={DEV_PANEL_MAX_WIDTH}
-                >
-                    <div
-                        id="dev-panel"
-                        className={cn(
-                            'rounded-tl-xl transition-width duration-300 opacity-100 bg-background/95 overflow-hidden h-full',
-                            editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
-                        )}
-                    >
-                        <div
-                            className={cn(
-                                'backdrop-blur-xl shadow h-full relative transition-opacity duration-300',
-                                isOpen ? '' : 'rounded-tr-xl',
-                            )}
-                        >
-                            <DevTab />
-                        </div>
-                    </div>
-                </ResizablePanel>
-            )}
             <ResizablePanel
                 side="right"
                 defaultWidth={editPanelWidth}
                 forceWidth={editPanelWidth}
-                minWidth={240}
-                maxWidth={700}
+                minWidth={selectedTab === EditorTabValue.DEV ? DEV_PANEL_MIN_WIDTH : 240}
+                maxWidth={selectedTab === EditorTabValue.DEV ? DEV_PANEL_MAX_WIDTH : 700}
             >
                 <div
-                    id="style-panel"
+                    id="editor-panel"
                     className={cn(
-                        'w-full transition-width duration-300 opacity-100 bg-background/95 overflow-hidden group/panel',
+                        'w-full transition-width duration-300 opacity-100 bg-background/95 overflow-hidden group/panel h-full',
                         editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
-                        !isDevPanelOpen && 'rounded-tl-xl',
+                        'rounded-tl-xl',
                     )}
                 >
                     <div

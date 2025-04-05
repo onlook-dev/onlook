@@ -49,6 +49,7 @@ export enum MainChannels {
     WRITE_CODE_DIFFS = 'write-code-diffs',
     VIEW_SOURCE_CODE = 'view-source-code',
     VIEW_SOURCE_FILE = 'view-source-file',
+    VIEW_CODE_IN_ONLOOK = 'view-code-in-onlook',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
     CLEAN_CODE_KEYS = 'clean-move-keys',
@@ -156,6 +157,9 @@ export enum MainChannels {
     SCAN_TAILWIND_CONFIG = 'scan-tailwind-config',
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
     DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
+
+    // Editor
+    SHOW_EDITOR_TAB = 'show-editor-tab',
 }
 
 export enum GitChannels {
