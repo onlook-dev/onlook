@@ -1,5 +1,5 @@
 import { BASE_PROXY_ROUTE, FUNCTIONS_ROUTE, ProxyRoutes } from '@onlook/models/constants';
-import { Client, SampleFeedbackType } from '@trainloop/sdk';
+import { Client, type SampleFeedbackType } from '@trainloop/sdk';
 import type { CoreMessage } from 'ai';
 import { getRefreshedAuthTokens } from '../auth';
 
