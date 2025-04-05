@@ -18,7 +18,6 @@ export enum ProxyRoutes {
     ANTHROPIC = '/anthropic',
     TRAINLOOP = '/trainloop',
 }
-export const TRAINLOOP_COLLECT_ROUTE = '/api/datasets/collect';
 export const REDIRECT_APP_URL = 'https://onlook.dev/redirect-app';
 export const REQUEST_TYPE_HEADER = 'X-Onlook-Request-Type';
 
