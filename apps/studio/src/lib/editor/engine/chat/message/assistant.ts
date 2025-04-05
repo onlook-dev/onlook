@@ -26,6 +26,13 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         };
     }
 
+    getStringContent(): string {
+        if (typeof this.content === 'string') {
+            return this.content;
+        }
+        return this.content.map((part) => (part.type === 'text' ? part.text : '')).join('');
+    }
+
     static fromJSON(data: AssistantChatMessage): AssistantChatMessageImpl {
         const message = new AssistantChatMessageImpl(data.content);
         message.id = data.id;
