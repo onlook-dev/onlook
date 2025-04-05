@@ -48,5 +48,8 @@
     "devDependencies": {
         "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
+    },
+    "dependencies": {
+        "@trainloop/sdk": "^0.1.8"
     }
 }
