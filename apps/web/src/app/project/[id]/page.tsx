@@ -1,3 +1,5 @@
+"use client";
+
 // import { WebviewArea } from './_components/canvas/webview-area';
 
 // import { EditPanel } from './EditPanel';
@@ -5,11 +7,17 @@
 // import { LayersPanel } from './LayersPanel';
 // import { Toolbar } from './Toolbar';
 
+import { useState } from "react";
 import { EditorBar } from "./_components/editor-bar";
+import { StagingToggle } from "./_components/editor-bar/staging-toggle";
 import { EditorTopBar } from "./_components/top-bar";
 
-export default async function Page({ params }: { params: { id: string } }) {
-    const id = (await params).id
+type ElementType = "div" | "text" | "image";
+
+export default function Page({ params }: { params: { id: string } }) {
+    const id = params.id;
+    const [selectedElement, setSelectedElement] = useState<ElementType>("div");
+
     return (
         <div className="h-screen w-screen relative flex flex-row select-none">
             {/* <Canvas> */}
@@ -33,7 +41,11 @@ export default async function Page({ params }: { params: { id: string } }) {
             </div>
 
             <div className="absolute top-10 w-full z-10">
-                <EditorBar />
+                <EditorBar selectedElement={selectedElement} />
+            </div>
+
+            <div className="absolute top-10 w-full z-1">
+                <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
             </div>
             {/* <HotkeysModal /> */}
         </div>
