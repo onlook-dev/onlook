@@ -1,7 +1,7 @@
 import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
 import type { DomElement } from '@onlook/models/element';
-import { DEFAULT_IDE } from '@onlook/models/ide';
+import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,6 +16,7 @@ import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { IDE } from '/common/ide';
+import { EditorTabValue } from '@/lib/models';
 
 const OpenCodeMini = observer(() => {
     const editorEngine = useEditorEngine();
@@ -113,6 +114,9 @@ const OpenCodeMini = observer(() => {
                 <DropdownMenuItem
                     className="text-sm"
                     onClick={() => {
+                        if (ide.type === IdeType.ONLOOK) {
+                            editorEngine.editPanelTab = EditorTabValue.DEV;
+                        }
                         editorEngine.code.viewSourceFile(folderPath);
                     }}
                     onMouseEnter={() => setIsFolderHovered(true)}
@@ -129,6 +133,9 @@ const OpenCodeMini = observer(() => {
                     <DropdownMenuItem
                         className="text-sm"
                         onClick={() => {
+                            if (ide.type === IdeType.ONLOOK) {
+                                editorEngine.editPanelTab = EditorTabValue.DEV;
+                            }
                             editorEngine.code.viewSource(instance);
                         }}
                     >
@@ -140,6 +147,9 @@ const OpenCodeMini = observer(() => {
                     <DropdownMenuItem
                         className="text-sm"
                         onClick={() => {
+                            if (ide.type === IdeType.ONLOOK) {
+                                editorEngine.editPanelTab = EditorTabValue.DEV;
+                            }
                             editorEngine.code.viewSource(root);
                         }}
                     >

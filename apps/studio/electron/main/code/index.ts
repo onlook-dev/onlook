@@ -8,7 +8,6 @@ import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
-import { MainChannels } from '@onlook/models/constants';
 
 export async function readCodeBlock(
     templateNode: TemplateNode,
@@ -88,13 +87,6 @@ export function openInIde(templateNode: TemplateNode) {
     const command = ide.getCodeCommand(templateNode);
 
     if (ide.type === IdeType.ONLOOK) {
-        ipcMain.emit(MainChannels.VIEW_CODE_IN_ONLOOK, null, {
-            filePath: templateNode.path,
-            startLine: templateNode.startTag.start.line,
-            startColumn: templateNode.startTag.start.column,
-            endLine: templateNode.endTag?.end.line || templateNode.startTag.start.line,
-            endColumn: templateNode.endTag?.end.column || templateNode.startTag.start.column,
-        });
         return;
     }
 
@@ -106,10 +98,6 @@ export function openFileInIde(filePath: string, line?: number) {
     const command = ide.getCodeFileCommand(filePath, line);
 
     if (ide.type === IdeType.ONLOOK) {
-        ipcMain.emit(MainChannels.VIEW_CODE_IN_ONLOOK, null, {
-            filePath,
-            line,
-        });
         return;
     }
 

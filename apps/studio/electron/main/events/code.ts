@@ -17,8 +17,6 @@ import {
     updateTailwindColorConfig,
     deleteTailwindColorGroup,
 } from '../assets/styles';
-import { mainWindow } from '..';
-import { EditorTabValue } from '../../../src/lib/models';
 import {
     addFont,
     removeFont,
@@ -160,24 +158,6 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.DELETE_TAILWIND_CONFIG, async (_, args) => {
         const { projectRoot, groupName, colorName } = args;
         return deleteTailwindColorGroup(projectRoot, groupName, colorName);
-    });
-
-    ipcMain.handle(MainChannels.VIEW_CODE_IN_ONLOOK, (_, args) => {
-        const { filePath, startLine, startColumn, endLine, endColumn, line } = args;
-
-        // Send the data to the renderer process
-        mainWindow?.webContents.send(MainChannels.VIEW_CODE_IN_ONLOOK, {
-            filePath,
-            startLine: startLine || line,
-            startColumn,
-            endLine: endLine || line,
-            endColumn,
-        });
-
-        // Ensures the editor panel is open and DevTab is selected
-        mainWindow?.webContents.send(MainChannels.SHOW_EDITOR_TAB, EditorTabValue.DEV);
-
-        return true;
     });
 
     ipcMain.handle(MainChannels.SCAN_FONTS, async (_, args) => {
