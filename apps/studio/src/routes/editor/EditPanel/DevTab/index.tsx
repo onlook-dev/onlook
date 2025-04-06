@@ -21,79 +21,20 @@ import useResizeObserver from 'use-resize-observer';
 import type { FileNode } from '@/lib/editor/engine/files';
 import FileTreeNode from './FileTreeNode';
 import FileTreeRow from './FileTreeRow';
+import { FileTab } from './FileTab';
 
-import { javascript } from '@codemirror/lang-javascript';
-import { css } from '@codemirror/lang-css';
-import { html } from '@codemirror/lang-html';
-import { json } from '@codemirror/lang-json';
-import { markdown } from '@codemirror/lang-markdown';
+import { getBasicSetup, getExtensions, getLanguageFromFileName } from './CodeMirrorConfig';
 
-// Extensions
 import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
 import CodeMirror from '@uiw/react-codemirror';
-import { highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
-import { highlightSpecialChars, drawSelection } from '@codemirror/view';
-import { bracketMatching } from '@codemirror/language';
-import { autocompletion } from '@codemirror/autocomplete';
-import { highlightSelectionMatches } from '@codemirror/search';
-import { lintGutter } from '@codemirror/lint';
-import { lineNumbers } from '@codemirror/view';
 import { v4 as uuidv4 } from 'uuid';
-import { keymap } from '@codemirror/view';
 
 enum TabValue {
     CONSOLE = 'console',
     NETWORK = 'network',
     ELEMENTS = 'elements',
 }
-interface FileTabProps {
-    filename: string;
-    isActive?: boolean;
-    isDirty?: boolean;
-    onClick?: () => void;
-    onClose?: () => void;
-}
-
-const FileTab: React.FC<FileTabProps> = ({
-    filename,
-    isActive = false,
-    isDirty = false,
-    onClick,
-    onClose,
-}) => {
-    return (
-        <div className="h-full px-4 relative group">
-            <div className="absolute right-0 h-[50%] w-[0.5px] bg-foreground/10 top-1/2 -translate-y-1/2"></div>
-            <div className="flex items-center h-full">
-                <button
-                    className={cn(
-                        'text-sm h-full flex items-center focus:outline-none',
-                        isActive
-                            ? 'text-foreground-hover'
-                            : 'text-foreground hover:text-foreground-hover',
-                    )}
-                    onClick={onClick}
-                >
-                    {filename}
-                    {isDirty && <span className="ml-1 text-foreground-hover text-white">●</span>}
-                    {isActive && (
-                        <div className="absolute bottom-0 left-0 w-full h-[2px] bg-foreground-hover"></div>
-                    )}
-                </button>
-                <button
-                    className="ml-2 cursor-pointer text-foreground"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onClose?.();
-                    }}
-                >
-                    <Icons.CrossS className="h-3 w-3" />
-                </button>
-            </div>
-        </div>
-    );
-};
 
 interface EditorFile {
     id: string;
@@ -231,51 +172,6 @@ export const DevTab = observer(() => {
         return null;
     }
 
-    // Adds highlighting to CodeMirror
-    const basicTheme = {
-        '&': {
-            fontSize: '13px',
-            backgroundColor: 'transparent',
-        },
-        '&.cm-focused .cm-selectionBackground, & .cm-selectionBackground': {
-            backgroundColor: 'rgba(21, 170, 147, 0.2) !important',
-        },
-        '.cm-content': {
-            lineHeight: '1.5',
-        },
-    };
-
-    const getBasicSetup = (isDark: boolean) => {
-        return [
-            EditorView.theme(basicTheme),
-            isDark
-                ? EditorView.theme({
-                      '&': { color: '#ffffffd9' },
-                  })
-                : EditorView.theme({
-                      '&': { color: '#000000d9' },
-                  }),
-            highlightActiveLine(),
-            highlightActiveLineGutter(),
-            highlightSpecialChars(),
-            drawSelection(),
-            bracketMatching(),
-            autocompletion(),
-            highlightSelectionMatches(),
-            lintGutter(),
-            lineNumbers(),
-            keymap.of([
-                {
-                    key: 'Mod-s',
-                    run: () => {
-                        saveFile();
-                        return true;
-                    },
-                },
-            ]),
-        ];
-    };
-
     // Update highlighting when highlightRange changes
     useEffect(() => {
         if (!activeFile || !highlightRange || !editorViewRef.current) {
@@ -370,50 +266,6 @@ export const DevTab = observer(() => {
             console.error('Error loading file:', error);
         } finally {
             setIsLoading(false);
-        }
-    }
-
-    function getLanguageFromFileName(fileName: string): string {
-        const extension = fileName.split('.').pop()?.toLowerCase();
-        switch (extension) {
-            case 'js':
-                return 'javascript';
-            case 'jsx':
-                return 'javascript';
-            case 'ts':
-                return 'typescript';
-            case 'tsx':
-                return 'typescript';
-            case 'css':
-                return 'css';
-            case 'html':
-                return 'html';
-            case 'json':
-                return 'json';
-            case 'md':
-                return 'markdown';
-            default:
-                return 'typescript';
-        }
-    }
-
-    // Get CodeMirror extensions based on file language
-    function getExtensions(language: string): any[] {
-        switch (language) {
-            case 'javascript':
-                return [javascript({ jsx: true })];
-            case 'typescript':
-                return [javascript({ jsx: true, typescript: true })];
-            case 'css':
-                return [css()];
-            case 'html':
-                return [html()];
-            case 'json':
-                return [json()];
-            case 'markdown':
-                return [markdown()];
-            default:
-                return [javascript({ jsx: true, typescript: true })];
         }
     }
 
@@ -806,7 +658,7 @@ export const DevTab = observer(() => {
                                     height="100%"
                                     theme={theme === Theme.Dark ? 'dark' : 'light'}
                                     extensions={[
-                                        ...getBasicSetup(theme === Theme.Dark),
+                                        ...getBasicSetup(theme === Theme.Dark, saveFile),
                                         ...getExtensions(activeFile.language),
                                     ]}
                                     onChange={(value) => {
