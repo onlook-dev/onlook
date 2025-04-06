@@ -1,6 +1,7 @@
 import { useEditorEngine, useUserManager } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
+import { IdeType } from '@onlook/models/ide';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,6 +36,9 @@ export const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
     const { t } = useTranslation();
+
+    const currentIdeType = userManager.settings.settings?.editor?.ideType;
+    const isOnlookIde = currentIdeType === IdeType.ONLOOK;
 
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
@@ -207,13 +211,15 @@ export const EditPanel = observer(() => {
                             <Icons.MixerHorizontal className="mr-1.5 mb-0.5" />
                             Props
                         </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover"
-                            value={EditorTabValue.DEV}
-                        >
-                            <Icons.Code className="mr-1.5 h-4 w-4" />
-                            Code
-                        </TabsTrigger>
+                        {isOnlookIde && (
+                            <TabsTrigger
+                                className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover"
+                                value={EditorTabValue.DEV}
+                            >
+                                <Icons.Code className="mr-1.5 h-4 w-4" />
+                                Code
+                            </TabsTrigger>
+                        )}
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
@@ -233,9 +239,11 @@ export const EditPanel = observer(() => {
                             renderEmptyState()
                         )}
                     </TabsContent>
-                    <TabsContent value={EditorTabValue.DEV} className="h-full">
-                        <DevTab />
-                    </TabsContent>
+                    {isOnlookIde && (
+                        <TabsContent value={EditorTabValue.DEV} className="h-full">
+                            <DevTab />
+                        </TabsContent>
+                    )}
                 </div>
             </Tabs>
         );

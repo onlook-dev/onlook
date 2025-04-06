@@ -158,6 +158,10 @@ export enum MainChannels {
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
     DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
 
+    // Files
+    SCAN_FILES = 'scan-files',
+    GET_PROJECT_FILES = 'get-project-files',
+
     // Editor
     SHOW_EDITOR_TAB = 'show-editor-tab',
 }
