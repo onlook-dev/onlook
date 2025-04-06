@@ -179,20 +179,15 @@ export const GestureScreen = observer(() => {
     }, [editorEngine.state.editorMode, isResizing]);
 
     const handleMouseOut = () => {
-        setHovered(false);
         editorEngine.elements.clearHoveredElement();
         editorEngine.overlay.state.updateHoverRect(null);
     }
 
-    const setHovered = (hovered: boolean) => {
-        return;
-    }
     return (
         <RightClickMenu>
             <div
                 className={gestureScreenClassName}
                 onClick={handleClick}
-                onMouseOver={() => setHovered(true)}
                 onMouseOut={handleMouseOut}
                 onMouseLeave={handleMouseUp}
                 onMouseMove={throttledMouseMove}
