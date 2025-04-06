@@ -114,23 +114,23 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
         [handleZoom, handlePan],
     );
 
-    const middleMouseButtonDown = (e: MouseEvent) => {
+    const middleMouseButtonDown = useCallback((e: MouseEvent) => {
         if (e.button === 1) {
             editorEngine.state.editorMode = EditorMode.PAN;
             setIsPanning(true);
             e.preventDefault();
             e.stopPropagation();
         }
-    }
+    }, []);
 
-    const middleMouseButtonUp = (e: MouseEvent) => {
+    const middleMouseButtonUp = useCallback((e: MouseEvent) => {
         if (e.button === 1) {
             editorEngine.state.editorMode = EditorMode.DESIGN;
             setIsPanning(false);
             e.preventDefault();
             e.stopPropagation();
         }
-    }
+    }, []);
 
     const transformStyle = useMemo(
         () => ({
@@ -153,7 +153,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
                 div.removeEventListener('mouseup', middleMouseButtonUp);
             };
         }
-    }, [handleWheel]);
+    }, [handleWheel, middleMouseButtonDown, middleMouseButtonUp]);
 
     return (
         <HotkeysArea>
