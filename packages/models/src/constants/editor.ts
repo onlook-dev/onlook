@@ -45,7 +45,7 @@ export enum Links {
 }
 
 export enum Orientation {
-    Potrait = 'Potrait',
+    Portrait = 'Portrait',
     Landscape = 'Landscape',
 }
 
@@ -64,7 +64,7 @@ export const DefaultSettings = {
     ASPECT_RATIO_LOCKED: false,
     DEVICE: 'Custom:Custom',
     THEME: Theme.System,
-    ORIENTATION: Orientation.Potrait,
+    ORIENTATION: Orientation.Portrait,
     MIN_DIMENSIONS: { width: '280px', height: '360px' },
     COMMANDS: {
         run: 'npm run dev',
@@ -73,6 +73,8 @@ export const DefaultSettings = {
     },
     IMAGE_FOLDER: 'public/images',
     IMAGE_DIMENSION: { width: '100px', height: '100px' },
+    FONT_FOLDER: 'public/fonts',
+    FONT_CONFIG: 'app/fonts.ts',
     CHAT_SETTINGS: {
         showSuggestions: true,
         autoApplyCode: true,

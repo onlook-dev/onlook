@@ -172,7 +172,7 @@ class LlmManager {
         if (error && typeof error === 'object' && 'message' in error) {
             return String(error.message);
         }
-        return 'An unknown error occurred';
+        return 'An unknown chat error occurred';
     }
 
     public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {

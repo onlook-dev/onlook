@@ -250,7 +250,12 @@ export const EditPanel = observer(() => {
     }
 
     return (
-        <div className="flex flex-row h-full">
+        <div
+            className={cn(
+                'flex flex-row h-full',
+                editorEngine.mode === EditorMode.PREVIEW ? 'hidden' : 'visible',
+            )}
+        >
             <ResizablePanel
                 side="right"
                 defaultWidth={editPanelWidth}

@@ -979,12 +979,13 @@ export const propertyMap: Map<
     ['clip-path', (val) => `[clip-path:${getCustomVal(val)}]`],
     [
         'color',
-        (val) =>
+        (val, isCustom = false) =>
             ({
                 transparent: 'text-transparent',
                 currentColor: 'text-current',
                 currentcolor: 'text-current',
-            })[val] ?? (isColor(val, true) ? `text-[${getCustomVal(val)}]` : ''),
+            })[val] ??
+            (isCustom ? `text-${val}` : isColor(val, true) ? `text-[${getCustomVal(val)}]` : ''),
     ],
     ['color-scheme', (val) => `[color-scheme:${getCustomVal(val)}]`],
     ['column-count', (val) => `[column-count:${getCustomVal(val)}]`],
@@ -3304,14 +3305,21 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
                 pipeVal = `[${key.trim()}:${val}]`;
             } else {
                 config.customTheme = config.customTheme ?? {};
-                pipeVal =
-                    typeof pipe === 'function'
-                        ? config.customTheme[key.trim()]?.[val] ||
-                          (config.useAllDefaultValues && moreDefaultValuesMap[key.trim()]?.[val]) ||
-                          pipe(val)
-                        : config.customTheme[key.trim()]?.[val] ||
-                          (config.useAllDefaultValues && moreDefaultValuesMap[key.trim()]?.[val]) ||
-                          (pipe?.[val] ?? '');
+                // Handle all font-family values without square brackets
+                if (key.trim() === 'font-family') {
+                    pipeVal = `font-${val}`;
+                } else {
+                    pipeVal =
+                        typeof pipe === 'function'
+                            ? config.customTheme[key.trim()]?.[val] ||
+                              (config.useAllDefaultValues &&
+                                  moreDefaultValuesMap[key.trim()]?.[val]) ||
+                              pipe(val)
+                            : config.customTheme[key.trim()]?.[val] ||
+                              (config.useAllDefaultValues &&
+                                  moreDefaultValuesMap[key.trim()]?.[val]) ||
+                              (pipe?.[val] ?? '');
+                }
             }
             if ((config.prefix?.length ?? 0) > 0) {
                 pipeVal = pipeVal

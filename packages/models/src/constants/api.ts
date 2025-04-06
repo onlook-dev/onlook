@@ -16,6 +16,7 @@ export enum ApiRoutes {
 export const BASE_PROXY_ROUTE = '/proxy';
 export enum ProxyRoutes {
     ANTHROPIC = '/anthropic',
+    TRAINLOOP = '/trainloop',
 }
 export const REDIRECT_APP_URL = 'https://onlook.dev/redirect-app';
 export const REQUEST_TYPE_HEADER = 'X-Onlook-Request-Type';

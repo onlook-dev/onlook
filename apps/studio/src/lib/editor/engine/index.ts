@@ -1,4 +1,10 @@
-import { EditorMode, EditorTabValue, SettingsTabValue } from '@/lib/models';
+import {
+    BrandTabValue,
+    EditorMode,
+    EditorTabValue,
+    LayersPanelTabValue,
+    SettingsTabValue,
+} from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
@@ -15,6 +21,7 @@ import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
+import { FontManager } from './font';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
 import { ImageManager } from './image';
@@ -34,10 +41,13 @@ export class EditorEngine {
     private _settingsOpen: boolean = false;
     private _hotkeysOpen: boolean = false;
     private _publishOpen: boolean = false;
+    private _isLayersPanelLocked: boolean = false;
 
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
+    private _layersPanelTab: LayersPanelTabValue | null = null;
+    private _brandTab: BrandTabValue | null = null;
 
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
@@ -49,6 +59,7 @@ export class EditorEngine {
     private errorManager: ErrorManager;
     private imageManager: ImageManager;
     private themeManager: ThemeManager;
+    private fontManager: FontManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
@@ -77,6 +88,7 @@ export class EditorEngine {
         this.errorManager = new ErrorManager(this, this.projectsManager);
         this.imageManager = new ImageManager(this, this.projectsManager);
         this.themeManager = new ThemeManager(this, this.projectsManager);
+        this.fontManager = new FontManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -136,11 +148,17 @@ export class EditorEngine {
     get theme() {
         return this.themeManager;
     }
+    get font() {
+        return this.fontManager;
+    }
     get editPanelTab() {
         return this._editorPanelTab;
     }
     get settingsTab() {
         return this._settingsTab;
+    }
+    get layersPanelTab() {
+        return this._layersPanelTab;
     }
     get isPlansOpen() {
         return this._plansOpen;
@@ -154,6 +172,9 @@ export class EditorEngine {
     get isHotkeysOpen() {
         return this._hotkeysOpen;
     }
+    get brandTab() {
+        return this._brandTab;
+    }
     get errors() {
         return this.errorManager;
     }
@@ -166,6 +187,13 @@ export class EditorEngine {
     get files() {
         return this.filesManager;
     }
+    get isLayersPanelLocked() {
+        return this._isLayersPanelLocked;
+    }
+
+    set isLayersPanelLocked(value: boolean) {
+        this._isLayersPanelLocked = value;
+    }
 
     set mode(mode: EditorMode) {
         this._editorMode = mode;
@@ -177,6 +205,10 @@ export class EditorEngine {
 
     set settingsTab(tab: SettingsTabValue) {
         this._settingsTab = tab;
+    }
+
+    set layersPanelTab(tab: LayersPanelTabValue | null) {
+        this._layersPanelTab = tab;
     }
 
     set isPlansOpen(open: boolean) {
@@ -196,6 +228,10 @@ export class EditorEngine {
 
     set isPublishOpen(open: boolean) {
         this._publishOpen = open;
+    }
+
+    set brandTab(tab: BrandTabValue | null) {
+        this._brandTab = tab;
     }
 
     dispose() {
@@ -220,6 +256,7 @@ export class EditorEngine {
         this.canvasManager?.clear();
         this.imageManager?.dispose();
         this.themeManager?.dispose();
+        this.fontManager?.dispose();
         this._settingsOpen = false;
         this._plansOpen = false;
     }

@@ -34,6 +34,18 @@ const ProjectTab = observer(() => {
         });
     };
 
+    const handleUpdateUrl = (url: string) => {
+        projectsManager.updatePartialProject({
+            url,
+        });
+        projectsManager.editorEngine?.canvas.saveFrames(
+            projectsManager.editorEngine?.canvas.frames.map((frame) => ({
+                ...frame,
+                url,
+            })),
+        );
+    };
+
     return (
         <div className="text-sm">
             <div className="flex flex-col gap-4 p-6">
@@ -57,11 +69,7 @@ const ProjectTab = observer(() => {
                         <Input
                             id="url"
                             value={url}
-                            onChange={(e) =>
-                                projectsManager.updatePartialProject({
-                                    url: e.target.value,
-                                })
-                            }
+                            onChange={(e) => handleUpdateUrl(e.target.value)}
                             className="w-2/3"
                         />
                     </div>

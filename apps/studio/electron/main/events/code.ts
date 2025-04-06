@@ -19,6 +19,17 @@ import {
 } from '../assets/styles';
 import { mainWindow } from '..';
 import { EditorTabValue } from '../../../src/lib/models';
+import {
+    addFont,
+    removeFont,
+    scanFonts,
+    setDefaultFont,
+    getDefaultFont,
+    addLocalFont,
+} from '../assets/fonts/index';
+import { FontFileWatcher } from '../assets/fonts/watcher';
+
+const fontFileWatcher = new FontFileWatcher();
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -167,5 +178,41 @@ export function listenForCodeMessages() {
         mainWindow?.webContents.send(MainChannels.SHOW_EDITOR_TAB, EditorTabValue.DEV);
 
         return true;
+    });
+
+    ipcMain.handle(MainChannels.SCAN_FONTS, async (_, args) => {
+        const { projectRoot } = args;
+
+        return scanFonts(projectRoot);
+    });
+
+    ipcMain.handle(MainChannels.ADD_FONT, async (_, args) => {
+        const { projectRoot, font } = args;
+        return addFont(projectRoot, font);
+    });
+
+    ipcMain.handle(MainChannels.REMOVE_FONT, async (_, args) => {
+        const { projectRoot, font } = args;
+        return removeFont(projectRoot, font);
+    });
+
+    ipcMain.handle(MainChannels.SET_FONT, async (_, args) => {
+        const { projectRoot, font } = args;
+        return setDefaultFont(projectRoot, font);
+    });
+
+    ipcMain.handle(MainChannels.GET_DEFAULT_FONT, async (_, args) => {
+        const { projectRoot } = args;
+        return getDefaultFont(projectRoot);
+    });
+
+    ipcMain.handle(MainChannels.UPLOAD_FONTS, async (_, args) => {
+        const { projectRoot, fontFiles } = args;
+        return addLocalFont(projectRoot, fontFiles);
+    });
+
+    ipcMain.handle(MainChannels.WATCH_FONT_FILE, async (_, args) => {
+        const { projectRoot } = args;
+        return fontFileWatcher.watch(projectRoot);
     });
 }

@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/studio",
-    "version": "0.2.21",
+    "version": "0.2.25",
     "homepage": "https://onlook.com",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -60,6 +60,8 @@
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
         "@uiw/react-codemirror": "^4.21.21",
+        "@trainloop/sdk": "^0.1.8",
+        "@types/webfontloader": "^1.6.38",
         "@xterm/xterm": "^5.6.0-beta.98",
         "ai": "^4.2.6",
         "browser-image-compression": "^2.0.2",
@@ -71,7 +73,7 @@
         "embla-carousel-wheel-gestures": "^8.0.1",
         "fflate": "^0.8.2",
         "fix-path": "^4.0.0",
-        "freestyle-sandboxes": "^0.0.35",
+        "freestyle-sandboxes": "^0.0.36",
         "i18next": "^24.2.2",
         "istextorbinary": "^9.5.0",
         "js-string-escape": "^1.0.1",
@@ -99,7 +101,7 @@
         "ts-morph": "^25.0.0",
         "type-fest": "^4.26.1",
         "use-resize-observer": "^9.1.0",
-        "write-file-atomic": "^6.0.0",
+        "webfontloader": "^1.6.28",
         "zod": "^3.23.8"
     },
     "devDependencies": {
@@ -119,7 +121,6 @@
         "@types/react": "^18.2.64",
         "@types/react-dom": "^18.2.21",
         "@types/shell-quote": "^1.7.5",
-        "@types/write-file-atomic": "^4.0.3",
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "^10.4.20",
         "css-tree": "^3.1.0",

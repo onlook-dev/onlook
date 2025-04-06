@@ -158,6 +158,18 @@ export enum MainChannels {
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
     DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
 
+    // Fonts
+    SCAN_FONTS = 'scan-fonts-config',
+    ADD_FONT = 'add-font',
+    REMOVE_FONT = 'remove-font',
+    SET_FONT = 'set-font',
+    GET_DEFAULT_FONT = 'get-default-font',
+    UPLOAD_FONTS = 'upload-fonts',
+    WATCH_FONT_FILE = 'watch-font-file',
+
+    // Trainloop
+    SAVE_APPLY_RESULT = 'save-apply-result',
+
     // Files
     SCAN_FILES = 'scan-files',
     GET_PROJECT_FILES = 'get-project-files',

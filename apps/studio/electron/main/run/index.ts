@@ -14,6 +14,7 @@ class RunManager {
     private static instance: RunManager;
     private mapping = new Map<string, TemplateNode>();
     private subscription: AsyncSubscription | null = null;
+    private selfModified = new Set<string>();
     state: RunState = RunState.STOPPED;
     runningDirs = new Set<string>();
     createdFiles = new Set<string>();
@@ -129,23 +130,21 @@ class RunManager {
 
         this.subscription = await subscribe(
             folderPath,
-            (err, events) => {
+            async (err, events) => {
                 if (err) {
                     console.error(`Watcher error: ${err}`);
                     return;
                 }
 
                 for (const event of events) {
-                    if (event.type === 'update') {
+                    if (this.selfModified.has(event.path)) {
+                        this.selfModified.delete(event.path);
+                        continue;
+                    }
+                    if (event.type === 'update' || event.type === 'create') {
                         if (this.isAllowedExtension(event.path)) {
-                            this.processFileForMapping(event.path);
-                        }
-                    } else if (event.type === 'create') {
-                        if (!this.createdFiles.has(event.path)) {
-                            if (this.isAllowedExtension(event.path)) {
-                                this.processFileForMapping(event.path);
-                            }
-                            this.createdFiles.add(event.path);
+                            this.selfModified.add(event.path);
+                            await this.processFileForMapping(event.path);
                         }
                     }
                 }
@@ -182,6 +181,7 @@ class RunManager {
         }
 
         await writeFile(filePath, content);
+
         for (const [key, value] of Object.entries(newMapping)) {
             this.mapping.set(key, value);
         }
@@ -195,6 +195,7 @@ class RunManager {
         await this.clearSubscription();
         this.runningDirs.clear();
         this.mapping.clear();
+        this.selfModified.clear();
     }
 
     async cleanProjectDir(folderPath: string): Promise<void> {

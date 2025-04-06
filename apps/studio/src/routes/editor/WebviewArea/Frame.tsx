@@ -27,10 +27,12 @@ const Frame = observer(
         messageBridge: WebviewMessageBridge;
         settings: FrameSettings;
     }) => {
-        const RETRY_TIMEOUT = 3000;
-        const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
+
+        const RETRY_TIMEOUT = 3000;
+        const DOM_FAILED_DELAY = 3000;
+
         const { t } = useTranslation();
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
         let domState = editorEngine.webviews.getState(settings.id);
@@ -74,7 +76,6 @@ const Frame = observer(
         const handleUrlChange = useCallback(
             (e: any) => {
                 setWebviewSrc(e.url);
-
                 editorEngine.pages.handleWebviewUrlChange(settings.id);
             },
             [editorEngine.pages, settings.id],
@@ -95,12 +96,6 @@ const Frame = observer(
 
             const state = editorEngine.webviews.computeState(body);
             editorEngine.webviews.setState(webview, state);
-
-            if (state === WebviewState.DOM_ONLOOK_ENABLED) {
-                setTimeout(() => {
-                    selectFirstElement(webview);
-                }, 1000);
-            }
 
             setTimeout(() => {
                 getDarkMode(webview);
@@ -201,7 +196,7 @@ const Frame = observer(
                 setupFrame();
                 domState = editorEngine.webviews.getState(settings.id);
             }
-        }, [settings.id]);
+        }, [settings.id, settings.url]);
 
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
@@ -381,13 +376,6 @@ const Frame = observer(
                     )}
                 </>
             );
-        }
-
-        async function selectFirstElement(webview: Electron.WebviewTag) {
-            const domEl = await webview.executeJavaScript(`window.api?.getFirstOnlookElement()`);
-            if (domEl) {
-                editorEngine.elements.click([domEl], webview);
-            }
         }
 
         return (

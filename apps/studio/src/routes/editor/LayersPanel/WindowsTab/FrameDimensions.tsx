@@ -163,8 +163,8 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
         ) {
             setDevice('Custom:Custom');
         }
-        if (height > width && orientation !== Orientation.Potrait && !aspectRatioLocked) {
-            setOrientation(Orientation.Potrait);
+        if (height > width && orientation !== Orientation.Portrait && !aspectRatioLocked) {
+            setOrientation(Orientation.Portrait);
         }
         if (width > height && orientation !== Orientation.Landscape && !aspectRatioLocked) {
             setOrientation(Orientation.Landscape);
@@ -213,7 +213,9 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
             setHeight(width);
             setWidth(height);
             setOrientation(
-                orientation === Orientation.Landscape ? Orientation.Potrait : Orientation.Landscape,
+                orientation === Orientation.Landscape
+                    ? Orientation.Portrait
+                    : Orientation.Landscape,
             );
         }
     };
@@ -366,12 +368,12 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
                 <div className="flex flex-row p-0.5 w-3/5 bg-background-secondary rounded">
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === Orientation.Potrait ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
+                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === Orientation.Portrait ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
                         variant={'ghost'}
                         onClick={handleOrientationChange}
                     >
-                        <Icons.Potrait
-                            className={`h-4 w-4 ${orientation !== Orientation.Potrait ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
+                        <Icons.Portrait
+                            className={`h-4 w-4 ${orientation !== Orientation.Portrait ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
                         />
                     </Button>
                     <Button
