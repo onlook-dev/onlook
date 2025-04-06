@@ -20,9 +20,11 @@ import {
     type ToolSet,
 } from 'ai';
 import { z } from 'zod';
+import { nanoid } from 'nanoid/non-secure';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { initModel } from './llmProvider';
+import errorLogger from '@onlook/supabase/logging';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -63,9 +65,12 @@ class LlmManager {
         options?: {
             abortController?: AbortController;
             skipSystemPrompt?: boolean;
+            userId?: string;
+            retryCount?: number;
         },
     ): Promise<CompletedStreamResponse> {
-        const { abortController, skipSystemPrompt } = options || {};
+        const { abortController, skipSystemPrompt, userId, retryCount = 0 } = options || {};
+        const sessionId = nanoid();
         this.abortController = abortController || new AbortController();
         try {
             if (!skipSystemPrompt) {
@@ -116,6 +121,32 @@ class LlmManager {
         } catch (error: any) {
             try {
                 console.error('Error', error);
+
+                await errorLogger.logError(error, {
+                    userId,
+                    sessionId,
+                    requestType,
+                    source: 'chat_stream',
+                    additionalInfo: {
+                        messageCount: messages.length,
+                        retryCount,
+                        platform: process.platform,
+                        appVersion: process.env.APP_VERSION || 'unknown',
+                        modelName: CLAUDE_MODELS.SONNET,
+                    },
+                });
+
+                const maxRetries = 2;
+                const shouldRetry = this.isRetryableError(error) && retryCount < maxRetries;
+
+                if (shouldRetry) {
+                    console.log(`Retrying request (${retryCount + 1}/${maxRetries})...`);
+                    return this.stream(messages, requestType, {
+                        ...options,
+                        retryCount: retryCount + 1,
+                    });
+                }
+
                 if (error?.error?.statusCode) {
                     if (error?.error?.statusCode === 403) {
                         const rateLimitError = JSON.parse(
@@ -134,8 +165,19 @@ class LlmManager {
                 }
                 const errorMessage = this.getErrorMessage(error);
                 return { message: errorMessage, type: 'error' };
-            } catch (error) {
-                console.error('Error parsing error', error);
+            } catch (parseError) {
+                console.error('Error parsing error', parseError);
+
+                await errorLogger.logError(parseError, {
+                    userId,
+                    sessionId,
+                    requestType,
+                    source: 'chat_stream_error_parsing',
+                    additionalInfo: {
+                        originalError: String(error),
+                    },
+                });
+
                 return { message: 'An unknown error occurred', type: 'error' };
             } finally {
                 this.abortController = null;
@@ -167,12 +209,65 @@ class LlmManager {
             return error;
         }
         if (error instanceof Response) {
-            return error.statusText;
+            return `HTTP Error ${error.status}: ${error.statusText}`;
         }
-        if (error && typeof error === 'object' && 'message' in error) {
-            return String(error.message);
+        if (error && typeof error === 'object') {
+            if ('message' in error) {
+                return String(error.message);
+            }
+
+            if ('error' in error && typeof (error as any).error === 'object') {
+                const errorObj = (error as any).error;
+
+                if ('statusCode' in errorObj) {
+                    if (errorObj.statusCode === 401 || errorObj.statusCode === 403) {
+                        return 'Authentication error: Please sign out and sign in again';
+                    }
+
+                    if (errorObj.statusCode === 429) {
+                        return 'Rate limit exceeded: Please try again later';
+                    }
+
+                    if (errorObj.statusCode >= 500) {
+                        return 'Server error: The AI service is currently unavailable';
+                    }
+
+                    return `API Error (${errorObj.statusCode}): ${errorObj.responseBody || 'Unknown error'}`;
+                }
+
+                if ('type' in errorObj) {
+                    return `Error type: ${errorObj.type}`;
+                }
+            }
+
+            if ('code' in error) {
+                if ((error as any).code === 'ECONNREFUSED' || (error as any).code === 'ENOTFOUND') {
+                    return 'Network error: Unable to connect to the AI service';
+                }
+
+                return `Error code: ${(error as any).code}`;
+            }
         }
+
         return 'An unknown chat error occurred';
+    }
+
+    private isRetryableError(error: unknown): boolean {
+        if (error && typeof error === 'object' && 'code' in error) {
+            const networkErrors = ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'ENOTFOUND'];
+            if (networkErrors.includes((error as any).code)) {
+                return true;
+            }
+        }
+
+        if (error && typeof error === 'object' && 'error' in error) {
+            const errorObj = (error as any).error;
+            if ('statusCode' in errorObj) {
+                return errorObj.statusCode >= 500 || errorObj.statusCode === 429;
+            }
+        }
+
+        return false;
     }
 
     public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {

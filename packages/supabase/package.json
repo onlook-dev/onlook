@@ -33,6 +33,7 @@
         "./clients": "./src/clients/index.ts",
         "./queries": "./src/queries/index.ts",
         "./rpc": "./src/rpc/index.ts",
-        "./types": "./src/types/index.ts"
+        "./types": "./src/types/index.ts",
+        "./logging": "./src/logging/index.ts"
     }
 }
