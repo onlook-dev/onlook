@@ -37,8 +37,6 @@ export const RightPanel = observer(() => {
     const [isOpen, setIsOpen] = useState(true);
     const selectedTab = editorEngine.state.editorPanelTab;
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
-    const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
-
 
     function renderEmptyState() {
         return (

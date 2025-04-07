@@ -22,7 +22,7 @@ export const ChatControls = observer(() => {
                             size={'icon'}
                             className="p-2 w-fit h-fit hover:bg-background-onlook"
                             onClick={handleNewChat}
-                            disabled={editorEngine.chat?.isWaiting || true}
+                            disabled={editorEngine.chat?.isWaiting || false}
                         >
                             <Icons.Plus />
                         </Button>
