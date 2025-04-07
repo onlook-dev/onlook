@@ -1312,6 +1312,25 @@ export const Icons = {
     TextAlignCenter: TextAlignCenterIcon,
     TextAlignLeft: TextAlignLeftIcon,
     TextAlignRight: TextAlignRightIcon,
+    TextAlignJustified: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M3.75 4.75H20.25M3.75 12H20.25M3.75 19.25H20.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
     Trash: TrashIcon,
     Tokens: TokensIcon,
     Upload: UploadIcon,
@@ -1444,6 +1463,303 @@ export const Icons = {
                     />
                 </filter>
             </defs>
+        </svg>
+    ),
+    TextColorSymbol: ({ className, ...props }: IconProps) => (
+        <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M7.78056 0.966376C7.63595 0.666883 7.3327 0.476562 7.00012 0.476562C6.66754 0.476562 6.36429 0.666883 6.21968 0.966376L1.00048 11.7751C0.792354 12.2061 0.973047 12.7242 1.40407 12.9324C1.8351 13.1405 2.35324 12.9598 2.56137 12.5288L4.28366 8.96199H9.71658L11.4389 12.5288C11.647 12.9598 12.1651 13.1405 12.5962 12.9324C13.0272 12.7242 13.2079 12.2061 12.9998 11.7751L7.78056 0.966376ZM8.94399 7.36199L7.00012 3.33634L5.05626 7.36199H8.94399Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
+    Width: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M6 12H18M6 12L8 9M6 12L8 15M18 12L16 9M18 12L16 15M21 21V3M3 21V3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    Height: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M12 18L12 6M12 18L9 16M12 18L15 16M12 6L9 8M12 6L15 8M21 3H3M21 21H3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    Padding: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M20.25 17.05V6.95C20.25 5.8299 20.25 5.26984 20.032 4.84202C19.8403 4.46569 19.5343 4.15973 19.158 3.96799C18.7302 3.75 18.1701 3.75 17.05 3.75H6.95C5.8299 3.75 5.26984 3.75 4.84202 3.96799C4.46569 4.15973 4.15973 4.46569 3.96799 4.84202C3.75 5.26984 3.75 5.8299 3.75 6.95V17.05C3.75 18.1701 3.75 18.7302 3.96799 19.158C4.15973 19.5343 4.46569 19.8403 4.84202 20.032C5.26984 20.25 5.8299 20.25 6.95 20.25H17.05C18.1701 20.25 18.7302 20.25 19.158 20.032C19.5343 19.8403 19.8403 19.5343 20.032 19.158C20.25 18.7302 20.25 18.1701 20.25 17.05Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M9 6.75H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9 17.25H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M17.25 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M6.75 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    ),
+    Margin: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M18 15.6727V8.32727C18 7.51265 18 7.10534 17.8415 6.7942C17.702 6.5205 17.4795 6.29799 17.2058 6.15854C16.8947 6 16.4873 6 15.6727 6H8.32727C7.51265 6 7.10534 6 6.7942 6.15854C6.5205 6.29799 6.29799 6.5205 6.15854 6.7942C6 7.10534 6 7.51265 6 8.32727V15.6727C6 16.4873 6 16.8947 6.15854 17.2058C6.29799 17.4795 6.5205 17.702 6.7942 17.8415C7.10534 18 7.51265 18 8.32727 18H15.6727C16.4873 18 16.8947 18 17.2058 17.8415C17.4795 17.702 17.702 17.4795 17.8415 17.2058C18 16.8947 18 16.4873 18 15.6727Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M7.5 3H16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M7.5 21H16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M21 7.5V16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3 7.5L3 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    ),
+    CornerRadius: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M20.25 3.75H13.35C9.98969 3.75 8.30953 3.75 7.02606 4.40396C5.89708 4.9792 4.9792 5.89708 4.40396 7.02606C3.75 8.30953 3.75 9.98969 3.75 13.35V20.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    Layout: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M12.1875 4.34375V10.6563H13.125V4.34375H12.1875ZM10.6563 12.1875H4.34375V13.125H10.6563V12.1875ZM2.8125 10.6563V4.34375H1.875V10.6563H2.8125ZM4.34375 2.8125H10.6563V1.875H4.34375V2.8125ZM4.34375 12.1875C3.98598 12.1875 3.74585 12.1871 3.56093 12.172C3.38147 12.1574 3.29567 12.1312 3.23907 12.1024L2.81346 12.9377C3.02424 13.0451 3.24716 13.087 3.48458 13.1064C3.71654 13.1254 4.00145 13.125 4.34375 13.125V12.1875ZM1.875 10.6563C1.875 10.9986 1.87464 11.2834 1.89359 11.5154C1.91299 11.7529 1.95493 11.9758 2.06233 12.1866L2.89765 11.7609C2.86881 11.7043 2.84264 11.6185 2.82798 11.4391C2.81286 11.2541 2.8125 11.014 2.8125 10.6563H1.875ZM3.23907 12.1024C3.09207 12.0274 2.97255 11.9079 2.89765 11.7609L2.06233 12.1866C2.22711 12.5099 2.49005 12.7729 2.81346 12.9377L3.23907 12.1024ZM12.1875 10.6563C12.1875 11.014 12.1871 11.2541 12.172 11.4391C12.1574 11.6185 12.1312 11.7043 12.1024 11.7609L12.9377 12.1866C13.0451 11.9758 13.087 11.7529 13.1064 11.5154C13.1254 11.2834 13.125 10.9986 13.125 10.6563H12.1875ZM10.6563 13.125C10.9986 13.125 11.2834 13.1254 11.5154 13.1064C11.7529 13.087 11.9758 13.0451 12.1866 12.9377L11.7609 12.1024C11.7043 12.1312 11.6185 12.1574 11.4391 12.172C11.2541 12.1871 11.014 12.1875 10.6563 12.1875V13.125ZM12.1024 11.7609C12.0274 11.9079 11.9079 12.0274 11.7609 12.1024L12.1866 12.9377C12.5099 12.7729 12.7729 12.5099 12.9377 12.1866L12.1024 11.7609ZM13.125 4.34375C13.125 4.00145 13.1254 3.71654 13.1064 3.48458C13.087 3.24716 13.0451 3.02424 12.9377 2.81346L12.1024 3.23907C12.1312 3.29567 12.1574 3.38147 12.172 3.56093C12.1871 3.74585 12.1875 3.98598 12.1875 4.34375H13.125ZM10.6563 2.8125C11.014 2.8125 11.2541 2.81286 11.4391 2.82798C11.6185 2.84264 11.7043 2.86881 11.7609 2.89765L12.1866 2.06233C11.9758 1.95493 11.7529 1.91299 11.5154 1.89359C11.2834 1.87464 10.9986 1.875 10.6563 1.875V2.8125ZM12.9377 2.81346C12.7729 2.49005 12.5099 2.22711 12.1866 2.06233L11.7609 2.89765C11.9079 2.97255 12.0274 3.09207 12.1024 3.23907L12.9377 2.81346ZM2.8125 4.34375C2.8125 3.98598 2.81286 3.74585 2.82798 3.56093C2.84264 3.38147 2.86881 3.29567 2.89765 3.23907L2.06233 2.81346C1.95493 3.02424 1.91299 3.24716 1.89359 3.48458C1.87464 3.71654 1.875 4.00145 1.875 4.34375H2.8125ZM4.34375 1.875C4.00145 1.875 3.71654 1.87464 3.48458 1.89359C3.24716 1.91299 3.02424 1.95493 2.81346 2.06233L3.23907 2.89765C3.29567 2.86881 3.38147 2.84264 3.56093 2.82798C3.74585 2.81286 3.98598 2.8125 4.34375 2.8125V1.875ZM2.89765 3.23907C2.97255 3.09207 3.09207 2.97255 3.23907 2.89765L2.81346 2.06233C2.49005 2.22711 2.22711 2.49005 2.06233 2.81346L2.89765 3.23907Z"
+                fill="currentColor"
+            />
+            <path d="M12.6562 6.09375H2.34375" stroke="currentColor" strokeLinecap="square" />
+            <path
+                d="M7.03125 12.6562V13.125H7.96875V12.6562H7.03125ZM7.96875 6.09375V5.625H7.03125V6.09375H7.96875ZM7.96875 12.6562V6.09375H7.03125V12.6562H7.96875Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
+    StateCursor: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M11.875 16.375L15.464 12.786C15.594 12.656 15.544 12.435 15.3709 12.3736L4.24478 8.42557C4.04643 8.35519 3.85518 8.54643 3.92557 8.74478L7.87354 19.8709C7.93499 20.044 8.15599 20.094 8.28593 19.964L11.875 16.375ZM11.875 16.375L16.75 21.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+            />
+            <path
+                d="M20.25 3.75H10.75"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+            />
+            <path
+                d="M20.25 7.75H15.75"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+            />
+        </svg>
+    ),
+    BorderEdit: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M17.5237 13.1522L18.0541 13.6825C18.1948 13.5419 18.2738 13.3511 18.2737 13.1521C18.2737 12.9532 18.1946 12.7624 18.0539 12.6217L17.5237 13.1522ZM8.65047 3.22094C8.35765 2.92797 7.88276 2.92784 7.58978 3.22065C7.2968 3.51346 7.29668 3.98832 7.5895 4.28129L8.65047 3.22094ZM5.48179 12.8224L6.1951 13.0542L6.19511 13.0541L5.48179 12.8224ZM5.48181 13.4865L6.19512 13.2548L6.19509 13.2547L5.48181 13.4865ZM10.9208 18.9252L11.1526 18.2119L11.1525 18.2119L10.9208 18.9252ZM11.5849 18.9252L11.3531 18.2119L11.353 18.2119L11.5849 18.9252ZM12.9989 18.7375L18.0541 13.6825L16.9934 12.6219L11.9382 17.6769L12.9989 18.7375ZM18.0539 12.6217L11.7832 6.35527L10.7229 7.41624L16.9936 13.6827L18.0539 12.6217ZM11.7835 6.35558L8.65047 3.22094L7.5895 4.28129L10.7226 7.41593L11.7835 6.35558Z"
+                fill="currentColor"
+            />
+            <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M18.4051 16.3406C18.8466 15.6254 19.9451 14.5234 19.9998 14.5234C20.0545 14.5234 21.153 15.6254 21.5945 16.3406C21.9541 16.9231 22.148 17.3744 22.148 18.0187C22.148 19.2574 21.181 20.2518 19.9998 20.2518C18.8186 20.2518 17.8516 19.2574 17.8516 18.0187C17.8516 17.3744 18.0454 16.9231 18.4051 16.3406Z"
+                fill="currentColor"
+            />
+            <path
+                d="M5.20703 12.9531H17.6659L11.4365 19.1823L5.20703 12.9531Z"
+                fill="currentColor"
+            />
+            <rect x="3.5" y="5.92969" width="17" height="1.21429" fill="currentColor" />
+            <rect x="3.5" y="9.57031" width="17" height="2.125" fill="currentColor" />
+            <rect x="3.5" y="14.125" width="17" height="3.94643" fill="currentColor" />
+        </svg>
+    ),
+
+    BackgroundImage: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M12.5 3H7.8C6.11984 3 5.27976 3 4.63803 3.32698C4.07354 3.6146 3.6146 4.07354 3.32698 4.63803C3 5.27976 3 6.11984 3 7.8V16.2C3 17.8802 3 18.7202 3.32698 19.362C3.6146 19.9265 4.07354 20.3854 4.63803 20.673C5.27976 21 6.11984 21 7.8 21H17C17.93 21 18.395 21 18.7765 20.8978C19.8117 20.6204 20.6204 19.8117 20.8978 18.7765C21 18.395 21 17.93 21 17M19 8V2M16 5H22M10.5 8.5C10.5 9.60457 9.60457 10.5 8.5 10.5C7.39543 10.5 6.5 9.60457 6.5 8.5C6.5 7.39543 7.39543 6.5 8.5 6.5C9.60457 6.5 10.5 7.39543 10.5 8.5ZM14.99 11.9181L6.53115 19.608C6.05536 20.0406 5.81747 20.2568 5.79643 20.4442C5.77819 20.6066 5.84045 20.7676 5.96319 20.8755C6.10478 21 6.42628 21 7.06929 21H16.456C17.8951 21 18.6147 21 19.1799 20.7582C19.8894 20.4547 20.4547 19.8894 20.7582 19.1799C21 18.6147 21 17.8951 21 16.456C21 15.9717 21 15.7296 20.9471 15.5042C20.8805 15.2208 20.753 14.9554 20.5733 14.7264C20.4303 14.5442 20.2412 14.3929 19.8631 14.0905L17.0658 11.8527C16.6874 11.5499 16.4982 11.3985 16.2898 11.3451C16.1061 11.298 15.9129 11.3041 15.7325 11.3627C15.5279 11.4291 15.3486 11.5921 14.99 11.9181Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    LeftSide: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={cn('', className)}
+            {...props}
+        >
+            <path
+                d="M7.5 3H7.51M7.5 12H7.51M7.5 21H7.51M16.5 3H16.51M16.5 12H16.51M16.5 21H16.51M12 3H12.01M12 12H12.01M12 21H12.01M12 16.5H12.01M12 7.5H12.01M21 3H21.01M21 12H21.01M21 21H21.01M21 16.5H21.01M21 7.5H21.01M3 21V3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    RightSide: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={cn('', className)}
+            {...props}
+        >
+            <path
+                d="M7.5 3H7.51M7.5 12H7.51M7.5 21H7.51M16.5 3H16.51M16.5 12H16.51M16.5 21H16.51M12 3H12.01M12 12H12.01M12 21H12.01M12 16.5H12.01M12 7.5H12.01M3 3H3.01M3 12H3.01M3 21H3.01M3 16.5H3.01M3 7.5H3.01M21 21V3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    TopSide: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={cn('', className)}
+            {...props}
+        >
+            <path
+                d="M3 21H3.01M3 12H3.01M3 16.5H3.01M3 7.5H3.01M7.5 21H7.51M7.5 12H7.51M16.5 21H16.51M16.5 12H16.51M12 21H12.01M12 12H12.01M12 16.5H12.01M12 7.5H12.01M21 21H21.01M21 12H21.01M21 16.5H21.01M21 7.5H21.01M21 3H3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    BottomSide: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={cn('', className)}
+            {...props}
+        >
+            <path
+                d="M3 3H3.01M3 12H3.01M3 7.5H3.01M3 16.5H3.01M7.5 3H7.51M7.5 12H7.51M16.5 3H16.51M16.5 12H16.51M12 3H12.01M12 12H12.01M12 7.5H12.01M12 16.5H12.01M21 3H21.01M21 12H21.01M21 7.5H21.01M21 16.5H21.01M21 21H3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
         </svg>
     ),
 } satisfies { [key: string]: React.FC<IconProps> };

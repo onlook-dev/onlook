@@ -2,7 +2,6 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store';
-import { SettingsTabValue } from '@onlook/models/editor';
 import { Button } from '@onlook/ui-v4/button';
 import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
 import { Icons } from '@onlook/ui-v4/icons';
@@ -34,7 +33,7 @@ export const TopBar = observer(() => {
 
     return (
         <TooltipProvider>
-            <div className="bg-background-onlook/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
+            <div className="bg-background backdrop-blur-sm border-b-[0.5px] border-border flex flex-row h-10 p-2 justify-center items-center">
                 <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                     <ProjectBreadcrumb />
                 </div>
@@ -78,10 +77,10 @@ export const TopBar = observer(() => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8"
-                                    onClick={() => {
-                                        editorEngine.state.settingsTab = SettingsTabValue.VERSIONS;
-                                        editorEngine.state.settingsOpen = true;
-                                    }}
+                                // onClick={() => {
+                                //     editorEngine.settingsTab = SettingsTabValue.VERSIONS;
+                                //     editorEngine.isSettingsOpen = true;
+                                // }}
                                 >
                                     <Icons.CounterClockwiseClock className="h-4 w-4" />
                                 </Button>
@@ -91,7 +90,6 @@ export const TopBar = observer(() => {
                             </TooltipContent>
                         </Tooltip>
                     </div>
-                    {/* <Publish /> */}
                 </div>
             </div>
         </TooltipProvider>
