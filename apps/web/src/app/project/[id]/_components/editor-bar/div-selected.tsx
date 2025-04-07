@@ -219,7 +219,7 @@ export const DivSelected = () => {
                 className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border px-3"
             >
                 <div className="flex items-center gap-2">
-                    <Icons.BorderSolid className="h-4 w-4 min-h-4 min-w-4" />
+                    <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
                     <span className="text-sm">1px</span>
                 </div>
             </Button>

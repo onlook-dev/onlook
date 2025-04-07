@@ -11,13 +11,16 @@ export const StateDropdown = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border min-w-[80px] px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                >
-                    <span className="text-sm">State</span>
-                    <Icons.ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
+            <Button
+                        variant="ghost"
+                        className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border min-w-[105px] max-w-[105px] px-2 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                    >
+                        <div className="flex items-center gap-2">
+                            <Icons.StateCursor className="h-4 w-4 min-h-4 min-w-4" />
+                            <span className="text-sm">State</span>
+                        </div>
+                        <Icons.ChevronDown className="h-4 w-4 min-h-4 min-w-4 opacity-50" />
+                    </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="min-w-[120px] mt-2 p-1 rounded-lg">
                 <DropdownMenuItem 
