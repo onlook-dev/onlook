@@ -8,13 +8,13 @@ import { useState } from "react";
 import { Canvas } from "./_components/canvas";
 import { EditorBar } from "./_components/editor-bar";
 import { StagingToggle } from "./_components/editor-bar/staging-toggle";
+import { LeftPanel } from './_components/left-panel';
 import { RightPanel } from './_components/right-panel';
 import { TopBar } from "./_components/top-bar";
-import { LeftPanel } from './_components/left-panel';
 
 type ElementType = "div" | "text" | "image";
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page({ }: { params: { id: string } }) {
     const [selectedElement, setSelectedElement] = useState<ElementType>("div");
 
     return (
@@ -23,11 +23,11 @@ export default function Page({ params }: { params: { id: string } }) {
                 <Frames />
             </Canvas>
 
-            <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-2.60rem)]">
+            <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-2.60rem)] z-1">
                 <LeftPanel />
             </div>
 
-            <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-2.60rem)] z-11">
+            <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-2.60rem)] z-1">
                 <RightPanel />
             </div>
 
@@ -35,15 +35,15 @@ export default function Page({ params }: { params: { id: string } }) {
                 {/* <Toolbar /> */}
             </div>
 
-            <div className="absolute top-0 w-full z-10">
+            <div className="absolute top-0 w-full">
                 <TopBar />
             </div>
 
-            <div className="absolute top-10 w-full z-10">
+            <div className="absolute top-10 w-full">
                 <EditorBar selectedElement={selectedElement} />
             </div>
 
-            <div className="absolute top-10 w-full z-10">
+            <div className="absolute top-10 w-full">
                 <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
             </div>
             {/* <HotkeysModal /> */}
