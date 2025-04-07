@@ -1,17 +1,20 @@
 import { sendAnalytics } from "@/utils/analytics";
-import { EditorMode, EditorTabValue, SettingsTabValue } from "@onlook/models";
+import { type BrandTabValue, EditorMode, EditorTabValue, type LayersPanelTabValue, SettingsTabValue } from "@onlook/models";
 import { makeAutoObservable } from "mobx";
-import { EditorEngine } from "../index";
 export class StateManager {
-    private _plansOpen: boolean = false;
-    settingsOpen: boolean = false;
-    hotkeysOpen: boolean = false;
-    publishOpen: boolean = false;
+    private _plansOpen = false;
+    settingsOpen = false;
+    hotkeysOpen = false;
+    publishOpen = false;
+    leftPanelLocked = false;
+
     editorMode: EditorMode = EditorMode.DESIGN;
     editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
+    layersPanelTab: LayersPanelTabValue | null = null;
+    brandTab: BrandTabValue | null = null;
 
-    constructor(private readonly engine: EditorEngine) {
+    constructor() {
         makeAutoObservable(this);
     }
 

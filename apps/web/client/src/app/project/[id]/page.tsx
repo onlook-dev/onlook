@@ -2,7 +2,6 @@
 
 import { Frames } from './_components/canvas/frames';
 // import { HotkeysModal } from './HotkeysModal';
-// import { LayersPanel } from './LayersPanel';
 // import { Toolbar } from './Toolbar';
 
 import { useState } from "react";
@@ -11,6 +10,7 @@ import { EditorBar } from "./_components/editor-bar";
 import { StagingToggle } from "./_components/editor-bar/staging-toggle";
 import { RightPanel } from './_components/right-panel';
 import { TopBar } from "./_components/top-bar";
+import { LeftPanel } from './_components/left-panel';
 
 type ElementType = "div" | "text" | "image";
 
@@ -23,11 +23,11 @@ export default function Page({ params }: { params: { id: string } }) {
                 <Frames />
             </Canvas>
 
-            {/* <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-2.60rem)]">
+            <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-2.60rem)]">
                 <LeftPanel />
-            </div> */}
+            </div>
 
-            <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-2.60rem)]">
+            <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-2.60rem)] z-11">
                 <RightPanel />
             </div>
 
@@ -35,7 +35,7 @@ export default function Page({ params }: { params: { id: string } }) {
                 {/* <Toolbar /> */}
             </div>
 
-            <div className="absolute top-0 w-full z-20">
+            <div className="absolute top-0 w-full z-10">
                 <TopBar />
             </div>
 
@@ -43,7 +43,7 @@ export default function Page({ params }: { params: { id: string } }) {
                 <EditorBar selectedElement={selectedElement} />
             </div>
 
-            <div className="absolute top-10 w-full z-1">
+            <div className="absolute top-10 w-full z-10">
                 <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
             </div>
             {/* <HotkeysModal /> */}
