@@ -31,7 +31,6 @@ const SystemFont = observer(() => {
                                             FONT_VARIANTS.find((v) => v.value === weight)?.name,
                                     ) as string[]
                                 }
-                                isLast={index === fontManager.fonts.length - 1}
                                 showDropdown={true}
                                 showAddButton={false}
                                 isDefault={font.id === fontManager.defaultFont}

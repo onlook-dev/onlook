@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/lib/utils';
+import { sendAnalytics } from '@/utils/analytics';
 import type { Action } from '@onlook/models/actions';
 import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';

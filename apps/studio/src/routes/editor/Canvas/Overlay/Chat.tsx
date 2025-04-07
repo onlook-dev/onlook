@@ -64,7 +64,6 @@ export const OverlayChat = observer(
             editorEngine.chat.stream.content.length > 0 ||
             !userManager.settings.settings?.chat?.showMiniChat;
 
-        // Add effect to reset input state when elementId changes
         useEffect(() => {
             setInputState(DEFAULT_INPUT_STATE);
         }, [elementId]);
@@ -79,22 +78,12 @@ export const OverlayChat = observer(
                 : 0,
         };
 
-        // Calculate distance from previous chat position
-        const distance = prevChatPositionRef.current
-            ? Math.sqrt(
-                  Math.pow(chatPosition.x - prevChatPositionRef.current.x, 2) +
-                      Math.pow(chatPosition.y - prevChatPositionRef.current.y, 2),
-              )
-            : 0;
-
         useEffect(() => {
             prevChatPositionRef.current = chatPosition;
         }, [chatPosition.x, chatPosition.y]);
 
         const animationClass =
-            distance > ANIMATION.DISTANCE_THRESHOLD
-                ? 'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200'
-                : 'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200';
+            'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200';
 
         useEffect(() => {
             if (elementId) {

@@ -1,4 +1,5 @@
 import { DEFAULT_FONT_STYLE, DEFAULT_FONT_WEIGHT, FONT_VARIANTS } from '@onlook/models/constants';
+import { camelCase } from 'lodash';
 
 /**
  * Extracts the actual font name from a font file name
@@ -180,4 +181,19 @@ function getFontFileName(baseName: string, weight: string, style: string): strin
     return `${baseName.replace(/\s+/g, '')}${weightName}${styleName}`;
 }
 
-export { extractFontParts, getFontFileName };
+/**
+ * Converts a font string like "__Advent_Pro_[hash], __Advent_Pro_Fallback_[hash], sans-serif" to "adventPro"
+ */
+function convertFontString(fontString: string): string {
+    if (!fontString) {
+        return '';
+    }
+
+    const firstFont = fontString.split(',')[0].trim();
+    const cleanFont = firstFont.replace(/^__/, '').replace(/_[a-f0-9]+$/, '');
+    const withoutFallback = cleanFont.replace(/_Fallback$/, '');
+
+    return camelCase(withoutFallback);
+}
+
+export { extractFontParts, getFontFileName, convertFontString };

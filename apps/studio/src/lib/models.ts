@@ -26,3 +26,18 @@ export enum SettingsTabValue {
     VERSIONS = 'versions',
     ADVANCED = 'advanced',
 }
+
+export enum LayersPanelTabValue {
+    PAGES = 'pages',
+    LAYERS = 'layers',
+    COMPONENTS = 'components',
+    IMAGES = 'images',
+    WINDOWS = 'windows',
+    BRAND = 'brand',
+    APPS = 'apps',
+}
+
+export enum BrandTabValue {
+    COLORS = 'colors',
+    FONTS = 'fonts',
+}

@@ -5,7 +5,7 @@ import type {
     UpdateStyleAction,
     WriteCodeAction,
 } from '@onlook/models/actions';
-import { assertNever } from '/common/helpers';
+import { assertNever } from '@onlook/utility';
 
 export function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };

@@ -1,4 +1,5 @@
-import { sendAnalytics, sendToWebview } from '@/lib/utils';
+import { sendToWebview } from '@/lib/utils';
+import { sendAnalytics } from '@/utils/analytics';
 import {
     type Action,
     type EditTextAction,
@@ -13,11 +14,11 @@ import {
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
 import { StyleChangeType } from '@onlook/models/style';
+import { assertNever } from '@onlook/utility';
 import type { EditorEngine } from '..';
-import { assertNever } from '/common/helpers';
 
 export class ActionManager {
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     run(action: Action) {
         this.editorEngine.history.push(action);
@@ -211,5 +212,5 @@ export class ActionManager {
         });
     }
 
-    dispose() {}
+    dispose() { }
 }

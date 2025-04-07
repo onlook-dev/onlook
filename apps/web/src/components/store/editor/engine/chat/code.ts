@@ -1,5 +1,4 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { sendAnalytics } from '@/lib/utils';
+import { sendAnalytics } from '@/utils/analytics';
 import { CodeBlockProcessor } from '@onlook/ai';
 import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';

@@ -52,8 +52,8 @@
         "zod": "^3.24.2"
     },
     "devDependencies": {
-        "@onlook/typescript": "*",
         "@eslint/eslintrc": "^3.3.1",
+        "@onlook/typescript": "*",
         "@tailwindcss/postcss": "^4.0.15",
         "@types/node": "^20.14.10",
         "@types/react": "^19.0.0",

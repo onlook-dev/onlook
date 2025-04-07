@@ -22,7 +22,7 @@ export async function GET(request: Request) {
                 return NextResponse.redirect(`${origin}${next}`)
             }
         }
-        console.log(error)
+        console.error(`Error exchanging code for session: ${error}`)
     }
 
     // return the user to an error page with instructions

@@ -21,7 +21,7 @@ export class InsertManager {
     isDrawing = false;
     private drawOrigin: ElementPosition | undefined;
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     getDefaultProperties(mode: EditorMode): DropElementProperties {
         switch (mode) {
@@ -42,7 +42,6 @@ export class InsertManager {
                         width: '100px',
                         height: '100px',
                         backgroundColor: colors.blue[100],
-                        position: 'absolute',
                     },
                     textContent: null,
                 };
@@ -172,15 +171,14 @@ export class InsertManager {
         const styles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
-                      width: `${width}px`,
-                      height: `${height}px`,
-                  }
+                    width: `${width}px`,
+                    height: `${height}px`,
+                }
                 : {
-                      width: `${width}px`,
-                      height: `${height}px`,
-                      backgroundColor: colors.blue[100],
-                      position: 'absolute',
-                  };
+                    width: `${width}px`,
+                    height: `${height}px`,
+                    backgroundColor: colors.blue[100],
+                };
 
         const actionElement: ActionElement = {
             domId,
