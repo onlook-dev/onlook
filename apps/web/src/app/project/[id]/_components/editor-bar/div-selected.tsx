@@ -49,7 +49,7 @@ export const DivSelected = () => {
                 <DropdownMenuContent align="start" className="w-[280px] mt-2 p-3 rounded-lg space-y-3">
                     <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                            <span className="text-[15px] text-white">Width</span>
+                            <span className="text-base text-muted-white">Width</span>
                             <div className="flex items-center">
                                 <div className="flex items-center bg-background-tertiary/50 justify-between rounded-l-md px-3 py-1.5 w-[80px]">
                                     <input 
@@ -80,7 +80,7 @@ export const DivSelected = () => {
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-[15px] text-white">Min</span>
+                            <span className="text-base text-muted-foreground">Min</span>
                             <div className="flex items-center">
                                 <div className="flex items-center justify-between bg-background-tertiary/50 rounded-l-md px-3 py-1.5 w-[80px]">
                                     <span className="text-[15px] text-muted-foreground text-left">--</span>
@@ -107,7 +107,7 @@ export const DivSelected = () => {
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-[15px] text-white">Max</span>
+                            <span className="text-base text-muted-foreground">Max</span>
                             <div className="flex items-center">
                                 <div className="flex items-center justify-between bg-background-tertiary/50 rounded-l-md px-3 py-1.5 w-[80px]">
                                     <span className="text-[15px] text-muted-foreground text-left">--</span>
