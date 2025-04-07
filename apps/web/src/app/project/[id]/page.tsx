@@ -1,28 +1,26 @@
 
 import { Frames } from './_components/canvas/frames';
-
-// import { EditPanel } from './EditPanel';
+import { RightPanel } from './_components/right-panel';
 // import { HotkeysModal } from './HotkeysModal';
 // import { LayersPanel } from './LayersPanel';
 // import { Toolbar } from './Toolbar';
 
 import { Canvas } from "./_components/canvas";
-import { EditorTopBar } from "./_components/top-bar";
+import { TopBar } from "./_components/top-bar";
 
-export default async function Page({ params }: { params: { id: string } }) {
-    const id = (await params).id
+export default async function Page({ }: { params: { id: string } }) {
     return (
-        <div className="h-screen w-screen relative flex flex-row select-none">
+        <div className="relative h-screen w-screen flex flex-row select-none">
             <Canvas>
                 <Frames />
             </Canvas>
 
-            <div className="fixed top-20 left-0 animate-layer-panel-in">
-                {/* <LayersPanel /> */}
+            <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-2.60rem)]">
+                {/* <LeftPanel /> */}
             </div>
 
-            <div className="fixed top-20 right-0 animate-edit-panel-in">
-                {/* <EditPanel /> */}
+            <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-2.60rem)]">
+                <RightPanel />
             </div>
 
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up ">
@@ -30,7 +28,7 @@ export default async function Page({ params }: { params: { id: string } }) {
             </div>
 
             <div className="absolute top-0 w-full">
-                <EditorTopBar />
+                <TopBar />
             </div>
             {/* <HotkeysModal /> */}
         </div>

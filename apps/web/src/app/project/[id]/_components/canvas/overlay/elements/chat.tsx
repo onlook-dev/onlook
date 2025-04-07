@@ -6,8 +6,8 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 const SPACING = {
     base: 8,
@@ -43,7 +43,7 @@ export const OverlayChat = observer(
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
-        const { t } = useTranslation();
+        const t = useTranslations();
 
         const shouldHideButton =
             !selectedEl ||

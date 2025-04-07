@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 
-export const EditorTopBar = observer(() => {
+export const TopBar = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
 
