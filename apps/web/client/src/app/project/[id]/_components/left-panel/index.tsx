@@ -52,12 +52,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hi
         icon: <Icons.ViewGrid className="w-5 h-5" />,
         label: 'editor.panels.layers.tabs.apps',
         hidden: true,
-    },
-    {
-        value: LeftPanelTabValue.COMPONENTS,
-        icon: <Icons.Component className="w-5 h-5" />,
-        label: 'editor.panels.layers.tabs.elements',
-        hidden: true,
     }
 ];
 

@@ -4,7 +4,8 @@ import { useEditorEngine } from '@/components/store';
 import { EditorAttributes } from '@onlook/models/constants';
 import { EditorMode } from '@onlook/models/editor';
 import { observer } from 'mobx-react-lite';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
 import { PanOverlay } from './overlay/pan';
@@ -18,7 +19,7 @@ const MAX_Y = 10000;
 const MIN_X = -5000;
 const MIN_Y = -5000;
 
-export const Canvas = observer(({ children }: { children: ReactNode }) => {
+export const Canvas = observer(() => {
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
@@ -164,7 +165,7 @@ export const Canvas = observer(({ children }: { children: ReactNode }) => {
             >
                 <Overlay>
                     <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                        {children}
+                        <Frames />
                     </div>
                 </Overlay>
                 <PanOverlay
