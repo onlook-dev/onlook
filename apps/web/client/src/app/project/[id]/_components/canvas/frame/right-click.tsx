@@ -203,7 +203,10 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
 
     return (
         <ContextMenu>
-            <ContextMenuTrigger>{children}</ContextMenuTrigger>
+            <ContextMenuTrigger>
+                {/* @ts-ignore */}
+                {children}
+            </ContextMenuTrigger>
             <ContextMenuContent className="w-64 bg-background/95 backdrop-blur-lg">
                 {menuItems.map((group, groupIndex) => (
                     <div key={groupIndex}>

@@ -15,7 +15,7 @@ import { TopBar } from "./_components/top-bar";
 
 type ElementType = "div" | "text" | "image";
 
-export default function Page({ }: { params: { id: string } }) {
+export default function Page() {
     const [selectedElement, setSelectedElement] = useState<ElementType>("div");
 
     return (

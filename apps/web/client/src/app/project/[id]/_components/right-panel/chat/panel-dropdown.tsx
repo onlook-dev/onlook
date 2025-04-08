@@ -1,6 +1,7 @@
 import { useEditorEngine, useUserManager } from '@/components/store';
 import { DefaultSettings } from '@onlook/models/constants';
 import { EditorTabValue } from "@onlook/models/editor";
+import type { ChatSettings } from '@onlook/models/settings';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -114,7 +115,7 @@ export const ChatPanelDropdown = ({ children }: { children: React.ReactNode }) =
                 </DropdownMenuItem>
                 < DropdownMenuSeparator />
                 <DropdownMenuItem
-                    onClick={() => setIsChatHistoryOpen(!isChatHistoryOpen)}
+                // onClick={() => setIsChatHistoryOpen(!isChatHistoryOpen)}
                 >
                     <Icons.CounterClockwiseClock className="mr-2 h-4 w-4" />
                     Chat History

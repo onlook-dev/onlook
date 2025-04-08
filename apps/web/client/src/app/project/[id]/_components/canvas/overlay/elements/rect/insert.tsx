@@ -1,4 +1,4 @@
-import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
+import type { RectDimensions } from '@onlook/models/editor';
 import React from 'react';
 import { BaseRect } from './base';
 

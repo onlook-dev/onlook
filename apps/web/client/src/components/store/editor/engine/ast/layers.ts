@@ -22,7 +22,7 @@ export class LayersManager {
     }
 
     get filteredLayers(): LayerNode[] {
-        const selectedWebviews = this.editorEngine.webviews.selected;
+        const selectedWebviews = this.editorEngine.webview.selected;
         if (selectedWebviews.length === 0) {
             return this.layers;
         }

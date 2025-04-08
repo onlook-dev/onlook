@@ -1,4 +1,4 @@
-import { sendToWebview } from '@/lib/utils';
+// import { sendToWebview } from '@/lib/utils';
 import { sendAnalytics } from '@/utils/analytics';
 import {
     type Action,
@@ -12,7 +12,6 @@ import {
     type UngroupElementsAction,
     type UpdateStyleAction,
 } from '@onlook/models/actions';
-import { WebviewChannels } from '@onlook/models/constants';
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
 import type { EditorEngine } from '..';
@@ -83,7 +82,7 @@ export class ActionManager {
 
     updateStyle({ targets }: UpdateStyleAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webview.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
@@ -101,114 +100,114 @@ export class ActionManager {
                 }),
             );
 
-            sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
-                domId: target.domId,
-                change: {
-                    ...target.change,
-                    updated: convertedChange,
-                },
-            });
+            // sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
+            //     domId: target.domId,
+            //     change: {
+            //         ...target.change,
+            //         updated: convertedChange,
+            //     },
+            // });
         });
     }
 
     private insertElement({ targets, element, editText, location }: InsertElementAction) {
         targets.forEach((elementMetadata) => {
-            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webview.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.INSERT_ELEMENT, {
-                element,
-                location,
-                editText,
-            });
+            // sendToWebview(webview, WebviewChannels.INSERT_ELEMENT, {
+            //     element,
+            //     location,
+            //     editText,
+            // });
         });
     }
 
     private removeElement({ targets, location }: RemoveElementAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webview.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.REMOVE_ELEMENT, {
-                location,
-            });
+            // sendToWebview(webview, WebviewChannels.REMOVE_ELEMENT, {
+            //     location,
+            // });
         });
     }
 
     private moveElement({ targets, location }: MoveElementAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webview.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.MOVE_ELEMENT, {
-                domId: target.domId,
-                newIndex: location.index,
-            });
+            // sendToWebview(webview, WebviewChannels.MOVE_ELEMENT, {
+            //     domId: target.domId,
+            //     newIndex: location.index,
+            // });
         });
     }
 
     private editText({ targets, newContent }: EditTextAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webview.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.EDIT_ELEMENT_TEXT, {
-                domId: target.domId,
-                content: newContent,
-            });
+            // sendToWebview(webview, WebviewChannels.EDIT_ELEMENT_TEXT, {
+            //     domId: target.domId,
+            //     content: newContent,
+            // });
         });
     }
 
     private groupElements({ parent, container, children }: GroupElementsAction) {
-        const webview = this.editorEngine.webviews.getWebview(parent.webviewId);
+        const webview = this.editorEngine.webview.getWebview(parent.webviewId);
         if (!webview) {
             console.error('Failed to get webview');
             return;
         }
-        sendToWebview(webview, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
+        // sendToWebview(webview, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
     }
 
     private ungroupElements({ parent, container, children }: UngroupElementsAction) {
-        const webview = this.editorEngine.webviews.getWebview(parent.webviewId);
+        const webview = this.editorEngine.webview.getWebview(parent.webviewId);
         if (!webview) {
             console.error('Failed to get webview');
             return;
         }
-        sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
+        // sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
     }
 
     private insertImage({ targets, image }: InsertImageAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webview.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.INSERT_IMAGE, {
-                domId: target.domId,
-                image,
-            });
+            // sendToWebview(webview, WebviewChannels.INSERT_IMAGE, {
+            //     domId: target.domId,
+            //     image,
+            // });
         });
     }
 
     private removeImage({ targets }: RemoveImageAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webview.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.REMOVE_IMAGE, {
-                domId: target.domId,
-            });
+            // sendToWebview(webview, WebviewChannels.REMOVE_IMAGE, {
+            //     domId: target.domId,
+            // });
         });
     }
 

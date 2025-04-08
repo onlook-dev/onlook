@@ -47,3 +47,10 @@ export enum MouseAction {
     MOUSE_DOWN = 'click',
     DOUBLE_CLICK = 'double-click',
 }
+
+export interface RectDimensions {
+    width: number;
+    height: number;
+    top: number;
+    left: number;
+}
