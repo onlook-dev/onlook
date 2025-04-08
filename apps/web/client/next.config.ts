@@ -17,11 +17,8 @@ const nextConfig: NextConfig = {
     eslint: {
         ignoreDuringBuilds: true
     },
-    output: 'export',
-    distDir: '.next',
-    images: {
-        unoptimized: true
-    }
+    skipTrailingSlashRedirect: true,
+    skipMiddlewareUrlNormalize: true
 };
 
 const withNextIntl = createNextIntlPlugin();
