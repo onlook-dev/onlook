@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { invokeMainChannel } from '@/lib/utils';
-import { fontFamilies, MainChannels } from '@onlook/models';
+import { fontFamilies, MainChannels, type CodeDiff, type WriteCodeAction } from '@onlook/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { Font } from '@onlook/models/assets';
 import type { FontFile } from '@/routes/editor/LayersPanel/BrandTab/FontPanel/FontFiles';
@@ -133,10 +133,17 @@ export class FontManager {
         }
 
         try {
-            await invokeMainChannel(MainChannels.ADD_FONT, {
+            const result = (await invokeMainChannel(MainChannels.ADD_FONT, {
                 projectRoot,
                 font,
-            });
+            })) as CodeDiff;
+
+            const writeCodeAction: WriteCodeAction = {
+                type: 'write-code',
+                diffs: [result],
+            };
+
+            this.editorEngine.history.push(writeCodeAction);
 
             await this.scanFonts();
         } catch (error) {
@@ -152,10 +159,17 @@ export class FontManager {
         }
 
         try {
-            await invokeMainChannel(MainChannels.REMOVE_FONT, {
+            const result = (await invokeMainChannel(MainChannels.REMOVE_FONT, {
                 projectRoot,
                 font,
-            });
+            })) as CodeDiff;
+
+            const writeCodeAction: WriteCodeAction = {
+                type: 'write-code',
+                diffs: [result],
+            };
+
+            this.editorEngine.history.push(writeCodeAction);
 
             if (font.id === this.defaultFont) {
                 this._defaultFont = null;
