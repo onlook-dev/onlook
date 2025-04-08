@@ -17,8 +17,11 @@ const nextConfig: NextConfig = {
     eslint: {
         ignoreDuringBuilds: true
     },
-    output: 'standalone',
-    serverExternalPackages: ['react', 'react-dom']
+    output: 'export',
+    distDir: '.next',
+    images: {
+        unoptimized: true
+    }
 };
 
 const withNextIntl = createNextIntlPlugin();
