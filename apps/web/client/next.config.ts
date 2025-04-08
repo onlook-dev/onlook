@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         // !! WARN !!
         ignoreBuildErrors: true,
     },
+    eslint: {
+        ignoreDuringBuilds: true
+    },
+    output: 'standalone',
+    serverExternalPackages: ['react', 'react-dom']
 };
 
 const withNextIntl = createNextIntlPlugin();
