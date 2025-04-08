@@ -1,14 +1,7 @@
 import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
+import { RunState } from '@onlook/models';
 import { DefaultSettings, MainChannels } from '@onlook/models/constants';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { Input } from '@onlook/ui/input';
-import { Separator } from '@onlook/ui/separator';
-import { observer } from 'mobx-react-lite';
-import { ReinstallButton } from './ReinstallButon';
-import { toast } from '@onlook/ui/use-toast';
-import { useTranslation } from 'react-i18next';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -17,8 +10,15 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
+import { Separator } from '@onlook/ui/separator';
+import { toast } from '@onlook/ui/use-toast';
+import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { RunState } from '@onlook/models';
+import { useTranslation } from 'react-i18next';
+import { ReinstallButton } from './ReinstallButon';
 
 type MoveProjectFolderResponse = {
     success: boolean;
@@ -113,8 +113,7 @@ const ProjectTab = observer(() => {
 
     return (
         <>
-        <div className="text-sm">
-            <div className="flex flex-col gap-4 p-6">
+            <div className="flex flex-col gap-4 p-6 text-sm">
                 <h2 className="text-lg">Metadata</h2>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
@@ -142,38 +141,10 @@ const ProjectTab = observer(() => {
                     <div className="flex justify-between items-center">
                         <p className=" text-muted-foreground">Path</p>
                         <div className="flex items-center gap-2 w-2/3">
-                            <Input
-                                id="url"
-                                value={url}
-                                onChange={(e) =>
-                                    projectsManager.updatePartialProject({
-                                        url: e.target.value,
-                                    })
-                                }
-                                className="w-2/3"
-                            />
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <p className=" text-muted-foreground">Path</p>
-                            <div className="flex items-center gap-2 w-2/3">
-                                <Input
-                                    id="folderPath"
-                                    value={folderPath}
-                                    readOnly={true}
-                                    onChange={(e) =>
-                                        projectsManager.updatePartialProject({
-                                            folderPath: e.target.value,
-                                        })
-                                    }
-                                />
-                                <Button
-                                    size={'icon'}
-                                    variant={'outline'}
-                                    onClick={handleUpdatePath}
-                                >
-                                    <Icons.Directory />
-                                </Button>
-                            </div>
+                            <Input id="folderPath" value={folderPath} readOnly={true} />
+                            <Button size={'icon'} variant={'outline'} onClick={handleUpdatePath}>
+                                <Icons.Directory />
+                            </Button>
                         </div>
                     </div>
                 </div>

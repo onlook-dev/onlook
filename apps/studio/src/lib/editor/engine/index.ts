@@ -215,7 +215,7 @@ export class EditorEngine {
     set isSettingsOpen(open: boolean) {
         this._settingsOpen = open;
     }
-    
+
     set isHotkeysOpen(value: boolean) {
         this._hotkeysOpen = value;
     }

@@ -2,14 +2,13 @@ import type { CodeDiff } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import { dialog, shell } from 'electron';
+import { promises as fs } from 'fs';
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
 import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
-import fs from 'fs';
-import path from 'path';
 
 export async function readCodeBlock(
     templateNode: TemplateNode,
@@ -104,8 +103,8 @@ export function pickDirectory() {
 
 export async function moveFolder(source: string, destination: string) {
     try {
-        await fs.mkdir(destination, { recursive: true }, err => { throw err });
-        await fs.cp(source, destination, { recursive: true }, err => { throw err });
+        await fs.mkdir(destination, { recursive: true });
+        await fs.cp(source, destination, { recursive: true });
 
         return { success: true, message: 'Folder moved successfully' };
     } catch (error: any) {

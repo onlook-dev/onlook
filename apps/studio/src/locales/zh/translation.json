@@ -67,7 +67,7 @@
             "updatePath": {
                 "title": "更新路径",
                 "description": "您确定要更新项目位置吗？",
-                "toast": " 项目路径已更新。",
+                "toast": "项目路径已更新。",
                 "error": "项目移动失败"
             }
         },
