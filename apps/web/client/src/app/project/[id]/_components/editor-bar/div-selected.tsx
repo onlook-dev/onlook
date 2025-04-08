@@ -36,11 +36,76 @@ export const DivSelected = () => {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="min-w-[120px] mt-2 p-1 rounded-lg">
-                    <DropdownMenuItem 
-                        className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
-                    >
-                        Flex
-                    </DropdownMenuItem>
+                    <div className="p-2 space-y-2">
+                        <div className="space-y-1">
+                            <span className="text-sm text-muted-foreground">Type</span>
+                            <div className="flex gap-1">
+                                <button className="flex-1 text-sm px-3 py-1 rounded-md text-muted-foreground hover:bg-background-tertiary/10">--</button>
+                                <button className="flex-1 text-sm px-3 py-1 rounded-md bg-background-tertiary/20 text-white">Flex</button>
+                                <button className="flex-1 text-sm px-3 py-1 rounded-md text-muted-foreground hover:bg-background-tertiary/10">Grid</button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <span className="text-sm text-muted-foreground">Direction</span>
+                            <div className="flex gap-1">
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md text-muted-foreground hover:bg-background-tertiary/10">
+                                    <Icons.ArrowDown className="h-4 w-4" />
+                                </button>
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md bg-background-tertiary/20 text-white">
+                                    <Icons.ArrowRight className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <span className="text-sm text-muted-foreground">Vertical</span>
+                            <div className="flex gap-1">
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md text-muted-foreground hover:bg-background-tertiary/10">
+                                    <Icons.AlignTop className="h-4 w-4" />
+                                </button>
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md bg-background-tertiary/20 text-white">
+                                    <Icons.AlignCenterVertically className="h-4 w-4" />
+                                </button>
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md text-muted-foreground hover:bg-background-tertiary/10">
+                                    <Icons.AlignBottom className="h-4 w-4" />
+                                </button>
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md text-muted-foreground hover:bg-background-tertiary/10">
+                                    <Icons.SpaceBetweenVertically className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <span className="text-sm text-muted-foreground">Horizontal</span>
+                            <div className="flex gap-1">
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md text-muted-foreground hover:bg-background-tertiary/10">
+                                    <Icons.AlignLeft className="h-4 w-4" />
+                                </button>
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md bg-background-tertiary/20 text-white">
+                                    <Icons.AlignCenterHorizontally className="h-4 w-4" />
+                                </button>
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md text-muted-foreground hover:bg-background-tertiary/10">
+                                    <Icons.AlignRight className="h-4 w-4" />
+                                </button>
+                                <button className="flex-1 flex items-center justify-center text-sm p-1.5 rounded-md text-muted-foreground hover:bg-background-tertiary/10">
+                                    <Icons.SpaceBetweenHorizontally className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-1">
+                            <span className="text-sm text-muted-foreground">Gap</span>
+                            <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5">
+                                <input 
+                                    type="text" 
+                                    value="12"
+                                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                />
+                                <span className="text-sm text-muted-foreground">PX</span>
+                            </div>
+                        </div>
+                    </div>
                 </DropdownMenuContent>
             </DropdownMenu>
 
