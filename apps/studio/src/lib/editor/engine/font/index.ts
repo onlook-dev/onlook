@@ -6,6 +6,8 @@ import type { ProjectsManager } from '@/lib/projects';
 import type { Font } from '@onlook/models/assets';
 import type { FontFile } from '@/routes/editor/LayersPanel/BrandTab/FontPanel/FontFiles';
 import WebFont from 'webfontloader';
+import FlexSearch from 'flexsearch';
+import type { Document } from 'flexsearch';
 
 interface RawFont {
     id: string;
@@ -30,12 +32,36 @@ export class FontManager {
     private _currentFontIndex = 0;
     private _batchSize = 20;
     private _isFetching = false;
+    private _fontSearchIndex: Document;
 
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
+
+        // Initialize FlexSearch index
+        this._fontSearchIndex = new FlexSearch.Document({
+            document: {
+                id: 'id',
+                index: ['family'],
+                store: true,
+            },
+            tokenize: 'forward',
+        });
+
+        // Add all font families to the search index
+        this._allFontFamilies.forEach((font) => {
+            this._fontSearchIndex.add(font.id, {
+                id: font.id,
+                family: font.family,
+                subsets: font.subsets,
+                variable: font.variable,
+                weights: font.weights,
+                styles: font.styles,
+            });
+        });
+
         this.loadInitialFonts();
 
         // Watch for project changes and set up watcher when a project is selected
@@ -258,28 +284,33 @@ export class FontManager {
 
     async searchFonts(query: string): Promise<Font[]> {
         if (!query) {
-            return [];
-        }
-
-        const searchResults = this._allFontFamilies
-            .filter(
-                (font) =>
-                    font.family.toLowerCase().includes(query.toLowerCase()) &&
-                    !this._fonts.some((f) => f.family === font.family),
-            )
-            .map((font) => this.convertFont(font));
-
-        if (searchResults.length === 0) {
             this._searchResults = [];
             return [];
         }
 
         try {
-            await this.loadFontBatch(searchResults);
-            this._searchResults = searchResults;
-            return searchResults;
+            // Search using FlexSearch
+            const searchResults = await this._fontSearchIndex.search(query, {
+                limit: 20,
+                suggest: true,
+                enrich: true,
+            });
+
+            const fonts = Object.values(searchResults)
+                .flatMap((result) => result.result)
+                .map((font) => this.convertFont(font.doc))
+                .filter((font) => !this._fonts.some((f) => f.family === font.family));
+
+            if (fonts.length === 0) {
+                this._searchResults = [];
+                return [];
+            }
+
+            await this.loadFontBatch(fonts);
+            this._searchResults = fonts;
+            return fonts;
         } catch (error) {
-            console.error('Error loading search results:', error);
+            console.error('Error searching fonts:', error);
             return [];
         }
     }
