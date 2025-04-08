@@ -55,7 +55,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         {
             label: 'Add to AI Chat',
             action: () => {
-                editorEngine.state.editorPanelTab = EditorTabValue.CHAT;
+                editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
                 editorEngine.chat.focusChatInput();
             },
             icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
@@ -65,7 +65,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         {
             label: 'New AI Chat',
             action: () => {
-                editorEngine.state.editorPanelTab = EditorTabValue.CHAT;
+                editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
                 editorEngine.chat.conversation.startNewConversation();
                 editorEngine.chat.focusChatInput();
             },

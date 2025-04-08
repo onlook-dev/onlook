@@ -72,9 +72,9 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     });
 
     // AI
-    useHotkeys(Hotkey.ADD_AI_CHAT.command, () => (editorEngine.state.editorPanelTab = EditorTabValue.CHAT));
+    useHotkeys(Hotkey.ADD_AI_CHAT.command, () => (editorEngine.state.rightPanelTab = EditorTabValue.CHAT));
     useHotkeys(Hotkey.NEW_AI_CHAT.command, () => {
-        editorEngine.state.editorPanelTab = EditorTabValue.CHAT;
+        editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
         editorEngine.chat.conversation.startNewConversation();
     });
 

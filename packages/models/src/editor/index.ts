@@ -27,7 +27,7 @@ export enum SettingsTabValue {
     ADVANCED = 'advanced',
 }
 
-export enum LayersPanelTabValue {
+export enum LeftPanelTabValue {
     PAGES = 'pages',
     LAYERS = 'layers',
     COMPONENTS = 'components',

@@ -35,7 +35,7 @@ export const RightPanel = observer(() => {
     const t = useTranslations();
 
     const [isOpen, setIsOpen] = useState(true);
-    const selectedTab = editorEngine.state.editorPanelTab;
+    const selectedTab = editorEngine.state.rightPanelTab;
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     function renderEmptyState() {
@@ -96,7 +96,7 @@ export const RightPanel = observer(() => {
                             isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                             // isDevPanelOpen && 'rounded-none'
                         )}>
-                    <Tabs onValueChange={(value) => editorEngine.state.editorPanelTab = value as EditorTabValue} value={selectedTab} >
+                    <Tabs onValueChange={(value) => editorEngine.state.rightPanelTab = value as EditorTabValue} value={selectedTab} >
                         <TabsList
                             className={
                                 cn(

@@ -1,5 +1,5 @@
 import { sendAnalytics } from "@/utils/analytics";
-import { type BrandTabValue, EditorMode, EditorTabValue, type LayersPanelTabValue, SettingsTabValue } from "@onlook/models";
+import { type BrandTabValue, EditorMode, EditorTabValue, type LeftPanelTabValue, SettingsTabValue } from "@onlook/models";
 import { makeAutoObservable } from "mobx";
 export class StateManager {
     private _plansOpen = false;
@@ -9,9 +9,10 @@ export class StateManager {
     leftPanelLocked = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
-    editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
-    layersPanelTab: LayersPanelTabValue | null = null;
+
+    leftPanelTab: LeftPanelTabValue | null = null;
+    rightPanelTab: EditorTabValue = EditorTabValue.CHAT;
     brandTab: BrandTabValue | null = null;
 
     constructor() {
