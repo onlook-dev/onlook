@@ -41,3 +41,9 @@ export enum BrandTabValue {
     COLORS = 'colors',
     FONTS = 'fonts',
 }
+
+export enum MouseAction {
+    MOVE = 'move',
+    MOUSE_DOWN = 'click',
+    DOUBLE_CLICK = 'double-click',
+}
