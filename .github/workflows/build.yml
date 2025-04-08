@@ -26,7 +26,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                 include:
+                include:
                     - os: macos-latest
                     - os: windows-latest
                     - os: ubuntu-latest
@@ -55,10 +55,10 @@ jobs:
 
             - uses: oven-sh/setup-bun@v1
               with:
-                  bun-version: 1.2.7
-            
+                  bun-version: 1.2.8
+
             - name: Install dependencies
-              run: bun install --frozen-lockfile
+              run: bun install
 
             - name: Download Bun binary
               env:
@@ -74,8 +74,8 @@ jobs:
 
             - name: Build foundation
               run: bun run ci:build
-            
-            - name: Build and Release 
+
+            - name: Build and Release
               uses: samuelmeuli/action-electron-builder@v1
               with:
                   skip_build: true

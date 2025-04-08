@@ -84,7 +84,7 @@ interface ResizablePanelProps {
     className?: string;
 }
 
-const ResizablePanel: React.FC<ResizablePanelProps> = ({
+export const ResizablePanel: React.FC<ResizablePanelProps> = ({
     children,
     side = 'left',
     defaultWidth = 240,
@@ -122,5 +122,3 @@ const ResizablePanel: React.FC<ResizablePanelProps> = ({
         </div>
     );
 };
-
-export default ResizablePanel;

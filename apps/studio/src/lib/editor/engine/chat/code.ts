@@ -5,7 +5,8 @@ import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onl
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import { toast } from '@onlook/ui/use-toast';
-import { SampleFeedbackType, type Message } from '@trainloop/sdk';
+import { SampleFeedbackType } from '@trainloop/sdk';
+import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
 import type { EditorEngine } from '..';
@@ -92,7 +93,7 @@ export class ChatCodeManager {
         sendAnalytics('apply code change');
     }
 
-    saveApplyResult(message: Message, type: SampleFeedbackType) {
+    saveApplyResult(message: CoreMessage, type: SampleFeedbackType) {
         invokeMainChannel(MainChannels.SAVE_APPLY_RESULT, { type, messages: [message] });
     }
 
