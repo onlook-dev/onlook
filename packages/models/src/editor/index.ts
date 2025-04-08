@@ -1,9 +1,3 @@
-export enum MouseAction {
-    MOVE = 'move',
-    MOUSE_DOWN = 'click',
-    DOUBLE_CLICK = 'double-click',
-}
-
 export interface WebviewMetadata {
     id: string;
     title: string;
@@ -31,4 +25,19 @@ export enum SettingsTabValue {
     PREFERENCES = 'preferences',
     VERSIONS = 'versions',
     ADVANCED = 'advanced',
+}
+
+export enum LeftPanelTabValue {
+    PAGES = 'pages',
+    LAYERS = 'layers',
+    COMPONENTS = 'components',
+    IMAGES = 'images',
+    WINDOWS = 'windows',
+    BRAND = 'brand',
+    APPS = 'apps',
+}
+
+export enum BrandTabValue {
+    COLORS = 'colors',
+    FONTS = 'fonts',
 }
