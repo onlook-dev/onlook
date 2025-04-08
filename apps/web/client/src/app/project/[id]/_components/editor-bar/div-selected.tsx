@@ -296,7 +296,7 @@ export const DivSelected = () => {
                     </div>
                     {activeTab === 'all' ? (
                         <div className="flex items-center gap-2">
-                            <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
+                            <Icons.CornerRadius className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
                             <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
                                 <input 
                                     type="text" 
@@ -307,10 +307,10 @@ export const DivSelected = () => {
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="LeftSide" value="12px" />
-                            <InputIcon icon="TopSide" value="18px" />
-                            <InputIcon icon="RightSide" value="12px" />
-                            <InputIcon icon="BottomSide" value="18px" />
+                            <InputIcon icon="CornerRadius" value="12px" />
+                            <InputIcon icon="CornerTopRight" value="18px" />
+                            <InputIcon icon="CornerBottomLeft" value="12px" />
+                            <InputIcon icon="CornerBottomRight" value="18px" />
                         </div>
                     )}
                 </DropdownMenuContent>
