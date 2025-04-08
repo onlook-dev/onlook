@@ -383,7 +383,9 @@ export const DivSelected = () => {
 
             <div className="h-6 w-[1px] bg-border" />
 
-            <Button
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <Button
                 variant="ghost"
                 className="flex items-center justify-between gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border px-3"
             >
@@ -392,6 +394,71 @@ export const DivSelected = () => {
                     <span className="text-sm">1px</span>
                 </div>
             </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-3">
+                        <button 
+                            onClick={() => setActiveTab('all')}
+                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
+                                activeTab === 'all' 
+                                    ? 'text-white bg-background-tertiary/20' 
+                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            }`}
+                        >
+                            All sides
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('individual')}
+                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
+                                activeTab === 'individual' 
+                                    ? 'text-white bg-background-tertiary/20' 
+                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            }`}
+                        >
+                            Individual
+                        </button>
+                    </div>
+                    {activeTab === 'all' ? (
+                        <div className="flex items-center gap-2">
+                            <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
+                            <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
+                                <input 
+                                    type="text" 
+                                    value="12px"
+                                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-2">
+                            <InputIcon icon="LeftSide" value="12px" />
+                            <InputIcon icon="TopSide" value="18px" />
+                            <InputIcon icon="RightSide" value="12px" />
+                            <InputIcon icon="BottomSide" value="18px" />
+                        </div>
+                    )}
+                    <div className="mt-3">
+                        <div className="flex items-center w-full">
+                            <div className="flex-1 flex mr-[1px] items-center bg-background-tertiary/50 rounded-md px-3 py-1.5">
+                                <input 
+                                    type="text" 
+                                    value="#080808"
+                                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                />
+                            </div>
+                            <div className="min-w-[70px] max-w-[70px] flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5">
+                                <input 
+                                    type="text" 
+                                    value="100"
+                                    className="w-full bg-transparent text-sm text-white focus:outline-none text-right"
+                                />
+                                <span className="text-sm text-muted-foreground ml-1">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
         </div>
     );
 };
