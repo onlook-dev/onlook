@@ -86,10 +86,6 @@ class LlmManager {
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
-                onError: (error) => {
-                    console.error('Error', JSON.stringify(error, null, 2));
-                    throw error;
-                },
                 maxSteps: 10,
                 tools: chatToolSet,
                 maxTokens: 64000,
@@ -100,6 +96,9 @@ class LlmManager {
                     for (const toolResult of toolResults) {
                         this.emitMessagePart(toolResult);
                     }
+                },
+                onError: (error) => {
+                    throw error;
                 },
             });
             const streamParts: TextStreamPart<ToolSet>[] = [];
@@ -115,7 +114,6 @@ class LlmManager {
             };
         } catch (error: any) {
             try {
-                console.error('Error', error);
                 if (error?.error?.statusCode) {
                     if (error?.error?.statusCode === 403) {
                         const rateLimitError = JSON.parse(
@@ -125,19 +123,16 @@ class LlmManager {
                             type: 'rate-limited',
                             rateLimitResult: rateLimitError,
                         };
-                    } else {
-                        return {
-                            type: 'error',
-                            message: error.error.responseBody,
-                        };
                     }
                 }
-                const errorMessage = this.getErrorMessage(error);
+                console.log('C', error.error.lastError.responseBody);
+                const errorMessage = JSON.parse(error.error.lastError.responseBody).error.message;
                 return { message: errorMessage, type: 'error' };
-            } catch (error) {
-                console.error('Error parsing error', error);
-                return { message: 'An unknown error occurred', type: 'error' };
+            } catch (parseError) {
+                console.error('Error parsing error', parseError);
+                return { message: JSON.stringify(parseError), type: 'error' };
             } finally {
+                this.abortController?.abort();
                 this.abortController = null;
             }
         }
@@ -159,7 +154,7 @@ class LlmManager {
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
     }
 
-    private getErrorMessage(error: unknown): string {
+    private getErrorMessage(error: any): string {
         if (error instanceof Error) {
             return error.message;
         }
@@ -172,7 +167,11 @@ class LlmManager {
         if (error && typeof error === 'object' && 'message' in error) {
             return String(error.message);
         }
-        return 'An unknown chat error occurred';
+
+        if (error?.error?.lastError?.responseBody) {
+            return JSON.parse(error.error.lastError.responseBody).error;
+        }
+        return JSON.stringify(error);
     }
 
     public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
