@@ -1,5 +1,5 @@
 import { subscribe, type AsyncSubscription } from '@parcel/watcher';
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import * as pathModule from 'path';
 import { scanFonts } from './scanner';
 import fs from 'fs';
@@ -8,6 +8,7 @@ import { removeFontVariableFromLayout } from './layout';
 import { removeFontFromTailwindConfig, updateTailwindFontConfig } from './tailwind';
 import type { Font } from '@onlook/models/assets';
 import { detectRouterType } from '../../pages';
+import { mainWindow } from '../../index';
 
 export class FontFileWatcher {
     private subscription: AsyncSubscription | null = null;
@@ -78,7 +79,7 @@ export class FontFileWatcher {
             );
 
             const addedFonts = currentFonts.filter(
-                (currFont) => !this.previousFonts.some((prevFont) => prevFont.id === currFont.id),
+                (currFont) => !this.previousFonts.some((prevFont) => currFont.id === prevFont.id),
             );
 
             for (const font of removedFonts) {
@@ -106,6 +107,14 @@ export class FontFileWatcher {
                     await updateTailwindFontConfig(projectRoot, font);
                     await addFontVariableToLayout(projectRoot, font.id);
                 }
+            }
+
+            if (removedFonts.length > 0 || addedFonts.length > 0) {
+                mainWindow?.webContents.send(MainChannels.FONTS_CHANGED, {
+                    currentFonts,
+                    removedFonts,
+                    addedFonts,
+                });
             }
 
             this.previousFonts = currentFonts;

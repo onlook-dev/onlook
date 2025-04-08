@@ -38,6 +38,15 @@ export class FontManager {
         makeAutoObservable(this);
         this.loadInitialFonts();
 
+        const fontChangeHandler = (data: {
+            currentFonts: Font[];
+            removedFonts: Font[];
+            addedFonts: Font[];
+        }) => {
+            this._fonts = data.currentFonts;
+        };
+        window.api.on(MainChannels.FONTS_CHANGED, fontChangeHandler);
+
         // Watch for project changes and set up watcher when a project is selected
         const disposer = reaction(
             () => this.projectsManager.project?.folderPath,
@@ -51,6 +60,9 @@ export class FontManager {
         );
 
         this.disposers.push(disposer);
+        this.disposers.push(() =>
+            window.api.removeListener(MainChannels.FONTS_CHANGED, fontChangeHandler),
+        );
     }
 
     private convertFont(font: RawFont): Font {
@@ -144,8 +156,6 @@ export class FontManager {
             };
 
             this.editorEngine.history.push(writeCodeAction);
-
-            await this.scanFonts();
         } catch (error) {
             console.error('Error adding font:', error);
         }
@@ -174,8 +184,6 @@ export class FontManager {
             if (font.id === this.defaultFont) {
                 this._defaultFont = null;
             }
-
-            await this.scanFonts();
         } catch (error) {
             console.error('Error removing font:', error);
         }
@@ -189,12 +197,20 @@ export class FontManager {
         }
 
         try {
-            await invokeMainChannel(MainChannels.SET_FONT, {
+            const result = (await invokeMainChannel(MainChannels.SET_FONT, {
                 projectRoot,
                 font,
-            });
+            })) as CodeDiff;
 
-            await this.getDefaultFont();
+            if (result) {
+                const writeCodeAction: WriteCodeAction = {
+                    type: 'write-code',
+                    diffs: [result],
+                };
+                this.editorEngine.history.push(writeCodeAction);
+            }
+
+            setTimeout(() => this.getDefaultFont(), 300);
         } catch (error) {
             console.error('Error setting font:', error);
         }
