@@ -27,11 +27,11 @@ export default function Page({ }: { params: { id: string } }) {
                     <TopBar />
                 </div>
 
-                <div className="absolute top-10 w-full">
+                <div className="absolute top-10 w-full z-50">
                     <EditorBar selectedElement={selectedElement} />
                 </div>
 
-                <div className="absolute top-20 w-full">
+                <div className="absolute top-20 w-screen h-screen flex items-center justify-center z-30">
                     <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
                 </div>
 

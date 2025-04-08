@@ -62,7 +62,7 @@ export const TextSelected = () => {
                             <Icons.ChevronDown className="h-4 w-4 opacity-50" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="min-w-[120px] mt-2 p-1 rounded-lg">
+                    <DropdownMenuContent align="center" className="min-w-[120px] mt-1 p-1 rounded-lg">
                         <DropdownMenuItem 
                             onClick={() => setFontWeight("Light")}
                             className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
@@ -138,7 +138,7 @@ export const TextSelected = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                             align="center"
-                            className="w-[48px] min-w-[48px] mt-2 p-1 rounded-lg"
+                            className="w-[48px] min-w-[48px] mt-1 p-1 rounded-lg"
                         >
                             {FONT_SIZES.map((size) => (
                                 <DropdownMenuItem
@@ -184,7 +184,7 @@ export const TextSelected = () => {
                             {textAlign === "justify" && <Icons.TextAlignJustified className="h-4 w-4" />}
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="flex min-w-fit mt-2 p-1 rounded-lg gap-1">
+                    <DropdownMenuContent align="center" className="flex min-w-fit mt-1 p-1 rounded-lg gap-1">
                         <DropdownMenuItem 
                             onClick={() => setTextAlign("left")}
                             className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
