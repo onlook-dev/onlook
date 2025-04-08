@@ -14,11 +14,6 @@ const nextConfig: NextConfig = {
         // !! WARN !!
         ignoreBuildErrors: true,
     },
-    eslint: {
-        ignoreDuringBuilds: true
-    },
-    skipTrailingSlashRedirect: true,
-    skipMiddlewareUrlNormalize: true
 };
 
 const withNextIntl = createNextIntlPlugin();
