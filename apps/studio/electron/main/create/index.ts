@@ -38,6 +38,7 @@ export class ProjectCreator {
         this.abortController = new AbortController();
 
         try {
+            console.log('Creating project...');
             const result = await action();
             return { success: true, response: result };
         } catch (error) {

@@ -140,10 +140,10 @@ class LlmManager {
             } catch (parseError) {
                 console.error('Error parsing error', parseError);
                 return { message: JSON.stringify(parseError), type: 'error' };
+            } finally {
+                this.abortController?.abort();
+                this.abortController = null;
             }
-        } finally {
-            this.abortController?.abort();
-            this.abortController = null;
         }
     }
 
