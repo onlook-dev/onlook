@@ -40,9 +40,13 @@ export const validateNextJsRoute = (route: string): { valid: boolean; error?: st
 
 export const doesRouteExist = (nodes: PageNode[], route: string): boolean => {
     const normalizedRoute = normalizeRoute(route);
+    console.log(nodes, route);
 
     const checkNode = (nodes: PageNode[]): boolean => {
         for (const node of nodes) {
+            console.log(normalizeRoute(node.path));
+            console.log(normalizedRoute);
+
             if (normalizeRoute(node.path) === normalizedRoute) {
                 return true;
             }

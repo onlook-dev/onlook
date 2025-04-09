@@ -81,7 +81,6 @@ export enum MainChannels {
     UPDATE_USER_SETTINGS = 'update-user-settings',
     REPLACE_APP_STATE = 'replace-app-state',
     UPDATE_PROJECTS = 'update-projects',
-
     // Create
     GET_CREATE_PROJECT_PATH = 'get-create-project-path',
     CREATE_NEW_PROJECT = 'create-new-project',
@@ -145,6 +144,7 @@ export enum MainChannels {
     DELETE_PAGE = 'delete-page',
     RENAME_PAGE = 'rename-page',
     DUPLICATE_PAGE = 'duplicate-page',
+    UPDATE_PAGE_METADATA = 'update-page-metadata',
 
     // Images
     SCAN_IMAGES_IN_PROJECT = 'scan-images-in-project',

@@ -3,10 +3,14 @@ import { ipcMain } from 'electron';
 import {
     createNextJsPage,
     deleteNextJsPage,
+    detectRouterType,
     duplicateNextJsPage,
     renameNextJsPage,
     scanNextJsPages,
 } from '../pages';
+import type { Metadata } from '@onlook/models';
+import { updateNextJsPage } from '../pages/update';
+import path from 'path';
 
 export function listenForPageMessages() {
     ipcMain.handle(MainChannels.SCAN_PAGES, async (_event, projectRoot: string) => {
@@ -60,6 +64,33 @@ export function listenForPageMessages() {
             }: { projectRoot: string; sourcePath: string; targetPath: string },
         ) => {
             return await duplicateNextJsPage(projectRoot, sourcePath, targetPath);
+        },
+    );
+
+    ipcMain.handle(
+        MainChannels.UPDATE_PAGE_METADATA,
+        async (
+            _event,
+            {
+                projectRoot,
+                pagePath,
+                metadata,
+                isRoot,
+            }: { projectRoot: string; pagePath: string; metadata: Metadata; isRoot: boolean },
+        ) => {
+            let fullPath = pagePath;
+            const routerConfig = await detectRouterType(projectRoot);
+            if (routerConfig) {
+                if (routerConfig.type === 'app') {
+                    if (!isRoot) {
+                        fullPath = path.join(fullPath, 'page.tsx');
+                    }
+                } else {
+                    return;
+                }
+            }
+
+            return await updateNextJsPage(projectRoot, fullPath, metadata);
         },
     );
 }

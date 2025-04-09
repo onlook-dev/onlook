@@ -44,7 +44,7 @@ export class EditorEngine {
 
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
-    private _settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
+    private _settingsTab: SettingsTabValue | string = SettingsTabValue.PREFERENCES;
     private _layersPanelTab: LayersPanelTabValue | null = null;
     private _brandTab: BrandTabValue | null = null;
 
@@ -197,7 +197,7 @@ export class EditorEngine {
         this._editorPanelTab = tab;
     }
 
-    set settingsTab(tab: SettingsTabValue) {
+    set settingsTab(tab: SettingsTabValue | string) {
         this._settingsTab = tab;
     }
 

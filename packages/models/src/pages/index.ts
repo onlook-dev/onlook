@@ -2,7 +2,44 @@ export interface PageNode {
     id: string;
     path: string;
     name: string;
+    metadata?: Metadata;
     children?: PageNode[];
     isActive: boolean;
     isRoot?: boolean;
 }
+
+export interface Metadata {
+    title?: string;
+    description?: string;
+    applicationName?: string;
+    icons?: null | IconURL | Array<Icon> | Icons;
+}
+
+type IconURL = string | URL;
+type Icon = IconURL | IconDescriptor;
+type IconDescriptor = {
+    url: string | URL;
+    type?: string;
+    sizes?: string;
+    color?: string;
+    /** defaults to rel="icon" unless superseded by Icons map */
+    rel?: string;
+    media?: string;
+    /**
+     * @see https://developer.mozilla.org/docs/Web/API/HTMLImageElement/fetchPriority
+     */
+    fetchPriority?: 'high' | 'low' | 'auto';
+};
+type Icons = {
+    /** rel="icon" */
+    icon?: Icon | Icon[];
+    /** rel="shortcut icon" */
+    shortcut?: Icon | Icon[];
+    /**
+     * @see https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+     * rel="apple-touch-icon"
+     */
+    apple?: Icon | Icon[];
+    /** rel inferred from descriptor, defaults to "icon" */
+    other?: IconDescriptor | IconDescriptor[];
+};
