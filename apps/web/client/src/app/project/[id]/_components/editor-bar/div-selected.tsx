@@ -241,12 +241,21 @@ export const DivSelected = () => {
                     {activeTab === 'all' ? (
                         <div className="flex items-center gap-2">
                             <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
-                                <input 
-                                    type="text" 
+                            <div className="flex-1 flex items-center gap-2">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="500"
                                     value="12"
-                                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                                 />
+                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
+                                    <input 
+                                        type="text" 
+                                        value="12"
+                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    />
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -301,12 +310,21 @@ export const DivSelected = () => {
                     {activeTab === 'all' ? (
                         <div className="flex items-center gap-2">
                             <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
-                                <input 
-                                    type="text" 
+                            <div className="flex-1 flex items-center gap-2">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="500"
                                     value="12"
-                                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                                 />
+                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
+                                    <input 
+                                        type="text" 
+                                        value="12"
+                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    />
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -362,12 +380,21 @@ export const DivSelected = () => {
                     {activeTab === 'all' ? (
                         <div className="flex items-center gap-2">
                             <Icons.CornerRadius className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
-                                <input 
-                                    type="text" 
+                            <div className="flex-1 flex items-center gap-2">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="500"
                                     value="12"
-                                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                                 />
+                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
+                                    <input 
+                                        type="text" 
+                                        value="12"
+                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    />
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -421,12 +448,21 @@ export const DivSelected = () => {
                     {activeTab === 'all' ? (
                         <div className="flex items-center gap-2">
                             <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
-                                <input 
-                                    type="text" 
+                            <div className="flex-1 flex items-center gap-2">
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="500"
                                     value="12"
-                                    className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
                                 />
+                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
+                                    <input 
+                                        type="text" 
+                                        value="12"
+                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
+                                    />
+                                </div>
                             </div>
                         </div>
                     ) : (
