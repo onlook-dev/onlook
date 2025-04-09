@@ -4,15 +4,16 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "dev": "bun run --elide-lines 0 --filter '*' dev",
+        "dev": "bun --filter '@onlook/web-client' --filter '@onlook/web-server' dev",
+        "dev:client": "bun --filter @onlook/web-client dev",
+        "dev:server": "bun --filter @onlook/web-server dev",
         "docker:up": "docker compose up",
         "docker:build": "docker compose build",
         "docker:down": "docker compose down",
         "docker:restart": "docker compose down && docker compose up"
     },
     "devDependencies": {
-        "@types/bun": "latest",
-        "concurrently": "^9.1.2"
+        "@types/bun": "latest"
     },
     "peerDependencies": {
         "typescript": "^5"

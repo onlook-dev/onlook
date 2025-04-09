@@ -13,7 +13,7 @@
         "packages/*",
         "apps/*",
         "tooling/*",
-        "apps/web/client"
+        "apps/web/*"
     ],
     "scripts": {
         "build:foundation": "bun --filter @onlook/foundation build",
