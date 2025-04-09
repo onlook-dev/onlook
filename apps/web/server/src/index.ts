@@ -1,6 +1,6 @@
-import { serverConfig } from './config';
+import { editorServerConfig } from '@onlook/web-shared';
 import { createServer } from './server';
 
-const server = createServer(serverConfig);
+const server = createServer(editorServerConfig);
 
 void server.start();

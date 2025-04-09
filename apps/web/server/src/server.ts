@@ -1,11 +1,11 @@
 import ws from '@fastify/websocket';
+import type { EditorServerOptions } from '@onlook/web-shared';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import fastify from 'fastify';
-import type { ServerOptions } from './config';
 import { appRouter } from './router';
 import { createContext } from './router/context';
 
-export function createServer(opts: ServerOptions) {
+export function createServer(opts: EditorServerOptions) {
     const dev = opts.dev ?? true;
     const port = opts.port ?? 3000;
     const trpcPrefix = opts.prefix ?? '/trpc';

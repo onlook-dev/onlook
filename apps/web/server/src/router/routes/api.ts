@@ -1,15 +1,35 @@
-import { z } from 'zod';
+// import { TRPCError } from '@trpc/server';
+// import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
 
+// interface Post {
+//     id: number;
+//     title: string;
+// }
+
+// interface Db {
+//     posts: Post[];
+// }
+
+// const db: Db = {
+//     posts: [],
+// };
+
 export const apiRouter = router({
-    version: publicProcedure.query(() => {
-        return { version: '0.42.0' };
-    }),
-    hello: publicProcedure
-        .input(z.object({ username: z.string().nullish() }).nullish())
-        .query(({ input, ctx }) => {
-            return {
-                text: `hello ${input?.username ?? ctx.user?.name ?? 'world'}`,
-            };
-        }),
+    hello: publicProcedure.query(() => 'hello'),
+    // create: publicProcedure
+    //     .input(z.object({ title: z.string() }))
+    //     .mutation(({ input, ctx }) => {
+    //         if (ctx.user.name !== 'nyan') {
+    //             throw new TRPCError({ code: 'UNAUTHORIZED' });
+    //         }
+    //         const id = db.posts.length + 1;
+    //         const post = { id, ...input };
+    //         db.posts.push(post);
+    //         return post;
+    //     }),
+    // list: publicProcedure.query(() => db.posts),
+    // reset: publicProcedure.mutation(() => {
+    //     db.posts = [];
+    // }),
 });
