@@ -13,6 +13,7 @@ import {
 import { MainChannels } from '@onlook/models/constants';
 import {
     generateObject,
+    RetryError,
     streamText,
     type CoreMessage,
     type CoreSystemMessage,
@@ -86,10 +87,6 @@ class LlmManager {
                 model,
                 messages,
                 abortSignal: this.abortController?.signal,
-                onError: (error) => {
-                    console.error('Error', JSON.stringify(error, null, 2));
-                    throw error;
-                },
                 maxSteps: 10,
                 tools: chatToolSet,
                 maxTokens: 64000,
@@ -100,6 +97,9 @@ class LlmManager {
                     for (const toolResult of toolResults) {
                         this.emitMessagePart(toolResult);
                     }
+                },
+                onError: (error) => {
+                    throw error;
                 },
             });
             const streamParts: TextStreamPart<ToolSet>[] = [];
@@ -115,7 +115,6 @@ class LlmManager {
             };
         } catch (error: any) {
             try {
-                console.error('Error', error);
                 if (error?.error?.statusCode) {
                     if (error?.error?.statusCode === 403) {
                         const rateLimitError = JSON.parse(
@@ -125,21 +124,26 @@ class LlmManager {
                             type: 'rate-limited',
                             rateLimitResult: rateLimitError,
                         };
-                    } else {
-                        return {
-                            type: 'error',
-                            message: error.error.responseBody,
-                        };
                     }
                 }
-                const errorMessage = this.getErrorMessage(error);
-                return { message: errorMessage, type: 'error' };
-            } catch (error) {
-                console.error('Error parsing error', error);
-                return { message: 'An unknown error occurred', type: 'error' };
-            } finally {
-                this.abortController = null;
+
+                if (RetryError.isInstance(error.error)) {
+                    const parsed = JSON.parse(error.error.lastError.responseBody);
+                    return { message: parsed.error.message, type: 'error' };
+                }
+
+                if (error.error instanceof DOMException) {
+                    return { message: 'Request aborted', type: 'error' };
+                }
+
+                return { message: JSON.stringify(error), type: 'error' };
+            } catch (parseError) {
+                console.error('Error parsing error', parseError);
+                return { message: JSON.stringify(parseError), type: 'error' };
             }
+        } finally {
+            this.abortController?.abort();
+            this.abortController = null;
         }
     }
 
@@ -157,22 +161,6 @@ class LlmManager {
             payload: streamPart,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
-    }
-
-    private getErrorMessage(error: unknown): string {
-        if (error instanceof Error) {
-            return error.message;
-        }
-        if (typeof error === 'string') {
-            return error;
-        }
-        if (error instanceof Response) {
-            return error.statusText;
-        }
-        if (error && typeof error === 'object' && 'message' in error) {
-            return String(error.message);
-        }
-        return 'An unknown chat error occurred';
     }
 
     public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
