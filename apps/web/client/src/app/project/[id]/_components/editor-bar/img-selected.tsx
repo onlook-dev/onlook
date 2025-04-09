@@ -102,7 +102,6 @@ export const ImgSelected = () => {
 
             <div className="h-6 w-[1px] bg-border" />
 
-
             <Button
                 variant="ghost"
                 className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border px-3"
