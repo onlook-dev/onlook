@@ -132,14 +132,18 @@ class LlmManager {
                     return { message: parsed.error.message, type: 'error' };
                 }
 
+                if (error.error instanceof DOMException) {
+                    return { message: 'Request aborted', type: 'error' };
+                }
+
                 return { message: JSON.stringify(error), type: 'error' };
             } catch (parseError) {
                 console.error('Error parsing error', parseError);
                 return { message: JSON.stringify(parseError), type: 'error' };
-            } finally {
-                this.abortController?.abort();
-                this.abortController = null;
             }
+        } finally {
+            this.abortController?.abort();
+            this.abortController = null;
         }
     }
 
