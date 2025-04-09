@@ -130,11 +130,14 @@ export class ChatConversationImpl implements ChatConversation {
                         }
                         
                         if (!hasCorrespondingResult) {
+                            console.error(
+                                `Missing tool_result for tool call ${toolCall.toolCallId} (${toolCall.toolName}). Adding stub result.`
+                            );
                             missingToolResults.push({
                                 type: 'tool-result',
                                 toolCallId: toolCall.toolCallId,
                                 toolName: toolCall.toolName,
-                                result: {},
+                                result: "success",
                                 isError: true
                             });
                         }
