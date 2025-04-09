@@ -13,6 +13,7 @@ import {
 import { MainChannels } from '@onlook/models/constants';
 import {
     generateObject,
+    RetryError,
     streamText,
     type CoreMessage,
     type CoreSystemMessage,
@@ -125,9 +126,13 @@ class LlmManager {
                         };
                     }
                 }
-                console.log('C', error.error.lastError.responseBody);
-                const errorMessage = JSON.parse(error.error.lastError.responseBody).error.message;
-                return { message: errorMessage, type: 'error' };
+
+                if (RetryError.isInstance(error.error)) {
+                    const parsed = JSON.parse(error.error.lastError.responseBody);
+                    return { message: parsed.error.message, type: 'error' };
+                }
+
+                return { message: JSON.stringify(error), type: 'error' };
             } catch (parseError) {
                 console.error('Error parsing error', parseError);
                 return { message: JSON.stringify(parseError), type: 'error' };
@@ -152,26 +157,6 @@ class LlmManager {
             payload: streamPart,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
-    }
-
-    private getErrorMessage(error: any): string {
-        if (error instanceof Error) {
-            return error.message;
-        }
-        if (typeof error === 'string') {
-            return error;
-        }
-        if (error instanceof Response) {
-            return error.statusText;
-        }
-        if (error && typeof error === 'object' && 'message' in error) {
-            return String(error.message);
-        }
-
-        if (error?.error?.lastError?.responseBody) {
-            return JSON.parse(error.error.lastError.responseBody).error;
-        }
-        return JSON.stringify(error);
     }
 
     public async generateSuggestions(messages: CoreMessage[]): Promise<ChatSuggestion[]> {
