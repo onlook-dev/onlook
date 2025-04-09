@@ -11,6 +11,7 @@ import {
 import { StateDropdown } from "./state-dropdown";
 import { InputDropdown } from "./inputs/input-dropdown";
 import { InputIcon } from "./inputs/input-icon";
+import { InputRange } from "./inputs/input-range";
 import { useState } from "react";
 
 export const DivSelected = () => {
@@ -239,25 +240,7 @@ export const DivSelected = () => {
                         </button>
                     </div>
                     {activeTab === 'all' ? (
-                        <div className="flex items-center gap-2">
-                            <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex-1 flex items-center gap-2">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="500"
-                                    value="12"
-                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                                />
-                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
-                                    <input 
-                                        type="text" 
-                                        value="12"
-                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                        <InputRange value={12} onChange={(value) => console.log(value)} />
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
                             <InputIcon icon="LeftSide" value={12} />
@@ -308,25 +291,7 @@ export const DivSelected = () => {
                         </button>
                     </div>
                     {activeTab === 'all' ? (
-                        <div className="flex items-center gap-2">
-                            <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex-1 flex items-center gap-2">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="500"
-                                    value="12"
-                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                                />
-                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
-                                    <input 
-                                        type="text" 
-                                        value="12"
-                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                        <InputRange value={12} onChange={(value) => console.log(value)} />
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
                             <InputIcon icon="LeftSide" value={12} />
@@ -378,25 +343,7 @@ export const DivSelected = () => {
                         </button>
                     </div>
                     {activeTab === 'all' ? (
-                        <div className="flex items-center gap-2">
-                            <Icons.CornerRadius className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex-1 flex items-center gap-2">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="500"
-                                    value="12"
-                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                                />
-                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
-                                    <input 
-                                        type="text" 
-                                        value="12"
-                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                        <InputRange value={12} icon="CornerRadius" onChange={(value) => console.log(value)} />
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
                             <InputIcon icon="CornerRadius" value={12} />
@@ -446,25 +393,7 @@ export const DivSelected = () => {
                         </button>
                     </div>
                     {activeTab === 'all' ? (
-                        <div className="flex items-center gap-2">
-                            <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
-                            <div className="flex-1 flex items-center gap-2">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="500"
-                                    value="12"
-                                    className="flex-1 h-1 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
-                                />
-                                <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 min-w-[80px]">
-                                    <input 
-                                        type="text" 
-                                        value="12"
-                                        className="w-full bg-transparent text-sm text-white focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                        <InputRange value={12} onChange={(value) => console.log(value)} />
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
                             <InputIcon icon="LeftSide" value={12} />
