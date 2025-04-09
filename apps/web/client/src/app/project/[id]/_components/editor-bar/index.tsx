@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { TextSelected } from "./text-selected";
 import { DivSelected } from "./div-selected";
+import { ImgSelected } from "./img-selected";
 
 type EditorBarProps = {
     selectedElement: "div" | "text" | "image";
@@ -25,6 +26,7 @@ export const EditorBar = ({ selectedElement }: EditorBarProps) => {
         >
             {selectedElement === "text" && <TextSelected />}
             {selectedElement === "div" && <DivSelected />}
+            {selectedElement === "image" && <ImgSelected />}
         </motion.div>
     );
 };

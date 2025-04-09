@@ -12,6 +12,11 @@ import { StateDropdown } from "./state-dropdown";
 import { InputDropdown } from "./inputs/input-dropdown";
 import { InputIcon } from "./inputs/input-icon";
 import { InputRange } from "./inputs/input-range";
+import { Width } from "./dropdowns/width";
+import { Height } from "./dropdowns/height";
+import { Padding } from "./dropdowns/padding";
+import { Margin } from "./dropdowns/margin";
+import { Radius } from "./dropdowns/radius";
 import { useState } from "react";
 
 export const DivSelected = () => {
@@ -109,232 +114,23 @@ export const DivSelected = () => {
 
             <div className="h-6 w-[1px] bg-border" />
 
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                    >
-                        <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
-                        <span className="text-sm">280</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg space-y-3">
-                    <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-white">Width</span>
-                            <InputDropdown 
-                                value="250"
-                                dropdownValue="Hug"
-                                dropdownOptions={["Hug", "Fixed"]}
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Min</span>
-                            <InputDropdown 
-                                value="--"
-                                dropdownValue="Fixed"
-                                dropdownOptions={["Fixed"]}
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Max</span>
-                            <InputDropdown 
-                                value="--"
-                                dropdownValue="Fixed"
-                                dropdownOptions={["Fixed"]}
-                            />
-                        </div>
-                    </div>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Width />
 
             <div className="h-6 w-[1px] bg-border" />
 
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                    >
-                        <Icons.Height className="h-4 w-4 min-h-4 min-w-4" />
-                        <span className="text-sm">Hug</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg space-y-3">
-                    <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-white">Height</span>
-                            <InputDropdown 
-                                value="250"
-                                dropdownValue="Hug"
-                                dropdownOptions={["Hug", "Fixed"]}
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Min</span>
-                            <InputDropdown 
-                                value="--"
-                                dropdownValue="Fixed"
-                                dropdownOptions={["Fixed"]}
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Max</span>
-                            <InputDropdown 
-                                value="--"
-                                dropdownValue="Fixed"
-                                dropdownOptions={["Fixed"]}
-                            />
-                        </div>
-                    </div>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Height />
+       
+            <div className="h-6 w-[1px] bg-border" />
+
+            <Padding />
 
             <div className="h-6 w-[1px] bg-border" />
 
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                    >
-                        <Icons.Padding className="h-4 w-4 min-h-4 min-w-4" />
-                        <span className="text-sm">Mixed</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                        <button 
-                            onClick={() => setActiveTab('all')}
-                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
-                                activeTab === 'all' 
-                                    ? 'text-white bg-background-tertiary/20' 
-                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
-                        >
-                            All sides
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('individual')}
-                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
-                                activeTab === 'individual' 
-                                    ? 'text-white bg-background-tertiary/20' 
-                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
-                        >
-                            Individual
-                        </button>
-                    </div>
-                    {activeTab === 'all' ? (
-                        <InputRange value={12} onChange={(value) => console.log(value)} />
-                    ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="LeftSide" value={12} />
-                            <InputIcon icon="TopSide" value={18} />
-                            <InputIcon icon="RightSide" value={12} />
-                            <InputIcon icon="BottomSide" value={18} />
-                        </div>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Margin />
 
             <div className="h-6 w-[1px] bg-border" />
-
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                    >
-                        <Icons.Margin className="h-4 w-4 min-h-4 min-w-4" />
-                        <span className="text-sm">24px</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                        <button 
-                            onClick={() => setActiveTab('all')}
-                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
-                                activeTab === 'all' 
-                                    ? 'text-white bg-background-tertiary/20' 
-                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
-                        >
-                            All sides
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('individual')}
-                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
-                                activeTab === 'individual' 
-                                    ? 'text-white bg-background-tertiary/20' 
-                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
-                        >
-                            Individual
-                        </button>
-                    </div>
-                    {activeTab === 'all' ? (
-                        <InputRange value={12} onChange={(value) => console.log(value)} />
-                    ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="LeftSide" value={12} />
-                            <InputIcon icon="TopSide" value={18} />
-                            <InputIcon icon="RightSide" value={12} />
-                            <InputIcon icon="BottomSide" value={18} />
-                        </div>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
-
-            <div className="h-6 w-[1px] bg-border" />
-
     
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                    >
-                        <Icons.CornerRadius className="h-4 w-4 min-h-4 min-w-4" />
-                        <span className="text-sm">8px</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-3">
-                        <button 
-                            onClick={() => setActiveTab('all')}
-                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${
-                                activeTab === 'all' 
-                                    ? 'text-white bg-background-tertiary/20' 
-                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
-                        >
-                            All sides
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('individual')}
-                            className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${
-                                activeTab === 'individual' 
-                                    ? 'text-white bg-background-tertiary/20' 
-                                    : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
-                        >
-                            Individual
-                        </button>
-                    </div>
-                    {activeTab === 'all' ? (
-                        <InputRange value={12} icon="CornerRadius" onChange={(value) => console.log(value)} />
-                    ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="CornerRadius" value={12} />
-                            <InputIcon icon="CornerTopRight" value={18} />
-                            <InputIcon icon="CornerBottomLeft" value={12} />
-                            <InputIcon icon="CornerBottomRight" value={18} />
-                        </div>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Radius />
 
             <div className="h-6 w-[1px] bg-border" />
 
