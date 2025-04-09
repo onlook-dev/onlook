@@ -1,6 +1,7 @@
-import type { ProjectsManager } from '@/lib/projects';
-import type { UserManager } from '@/lib/user';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+// import type { ProjectsManager } from '@/lib/projects';
+// import type { UserManager } from '@/lib/user';
+// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { sendAnalytics } from '@/utils/analytics';
 import {
     ChatMessageRole,
     StreamRequestType,
@@ -9,7 +10,6 @@ import {
     type ErrorStreamResponse,
     type RateLimitedStreamResponse,
 } from '@onlook/models/chat';
-import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -34,8 +34,8 @@ export class ChatManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
-        private userManager: UserManager,
+        // private projectsManager: ProjectsManager,
+        // private userManager: UserManager,
     ) {
         makeAutoObservable(this);
         this.context = new ChatContext(this.editorEngine, this.projectsManager);
@@ -81,13 +81,13 @@ export class ChatManager {
             ...errorContexts,
             ...projectContexts,
         ]);
-        this.conversation.current.updateName(errors[0].content);
+        this.conversation.current.updateName(errors[0]?.content ?? '');
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;
         }
         sendAnalytics('send fix error chat message', {
-            errors: errors.map((e) => e.content),
+            errors: errors.map((e) => e.content).join('\n'),
         });
         await this.sendChatToAi(StreamRequestType.ERROR_FIX, prompt);
         return true;
@@ -99,10 +99,10 @@ export class ChatManager {
             return;
         }
         // Save current changes before sending to AI
-        this.projectsManager.versions?.createCommit(
-            userPrompt ?? 'Save before applying code',
-            false,
-        );
+        // this.projectsManager.versions?.createCommit(
+        //     userPrompt ?? 'Save before applying code',
+        //     false,
+        // );
 
         this.stream.clearBeforeSend();
         this.isWaiting = true;
@@ -126,18 +126,19 @@ export class ChatManager {
         requestType: StreamRequestType,
     ): Promise<CompletedStreamResponse | null> {
         const requestId = nanoid();
-        return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
-            messages,
-            requestId,
-            requestType,
-        });
+        // return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+        //     messages,
+        //     requestId,
+        //     requestType,
+        // });
+        return null;
     }
 
     stopStream() {
         const requestId = nanoid();
-        invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
-            requestId,
-        });
+        // invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
+        //     requestId,
+        // });
         sendAnalytics('stop chat stream');
     }
 
@@ -229,11 +230,11 @@ export class ChatManager {
     }
 
     autoApplyCode(assistantMessage: AssistantChatMessage) {
-        if (this.userManager.settings.settings?.chat?.autoApplyCode) {
-            setTimeout(() => {
-                this.code.applyCode(assistantMessage.id);
-            }, 100);
-        }
+        // if (this.userManager.settings.settings?.chat?.autoApplyCode) {
+        //     setTimeout(() => {
+        //         this.code.applyCode(assistantMessage.id);
+        //     }, 100);
+        // }
     }
 
     handleRateLimited(res: RateLimitedStreamResponse) {

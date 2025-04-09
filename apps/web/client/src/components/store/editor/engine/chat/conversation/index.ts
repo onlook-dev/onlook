@@ -1,10 +1,10 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
-import { MainChannels } from '@onlook/models/constants';
+// import type { ProjectsManager } from '@/lib/projects';
+// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { sendAnalytics } from '@/utils/analytics';
+import { type ChatMessageContext } from '@onlook/models/chat';
 import type { Project } from '@onlook/models/projects';
 import type { CoreAssistantMessage, CoreToolMessage, CoreUserMessage } from 'ai';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../..';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { ToolChatMessageImpl } from '../message/tool';
@@ -20,13 +20,13 @@ export class ConversationManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
-        reaction(
-            () => this.projectsManager.project,
-            (current) => this.getCurrentProjectConversations(current),
-        );
+        // reaction(
+        //     () => this.projectsManager.project,
+        //     (current) => this.getCurrentProjectConversations(current),
+        // );
     }
 
     async getCurrentProjectConversations(project: Project | null) {
@@ -43,7 +43,7 @@ export class ConversationManager {
         if (this.conversations.length === 0) {
             this.current = new ChatConversationImpl(project.id, []);
         } else {
-            this.current = this.conversations[0];
+            this.current = this.conversations[0] ?? null;
         }
 
         if (USE_MOCK) {
@@ -52,20 +52,21 @@ export class ConversationManager {
     }
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
-        const res: ChatConversation[] | null = await invokeMainChannel(
-            MainChannels.GET_CONVERSATIONS_BY_PROJECT,
-            { projectId },
-        );
-        if (!res) {
-            console.error('No conversations found');
-            return [];
-        }
-        const conversations = res?.map((c) => ChatConversationImpl.fromJSON(c));
+        // const res: ChatConversation[] | null = await invokeMainChannel(
+        //     MainChannels.GET_CONVERSATIONS_BY_PROJECT,
+        //     { projectId },
+        // );
+        // if (!res) {
+        //     console.error('No conversations found');
+        //     return [];
+        // }
+        // const conversations = res?.map((c) => ChatConversationImpl.fromJSON(c));
 
-        const sorted = conversations.sort((a, b) => {
-            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-        });
-        return sorted || [];
+        // const sorted = conversations.sort((a, b) => {
+        //     return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        // });
+        // return sorted || [];
+        return [];
     }
 
     startNewConversation() {
@@ -119,7 +120,7 @@ export class ConversationManager {
         this.deleteConversationInStorage(id);
         if (this.current.id === id) {
             if (this.conversations.length > 0) {
-                this.current = this.conversations[0];
+                this.current = this.conversations[0] ?? null;
             } else {
                 this.current = new ChatConversationImpl(this.projectId, []);
                 this.conversations.push(this.current);
@@ -130,7 +131,7 @@ export class ConversationManager {
     }
 
     deleteConversationInStorage(id: string) {
-        invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
+        // invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
     }
 
     saveConversationToStorage() {
@@ -138,26 +139,26 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
-            conversation: this.current,
-        });
+        // invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
+        //     conversation: this.current,
+        // });
     }
 
     async generateConversationSummary(): Promise<void> {
-        if (!this.current || !this.current.needsSummary()) {
-            return;
-        }
+        // if (!this.current || !this.current.needsSummary()) {
+        //     return;
+        // }
 
-        const res: string | null = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
-            messages: this.current.getMessagesForStream(),
-        });
+        // const res: string | null = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
+        //     messages: this.current.getMessagesForStream(),
+        // });
 
-        if (!res) {
-            console.log(`Failed to generate summary for conversation`);
-            return;
-        }
-        this.current.setSummaryMessage(res);
-        this.saveConversationToStorage();
+        // if (!res) {
+        //     console.log(`Failed to generate summary for conversation`);
+        //     return;
+        // }
+        // this.current.setSummaryMessage(res);
+        // this.saveConversationToStorage();
     }
 
     addUserMessage(

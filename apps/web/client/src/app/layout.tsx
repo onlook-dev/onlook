@@ -30,6 +30,7 @@ export default async function RootLayout({
             <body>
                 <TRPCReactProvider>
                     <NextIntlClientProvider>
+                        {/* @ts-ignore */}
                         {children}
                         {/* <Modals /> */}
                     </NextIntlClientProvider>

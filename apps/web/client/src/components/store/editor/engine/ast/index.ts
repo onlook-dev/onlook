@@ -1,5 +1,5 @@
-import { invokeMainChannel } from '@/lib/utils';
-import { EditorAttributes, MainChannels } from '@onlook/models/constants';
+// import { invokeMainChannel } from '@/lib/utils';
+import { EditorAttributes } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
@@ -54,7 +54,7 @@ export class AstManager {
             callback(node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i]);
+                    const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i] ?? '');
                     if (childLayerNode) {
                         stack.push(childLayerNode);
                     }
@@ -81,7 +81,7 @@ export class AstManager {
             return;
         }
 
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        const webview = this.editorEngine.webview.getWebview(webviewId);
         if (!webview) {
             console.warn('Failed: Webview not found');
             return;
@@ -150,24 +150,24 @@ export class AstManager {
                 return;
             }
             const index = Array.from(children).indexOf(htmlOriginalNode);
-            const res: { instanceId: string; component: string } | undefined =
-                await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE_CHILD, {
-                    parent: parentTemplateNode,
-                    child: templateNode,
-                    index,
-                });
-            if (res) {
-                originalNode.instanceId = res.instanceId;
-                originalNode.component = res.component;
-                this.updateElementInstance(
-                    webviewId,
-                    originalNode.domId,
-                    res.instanceId,
-                    res.component,
-                );
-            } else {
-                await this.findNodeInstance(webviewId, originalNode, parent, templateNode);
-            }
+            // const res: { instanceId: string; component: string } | undefined =
+            //     await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE_CHILD, {
+            //         parent: parentTemplateNode,
+            //         child: templateNode,
+            //         index,
+            //     });
+            // if (res) {
+            //     originalNode.instanceId = res.instanceId;
+            //     originalNode.component = res.component;
+            //     this.updateElementInstance(
+            //         webviewId,
+            //         originalNode.domId,
+            //         res.instanceId,
+            //         res.component,
+            //     );
+            // } else {
+            //     await this.findNodeInstance(webviewId, originalNode, parent, templateNode);
+            // }
         }
     }
 
@@ -185,11 +185,12 @@ export class AstManager {
             console.warn('Failed to getTemplateNodeById: No oid found');
             return null;
         }
-        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
+        // return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
+        return null;
     }
 
     updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        const webview = this.editorEngine.webview.getWebview(webviewId);
         if (!webview) {
             console.warn('Failed to updateElementInstanceId: Webview not found');
             return;

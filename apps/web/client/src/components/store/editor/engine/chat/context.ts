@@ -1,4 +1,4 @@
-import type { ProjectsManager } from '@/lib/projects';
+// import type { ProjectsManager } from '@/lib/projects';
 import {
     MessageContextType,
     type ChatMessageContext,
@@ -17,21 +17,21 @@ export class ChatContext {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
         reaction(
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
-        reaction(
-            () => this.projectsManager.project?.folderPath,
-            (folderPath) => {
-                if (folderPath) {
-                    this.getChatContext().then((context) => (this.context = context));
-                }
-            },
-        );
+        // reaction(
+        //     () => this.projectsManager.project?.folderPath,
+        //     (folderPath) => {
+        //         if (folderPath) {
+        //             this.getChatContext().then((context) => (this.context = context));
+        //         }
+        //     },
+        // );
     }
 
     async getChatContext(): Promise<ChatMessageContext[]> {
@@ -122,7 +122,7 @@ export class ChatContext {
         if (this.editorEngine.elements.selected.length === 0) {
             return null;
         }
-        const webviewId = this.editorEngine.elements.selected[0].webviewId;
+        const webviewId = this.editorEngine.elements.selected[0]?.webviewId;
         if (!webviewId) {
             return null;
         }
@@ -131,19 +131,20 @@ export class ChatContext {
         const screenshotName = `chat-screenshot-${timestamp}`;
 
         try {
-            const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
-            if (!result || !result.image) {
-                console.error('Failed to capture screenshot');
-                return null;
-            }
-            const { image } = result;
+            // const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
+            // if (!result || !result.image) {
+            //     console.error('Failed to capture screenshot');
+            //     return null;
+            // }
+            // const { image } = result;
 
-            return {
-                type: MessageContextType.IMAGE,
-                content: image,
-                mimeType: 'image/png',
-                displayName: 'screen',
-            };
+            // return {
+            //     type: MessageContextType.IMAGE,
+            //     content: image,
+            //     mimeType: 'image/png',
+            //     displayName: 'screen',
+            // };
+            return null;
         } catch (error) {
             console.error('Failed to capture screenshot:', error);
             return null;
@@ -151,19 +152,20 @@ export class ChatContext {
     }
 
     getProjectContext(): ProjectMessageContext[] {
-        const folderPath = this.projectsManager.project?.folderPath;
-        if (!folderPath) {
-            return [];
-        }
+        // const folderPath = this.projectsManager.project?.folderPath;
+        // if (!folderPath) {
+        //     return [];
+        // }
 
-        return [
-            {
-                type: MessageContextType.PROJECT,
-                content: '',
-                displayName: 'Project',
-                path: folderPath,
-            },
-        ];
+        // return [
+        //     {
+        //         type: MessageContextType.PROJECT,
+        //         content: '',
+        //         displayName: 'Project',
+        //         path: folderPath,
+        //     },
+        // ];
+        return [];
     }
 
     getMessageContext(errors: ParsedError[]): ErrorMessageContext[] {

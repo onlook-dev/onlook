@@ -31,10 +31,10 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
 
     // Modes
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.state.editorMode = EditorMode.DESIGN));
-    useHotkeys(Hotkey.ESCAPE.command, () => {
-        editorEngine.state.editorMode = EditorMode.DESIGN;
-        !editorEngine.text.isEditing && editorEngine.clearUI();
-    });
+    // useHotkeys(Hotkey.ESCAPE.command, () => {
+    //     editorEngine.state.editorMode = EditorMode.DESIGN;
+    //     !editorEngine.text.isEditing && editorEngine.clearUI();
+    // });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.state.editorMode = EditorMode.PAN));
     useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.state.editorMode = EditorMode.PREVIEW));
     useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.state.editorMode = EditorMode.INSERT_DIV));
@@ -45,31 +45,31 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys('alt', () => (editorEngine.overlay.removeMeasurement()), { keyup: true });
 
     // Actions
-    useHotkeys(Hotkey.UNDO.command, () => (editorEngine.action.undo()));
-    useHotkeys(Hotkey.REDO.command, () => (editorEngine.action.redo()));
-    useHotkeys(Hotkey.ENTER.command, () => (editorEngine.text.editSelectedElement()));
+    // useHotkeys(Hotkey.UNDO.command, () => (editorEngine.action.undo()));
+    // useHotkeys(Hotkey.REDO.command, () => (editorEngine.action.redo()));
+    // useHotkeys(Hotkey.ENTER.command, () => (editorEngine.text.editSelectedElement()));
     useHotkeys(Hotkey.REFRESH_LAYERS.command, () => (editorEngine.refreshLayers()));
     useHotkeys(Hotkey.OPEN_DEV_TOOL.command, () => (editorEngine.inspect()));
 
     // Group
-    useHotkeys(Hotkey.GROUP.command, () => (
-        editorEngine.group.groupSelectedElements()
-    ));
-    useHotkeys(Hotkey.UNGROUP.command, () => (
-        editorEngine.group.ungroupSelectedElement()
-    ));
+    // useHotkeys(Hotkey.GROUP.command, () => (
+    //     editorEngine.group.groupSelectedElements()
+    // ));
+    // useHotkeys(Hotkey.UNGROUP.command, () => (
+    //     editorEngine.group.ungroupSelectedElement()
+    // ));
 
     // Copy
-    useHotkeys(Hotkey.COPY.command, () => (editorEngine.copy.copy()));
-    useHotkeys(Hotkey.PASTE.command, () => (editorEngine.copy.paste()));
-    useHotkeys(Hotkey.CUT.command, () => (editorEngine.copy.cut()));
-    useHotkeys(Hotkey.DUPLICATE.command, () => {
-        if (editorEngine.window.isWindowSelected) {
-            editorEngine.window.duplicateWindow();
-        } else {
-            editorEngine.copy.duplicate();
-        }
-    });
+    // useHotkeys(Hotkey.COPY.command, () => (editorEngine.copy.copy()));
+    // useHotkeys(Hotkey.PASTE.command, () => (editorEngine.copy.paste()));
+    // useHotkeys(Hotkey.CUT.command, () => (editorEngine.copy.cut()));
+    // useHotkeys(Hotkey.DUPLICATE.command, () => {
+    //     if (editorEngine.window.isWindowSelected) {
+    //         editorEngine.window.duplicateWindow();
+    //     } else {
+    //         editorEngine.copy.duplicate();
+    //     }
+    // });
 
     // AI
     useHotkeys(Hotkey.ADD_AI_CHAT.command, () => (editorEngine.state.rightPanelTab = EditorTabValue.CHAT));
@@ -79,8 +79,8 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     });
 
     // Move
-    useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => (editorEngine.move.moveSelected('up')));
-    useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => (editorEngine.move.moveSelected('down')));
+    // useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => (editorEngine.move.moveSelected('up')));
+    // useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => (editorEngine.move.moveSelected('down')));
     useHotkeys(Hotkey.SHOW_HOTKEYS.command, () => (editorEngine.state.hotkeysOpen = !editorEngine.state.hotkeysOpen));
 
     return (

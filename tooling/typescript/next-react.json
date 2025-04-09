@@ -5,7 +5,7 @@
     "compilerOptions": {
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "target": "es2022",
+        "target": "es2023",
         "allowJs": true,
         "resolveJsonModule": true,
         "moduleDetection": "force",
@@ -17,7 +17,7 @@
         "lib": [
             "dom",
             "dom.iterable",
-            "ES2022"
+            "es2023"
         ],
         "noEmit": true,
         "module": "ESNext",
