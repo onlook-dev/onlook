@@ -136,6 +136,10 @@ class LlmManager {
                     return { message: 'Request aborted', type: 'error' };
                 }
 
+                if ((error as Error).name === 'AbortError') {
+                    return { message: 'Request aborted', type: 'error' };
+                }
+
                 return { message: JSON.stringify(error), type: 'error' };
             } catch (parseError) {
                 console.error('Error parsing error', parseError);
