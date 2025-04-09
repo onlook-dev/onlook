@@ -1,7 +1,7 @@
 import type { CodeDiff } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
-import { DEFAULT_IDE } from '@onlook/models/ide';
-import { dialog, shell } from 'electron';
+import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
+import { dialog, ipcMain, shell } from 'electron';
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
 import { generateCode } from './diff/helpers';
@@ -85,12 +85,22 @@ function getIdeFromUserSettings(): IDE {
 export function openInIde(templateNode: TemplateNode) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeCommand(templateNode);
+
+    if (ide.type === IdeType.ONLOOK) {
+        return;
+    }
+
     shell.openExternal(command);
 }
 
 export function openFileInIde(filePath: string, line?: number) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeFileCommand(filePath, line);
+
+    if (ide.type === IdeType.ONLOOK) {
+        return;
+    }
+
     shell.openExternal(command);
 }
 

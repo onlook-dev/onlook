@@ -16,6 +16,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import { IDE } from '/common/ide';
+import { IdeType } from '@onlook/models/ide';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -190,6 +191,10 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     };
 
     function viewSource(oid: string | null) {
+        if (ide.type === IdeType.ONLOOK) {
+            editorEngine.editPanelTab = EditorTabValue.DEV;
+        }
+
         editorEngine.code.viewSource(oid);
     }
 
