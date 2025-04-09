@@ -244,17 +244,17 @@ export const DivSelected = () => {
                             <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
                                 <input 
                                     type="text" 
-                                    value="12px"
+                                    value="12"
                                     className="w-full bg-transparent text-sm text-white focus:outline-none"
                                 />
                             </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="LeftSide" value="12px" />
-                            <InputIcon icon="TopSide" value="18px" />
-                            <InputIcon icon="RightSide" value="12px" />
-                            <InputIcon icon="BottomSide" value="18px" />
+                            <InputIcon icon="LeftSide" value={12} />
+                            <InputIcon icon="TopSide" value={18} />
+                            <InputIcon icon="RightSide" value={12} />
+                            <InputIcon icon="BottomSide" value={18} />
                         </div>
                     )}
                 </DropdownMenuContent>
@@ -304,17 +304,17 @@ export const DivSelected = () => {
                             <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
                                 <input 
                                     type="text" 
-                                    value="12px"
+                                    value="12"
                                     className="w-full bg-transparent text-sm text-white focus:outline-none"
                                 />
                             </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="LeftSide" value="12px" />
-                            <InputIcon icon="TopSide" value="18px" />
-                            <InputIcon icon="RightSide" value="12px" />
-                            <InputIcon icon="BottomSide" value="18px" />
+                            <InputIcon icon="LeftSide" value={12} />
+                            <InputIcon icon="TopSide" value={18} />
+                            <InputIcon icon="RightSide" value={12} />
+                            <InputIcon icon="BottomSide" value={18} />
                         </div>
                     )}
                 </DropdownMenuContent>
@@ -365,17 +365,17 @@ export const DivSelected = () => {
                             <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
                                 <input 
                                     type="text" 
-                                    value="12px"
+                                    value="12"
                                     className="w-full bg-transparent text-sm text-white focus:outline-none"
                                 />
                             </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="CornerRadius" value="12px" />
-                            <InputIcon icon="CornerTopRight" value="18px" />
-                            <InputIcon icon="CornerBottomLeft" value="12px" />
-                            <InputIcon icon="CornerBottomRight" value="18px" />
+                            <InputIcon icon="CornerRadius" value={12} />
+                            <InputIcon icon="CornerTopRight" value={18} />
+                            <InputIcon icon="CornerBottomLeft" value={12} />
+                            <InputIcon icon="CornerBottomRight" value={18} />
                         </div>
                     )}
                 </DropdownMenuContent>
@@ -424,17 +424,17 @@ export const DivSelected = () => {
                             <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
                                 <input 
                                     type="text" 
-                                    value="12px"
+                                    value="12"
                                     className="w-full bg-transparent text-sm text-white focus:outline-none"
                                 />
                             </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-2">
-                            <InputIcon icon="LeftSide" value="12px" />
-                            <InputIcon icon="TopSide" value="18px" />
-                            <InputIcon icon="RightSide" value="12px" />
-                            <InputIcon icon="BottomSide" value="18px" />
+                            <InputIcon icon="LeftSide" value={12} />
+                            <InputIcon icon="TopSide" value={18} />
+                            <InputIcon icon="RightSide" value={12} />
+                            <InputIcon icon="BottomSide" value={18} />
                         </div>
                     )}
                     <div className="mt-3">
