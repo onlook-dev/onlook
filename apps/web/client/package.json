@@ -1,6 +1,6 @@
 {
     "productName": "Onlook",
-    "name": "@onlook/web",
+    "name": "@onlook/web-client",
     "version": "0.1.0",
     "private": true,
     "homepage": "https://onlook.com",

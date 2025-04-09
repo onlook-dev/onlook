@@ -1,0 +1,21 @@
+{
+    "name": "server",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "bun run src/index.ts"
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@fastify/websocket": "^11.0.2",
+        "@trpc/server": "^11.0.4",
+        "fastify": "^5.2.2",
+        "zod": "^3.24.2"
+    }
+}

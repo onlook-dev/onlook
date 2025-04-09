@@ -1,0 +1,20 @@
+{
+    "name": "@onlook/web",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "bun run --elide-lines 0 --filter '*' dev",
+        "docker:up": "docker compose up",
+        "docker:build": "docker compose build",
+        "docker:down": "docker compose down",
+        "docker:restart": "docker compose down && docker compose up"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "concurrently": "^9.1.2"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    }
+}
