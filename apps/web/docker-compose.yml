@@ -1,58 +1,58 @@
 services:
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./packages/client:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-    command: bun run dev
+  # client:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8080:3000"
+  #   volumes:
+  #     - ./client:/app
+  #     - /app/node_modules
+  #   environment:
+  #     - NODE_ENV=development
+  #   command: bun run dev
 
-  server:
-    build:
-      context: ./packages/server
-      dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
-      - "8082:8082"
-    volumes:
-      - ./packages/server:/app
-      - /app/node_modules
-      - test-project-volume:/test-project
-    environment:
-      - NODE_ENV=development
-    command: bun run dev
+  # server:
+  #   build:
+  #     context: ./server
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8081:8081"
+  #     - "8082:8082"
+  #   volumes:
+  #     - ./server:/app
+  #     - /app/node_modules
+  #     - template-volume:/template
+  #   environment:
+  #     - NODE_ENV=development
+  #   command: bun run dev
 
   preload:
     build:
-      context: ./packages/preload
+      context: ./preload
       dockerfile: Dockerfile
     ports:
       - "8083:8083"
     volumes:
-      - ./packages/preload:/app
+      - ./preload:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
     command: bun run server/index.ts
 
-  test-project:
+  template:
     build:
-      context: ./packages/test-project
+      context: ./template
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "8084:3000"
     volumes:
-      - ./packages/test-project:/app
+      - ./packages/template:/app
       - /app/node_modules
-      - test-project-volume:/app
+      - template-volume:/app
     environment:
       - NODE_ENV=development
     command: bun run dev
 
 volumes:
-  test-project-volume: 
+  template-volume: 

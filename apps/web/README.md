@@ -1,15 +1,11 @@
-# web
+# Web project
 
-To install dependencies:
+Structure
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.4. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- Client - Next.js client that is served as app front-end
+- Server - The control server that will be used to interact with the template
+  app
+- Template - The example app that will be editable
+- Shared - All the shared packages for the web project
+- Preload - The script that gets injected into Template app. This allows
+  communnicating directly with the app DOM through iframe
