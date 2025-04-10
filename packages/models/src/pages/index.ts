@@ -1,4 +1,6 @@
-import type { OpenGraph } from './opengraph';
+import type { OpenGraph, OGImage } from './opengraph';
+
+export type { OGImage };
 
 export interface PageNode {
     id: string;
@@ -15,7 +17,7 @@ export interface Metadata {
     description?: string;
     applicationName?: string;
     metadataBase?: null | URL;
-    icons?: null | IconURL | Array<Icon> | Icons;
+    icons?: null | Icons;
     openGraph?: null | OpenGraph;
 }
 
@@ -36,14 +38,14 @@ type IconDescriptor = {
 };
 type Icons = {
     /** rel="icon" */
-    icon?: Icon | Icon[];
+    icon?: Icon;
     /** rel="shortcut icon" */
-    shortcut?: Icon | Icon[];
+    shortcut?: Icon;
     /**
      * @see https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
      * rel="apple-touch-icon"
      */
-    apple?: Icon | Icon[];
+    apple?: Icon;
     /** rel inferred from descriptor, defaults to "icon" */
     other?: IconDescriptor | IconDescriptor[];
 };

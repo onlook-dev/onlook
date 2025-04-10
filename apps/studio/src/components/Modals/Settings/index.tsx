@@ -15,7 +15,8 @@ import { capitalizeFirstLetter } from '/common/helpers';
 import { SiteTab } from './Site';
 import { PageTab } from './Site/Page';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import type { PageNode } from '@onlook/models';
 
 interface SettingTab {
     label: SettingsTabValue | string;
@@ -27,21 +28,22 @@ export const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
-    const pages = editorEngine.pages.tree;
+    const pagesManager = editorEngine.pages;
 
-    const flattenPages = pages.reduce(
-        (acc, page) => {
-            const flattenNode = (node: typeof page) => {
-                if (node.children?.length) {
-                    node.children.forEach((child) => flattenNode(child));
-                } else {
-                    acc.push(node);
-                }
-            };
-            flattenNode(page);
-            return acc;
-        },
-        [] as typeof pages,
+    const flattenPages = useMemo(
+        () =>
+            pagesManager.tree.reduce((acc, page) => {
+                const flattenNode = (node: typeof page) => {
+                    if (node.children?.length) {
+                        node.children.forEach((child) => flattenNode(child));
+                    } else {
+                        acc.push(node);
+                    }
+                };
+                flattenNode(page);
+                return acc;
+            }, [] as PageNode[]),
+        [pagesManager.tree],
     );
 
     const projectOnlyTabs: SettingTab[] = [
@@ -89,7 +91,7 @@ export const SettingsModal = observer(() => {
     const tabs = project ? [...projectOnlyTabs, ...globalTabs, ...pagesTabs] : [...globalTabs];
 
     useEffect(() => {
-        editorEngine.pages.scanPages();
+        pagesManager.scanPages();
         if (project) {
             projectsManager.scanProjectMetadata(project);
         }
