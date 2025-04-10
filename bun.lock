@@ -183,7 +183,6 @@
       "devDependencies": {
         "@types/bun": "latest",
         "concurrently": "^9.1.2",
-        "tsup": "^8.4.0",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -200,7 +199,6 @@
       },
       "devDependencies": {
         "@types/bun": "latest",
-        "tsup": "^8.4.0",
       },
       "peerDependencies": {
         "typescript": "^5",

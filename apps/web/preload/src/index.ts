@@ -1,4 +1,3 @@
-import { Urls } from '@onlook/shared';
 import { WindowMessenger, connect } from 'penpal';
 
 const createMessageConnection = async () => {
@@ -6,7 +5,7 @@ const createMessageConnection = async () => {
 
     const messenger = new WindowMessenger({
         remoteWindow: window.parent,
-        allowedOrigins: [Urls.NEXT_JS],
+        allowedOrigins: ['http://localhost:8084'],
     });
 
     const connection = connect({
