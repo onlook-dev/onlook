@@ -35,10 +35,7 @@ import {
     CodeIcon,
     ComponentInstanceIcon,
     CopyIcon,
-    CornerBottomLeftIcon,
-    CornerBottomRightIcon,
     CornerTopLeftIcon,
-    CornerTopRightIcon,
     CornersIcon,
     CounterClockwiseClockIcon,
     Cross1Icon,
@@ -1691,7 +1688,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1710,7 +1707,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1729,7 +1726,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1748,7 +1745,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1767,7 +1764,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1786,7 +1783,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1805,7 +1802,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
