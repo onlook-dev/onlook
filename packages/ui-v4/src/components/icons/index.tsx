@@ -35,10 +35,7 @@ import {
     CodeIcon,
     ComponentInstanceIcon,
     CopyIcon,
-    CornerBottomLeftIcon,
-    CornerBottomRightIcon,
     CornerTopLeftIcon,
-    CornerTopRightIcon,
     CornersIcon,
     CounterClockwiseClockIcon,
     Cross1Icon,
@@ -676,6 +673,7 @@ export const Icons = {
             </defs>
         </svg>
     ),
+
     WindsurfLogo: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1222,10 +1220,7 @@ export const Icons = {
     Code: CodeIcon,
     ComponentInstance: ComponentInstanceIcon,
     Copy: CopyIcon,
-    CornerBottomLeft: CornerBottomLeftIcon,
-    CornerBottomRight: CornerBottomRightIcon,
     CornerTopLeft: CornerTopLeftIcon,
-    CornerTopRight: CornerTopRightIcon,
     Corners: CornersIcon,
     CounterClockwiseClock: CounterClockwiseClockIcon,
     CrossL: Cross1Icon,
@@ -1693,7 +1688,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1712,7 +1707,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1731,7 +1726,7 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
@@ -1750,11 +1745,68 @@ export const Icons = {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className={cn('', className)}
+            className={className}
             {...props}
         >
             <path
                 d="M3 3H3.01M3 12H3.01M3 7.5H3.01M3 16.5H3.01M7.5 3H7.51M7.5 12H7.51M16.5 3H16.51M16.5 12H16.51M12 3H12.01M12 12H12.01M12 7.5H12.01M12 16.5H12.01M21 3H21.01M21 12H21.01M21 7.5H21.01M21 16.5H21.01M21 21H3"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    CornerTopRight: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M3.75 3.75H10.65C14.0103 3.75 15.6905 3.75 16.9739 4.40396C18.1029 4.9792 19.0208 5.89708 19.596 7.02606C20.25 8.30953 20.25 9.98969 20.25 13.35V20.25"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    CornerBottomRight: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M3.75 20.25H10.65C14.0103 20.25 15.6905 20.25 16.9739 19.596C18.1029 19.0208 19.0208 18.1029 19.596 16.9739C20.25 15.6905 20.25 14.0103 20.25 10.65V3.75"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    CornerBottomLeft: ({ className, ...props }: IconProps) => (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M20.25 20.25H13.35C9.98969 20.25 8.30953 20.25 7.02606 19.596C5.89708 19.0208 4.9792 18.1029 4.40396 16.9739C3.75 15.6905 3.75 14.0103 3.75 10.65V3.75"
                 stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
