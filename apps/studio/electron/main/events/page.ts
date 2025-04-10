@@ -5,6 +5,7 @@ import {
     deleteNextJsPage,
     detectRouterType,
     duplicateNextJsPage,
+    extractMetadata,
     renameNextJsPage,
     scanNextJsPages,
 } from '../pages';
@@ -91,6 +92,22 @@ export function listenForPageMessages() {
             }
 
             return await updateNextJsPage(projectRoot, fullPath, metadata);
+        },
+    );
+
+    ipcMain.handle(
+        MainChannels.SCAN_PROJECT_METADATA,
+        async (_event, { projectRoot }: { projectRoot: string }) => {
+            const routerConfig = await detectRouterType(projectRoot);
+            if (routerConfig) {
+                if (routerConfig.type === 'app') {
+                    const layoutPath = path.join(routerConfig.basePath, 'layout.tsx');
+                    return await extractMetadata(layoutPath);
+                } else {
+                    return;
+                }
+            }
+            return null;
         },
     );
 }

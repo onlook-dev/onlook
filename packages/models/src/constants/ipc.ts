@@ -156,6 +156,7 @@ export enum MainChannels {
     SCAN_TAILWIND_CONFIG = 'scan-tailwind-config',
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
     DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
+    SCAN_PROJECT_METADATA = 'scan-project-metadata',
 
     // Fonts
     SCAN_FONTS = 'scan-fonts-config',

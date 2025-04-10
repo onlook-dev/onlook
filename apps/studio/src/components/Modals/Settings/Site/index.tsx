@@ -181,7 +181,10 @@ export const SiteTab = observer(() => {
                             <p className="text-small">Cropped to 1200 × 630 pixels</p>
                         </div>
                         <div>
-                            <ImagePicker onImageSelect={onImageUpload} />
+                            <ImagePicker
+                                onImageSelect={onImageUpload}
+                                url={siteSetting?.openGraph?.images?.[0]?.url}
+                            />
                         </div>
                     </div>
                     <div className="grid grid-cols-2">
@@ -192,7 +195,7 @@ export const SiteTab = observer(() => {
                                 browser. It should be 64 × 64 pixels.
                             </p>
                         </div>
-                        <Favicon onImageSelect={onFaviconUpload} />
+                        <Favicon onImageSelect={onFaviconUpload} url={siteSetting?.icons?.icon} />
                     </div>
                     <div className="flex justify-end gap-4">
                         <Button

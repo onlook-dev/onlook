@@ -1,9 +1,24 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button } from '@onlook/ui/button';
+import { useEditorEngine } from '@/components/Context';
 
-export const Favicon: React.FC<{ onImageSelect: (file: File) => void }> = ({ onImageSelect }) => {
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+export const Favicon: React.FC<{ onImageSelect: (file: File) => void; url?: string }> = ({
+    onImageSelect,
+    url,
+}) => {
+    const [selectedImage, setSelectedImage] = useState<string | null>(url ?? null);
     const [isDragging, setIsDragging] = useState(false);
+
+    const editorEngine = useEditorEngine();
+
+    useEffect(() => {
+        if (url) {
+            const image = editorEngine.image.assets.find((image) => url?.includes(image.fileName));
+            if (image) {
+                setSelectedImage(image.content);
+            }
+        }
+    }, [url]);
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();

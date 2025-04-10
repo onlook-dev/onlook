@@ -83,10 +83,8 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
     };
 
     useEffect(() => {
-        if (metadata) {
-            setTitle(metadata?.title ?? DEFAULT_TITLE);
-            setDescription(metadata.description ?? DEFAULT_DESCRIPTION);
-        }
+        setTitle(metadata?.title ?? DEFAULT_TITLE);
+        setDescription(metadata?.description ?? DEFAULT_DESCRIPTION);
     }, [metadata]);
 
     return (

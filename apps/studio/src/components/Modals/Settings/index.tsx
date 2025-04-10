@@ -90,6 +90,9 @@ export const SettingsModal = observer(() => {
 
     useEffect(() => {
         editorEngine.pages.scanPages();
+        if (project) {
+            projectsManager.scanProjectMetadata(project);
+        }
     }, []);
 
     return (

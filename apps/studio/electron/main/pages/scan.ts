@@ -13,7 +13,7 @@ import {
     ROOT_PATH_IDENTIFIERS,
 } from './helpers';
 
-async function extractMetadata(filePath: string): Promise<Metadata | undefined> {
+export async function extractMetadata(filePath: string): Promise<Metadata | undefined> {
     try {
         const content = await fs.readFile(filePath, 'utf-8');
 
@@ -125,7 +125,6 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
 
         // Extract metadata from the page file
         const metadata = await extractMetadata(path.join(dir, pageFile.name));
-        console.log(metadata);
 
         nodes.push({
             id: nanoid(),
