@@ -1,0 +1,21 @@
+{
+    "name": "@onlook/preload",
+    "module": "src/index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "concurrently \"bun run build:watch\" \"bun run serve\"",
+        "serve": "bun --watch src/index.ts",
+        "build:watch": "bun build src/index.ts --outdir dist --target bun --watch",
+        "build": "bun build src/index.ts --outdir dist --target bun"
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "concurrently": "^9.1.2"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "penpal": "^7.0.0"
+    }
+}
