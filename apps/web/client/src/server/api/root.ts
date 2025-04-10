@@ -1,5 +1,5 @@
-import { editorForwardRouter } from "@/server/api/routers/editor";
-import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { createCallerFactory, createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { editorForwardRouter } from "./routers/editor";
 
 /**
  * This is the primary router for your server.
@@ -8,6 +8,9 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
     external: editorForwardRouter,
+    hello: publicProcedure.query(() => {
+        return "Hello World";
+    }),
 });
 
 // export type definition of API

@@ -16,7 +16,7 @@ import { publicProcedure, router } from '../trpc';
 // };
 
 export const apiRouter = router({
-    hello: publicProcedure.query(() => 'hello'),
+    hello: publicProcedure.query(() => 'hello from external'),
     // create: publicProcedure
     //     .input(z.object({ title: z.string() }))
     //     .mutation(({ input, ctx }) => {

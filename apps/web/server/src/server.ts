@@ -7,8 +7,8 @@ import { createContext } from './router/context';
 
 export function createServer(opts: EditorServerOptions) {
     const dev = opts.dev ?? true;
-    const port = opts.port ?? 3000;
-    const trpcPrefix = opts.prefix ?? '/trpc';
+    const port = opts.port ?? 8080;
+    const trpcPrefix = opts.prefix ?? '/api/trpc';
     const server = fastify({ logger: dev });
 
     void server.register(ws);
