@@ -9,7 +9,7 @@ import { editorForwardRouter } from "./routers/editor";
 export const appRouter = createTRPCRouter({
     external: editorForwardRouter,
     hello: publicProcedure.query(() => {
-        return "Hello World";
+        return "Hello from internal";
     }),
 });
 

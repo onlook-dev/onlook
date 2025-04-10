@@ -1,7 +1,7 @@
 import { editorServerConfig, type EditorRouter } from '@onlook/web-shared';
 import { createTRPCClient, createWSClient, httpBatchLink, splitLink, wsLink } from '@trpc/client';
 import superJSON from 'superjson';
-import { publicProcedure } from '../trpc';
+import { createTRPCRouter, publicProcedure } from '../trpc';
 
 const { port, prefix } = editorServerConfig;
 const urlEnd = `localhost:${port}${prefix}`;
@@ -22,25 +22,8 @@ const editorClient = createTRPCClient<EditorRouter>({
     ],
 });
 
-function createProxy<T extends Record<string, any>>(client: T, path: string[] = []): any {
-    return Object.keys(client).reduce((acc: any, key: string) => {
-        const currentPath = [...path, key];
-        const procedure = client[key];
-        if (typeof procedure === 'function') {
-            acc[key] = publicProcedure
-                .input(procedure._def.$types.input)
-                .output(procedure._def.$types.output)
-                .query(({ input }: { input: any }) => procedure.query(input));
-        } else {
-            acc[key] = createProxy(procedure, currentPath);
-        }
-        return acc;
-    }, {});
-}
-
-
-export const editorForwardRouter = {
+export const editorForwardRouter = createTRPCRouter({
     hello: publicProcedure.query(() => {
         return editorClient.api.hello.query();
     }),
-};
+});
