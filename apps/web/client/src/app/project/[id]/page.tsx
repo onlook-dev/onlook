@@ -8,7 +8,6 @@ import { useState } from "react";
 import { BottomBar } from "./_components/bottom-bar";
 import { Canvas } from "./_components/canvas";
 import { EditorBar } from "./_components/editor-bar";
-import { StagingToggle } from "./_components/editor-bar/staging-toggle";
 import { LeftPanel } from './_components/left-panel';
 import { RightPanel } from './_components/right-panel';
 import { TopBar } from "./_components/top-bar";
@@ -31,15 +30,16 @@ export default function Page({ }: { params: { id: string } }) {
                     <EditorBar selectedElement={selectedElement} />
                 </div>
 
-                <div className="absolute top-20 w-screen h-screen flex items-center justify-center z-30">
+                {/* <div className="absolute top-20 w-screen h-screen flex items-center justify-center z-30">
                     <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
-                </div>
+                </div> */}
 
-                <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-2.60rem)] z-1">
+                {/* Height full minus top bar and editor bar (80px) */}
+                <div className="absolute top-20 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
                     <LeftPanel />
                 </div>
 
-                <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-2.60rem)] z-1">
+                <div className="absolute top-20 right-0 animate-edit-panel-in h-[calc(100%-80px)] z-1">
                     <RightPanel />
                 </div>
 
