@@ -84,6 +84,7 @@ export const SiteTab = observer(() => {
 
             await editorEngine.pages.updateMetadataPage('layout.tsx', updatedMetadata, true);
             setUploadedFavicon(null);
+            setIsDirty(false);
         } catch (error) {
             console.error('Failed to update metadata:', error);
         }

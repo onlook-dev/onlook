@@ -18,6 +18,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
         handleDescriptionChange,
         handleImageSelect,
         handleDiscard,
+        setIsDirty,
     } = useMetadataForm({
         initialMetadata: metadata,
     });
@@ -42,7 +43,6 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
                     console.log(error);
                     return;
                 }
-
                 updatedMetadata.metadataBase = new URL(project.domains?.base?.url ?? project.url);
                 updatedMetadata.openGraph = {
                     ...updatedMetadata.openGraph,
@@ -63,6 +63,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
             }
 
             await editorEngine.pages.updateMetadataPage(path, updatedMetadata, false);
+            setIsDirty(false);
         } catch (error) {
             console.error('Failed to update metadata:', error);
         }
