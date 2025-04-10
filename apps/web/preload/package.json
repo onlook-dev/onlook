@@ -4,9 +4,9 @@
     "type": "module",
     "scripts": {
         "dev": "concurrently \"bun run build:watch\" \"bun run serve\"",
-        "serve": "bun --watch src/index.ts",
-        "build:watch": "bun build src/index.ts --outdir dist --target bun --watch",
-        "build": "bun build src/index.ts --outdir dist --target bun"
+        "serve": "bun --watch server/index.ts",
+        "build": "bun build src/index.ts --outdir dist --target bun",
+        "build:watch": "bun build src/index.ts --outdir dist --target bun --watch"
     },
     "devDependencies": {
         "@types/bun": "latest",
