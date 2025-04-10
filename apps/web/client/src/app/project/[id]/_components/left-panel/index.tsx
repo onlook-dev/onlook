@@ -109,7 +109,7 @@ export const LeftPanel = observer(() => {
     return (
         <div
             className={cn(
-                'flex gap-0 h-full',
+                'flex gap-0 h-full z-40',
                 editorEngine.state.editorMode === EditorMode.PREVIEW ? 'hidden' : 'visible',
             )}
             onMouseLeave={handleMouseLeave}
