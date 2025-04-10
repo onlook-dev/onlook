@@ -58,10 +58,10 @@ export const MetadataForm = ({
             <div className="flex flex-col gap-6 p-6">
                 <div className="grid grid-cols-2 text-foreground-onlook">
                     <div className="flex items-center">
-                        <h2 className="text-regular font-medium">Site Title</h2>
+                        <h2 className="text-regular font-medium">Title</h2>
                     </div>
                     <Input
-                        placeholder="Site Title"
+                        placeholder="Title"
                         value={title}
                         className="col-span-1 text-miniPlus break-words transition-all duration-150 ease-in-out backdrop-blur-lg bg-background-secondary/75 text-foreground-primary border-background-secondary/75"
                         onChange={onTitleChange}

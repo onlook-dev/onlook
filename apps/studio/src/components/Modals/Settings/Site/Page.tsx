@@ -3,6 +3,7 @@ import { DefaultSettings, type Metadata } from '@onlook/models';
 import { memo } from 'react';
 import { useMetadataForm } from '@/hooks/useMetadataForm';
 import { MetadataForm } from './MetadataForm';
+import { toast } from '@onlook/ui/use-toast';
 
 export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: string }) => {
     const projectsManager = useProjectsManager();
@@ -32,7 +33,26 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
                 ...metadata,
                 title,
                 description,
+                openGraph: {
+                    ...metadata?.openGraph,
+                    title: title,
+                    description: description,
+                    url: project.domains?.base?.url || '',
+                    siteName: title,
+                    type: 'website',
+                },
             };
+
+            if (!metadata?.metadataBase) {
+                const baseUrl = project.domains?.base?.url;
+                if (baseUrl && !baseUrl.startsWith('http')) {
+                    updatedMetadata.metadataBase = new URL(`https://${baseUrl}`);
+                } else if (baseUrl) {
+                    updatedMetadata.metadataBase = new URL(baseUrl);
+                } else if (project.url) {
+                    updatedMetadata.metadataBase = new URL(project.url);
+                }
+            }
 
             if (uploadedImage) {
                 let imagePath;
@@ -43,13 +63,8 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
                     console.log(error);
                     return;
                 }
-                updatedMetadata.metadataBase = new URL(project.domains?.base?.url ?? project.url);
                 updatedMetadata.openGraph = {
                     ...updatedMetadata.openGraph,
-                    title: title,
-                    description: description,
-                    url: project.domains?.base?.url || '',
-                    siteName: title,
                     images: [
                         {
                             url: imagePath,
@@ -62,10 +77,19 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
                 };
             }
 
-            await editorEngine.pages.updateMetadataPage(path, updatedMetadata, false);
+            await editorEngine.pages.updateMetadataPage(path, updatedMetadata);
             setIsDirty(false);
+            toast({
+                title: 'Success',
+                description: 'Page metadata has been updated successfully.',
+            });
         } catch (error) {
             console.error('Failed to update metadata:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to update page metadata. Please try again.',
+                variant: 'destructive',
+            });
         }
     };
 

@@ -76,22 +76,9 @@ export function listenForPageMessages() {
                 projectRoot,
                 pagePath,
                 metadata,
-                isRoot,
-            }: { projectRoot: string; pagePath: string; metadata: Metadata; isRoot: boolean },
+            }: { projectRoot: string; pagePath: string; metadata: Metadata },
         ) => {
-            let fullPath = pagePath;
-            const routerConfig = await detectRouterType(projectRoot);
-            if (routerConfig) {
-                if (routerConfig.type === 'app') {
-                    if (!isRoot) {
-                        fullPath = path.join(fullPath, 'page.tsx');
-                    }
-                } else {
-                    return;
-                }
-            }
-
-            return await updateNextJsPage(projectRoot, fullPath, metadata);
+            return await updateNextJsPage(projectRoot, pagePath, metadata);
         },
     );
 

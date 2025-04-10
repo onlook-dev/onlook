@@ -242,7 +242,7 @@ export class PagesManager {
         }
     }
 
-    public async updateMetadataPage(pagePath: string, metadata: Metadata, isRoot: boolean) {
+    public async updateMetadataPage(pagePath: string, metadata: Metadata) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
             throw new Error('No project root found');
@@ -257,7 +257,6 @@ export class PagesManager {
                 projectRoot,
                 pagePath,
                 metadata,
-                isRoot,
             });
         } catch (error) {
             console.error('Failed to update metadata:', error);

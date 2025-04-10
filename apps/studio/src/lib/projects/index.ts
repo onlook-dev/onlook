@@ -9,7 +9,6 @@ import { CreateManager } from './create';
 import { DomainsManager } from './domains';
 import { RunManager } from './run';
 import { VersionsManager } from './versions';
-import type { Metadata } from '@onlook/models';
 
 export enum ProjectTabs {
     PROJECTS = 'projects',

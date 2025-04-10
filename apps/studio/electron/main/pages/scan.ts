@@ -123,8 +123,26 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
 
         const isRoot = ROOT_PATH_IDENTIFIERS.includes(cleanPath);
 
-        // Extract metadata from the page file
-        const metadata = await extractMetadata(path.join(dir, pageFile.name));
+        // Extract metadata from both page and layout files
+        const pageMetadata = await extractMetadata(path.join(dir, pageFile.name));
+
+        // Look for layout file in the same directory
+        const layoutFile = entries.find(
+            (entry) =>
+                entry.isFile() &&
+                entry.name.startsWith('layout.') &&
+                ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
+        );
+
+        const layoutMetadata = layoutFile
+            ? await extractMetadata(path.join(dir, layoutFile.name))
+            : undefined;
+
+        // Merge metadata, with page metadata taking precedence over layout metadata
+        const metadata = {
+            ...layoutMetadata,
+            ...pageMetadata,
+        };
 
         nodes.push({
             id: nanoid(),

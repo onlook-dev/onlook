@@ -4,6 +4,7 @@ import { DefaultSettings, type Metadata } from '@onlook/models';
 import { useMetadataForm } from '@/hooks/useMetadataForm';
 import { MetadataForm } from './MetadataForm';
 import { useState } from 'react';
+import { toast } from '@onlook/ui/use-toast';
 
 const DEFAULT_TITLE = 'Saved Places - Discover new spots';
 const DEFAULT_DESCRIPTION =
@@ -49,6 +50,10 @@ export const SiteTab = observer(() => {
                 description,
             };
 
+            if (!siteSetting.metadataBase) {
+                updatedMetadata.metadataBase = new URL(project.domains?.base?.url ?? project.url);
+            }
+
             if (uploadedFavicon) {
                 await editorEngine.image.upload(uploadedFavicon);
                 const faviconPath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedFavicon.name}`;
@@ -82,11 +87,20 @@ export const SiteTab = observer(() => {
                 metadata: updatedMetadata,
             });
 
-            await editorEngine.pages.updateMetadataPage('layout.tsx', updatedMetadata, true);
+            await editorEngine.pages.updateMetadataPage('/', updatedMetadata);
             setUploadedFavicon(null);
             setIsDirty(false);
+            toast({
+                title: 'Success',
+                description: 'Site metadata has been updated successfully.',
+            });
         } catch (error) {
             console.error('Failed to update metadata:', error);
+            toast({
+                title: 'Error',
+                description: 'Failed to update site metadata. Please try again.',
+                variant: 'destructive',
+            });
         }
     };
 
