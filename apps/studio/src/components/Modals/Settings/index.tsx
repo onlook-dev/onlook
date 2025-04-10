@@ -15,8 +15,8 @@ import { capitalizeFirstLetter } from '/common/helpers';
 import { SiteTab } from './Site';
 import { PageTab } from './Site/Page';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect, useMemo } from 'react';
 import type { PageNode } from '@onlook/models';
+import { useMemo } from 'react';
 
 interface SettingTab {
     label: SettingsTabValue | string;
@@ -30,21 +30,19 @@ export const SettingsModal = observer(() => {
     const project = projectsManager.project;
     const pagesManager = editorEngine.pages;
 
-    const flattenPages = useMemo(
-        () =>
-            pagesManager.tree.reduce((acc, page) => {
-                const flattenNode = (node: typeof page) => {
-                    if (node.children?.length) {
-                        node.children.forEach((child) => flattenNode(child));
-                    } else {
-                        acc.push(node);
-                    }
-                };
-                flattenNode(page);
-                return acc;
-            }, [] as PageNode[]),
-        [pagesManager.tree],
-    );
+    const flattenPages = useMemo(() => {
+        return pagesManager.tree.reduce((acc, page) => {
+            const flattenNode = (node: typeof page) => {
+                if (node.children?.length) {
+                    node.children.forEach((child) => flattenNode(child));
+                } else {
+                    acc.push(node);
+                }
+            };
+            flattenNode(page);
+            return acc;
+        }, [] as PageNode[]);
+    }, [pagesManager.tree]);
 
     const projectOnlyTabs: SettingTab[] = [
         {
@@ -89,13 +87,6 @@ export const SettingsModal = observer(() => {
     }));
 
     const tabs = project ? [...projectOnlyTabs, ...globalTabs, ...pagesTabs] : [...globalTabs];
-
-    useEffect(() => {
-        pagesManager.scanPages();
-        if (project) {
-            projectsManager.scanProjectMetadata(project);
-        }
-    }, []);
 
     return (
         <AnimatePresence>

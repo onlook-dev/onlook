@@ -34,9 +34,16 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
             };
 
             if (uploadedImage) {
-                await editorEngine.image.upload(uploadedImage);
-                const imagePath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedImage.name}`;
-                updatedMetadata.metadataBase = new URL(project.domains?.base?.url ?? '');
+                let imagePath;
+                try {
+                    await editorEngine.image.upload(uploadedImage);
+                    imagePath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedImage.name}`;
+                } catch (error) {
+                    console.log(error);
+                    return;
+                }
+
+                updatedMetadata.metadataBase = new URL(project.domains?.base?.url ?? project.url);
                 updatedMetadata.openGraph = {
                     ...updatedMetadata.openGraph,
                     title: title,
