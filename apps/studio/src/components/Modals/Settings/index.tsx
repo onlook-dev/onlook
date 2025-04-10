@@ -14,6 +14,8 @@ import { VersionsTab } from './Versions';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { SiteTab } from './Site';
 import { PageTab } from './Site/Page';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { useEffect } from 'react';
 
 interface SettingTab {
     label: SettingsTabValue | string;
@@ -45,7 +47,7 @@ export const SettingsModal = observer(() => {
     const projectOnlyTabs: SettingTab[] = [
         {
             label: SettingsTabValue.SITE,
-            icon: <Icons.Globe className="mr-2 h-4 w-4" />,
+            icon: <Icons.File className="mr-2 h-4 w-4" />,
             component: <SiteTab />,
         },
         {
@@ -79,12 +81,16 @@ export const SettingsModal = observer(() => {
     ];
 
     const pagesTabs: SettingTab[] = flattenPages.map((page) => ({
-        label: page.path,
+        label: page.path === '/' ? 'Home' : page.path,
         icon: <Icons.File className="mr-2 h-4 min-w-4" />,
         component: <PageTab metadata={page.metadata} path={page.path} />,
     }));
 
     const tabs = project ? [...projectOnlyTabs, ...globalTabs, ...pagesTabs] : [...globalTabs];
+
+    useEffect(() => {
+        editorEngine.pages.scanPages();
+    }, []);
 
     return (
         <AnimatePresence>
@@ -171,7 +177,20 @@ export const SettingsModal = observer(() => {
                                                     }
                                                 >
                                                     {tab.icon}
-                                                    {capitalizeFirstLetter(tab.label.toLowerCase())}
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <span className="truncate">
+                                                                {capitalizeFirstLetter(
+                                                                    tab.label.toLowerCase(),
+                                                                )}
+                                                            </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            {capitalizeFirstLetter(
+                                                                tab.label.toLowerCase(),
+                                                            )}
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                 </Button>
                                             ))}
                                         </div>

@@ -252,6 +252,8 @@ export class PagesManager {
         //     throw new Error('A page with this name does not exists');
         // }
 
+        console.log(projectRoot, pagePath, metadata, isRoot);
+
         try {
             await invokeMainChannel(MainChannels.UPDATE_PAGE_METADATA, {
                 projectRoot,

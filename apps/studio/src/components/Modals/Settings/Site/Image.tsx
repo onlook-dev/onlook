@@ -55,6 +55,7 @@ const ImagePicker: React.FC<{ onImageSelect: (file: File) => void }> = ({ onImag
                 onDrop={handleDrop}
                 style={{
                     backgroundImage: selectedImage ? `url(${selectedImage})` : 'none',
+                    backgroundSize: 'cover',
                 }}
             >
                 <UploadButton onButtonClick={handleButtonClick} />

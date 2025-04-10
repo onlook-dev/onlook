@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import type { Metadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { DefaultSettings } from '@onlook/models/constants';
-import Favicon from './Favicon';
+import { Favicon } from './Favicon';
 
 const DEFAULT_TITLE = 'Saved Places - Discover new spots';
 const DEFAULT_DESCRIPTION =
@@ -66,21 +66,22 @@ export const SiteTab = observer(() => {
             if (uploadedImage) {
                 await editorEngine.image.upload(uploadedImage);
                 const imagePath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedImage.name}`;
-                // If icons is already an object, preserve its properties
-                if (
-                    updatedMetadata.icons &&
-                    typeof updatedMetadata.icons === 'object' &&
-                    !Array.isArray(updatedMetadata.icons)
-                ) {
-                    updatedMetadata.icons = {
-                        ...updatedMetadata.icons,
-                        apple: imagePath, // Using apple icon for social media preview
-                    };
-                } else {
-                    updatedMetadata.icons = {
-                        apple: imagePath, // Using apple icon for social media preview
-                    };
-                }
+                updatedMetadata.openGraph = {
+                    ...updatedMetadata.openGraph,
+                    title: title,
+                    description: description,
+                    url: project?.url || '',
+                    siteName: title,
+                    images: [
+                        {
+                            url: imagePath,
+                            width: 1200,
+                            height: 630,
+                            alt: title,
+                        },
+                    ],
+                    type: 'website',
+                };
             }
 
             projectsManager.updatePartialProject({
@@ -161,7 +162,9 @@ export const SiteTab = observer(() => {
                 <div className="flex flex-col gap-2">
                     <h2 className="text-regular text-foreground-onlook">Search Engine Preview</h2>
                     <div className="bg-background/50 p-4 rounded-md border gap-1.5 flex flex-col">
-                        <p className="text-miniPlus text-blue-500">{project?.url}</p>
+                        <p className="text-miniPlus text-blue-500">
+                            {project?.domains?.base?.url ?? project?.url}
+                        </p>
                         <h3 className="text-regular">{title || DEFAULT_TITLE}</h3>
                         <p className="text-sm text-muted-foreground line-clamp-2">
                             {description || DEFAULT_DESCRIPTION}

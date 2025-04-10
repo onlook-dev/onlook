@@ -87,22 +87,94 @@ export async function updateNextJsPage(projectRoot: string, pagePath: string, me
             Object.entries(metadata).map(([key, value]) => {
                 if (typeof value === 'string') {
                     return t.objectProperty(t.identifier(key), t.stringLiteral(value));
+                } else if (value === null) {
+                    return t.objectProperty(t.identifier(key), t.nullLiteral());
                 } else if (Array.isArray(value)) {
                     return t.objectProperty(
                         t.identifier(key),
-                        t.arrayExpression(value.map((v) => t.stringLiteral(v))),
-                    );
-                } else if (value === null) {
-                    return t.objectProperty(t.identifier(key), t.nullLiteral());
-                }
-                return t.objectProperty(
-                    t.identifier(key),
-                    t.objectExpression(
-                        Object.entries(value).map(([k, v]) =>
-                            t.objectProperty(t.identifier(k), t.stringLiteral(v as string)),
+                        t.arrayExpression(
+                            value.map((v) => {
+                                if (typeof v === 'string') {
+                                    return t.stringLiteral(v);
+                                } else if (typeof v === 'object' && v !== null) {
+                                    return t.objectExpression(
+                                        Object.entries(v).map(([k, val]) => {
+                                            if (typeof val === 'string') {
+                                                return t.objectProperty(
+                                                    t.identifier(k),
+                                                    t.stringLiteral(val),
+                                                );
+                                            } else if (typeof val === 'number') {
+                                                return t.objectProperty(
+                                                    t.identifier(k),
+                                                    t.numericLiteral(val),
+                                                );
+                                            }
+                                            return t.objectProperty(
+                                                t.identifier(k),
+                                                t.stringLiteral(String(val)),
+                                            );
+                                        }),
+                                    );
+                                }
+                                return t.stringLiteral(String(v));
+                            }),
                         ),
-                    ),
-                );
+                    );
+                } else if (typeof value === 'object' && value !== null) {
+                    return t.objectProperty(
+                        t.identifier(key),
+                        t.objectExpression(
+                            Object.entries(value).map(([k, v]) => {
+                                if (typeof v === 'string') {
+                                    return t.objectProperty(t.identifier(k), t.stringLiteral(v));
+                                } else if (typeof v === 'number') {
+                                    return t.objectProperty(t.identifier(k), t.numericLiteral(v));
+                                } else if (Array.isArray(v)) {
+                                    return t.objectProperty(
+                                        t.identifier(k),
+                                        t.arrayExpression(
+                                            v.map((item) => {
+                                                if (typeof item === 'string') {
+                                                    return t.stringLiteral(item);
+                                                } else if (
+                                                    typeof item === 'object' &&
+                                                    item !== null
+                                                ) {
+                                                    return t.objectExpression(
+                                                        Object.entries(item).map(([ik, iv]) => {
+                                                            if (typeof iv === 'string') {
+                                                                return t.objectProperty(
+                                                                    t.identifier(ik),
+                                                                    t.stringLiteral(iv),
+                                                                );
+                                                            } else if (typeof iv === 'number') {
+                                                                return t.objectProperty(
+                                                                    t.identifier(ik),
+                                                                    t.numericLiteral(iv),
+                                                                );
+                                                            }
+                                                            return t.objectProperty(
+                                                                t.identifier(ik),
+                                                                t.stringLiteral(String(iv)),
+                                                            );
+                                                        }),
+                                                    );
+                                                }
+                                                return t.stringLiteral(String(item));
+                                            }),
+                                        ),
+                                    );
+                                }
+                                return t.objectProperty(
+                                    t.identifier(k),
+                                    t.stringLiteral(String(v)),
+                                );
+                            }),
+                        ),
+                    );
+                }
+                return t.objectProperty(t.identifier(key), t.stringLiteral(String(value)));
             }),
         );
 

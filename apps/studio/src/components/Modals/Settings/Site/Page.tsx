@@ -2,9 +2,8 @@ import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Textarea } from '@onlook/ui/textarea';
-import { observer } from 'mobx-react-lite';
 import ImagePicker from './Image';
-import type { Metadata } from '@onlook/models';
+import { DefaultSettings, type Metadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { memo, useEffect, useState } from 'react';
 
@@ -17,15 +16,14 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
     const editorEngine = useEditorEngine();
     const project = projectsManager.project;
 
-    console.log(metadata);
-
     const [title, setTitle] = useState(metadata?.title || DEFAULT_TITLE);
     const [description, setDescription] = useState(metadata?.description || DEFAULT_DESCRIPTION);
     const [isDirty, setIsDirty] = useState(false);
+    const [uploadedImage, setUploadedImage] = useState<File | null>(null);
 
     const handleFileSelect = (file: File) => {
-        // TODO: Handle image upload
-        console.log('Selected file:', file);
+        setUploadedImage(file);
+        setIsDirty(true);
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,6 +52,28 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
                 title,
                 description,
             };
+
+            if (uploadedImage) {
+                await editorEngine.image.upload(uploadedImage);
+                const imagePath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedImage.name}`;
+                updatedMetadata.metadataBase = new URL(project.domains?.base?.url ?? '');
+                updatedMetadata.openGraph = {
+                    ...updatedMetadata.openGraph,
+                    title: title,
+                    description: description,
+                    url: project.domains?.base?.url || '',
+                    siteName: title,
+                    images: [
+                        {
+                            url: imagePath,
+                            width: 1200,
+                            height: 630,
+                            alt: title,
+                        },
+                    ],
+                    type: 'website',
+                };
+            }
 
             await editorEngine.pages.updateMetadataPage(path, updatedMetadata, false);
             setIsDirty(false);

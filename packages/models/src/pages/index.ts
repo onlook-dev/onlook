@@ -1,3 +1,5 @@
+import type { OpenGraph } from './opengraph';
+
 export interface PageNode {
     id: string;
     path: string;
@@ -12,7 +14,9 @@ export interface Metadata {
     title?: string;
     description?: string;
     applicationName?: string;
+    metadataBase?: null | URL;
     icons?: null | IconURL | Array<Icon> | Icons;
+    openGraph?: null | OpenGraph;
 }
 
 type IconURL = string | URL;
