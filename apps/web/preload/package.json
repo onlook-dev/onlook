@@ -10,12 +10,16 @@
     },
     "devDependencies": {
         "@types/bun": "latest",
+        "@types/lodash.debounce": "^4.0.9",
         "concurrently": "^9.1.2"
     },
     "peerDependencies": {
         "typescript": "^5"
     },
     "dependencies": {
-        "penpal": "^7.0.0"
+        "lodash-es": "^4.17.21",
+        "lodash.debounce": "^4.0.8",
+        "penpal": "^7.0.0",
+        "uuid": "^11.1.0"
     }
 }
