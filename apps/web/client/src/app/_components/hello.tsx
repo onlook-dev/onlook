@@ -4,15 +4,13 @@ import { api } from "@/trpc/react";
 
 
 export function Hello() {
-    const [hi] = api.hello.useSuspenseQuery();
-    const [hello] = api.external.hello.useSuspenseQuery();
+    const [internal] = api.hello.useSuspenseQuery();
+    const [external] = api.external.hello.useSuspenseQuery();
 
-    console.log(hi);
-    console.log(hello);
     return (
         <div className="showcaseContainer">
-            <p>{hi}</p>
-            <p>{hello}</p>
+            <p>{internal}</p>
+            <p>{external}</p>
         </div>
     );
 }
