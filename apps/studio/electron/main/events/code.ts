@@ -2,30 +2,37 @@ import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { ipcMain } from 'electron';
-import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } from '../code/';
+import {
+    addFont,
+    addLocalFont,
+    getDefaultFont,
+    removeFont,
+    scanFonts,
+    setDefaultFont,
+} from '../assets/fonts/index';
+import { FontFileWatcher } from '../assets/fonts/watcher';
+import {
+    deleteTailwindColorGroup,
+    scanTailwindConfig,
+    updateTailwindColorConfig,
+} from '../assets/styles';
+import {
+    moveFolder,
+    openFileInIde,
+    openInIde,
+    pickDirectory,
+    readCodeBlock,
+    writeCode,
+} from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { isChildTextEditable } from '../code/diff/text';
 import { readFile } from '../code/files';
+import { getTemplateNodeProps } from '../code/props';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
-import { getTemplateNodeProps } from '../code/props';
-import {
-    scanTailwindConfig,
-    updateTailwindColorConfig,
-    deleteTailwindColorGroup,
-} from '../assets/styles';
-import {
-    addFont,
-    removeFont,
-    scanFonts,
-    setDefaultFont,
-    getDefaultFont,
-    addLocalFont,
-} from '../assets/fonts/index';
-import { FontFileWatcher } from '../assets/fonts/watcher';
 
 const fontFileWatcher = new FontFileWatcher();
 
@@ -110,9 +117,19 @@ export function listenForCodeMessages() {
         if (result.canceled) {
             return null;
         }
-
         return result.filePaths.at(0) ?? null;
     });
+
+    ipcMain.handle(
+        MainChannels.MOVE_PROJECT_FOLDER,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { currentPath, newPath } = args as {
+                currentPath: string;
+                newPath: string;
+            };
+            return moveFolder(currentPath, newPath);
+        },
+    );
 
     ipcMain.handle(MainChannels.GET_COMPONENTS, async (_, args) => {
         if (typeof args !== 'string') {

@@ -2,6 +2,7 @@ import type { CodeDiff } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import { dialog, shell } from 'electron';
+import { promises as fs } from 'fs';
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
 import { generateCode } from './diff/helpers';
@@ -98,4 +99,16 @@ export function pickDirectory() {
     return dialog.showOpenDialog({
         properties: ['openDirectory', 'createDirectory'],
     });
+}
+
+export async function moveFolder(source: string, destination: string) {
+    try {
+        await fs.mkdir(destination, { recursive: true });
+        await fs.cp(source, destination, { recursive: true });
+
+        return { success: true, message: 'Folder moved successfully' };
+    } catch (error: any) {
+        console.error('Move failed:', error);
+        return { success: false, message: error.message };
+    }
 }
