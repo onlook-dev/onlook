@@ -98,7 +98,7 @@ export const EnvVars = observer(() => {
             </div>
 
             <div className="space-y-4">
-                {Object.entries(envVars).length && (
+                {Object.entries(envVars).length > 0 && (
                     <div className="border rounded p-2 grid grid-cols-10 gap-2 items-center">
                         <div className="col-span-4">KEY</div>
                         <div className="col-span-4">VALUE</div>
