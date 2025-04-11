@@ -21,7 +21,7 @@ export class CanvasManager {
 
         const webFrame: WebFrame = {
             id: '1',
-            url: 'https://react.dev/',
+            url: 'http://localhost:8084',
             position: { x: 0, y: 0 },
             dimension: { width: 1000, height: 1000 },
             type: FrameType.WEB,

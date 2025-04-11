@@ -1,9 +1,10 @@
 import { FrameType, type Frame, type WebFrame } from "@onlook/models";
 import { observer } from "mobx-react-lite";
+import { useRef } from "react";
 import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
 import { TopBar } from "./top-bar";
-import { WebFrameComponent } from "./web-frame";
+import { WebFrameComponent, type WebFrameView } from "./web-frame";
 
 export const FrameView = observer(
     ({
@@ -11,6 +12,7 @@ export const FrameView = observer(
     }: {
         frame: Frame;
     }) => {
+        const webFrameRef = useRef<WebFrameView>(null);
         return (
             <div
                 className="flex flex-col fixed"
@@ -20,8 +22,8 @@ export const FrameView = observer(
                 </TopBar>
                 <div className="relative">
                     <ResizeHandles frame={frame} />
-                    {frame.type === FrameType.WEB && <WebFrameComponent frame={frame as WebFrame} />}
-                    <GestureScreen />
+                    {frame.type === FrameType.WEB && <WebFrameComponent frame={frame as WebFrame} ref={webFrameRef} />}
+                    <GestureScreen frame={frame as WebFrame} webFrameRef={webFrameRef} />
                     {/* {domFailed && shouldShowDomFailed && renderNotRunning()} */}
                 </div>
 
