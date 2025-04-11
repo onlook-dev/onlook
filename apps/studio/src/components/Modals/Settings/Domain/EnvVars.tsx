@@ -3,10 +3,11 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/use-toast';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-export const EnvVarsSection = observer(() => {
+export const EnvVars = observer(() => {
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
     const [newVarKey, setNewVarKey] = useState('');
@@ -88,41 +89,38 @@ export const EnvVarsSection = observer(() => {
     };
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 text-sm">
             <div className="flex flex-col gap-2">
                 <h2 className="text-lg">Environment Variables</h2>
-                <p className="text-small text-foreground-secondary">
+                <p className="text-sm text-foreground-secondary">
                     Environment variables to use when running your project
                 </p>
             </div>
 
             <div className="space-y-4">
-                {/* Current environment variables */}
-                {Object.entries(envVars).length > 0 ? (
-                    <div className="border rounded-md overflow-hidden">
-                        <div className="bg-muted p-2 grid grid-cols-[1fr_1fr_auto] gap-2 text-xs font-medium">
-                            <div>KEY</div>
-                            <div>VALUE</div>
-                            <div></div>
-                        </div>
-                        <div className="divide-y">
-                            {Object.entries(envVars).map(([key, value]) => (
-                                <div
-                                    key={key}
-                                    className="p-2 grid grid-cols-[1fr_1fr_auto] gap-2 items-center"
-                                >
-                                    <div className="font-medium truncate">{key}</div>
+                {Object.entries(envVars).length && (
+                    <div className="border rounded p-2 grid grid-cols-10 gap-2 items-center">
+                        <div className="col-span-4">KEY</div>
+                        <div className="col-span-4">VALUE</div>
+                        {Object.entries(envVars).map(([key, value]) => (
+                            <>
+                                <div className="truncate col-span-4">{key}</div>
+
+                                <div className="flex items-center gap-2 col-span-6">
+                                    <Input
+                                        value={editing === key ? editValue : value}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        placeholder="Value"
+                                        className={cn('h-8', {
+                                            'border-none p-0 disabled:opacity-100': editing !== key,
+                                        })}
+                                        disabled={editing !== key}
+                                    />
+
                                     {editing === key ? (
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                value={editValue}
-                                                onChange={(e) => setEditValue(e.target.value)}
-                                                placeholder="Value"
-                                                className="h-8"
-                                            />
+                                        <>
                                             <Button
                                                 size="sm"
-                                                variant="ghost"
                                                 onClick={() => handleEditEnvVar(key)}
                                                 className="h-8"
                                             >
@@ -139,60 +137,49 @@ export const EnvVarsSection = observer(() => {
                                             >
                                                 Cancel
                                             </Button>
-                                        </div>
+                                        </>
                                     ) : (
-                                        <div className="flex items-center">
-                                            <div className="bg-muted px-2 py-1 rounded text-sm truncate">
-                                                {value}
-                                            </div>
-                                        </div>
+                                        <>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => startEditing(key, value)}
+                                                className="h-8 w-8"
+                                            >
+                                                <Icons.Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                onClick={() => handleDeleteEnvVar(key)}
+                                                className="h-8 w-8 text-red-500"
+                                            >
+                                                <Icons.Trash className="h-4 w-4" />
+                                            </Button>
+                                        </>
                                     )}
-                                    <div className="flex items-center gap-1 justify-end">
-                                        {editing !== key && (
-                                            <>
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    onClick={() => startEditing(key, value)}
-                                                    className="h-8 w-8"
-                                                >
-                                                    <Icons.Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    onClick={() => handleDeleteEnvVar(key)}
-                                                    className="h-8 w-8 text-destructive"
-                                                >
-                                                    <Icons.Trash className="h-4 w-4" />
-                                                </Button>
-                                            </>
-                                        )}
-                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="text-sm text-muted-foreground">
-                        No environment variables added yet.
+                            </>
+                        ))}
                     </div>
                 )}
 
                 {/* Add new environment variable */}
                 <div className="pt-2">
-                    <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                    <div className="grid grid-cols-10 gap-2">
                         <Input
                             placeholder="KEY"
                             value={newVarKey}
                             onChange={(e) => setNewVarKey(e.target.value)}
+                            className="col-span-4"
                         />
                         <Input
                             placeholder="VALUE"
                             value={newVarValue}
                             onChange={(e) => setNewVarValue(e.target.value)}
+                            className="col-span-5"
                         />
-                        <Button onClick={handleAddEnvVar} className="gap-1">
+                        <Button onClick={handleAddEnvVar} className="col-span-1" variant="outline">
                             <Icons.Plus className="h-4 w-4" />
                             Add
                         </Button>
@@ -202,5 +189,3 @@ export const EnvVarsSection = observer(() => {
         </div>
     );
 });
-
-export default EnvVarsSection;

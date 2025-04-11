@@ -7,7 +7,6 @@ import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { ReinstallButton } from './ReinstallButon';
-import EnvVarsSection from './EnvVarsSection';
 
 const ProjectTab = observer(() => {
     const projectsManager = useProjectsManager();
@@ -154,12 +153,6 @@ const ProjectTab = observer(() => {
                         />
                     </div>
                 </div>
-            </div>
-            <Separator />
-
-            {/* Environment Variables Section */}
-            <div className="flex flex-col gap-4 p-6">
-                <EnvVarsSection />
             </div>
             <Separator />
 
