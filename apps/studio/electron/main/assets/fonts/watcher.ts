@@ -75,9 +75,8 @@ export class FontFileWatcher {
                                 }
                             }
                             if (
-                                eventPath === layoutPath ||
-                                (eventPath === appPath &&
-                                    (event.type === 'update' || event.type === 'create'))
+                                (eventPath === layoutPath || eventPath === appPath) &&
+                                (event.type === 'update' || event.type === 'create')
                             ) {
                                 this.selfModified.add(eventPath);
                                 try {
