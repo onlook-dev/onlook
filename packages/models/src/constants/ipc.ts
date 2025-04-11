@@ -168,6 +168,9 @@ export enum MainChannels {
 
     // Trainloop
     SAVE_APPLY_RESULT = 'save-apply-result',
+
+    // New channel
+    FONTS_CHANGED = 'fonts-changed',
 }
 
 export enum GitChannels {

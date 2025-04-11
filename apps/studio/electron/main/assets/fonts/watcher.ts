@@ -1,5 +1,5 @@
 import { subscribe, type AsyncSubscription } from '@parcel/watcher';
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import * as pathModule from 'path';
 import { scanFonts } from './scanner';
 import fs from 'fs';
@@ -8,16 +8,20 @@ import { removeFontVariableFromLayout } from './layout';
 import { removeFontFromTailwindConfig, updateTailwindFontConfig } from './tailwind';
 import type { Font } from '@onlook/models/assets';
 import { detectRouterType } from '../../pages';
+import { mainWindow } from '../../index';
 
 export class FontFileWatcher {
     private subscription: AsyncSubscription | null = null;
     private previousFonts: Font[] = [];
+    private selfModified: Set<string> = new Set();
 
     async watch(projectRoot: string) {
         await this.clearSubscription();
 
-        const fontPath = pathModule.resolve(projectRoot, DefaultSettings.FONT_CONFIG);
-        const fontDir = pathModule.dirname(fontPath);
+        const _fontPath = pathModule.resolve(projectRoot, DefaultSettings.FONT_CONFIG);
+        const fontDir = pathModule.dirname(_fontPath);
+        let _layoutPath: string = '';
+        let _appPath: string = '';
 
         if (!fs.existsSync(fontDir)) {
             console.error(`Font directory does not exist: ${fontDir}`);
@@ -28,6 +32,15 @@ export class FontFileWatcher {
         } catch (error) {
             console.error('Error scanning initial fonts state:', error);
             this.previousFonts = [];
+        }
+
+        const routerConfig = await detectRouterType(projectRoot);
+        if (routerConfig) {
+            if (routerConfig.type === 'app') {
+                _layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+            } else {
+                _appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+            }
         }
 
         try {
@@ -42,15 +55,32 @@ export class FontFileWatcher {
                     if (events.length > 0) {
                         for (const event of events) {
                             const eventPath = pathModule.normalize(event.path);
-                            const expectedPath = pathModule.normalize(fontPath);
+                            const fontPath = pathModule.normalize(_fontPath);
+                            const layoutPath = pathModule.normalize(_layoutPath);
+                            const appPath = pathModule.normalize(_appPath);
+                            if (this.selfModified.has(eventPath)) {
+                                this.selfModified.delete(eventPath);
+                                continue;
+                            }
 
                             if (
-                                (eventPath === expectedPath ||
+                                (eventPath === fontPath ||
                                     eventPath.endsWith(DefaultSettings.FONT_CONFIG)) &&
                                 (event.type === 'update' || event.type === 'create')
                             ) {
                                 try {
                                     this.syncFontsWithConfigs(projectRoot);
+                                } catch (error) {
+                                    console.error('Error syncing fonts with configs:', error);
+                                }
+                            }
+                            if (
+                                (eventPath === layoutPath || eventPath === appPath) &&
+                                (event.type === 'update' || event.type === 'create')
+                            ) {
+                                this.selfModified.add(eventPath);
+                                try {
+                                    mainWindow?.webContents.send(MainChannels.GET_DEFAULT_FONT);
                                 } catch (error) {
                                     console.error('Error syncing fonts with configs:', error);
                                 }
@@ -78,7 +108,7 @@ export class FontFileWatcher {
             );
 
             const addedFonts = currentFonts.filter(
-                (currFont) => !this.previousFonts.some((prevFont) => prevFont.id === currFont.id),
+                (currFont) => !this.previousFonts.some((prevFont) => currFont.id === prevFont.id),
             );
 
             for (const font of removedFonts) {
@@ -86,9 +116,11 @@ export class FontFileWatcher {
                 if (routerConfig) {
                     if (routerConfig.type === 'app') {
                         const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+                        this.selfModified.add(layoutPath);
                         await removeFontVariableFromLayout(layoutPath, font.id, ['html']);
                     } else {
                         const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+                        this.selfModified.add(appPath);
                         await removeFontVariableFromLayout(appPath, font.id, [
                             'div',
                             'main',
@@ -98,14 +130,38 @@ export class FontFileWatcher {
                     }
                 }
 
+                const tailwindConfigPath = pathModule.join(projectRoot, 'tailwind.config.ts');
+                this.selfModified.add(tailwindConfigPath);
                 await removeFontFromTailwindConfig(projectRoot, font);
             }
 
             if (addedFonts.length > 0) {
                 for (const font of addedFonts) {
+                    const tailwindConfigPath = pathModule.join(projectRoot, 'tailwind.config.ts');
+                    this.selfModified.add(tailwindConfigPath);
                     await updateTailwindFontConfig(projectRoot, font);
-                    await addFontVariableToLayout(projectRoot, font.id);
+
+                    const routerConfig = await detectRouterType(projectRoot);
+                    if (routerConfig) {
+                        if (routerConfig.type === 'app') {
+                            const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
+                            this.selfModified.add(layoutPath);
+                            await addFontVariableToLayout(projectRoot, font.id);
+                        } else {
+                            const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
+                            this.selfModified.add(appPath);
+                            await addFontVariableToLayout(projectRoot, font.id);
+                        }
+                    }
                 }
+            }
+
+            if (removedFonts.length > 0 || addedFonts.length > 0) {
+                mainWindow?.webContents.send(MainChannels.FONTS_CHANGED, {
+                    currentFonts,
+                    removedFonts,
+                    addedFonts,
+                });
             }
 
             this.previousFonts = currentFonts;

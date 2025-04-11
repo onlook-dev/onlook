@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { invokeMainChannel } from '@/lib/utils';
-import { fontFamilies, MainChannels } from '@onlook/models';
+import { fontFamilies, MainChannels, type CodeDiff, type WriteCodeAction } from '@onlook/models';
 import type { ProjectsManager } from '@/lib/projects';
 import type { Font } from '@onlook/models/assets';
 import type { FontFile } from '@/routes/editor/LayersPanel/BrandTab/FontPanel/FontFiles';
@@ -28,6 +28,7 @@ export class FontManager {
     private _searchResults: Font[] = [];
     private _allFontFamilies: RawFont[] = fontFamilies as RawFont[];
     private _defaultFont: string | null = null;
+    private _lastDefaultFont: string | null = null;
     private disposers: Array<() => void> = [];
     private _currentFontIndex = 0;
     private _batchSize = 20;
@@ -64,6 +65,20 @@ export class FontManager {
 
         this.loadInitialFonts();
 
+        const fontChangeHandler = (data: {
+            currentFonts: Font[];
+            removedFonts: Font[];
+            addedFonts: Font[];
+        }) => {
+            this._fonts = data.currentFonts;
+        };
+
+        const defaultFontChangeHandler = () => {
+            this.getDefaultFont();
+        };
+        window.api.on(MainChannels.FONTS_CHANGED, fontChangeHandler);
+        window.api.on(MainChannels.GET_DEFAULT_FONT, defaultFontChangeHandler);
+
         // Watch for project changes and set up watcher when a project is selected
         const disposer = reaction(
             () => this.projectsManager.project?.folderPath,
@@ -77,6 +92,12 @@ export class FontManager {
         );
 
         this.disposers.push(disposer);
+        this.disposers.push(() =>
+            window.api.removeListener(MainChannels.FONTS_CHANGED, fontChangeHandler),
+        );
+        this.disposers.push(() =>
+            window.api.removeListener(MainChannels.GET_DEFAULT_FONT, defaultFontChangeHandler),
+        );
     }
 
     private convertFont(font: RawFont): Font {
@@ -159,12 +180,17 @@ export class FontManager {
         }
 
         try {
-            await invokeMainChannel(MainChannels.ADD_FONT, {
+            const result = (await invokeMainChannel(MainChannels.ADD_FONT, {
                 projectRoot,
                 font,
-            });
+            })) as CodeDiff;
 
-            await this.scanFonts();
+            const writeCodeAction: WriteCodeAction = {
+                type: 'write-code',
+                diffs: [result],
+            };
+
+            this.editorEngine.history.push(writeCodeAction);
         } catch (error) {
             console.error('Error adding font:', error);
         }
@@ -178,16 +204,21 @@ export class FontManager {
         }
 
         try {
-            await invokeMainChannel(MainChannels.REMOVE_FONT, {
+            const result = (await invokeMainChannel(MainChannels.REMOVE_FONT, {
                 projectRoot,
                 font,
-            });
+            })) as CodeDiff;
+
+            const writeCodeAction: WriteCodeAction = {
+                type: 'write-code',
+                diffs: [result],
+            };
+
+            this.editorEngine.history.push(writeCodeAction);
 
             if (font.id === this.defaultFont) {
                 this._defaultFont = null;
             }
-
-            await this.scanFonts();
         } catch (error) {
             console.error('Error removing font:', error);
         }
@@ -201,12 +232,20 @@ export class FontManager {
         }
 
         try {
-            await invokeMainChannel(MainChannels.SET_FONT, {
+            const result = (await invokeMainChannel(MainChannels.SET_FONT, {
                 projectRoot,
                 font,
-            });
+            })) as CodeDiff;
 
-            await this.getDefaultFont();
+            if (result) {
+                const writeCodeAction: WriteCodeAction = {
+                    type: 'write-code',
+                    diffs: [result],
+                };
+                this.editorEngine.history.push(writeCodeAction);
+            }
+
+            setTimeout(() => this.getDefaultFont(), 300);
         } catch (error) {
             console.error('Error setting font:', error);
         }
@@ -220,10 +259,14 @@ export class FontManager {
         }
 
         try {
-            const defaultFont = await invokeMainChannel(MainChannels.GET_DEFAULT_FONT, {
+            const defaultFont = (await invokeMainChannel(MainChannels.GET_DEFAULT_FONT, {
                 projectRoot,
-            });
-            this._defaultFont = defaultFont as string;
+            })) as string;
+
+            if (defaultFont !== this._lastDefaultFont) {
+                this._lastDefaultFont = defaultFont;
+                this._defaultFont = defaultFont;
+            }
         } catch (error) {
             console.error('Error getting current font:', error);
         }
@@ -357,6 +400,7 @@ export class FontManager {
         this._systemFonts = [];
         this._searchResults = [];
         this._defaultFont = null;
+        this._lastDefaultFont = null;
         this._allFontFamilies = [];
         this._currentFontIndex = 0;
         this._batchSize = 20;

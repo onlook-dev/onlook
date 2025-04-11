@@ -10,15 +10,19 @@ import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { cn } from '@onlook/ui/utils';
+import { camelCase } from 'lodash';
 
 interface FontVariantProps {
     name: string;
     isActive?: boolean;
 }
 
-const FontVariant = ({ name }: FontVariantProps) => (
-    <div className="text-sm font-normal text-muted-foreground">{name}</div>
-);
+const FontVariant = ({ name }: FontVariantProps) => {
+    const fontVariant = `font-${camelCase(name).toLowerCase()}`;
+
+    return <div className={cn('text-sm text-muted-foreground', fontVariant)}>{name}</div>;
+};
 
 export interface FontFamilyProps {
     name: string;
@@ -48,7 +52,12 @@ export const FontFamily = ({
     };
 
     return (
-        <div className="w-full group">
+        <div
+            className="w-full group"
+            style={{
+                fontFamily: name,
+            }}
+        >
             <div className="flex justify-between items-center py-3">
                 <div
                     className="flex flex-1 items-center cursor-pointer max-w-52"
@@ -59,12 +68,7 @@ export const FontFamily = ({
                     />
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span
-                                className={`text-sm truncate transition-opacity duration-200`}
-                                style={{
-                                    fontFamily: name,
-                                }}
-                            >
+                            <span className={`text-sm truncate transition-opacity duration-200`}>
                                 {name}
                             </span>
                         </TooltipTrigger>
