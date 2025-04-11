@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
 
-export type IFrameView = HTMLIFrameElement &
+export type WebFrameView = HTMLIFrameElement &
     Pick<
         Electron.WebviewTag,
         | 'setZoomLevel'
@@ -23,11 +23,11 @@ export type IFrameView = HTMLIFrameElement &
         capturePageAsCanvas: () => Promise<HTMLCanvasElement>;
     };
 
-interface IFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
+interface WebFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: WebFrame;
 }
 
-export const WebFrameComponent = observer(forwardRef<IFrameView, IFrameViewProps>(({ frame, ...props }, ref) => {
+export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewProps>(({ frame, ...props }, ref) => {
     const [iframeRemote, setIframeRemote] = useState<any>(null);
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -173,7 +173,7 @@ export const WebFrameComponent = observer(forwardRef<IFrameView, IFrameViewProps
             },
         });
 
-        return iframe as IFrameView;
+        return iframe as WebFrameView;
     }, []);
     return (
         <iframe
@@ -191,6 +191,7 @@ export const WebFrameComponent = observer(forwardRef<IFrameView, IFrameViewProps
                 width: frame.dimension.width,
                 height: frame.dimension.height,
             }}
+            {...props}
         />
     );
 }));
