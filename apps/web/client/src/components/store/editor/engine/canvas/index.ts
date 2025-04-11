@@ -29,7 +29,7 @@ export class CanvasManager {
 
         const webFrame1 = {
             id: '2',
-            url: 'http://localhost:8084',
+            url: 'http://localhost:3001',
             position: { x: 1100, y: 0 },
             dimension: { width: 1000, height: 1000 },
             type: FrameType.WEB,

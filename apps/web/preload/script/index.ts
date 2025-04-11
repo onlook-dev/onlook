@@ -6,7 +6,8 @@ const createMessageConnection = async () => {
 
     const messenger = new WindowMessenger({
         remoteWindow: window.parent,
-        allowedOrigins: ['http://localhost:8084'],
+        // TODO: Use a proper origin
+        allowedOrigins: ['http://localhost:3000'],
     });
 
     const connection = connect({
