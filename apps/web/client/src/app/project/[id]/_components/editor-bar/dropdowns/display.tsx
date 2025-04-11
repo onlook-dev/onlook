@@ -8,6 +8,7 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui-v4/dropdown-menu";
 import { useState } from "react";
+import { InputRadio } from "../inputs/input-radio";
 
 export const Display = () => {
     const [layoutType, setLayoutType] = useState<"--" | "Flex" | "Grid">("Flex");
@@ -15,6 +16,31 @@ export const Display = () => {
     const [verticalAlign, setVerticalAlign] = useState<"top" | "center" | "bottom" | "space-between">("center");
     const [horizontalAlign, setHorizontalAlign] = useState<"left" | "center" | "right" | "space-between">("center");
     const [gap, setGap] = useState("12");
+
+    const typeOptions = [
+        { value: "--", label: "--" },
+        { value: "Flex", label: "Flex" },
+        { value: "Grid", label: "Grid" },
+    ];
+
+    const directionOptions = [
+        { value: "vertical", icon: <Icons.ArrowDown className="h-4 w-4" /> },
+        { value: "horizontal", icon: <Icons.ArrowRight className="h-4 w-4" /> },
+    ];
+
+    const verticalOptions = [
+        { value: "top", icon: <Icons.AlignTop className="h-4 w-4" /> },
+        { value: "center", icon: <Icons.AlignCenterVertically className="h-4 w-4" /> },
+        { value: "bottom", icon: <Icons.AlignBottom className="h-4 w-4" /> },
+        { value: "space-between", icon: <Icons.SpaceBetweenVertically className="h-4 w-4" /> },
+    ];
+
+    const horizontalOptions = [
+        { value: "left", icon: <Icons.AlignLeft className="h-4 w-4" /> },
+        { value: "center", icon: <Icons.AlignCenterHorizontally className="h-4 w-4" /> },
+        { value: "right", icon: <Icons.AlignRight className="h-4 w-4" /> },
+        { value: "space-between", icon: <Icons.SpaceBetweenHorizontally className="h-4 w-4" /> },
+    ];
 
     return (
         <DropdownMenu>
@@ -29,107 +55,33 @@ export const Display = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="min-w-[200px] mt-2 p-1 rounded-lg">
                 <div className="p-2 space-y-2">
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground w-20">Type</span>
-                        <div className="flex gap-1 flex-1">
-                            <button 
-                                className={`flex-1 text-sm px-1 py-1 rounded-md ${layoutType === "--" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setLayoutType("--")}
-                            >
-                                --
-                            </button>
-                            <button 
-                                className={`flex-1 text-sm px-1 py-1 rounded-md ${layoutType === "Flex" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setLayoutType("Flex")}
-                            >
-                                Flex
-                            </button>
-                            <button 
-                                className={`flex-1 text-sm px-1 py-1 rounded-md ${layoutType === "Grid" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setLayoutType("Grid")}
-                            >
-                                Grid
-                            </button>
-                        </div>
-                    </div>
+                    <InputRadio 
+                        label="Type" 
+                        options={typeOptions} 
+                        value={layoutType} 
+                        onChange={setLayoutType}
+                    />
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground w-20">Direction</span>
-                        <div className="flex gap-1 flex-1">
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1.5 rounded-md ${direction === "vertical" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setDirection("vertical")}
-                            >
-                                <Icons.ArrowDown className="h-4 w-4" />
-                            </button>
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1.5 rounded-md ${direction === "horizontal" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setDirection("horizontal")}
-                            >
-                                <Icons.ArrowRight className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
+                    <InputRadio 
+                        label="Direction" 
+                        options={directionOptions} 
+                        value={direction} 
+                        onChange={setDirection}
+                    />
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground w-20">Vertical</span>
-                        <div className="flex gap-1 flex-1">
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${verticalAlign === "top" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setVerticalAlign("top")}
-                            >
-                                <Icons.AlignTop className="h-4 w-4" />
-                            </button>
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${verticalAlign === "center" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setVerticalAlign("center")}
-                            >
-                                <Icons.AlignCenterVertically className="h-4 w-4" />
-                            </button>
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${verticalAlign === "bottom" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setVerticalAlign("bottom")}
-                            >
-                                <Icons.AlignBottom className="h-4 w-4" />
-                            </button>
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${verticalAlign === "space-between" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setVerticalAlign("space-between")}
-                            >
-                                <Icons.SpaceBetweenVertically className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
+                    <InputRadio 
+                        label="Vertical" 
+                        options={verticalOptions} 
+                        value={verticalAlign} 
+                        onChange={setVerticalAlign}
+                    />
 
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground w-20">Horizontal</span>
-                        <div className="flex gap-1 flex-1">
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${horizontalAlign === "left" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setHorizontalAlign("left")}
-                            >
-                                <Icons.AlignLeft className="h-4 w-4" />
-                            </button>
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${horizontalAlign === "center" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setHorizontalAlign("center")}
-                            >
-                                <Icons.AlignCenterHorizontally className="h-4 w-4" />
-                            </button>
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${horizontalAlign === "right" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setHorizontalAlign("right")}
-                            >
-                                <Icons.AlignRight className="h-4 w-4" />
-                            </button>
-                            <button 
-                                className={`flex-1 flex items-center justify-center text-sm p-1 py-2 rounded-md ${horizontalAlign === "space-between" ? "bg-background-tertiary/20 text-white" : "text-muted-foreground hover:bg-background-tertiary/10"}`}
-                                onClick={() => setHorizontalAlign("space-between")}
-                            >
-                                <Icons.SpaceBetweenHorizontally className="h-4 w-4" />
-                            </button>
-                        </div>
-                    </div>
+                    <InputRadio 
+                        label="Horizontal" 
+                        options={horizontalOptions} 
+                        value={horizontalAlign} 
+                        onChange={setHorizontalAlign}
+                    />
 
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-muted-foreground w-20">Gap</span>
