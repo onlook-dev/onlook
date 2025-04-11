@@ -1,5 +1,5 @@
 import { jsonClone } from '@onlook/utility';
-import { elementFromDomId } from '/common/helpers';
+import { elementFromDomId } from '../../helpers';
 
 export function getStyles(element: HTMLElement): {
     defined: Record<string, string>;
