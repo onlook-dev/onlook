@@ -23,7 +23,7 @@ export const FrameView = observer(
                 <div className="relative">
                     <ResizeHandles frame={frame} />
                     {frame.type === FrameType.WEB && <WebFrameComponent frame={frame as WebFrame} ref={webFrameRef} />}
-                    {webFrameRef.current && <GestureScreen frame={frame as WebFrame} webFrame={webFrameRef.current} />}
+                    <GestureScreen frame={frame as WebFrame} webFrameRef={webFrameRef} />
                     {/* {domFailed && shouldShowDomFailed && renderNotRunning()} */}
                 </div>
 
