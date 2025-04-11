@@ -54,38 +54,50 @@ export const Display = () => {
                     <span className="text-sm">{layoutType}</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="min-w-[200px] mt-2 p-1 rounded-lg">
-                <div className="p-2 space-y-2">
-                    <InputRadio 
-                        label="Type" 
-                        options={typeOptions} 
-                        value={layoutType} 
-                        onChange={setLayoutType}
-                    />
-
-                    <InputRadio 
-                        label="Direction" 
-                        options={directionOptions} 
-                        value={direction} 
-                        onChange={setDirection}
-                    />
-
-                    <InputRadio 
-                        label="Vertical" 
-                        options={verticalOptions} 
-                        value={verticalAlign} 
-                        onChange={setVerticalAlign}
-                    />
-
-                    <InputRadio 
-                        label="Horizontal" 
-                        options={horizontalOptions} 
-                        value={horizontalAlign} 
-                        onChange={setHorizontalAlign}
-                    />
+            <DropdownMenuContent align="start" className="min-w-[200px] mt-2 p-1.5 rounded-lg">
+                <div className="p-2 space-y-2.5">
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-24">Type</span>
+                        <InputRadio 
+                            options={typeOptions} 
+                            value={layoutType} 
+                            onChange={(value) => setLayoutType(value as "--" | "Flex" | "Grid")}
+                            className="flex-1"
+                        />
+                    </div>
 
                     <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground w-20">Gap</span>
+                        <span className="text-sm text-muted-foreground w-24">Direction</span>
+                        <InputRadio 
+                            options={directionOptions} 
+                            value={direction} 
+                            onChange={(value) => setDirection(value as "vertical" | "horizontal")}
+                            className="flex-1"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-24">Vertical</span>
+                        <InputRadio 
+                            options={verticalOptions} 
+                            value={verticalAlign} 
+                            onChange={(value) => setVerticalAlign(value as "top" | "center" | "bottom" | "space-between")}
+                            className="flex-1"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-24">Horizontal</span>
+                        <InputRadio 
+                            options={horizontalOptions} 
+                            value={horizontalAlign} 
+                            onChange={(value) => setHorizontalAlign(value as "left" | "center" | "right" | "space-between")}
+                            className="flex-1"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-24">Gap</span>
                         <InputIcon value={18} />
                     </div>
                 </div>

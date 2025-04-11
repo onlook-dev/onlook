@@ -30,7 +30,7 @@ export const InputIcon = ({ icon, value, unit = "px", onChange }: InputIconProps
     };
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-1 items-center gap-2">
             {Icon && <Icon className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />}
             <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
                 <input 
