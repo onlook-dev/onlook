@@ -12,6 +12,7 @@ import { LeftPanel } from './_components/left-panel';
 import { RightPanel } from './_components/right-panel';
 import { TopBar } from "./_components/top-bar";
 import { StagingToggle } from "./_components/editor-bar/staging-toggle";
+import { Panels } from "./_components/editor-bar/panels";
 
 type ElementType = "div" | "text" | "image";
 
@@ -31,13 +32,17 @@ export default function Page({ }: { params: { id: string } }) {
                     <EditorBar selectedElement={selectedElement} />
                 </div>
 
-                <div className="absolute top-20 w-screen h-screen flex items-center justify-center z-30">
+                <div className="absolute w-screen h-screen flex items-center justify-center z-30">
                     <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
                 </div> 
 
                 {/* Height full minus top bar and editor bar (80px) */}
                 <div className="absolute top-20 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
                     <LeftPanel />
+                </div>
+
+                <div className="absolute top-20 left-[80px] z-50 h-[calc(100%-80px)]">
+                    <Panels selectedElement={selectedElement} />
                 </div>
 
                 <div className="absolute top-20 right-0 animate-edit-panel-in h-[calc(100%-80px)] z-1">

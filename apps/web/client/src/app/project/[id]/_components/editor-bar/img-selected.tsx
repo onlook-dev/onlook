@@ -8,7 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@onlook/ui-v4/dropdown-menu";
-import { StateDropdown } from "./state-dropdown";
+import { StateDropdown } from "./dropdowns/state-dropdown";
 import { InputDropdown } from "./inputs/input-dropdown";
 import { InputIcon } from "./inputs/input-icon";
 import { InputRange } from "./inputs/input-range";

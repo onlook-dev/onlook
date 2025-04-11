@@ -12,7 +12,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@onlook/ui-v4/dropdown-menu";
-import { StateDropdown } from "./state-dropdown";
+import { StateDropdown } from "./dropdowns/state-dropdown";
 
 type EditorMode = "STATE" | "MEDIUM" | "TYPOGRAPHY" | "POSITION" | "TRANSFORMS";
 
