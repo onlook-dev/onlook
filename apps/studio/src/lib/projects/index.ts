@@ -82,6 +82,7 @@ export class ProjectsManager {
                 base: null,
                 custom: null,
             },
+            metadata: null,
         };
 
         const updatedProjects = [...this._projects, newProject];
@@ -123,6 +124,17 @@ export class ProjectsManager {
             invokeMainChannel(MainChannels.DELETE_FOLDER, project.folderPath);
         }
         sendAnalytics('delete project', { url: project.url, id: project.id, deleteProjectFolder });
+    }
+
+    async scanProjectMetadata(project: Project) {
+        try {
+            const metadata = await invokeMainChannel(MainChannels.SCAN_PROJECT_METADATA, {
+                projectRoot: project.folderPath,
+            });
+            this.updatePartialProject({ metadata });
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     get project() {

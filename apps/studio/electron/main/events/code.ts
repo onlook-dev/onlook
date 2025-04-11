@@ -195,4 +195,9 @@ export function listenForCodeMessages() {
         const { projectRoot } = args;
         return fontFileWatcher.watch(projectRoot);
     });
+
+    ipcMain.handle(MainChannels.SCAN_SITE_CONFIG, async (_, args) => {
+        const { projectRoot } = args;
+        return fontFileWatcher.watch(projectRoot);
+    });
 }

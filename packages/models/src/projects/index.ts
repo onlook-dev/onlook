@@ -1,3 +1,4 @@
+import type { Metadata } from 'src/pages';
 import { Orientation, Theme } from '../constants';
 
 export interface RectPosition {
@@ -56,6 +57,7 @@ export interface Project {
         base: DomainSettings | null;
         custom: DomainSettings | null;
     } | null;
+    metadata: Metadata | null;
 
     // deprecated
     // hosting?: HostingSettings | null;

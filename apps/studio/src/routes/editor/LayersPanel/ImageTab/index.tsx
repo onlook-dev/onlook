@@ -250,7 +250,7 @@ const ImagesTab = observer(() => {
                         <Input
                             ref={inputRef}
                             className="h-8 text-xs pr-8 w-full"
-                            placeholder="Search pages"
+                            placeholder="Search images"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={handleKeyDown}

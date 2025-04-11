@@ -25,6 +25,7 @@ export enum SettingsTabValue {
     PREFERENCES = 'preferences',
     VERSIONS = 'versions',
     ADVANCED = 'advanced',
+    SITE = 'site',
 }
 
 export enum LayersPanelTabValue {
