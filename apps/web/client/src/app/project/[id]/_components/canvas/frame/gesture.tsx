@@ -9,23 +9,19 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
 import { RightClickMenu } from './right-click';
 import type { WebFrameView } from './web-frame';
-export const GestureScreen = observer(({ frame, webframe }: { frame: WebFrame, webframe: React.RefObject<WebFrameView> }) => {
+export const GestureScreen = observer(({ frame, webFrame }: { frame: WebFrame, webFrame: WebFrameView }) => {
     const editorEngine = useEditorEngine();
     const isResizing = false;
 
-    const getRelativeMousePosition = useCallback(
-        (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
-            const webview = webframe.current;
-            return getRelativeMousePositionToWebview(e, webview);
-        },
-        [webframe],
-    );
+    const getRelativeMousePosition = (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
+        return getRelativeMousePositionToWebview(e, webFrame);
+    }
 
     const handleMouseEvent = useCallback(
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
             const pos = getRelativeMousePosition(e);
             const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(action);
-            const el: DomElement = await webframe.current.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
+            const el: DomElement = await webFrame.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
             if (!el) {
                 console.log('No element found');
                 return;
