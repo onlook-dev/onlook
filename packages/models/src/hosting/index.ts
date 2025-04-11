@@ -41,6 +41,7 @@ export interface PublishOptions {
     skipBuild?: boolean;
     skipBadge?: boolean;
     buildFlags?: string;
+    envVars?: Record<string, string>;
 }
 
 export interface UnpublishRequest {

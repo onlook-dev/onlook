@@ -2,9 +2,10 @@ import { useEditorEngine, useUserManager } from '@/components/Context';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import BaseDomain from './Base';
+import { BaseDomain } from './Base';
 import { CustomDomain } from './Custom';
-import DangerZone from './DangerZone';
+import { DangerZone } from './DangerZone';
+import { EnvVars } from './EnvVars';
 
 export const DomainTab = observer(() => {
     const userManager = useUserManager();
@@ -22,6 +23,10 @@ export const DomainTab = observer(() => {
             <Separator />
             <div className="p-6">
                 <CustomDomain />
+            </div>
+            <Separator />
+            <div className="flex flex-col gap-4 p-6">
+                <EnvVars />
             </div>
             <Separator />
             <div className="p-6">

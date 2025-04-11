@@ -7,7 +7,7 @@ import { Input } from '@onlook/ui/input';
 import { getValidSubdomain, getValidUrl, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 
-const BaseDomain = observer(() => {
+export const BaseDomain = observer(() => {
     const projectsManager = useProjectsManager();
     if (!projectsManager.project) {
         return null;
@@ -51,5 +51,3 @@ const BaseDomain = observer(() => {
         </div>
     );
 });
-
-export default BaseDomain;

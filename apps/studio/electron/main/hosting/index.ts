@@ -90,7 +90,7 @@ class HostingManager {
             this.emitState(PublishStatus.LOADING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const id = await this.sendHostingPostRequest(files, urls);
+            const id = await this.sendHostingPostRequest(files, urls, options?.envVars);
             timer.log('Deployment completed');
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
@@ -210,11 +210,16 @@ class HostingManager {
         }
     }
 
-    async sendHostingPostRequest(files: FileRecord, urls: string[]): Promise<string> {
+    async sendHostingPostRequest(
+        files: FileRecord,
+        urls: string[],
+        envVars?: Record<string, string>,
+    ): Promise<string> {
         const authTokens = await getRefreshedAuthTokens();
         const config: FreestyleDeployWebConfiguration = {
             domains: urls,
             entrypoint: 'server.js',
+            envVars,
         };
 
         const res: Response = await fetch(
