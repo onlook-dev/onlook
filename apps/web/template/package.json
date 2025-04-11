@@ -1,9 +1,9 @@
 {
-    "name": "@onlook/test-project",
+    "name": "@onlook/web-template",
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "PORT=8084 next dev",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
