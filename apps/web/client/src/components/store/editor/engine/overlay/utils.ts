@@ -1,3 +1,4 @@
+import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { ElementPosition } from '@onlook/models/element';
 import type { WebviewTag } from 'electron/renderer';
@@ -85,7 +86,7 @@ export function adaptValueToCanvas(value: number, inverse = false): number {
  */
 export function getRelativeMousePositionToWebview(
     e: React.MouseEvent<HTMLDivElement>,
-    webview: WebviewTag,
+    webview: WebFrameView,
     inverse: boolean = false,
 ): ElementPosition {
     const rect = webview.getBoundingClientRect();

@@ -1,4 +1,4 @@
-import type { WebFrame } from "@onlook/models";
+import type { DomElement, WebFrame } from "@onlook/models";
 import { cn } from "@onlook/ui-v4/utils";
 import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
@@ -8,7 +8,6 @@ export type WebFrameView = HTMLIFrameElement &
     Pick<
         Electron.WebviewTag,
         | 'setZoomLevel'
-        | 'executeJavaScript'
         | 'loadURL'
         | 'openDevTools'
         | 'canGoForward'
@@ -21,6 +20,7 @@ export type WebFrameView = HTMLIFrameElement &
     > & {
         supportsOpenDevTools: () => boolean;
         capturePageAsCanvas: () => Promise<HTMLCanvasElement>;
+        getElementAtLoc: (x: number, y: number, getStyle: boolean) => Promise<DomElement>;
     };
 
 interface WebFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
@@ -49,11 +49,11 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
                 const messenger = new WindowMessenger({
                     remoteWindow: iframe.contentWindow,
                     // TODO: Use a proper origin
-                    allowedOrigins: ['http://localhost:3001'],
+                    allowedOrigins: ['*'],
                 });
                 const connection = connect({
                     messenger,
-                    // Methods the iframe window is exposing to the parent window.
+                    // Methods we are exposing to the iframe window.
                     methods: {}
                 });
                 const remote = await connection.promise as any;
@@ -95,55 +95,6 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
                 iframe.style.transform = `scale(${level})`;
                 iframe.style.transformOrigin = 'top left';
             },
-            executeJavaScript: async (code: string): Promise<any> => {
-                const contentWindow = iframe.contentWindow;
-                if (!contentWindow) {
-                    throw new Error('No iframe content window available');
-                }
-
-                return new Promise((resolve, reject) => {
-                    const channel = new MessageChannel();
-                    const messageId = `execute_${Date.now()}_${Math.random()}`;
-
-                    channel.port1.onmessage = (event) => {
-                        channel.port1.close();
-                        if (event.data.error) {
-                            reject(new Error(event.data.error));
-                        } else {
-                            resolve(event.data.result);
-                        }
-                    };
-
-                    const wrappedCode = `
-                        (async () => {
-                            try {
-                                const result = await (${code});
-                                window.postMessage({
-                                    type: 'execute-response',
-                                    messageId: '${messageId}',
-                                    result
-                                }, '*', [event.ports[0]]);
-                            } catch (error) {
-                                window.postMessage({
-                                    type: 'execute-error',
-                                    messageId: '${messageId}',
-                                    error: error.message
-                                }, '*', [event.ports[0]]);
-                            }
-                        })();
-                    `;
-
-                    contentWindow.postMessage(
-                        {
-                            type: 'execute-code',
-                            code: wrappedCode,
-                            messageId,
-                        },
-                        '*',
-                        [channel.port2],
-                    );
-                });
-            },
             loadURL: async (url: string) => {
                 iframe.src = url;
             },
@@ -171,10 +122,13 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
                 }
                 return contentDocument.readyState !== 'complete';
             },
+            getElementAtLoc: async (x: number, y: number, getStyle: boolean) => {
+                return await iframeRemote?.getElementAtLoc(x, y, getStyle);
+            },
         });
 
         return iframe as WebFrameView;
-    }, []);
+    }, [iframeRemote]);
     return (
         <iframe
             ref={iframeRef}
