@@ -155,6 +155,7 @@ const ProjectTab = observer(() => {
                 </div>
             </div>
             <Separator />
+
             <div className="flex justify-between items-center p-6">
                 <div className="flex flex-col gap-2">
                     <p className="text-largePlus">Reinstall Dependencies</p>
