@@ -2,14 +2,14 @@ import { Icons } from "@onlook/ui-v4/icons";
 import { useState } from "react";
 
 interface InputIconProps {
-    icon: keyof typeof Icons;
+    icon?: keyof typeof Icons;
     value: number;
     unit?: string;
     onChange?: (value: number) => void;
 }
 
 export const InputIcon = ({ icon, value, unit = "px", onChange }: InputIconProps) => {
-    const Icon = Icons[icon];
+    const Icon = icon ? Icons[icon] : null;
     const [inputValue, setInputValue] = useState(value.toString());
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +31,7 @@ export const InputIcon = ({ icon, value, unit = "px", onChange }: InputIconProps
 
     return (
         <div className="flex items-center gap-2">
-            <Icon className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
+            {Icon && <Icon className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />}
             <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
                 <input 
                     type="text"

@@ -9,6 +9,7 @@ import {
 } from "@onlook/ui-v4/dropdown-menu";
 import { useState } from "react";
 import { InputRadio } from "../inputs/input-radio";
+import { InputIcon } from "../inputs/input-icon";
 
 export const Display = () => {
     const [layoutType, setLayoutType] = useState<"--" | "Flex" | "Grid">("Flex");
@@ -85,15 +86,7 @@ export const Display = () => {
 
                     <div className="flex items-center gap-3">
                         <span className="text-sm text-muted-foreground w-20">Gap</span>
-                        <div className="flex items-center bg-background-tertiary/50 rounded-md px-3 py-1.5 flex-1">
-                            <input 
-                                type="text" 
-                                value={gap}
-                                onChange={(e) => setGap(e.target.value)}
-                                className="w-full bg-transparent text-sm text-white focus:outline-none"
-                            />
-                            <span className="text-sm text-muted-foreground">PX</span>
-                        </div>
+                        <InputIcon value={18} />
                     </div>
                 </div>
             </DropdownMenuContent>

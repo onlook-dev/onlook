@@ -13,7 +13,7 @@ export const Panels = ({ selectedElement }: EditorBarProps) => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="h-full w-[280px] flex flex-col overflow-y-auto"
+            className="h-full w-[320px] flex flex-col overflow-y-auto"
             transition={{
                 type: "spring",
                 bounce: 0.1,
@@ -22,7 +22,7 @@ export const Panels = ({ selectedElement }: EditorBarProps) => {
                 damping: 25,
             }}
         >
-            <div className="p-4 overflow-y-auto">
+            <div className="p-4 pl-0 overflow-y-auto">
                 <LayoutPosition />
             </div>
         </motion.div>
