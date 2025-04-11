@@ -56,10 +56,7 @@ export interface Project {
         base: DomainSettings | null;
         custom: DomainSettings | null;
     } | null;
-    env?: Record<string, string>; // Added environment variables
-
-    // deprecated
-    // hosting?: HostingSettings | null;
+    env?: Record<string, string>;
 }
 
 export enum WindowCommand {
