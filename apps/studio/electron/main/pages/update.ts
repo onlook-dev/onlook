@@ -63,11 +63,16 @@ async function updateMetadataInFile(filePath: string, metadata: Metadata) {
         );
         ast.program.body.unshift(metadataImport);
     }
-
     // Create metadata object expression
     const metadataObject = t.objectExpression(
         Object.entries(metadata).map(([key, value]) => {
             if (typeof value === 'string') {
+                if (key === 'metadataBase') {
+                    return t.objectProperty(
+                        t.identifier(key),
+                        t.newExpression(t.identifier('URL'), [t.stringLiteral(value)]),
+                    );
+                }
                 return t.objectProperty(t.identifier(key), t.stringLiteral(value));
             } else if (value === null) {
                 return t.objectProperty(t.identifier(key), t.nullLiteral());

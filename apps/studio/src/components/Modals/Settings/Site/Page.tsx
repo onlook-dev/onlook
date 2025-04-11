@@ -45,12 +45,14 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
 
             if (!metadata?.metadataBase) {
                 const baseUrl = project.domains?.base?.url;
-                if (baseUrl && !baseUrl.startsWith('http')) {
-                    updatedMetadata.metadataBase = new URL(`https://${baseUrl}`);
-                } else if (baseUrl) {
-                    updatedMetadata.metadataBase = new URL(baseUrl);
+                if (baseUrl) {
+                    const url = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+                    updatedMetadata.metadataBase = new URL(url);
                 } else if (project.url) {
-                    updatedMetadata.metadataBase = new URL(project.url);
+                    const url = project.url.startsWith('http')
+                        ? project.url
+                        : `https://${project.url}`;
+                    updatedMetadata.metadataBase = new URL(url);
                 }
             }
 
