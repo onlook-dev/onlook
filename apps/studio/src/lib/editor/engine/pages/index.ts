@@ -248,9 +248,9 @@ export class PagesManager {
             throw new Error('No project root found');
         }
 
-        // if (doesRouteExist(this.pages, `${path}`)) {
-        //     throw new Error('A page with this name does not exists');
-        // }
+        if (!doesRouteExist(this.pages, pagePath)) {
+            throw new Error('A page with this name does not exists');
+        }
 
         try {
             await invokeMainChannel(MainChannels.UPDATE_PAGE_METADATA, {
@@ -258,6 +258,7 @@ export class PagesManager {
                 pagePath,
                 metadata,
             });
+            await this.scanPages();
         } catch (error) {
             console.error('Failed to update metadata:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
