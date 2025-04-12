@@ -114,9 +114,7 @@ class LlmManager {
                     const tool = tools[toolCall.toolName as keyof typeof tools];
 
                     console.log(
-                        'Invalid parameter for tool',
-                        toolCall.toolName,
-                        'attempting to fix',
+                        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
                     );
 
                     const { object: repairedArgs } = await generateObject({
