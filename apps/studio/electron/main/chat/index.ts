@@ -91,9 +91,6 @@ class LlmManager {
                 maxSteps: 10,
                 tools: chatToolSet,
                 maxTokens: 64000,
-                headers: {
-                    'anthropic-beta': 'output-128k-2025-02-19',
-                },
                 onStepFinish: ({ toolResults }) => {
                     for (const toolResult of toolResults) {
                         this.emitMessagePart(toolResult);
