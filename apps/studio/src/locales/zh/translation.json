@@ -50,8 +50,7 @@
             "startFromScratch": "从零开始",
             "importProject": "导入项目",
             "subscriptions": "订阅",
-            "settings": "设置",
-            "confirm": "确认"
+            "settings": "设置"
         },
         "dialogs": {
             "delete": {
@@ -63,12 +62,6 @@
                 "title": "重命名项目",
                 "label": "项目名称",
                 "error": "项目名称不能为空"
-            },
-            "updatePath": {
-                "title": "更新路径",
-                "description": "您确定要更新项目位置吗？",
-                "toast": " 项目路径已更新。",
-                "error": "项目移动失败"
             }
         },
         "prompt": {

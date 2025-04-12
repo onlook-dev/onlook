@@ -8,8 +8,6 @@ import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
-import fs from 'fs';
-import path from 'path';
 
 export async function readCodeBlock(
     templateNode: TemplateNode,
@@ -100,16 +98,4 @@ export function pickDirectory() {
     return dialog.showOpenDialog({
         properties: ['openDirectory', 'createDirectory'],
     });
-}
-
-export async function moveFolder(source: string, destination: string) {
-    try {
-        await fs.mkdir(destination, { recursive: true }, err => { throw err });
-        await fs.cp(source, destination, { recursive: true }, err => { throw err });
-
-        return { success: true, message: 'Folder moved successfully' };
-    } catch (error: any) {
-        console.error('Move failed:', error);
-        return { success: false, message: error.message };
-    }
 }

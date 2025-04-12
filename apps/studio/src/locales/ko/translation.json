@@ -50,8 +50,7 @@
             "startFromScratch": "처음부터 시작하기",
             "importProject": "프로젝트 가져오기",
             "subscriptions": "구독하기",
-            "settings": "설정",
-            "confirm": "확인"
+            "settings": "설정"
         },
         "dialogs": {
             "delete": {
@@ -63,12 +62,6 @@
                 "title": "프로젝트 이름 변경",
                 "label": "프로젝트 이름",
                 "error": "프로젝트 이름은 비워둘 수 없습니다."
-            },
-            "updatePath" : {
-                "title":"경로 업데이트",
-                "description":"프로젝트 위치를 업데이트하시겠습니까?",
-                "toast": " 프로젝트 경로가 업데이트되었습니다.",
-                "error": "프로젝트 이동에 실패했습니다"
             }
         },
         "prompt": {
