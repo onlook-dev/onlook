@@ -1,6 +1,6 @@
+import type { RectDimensions } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
-import type { RectDimensions } from './rect';
 
 export interface MeasurementState {
     fromRect: RectDimensions;

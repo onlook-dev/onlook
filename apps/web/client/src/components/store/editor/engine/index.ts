@@ -19,9 +19,8 @@ import { PagesManager } from './pages';
 import { StateManager } from './state';
 // import { StyleManager } from './style';
 // import { TextEditingManager } from './text';
+import { FramesManager } from './frames';
 import { ThemeManager } from './theme';
-import { WebviewManager } from './webview';
-import { WindowManager } from './window';
 
 // import { nanoid } from 'nanoid/non-secure';
 // import type { ProjectsManager } from '@/lib/projects';
@@ -30,8 +29,9 @@ import { WindowManager } from './window';
 
 export class EditorEngine {
     readonly canvas: CanvasManager;
+    readonly frames: FramesManager;
+
     readonly chat: ChatManager;
-    readonly webview: WebviewManager;
     readonly code: CodeManager;
     readonly pages: PagesManager;
     readonly error: ErrorManager;
@@ -41,11 +41,11 @@ export class EditorEngine {
 
     readonly overlay: OverlayManager = new OverlayManager(this);
     readonly state: StateManager = new StateManager();
-    readonly window: WindowManager = new WindowManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
+    readonly elements: ElementsManager = new ElementsManager(this);
+
     // readonly action: ActionManager = new ActionManager(this);
     // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
-    readonly elements: ElementsManager = new ElementsManager(this);
     // readonly text: TextEditingManager = new TextEditingManager(this);
     // readonly insert: InsertManager = new InsertManager(this);
     // readonly move: MoveManager = new MoveManager(this);
@@ -54,6 +54,9 @@ export class EditorEngine {
     // readonly group: GroupManager = new GroupManager(this);
     // readonly ast: AstManager = new AstManager(this);
 
+    // TODO: Window, Frames, Webviews should be Frames
+    // readonly window: WindowManager = new WindowManager(this);
+
     constructor(
         // private projectsManager: ProjectsManager,
         // private userManager: UserManager,
@@ -61,7 +64,9 @@ export class EditorEngine {
         makeAutoObservable(this);
         this.canvas = new CanvasManager();
         // this.chat = new ChatManager(this, this.projectsManager, this.userManager);
-        // this.webview = new WebviewManager(this, this.projectsManager);
+        this.frames = new FramesManager(this,
+            // this.projectsManager
+        );
         // this.code = new CodeManager(this, this.projectsManager);
         // this.pages = new PagesManager(this, this.projectsManager);
         // this.error = new ErrorManager(this, this.projectsManager);
@@ -80,7 +85,9 @@ export class EditorEngine {
     // }
 
     dispose() {
-        // this.elements.clear();
+        this.elements.clear();
+        this.frames.dispose();
+
         // this.history.clear();
         // this.action.dispose();
         // this.overlay.clear();

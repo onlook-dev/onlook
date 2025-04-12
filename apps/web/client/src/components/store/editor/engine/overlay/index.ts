@@ -1,7 +1,8 @@
+import type { DomElement, RectDimensions } from '@onlook/models/element';
 import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
-import type { RectDimensions } from './rect';
 import { OverlayState } from './state';
+import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
@@ -14,33 +15,34 @@ export class OverlayManager {
     listenToScaleChange() {
         reaction(
             () => ({
-                // position: this.editorEngine.canvas.position,
-                // scale: this.editorEngine.canvas.scale,
+                position: this.editorEngine.canvas.position,
+                scale: this.editorEngine.canvas.scale,
             }),
             () => {
-                // this.refreshOverlay();
+                this.refreshOverlay();
             },
         );
     }
 
     refreshOverlay = async () => {
-        // this.state.updateHoverRect(null);
-        // const newClickRects: { rect: RectDimensions; styles: Record<string, string> }[] = [];
-        // for (const selectedElement of this.editorEngine.elements.selected) {
-        //     const webview = this.editorEngine.webviews.getWebview(selectedElement.webviewId);
-        //     if (!webview) {
-        //         continue;
-        //     }
-        //     const el: DomElement = await webview.executeJavaScript(
-        //         `window.api?.getDomElementByDomId('${selectedElement.domId}', true)`,
-        //     );
-        //     if (!el) {
-        //         continue;
-        //     }
-        //     const adaptedRect = adaptRectToCanvas(el.rect, webview);
-        //     newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
-        // }
-        // this.state.removeClickRects();
+        this.state.updateHoverRect(null);
+        const newClickRects: { rect: RectDimensions; styles: Record<string, string> }[] = [];
+        for (const selectedElement of this.editorEngine.elements.selected) {
+            const frameData = this.editorEngine.frames.get(selectedElement.frameId);
+            if (!frameData) {
+                console.error('Frame data not found');
+                continue;
+            }
+            const { view } = frameData;
+            const el: DomElement = await view.getElementByDomId(selectedElement.domId, true);
+            if (!el) {
+                console.error('Element not found');
+                continue;
+            }
+            const adaptedRect = adaptRectToCanvas(el.rect, view);
+            newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
+        }
+        this.state.removeClickRects();
         // for (const clickRect of newClickRects) {
         //     if (!this.editorEngine.text.isEditing) {
         //         this.state.addClickRect(clickRect.rect, clickRect.styles);
@@ -49,6 +51,32 @@ export class OverlayManager {
         //     }
         // }
     };
+
+    showMeasurement() {
+        this.editorEngine.overlay.removeMeasurement();
+        if (!this.editorEngine.elements.selected.length || !this.editorEngine.elements.hovered) {
+            return;
+        }
+
+        const selectedEl = this.editorEngine.elements.selected[0];
+        if (!selectedEl) {
+            return;
+        }
+
+        const hoverEl = this.editorEngine.elements.hovered;
+        const frameId = selectedEl.frameId;
+        const frameData = this.editorEngine.frames.get(frameId);
+        if (!frameData) {
+            return;
+        }
+
+        const { view } = frameData;
+
+        const selectedRect = adaptRectToCanvas(selectedEl.rect, view);
+        const hoverRect = adaptRectToCanvas(hoverEl.rect, view);
+
+        this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
+    }
 
     updateMeasurement = (fromRect: RectDimensions, toRect: RectDimensions) => {
         this.state.updateMeasurement(fromRect, toRect);
