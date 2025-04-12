@@ -165,12 +165,10 @@ export enum MainChannels {
     GET_DEFAULT_FONT = 'get-default-font',
     UPLOAD_FONTS = 'upload-fonts',
     WATCH_FONT_FILE = 'watch-font-file',
+    FONTS_CHANGED = 'fonts-changed',
 
     // Trainloop
     SAVE_APPLY_RESULT = 'save-apply-result',
-
-    // New channel
-    FONTS_CHANGED = 'fonts-changed',
 }
 
 export enum GitChannels {
