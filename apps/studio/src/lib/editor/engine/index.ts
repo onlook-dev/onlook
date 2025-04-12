@@ -82,7 +82,7 @@ export class EditorEngine {
         this.chatManager = new ChatManager(this, this.projectsManager, this.userManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
-        this.codeManager = new CodeManager(this, this.projectsManager);
+        this.codeManager = new CodeManager(this, this.projectsManager, this.userManager);
         this.pagesManager = new PagesManager(this, this.projectsManager);
         this.filesManager = new FilesManager(this, this.projectsManager);
         this.errorManager = new ErrorManager(this, this.projectsManager);
