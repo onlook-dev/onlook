@@ -1,7 +1,7 @@
 import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
-import { EditorTabValue, SettingsTabValue } from '@/lib/models';
+import { SettingsTabValue } from '@/lib/models';
 import type { DomElement } from '@onlook/models/element';
-import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
+import { DEFAULT_IDE } from '@onlook/models/ide';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -113,9 +113,6 @@ const OpenCodeMini = observer(() => {
                 <DropdownMenuItem
                     className="text-sm"
                     onClick={() => {
-                        if (ide.type === IdeType.ONLOOK) {
-                            editorEngine.editPanelTab = EditorTabValue.DEV;
-                        }
                         editorEngine.code.viewSourceFile(folderPath);
                     }}
                     onMouseEnter={() => setIsFolderHovered(true)}
