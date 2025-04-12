@@ -239,10 +239,18 @@ export const EditPanel = observer(() => {
                             renderEmptyState()
                         )}
                     </TabsContent>
+                    {/* Empty TabsContent to make the tabs system work, but actual content is rendered separately */}
+                    {isOnlookIde && <TabsContent value={EditorTabValue.DEV}></TabsContent>}
+
+                    {/* Keep DevTab mounted but control visibility based on selected tab so we dont lose the state when switching tabs */}
                     {isOnlookIde && (
-                        <TabsContent value={EditorTabValue.DEV} className="h-full">
+                        <div
+                            className={
+                                selectedTab === EditorTabValue.DEV ? 'block h-full' : 'hidden'
+                            }
+                        >
                             <DevTab />
-                        </TabsContent>
+                        </div>
                     )}
                 </div>
             </Tabs>

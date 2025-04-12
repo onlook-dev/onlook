@@ -60,6 +60,7 @@ export class CodeManager {
     viewSourceFile(filePath: string | null, line?: number): void {
         if (this.userManager.settings.settings?.editor?.ideType === IdeType.ONLOOK) {
             this.editorEngine.editPanelTab = EditorTabValue.DEV;
+            return;
         }
         if (!filePath) {
             console.error('No file path found.');

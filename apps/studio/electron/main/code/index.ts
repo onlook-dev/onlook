@@ -89,6 +89,23 @@ export function openInIde(templateNode: TemplateNode) {
     const command = ide.getCodeCommand(templateNode);
 
     if (ide.type === IdeType.ONLOOK) {
+        // Send an event to the renderer process to view the file in Onlook's internal IDE
+        const startTag = templateNode.startTag;
+        const endTag = templateNode.endTag || startTag;
+
+        if (startTag && endTag) {
+            mainWindow?.webContents.send(MainChannels.VIEW_CODE_IN_ONLOOK, {
+                filePath: templateNode.path,
+                startLine: startTag.start.line,
+                startColumn: startTag.start.column,
+                endLine: endTag.end.line,
+                endColumn: endTag.end.column - 1,
+            });
+        } else {
+            mainWindow?.webContents.send(MainChannels.VIEW_CODE_IN_ONLOOK, {
+                filePath: templateNode.path,
+            });
+        }
         return;
     }
 
