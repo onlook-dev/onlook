@@ -25,7 +25,10 @@ export class OverlayManager {
     }
 
     refreshOverlay = async () => {
-        this.state.updateHoverRect(null);
+        // Refresh hover rect
+        this.state.removeHoverRect();
+
+        // Refresh click rects
         const newClickRects: { rect: RectDimensions; styles: Record<string, string> }[] = [];
         for (const selectedElement of this.editorEngine.elements.selected) {
             const frameData = this.editorEngine.frames.get(selectedElement.frameId);
@@ -42,14 +45,15 @@ export class OverlayManager {
             const adaptedRect = adaptRectToCanvas(el.rect, view);
             newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
         }
+
         this.state.removeClickRects();
-        // for (const clickRect of newClickRects) {
-        //     if (!this.editorEngine.text.isEditing) {
-        //         this.state.addClickRect(clickRect.rect, clickRect.styles);
-        //     } else {
-        //         this.state.updateTextEditor(clickRect.rect);
-        //     }
-        // }
+        for (const clickRect of newClickRects) {
+            if (!this.editorEngine.text.isEditing) {
+                this.state.addClickRect(clickRect.rect, clickRect.styles);
+            } else {
+                this.state.updateTextEditor(clickRect.rect);
+            }
+        }
     };
 
     showMeasurement() {

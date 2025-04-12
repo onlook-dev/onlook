@@ -27,8 +27,7 @@ export class ElementsManager {
     }
 
     mouseover(domEl: DomElement, frameData: FrameData) {
-        console.log('mouseover', domEl);
-        if (this.hoveredElement && this.hoveredElement.domId === domEl.domId) {
+        if (this.hoveredElement?.domId && this.hoveredElement.domId === domEl.domId) {
             return;
         }
 
@@ -56,7 +55,6 @@ export class ElementsManager {
     }
 
     click(domEls: DomElement[], frameData: FrameData) {
-        console.log('click', domEls);
         const { view } = frameData;
         this.editorEngine.overlay.state.removeClickRects();
         this.clearSelectedElements();
