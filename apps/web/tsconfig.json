@@ -1,24 +1,9 @@
 {
-    "extends": "@onlook/typescript/next-react.json",
+    "extends": "@onlook/typescript/base.json",
     "compilerOptions": {
-        "baseUrl": ".",
-        "paths": {
-            "@/*": [
-                "./src/*"
-            ],
-            "/*": [
-                "./*"
-            ],
-            "~/*": [
-                "./src/*"
-            ]
-        }
+        "baseUrl": "."
     },
-    "include": [
-        "src",
-        "tests",
-        ".next/types/**/*.ts"
-    ],
+    "include": [],
     "exclude": [
         "node_modules"
     ]

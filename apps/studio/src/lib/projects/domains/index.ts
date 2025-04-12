@@ -66,7 +66,7 @@ export class DomainsManager {
         this.projectsManager.updateProject({ ...this.project, domains });
 
         setTimeout(() => {
-            this.base?.publish({ buildFlags });
+            this.base?.publish({ buildFlags, envVars: this.project.env });
         }, 100);
     }
 
