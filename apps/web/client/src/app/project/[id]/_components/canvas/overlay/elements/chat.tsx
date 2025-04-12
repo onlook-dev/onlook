@@ -89,7 +89,7 @@ export const OverlayChat = observer(
 
         const handleSubmit = async () => {
             const messageToSend = inputState.value;
-            editorEngine.state.editorPanelTab = EditorTabValue.CHAT;
+            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
             await editorEngine.chat.sendNewMessage(messageToSend);
             setInputState(DEFAULT_INPUT_STATE);
         };

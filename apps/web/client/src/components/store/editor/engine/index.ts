@@ -40,7 +40,7 @@ export class EditorEngine {
     readonly font: FontManager;
 
     readonly overlay: OverlayManager = new OverlayManager(this);
-    readonly state: StateManager = new StateManager(this);
+    readonly state: StateManager = new StateManager();
     readonly window: WindowManager = new WindowManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
     // readonly action: ActionManager = new ActionManager(this);

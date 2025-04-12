@@ -16,7 +16,7 @@ export const ChatPanelDropdown = ({ children }: { children: React.ReactNode }) =
     const editorEngine = useEditorEngine();
 
     const chatSettings = userManager.settings.settings?.chat ?? DefaultSettings.CHAT_SETTINGS;
-    const selectedTab = editorEngine.state.editorPanelTab;
+    const selectedTab = editorEngine.state.rightPanelTab;
 
     const updateChatSettings = (e: React.MouseEvent, settings: Partial<ChatSettings>) => {
         e.preventDefault();
