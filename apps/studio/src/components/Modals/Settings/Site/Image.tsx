@@ -1,20 +1,30 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useState,
+    forwardRef,
+    useImperativeHandle,
+    useRef,
+} from 'react';
 import { Button } from '@onlook/ui/button';
 import { useEditorEngine } from '@/components/Context';
 
-const ImagePicker: React.FC<{ onImageSelect: (file: File) => void; url?: string }> = ({
-    onImageSelect,
-    url,
-}) => {
+export interface ImagePickerRef {
+    reset: () => void;
+}
+
+const ImagePicker = forwardRef<
+    ImagePickerRef,
+    { onImageSelect: (file: File) => void; url?: string }
+>(({ onImageSelect, url }, ref) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(url ?? null);
     const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
         if (url) {
-            console.log(editorEngine.image.assets);
-
             const image = editorEngine.image.assets.find((image) => url?.includes(image.fileName));
             if (image) {
                 setSelectedImage(image.content);
@@ -53,14 +63,42 @@ const ImagePicker: React.FC<{ onImageSelect: (file: File) => void; url?: string 
 
     const handleButtonClick = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
-        document.getElementById('image-upload')?.click();
+        fileInputRef.current?.click();
     }, []);
 
-    const saveImage = async (file: File) => {
-        const url = URL.createObjectURL(file);
-        setSelectedImage(url);
-        onImageSelect(file);
-    };
+    const reset = useCallback(() => {
+        if (url) {
+            const image = editorEngine.image.assets.find((image) => url?.includes(image.fileName));
+            if (image) {
+                setSelectedImage(image.content);
+            } else {
+                setSelectedImage(url);
+            }
+        } else {
+            setSelectedImage(null);
+        }
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }, [url, editorEngine.image.assets]);
+
+    useImperativeHandle(
+        ref,
+        () => ({
+            reset,
+        }),
+        [reset],
+    );
+
+    const saveImage = useCallback(
+        async (file: File) => {
+            const url = URL.createObjectURL(file);
+            setSelectedImage(url);
+            onImageSelect(file);
+        },
+        [onImageSelect],
+    );
 
     return (
         <div className="flex flex-col gap-2 p-2 text-xs">
@@ -77,6 +115,7 @@ const ImagePicker: React.FC<{ onImageSelect: (file: File) => void; url?: string 
             >
                 <UploadButton onButtonClick={handleButtonClick} />
                 <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     className="hidden"
@@ -86,7 +125,9 @@ const ImagePicker: React.FC<{ onImageSelect: (file: File) => void; url?: string 
             </div>
         </div>
     );
-};
+});
+
+ImagePicker.displayName = 'ImagePicker';
 
 export const UploadButton: React.FC<{ onButtonClick: (e: React.MouseEvent) => void }> = ({
     onButtonClick,

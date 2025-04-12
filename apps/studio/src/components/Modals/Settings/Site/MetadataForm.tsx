@@ -4,7 +4,10 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Button } from '@onlook/ui/button';
 import type { Metadata, OGImage } from '@onlook/models';
 import ImagePicker from './Image';
+import type { ImagePickerRef } from './Image';
 import { Favicon } from './Favicon';
+import type { FaviconRef } from './Favicon';
+import { useRef } from 'react';
 
 const getImageUrl = (images: OGImage | OGImage[] | undefined): string | undefined => {
     if (!images) {
@@ -54,6 +57,15 @@ export const MetadataForm = ({
     showFavicon = false,
     currentMetadata,
 }: MetadataFormProps) => {
+    const imagePickerRef = useRef<ImagePickerRef>(null);
+    const faviconRef = useRef<FaviconRef>(null);
+
+    const handleDiscard = () => {
+        imagePickerRef.current?.reset();
+        faviconRef.current?.reset();
+        onDiscard();
+    };
+
     return (
         <div className="text-sm">
             <div className="flex flex-col gap-6 p-6">
@@ -115,6 +127,7 @@ export const MetadataForm = ({
                         </div>
                         <div>
                             <ImagePicker
+                                ref={imagePickerRef}
                                 onImageSelect={onImageSelect}
                                 url={getImageUrl(currentMetadata?.openGraph?.images)}
                             />
@@ -130,6 +143,7 @@ export const MetadataForm = ({
                                 </p>
                             </div>
                             <Favicon
+                                ref={faviconRef}
                                 onImageSelect={onFaviconSelect!}
                                 url={currentMetadata?.icons?.icon?.toString()}
                             />
@@ -140,7 +154,7 @@ export const MetadataForm = ({
                             variant="ghost"
                             className="flex items-center gap-2 px-4 py-0"
                             type="button"
-                            onClick={onDiscard}
+                            onClick={handleDiscard}
                             disabled={!isDirty}
                         >
                             <span>Discard changes</span>

@@ -1,13 +1,25 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useState,
+    forwardRef,
+    useImperativeHandle,
+    useRef,
+} from 'react';
 import { Button } from '@onlook/ui/button';
 import { useEditorEngine } from '@/components/Context';
 
-export const Favicon: React.FC<{ onImageSelect: (file: File) => void; url?: string }> = ({
-    onImageSelect,
-    url,
-}) => {
+export interface FaviconRef {
+    reset: () => void;
+}
+
+export const Favicon = forwardRef<
+    FaviconRef,
+    { onImageSelect: (file: File) => void; url?: string }
+>(({ onImageSelect, url }, ref) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(url ?? null);
     const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const editorEngine = useEditorEngine();
 
@@ -51,14 +63,42 @@ export const Favicon: React.FC<{ onImageSelect: (file: File) => void; url?: stri
 
     const handleButtonClick = useCallback((e: React.MouseEvent) => {
         e.preventDefault();
-        document.getElementById('favicon-upload')?.click();
+        fileInputRef.current?.click();
     }, []);
 
-    const saveImage = async (file: File) => {
-        const url = URL.createObjectURL(file);
-        setSelectedImage(url);
-        onImageSelect(file);
-    };
+    const reset = useCallback(() => {
+        if (url) {
+            const image = editorEngine.image.assets.find((image) => url?.includes(image.fileName));
+            if (image) {
+                setSelectedImage(image.content);
+            } else {
+                setSelectedImage(url);
+            }
+        } else {
+            setSelectedImage(null);
+        }
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }, [url, editorEngine.image.assets]);
+
+    useImperativeHandle(
+        ref,
+        () => ({
+            reset,
+        }),
+        [reset],
+    );
+
+    const saveImage = useCallback(
+        async (file: File) => {
+            const url = URL.createObjectURL(file);
+            setSelectedImage(url);
+            onImageSelect(file);
+        },
+        [onImageSelect],
+    );
 
     return (
         <div className="p-2">
@@ -73,6 +113,7 @@ export const Favicon: React.FC<{ onImageSelect: (file: File) => void; url?: stri
                 }}
             >
                 <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     className="hidden"
@@ -84,14 +125,16 @@ export const Favicon: React.FC<{ onImageSelect: (file: File) => void; url?: stri
             <UploadButton onButtonClick={handleButtonClick} />
         </div>
     );
-};
+});
 
-const UploadButton: React.FC<{ onButtonClick: (e: React.MouseEvent) => void }> = ({
+Favicon.displayName = 'Favicon';
+
+export const UploadButton: React.FC<{ onButtonClick: (e: React.MouseEvent) => void }> = ({
     onButtonClick,
 }) => (
     <Button
-        variant="ghost"
-        className="flex items-center gap-2 mt-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20"
+        variant="secondary"
+        className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20 opacity-0 group-hover:opacity-90 transition-opacity"
         type="button"
         onClick={onButtonClick}
     >
