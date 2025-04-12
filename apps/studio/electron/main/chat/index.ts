@@ -13,6 +13,7 @@ import {
 import { MainChannels } from '@onlook/models/constants';
 import {
     generateObject,
+    NoSuchToolError,
     RetryError,
     streamText,
     type CoreMessage,
@@ -100,6 +101,37 @@ class LlmManager {
                 },
                 onError: (error) => {
                     throw error;
+                },
+                experimental_repairToolCall: async ({
+                    toolCall,
+                    tools,
+                    parameterSchema,
+                    error,
+                }) => {
+                    if (NoSuchToolError.isInstance(error)) {
+                        console.error('Invalid tool name', toolCall.toolName);
+                        return null; // do not attempt to fix invalid tool names
+                    }
+                    const tool = tools[toolCall.toolName as keyof typeof tools];
+
+                    console.warn(
+                        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
+                    );
+
+                    const { object: repairedArgs } = await generateObject({
+                        model,
+                        schema: tool.parameters,
+                        prompt: [
+                            `The model tried to call the tool "${toolCall.toolName}"` +
+                                ` with the following arguments:`,
+                            JSON.stringify(toolCall.args),
+                            `The tool accepts the following schema:`,
+                            JSON.stringify(parameterSchema(toolCall)),
+                            'Please fix the arguments.',
+                        ].join('\n'),
+                    });
+
+                    return { ...toolCall, args: JSON.stringify(repairedArgs) };
                 },
             });
             const streamParts: TextStreamPart<ToolSet>[] = [];
