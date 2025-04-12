@@ -12,7 +12,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Button } from '@onlook/ui/button';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { cn } from '@onlook/ui/utils';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, useMemo } from 'react';
@@ -67,9 +66,16 @@ export const DevTab = observer(() => {
     const [isFilesVisible, setIsFilesVisible] = useState(true);
 
     const editorContainer = useRef<HTMLDivElement | null>(null);
-    const editorViewRef = useRef<EditorView | null>(null);
+    const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const treeRef = useRef<TreeApi<FileNode>>();
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const getActiveEditorView = (): EditorView | undefined => {
+        if (!activeFile) {
+            return undefined;
+        }
+        return editorViewsRef.current.get(activeFile.id);
+    };
 
     // Scan project files when the component is mounted
     useEffect(() => {
@@ -174,7 +180,12 @@ export const DevTab = observer(() => {
 
     // Update highlighting when highlightRange changes
     useEffect(() => {
-        if (!activeFile || !highlightRange || !editorViewRef.current) {
+        if (!activeFile || !highlightRange) {
+            return;
+        }
+
+        const editorView = getActiveEditorView();
+        if (!editorView) {
             return;
         }
 
@@ -219,13 +230,13 @@ export const DevTab = observer(() => {
             }
 
             // Creates a selection at the highlight position
-            editorViewRef.current.dispatch({
+            editorView.dispatch({
                 selection: EditorSelection.create([EditorSelection.range(startPos, endPos)]),
             });
 
             // Scrolls to the selection
-            editorViewRef.current.dispatch({
-                effects: EditorView.scrollIntoView(editorViewRef.current.state.selection.main, {
+            editorView.dispatch({
+                effects: EditorView.scrollIntoView(editorView.state.selection.main, {
                     y: 'center',
                 }),
             });
@@ -233,7 +244,7 @@ export const DevTab = observer(() => {
             console.error('Error applying highlight:', error);
             setHighlightRange(null);
         }
-    }, [highlightRange, activeFile, editorViewRef.current]);
+    }, [highlightRange, activeFile]);
 
     async function loadFile(filePath: string) {
         try {
@@ -272,6 +283,7 @@ export const DevTab = observer(() => {
     function handleFileSelect(file: EditorFile) {
         setHighlightRange(null);
         setActiveFile(file);
+        setIsDirty(file.isDirty);
     }
 
     function handleJumpToElement() {
@@ -425,6 +437,13 @@ export const DevTab = observer(() => {
             return;
         }
 
+        // Clean up the editor instance for this file
+        const editorView = editorViewsRef.current.get(fileId);
+        if (editorView) {
+            editorView.destroy();
+            editorViewsRef.current.delete(fileId);
+        }
+
         const newOpenedFiles = [...openedFiles];
         newOpenedFiles.splice(fileIndex, 1);
         setOpenedFiles(newOpenedFiles);
@@ -435,8 +454,10 @@ export const DevTab = observer(() => {
                 // Tries to select the file at the same index, or the previous one
                 const newIndex = Math.min(fileIndex, newOpenedFiles.length - 1);
                 setActiveFile(newOpenedFiles[newIndex]);
+                setIsDirty(newOpenedFiles[newIndex].isDirty);
             } else {
                 setActiveFile(null);
+                setIsDirty(false);
             }
         }
 
@@ -445,11 +466,55 @@ export const DevTab = observer(() => {
     }
 
     function closeAllFiles() {
+        // Clean up all editor instances
+        editorViewsRef.current.forEach((view) => view.destroy());
+        editorViewsRef.current.clear();
+
         setOpenedFiles([]);
         setActiveFile(null);
         setHighlightRange(null);
         setIsDirty(false);
     }
+
+    const updateFileContent = (fileId: string, content: string) => {
+        const file = openedFiles.find((f) => f.id === fileId);
+        if (!file) {
+            return;
+        }
+
+        // Check if content has actually changed
+        const hasChanged = content !== file.content;
+
+        const updatedFiles = openedFiles.map((file) =>
+            file.id === fileId
+                ? {
+                      ...file,
+                      content: content,
+                      isDirty: hasChanged,
+                  }
+                : file,
+        );
+
+        setOpenedFiles(updatedFiles);
+
+        // If this is the active file, update the dirty state
+        if (activeFile && activeFile.id === fileId) {
+            setActiveFile({
+                ...activeFile,
+                content: content,
+                isDirty: hasChanged,
+            });
+            setIsDirty(hasChanged);
+        }
+    };
+
+    // Cleanup editor instances when component unmounts
+    useEffect(() => {
+        return () => {
+            editorViewsRef.current.forEach((view) => view.destroy());
+            editorViewsRef.current.clear();
+        };
+    }, []);
 
     const filesTreeDimensions = useMemo(
         () => ({
@@ -652,59 +717,42 @@ export const DevTab = observer(() => {
                             </div>
                         )}
                         <div ref={editorContainer} className="h-full">
-                            {activeFile && (
-                                <CodeMirror
-                                    value={activeFile.content}
-                                    height="100%"
-                                    theme={theme === Theme.Dark ? 'dark' : 'light'}
-                                    extensions={[
-                                        ...getBasicSetup(theme === Theme.Dark, saveFile),
-                                        ...getExtensions(activeFile.language),
-                                    ]}
-                                    onChange={(value) => {
-                                        if (activeFile) {
+                            {openedFiles.map((file) => (
+                                <div
+                                    key={file.id}
+                                    className="h-full"
+                                    style={{
+                                        display: activeFile?.id === file.id ? 'block' : 'none',
+                                    }}
+                                >
+                                    <CodeMirror
+                                        key={file.id}
+                                        value={file.content}
+                                        height="100%"
+                                        theme={theme === Theme.Dark ? 'dark' : 'light'}
+                                        extensions={[
+                                            ...getBasicSetup(theme === Theme.Dark, saveFile),
+                                            ...getExtensions(file.language),
+                                        ]}
+                                        onChange={(value) => {
                                             if (highlightRange) {
                                                 setHighlightRange(null);
                                             }
+                                            updateFileContent(file.id, value);
+                                        }}
+                                        className="h-full overflow-hidden"
+                                        onCreateEditor={(editor) => {
+                                            editorViewsRef.current.set(file.id, editor);
 
-                                            // Check if content has actually changed
-                                            const hasChanged = value !== activeFile.content;
-
-                                            const updatedFiles = openedFiles.map(
-                                                (file: EditorFile) =>
-                                                    file.id === activeFile.id
-                                                        ? {
-                                                              ...file,
-                                                              content: value,
-                                                              isDirty: hasChanged,
-                                                          }
-                                                        : file,
-                                            );
-
-                                            setOpenedFiles(updatedFiles);
-
-                                            const updatedActiveFile = {
-                                                ...activeFile,
-                                                content: value,
-                                                isDirty: hasChanged,
-                                            };
-                                            setActiveFile(updatedActiveFile);
-
-                                            setIsDirty(hasChanged);
-                                        }
-                                    }}
-                                    className="h-full overflow-hidden"
-                                    onCreateEditor={(editor) => {
-                                        editorViewRef.current = editor;
-
-                                        editor.dom.addEventListener('mousedown', () => {
-                                            if (highlightRange) {
-                                                setHighlightRange(null);
-                                            }
-                                        });
-                                    }}
-                                />
-                            )}
+                                            editor.dom.addEventListener('mousedown', () => {
+                                                if (highlightRange) {
+                                                    setHighlightRange(null);
+                                                }
+                                            });
+                                        }}
+                                    />
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
