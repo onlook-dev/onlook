@@ -92,35 +92,41 @@ export const DevTab = observer(() => {
     }
 
     useEffect(() => {
-        const handleOpenCodeInOnlook = (data: any) => {
+        const handleOpenCodeInOnlook = async (data: any) => {
             if (data && data.filePath) {
                 editorEngine.editPanelTab = EditorTabValue.DEV;
 
-                loadFile(data.filePath);
-                if (data.startLine) {
-                    setHighlightRange({
-                        startLineNumber: data.startLine,
-                        startColumn: data.startColumn || 1,
-                        endLineNumber: data.endLine || data.startLine,
-                        endColumn: data.endColumn || 80,
-                    });
-                } else if (data.line) {
-                    setHighlightRange({
-                        startLineNumber: data.line,
-                        startColumn: 1,
-                        endLineNumber: data.line,
-                        endColumn: 80,
-                    });
+                const file = await loadFile(data.filePath);
+
+                // Only set highlight range if file was successfully loaded
+                if (file) {
+                    setTimeout(() => {
+                        if (data.startLine) {
+                            setHighlightRange({
+                                startLineNumber: data.startLine,
+                                startColumn: data.startColumn || 1,
+                                endLineNumber: data.endLine || data.startLine,
+                                endColumn: data.endColumn || 80,
+                            });
+                        } else if (data.line) {
+                            setHighlightRange({
+                                startLineNumber: data.line,
+                                startColumn: 1,
+                                endLineNumber: data.line,
+                                endColumn: 80,
+                            });
+                        }
+                    }, 300);
                 }
             }
         };
 
         // Subscribe to the event using the standard IPC API
-        const unsubscribe = window.api.on(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
+        window.api.on(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
 
         // Cleanup
         return () => {
-            unsubscribe();
+            window.api.removeListener(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
         };
     }, [editorEngine]);
 
@@ -138,13 +144,16 @@ export const DevTab = observer(() => {
                 const filePath = await getFilePathFromOid(element?.oid || '');
 
                 if (filePath) {
-                    await loadFile(filePath);
+                    const file = await loadFile(filePath);
 
-                    // Gets range information for the selected element
-                    const range = await getElementCodeRange(element);
+                    // Only get range information if file was successfully loaded
+                    if (file) {
+                        // Gets range information for the selected element
+                        const range = await getElementCodeRange(element);
 
-                    if (range) {
-                        setHighlightRange(range);
+                        if (range) {
+                            setHighlightRange(range);
+                        }
                     }
                 }
             } catch (error) {
@@ -246,7 +255,7 @@ export const DevTab = observer(() => {
         }
     }, [highlightRange, activeFile]);
 
-    async function loadFile(filePath: string) {
+    async function loadFile(filePath: string): Promise<EditorFile | null> {
         try {
             setIsLoading(true);
             const content = await editorEngine.files.getFileContent(filePath);
@@ -257,7 +266,7 @@ export const DevTab = observer(() => {
             const existingFile = openedFiles.find((f) => f.path === filePath);
             if (existingFile) {
                 setActiveFile(existingFile);
-                return;
+                return existingFile;
             }
 
             const newFile = {
@@ -272,9 +281,10 @@ export const DevTab = observer(() => {
             setOpenedFiles([...openedFiles, newFile]);
             setActiveFile(newFile);
             setIsDirty(false);
-            setHighlightRange(null);
+            return newFile;
         } catch (error) {
             console.error('Error loading file:', error);
+            return null;
         } finally {
             setIsLoading(false);
         }
@@ -421,6 +431,7 @@ export const DevTab = observer(() => {
             if (selectedNode && !selectedNode.isInternal && !selectedNode.data.isDirectory) {
                 loadFile(selectedNode.data.path);
                 setHighlightedIndex(null);
+                setHighlightRange(null);
             }
         }
     };
@@ -428,6 +439,7 @@ export const DevTab = observer(() => {
     const handleFileTreeSelect = async (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
             await loadFile(nodes[0].data.path);
+            setHighlightRange(null);
         }
     };
 
@@ -749,6 +761,18 @@ export const DevTab = observer(() => {
                                                     setHighlightRange(null);
                                                 }
                                             });
+
+                                            // If this file is the active file and we have a highlight range,
+                                            // trigger the highlight effect again
+                                            if (
+                                                activeFile &&
+                                                activeFile.id === file.id &&
+                                                highlightRange
+                                            ) {
+                                                setTimeout(() => {
+                                                    setHighlightRange({ ...highlightRange });
+                                                }, 300);
+                                            }
                                         }}
                                     />
                                 </div>

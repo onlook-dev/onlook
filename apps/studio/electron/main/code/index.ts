@@ -1,13 +1,15 @@
 import type { CodeDiff } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
 import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
-import { dialog, ipcMain, shell } from 'electron';
+import { dialog, shell } from 'electron';
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
 import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
+import { mainWindow } from '..';
+import { MainChannels } from '../../../../../packages/models/src/constants/ipc';
 
 export async function readCodeBlock(
     templateNode: TemplateNode,
@@ -98,6 +100,12 @@ export function openFileInIde(filePath: string, line?: number) {
     const command = ide.getCodeFileCommand(filePath, line);
 
     if (ide.type === IdeType.ONLOOK) {
+        // Send an event to the renderer process to view the file in Onlook's internal IDE
+        mainWindow?.webContents.send(MainChannels.VIEW_CODE_IN_ONLOOK, {
+            filePath,
+            line,
+            startLine: line,
+        });
         return;
     }
 
