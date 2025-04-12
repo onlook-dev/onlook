@@ -109,11 +109,12 @@ class LlmManager {
                     error,
                 }) => {
                     if (NoSuchToolError.isInstance(error)) {
+                        console.error('Invalid tool name', toolCall.toolName);
                         return null; // do not attempt to fix invalid tool names
                     }
                     const tool = tools[toolCall.toolName as keyof typeof tools];
 
-                    console.log(
+                    console.warn(
                         `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
                     );
 
