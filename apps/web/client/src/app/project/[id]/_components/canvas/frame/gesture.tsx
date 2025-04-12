@@ -9,15 +9,10 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
 import { RightClickMenu } from './right-click';
 import type { WebFrameView } from './web-frame';
-export const GestureScreen = observer(({ frame, webFrameRef }: { frame: WebFrame, webFrameRef: React.RefObject<WebFrameView | null> }) => {
+
+export const GestureScreen = observer(({ frame, webFrame }: { frame: WebFrame, webFrame: WebFrameView }) => {
     const editorEngine = useEditorEngine();
     const isResizing = false;
-    const webFrame = webFrameRef.current;
-
-    if (!webFrame) {
-        console.log('No web frame found in gesture screen for frame', frame.id);
-        return null;
-    }
 
     const getRelativeMousePosition = (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
         return getRelativeMousePositionToWebview(e, webFrame);
