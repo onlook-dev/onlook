@@ -185,7 +185,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
     const handleMouseOut = () => {
         editorEngine.elements.clearHoveredElement();
-        editorEngine.overlay.state.updateHoverRect(null);
+        editorEngine.overlay.state.removeHoverRect();
     }
 
     return (

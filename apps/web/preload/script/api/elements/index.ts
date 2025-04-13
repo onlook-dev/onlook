@@ -2,6 +2,7 @@ import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { elementFromDomId } from '../../helpers';
 import { getDomElement } from './helpers';
+
 export const getDomElementByDomId = (domId: string, style: boolean): DomElement => {
     const el = elementFromDomId(domId) || document.body;
     return getDomElement(el as HTMLElement, style);

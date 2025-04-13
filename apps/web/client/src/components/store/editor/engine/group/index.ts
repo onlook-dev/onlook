@@ -19,8 +19,8 @@ export class GroupManager {
             console.error('Failed to get group target');
             return;
         }
-        const { frameId: webviewId, parentDomId } = groupTarget;
-        const groupAction = await this.getGroupAction(webviewId, parentDomId, selectedEls);
+        const { frameId, parentDomId } = groupTarget;
+        const groupAction = await this.getGroupAction(frameId, parentDomId, selectedEls);
 
         if (!groupAction) {
             console.error('Failed to get group action');
@@ -57,12 +57,12 @@ export class GroupManager {
             return null;
         }
 
-        const webviewId = elements[0].frameId;
-        const sameWebview = elements.every((el) => el.frameId === webviewId);
+        const frameId = elements[0].frameId;
+        const sameFrame = elements.every((el) => el.frameId === frameId);
 
-        if (!sameWebview) {
+        if (!sameFrame) {
             if (log) {
-                console.error('Selected elements are not in the same webview');
+                console.error('Selected elements are not in the same frame');
             }
             return null;
         }
@@ -83,7 +83,7 @@ export class GroupManager {
             return null;
         }
 
-        return { frameId: webviewId, parentDomId };
+        return { frameId: frameId, parentDomId };
     }
 
     canGroupElements() {
@@ -95,13 +95,13 @@ export class GroupManager {
     }
 
     async getGroupAction(
-        webviewId: string,
+        frameId: string,
         parentDomId: string,
         selectedEls: DomElement[],
     ): Promise<GroupElementsAction | null> {
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
-        if (!webview) {
-            console.error('Failed to get webview');
+        const frame = this.editorEngine.frames.get(frameId);
+        if (!frame) {
+            console.error('Failed to get frame');
             return null;
         }
 
@@ -113,13 +113,13 @@ export class GroupManager {
         }
 
         const parentTarget: ActionTarget = {
-            frameId: webviewId,
+            frameId: frameId,
             domId: anyParent.domId,
             oid: anyParent.oid,
         };
 
         const children: ActionTarget[] = selectedEls.map((el) => ({
-            webviewId: el.frameId,
+            frameId: el.frameId,
             domId: el.domId,
             oid: el.oid,
         }));
@@ -140,9 +140,9 @@ export class GroupManager {
     }
 
     async getUngroupAction(selectedEl: DomElement): Promise<UngroupElementsAction | null> {
-        const webview = this.editorEngine.webviews.getWebview(selectedEl.frameId);
-        if (!webview) {
-            console.error('Failed to get webview');
+        const frame = this.editorEngine.frames.get(selectedEl.frameId);
+        if (!frame) {
+            console.error('Failed to get frame');
             return null;
         }
 
@@ -153,8 +153,8 @@ export class GroupManager {
         }
 
         // Container is the selected element
-        const actionContainer: ActionElement = await webview.executeJavaScript(
-            `window.api?.getActionElementByDomId('${selectedEl.domId}', true)`,
+        const actionContainer: ActionElement = await frame.view.getActionElementByDomId(
+            selectedEl.domId, true
         );
         if (!actionContainer) {
             console.error('Failed to get container');
@@ -171,7 +171,7 @@ export class GroupManager {
         // Children to be spread where container was
         const targets: ActionTarget[] = actionContainer.children.map((child) => {
             return {
-                webviewId: selectedEl.frameId,
+                frameId: selectedEl.frameId,
                 domId: child.domId,
                 oid: child.oid,
             };

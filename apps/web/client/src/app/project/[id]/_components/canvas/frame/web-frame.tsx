@@ -7,6 +7,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 
 type PenpalRemote = {
     setFrameId: (frameId: string) => void;
+    processDom: () => void;
     getElementAtLoc: (x: number, y: number, getStyle: boolean) => Promise<DomElement>;
     getDomElementByDomId: (domId: string, getStyle: boolean) => Promise<DomElement>;
 };
@@ -56,7 +57,8 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             methods: {}
         });
         const remote = (await connection.promise) as unknown as PenpalRemote;
-        remote.setFrameId(frame.id);
+        await remote.setFrameId(frame.id);
+        await remote.processDom();
         setIframeRemote(remote);
         console.log('Penpal connection initialized for frame', frame.id);
     }, [frame.id, setIframeRemote]);

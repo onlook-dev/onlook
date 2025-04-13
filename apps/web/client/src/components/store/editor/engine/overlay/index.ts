@@ -7,9 +7,23 @@ import { adaptRectToCanvas } from './utils';
 export class OverlayManager {
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
     state: OverlayState = new OverlayState();
+    private animationFrameId: number | null = null;
+    private needsRefresh: boolean = false;
 
     constructor(private editorEngine: EditorEngine) {
         this.listenToScaleChange();
+        this.startRefreshLoop();
+    }
+
+    private startRefreshLoop = () => {
+        const loop = () => {
+            if (this.needsRefresh) {
+                this.performRefresh();
+                this.needsRefresh = false;
+            }
+            this.animationFrameId = requestAnimationFrame(loop);
+        };
+        this.animationFrameId = requestAnimationFrame(loop);
     }
 
     listenToScaleChange() {
@@ -19,12 +33,12 @@ export class OverlayManager {
                 scale: this.editorEngine.canvas?.scale,
             }),
             () => {
-                this.refreshOverlay();
+                this.needsRefresh = true;
             },
         );
     }
 
-    refreshOverlay = async () => {
+    private performRefresh = async () => {
         // Refresh hover rect
         this.state.removeHoverRect();
 
@@ -47,13 +61,14 @@ export class OverlayManager {
         }
 
         this.state.removeClickRects();
-        // for (const clickRect of newClickRects) {
-        //     if (!this.editorEngine.text.isEditing) {
-        //         this.state.addClickRect(clickRect.rect, clickRect.styles);
-        //     } else {
-        //         this.state.updateTextEditor(clickRect.rect);
-        //     }
-        // }
+        for (const clickRect of newClickRects) {
+            this.state.addClickRect(clickRect.rect, clickRect.styles);
+        }
+    };
+
+    // Change the public refreshOverlay to trigger the refresh flag
+    refreshOverlay = () => {
+        this.needsRefresh = true;
     };
 
     showMeasurement() {
@@ -91,6 +106,10 @@ export class OverlayManager {
     };
 
     clear = () => {
+        if (this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
         this.removeMeasurement();
         this.state.clear();
     };

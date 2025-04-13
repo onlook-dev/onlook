@@ -5,6 +5,7 @@
 //     getParentElement,
 //     updateElementInstance,
 // } from './elements';
+import { processDom } from './dom';
 import { getDomElementByDomId, getElementAtLoc } from './elements';
 // import {
 //     getActionElementByDomId,
@@ -25,7 +26,7 @@ import { setFrameId } from './state';
 export function getMethods() {
     return {
         // Misc
-        // processDom,
+        processDom,
         // getComputedStyleByDomId,
         // updateElementInstance,
         setFrameId,
