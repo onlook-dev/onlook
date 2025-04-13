@@ -146,6 +146,7 @@ export enum MainChannels {
     DELETE_PAGE = 'delete-page',
     RENAME_PAGE = 'rename-page',
     DUPLICATE_PAGE = 'duplicate-page',
+    UPDATE_PAGE_METADATA = 'update-page-metadata',
 
     // Images
     SCAN_IMAGES_IN_PROJECT = 'scan-images-in-project',
@@ -157,6 +158,7 @@ export enum MainChannels {
     SCAN_TAILWIND_CONFIG = 'scan-tailwind-config',
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
     DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
+    SCAN_PROJECT_METADATA = 'scan-project-metadata',
 
     // Fonts
     SCAN_FONTS = 'scan-fonts-config',
@@ -166,6 +168,7 @@ export enum MainChannels {
     GET_DEFAULT_FONT = 'get-default-font',
     UPLOAD_FONTS = 'upload-fonts',
     WATCH_FONT_FILE = 'watch-font-file',
+    FONTS_CHANGED = 'fonts-changed',
 
     // Trainloop
     SAVE_APPLY_RESULT = 'save-apply-result',

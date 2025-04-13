@@ -20,11 +20,7 @@ async function scanImagesDirectory(projectRoot: string): Promise<ImageContentDat
                 ) {
                     const imagePath = path.join(imagesPath, entry.name);
                     const image = readFileSync(imagePath, { encoding: 'base64' });
-                    const mimeType = mime.getType(imagePath);
-                    if (!mimeType) {
-                        console.error(`Failed to get mime type for ${imagePath}`);
-                        continue;
-                    }
+                    const mimeType = mime.getType(imagePath) || 'application/octet-stream';
                     images.push({
                         fileName: entry.name,
                         content: `data:${mimeType};base64,${image}`,
@@ -50,6 +46,31 @@ export async function scanNextJsImages(projectRoot: string): Promise<ImageConten
     }
 }
 
+async function getUniqueFileName(imageFolder: string, fileName: string): Promise<string> {
+    let imagePath = path.join(imageFolder, fileName);
+    let counter = 1;
+
+    const fileExt = path.extname(fileName);
+    const baseName = path.basename(fileName, fileExt);
+
+    // Keep trying until we find a unique name
+    while (true) {
+        try {
+            await fs.access(imagePath);
+            // If file exists, try with a new suffix
+            const newFileName = `${baseName} (${counter})${fileExt}`;
+            imagePath = path.join(imageFolder, newFileName);
+            counter++;
+        } catch (err: any) {
+            if (err.code === 'ENOENT') {
+                // File doesn't exist, we can use this path
+                return path.basename(imagePath);
+            }
+            throw err;
+        }
+    }
+}
+
 export async function saveImageToProject(
     projectFolder: string,
     content: string,
@@ -57,19 +78,12 @@ export async function saveImageToProject(
 ): Promise<string> {
     try {
         const imageFolder = path.join(projectFolder, DefaultSettings.IMAGE_FOLDER);
-        const imagePath = path.join(imageFolder, fileName);
+        const uniqueFileName = await getUniqueFileName(imageFolder, fileName);
+        const imagePath = path.join(imageFolder, uniqueFileName);
 
-        try {
-            await fs.access(imagePath);
-            throw new Error(`File ${fileName} already exists`);
-        } catch (err: any) {
-            if (err.code === 'ENOENT') {
-                const buffer = Buffer.from(content, 'base64');
-                await fs.writeFile(imagePath, buffer);
-                return imagePath;
-            }
-            throw err;
-        }
+        const buffer = Buffer.from(content, 'base64');
+        await fs.writeFile(imagePath, buffer);
+        return imagePath;
     } catch (error) {
         console.error('Error uploading image:', error);
         throw error;
