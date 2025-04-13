@@ -134,7 +134,7 @@ export const UploadButton: React.FC<{ onButtonClick: (e: React.MouseEvent) => vo
 }) => (
     <Button
         variant="secondary"
-        className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20 opacity-0 group-hover:opacity-90 transition-opacity"
+        className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20 mt-2"
         type="button"
         onClick={onButtonClick}
     >
