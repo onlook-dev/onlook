@@ -9,7 +9,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
     const projectsManager = useProjectsManager();
     const editorEngine = useEditorEngine();
     const project = projectsManager.project;
-
+    const baseUrl = project?.domains?.custom?.url ?? project?.domains?.base?.url ?? project?.url;
     const {
         title,
         description,
@@ -37,21 +37,15 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
                     ...metadata?.openGraph,
                     title: title,
                     description: description,
-                    url: project.domains?.base?.url || '',
+                    url: baseUrl || '',
                     siteName: title,
                     type: 'website',
                 },
             };
 
             if (!metadata?.metadataBase) {
-                const baseUrl = project.domains?.base?.url;
-                if (baseUrl) {
-                    const url = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
-                    updatedMetadata.metadataBase = new URL(url);
-                } else if (project.url) {
-                    const url = project.url.startsWith('http')
-                        ? project.url
-                        : `https://${project.url}`;
+                const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+                if (url) {
                     updatedMetadata.metadataBase = new URL(url);
                 }
             }
@@ -104,7 +98,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
                 title={title}
                 description={description}
                 isDirty={isDirty}
-                projectUrl={project?.domains?.base?.url ?? project?.url}
+                projectUrl={baseUrl}
                 onTitleChange={handleTitleChange}
                 onDescriptionChange={handleDescriptionChange}
                 onImageSelect={handleImageSelect}

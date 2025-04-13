@@ -11,6 +11,7 @@ export const SiteTab = observer(() => {
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
     const siteSetting = project?.metadata;
+    const baseUrl = project?.domains?.custom?.url ?? project?.domains?.base?.url ?? project?.url;
 
     const {
         title,
@@ -45,14 +46,8 @@ export const SiteTab = observer(() => {
             };
 
             if (!siteSetting?.metadataBase) {
-                const baseUrl = project.domains?.base?.url;
-                if (baseUrl) {
-                    const url = baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`;
-                    updatedMetadata.metadataBase = new URL(url);
-                } else if (project.url) {
-                    const url = project.url.startsWith('http')
-                        ? project.url
-                        : `https://${project.url}`;
+                const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+                if (url) {
                     updatedMetadata.metadataBase = new URL(url);
                 }
             }
@@ -71,7 +66,7 @@ export const SiteTab = observer(() => {
                     ...updatedMetadata.openGraph,
                     title: title,
                     description: description,
-                    url: project?.url || '',
+                    url: baseUrl || '',
                     siteName: title,
                     images: [
                         {
@@ -116,7 +111,7 @@ export const SiteTab = observer(() => {
                 title={title}
                 description={description}
                 isDirty={isDirty}
-                projectUrl={project?.domains?.base?.url ?? project?.url}
+                projectUrl={baseUrl}
                 onTitleChange={handleTitleChange}
                 onDescriptionChange={handleDescriptionChange}
                 onImageSelect={handleImageSelect}
