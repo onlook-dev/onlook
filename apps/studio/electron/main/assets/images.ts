@@ -20,7 +20,7 @@ async function scanImagesDirectory(projectRoot: string): Promise<ImageContentDat
                 ) {
                     const imagePath = path.join(imagesPath, entry.name);
                     const image = readFileSync(imagePath, { encoding: 'base64' });
-                    const mimeType = mime.getType(imagePath);
+                    const mimeType = mime.getType(imagePath) || 'application/octet-stream';
                     images.push({
                         fileName: entry.name,
                         content: `data:${mimeType};base64,${image}`,
