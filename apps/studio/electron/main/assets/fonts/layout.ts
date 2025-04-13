@@ -34,6 +34,7 @@ export async function traverseClassName(
 
         const content = await readFile(filePath);
         if (!content) {
+            console.error(`Failed to read file: ${filePath}`);
             return;
         }
 
@@ -125,6 +126,7 @@ export async function addFontVariableToElement(
 
         const content = await readFile(filePath);
         if (!content) {
+            console.error(`Failed to read file: ${filePath}`);
             return;
         }
 
@@ -236,6 +238,7 @@ export async function removeFontVariableFromLayout(
 
         const content = await readFile(filePath);
         if (!content) {
+            console.error(`Failed to read file: ${filePath}`);
             return;
         }
 
@@ -301,6 +304,7 @@ export async function updateFontInLayout(
 
     const content = await readFile(filePath);
     if (!content) {
+        console.error(`Failed to read file: ${filePath}`);
         return null;
     }
 
