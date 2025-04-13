@@ -43,8 +43,8 @@ export const EditPanel = observer(() => {
     const chatSettings = userManager.settings.settings?.chat || DefaultSettings.CHAT_SETTINGS;
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab] || EDIT_PANEL_WIDTHS[EditorTabValue.CHAT];
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+    const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);

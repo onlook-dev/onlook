@@ -1,15 +1,15 @@
 import type { CodeDiff } from '@onlook/models/code';
+import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
 import { dialog, shell } from 'electron';
+import { mainWindow } from '..';
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
 import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
-import { mainWindow } from '..';
-import { MainChannels } from '../../../../../packages/models/src/constants/ipc';
 
 export async function readCodeBlock(
     templateNode: TemplateNode,
