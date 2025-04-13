@@ -21,17 +21,17 @@ const inter = Inter({
 export default async function RootLayout({
     children
 }: {
-    children: React.ReactNode;
+    children: React.ReactNode
 }) {
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={`${inter.variable}`}>
+        <html lang={locale} className={`${inter.variable} dark`}>
             <body>
                 <TRPCReactProvider>
                     <NextIntlClientProvider>
-                        {children as any}
-                        {/* <Modals /> */}
+                        {/* @ts-ignore */}
+                        {children}
                     </NextIntlClientProvider>
                 </TRPCReactProvider>
             </body>

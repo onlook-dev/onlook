@@ -1,6 +1,6 @@
 {
     "productName": "Onlook",
-    "name": "@onlook/web",
+    "name": "@onlook/web-client",
     "version": "0.1.0",
     "private": true,
     "homepage": "https://onlook.com",
@@ -29,6 +29,7 @@
     },
     "dependencies": {
         "@onlook/ui-v4": "*",
+        "@onlook/web-shared": "*",
         "@radix-ui/react-slot": "^1.1.2",
         "@supabase/ssr": "^0.6.1",
         "@t3-oss/env-nextjs": "^0.12.0",

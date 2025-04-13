@@ -107,6 +107,7 @@ export class ChatManager {
         this.stream.clearBeforeSend();
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
+
         const res: CompletedStreamResponse | null = await this.sendStreamRequest(
             messages,
             requestType,

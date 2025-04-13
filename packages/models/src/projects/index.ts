@@ -58,9 +58,7 @@ export interface Project {
         custom: DomainSettings | null;
     } | null;
     metadata: Metadata | null;
-
-    // deprecated
-    // hosting?: HostingSettings | null;
+    env?: Record<string, string>;
 }
 
 export enum WindowCommand {
