@@ -1,8 +1,7 @@
 import { makeAutoObservable } from 'mobx';
+import { LanguageManager } from './language';
 import { UserSettingsManager } from './settings';
 import { SubscriptionManager } from './subscription';
-import { LanguageManager } from './language';
-
 export class UserManager {
     private subscriptionManager = new SubscriptionManager();
     private settingsManager = new UserSettingsManager();

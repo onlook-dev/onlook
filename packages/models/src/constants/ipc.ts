@@ -49,6 +49,7 @@ export enum MainChannels {
     WRITE_CODE_DIFFS = 'write-code-diffs',
     VIEW_SOURCE_CODE = 'view-source-code',
     VIEW_SOURCE_FILE = 'view-source-file',
+    VIEW_CODE_IN_ONLOOK = 'view-code-in-onlook',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
     CLEAN_CODE_KEYS = 'clean-move-keys',
@@ -171,6 +172,13 @@ export enum MainChannels {
 
     // Trainloop
     SAVE_APPLY_RESULT = 'save-apply-result',
+
+    // Files
+    SCAN_FILES = 'scan-files',
+    GET_PROJECT_FILES = 'get-project-files',
+
+    // Editor
+    SHOW_EDITOR_TAB = 'show-editor-tab',
 }
 
 export enum GitChannels {

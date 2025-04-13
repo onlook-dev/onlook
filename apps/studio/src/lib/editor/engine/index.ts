@@ -29,6 +29,7 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
+import { FilesManager } from './files';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
@@ -54,6 +55,7 @@ export class EditorEngine {
     private overlayManager: OverlayManager;
     private codeManager: CodeManager;
     private pagesManager: PagesManager;
+    private filesManager: FilesManager;
     private errorManager: ErrorManager;
     private imageManager: ImageManager;
     private themeManager: ThemeManager;
@@ -80,8 +82,9 @@ export class EditorEngine {
         this.chatManager = new ChatManager(this, this.projectsManager, this.userManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
-        this.codeManager = new CodeManager(this, this.projectsManager);
+        this.codeManager = new CodeManager(this, this.projectsManager, this.userManager);
         this.pagesManager = new PagesManager(this, this.projectsManager);
+        this.filesManager = new FilesManager(this, this.projectsManager);
         this.errorManager = new ErrorManager(this, this.projectsManager);
         this.imageManager = new ImageManager(this, this.projectsManager);
         this.themeManager = new ThemeManager(this, this.projectsManager);
@@ -181,6 +184,9 @@ export class EditorEngine {
     get pages() {
         return this.pagesManager;
     }
+    get files() {
+        return this.filesManager;
+    }
     get isLayersPanelLocked() {
         return this._isLayersPanelLocked;
     }
@@ -234,6 +240,7 @@ export class EditorEngine {
         this.webviews.deregisterAll();
         this.errors.clear();
         this.chatManager?.dispose();
+        this.filesManager?.dispose();
         this.historyManager?.clear();
         this.elementManager?.clear();
         this.actionManager?.dispose();
