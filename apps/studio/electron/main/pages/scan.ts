@@ -1,4 +1,7 @@
-import type { PageNode } from '@onlook/models/pages';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+import * as t from '@babel/types';
+import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { promises as fs } from 'fs';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
@@ -9,6 +12,87 @@ import {
     ROOT_PAGE_NAME,
     ROOT_PATH_IDENTIFIERS,
 } from './helpers';
+
+export async function extractMetadata(filePath: string): Promise<PageMetadata | undefined> {
+    try {
+        const content = await fs.readFile(filePath, 'utf-8');
+
+        // Parse the file content using Babel
+        const ast = parse(content, {
+            sourceType: 'module',
+            plugins: ['typescript', 'jsx'],
+        });
+
+        let metadata: PageMetadata | undefined;
+
+        // Traverse the AST to find metadata export
+        traverse(ast, {
+            ExportNamedDeclaration(path) {
+                const declaration = path.node.declaration;
+                if (t.isVariableDeclaration(declaration)) {
+                    const declarator = declaration.declarations[0];
+                    if (
+                        t.isIdentifier(declarator.id) &&
+                        declarator.id.name === 'metadata' &&
+                        t.isObjectExpression(declarator.init)
+                    ) {
+                        metadata = {};
+                        // Extract properties from the object expression
+                        for (const prop of declarator.init.properties) {
+                            if (t.isObjectProperty(prop) && t.isIdentifier(prop.key)) {
+                                const key = prop.key.name;
+                                if (t.isStringLiteral(prop.value)) {
+                                    (metadata as any)[key] = prop.value.value;
+                                } else if (t.isObjectExpression(prop.value)) {
+                                    (metadata as any)[key] = extractObjectValue(prop.value);
+                                } else if (t.isArrayExpression(prop.value)) {
+                                    (metadata as any)[key] = extractArrayValue(prop.value);
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        });
+
+        return metadata;
+    } catch (error) {
+        console.error(`Error reading metadata from ${filePath}:`, error);
+        return undefined;
+    }
+}
+
+function extractObjectValue(obj: t.ObjectExpression): any {
+    const result: any = {};
+    for (const prop of obj.properties) {
+        if (t.isObjectProperty(prop) && t.isIdentifier(prop.key)) {
+            const key = prop.key.name;
+            if (t.isStringLiteral(prop.value)) {
+                result[key] = prop.value.value;
+            } else if (t.isObjectExpression(prop.value)) {
+                result[key] = extractObjectValue(prop.value);
+            } else if (t.isArrayExpression(prop.value)) {
+                result[key] = extractArrayValue(prop.value);
+            }
+        }
+    }
+    return result;
+}
+
+function extractArrayValue(arr: t.ArrayExpression): any[] {
+    return arr.elements
+        .map((element) => {
+            if (t.isStringLiteral(element)) {
+                return element.value;
+            } else if (t.isObjectExpression(element)) {
+                return extractObjectValue(element);
+            } else if (t.isArrayExpression(element)) {
+                return extractArrayValue(element);
+            }
+            return null;
+        })
+        .filter(Boolean);
+}
 
 async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<PageNode[]> {
     const nodes: PageNode[] = [];
@@ -38,6 +122,28 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
         cleanPath = '/' + cleanPath.replace(/^\/|\/$/g, '');
 
         const isRoot = ROOT_PATH_IDENTIFIERS.includes(cleanPath);
+
+        // Extract metadata from both page and layout files
+        const pageMetadata = await extractMetadata(path.join(dir, pageFile.name));
+
+        // Look for layout file in the same directory
+        const layoutFile = entries.find(
+            (entry) =>
+                entry.isFile() &&
+                entry.name.startsWith('layout.') &&
+                ALLOWED_EXTENSIONS.includes(path.extname(entry.name)),
+        );
+
+        const layoutMetadata = layoutFile
+            ? await extractMetadata(path.join(dir, layoutFile.name))
+            : undefined;
+
+        // Merge metadata, with page metadata taking precedence over layout metadata
+        const metadata = {
+            ...layoutMetadata,
+            ...pageMetadata,
+        };
+
         nodes.push({
             id: nanoid(),
             name: isDynamicRoute
@@ -49,6 +155,7 @@ async function scanAppDirectory(dir: string, parentPath: string = ''): Promise<P
             children: [],
             isActive: false,
             isRoot,
+            metadata,
         });
     }
 
@@ -110,6 +217,9 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
 
             const isRoot = ROOT_PATH_IDENTIFIERS.includes(cleanPath);
 
+            // Extract metadata from the page file
+            const metadata = await extractMetadata(path.join(dir, entry.name));
+
             nodes.push({
                 id: nanoid(),
                 name:
@@ -122,6 +232,7 @@ async function scanPagesDirectory(dir: string, parentPath: string = ''): Promise
                 children: [],
                 isActive: false,
                 isRoot,
+                metadata,
             });
         }
     }

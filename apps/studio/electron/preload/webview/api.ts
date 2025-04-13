@@ -21,6 +21,7 @@ import { getElementIndex } from './elements/move';
 import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
+import { onOnlookViewCode, removeOnlookViewCode, viewCodeInOnlook } from './events/code';
 import { setWebviewId } from './state';
 import { getTheme, setTheme } from './theme';
 
@@ -63,5 +64,10 @@ export function setApi() {
         startEditingText,
         editText,
         stopEditingText,
+
+        // Onlook IDE
+        onOnlookViewCode,
+        removeOnlookViewCode,
+        viewCodeInOnlook,
     });
 }
