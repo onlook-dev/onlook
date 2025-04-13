@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
-import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import TextInput from '../single/TextInput';
-import { cn } from '@onlook/ui/utils';
-import SelectInput from '../single/SelectInput';
-import { Icons } from '@onlook/ui/icons/index';
 import type { DomElement } from '@onlook/models/element';
+import { Icons } from '@onlook/ui/icons/index';
+import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
+import { useCallback, useEffect, useState } from 'react';
+import SelectInput from '../single/SelectInput';
+import TextInput from '../single/TextInput';
 
 type Position = 'top' | 'bottom' | 'left' | 'right';
 type PositionState = Record<Position, boolean>;
@@ -127,7 +127,7 @@ const PositionInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyl
                 continue;
             }
 
-            const webview = editorEngine.webviews.getWebview(element.webviewId);
+            const webview = editorEngine.webviews.getWebview(element.frameId);
             if (!webview) {
                 continue;
             }

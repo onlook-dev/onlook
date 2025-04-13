@@ -1,26 +1,28 @@
 import { makeAutoObservable } from 'mobx';
-// import { ActionManager } from './action';
-// import { AstManager } from './ast';
+
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
-// import { CopyManager } from './copy';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
-// import { GroupManager } from './group';
+import { FramesManager } from './frames';
 import { HistoryManager } from './history';
 import { ImageManager } from './image';
-// import { InsertManager } from './insert';
-// import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
-// import { ProjectInfoManager } from './projectinfo';
 import { StateManager } from './state';
+import { ThemeManager } from './theme';
+
+// import { CopyManager } from './copy';
+// import { GroupManager } from './group';
+// import { InsertManager } from './insert';
+// import { MoveManager } from './move';
 // import { StyleManager } from './style';
 // import { TextEditingManager } from './text';
-import { FramesManager } from './frames';
-import { ThemeManager } from './theme';
+// import { ActionManager } from './action';
+// import { AstManager } from './ast';
+// import { ProjectInfoManager } from './projectinfo';
 
 // import { nanoid } from 'nanoid/non-secure';
 // import type { ProjectsManager } from '@/lib/projects';
@@ -28,7 +30,6 @@ import { ThemeManager } from './theme';
 // import { invokeMainChannel } from '@/lib/utils';
 
 export class EditorEngine {
-    readonly canvas: CanvasManager;
     readonly frames: FramesManager;
 
     readonly chat: ChatManager;
@@ -39,6 +40,7 @@ export class EditorEngine {
     readonly theme: ThemeManager;
     readonly font: FontManager;
 
+    readonly canvas: CanvasManager = new CanvasManager();
     readonly overlay: OverlayManager = new OverlayManager(this);
     readonly state: StateManager = new StateManager();
     readonly history: HistoryManager = new HistoryManager(this);
@@ -62,7 +64,6 @@ export class EditorEngine {
         // private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        this.canvas = new CanvasManager();
         // this.chat = new ChatManager(this, this.projectsManager, this.userManager);
         this.frames = new FramesManager(this,
             // this.projectsManager

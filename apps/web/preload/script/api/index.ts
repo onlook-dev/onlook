@@ -1,4 +1,3 @@
-// import { processDom } from './dom';
 // import {
 //     getChildrenCount,
 //     getDomElementByDomId,
@@ -6,9 +5,7 @@
 //     getParentElement,
 //     updateElementInstance,
 // } from './elements';
-import {
-    getElementAtLoc,
-} from './elements';
+import { getDomElementByDomId, getElementAtLoc } from './elements';
 // import {
 //     getActionElementByDomId,
 //     getActionLocation,
@@ -22,7 +19,7 @@ import {
 // import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
 // import { getComputedStyleByDomId } from './elements/style';
 // import { editText, startEditingText, stopEditingText } from './elements/text';
-// import { setWebviewId } from './state';
+import { setFrameId } from './state';
 // import { getTheme, setTheme } from './theme';
 
 export function getMethods() {
@@ -31,12 +28,12 @@ export function getMethods() {
         // processDom,
         // getComputedStyleByDomId,
         // updateElementInstance,
-        // setWebviewId,
+        setFrameId,
         // getFirstOnlookElement,
 
-        // // Elements
+        // Elements
         getElementAtLoc,
-        // getDomElementByDomId,
+        getDomElementByDomId,
         // setElementType,
         // getElementType,
         // getParentElement,

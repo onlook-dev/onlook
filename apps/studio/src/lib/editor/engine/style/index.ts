@@ -3,12 +3,12 @@ import {
     type StyleActionTarget,
     type UpdateStyleAction,
 } from '@onlook/models/actions';
+import type { Font } from '@onlook/models/assets';
 import type { DomElement } from '@onlook/models/element';
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
+import { convertFontString } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
-import type { Font } from '@onlook/models/assets';
-import { convertFontString } from '@onlook/utility';
 
 export interface SelectedStyle {
     styles: Record<string, string>;
@@ -129,7 +129,7 @@ export class StyleManager {
                 ),
             };
             const target: StyleActionTarget = {
-                webviewId: selectedEl.webviewId,
+                frameId: selectedEl.frameId,
                 domId: selectedEl.domId,
                 oid: this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid,
                 change: change,

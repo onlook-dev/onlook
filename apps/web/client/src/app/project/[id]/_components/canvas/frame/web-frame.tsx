@@ -5,6 +5,12 @@ import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
 
+type PenpalRemote = {
+    setFrameId: (frameId: string) => void;
+    getElementAtLoc: (x: number, y: number, getStyle: boolean) => Promise<DomElement>;
+    getDomElementByDomId: (domId: string, getStyle: boolean) => Promise<DomElement>;
+};
+
 // TODO: Move this to a shared package
 export type WebFrameView = HTMLIFrameElement &
     Pick<
@@ -22,9 +28,7 @@ export type WebFrameView = HTMLIFrameElement &
     > & {
         supportsOpenDevTools: () => boolean;
         capturePageAsCanvas: () => Promise<HTMLCanvasElement>;
-        getElementAtLoc: (x: number, y: number, getStyle: boolean) => Promise<DomElement>;
-        getElementByDomId: (domId: string, getStyle: boolean) => Promise<DomElement>;
-    };
+    } & PenpalRemote;
 
 interface WebFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: WebFrame;
@@ -51,7 +55,8 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             // Methods we are exposing to the iframe window.
             methods: {}
         });
-        const remote = await connection.promise as any;
+        const remote = (await connection.promise) as unknown as PenpalRemote;
+        remote.setFrameId(frame.id);
         setIframeRemote(remote);
         console.log('Penpal connection initialized for frame', frame.id);
     }, [frame.id, setIframeRemote]);
@@ -130,9 +135,9 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
                 }
                 return contentDocument.readyState !== 'complete';
             },
-            getElementAtLoc: async (x: number, y: number, getStyle: boolean) => {
-                return await iframeRemote?.getElementAtLoc(x, y, getStyle);
-            },
+            getElementAtLoc: iframeRemote?.getElementAtLoc,
+            getDomElementByDomId: iframeRemote?.getDomElementByDomId,
+            setFrameId: iframeRemote?.setFrameId,
         });
 
         return iframe as WebFrameView;

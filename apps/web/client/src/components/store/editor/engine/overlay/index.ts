@@ -15,8 +15,8 @@ export class OverlayManager {
     listenToScaleChange() {
         reaction(
             () => ({
-                position: this.editorEngine.canvas.position,
-                scale: this.editorEngine.canvas.scale,
+                position: this.editorEngine.canvas?.position,
+                scale: this.editorEngine.canvas?.scale,
             }),
             () => {
                 this.refreshOverlay();
@@ -37,7 +37,7 @@ export class OverlayManager {
                 continue;
             }
             const { view } = frameData;
-            const el: DomElement = await view.getElementByDomId(selectedElement.domId, true);
+            const el: DomElement = await view.getDomElementByDomId(selectedElement.domId, true);
             if (!el) {
                 console.error('Element not found');
                 continue;
@@ -47,13 +47,13 @@ export class OverlayManager {
         }
 
         this.state.removeClickRects();
-        for (const clickRect of newClickRects) {
-            if (!this.editorEngine.text.isEditing) {
-                this.state.addClickRect(clickRect.rect, clickRect.styles);
-            } else {
-                this.state.updateTextEditor(clickRect.rect);
-            }
-        }
+        // for (const clickRect of newClickRects) {
+        //     if (!this.editorEngine.text.isEditing) {
+        //         this.state.addClickRect(clickRect.rect, clickRect.styles);
+        //     } else {
+        //         this.state.updateTextEditor(clickRect.rect);
+        //     }
+        // }
     };
 
     showMeasurement() {

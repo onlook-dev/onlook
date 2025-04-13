@@ -3,11 +3,11 @@ import type { LayerNode } from '@onlook/models/element';
 import debounce from 'lodash/debounce';
 import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
-import { getWebviewId } from './state';
+import { getFrameId } from './state';
 
 const processDebounced = debounce((root: HTMLElement) => {
-    const webviewId = getWebviewId();
-    if (!webviewId) {
+    const frameId = getFrameId();
+    if (!frameId) {
         console.warn('Webview id not found, skipping dom processing');
         return false;
     }
@@ -32,7 +32,7 @@ const processDebounced = debounce((root: HTMLElement) => {
 }, 500);
 
 export function processDom(root: HTMLElement = document.body): boolean {
-    if (!getWebviewId()) {
+    if (!getFrameId()) {
         console.warn('Webview id not found, skipping dom processing');
         return false;
     }
@@ -108,7 +108,7 @@ function processNode(node: HTMLElement): LayerNode {
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
         component: component || null,
-        webviewId: getWebviewId(),
+        frameId: getFrameId(),
         children: null,
         parent: null,
     };
