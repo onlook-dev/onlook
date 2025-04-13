@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import type { Metadata } from '@onlook/models';
+import type { PageMetadata } from '@onlook/models';
+import { useEffect, useState } from 'react';
 
 interface UseMetadataFormProps {
-    initialMetadata?: Metadata;
+    initialMetadata?: PageMetadata;
     defaultTitle?: string;
     defaultDescription?: string;
 }

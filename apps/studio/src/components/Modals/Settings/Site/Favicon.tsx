@@ -1,13 +1,13 @@
+import { useEditorEngine } from '@/components/Context';
+import { Button } from '@onlook/ui/button';
 import React, {
+    forwardRef,
     useCallback,
     useEffect,
-    useState,
-    forwardRef,
     useImperativeHandle,
     useRef,
+    useState,
 } from 'react';
-import { Button } from '@onlook/ui/button';
-import { useEditorEngine } from '@/components/Context';
 
 export interface FaviconRef {
     reset: () => void;
@@ -120,7 +120,7 @@ export const Favicon = forwardRef<
                     id="favicon-upload"
                     onChange={handleFileSelect}
                 />
-                <img src={selectedImage ?? ''} />
+                {selectedImage && <img src={selectedImage} />}
             </div>
             <UploadButton onButtonClick={handleButtonClick} />
         </div>

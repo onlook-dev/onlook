@@ -1,7 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
-import type { Metadata, PageNode } from '@onlook/models/pages';
+import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { doesRouteExist, normalizeRoute, validateNextJsRoute } from './helper';
@@ -242,14 +242,14 @@ export class PagesManager {
         }
     }
 
-    public async updateMetadataPage(pagePath: string, metadata: Metadata) {
+    public async updateMetadataPage(pagePath: string, metadata: PageMetadata) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
             throw new Error('No project root found');
         }
 
         if (!doesRouteExist(this.pages, pagePath)) {
-            throw new Error('A page with this name does not exists');
+            throw new Error('A page with this name does not exist');
         }
 
         try {

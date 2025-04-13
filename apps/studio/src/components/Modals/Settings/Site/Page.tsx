@@ -1,11 +1,11 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { DefaultSettings, type Metadata } from '@onlook/models';
-import { memo } from 'react';
 import { useMetadataForm } from '@/hooks/useMetadataForm';
-import { MetadataForm } from './MetadataForm';
+import { DefaultSettings, type PageMetadata } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
+import { memo } from 'react';
+import { MetadataForm } from './MetadataForm';
 
-export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: string }) => {
+export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
     const projectsManager = useProjectsManager();
     const editorEngine = useEditorEngine();
     const project = projectsManager.project;
@@ -29,7 +29,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: Metadata; path: st
             return;
         }
         try {
-            const updatedMetadata: Metadata = {
+            const updatedMetadata: PageMetadata = {
                 ...metadata,
                 title,
                 description,

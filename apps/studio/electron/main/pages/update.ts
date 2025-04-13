@@ -1,12 +1,12 @@
-import { promises as fs } from 'fs';
-import * as path from 'path';
+import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
-import generate from '@babel/generator';
-import { detectRouterType } from './helpers';
-import type { Metadata } from '@onlook/models';
+import type { PageMetadata } from '@onlook/models';
+import { promises as fs } from 'fs';
+import * as path from 'path';
 import { formatContent, writeFile } from '../code/files';
+import { detectRouterType } from './helpers';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,
@@ -16,7 +16,7 @@ const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     return <>{children}</>;
 }`;
 
-async function updateMetadataInFile(filePath: string, metadata: Metadata) {
+async function updateMetadataInFile(filePath: string, metadata: PageMetadata) {
     // Read the current file content
     const content = await fs.readFile(filePath, 'utf-8');
 
@@ -206,7 +206,11 @@ async function updateMetadataInFile(filePath: string, metadata: Metadata) {
     await writeFile(filePath, formattedContent);
 }
 
-export async function updateNextJsPage(projectRoot: string, pagePath: string, metadata: Metadata) {
+export async function updateNextJsPage(
+    projectRoot: string,
+    pagePath: string,
+    metadata: PageMetadata,
+) {
     try {
         const routerConfig = await detectRouterType(projectRoot);
 

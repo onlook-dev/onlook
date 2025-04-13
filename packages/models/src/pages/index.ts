@@ -1,4 +1,4 @@
-import type { OpenGraph, OGImage } from './opengraph';
+import type { OGImage, OpenGraph } from './opengraph';
 
 export type { OGImage };
 
@@ -6,13 +6,13 @@ export interface PageNode {
     id: string;
     path: string;
     name: string;
-    metadata?: Metadata;
+    metadata?: PageMetadata;
     children?: PageNode[];
     isActive: boolean;
     isRoot?: boolean;
 }
 
-export interface Metadata {
+export interface PageMetadata {
     title?: string;
     description?: string;
     applicationName?: string;

@@ -1,13 +1,13 @@
+import type { OGImage, PageMetadata } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Textarea } from '@onlook/ui/textarea';
-import { Button } from '@onlook/ui/button';
-import type { Metadata, OGImage } from '@onlook/models';
-import ImagePicker from './Image';
-import type { ImagePickerRef } from './Image';
-import { Favicon } from './Favicon';
-import type { FaviconRef } from './Favicon';
 import { useRef } from 'react';
+import type { FaviconRef } from './Favicon';
+import { Favicon } from './Favicon';
+import type { ImagePickerRef } from './Image';
+import ImagePicker from './Image';
 
 const getImageUrl = (images: OGImage | OGImage[] | undefined): string | undefined => {
     if (!images) {
@@ -35,7 +35,7 @@ interface MetadataFormProps {
     onDiscard: () => void;
     onSave: () => void;
     showFavicon?: boolean;
-    currentMetadata?: Metadata;
+    currentMetadata?: PageMetadata;
     defaultTitle?: string;
     defaultDescription?: string;
 }

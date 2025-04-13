@@ -1,10 +1,10 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { observer } from 'mobx-react-lite';
-import { DefaultSettings, type Metadata } from '@onlook/models';
 import { useMetadataForm } from '@/hooks/useMetadataForm';
-import { MetadataForm } from './MetadataForm';
-import { useState } from 'react';
+import { DefaultSettings, type PageMetadata } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
+import { MetadataForm } from './MetadataForm';
 
 export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -23,7 +23,7 @@ export const SiteTab = observer(() => {
         handleDiscard,
         setIsDirty,
     } = useMetadataForm({
-        initialMetadata: siteSetting,
+        initialMetadata: siteSetting ?? undefined,
     });
 
     const [uploadedFavicon, setUploadedFavicon] = useState<File | null>(null);
@@ -38,7 +38,7 @@ export const SiteTab = observer(() => {
             return;
         }
         try {
-            const updatedMetadata: Metadata = {
+            const updatedMetadata: PageMetadata = {
                 ...siteSetting,
                 title,
                 description,
@@ -124,7 +124,7 @@ export const SiteTab = observer(() => {
                 onDiscard={handleDiscard}
                 onSave={handleSave}
                 showFavicon={true}
-                currentMetadata={siteSetting}
+                currentMetadata={siteSetting ?? undefined}
             />
         </div>
     );

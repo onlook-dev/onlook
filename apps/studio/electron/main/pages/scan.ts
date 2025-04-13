@@ -1,7 +1,7 @@
-import type { Metadata, PageNode } from '@onlook/models/pages';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
+import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { promises as fs } from 'fs';
 import { nanoid } from 'nanoid';
 import * as path from 'path';
@@ -13,7 +13,7 @@ import {
     ROOT_PATH_IDENTIFIERS,
 } from './helpers';
 
-export async function extractMetadata(filePath: string): Promise<Metadata | undefined> {
+export async function extractMetadata(filePath: string): Promise<PageMetadata | undefined> {
     try {
         const content = await fs.readFile(filePath, 'utf-8');
 
@@ -23,7 +23,7 @@ export async function extractMetadata(filePath: string): Promise<Metadata | unde
             plugins: ['typescript', 'jsx'],
         });
 
-        let metadata: Metadata | undefined;
+        let metadata: PageMetadata | undefined;
 
         // Traverse the AST to find metadata export
         traverse(ast, {

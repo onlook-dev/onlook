@@ -1,5 +1,7 @@
+import type { PageMetadata } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
+import path from 'path';
 import {
     createNextJsPage,
     deleteNextJsPage,
@@ -9,9 +11,7 @@ import {
     renameNextJsPage,
     scanNextJsPages,
 } from '../pages';
-import type { Metadata } from '@onlook/models';
 import { updateNextJsPage } from '../pages/update';
-import path from 'path';
 
 export function listenForPageMessages() {
     ipcMain.handle(MainChannels.SCAN_PAGES, async (_event, projectRoot: string) => {
@@ -76,7 +76,7 @@ export function listenForPageMessages() {
                 projectRoot,
                 pagePath,
                 metadata,
-            }: { projectRoot: string; pagePath: string; metadata: Metadata },
+            }: { projectRoot: string; pagePath: string; metadata: PageMetadata },
         ) => {
             return await updateNextJsPage(projectRoot, pagePath, metadata);
         },

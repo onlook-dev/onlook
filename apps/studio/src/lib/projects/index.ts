@@ -1,4 +1,4 @@
-import type { Metadata } from '@onlook/models';
+import type { PageMetadata } from '@onlook/models';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { AppState, ProjectsCache } from '@onlook/models/settings';
@@ -130,7 +130,7 @@ export class ProjectsManager {
 
     async scanProjectMetadata(project: Project) {
         try {
-            const metadata: Metadata | null = await invokeMainChannel(
+            const metadata: PageMetadata | null = await invokeMainChannel(
                 MainChannels.SCAN_PROJECT_METADATA,
                 {
                     projectRoot: project.folderPath,

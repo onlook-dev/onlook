@@ -1,5 +1,5 @@
 import { Orientation, Theme } from '../constants';
-import type { Metadata } from '../pages';
+import type { PageMetadata } from '../pages';
 
 export interface RectPosition {
     x: number;
@@ -57,7 +57,7 @@ export interface Project {
         base: DomainSettings | null;
         custom: DomainSettings | null;
     } | null;
-    metadata: Metadata | null;
+    metadata: PageMetadata | null;
     env?: Record<string, string>;
 }
 
