@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { nanoid } from 'nanoid';
+import { CUSTOM_OUTPUT_DIR } from '@onlook/models';
 
 export interface FileNode {
     id: string;
@@ -12,7 +13,7 @@ export interface FileNode {
 }
 
 // Directories to ignore during scanning
-const IGNORED_DIRECTORIES = ['node_modules', '.git', '.next', 'dist', 'build'];
+const IGNORED_DIRECTORIES = ['node_modules', '.git', '.next', 'dist', 'build', CUSTOM_OUTPUT_DIR];
 
 // Extensions focus for code editing
 const PREFERRED_EXTENSIONS = [
