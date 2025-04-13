@@ -175,11 +175,6 @@ const ProjectBreadcrumb = observer(() => {
                         onClick={() => {
                             editorEngine.isSettingsOpen = true;
                             editorEngine.settingsTab = SettingsTabValue.PROJECT;
-                            editorEngine.pages.scanPages();
-                            editorEngine.image.scanImages();
-                            if (projectsManager.project) {
-                                projectsManager.scanProjectMetadata(projectsManager.project);
-                            }
                         }}
                     >
                         {t('projects.actions.settings')}

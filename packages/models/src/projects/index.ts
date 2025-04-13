@@ -1,5 +1,5 @@
-import type { Metadata } from 'src/pages';
 import { Orientation, Theme } from '../constants';
+import type { Metadata } from '../pages';
 
 export interface RectPosition {
     x: number;

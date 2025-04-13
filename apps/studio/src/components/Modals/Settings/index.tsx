@@ -1,22 +1,22 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
+import type { PageNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useMemo } from 'react';
 import AdvancedTab from './Advance';
 import { DomainTab } from './Domain';
 import PreferencesTab from './Preferences';
 import ProjectTab from './Project';
-import { VersionsTab } from './Versions';
-import { capitalizeFirstLetter } from '/common/helpers';
 import { SiteTab } from './Site';
 import { PageTab } from './Site/Page';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import type { PageNode } from '@onlook/models';
-import { useMemo } from 'react';
+import { VersionsTab } from './Versions';
+import { capitalizeFirstLetter } from '/common/helpers';
 
 interface SettingTab {
     label: SettingsTabValue | string;
@@ -29,6 +29,14 @@ export const SettingsModal = observer(() => {
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
     const pagesManager = editorEngine.pages;
+
+    useEffect(() => {
+        if (editorEngine.isSettingsOpen && project) {
+            pagesManager.scanPages();
+            editorEngine.image.scanImages();
+            projectsManager.scanProjectMetadata(project);
+        }
+    }, [editorEngine.isSettingsOpen]);
 
     const flattenPages = useMemo(() => {
         return pagesManager.tree.reduce((acc, page) => {
