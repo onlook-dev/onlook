@@ -1,15 +1,22 @@
-import { Icons } from "@onlook/ui-v4/icons";
 import { useState } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui-v4/dropdown-menu";
+
+const UNITS = ["PX", "%", "REM", "VW", "VH"] as const;
+type Unit = typeof UNITS[number];
 
 interface InputIconProps {
-    icon?: keyof typeof Icons;
     value: number;
-    unit?: string;
+    unit?: Unit;
     onChange?: (value: number) => void;
+    onUnitChange?: (unit: Unit) => void;
 }
 
-export const InputIcon = ({ icon, value, unit = "px", onChange }: InputIconProps) => {
-    const Icon = icon ? Icons[icon] : null;
+export const InputIcon = ({ 
+    value, 
+    unit = "PX", 
+    onChange,
+    onUnitChange 
+}: InputIconProps) => {
     const [inputValue, setInputValue] = useState(value.toString());
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,21 +37,33 @@ export const InputIcon = ({ icon, value, unit = "px", onChange }: InputIconProps
     };
 
     return (
-        <div className="flex flex-1 items-center gap-2">
-            {Icon && <Icon className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />}
-            <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
-                <input 
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={inputValue}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase"
-                />
-                            
-                <span className="text-[12px] text-muted-foreground uppercase">{unit}</span>
-            </div>
+        <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
+            <input 
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={inputValue}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className="w-full bg-transparent text-sm text-white focus:outline-none uppercase"
+            />
+                        
+            <DropdownMenu>
+                <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                    {unit}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                    {UNITS.map((unitOption) => (
+                        <DropdownMenuItem
+                            key={unitOption}
+                            onClick={() => onUnitChange?.(unitOption)}
+                            className="text-[12px] text-center px-2"
+                        >
+                            {unitOption}
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 };
