@@ -8,7 +8,7 @@ import { InputIcon } from "../inputs/input-icon";
 import { InputRadio } from "../inputs/input-radio";
 
 export function LayoutPosition() {
-  const [layoutType, setLayoutType] = useState<"--" | "Flex" | "Grid">("Flex");
+  const [layoutType, setLayoutType] = useState<"None" | "Flex" | "Grid">("Flex");
   const [direction, setDirection] = useState<"vertical" | "horizontal">("horizontal");
   const [verticalAlign, setVerticalAlign] = useState<"top" | "center" | "bottom" | "space-between">("center");
   const [horizontalAlign, setHorizontalAlign] = useState<"left" | "center" | "right" | "space-between">("center");
@@ -24,7 +24,7 @@ export function LayoutPosition() {
   const [positionOpen, setPositionOpen] = useState(true);
 
   const typeOptions = [
-    { value: "--", label: "--" },
+    { value: "None", label: "None" },
     { value: "Flex", label: "Flex" },
     { value: "Grid", label: "Grid" },
   ];
@@ -65,7 +65,7 @@ export function LayoutPosition() {
                 <InputRadio 
                   options={typeOptions} 
                   value={layoutType} 
-                  onChange={(value) => setLayoutType(value as "--" | "Flex" | "Grid")}
+                  onChange={(value) => setLayoutType(value as "None" | "Flex" | "Grid")}
                   className="flex-1"
                 />
               </div>
