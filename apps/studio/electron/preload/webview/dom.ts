@@ -114,7 +114,7 @@ function processNode(node: HTMLElement): LayerNode {
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
         component: component || null,
-        frameId: getWebviewId(),
+        webviewId: getWebviewId(),
         children: null,
         parent: null,
     };

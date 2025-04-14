@@ -37,7 +37,7 @@ export class ElementManager {
 
         const webviewEl: DomElement = {
             ...domEl,
-            frameId: webview.id,
+            webviewId: webview.id,
         };
         const adjustedRect = adaptRectToCanvas(webviewEl.rect, webview);
         const isComponent = !!domEl.instanceId;
@@ -54,7 +54,7 @@ export class ElementManager {
         const selectedEl = this.selected[0];
         const hoverEl = this.hovered;
 
-        const webViewId = selectedEl.frameId;
+        const webViewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webViewId);
         if (!webview) {
             return;
@@ -137,7 +137,7 @@ export class ElementManager {
         }
 
         for (const selectedEl of selected) {
-            const webviewId = selectedEl.frameId;
+            const webviewId = selectedEl.webviewId;
             const webview = this.editorEngine.webviews.getWebview(webviewId);
             if (!webview) {
                 return;
