@@ -196,7 +196,7 @@ export class InsertManager {
 
         const targets: Array<ActionTarget> = [
             {
-                frameId: webview.id,
+                webviewId: webview.id,
                 domId,
                 oid: null,
             },
@@ -271,7 +271,7 @@ export class InsertManager {
 
         const action: InsertElementAction = {
             type: 'insert-element',
-            targets: [{ frameId: webview.id, domId, oid }],
+            targets: [{ webviewId: webview.id, domId, oid }],
             element: imageElement,
             location,
             editText: false,
@@ -311,7 +311,7 @@ export class InsertManager {
 
                     domId: targetElement.domId,
                     oid: targetElement.oid,
-                    frameId: webview.id,
+                    webviewId: webview.id,
                 },
             ],
         };
@@ -352,7 +352,7 @@ export class InsertManager {
             type: 'insert-element',
             targets: [
                 {
-                    frameId: webview.id,
+                    webviewId: webview.id,
                     domId,
                     oid: null,
                 },

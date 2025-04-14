@@ -49,7 +49,7 @@ const LayersTab = observer(() => {
                 return;
             }
             const dragNode = dragNodes[0];
-            const webview = editorEngine.webviews.getWebview(dragNode.data.frameId);
+            const webview = editorEngine.webviews.getWebview(dragNode.data.webviewId);
 
             if (!webview) {
                 console.error('No webview found');
@@ -115,7 +115,7 @@ const LayersTab = observer(() => {
     const childrenAccessor = useCallback(
         (node: LayerNode) => {
             const children = node.children
-                ?.map((child) => editorEngine.ast.mappings.getLayerNode(node.frameId, child))
+                ?.map((child) => editorEngine.ast.mappings.getLayerNode(node.webviewId, child))
                 .filter((child) => child !== undefined) as LayerNode[];
 
             return children?.length ? children : null;
