@@ -21,7 +21,7 @@
         "db:gen": "bun --filter @onlook/supabase db:gen",
         "db:gen:local": "bun --filter @onlook/backend db:gen",
         "build": "bun --filter '*' build",
-        "dev": "bun --filter '*' dev",
+        "dev": "bun --filter @onlook/web dev",
         "test": "bun --filter '*' test",
         "format": "bun --filter '*' format",
         "lint": "bun --filter @onlook/web-client lint",

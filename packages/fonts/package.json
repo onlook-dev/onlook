@@ -1,0 +1,36 @@
+{
+    "name": "@onlook/fonts",
+    "description": "Onlook supported fonts",
+    "version": "0.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "type": "module",
+    "main": "src/index.ts",
+    "scripts": {
+        "clean": "rm -rf node_modules",
+        "lint": "eslint --fix",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "onlook",
+        "fonts"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.com",
+    "exports": {
+        ".": "./src/index.ts",
+        "./*": "./src/*/index.ts"
+    },
+    "devDependencies": {
+        "@onlook/typescript": "*",
+        "typescript": "^5.5.4"
+    },
+    "dependencies": {}
+}
