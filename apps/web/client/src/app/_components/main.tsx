@@ -5,6 +5,7 @@ import { Button } from "@onlook/ui-v4/button";
 import { type User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Csb } from "./csb";
 
 export default function Main() {
     const supabase = createClient();
@@ -48,6 +49,7 @@ export default function Main() {
                 <p className="text-lg">
                     Cursor for Designers
                 </p>
+                <Csb />
                 <textarea className="w-96 h-32 p-4 border-2 border-gray-300 rounded-md" />
             </div>
         </main>
