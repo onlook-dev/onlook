@@ -75,13 +75,7 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
 
     const handleDuplicate = async () => {
         try {
-            const basePath = node.data.path;
-            const newPath = basePath.replace(/(\/[^/]+)$/, (match) => {
-                const baseName = getBaseName(match);
-                const newName = `${baseName}1`;
-                return `/${newName}`;
-            });
-            await editorEngine.pages.duplicatePage(basePath, newPath);
+            await editorEngine.pages.duplicatePage(node.data.path, node.data.path);
 
             toast({
                 title: 'Page duplicated',
