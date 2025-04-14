@@ -9,7 +9,11 @@ import { InputRadio } from "../inputs/input-radio";
 import { Button } from "@onlook/ui-v4/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@onlook/ui-v4/dropdown-menu";
 
-export function LayoutPosition() {
+interface LayoutPositionProps {
+  className?: string;
+}
+
+export function LayoutPosition({ className }: LayoutPositionProps) {
   const [layoutType, setLayoutType] = useState<"None" | "Flex" | "Grid">("Flex");
   const [direction, setDirection] = useState<"vertical" | "horizontal">("horizontal");
   const [verticalAlign, setVerticalAlign] = useState<"top" | "center" | "bottom" | "space-between">("center");
@@ -53,7 +57,7 @@ export function LayoutPosition() {
   ];
 
   return (
-    <div className="space-y-1">
+    <div className={cn("space-y-1", className)}>
       {/* Layout Section */}
       <div className="rounded-lg bg-background backdrop-blur p-4">
         <div className="flex items-center justify-between mb-0 cursor-pointer" onClick={() => setLayoutOpen(!layoutOpen)}>

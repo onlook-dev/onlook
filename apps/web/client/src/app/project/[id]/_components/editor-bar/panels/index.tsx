@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { LayoutPosition } from "./layout-position";
-
+import { Typography } from "./typography";
 type EditorBarProps = {
     selectedElement: "div" | "text" | "image";
 };
@@ -23,7 +23,8 @@ export const Panels = ({ selectedElement }: EditorBarProps) => {
             }}
         >
             <div className="p-4 pl-0 overflow-y-auto">
-                <LayoutPosition />
+                <LayoutPosition className="hidden" />
+                <Typography className="" />
             </div>
         </motion.div>
     );
