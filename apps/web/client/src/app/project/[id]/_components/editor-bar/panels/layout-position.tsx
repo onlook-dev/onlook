@@ -18,6 +18,8 @@ export function LayoutPosition() {
   const [width, setWidth] = useState("100");
   const [height, setHeight] = useState("228");
   const [positionType, setPositionType] = useState("Relative");
+  const [showMarginInputs, setShowMarginInputs] = useState(false);
+  const [showPaddingInputs, setShowPaddingInputs] = useState(false);
 
   // Section collapse states
   const [layoutOpen, setLayoutOpen] = useState(true);
@@ -111,7 +113,7 @@ export function LayoutPosition() {
 
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground w-24">Gap</span>
-              <div className="w-[225px]">
+              <div className="w-[225px] flex items-center gap-1">
                 <InputIcon value={12} />
               </div>
             </div>
@@ -127,7 +129,51 @@ export function LayoutPosition() {
         </div>
         {spacingOpen && (
           <div className="pt-3 space-y-2">
-            {/* Spacing content */}
+            {/* Margin */}
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-muted-foreground w-24">Margin</span>
+              <div className="w-[225px] flex items-center gap-1">
+                <InputIcon value={12} />
+                <div 
+                  onClick={() => setShowMarginInputs(!showMarginInputs)}
+                  className="min-w-9 h-9 flex items-center justify-center bg-background-tertiary/50 rounded-md cursor-pointer hover:bg-background-tertiary/80"
+                >
+                  <Icons.Margin className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
+                </div>
+              </div>
+            </div>
+            {showMarginInputs && (
+              <div className="grid grid-cols-2 gap-2">
+                <InputIcon icon="LeftSide" value={24} />
+                <InputIcon icon="TopSide" value={16} />
+                <InputIcon icon="RightSide" value={24} />
+                <InputIcon icon="BottomSide" value={16} />
+              </div>
+            )}
+
+            {/* Padding */}
+            <div className="flex items-center gap-1 mt-2">
+              <span className="text-sm text-muted-foreground w-24">Padding</span>
+             
+              <div className="w-[225px] flex items-center gap-1">
+                <InputIcon value={12} />
+                <div 
+                  onClick={() => setShowPaddingInputs(!showPaddingInputs)}
+                  className="min-w-9 h-9 flex items-center justify-center bg-background-tertiary/50 rounded-md cursor-pointer hover:bg-background-tertiary/80"
+                >
+                  <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
+                </div>
+              </div>
+
+            </div>
+            {showPaddingInputs && (
+              <div className="grid grid-cols-2 gap-2">
+                <InputIcon icon="LeftSide" value={24} />
+                <InputIcon icon="TopSide" value={16} />
+                <InputIcon icon="RightSide" value={24} />
+                <InputIcon icon="BottomSide" value={16} />
+              </div>
+            )}
           </div>
         )}
       </div>
