@@ -1,10 +1,10 @@
 import { EditorAttributes } from '@onlook/models/constants';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid/non-secure';
 
 export function getOrAssignDomId(node: HTMLElement): string {
     let domId = node.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string;
     if (!domId) {
-        domId = `odid-${uuidv4()}`;
+        domId = `odid-${nanoid()}`;
         node.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, domId);
     }
     return domId;

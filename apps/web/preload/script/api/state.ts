@@ -1,13 +1,12 @@
-
-export function setWebviewId(webviewId: string) {
-    (window as any)._onlookWebviewId = webviewId;
+export function setFrameId(frameId: string) {
+    (window as any)._onlookFrameId = frameId;
 }
 
-export function getWebviewId(): string {
-    const webviewId = (window as any)._onlookWebviewId;
-    if (!webviewId) {
-        console.warn('Webview id not found');
+export function getFrameId(): string {
+    const frameId = (window as any)._onlookFrameId;
+    if (!frameId) {
+        console.warn('Frame id not found');
         return '';
     }
-    return webviewId;
+    return frameId;
 }

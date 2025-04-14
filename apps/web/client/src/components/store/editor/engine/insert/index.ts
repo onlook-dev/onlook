@@ -14,6 +14,7 @@ import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
+import type { FrameData } from '../frames';
 import type { RectDimensions } from '../overlay/rect';
 import { getRelativeMousePositionToWebview } from '../overlay/utils';
 
@@ -196,7 +197,7 @@ export class InsertManager {
 
         const targets: Array<ActionTarget> = [
             {
-                webviewId: webview.id,
+                frameId: webview.id,
                 domId,
                 oid: null,
             },
@@ -214,22 +215,18 @@ export class InsertManager {
     }
 
     async insertDroppedImage(
-        webview: Electron.WebviewTag,
+        frame: FrameData,
         dropPosition: { x: number; y: number },
         imageData: ImageContentData,
     ) {
-        const location = await webview.executeJavaScript(
-            `window.api?.getInsertLocation(${dropPosition.x}, ${dropPosition.y})`,
-        );
+        const location = await frame.view.getInsertLocation(dropPosition.x, dropPosition.y);
 
         if (!location) {
             console.error('Failed to get insert location for drop');
             return;
         }
 
-        const targetElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${dropPosition.x}, ${dropPosition.y})`,
-        );
+        const targetElement = await frame.view.getElementAtLoc(dropPosition.x, dropPosition.y);
 
         if (!targetElement) {
             console.error('Failed to get element at drop position');
@@ -238,11 +235,11 @@ export class InsertManager {
 
         // TODO: Handle if element is already an image, should update source
         // TODO: Handle if element has background image, should update style
-        this.insertImageElement(webview, location, imageData);
+        this.insertImageElement(frame, location, imageData);
     }
 
     insertImageElement(
-        webview: Electron.WebviewTag,
+        frame: FrameData,
         location: ActionLocation,
         imageData: ImageContentData,
     ) {
@@ -271,7 +268,7 @@ export class InsertManager {
 
         const action: InsertElementAction = {
             type: 'insert-element',
-            targets: [{ webviewId: webview.id, domId, oid }],
+            targets: [{ frameId: frame.frame.id, domId, oid }],
             element: imageElement,
             location,
             editText: false,
@@ -282,7 +279,7 @@ export class InsertManager {
     }
 
     updateElementBackgroundAction(
-        webview: Electron.WebviewTag,
+        frame: FrameData,
         targetElement: ActionElement,
         imageData: ImageContentData,
     ) {
@@ -311,7 +308,7 @@ export class InsertManager {
 
                     domId: targetElement.domId,
                     oid: targetElement.oid,
-                    webviewId: webview.id,
+                    frameId: frame.frame.id,
                 },
             ],
         };
@@ -319,13 +316,11 @@ export class InsertManager {
     }
 
     async insertDroppedElement(
-        webview: Electron.WebviewTag,
+        frame: FrameData,
         dropPosition: { x: number; y: number },
         properties: DropElementProperties,
     ) {
-        const location = await webview.executeJavaScript(
-            `window.api?.getInsertLocation(${dropPosition.x}, ${dropPosition.y})`,
-        );
+        const location = await frame.view.getInsertLocation(dropPosition.x, dropPosition.y);
 
         if (!location) {
             console.error('Failed to get insert location for drop');
@@ -352,7 +347,7 @@ export class InsertManager {
             type: 'insert-element',
             targets: [
                 {
-                    webviewId: webview.id,
+                    frameId: frame.frame.id,
                     domId,
                     oid: null,
                 },

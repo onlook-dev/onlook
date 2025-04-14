@@ -29,7 +29,7 @@ export class OverlayManager {
         this.state.updateHoverRect(null);
         const newClickRects: { rect: RectDimensions; styles: Record<string, string> }[] = [];
         for (const selectedElement of this.editorEngine.elements.selected) {
-            const webview = this.editorEngine.webviews.getWebview(selectedElement.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(selectedElement.frameId);
             if (!webview) {
                 continue;
             }

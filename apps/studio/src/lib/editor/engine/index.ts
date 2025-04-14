@@ -21,6 +21,7 @@ import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
+import { FilesManager } from './files';
 import { FontManager } from './font';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
@@ -29,7 +30,6 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
-import { FilesManager } from './files';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
@@ -273,7 +273,7 @@ export class EditorEngine {
             return;
         }
         const selectedEl = selected[0];
-        const webviewId = selectedEl.webviewId;
+        const webviewId = selectedEl.frameId;
         const webview = this.webviews.getWebview(webviewId);
         if (!webview) {
             return;

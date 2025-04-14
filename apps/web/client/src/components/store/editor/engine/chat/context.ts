@@ -122,7 +122,7 @@ export class ChatContext {
         if (this.editorEngine.elements.selected.length === 0) {
             return null;
         }
-        const webviewId = this.editorEngine.elements.selected[0].webviewId;
+        const webviewId = this.editorEngine.elements.selected[0].frameId;
         if (!webviewId) {
             return null;
         }

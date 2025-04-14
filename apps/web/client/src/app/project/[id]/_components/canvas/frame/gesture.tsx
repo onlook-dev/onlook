@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store';
+import type { FrameData } from '@/components/store/editor/engine/frames';
 import { getRelativeMousePositionToWebview } from '@/components/store/editor/engine/overlay/utils';
 import { EditorMode, MouseAction } from '@onlook/models/editor';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
@@ -8,26 +9,34 @@ import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
 import { RightClickMenu } from './right-click';
-import type { WebFrameView } from './web-frame';
-export const GestureScreen = observer(({ frame, webFrameRef }: { frame: WebFrame, webFrameRef: React.RefObject<WebFrameView | null> }) => {
+
+export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const editorEngine = useEditorEngine();
     const isResizing = false;
-    const webFrame = webFrameRef.current;
 
-    if (!webFrame) {
-        console.log('No web frame found in gesture screen for frame', frame.id);
-        return null;
+    const getFrameData: () => FrameData | undefined = () => {
+        return editorEngine.frames.get(frame.id);
     }
 
     const getRelativeMousePosition = (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
-        return getRelativeMousePositionToWebview(e, webFrame);
+        const frameData = getFrameData();
+        if (!frameData) {
+            return { x: 0, y: 0 };
+        }
+        const { view } = frameData;
+        return getRelativeMousePositionToWebview(e, view);
     }
 
     const handleMouseEvent = useCallback(
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
+            const frameData = getFrameData();
+            if (!frameData) {
+                console.error('Frame data not found');
+                return;
+            }
             const pos = getRelativeMousePosition(e);
             const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(action);
-            const el: DomElement = await webFrame.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
+            const el: DomElement = await frameData.view.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
             if (!el) {
                 console.log('No element found');
                 return;
@@ -35,7 +44,7 @@ export const GestureScreen = observer(({ frame, webFrameRef }: { frame: WebFrame
 
             switch (action) {
                 case MouseAction.MOVE:
-                    // editorEngine.elements.mouseover(el, webview);
+                    editorEngine.elements.mouseover(el, frameData);
                     // if (e.altKey) {
                     //     editorEngine.elements.showMeasurement();
                     // } else {
@@ -43,24 +52,23 @@ export const GestureScreen = observer(({ frame, webFrameRef }: { frame: WebFrame
                     // }
                     break;
                 case MouseAction.MOUSE_DOWN:
-                    console.log('mouse down', el);
-                    // if (el.tagName.toLocaleLowerCase() === 'body') {
-                    //     editorEngine.webview.select(webview);
-                    //     return;
-                    // }
-                    // // Ignore right-clicks
-                    // if (e.button == 2) {
-                    //     break;
-                    // }
+                    if (el.tagName.toLocaleLowerCase() === 'body') {
+                        editorEngine.frames.select(frame);
+                        return;
+                    }
+                    // Ignore right-clicks
+                    if (e.button == 2) {
+                        break;
+                    }
                     // if (editorEngine.text.isEditing) {
                     //     editorEngine.text.end();
                     // }
-                    // if (e.shiftKey) {
-                    //     editorEngine.elements.shiftClick(el, webview);
-                    // } else {
-                    //     editorEngine.move.start(el, pos, webview);
-                    //     editorEngine.elements.click([el], webview);
-                    // }
+                    if (e.shiftKey) {
+                        editorEngine.elements.shiftClick(el, frameData);
+                    } else {
+                        // editorEngine.move.start(el, pos, webview);
+                        editorEngine.elements.click([el], frameData);
+                    }
                     break;
                 case MouseAction.DOUBLE_CLICK:
                     // editorEngine.text.start(el, webview);
@@ -102,9 +110,9 @@ export const GestureScreen = observer(({ frame, webFrameRef }: { frame: WebFrame
         (e: React.MouseEvent<HTMLDivElement>) => {
             // const webview = getWebview();
             // editorEngine.webview.deselectAll();
-            // editorEngine.webview.select(webview);
+            editorEngine.frames.select(frame);
         },
-        [editorEngine.webview],
+        [editorEngine.frames],
     );
 
     function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -177,7 +185,7 @@ export const GestureScreen = observer(({ frame, webFrameRef }: { frame: WebFrame
 
     const handleMouseOut = () => {
         editorEngine.elements.clearHoveredElement();
-        editorEngine.overlay.state.updateHoverRect(null);
+        editorEngine.overlay.state.removeHoverRect();
     }
 
     return (

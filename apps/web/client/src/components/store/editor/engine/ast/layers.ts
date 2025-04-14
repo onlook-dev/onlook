@@ -27,7 +27,7 @@ export class LayersManager {
             return this.layers;
         }
         return this.layers.filter((layer) =>
-            selectedWebviews.some((webview) => webview.id === layer.webviewId),
+            selectedWebviews.some((webview) => webview.id === layer.frameId),
         );
     }
 

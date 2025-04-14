@@ -77,7 +77,7 @@ const TreeNode = observer(
         const isWindowSelected =
             isWindow &&
             editorEngine.elements.selected.length === 0 &&
-            editorEngine.webviews.selected.some((el) => el.id === node.data.webviewId);
+            editorEngine.webviews.selected.some((el) => el.id === node.data.frameId);
 
         const { hovered, selected, isParentSelected } = useMemo(
             () => ({
@@ -188,7 +188,7 @@ const TreeNode = observer(
             node: LayerNode,
             action: MouseAction,
         ) {
-            const webview = editorEngine.webviews.getWebview(node.webviewId);
+            const webview = editorEngine.webviews.getWebview(node.frameId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;

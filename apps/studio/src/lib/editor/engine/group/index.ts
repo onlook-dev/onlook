@@ -57,8 +57,8 @@ export class GroupManager {
             return null;
         }
 
-        const webviewId = elements[0].webviewId;
-        const sameWebview = elements.every((el) => el.webviewId === webviewId);
+        const webviewId = elements[0].frameId;
+        const sameWebview = elements.every((el) => el.frameId === webviewId);
 
         if (!sameWebview) {
             if (log) {
@@ -113,13 +113,13 @@ export class GroupManager {
         }
 
         const parentTarget: ActionTarget = {
-            webviewId,
+            frameId: webviewId,
             domId: anyParent.domId,
             oid: anyParent.oid,
         };
 
         const children: ActionTarget[] = selectedEls.map((el) => ({
-            webviewId: el.webviewId,
+            webviewId: el.frameId,
             domId: el.domId,
             oid: el.oid,
         }));
@@ -140,7 +140,7 @@ export class GroupManager {
     }
 
     async getUngroupAction(selectedEl: DomElement): Promise<UngroupElementsAction | null> {
-        const webview = this.editorEngine.webviews.getWebview(selectedEl.webviewId);
+        const webview = this.editorEngine.webviews.getWebview(selectedEl.frameId);
         if (!webview) {
             console.error('Failed to get webview');
             return null;
@@ -171,7 +171,7 @@ export class GroupManager {
         // Children to be spread where container was
         const targets: ActionTarget[] = actionContainer.children.map((child) => {
             return {
-                webviewId: selectedEl.webviewId,
+                webviewId: selectedEl.frameId,
                 domId: child.domId,
                 oid: child.oid,
             };

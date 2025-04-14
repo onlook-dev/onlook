@@ -41,7 +41,7 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.INSERT_TEXT.command, () => (editorEngine.state.editorMode = EditorMode.INSERT_TEXT));
     useHotkeys('space', () => (editorEngine.state.editorMode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.state.editorMode = EditorMode.DESIGN), { keyup: true });
-    useHotkeys('alt', () => (editorEngine.elements.showMeasurement()), { keydown: true });
+    useHotkeys('alt', () => (editorEngine.overlay.showMeasurement()), { keydown: true });
     useHotkeys('alt', () => (editorEngine.overlay.removeMeasurement()), { keyup: true });
 
     // Actions

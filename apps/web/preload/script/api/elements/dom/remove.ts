@@ -5,7 +5,7 @@ import { elementFromDomId } from '/common/helpers';
 
 export function getRemoveActionFromDomId(
     domId: string,
-    webviewId: string,
+    frameId: string,
 ): RemoveElementAction | undefined {
     const el = elementFromDomId(domId);
     if (!el) {
@@ -29,7 +29,7 @@ export function getRemoveActionFromDomId(
         type: 'remove-element',
         targets: [
             {
-                webviewId,
+                frameId,
                 domId: actionEl.domId,
                 oid: actionEl.oid,
             },

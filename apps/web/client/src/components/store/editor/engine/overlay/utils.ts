@@ -1,7 +1,6 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { ElementPosition } from '@onlook/models/element';
-import type { WebviewTag } from 'electron/renderer';
 import type { RectDimensions } from './rect';
 
 /**
@@ -44,7 +43,7 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
  */
 export function adaptRectToCanvas(
     rect: RectDimensions,
-    webview: WebviewTag,
+    frameView: WebFrameView,
     inverse = false,
 ): RectDimensions {
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
@@ -56,10 +55,11 @@ export function adaptRectToCanvas(
     // Get canvas transform matrix to handle scaling and translation
     const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
 
-    const scale = inverse ? 1 / canvasTransform.a : canvasTransform.a; // Get scale from transform matrix
+    // Get scale from transform matrix
+    const scale = inverse ? 1 / canvasTransform.a : canvasTransform.a;
 
     // Calculate offsets relative to canvas container
-    const sourceOffset = getRelativeOffset(webview, canvasContainer);
+    const sourceOffset = getRelativeOffset(frameView, canvasContainer);
 
     // Transform coordinates to fixed overlay space
     return {
