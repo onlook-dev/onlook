@@ -67,7 +67,7 @@ export class TextEditingManager {
             console.error('No target dom element to edit');
             return;
         }
-        const webview = this.editorEngine.webviews.getWebview(this.targetDomEl.frameId);
+        const webview = this.editorEngine.webviews.getWebview(this.targetDomEl.webviewId);
         if (!webview) {
             console.error('No webview found for text editing');
             return;
@@ -87,7 +87,7 @@ export class TextEditingManager {
             console.error('No target dom element to stop editing');
             return;
         }
-        const webview = this.editorEngine.webviews.getWebview(this.targetDomEl.frameId);
+        const webview = this.editorEngine.webviews.getWebview(this.targetDomEl.webviewId);
         if (!webview) {
             console.error('No webview found for end text editing');
             return;
@@ -117,7 +117,7 @@ export class TextEditingManager {
             type: 'edit-text',
             targets: [
                 {
-                    frameId: webview.id,
+                    webviewId: webview.id,
                     domId: domEl.domId,
                     oid: domEl.oid,
                 },
@@ -138,7 +138,7 @@ export class TextEditingManager {
             return;
         }
         const selectedEl = selected[0];
-        const webviewId = selectedEl.frameId;
+        const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             return;

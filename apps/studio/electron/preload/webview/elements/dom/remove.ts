@@ -29,7 +29,7 @@ export function getRemoveActionFromDomId(
         type: 'remove-element',
         targets: [
             {
-                frameId: webviewId,
+                webviewId,
                 domId: actionEl.domId,
                 oid: actionEl.oid,
             },

@@ -20,6 +20,6 @@
         "lodash-es": "^4.17.21",
         "lodash.debounce": "^4.0.8",
         "penpal": "^7.0.0",
-        "nanoid": "^11.1.0"
+        "nanoid": "^5.0.7"
     }
 }

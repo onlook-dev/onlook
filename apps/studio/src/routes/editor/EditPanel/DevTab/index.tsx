@@ -1,7 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
+import type { FileNode } from '@/lib/editor/engine/files';
 import { EditorTabValue } from '@/lib/models';
 import { MainChannels, Theme } from '@onlook/models/constants';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,24 +12,22 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { Button } from '@onlook/ui/button';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import type { FileNode } from '@/lib/editor/engine/files';
+import { FileTab } from './FileTab';
 import FileTreeNode from './FileTreeNode';
 import FileTreeRow from './FileTreeRow';
-import { FileTab } from './FileTab';
 
 import { getBasicSetup, getExtensions, getLanguageFromFileName } from './CodeMirrorConfig';
 
-import { EditorView } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 import CodeMirror from '@uiw/react-codemirror';
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 enum TabValue {
     CONSOLE = 'console',
@@ -270,7 +270,7 @@ export const DevTab = observer(() => {
             }
 
             const newFile = {
-                id: uuidv4(),
+                id: nanoid(),
                 filename: fileName,
                 path: filePath,
                 content: content || '',
