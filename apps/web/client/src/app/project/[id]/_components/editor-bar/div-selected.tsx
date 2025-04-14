@@ -22,6 +22,7 @@ import { ImageBackground } from "./dropdowns/img-background";
 import { ColorBackground } from "./dropdowns/color-background";
 import { Border } from "./dropdowns/border";
 import { Display } from "./dropdowns/display";
+import { ViewButtons } from "./panels/buttons";
 
 export const DivSelected = () => {
     const [activeTab, setActiveTab] = useState('individual');
@@ -66,6 +67,7 @@ export const DivSelected = () => {
 
             <ImageBackground />
 
+            <ViewButtons />
         </div>
     );
 };
