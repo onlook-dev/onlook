@@ -73,6 +73,10 @@
                 "fileReference": "File Reference",
                 "submit": "Start building your site"
             },
+            "crawl": {
+                "title": "Crawl a website",
+                "description": "Paste a link to a website you want to duplicate"
+            },
             "blankStart": "Start from a blank page"
         }
     },
