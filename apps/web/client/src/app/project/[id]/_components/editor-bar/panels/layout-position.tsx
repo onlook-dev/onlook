@@ -6,6 +6,8 @@ import { InputDropdown } from "../inputs/input-dropdown";
 import { cn } from "@onlook/ui/utils";
 import { InputIcon } from "../inputs/input-icon";
 import { InputRadio } from "../inputs/input-radio";
+import { Button } from "@onlook/ui-v4/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@onlook/ui-v4/dropdown-menu";
 
 export function LayoutPosition() {
   const [layoutType, setLayoutType] = useState<"None" | "Flex" | "Grid">("Flex");
@@ -235,37 +237,55 @@ export function LayoutPosition() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground w-24">Type</span>
               <div className="flex-1">
-                <InputDropdown
-                  value=""
-                  unit=""
-                  dropdownValue={positionType}
-                  dropdownOptions={["Relative", "Absolute", "Fixed", "Sticky"]}
-                  onDropdownChange={(value) => setPositionType(value)}
-                />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className="h-[36px] w-full bg-background-tertiary/50 hover:bg-background-tertiary/80 rounded-md ml-[1px] px-2.5 flex items-center justify-between cursor-pointer"
+                    >
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">{positionType}</span>
+                        </div>
+                        <Icons.ChevronDown className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-full min-w-[100px] -mt-[1px] p-1 rounded-lg">
+                    <DropdownMenuItem 
+                        className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
+                        onSelect={() => setPositionType("Static")}
+                    >
+                        Static
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                        className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
+                        onSelect={() => setPositionType("Relative")}
+                    >
+                        Relative
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                        className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
+                        onSelect={() => setPositionType("Sticky")}
+                    >
+                        Sticky
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                        className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
+                        onSelect={() => setPositionType("Absolute")}
+                    >
+                        Absolute
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>     
               </div>
             </div>
             
             {/* Position Coordinates */}
-            <div className="flex justify-between gap-2">
-              <div className="flex flex-col items-center gap-2">
-                <Icons.DotsHorizontal className="h-5 w-5 text-muted-foreground" />
-                <InputDropdown
-                  value="--"
-                  unit=""
-                  dropdownValue=""
-                  dropdownOptions={[]}
-                />
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <Icons.DotsHorizontal className="h-5 w-5 text-muted-foreground" />
-                <InputDropdown
-                  value="--"
-                  unit=""
-                  dropdownValue=""
-                  dropdownOptions={[]}
-                />
-              </div>
-            </div>
+            <div className="grid grid-cols-2 gap-2">
+                        <InputIcon icon="LeftSide" value={12} />
+                        <InputIcon icon="TopSide" value={18} />
+                        <InputIcon icon="RightSide" value={12} />
+                        <InputIcon icon="BottomSide" value={18} />
+                    </div>
           </div>
         )}
       </div>
