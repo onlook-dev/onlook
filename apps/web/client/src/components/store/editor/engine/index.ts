@@ -5,6 +5,7 @@ import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
+import { FilesManager } from './files/files';
 import { FontManager } from './font';
 import { FramesManager } from './frames';
 import { HistoryManager } from './history';
@@ -45,6 +46,7 @@ export class EditorEngine {
     readonly state: StateManager = new StateManager();
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
+    readonly files: FilesManager = new FilesManager();
 
     // readonly action: ActionManager = new ActionManager(this);
     // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();

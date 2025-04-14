@@ -148,6 +148,7 @@
       "name": "@onlook/web-client",
       "version": "0.1.0",
       "dependencies": {
+        "@codesandbox/sdk": "^0.11.1",
         "@onlook/ui-v4": "*",
         "@onlook/web-shared": "*",
         "@radix-ui/react-slot": "^1.1.2",
@@ -554,6 +555,8 @@
     "@codemirror/theme-one-dark": ["@codemirror/theme-one-dark@6.1.2", "", { "dependencies": { "@codemirror/language": "^6.0.0", "@codemirror/state": "^6.0.0", "@codemirror/view": "^6.0.0", "@lezer/highlight": "^1.0.0" } }, "sha512-F+sH0X16j/qFLMAfbciKTxVOwkdAS336b7AXTKOZhy8BR3eH/RelsnLgLFINrpST63mmN2OuwUt0W2ndUgYwUA=="],
 
     "@codemirror/view": ["@codemirror/view@6.36.5", "", { "dependencies": { "@codemirror/state": "^6.5.0", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-cd+FZEUlu3GQCYnguYm3EkhJ8KJVisqqUsCOKedBoAt/d9c76JUUap6U0UrpElln5k6VyrEOYliMuDAKIeDQLg=="],
+
+    "@codesandbox/sdk": ["@codesandbox/sdk@0.11.1", "", { "bin": { "csb": "dist/bin/codesandbox.cjs" } }, "sha512-MKil+626cDuHOZTuHukAVgOyk3GIogDXLJPnPpCTQNwVq49UaEN6BlkEIuWmSOWE09X66lbXmuU96lJKUJ4aDA=="],
 
     "@develar/schema-utils": ["@develar/schema-utils@2.6.5", "", { "dependencies": { "ajv": "^6.12.0", "ajv-keywords": "^3.4.1" } }, "sha512-0cp4PsWQ/9avqTVMCtZ+GirikIA36ikvjtHweU4/j8yLtgObI0+JUPhYFScgwlteveGB1rt3Cm8UhN04XayDig=="],
 
