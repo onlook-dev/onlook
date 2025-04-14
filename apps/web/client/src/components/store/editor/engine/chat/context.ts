@@ -1,4 +1,5 @@
 import type { ProjectsManager } from '@/lib/projects';
+import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
     type ChatMessageContext,
@@ -8,7 +9,6 @@ import {
     type ImageMessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
-import type { DomElement } from '@onlook/models/element';
 import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';

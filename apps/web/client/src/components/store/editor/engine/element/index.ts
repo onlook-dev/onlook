@@ -1,5 +1,4 @@
-import type { Frame } from '@onlook/models';
-import type { DomElement } from '@onlook/models/element';
+import type { DomElement, Frame } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';

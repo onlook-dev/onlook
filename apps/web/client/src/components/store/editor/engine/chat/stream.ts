@@ -1,5 +1,5 @@
+import { MainChannels } from '@onlook/constants';
 import type { PartialStreamResponse, UsageCheckResult } from '@onlook/models/chat';
-import { MainChannels } from '@onlook/models/constants';
 import type { TextPart, TextStreamPart, ToolCallPart, ToolResultPart, ToolSet } from 'ai';
 import { makeAutoObservable } from 'mobx';
 

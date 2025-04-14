@@ -1,10 +1,10 @@
+import { EditorAttributes } from '@onlook/constants';
 import {
     type DisplayDirection,
     findInsertionIndex as findFlexBlockInsertionIndex,
     findGridInsertionIndex,
     getDisplayDirection,
 } from './helpers';
-import { EditorAttributes } from '@onlook/models/constants';
 
 export function createStub(el: HTMLElement) {
     const stub = document.createElement('div');

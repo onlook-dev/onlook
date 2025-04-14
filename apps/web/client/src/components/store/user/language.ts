@@ -1,4 +1,4 @@
-import { Language } from '@onlook/models/constants';
+import { Language } from '@onlook/constants';
 
 export class LanguageManager {
     constructor() {

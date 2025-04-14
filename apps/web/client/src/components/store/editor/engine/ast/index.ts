@@ -1,7 +1,7 @@
 // import { invokeMainChannel } from '@/lib/utils';
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
-import { EditorAttributes, MainChannels } from '@onlook/models/constants';
-import type { LayerNode, TemplateNode } from '@onlook/models/element';
+import { EditorAttributes, MainChannels } from '@onlook/constants';
+import type { LayerNode, TemplateNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { LayersManager } from './layers';

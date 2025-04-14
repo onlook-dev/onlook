@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store';
-import type { RectDimensions } from '@/components/store/editor/engine/overlay/rect';
 import { adaptRectToCanvas, adaptValueToCanvas } from '@/components/store/editor/engine/overlay/utils';
+import type { RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
 import React, { memo, useMemo } from 'react';
 import { BaseRect } from './rect/base';
@@ -75,7 +75,7 @@ const getInsideRect = (rectA: RectPoint, rectB: RectPoint): RectPoint | null => 
 
 export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, toRect }) => {
     const editorEngine = useEditorEngine();
-    const webview = editorEngine.webviews.getWebview(editorEngine.elements.selected[0]?.frameId);
+    const frameData = editorEngine.frames.get(editorEngine.elements.selected[0]?.frameId);
 
     const fromRectAdjusted = useMemo(
         () => (webview ? adaptRectToCanvas(fromRect, webview) : fromRect),

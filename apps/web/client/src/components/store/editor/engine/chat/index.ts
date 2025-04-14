@@ -1,6 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { MainChannels } from '@onlook/constants';
 import {
     ChatMessageRole,
     StreamRequestType,
@@ -9,7 +10,6 @@ import {
     type ErrorStreamResponse,
     type RateLimitedStreamResponse,
 } from '@onlook/models/chat';
-import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';

@@ -1,7 +1,6 @@
+import { MAX_NAME_LENGTH } from '@onlook/constants';
 import { ChatMessageRole, type ChatConversation, type TokenUsage } from '@onlook/models/chat';
-import { MAX_NAME_LENGTH } from '@onlook/models/constants';
-import type { CoreMessage } from 'ai';
-import type { ToolCallPart, ToolResultPart } from 'ai';
+import type { CoreMessage, ToolCallPart, ToolResultPart } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { AssistantChatMessageImpl } from '../message/assistant';
@@ -90,7 +89,7 @@ export class ChatConversationImpl implements ChatConversation {
         } else {
             messages.push(...this.messages.map((m) => m.toCoreMessage()));
         }
-        
+
         return this.validateAndFixToolMessages(messages);
     }
 
@@ -100,35 +99,35 @@ export class ChatConversationImpl implements ChatConversation {
      */
     private validateAndFixToolMessages(messages: CoreMessage[]): CoreMessage[] {
         const result: CoreMessage[] = [];
-        
+
         for (let i = 0; i < messages.length; i++) {
             const currentMessage = messages[i];
             if (!currentMessage) continue;
-            
+
             result.push(currentMessage);
-            
-            if (currentMessage.role === 'assistant' && 
+
+            if (currentMessage.role === 'assistant' &&
                 Array.isArray(currentMessage.content)) {
-                
+
                 const toolCallParts = currentMessage.content.filter(
                     (part): part is ToolCallPart => part.type === 'tool-call'
                 );
-                
+
                 if (toolCallParts.length > 0) {
                     const nextMessage = i + 1 < messages.length ? messages[i + 1] : null;
                     const missingToolResults: ToolResultPart[] = [];
-                    
+
                     for (const toolCall of toolCallParts) {
                         let hasCorrespondingResult = false;
-                        
+
                         if (nextMessage?.role === 'tool' && Array.isArray(nextMessage.content)) {
                             hasCorrespondingResult = nextMessage.content.some(
-                                (part): part is ToolResultPart => 
-                                    part.type === 'tool-result' && 
+                                (part): part is ToolResultPart =>
+                                    part.type === 'tool-result' &&
                                     part.toolCallId === toolCall.toolCallId
                             );
                         }
-                        
+
                         if (!hasCorrespondingResult) {
                             console.error(
                                 `Missing tool_result for tool call ${toolCall.toolCallId} (${toolCall.toolName}). Adding stub result.`
@@ -142,12 +141,12 @@ export class ChatConversationImpl implements ChatConversation {
                             });
                         }
                     }
-                    
+
                     if (missingToolResults.length > 0) {
                         console.warn(
                             `Adding ${missingToolResults.length} stub tool result(s) for message without corresponding tool_result`
                         );
-                        
+
                         result.push({
                             role: 'tool',
                             content: missingToolResults
@@ -156,7 +155,7 @@ export class ChatConversationImpl implements ChatConversation {
                 }
             }
         }
-        
+
         return result;
     }
 

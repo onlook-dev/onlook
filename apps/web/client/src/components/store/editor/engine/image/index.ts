@@ -1,7 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { MainChannels } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { MainChannels } from '@onlook/models/constants';
 import mime from 'mime-lite';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';

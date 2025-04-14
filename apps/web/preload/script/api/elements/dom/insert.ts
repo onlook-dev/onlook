@@ -1,6 +1,6 @@
+import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/constants';
+import type { DomElement } from '@onlook/models';
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
-import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
 import cssManager from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';

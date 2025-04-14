@@ -6,7 +6,7 @@
 //     GroupContainer,
 //     ImageContentData,
 // } from '@onlook/models/actions';
-// import { WebviewChannels } from '@onlook/models/constants';
+// import { WebviewChannels } from '@onlook/constants';
 // import type { StyleChange } from '@onlook/models/style';
 // import { processDom } from '../dom';
 // import { groupElements, ungroupElements } from '../elements/dom/group';

@@ -1,6 +1,6 @@
-import { EditorMode } from '@/lib/models';
-import { createDomId, createOid } from '@/lib/utils';
-import type { ImageContentData } from '@onlook/models';
+import { DefaultSettings, EditorAttributes } from '@onlook/constants';
+import type { DropElementProperties, ElementPosition, ImageContentData, RectDimensions } from '@onlook/models';
+import { EditorMode } from '@onlook/models';
 import {
     type ActionElement,
     type ActionLocation,
@@ -8,14 +8,12 @@ import {
     type InsertElementAction,
     type UpdateStyleAction,
 } from '@onlook/models/actions';
-import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
-import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
 import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
+import { createDomId, createOid } from '@onlook/utility';
 import type React from 'react';
 import type { EditorEngine } from '..';
 import type { FrameData } from '../frames';
-import type { RectDimensions } from '../overlay/rect';
 import { getRelativeMousePositionToWebview } from '../overlay/utils';
 
 export class InsertManager {

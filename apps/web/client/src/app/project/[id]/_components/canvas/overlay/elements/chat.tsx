@@ -1,6 +1,6 @@
 import { useEditorEngine, useUserManager } from '@/components/store';
 import type { ClickRectState } from '@/components/store/editor/engine/overlay/state';
-import { EditorMode, EditorTabValue } from '@onlook/models/editor';
+import { EditorMode, EditorTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';

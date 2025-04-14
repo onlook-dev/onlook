@@ -1,5 +1,5 @@
+import { DefaultSettings } from '@onlook/constants';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
-import { DefaultSettings } from '@onlook/models/constants';
 import type {
     FrameSettings,
     Project,

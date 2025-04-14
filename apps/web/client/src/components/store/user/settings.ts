@@ -1,4 +1,4 @@
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings } from '@onlook/constants';
 import type { ChatSettings, EditorSettings, UserSettings } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
 

@@ -1,5 +1,5 @@
 import { adaptValueToCanvas } from '@/components/store/editor/engine/overlay/utils';
-import type { RectDimensions } from '@onlook/models/element';
+import type { RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
 import { BaseRect } from './base';

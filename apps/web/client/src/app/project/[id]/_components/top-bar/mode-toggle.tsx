@@ -1,6 +1,6 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store';
-import { EditorMode } from '@onlook/models/editor';
+import { EditorMode } from '@onlook/models';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';

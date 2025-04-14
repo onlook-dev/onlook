@@ -6,7 +6,7 @@ interface BaseDomElement {
     rect: DOMRect;
 }
 
-export interface ParentDomElement extends BaseDomElement {}
+export interface ParentDomElement extends BaseDomElement { }
 
 export interface DomElement extends BaseDomElement {
     tagName: string;
@@ -26,4 +26,11 @@ export interface DropElementProperties {
     tagName: string;
     styles: Record<string, string>;
     textContent: string | null;
+}
+
+export interface RectDimensions {
+    width: number;
+    height: number;
+    top: number;
+    left: number;
 }

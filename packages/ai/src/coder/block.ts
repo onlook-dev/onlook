@@ -1,4 +1,4 @@
-import { type CodeBlock } from '@onlook/models/chat/message';
+import { type CodeBlock } from '@onlook/models';
 import { FENCE } from '../prompt/format';
 import { flexibleSearchAndReplace } from './search-replace';
 

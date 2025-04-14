@@ -1,6 +1,6 @@
+import { EditorAttributes } from '@onlook/constants';
 import type { ActionElement, ActionLocation, PasteParams } from '@onlook/models/actions';
 import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
 import { StyleChangeType } from '@onlook/models/style';
 import { twMerge } from 'tailwind-merge';
 import { getTailwindClasses } from './helpers';

@@ -3,8 +3,8 @@ import {
     createEditorPlugins,
     schema,
 } from '@/components/store/editor/engine/overlay/prosemirror/';
-import type { RectDimensions } from '@/components/store/editor/engine/overlay/rect';
-import { EditorAttributes } from '@onlook/models/constants';
+import { EditorAttributes } from '@onlook/constants';
+import type { RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';

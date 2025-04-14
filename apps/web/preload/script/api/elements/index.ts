@@ -1,5 +1,5 @@
-import { EditorAttributes } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/constants';
+import type { DomElement } from '@onlook/models';
 import { elementFromDomId } from '../../helpers';
 import { getDomElement } from './helpers';
 

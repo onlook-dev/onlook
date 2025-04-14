@@ -1,6 +1,6 @@
 import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
-import type { DomElement, ElementPosition } from '@onlook/models/element';
+import { MainChannels } from '@onlook/constants';
+import type { DomElement, ElementPosition } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
 import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';

@@ -1,5 +1,6 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
+import { MainChannels, WebviewChannels } from '@onlook/constants';
 import type {
     Action,
     CodeInsertImage,
@@ -23,7 +24,6 @@ import {
     type CodeUngroup,
 } from '@onlook/models/actions';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
-import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { addTailwindToRequest, getOrCreateCodeDiffRequest } from './helpers';

@@ -1,4 +1,4 @@
-import type { RectDimensions } from '@onlook/models/element';
+import type { RectDimensions } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 

@@ -1,6 +1,7 @@
 import { useEditorEngine, useUserManager } from '@/components/store';
-import { DefaultSettings } from '@onlook/models/constants';
-import { EditorTabValue } from "@onlook/models/editor";
+import { DefaultSettings } from '@onlook/constants';
+import type { ChatSettings } from '@onlook/models';
+import { EditorTabValue } from "@onlook/models";
 import {
     DropdownMenu,
     DropdownMenuContent,

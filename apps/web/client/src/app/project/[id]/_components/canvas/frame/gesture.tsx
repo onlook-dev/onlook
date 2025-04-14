@@ -1,9 +1,8 @@
 import { useEditorEngine } from '@/components/store';
 import type { FrameData } from '@/components/store/editor/engine/frames';
 import { getRelativeMousePositionToWebview } from '@/components/store/editor/engine/overlay/utils';
-import { EditorMode, MouseAction } from '@onlook/models/editor';
-import type { DomElement, ElementPosition } from '@onlook/models/element';
-import type { WebFrame } from '@onlook/models/frame';
+import type { DomElement, ElementPosition, WebFrame } from '@onlook/models';
+import { EditorMode, MouseAction } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';

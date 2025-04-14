@@ -1,4 +1,4 @@
-import { DEFAULT_FONT_STYLE, DEFAULT_FONT_WEIGHT, FONT_VARIANTS } from '@onlook/models/constants';
+import { DEFAULT_FONT_STYLE, DEFAULT_FONT_WEIGHT, FONT_VARIANTS } from '@onlook/constants';
 import { camelCase } from 'lodash';
 
 /**
@@ -196,4 +196,5 @@ function convertFontString(fontString: string): string {
     return camelCase(withoutFallback);
 }
 
-export { extractFontParts, getFontFileName, convertFontString };
+export { convertFontString, extractFontParts, getFontFileName };
+

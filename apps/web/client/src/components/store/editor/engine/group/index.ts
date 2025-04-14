@@ -1,4 +1,5 @@
 import { createDomId, createOid } from '@/lib/utils';
+import type { DomElement } from '@onlook/models';
 import type {
     ActionElement,
     ActionTarget,
@@ -6,7 +7,6 @@ import type {
     GroupElementsAction,
     UngroupElementsAction,
 } from '@onlook/models/actions';
-import type { DomElement } from '@onlook/models/element';
 import type { EditorEngine } from '..';
 
 export class GroupManager {

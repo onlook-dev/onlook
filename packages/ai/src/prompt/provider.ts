@@ -4,7 +4,7 @@ import type {
     FileMessageContext,
     HighlightMessageContext,
     ProjectMessageContext,
-} from '@onlook/models/chat';
+} from '@onlook/models';
 import type { CoreUserMessage, ImagePart, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
@@ -104,9 +104,9 @@ export class PromptProvider {
                 typeof content === 'string'
                     ? content
                     : content
-                          .filter((c) => c.type === 'text')
-                          .map((c) => c.text)
-                          .join('\n');
+                        .filter((c) => c.type === 'text')
+                        .map((c) => c.text)
+                        .join('\n');
             prompt += wrapXml('instruction', textContent);
         } else {
             prompt += content;

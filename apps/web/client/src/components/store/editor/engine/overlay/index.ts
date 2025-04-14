@@ -1,4 +1,4 @@
-import type { DomElement, RectDimensions } from '@onlook/models/element';
+import type { DomElement, RectDimensions } from '@onlook/models';
 import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { OverlayState } from './state';

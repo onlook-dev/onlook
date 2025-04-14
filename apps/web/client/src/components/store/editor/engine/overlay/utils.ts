@@ -1,7 +1,6 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { ElementPosition } from '@onlook/models/element';
-import type { RectDimensions } from './rect';
+import { EditorAttributes } from '@onlook/constants';
+import type { ElementPosition, RectDimensions } from '@onlook/models';
 
 /**
  * Calculates the cumulative offset between an element and its ancestor,

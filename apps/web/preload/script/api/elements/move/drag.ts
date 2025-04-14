@@ -1,5 +1,5 @@
-import { EditorAttributes } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/constants';
+import type { DomElement } from '@onlook/models';
 import { getOrAssignDomId } from '../../ids';
 import { elementFromDomId, getDomElement, isValidHtmlElement, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';

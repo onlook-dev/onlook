@@ -1,12 +1,12 @@
 import { createDomId, createOid } from '@/lib/utils';
+import { EditorAttributes } from '@onlook/constants';
+import type { DomElement } from '@onlook/models';
 import type {
     ActionElement,
     ActionLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 

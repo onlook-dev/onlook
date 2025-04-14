@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store';
 import type { ClickRectState } from '@/components/store/editor/engine/overlay/state';
-import { EditorAttributes } from '@onlook/models/constants';
-import { EditorMode } from '@onlook/models/editor';
+import { EditorAttributes } from '@onlook/constants';
+import { EditorMode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
 import { memo, useMemo } from 'react';
 import { OverlayChat } from './elements/chat';

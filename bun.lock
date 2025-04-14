@@ -33,6 +33,8 @@
       "version": "0.1.0",
       "dependencies": {
         "@codesandbox/sdk": "^0.11.1",
+        "@onlook/constants": "*",
+        "@onlook/fonts": "*",
         "@onlook/ui": "*",
         "@onlook/web-shared": "*",
         "@radix-ui/react-slot": "^1.1.2",
@@ -152,6 +154,22 @@
       },
       "devDependencies": {
         "@onlook/typescript": "*",
+      },
+    },
+    "packages/constants": {
+      "name": "@onlook/constants",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@onlook/typescript": "*",
+        "typescript": "^5.5.4",
+      },
+    },
+    "packages/fonts": {
+      "name": "@onlook/fonts",
+      "version": "0.0.0",
+      "devDependencies": {
+        "@onlook/typescript": "*",
+        "typescript": "^5.5.4",
       },
     },
     "packages/git": {
@@ -483,6 +501,10 @@
     "@onlook/ai": ["@onlook/ai@workspace:packages/ai"],
 
     "@onlook/backend": ["@onlook/backend@workspace:apps/backend"],
+
+    "@onlook/constants": ["@onlook/constants@workspace:packages/constants"],
+
+    "@onlook/fonts": ["@onlook/fonts@workspace:packages/fonts"],
 
     "@onlook/git": ["@onlook/git@workspace:packages/git"],
 

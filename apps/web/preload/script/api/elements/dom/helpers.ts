@@ -1,6 +1,6 @@
+import { EditorAttributes } from '@onlook/constants';
+import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
 import { getDomElement, getImmediateTextContent } from '../helpers';
 import { elementFromDomId } from '/common/helpers';
