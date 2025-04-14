@@ -1,5 +1,5 @@
 import "@/styles/globals.css";
-import '@onlook/ui-v4/globals.css';
+import '@onlook/ui/globals.css';
 
 import { TRPCReactProvider } from "@/trpc/react";
 import { type Metadata } from "next";

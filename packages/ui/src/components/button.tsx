@@ -5,17 +5,17 @@ import * as React from 'react';
 import { cn } from '../utils';
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap rounded-md text-smallPlus transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+    'inline-flex items-center justify-center whitespace-nowrap rounded-md text-smallPlus transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
     {
         variants: {
             variant: {
                 default:
-                    'bg-primary border-[0.5px] text-primary-foreground shadow hover:bg-primary/90 hover:border-border-hover',
+                    'bg-primary border-[0.5px] text-primary-foreground shadow-sm hover:bg-primary/90 hover:border-border-hover',
                 destructive:
-                    'border border-[0.5px] border-red-600 dark:border-red-800 bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:border-red-500 dark:hover:border-red-800',
+                    'border border-[0.5px] border-red-600 dark:border-red-800 bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 hover:border-red-500 dark:hover:border-red-800',
                 outline:
-                    'border border-[0.5px] border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground hover:border-border-hover',
-                secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
+                    'border border-[0.5px] border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:border-border-hover',
+                secondary: 'bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80',
                 ghost: 'hover:bg-background-hover hover:text-accent-foreground hover:border-border-hover',
                 link: 'text-primary underline-offset-4 hover:underline',
             },

@@ -1,5 +1,5 @@
-import { Icons } from "@onlook/ui-v4/icons";
-import { useState, useEffect, useRef } from "react";
+import { Icons } from "@onlook/ui/icons";
+import { useEffect, useRef, useState } from "react";
 
 interface InputRangeProps {
     value: number;
@@ -74,7 +74,7 @@ export const InputRange = ({ value, icon, unit = "px", onChange }: InputRangePro
                         [&::-ms-thumb]:appearance-none [&::-ms-thumb]:w-4 [&::-ms-thumb]:h-4 [&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-white [&::-ms-thumb]:cursor-grab hover:[&::-ms-thumb]:bg-white/90 active:[&::-ms-thumb]:cursor-grabbing"
                 />
                 <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px]">
-                    <input 
+                    <input
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"

@@ -1,6 +1,6 @@
 import { useEditorEngine } from "@/components/store";
 import type { DomElement, WebFrame } from "@onlook/models";
-import { cn } from "@onlook/ui-v4/utils";
+import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';

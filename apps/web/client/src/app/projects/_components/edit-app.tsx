@@ -1,8 +1,8 @@
 import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import type { Project } from '@onlook/models/projects';
-import { Button } from '@onlook/ui-v4/button';
-import { Icons } from '@onlook/ui-v4/icons';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';

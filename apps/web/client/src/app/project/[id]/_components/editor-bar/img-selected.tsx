@@ -1,23 +1,19 @@
 "use client";
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
+import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
-import { StateDropdown } from "./state-dropdown";
-import { InputDropdown } from "./inputs/input-dropdown";
-import { InputIcon } from "./inputs/input-icon";
-import { InputRange } from "./inputs/input-range";
+    DropdownMenuTrigger
+} from "@onlook/ui/dropdown-menu";
+import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
-import { Width } from "./dropdowns/width";
 import { Height } from "./dropdowns/height";
-import { Radius } from "./dropdowns/radius";
-import { Padding } from "./dropdowns/padding";
 import { Margin } from "./dropdowns/margin";
+import { Padding } from "./dropdowns/padding";
+import { Radius } from "./dropdowns/radius";
+import { Width } from "./dropdowns/width";
+import { StateDropdown } from "./state-dropdown";
 export const ImgSelected = () => {
     const [activeTab, setActiveTab] = useState('individual');
     const [objectFit, setObjectFit] = useState('cover');
@@ -26,7 +22,7 @@ export const ImgSelected = () => {
         <div className="flex items-center gap-1">
 
             <StateDropdown />
-    
+
             <div className="h-6 w-[1px] bg-border" />
 
             <Width />
@@ -64,33 +60,30 @@ export const ImgSelected = () => {
                         <div className="space-y-1">
                             <span className="text-sm text-muted-foreground">Type</span>
                             <div className="flex gap-1">
-                                <button 
+                                <button
                                     onClick={() => setObjectFit('cover')}
-                                    className={`flex-1 text-sm px-3 py-1 rounded-md ${
-                                        objectFit === 'cover' 
-                                            ? 'bg-background-tertiary/20 text-white' 
+                                    className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'cover'
+                                            ? 'bg-background-tertiary/20 text-white'
                                             : 'text-muted-foreground hover:bg-background-tertiary/10'
-                                    }`}
+                                        }`}
                                 >
                                     Cover
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setObjectFit('contain')}
-                                    className={`flex-1 text-sm px-3 py-1 rounded-md ${
-                                        objectFit === 'contain' 
-                                            ? 'bg-background-tertiary/20 text-white' 
+                                    className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'contain'
+                                            ? 'bg-background-tertiary/20 text-white'
                                             : 'text-muted-foreground hover:bg-background-tertiary/10'
-                                    }`}
+                                        }`}
                                 >
                                     Contain
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setObjectFit('fill')}
-                                    className={`flex-1 text-sm px-3 py-1 rounded-md ${
-                                        objectFit === 'fill' 
-                                            ? 'bg-background-tertiary/20 text-white' 
+                                    className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'fill'
+                                            ? 'bg-background-tertiary/20 text-white'
                                             : 'text-muted-foreground hover:bg-background-tertiary/10'
-                                    }`}
+                                        }`}
                                 >
                                     Fill
                                 </button>

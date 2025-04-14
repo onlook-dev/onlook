@@ -1,9 +1,9 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store';
 import { EditorMode } from '@onlook/models/editor';
-import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
-import { ToggleGroup, ToggleGroupItem } from '@onlook/ui-v4/toggle-group';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui-v4/tooltip';
+import { HotkeyLabel } from '@onlook/ui/hotkey-label';
+import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';

@@ -1,17 +1,15 @@
 "use client";
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
-import { ToggleGroup, ToggleGroupItem } from "@onlook/ui-v4/toggle-group";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui-v4/tooltip";
-import { useState } from "react";
-import { motion } from "motion/react";
+import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
+} from "@onlook/ui/dropdown-menu";
+import { Icons } from "@onlook/ui/icons";
+import { motion } from "motion/react";
+import { useState } from "react";
 import { StateDropdown } from "./state-dropdown";
 
 type EditorMode = "STATE" | "MEDIUM" | "TYPOGRAPHY" | "POSITION" | "TRANSFORMS";
@@ -62,47 +60,42 @@ export const TextSelected = () => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="min-w-[120px] mt-1 p-1 rounded-lg">
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setFontWeight("Light")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                fontWeight === "Light" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${fontWeight === "Light" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             Light
                             {fontWeight === "Light" && <Icons.Check className="h-4 w-4 ml-2" />}
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setFontWeight("Normal")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                fontWeight === "Normal" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${fontWeight === "Normal" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             Normal
                             {fontWeight === "Normal" && <Icons.Check className="h-4 w-4 ml-2" />}
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setFontWeight("Medium")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                fontWeight === "Medium" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${fontWeight === "Medium" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             Medium
                             {fontWeight === "Medium" && <Icons.Check className="h-4 w-4 ml-2" />}
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setFontWeight("Bold")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                fontWeight === "Bold" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${fontWeight === "Bold" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             Bold
                             {fontWeight === "Bold" && <Icons.Check className="h-4 w-4 ml-2" />}
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setFontWeight("Extra Bold")}
-                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                fontWeight === "Extra Bold" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`flex items-center justify-between px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${fontWeight === "Extra Bold" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             Extra Bold
                             {fontWeight === "Extra Bold" && <Icons.Check className="h-4 w-4 ml-2" />}
@@ -121,19 +114,19 @@ export const TextSelected = () => {
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-           
-                                <input
-                                    type="number"
-                                    value={fontSize}
-                                    onChange={(e) => {
-                                        const value = parseInt(e.target.value);
-                                        if (!isNaN(value) && value > 0) {
-                                            setFontSize(value);
-                                        }
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="h-8 min-w-[40px] max-w-[40px] text-center text-sm border border-border/0 text-muted-foreground rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border px-1 data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none focus:bg-background-tertiary/20 focus:ring-1 focus:ring-border"
-                                    />
+
+                            <input
+                                type="number"
+                                value={fontSize}
+                                onChange={(e) => {
+                                    const value = parseInt(e.target.value);
+                                    if (!isNaN(value) && value > 0) {
+                                        setFontSize(value);
+                                    }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-8 min-w-[40px] max-w-[40px] text-center text-sm border border-border/0 text-muted-foreground rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border px-1 data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none focus:bg-background-tertiary/20 focus:ring-1 focus:ring-border"
+                            />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                             align="center"
@@ -143,9 +136,8 @@ export const TextSelected = () => {
                                 <DropdownMenuItem
                                     key={size}
                                     onClick={() => setFontSize(size)}
-                                    className={`text-sm justify-center px-2 py-1 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                        size === fontSize ? "bg-background-tertiary/20 border border-border text-white" : ""
-                                    }`}
+                                    className={`text-sm justify-center px-2 py-1 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${size === fontSize ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                        }`}
                                 >
                                     {size}
                                 </DropdownMenuItem>
@@ -184,35 +176,31 @@ export const TextSelected = () => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="flex min-w-fit mt-1 p-1 rounded-lg gap-1">
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setTextAlign("left")}
-                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                textAlign === "left" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${textAlign === "left" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             <Icons.TextAlignLeft className="h-4 w-4" />
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setTextAlign("center")}
-                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                textAlign === "center" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${textAlign === "center" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             <Icons.TextAlignCenter className="h-4 w-4" />
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setTextAlign("right")}
-                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                textAlign === "right" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${textAlign === "right" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             <Icons.TextAlignRight className="h-4 w-4" />
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             onClick={() => setTextAlign("justify")}
-                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${
-                                textAlign === "justify" ? "bg-background-tertiary/20 border border-border text-white" : ""
-                            }`}
+                            className={`px-2 py-1.5 rounded-md text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white ${textAlign === "justify" ? "bg-background-tertiary/20 border border-border text-white" : ""
+                                }`}
                         >
                             <Icons.TextAlignJustified className="h-4 w-4" />
                         </DropdownMenuItem>

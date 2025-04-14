@@ -7,15 +7,15 @@
 // import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
 // import { SettingsTabValue } from '@/lib/models';
 // import { ProjectTabs } from '@/lib/projects';
-import { Button } from '@onlook/ui-v4/button';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@onlook/ui-v4/dropdown-menu';
-import { Icons } from '@onlook/ui-v4/icons';
-import { cn } from '@onlook/ui-v4/utils';
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
 
 export const TopBar = () => {
     // const editorEngine = useEditorEngine();

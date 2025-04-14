@@ -22,7 +22,7 @@ interface SVPickerBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const SVPickerBody: React.FC<SVPickerBodyProps> = ({ children, ...props }) => (
     <div
-        className="relative shadow-inner border border-gray-300 rounded overflow-hidden cursor-pointer"
+        className="relative shadow-inner border border-gray-300 rounded-sm overflow-hidden cursor-pointer"
         {...props}
     >
         {children}

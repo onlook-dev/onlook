@@ -1,13 +1,13 @@
 "use client";
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
+import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
+} from "@onlook/ui/dropdown-menu";
+import { Icons } from "@onlook/ui/icons";
 
 interface InputDropdownProps {
     value: string;
@@ -29,8 +29,8 @@ export const InputDropdown = ({
     return (
         <div className="flex items-center">
             <div className="flex items-center bg-background-tertiary/50 justify-between rounded-l-md px-3 h-[36px] w-[80px]">
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     value={value}
                     onChange={(e) => onChange?.(e.target.value)}
                     className="w-[40px] bg-transparent text-sm text-white focus:outline-none text-left"
@@ -51,7 +51,7 @@ export const InputDropdown = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="min-w-[100px] -mt-[1px] p-1 rounded-lg">
                     {dropdownOptions.map((option) => (
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                             key={option}
                             onClick={() => onDropdownChange?.(option)}
                             className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"

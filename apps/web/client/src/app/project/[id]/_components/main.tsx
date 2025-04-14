@@ -4,7 +4,7 @@
 
 import { useProjectsManager } from "@/components/store";
 import type { Project } from "@onlook/models";
-import { TooltipProvider } from "@onlook/ui-v4/tooltip";
+import { TooltipProvider } from "@onlook/ui/tooltip";
 import { useEffect } from "react";
 import { BottomBar } from "./bottom-bar";
 import { Canvas } from "./canvas";

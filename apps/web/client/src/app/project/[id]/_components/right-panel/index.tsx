@@ -2,11 +2,11 @@
 
 import { useEditorEngine } from '@/components/store';
 import { EditorMode, EditorTabValue } from "@onlook/models/editor";
-import { Icons } from '@onlook/ui-v4/icons';
-import { ResizablePanel } from '@onlook/ui-v4/resizable';
-import { Separator } from '@onlook/ui-v4/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui-v4/tabs';
-import { cn } from '@onlook/ui-v4/utils';
+import { Icons } from '@onlook/ui/icons';
+import { ResizablePanel } from '@onlook/ui/resizable';
+import { Separator } from '@onlook/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';

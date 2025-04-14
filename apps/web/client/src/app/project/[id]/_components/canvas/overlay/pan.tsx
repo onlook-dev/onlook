@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store';
 import { EditorMode } from '@onlook/models/editor';
-import { cn } from '@onlook/ui-v4/utils';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 interface PanOverlayProps {

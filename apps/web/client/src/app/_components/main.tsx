@@ -1,7 +1,7 @@
 "use client";
 import { Routes } from "@/utils/constants";
 import { createClient } from "@/utils/supabase/client";
-import { Button } from "@onlook/ui-v4/button";
+import { Button } from "@onlook/ui/button";
 import { type User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";

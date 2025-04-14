@@ -2,10 +2,10 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store';
-import { Button } from '@onlook/ui-v4/button';
-import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
-import { Icons } from '@onlook/ui-v4/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui-v4/tooltip';
+import { Button } from '@onlook/ui/button';
+import { HotkeyLabel } from '@onlook/ui/hotkey-label';
+import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';

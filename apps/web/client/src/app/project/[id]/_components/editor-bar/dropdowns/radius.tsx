@@ -1,15 +1,15 @@
 "use client";
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
+import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
-import { InputRange } from "../inputs/input-range";
-import { InputIcon } from "../inputs/input-icon";
+} from "@onlook/ui/dropdown-menu";
+import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
+import { InputIcon } from "../inputs/input-icon";
+import { InputRange } from "../inputs/input-range";
 
 export const Radius = () => {
     const [activeTab, setActiveTab] = useState('individual');
@@ -27,23 +27,21 @@ export const Radius = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
-                    <button 
+                    <button
                         onClick={() => setActiveTab('all')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${
-                            activeTab === 'all' 
-                                ? 'text-white bg-background-tertiary/20' 
+                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${activeTab === 'all'
+                                ? 'text-white bg-background-tertiary/20'
                                 : 'text-muted-foreground hover:bg-background-tertiary/10'
-                        }`}
+                            }`}
                     >
                         All sides
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveTab('individual')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${
-                            activeTab === 'individual' 
-                                ? 'text-white bg-background-tertiary/20' 
+                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${activeTab === 'individual'
+                                ? 'text-white bg-background-tertiary/20'
                                 : 'text-muted-foreground hover:bg-background-tertiary/10'
-                        }`}
+                            }`}
                     >
                         Individual
                     </button>

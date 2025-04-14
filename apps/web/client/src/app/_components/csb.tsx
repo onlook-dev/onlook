@@ -1,7 +1,7 @@
 'use client';
 
 import { api } from "@/trpc/react";
-import { Button } from "@onlook/ui-v4/button";
+import { Button } from "@onlook/ui/button";
 
 export function Csb() {
     const { mutateAsync: start, isPending: isStarting } = api.csb.start.useMutation();

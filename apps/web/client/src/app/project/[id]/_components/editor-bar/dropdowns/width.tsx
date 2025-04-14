@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
+import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
+} from "@onlook/ui/dropdown-menu";
+import { Icons } from "@onlook/ui/icons";
 import { InputDropdown } from "../inputs/input-dropdown";
 
 export const Width = () => {
@@ -25,7 +25,7 @@ export const Width = () => {
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-white">Width</span>
-                        <InputDropdown 
+                        <InputDropdown
                             value="250"
                             dropdownValue="Hug"
                             dropdownOptions={["Hug", "Fixed"]}
@@ -33,7 +33,7 @@ export const Width = () => {
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Min</span>
-                        <InputDropdown 
+                        <InputDropdown
                             value="--"
                             dropdownValue="Fixed"
                             dropdownOptions={["Fixed"]}
@@ -41,7 +41,7 @@ export const Width = () => {
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Max</span>
-                        <InputDropdown 
+                        <InputDropdown
                             value="--"
                             dropdownValue="Fixed"
                             dropdownOptions={["Fixed"]}

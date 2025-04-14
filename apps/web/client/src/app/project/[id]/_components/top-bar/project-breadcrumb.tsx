@@ -1,7 +1,7 @@
 // import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
 // import { ProjectTabs } from '@/lib/projects';
 // import { Route } from '@/lib/routes';
-import { Button } from '@onlook/ui-v4/button';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,9 +11,9 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
-} from '@onlook/ui-v4/dropdown-menu';
-import { Icons } from '@onlook/ui-v4/icons';
-import { cn } from '@onlook/ui-v4/utils';
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
 import { useTranslations } from 'next-intl';
 import { redirect } from 'next/navigation';
 import { useRef, useState } from 'react';

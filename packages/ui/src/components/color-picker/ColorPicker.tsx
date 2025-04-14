@@ -35,7 +35,7 @@ const InputsRow = ({
         <div className="z-50 grid grid-cols-[48px_1fr_1fr_1fr_46px] gap-1 text-mini">
             <div className="flex items-center justify-center gap-1 min-w-0 ">
                 <label
-                    className="text-small text-foreground-primary cursor-pointer hover:text-foreground-hover bg-background-secondary border-[0.5px] border-foreground-tertiary/50 hover:bg-background-hover w-full flex rounded justify-center py-[0.5px] select-none"
+                    className="text-small text-foreground-primary cursor-pointer hover:text-foreground-hover bg-background-secondary border-[0.5px] border-foreground-tertiary/50 hover:bg-background-hover w-full flex rounded-sm justify-center py-[0.5px] select-none"
                     onClick={() =>
                         mode === 'hsl'
                             ? setMode('hsv')

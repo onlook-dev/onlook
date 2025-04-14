@@ -1,6 +1,6 @@
 "use client";
 
-import { Icons } from "@onlook/ui-v4/icons";
+import { Icons } from "@onlook/ui/icons";
 
 type ElementType = "div" | "text" | "image";
 
