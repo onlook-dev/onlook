@@ -4,27 +4,27 @@ import { api } from "@/trpc/react";
 import { Button } from "@onlook/ui-v4/button";
 
 export function Csb() {
-    const { mutate: start, isPending: isStarting, data: startData } = api.api.csb.start.useMutation();
-    const { mutate: stop, isPending: isStopping, data: stopData } = api.api.csb.stop.useMutation();
-    const { mutate: list, isPending: isListing, data: listData } = api.api.csb.list.useMutation();
+    const { mutateAsync: start, isPending: isStarting } = api.csb.start.useMutation();
+    const { mutateAsync: stop, isPending: isStopping } = api.csb.stop.useMutation();
+    const { mutateAsync: list, isPending: isListing } = api.csb.list.useMutation();
 
     const handleStart = async () => {
-        await start("123");
+        const startData = await start("123");
+        console.log("startData", startData);
     }
 
     const handleStop = async () => {
-        await stop("s6tryk");
+        const stopData = await stop("s6tryk");
+        console.log("stopData", stopData);
     }
 
     const handleList = async () => {
-        await list();
+        const listData = await list();
+        console.log("listData", listData);
     }
 
     return (
         <div>
-            <pre>{JSON.stringify(startData, null, 2)}</pre>
-            <pre>{JSON.stringify(stopData, null, 2)}</pre>
-            <pre>{JSON.stringify(listData, null, 2)}</pre>
             <Button
                 onClick={handleStart}
                 disabled={isStarting}

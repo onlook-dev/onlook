@@ -9,9 +9,7 @@ import { csbRouter } from "./routers/csb";
  */
 export const appRouter = createTRPCRouter({
     external: editorForwardRouter,
-    api: createTRPCRouter({
-        csb: csbRouter,
-    }),
+    csb: csbRouter,
 });
 
 // export type definition of API
