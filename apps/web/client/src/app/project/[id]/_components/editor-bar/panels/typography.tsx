@@ -22,6 +22,7 @@ export function Typography({ className }: TypographyProps) {
   const [textAlign, setTextAlign] = useState("left");
   const [textDecoration, setTextDecoration] = useState("none");
   const [fontFamily, setFontFamily] = useState("Inter");
+  const [capitalization, setCapitalization] = useState("none");
 
   // Section collapse states
   const [textOpen, setTextOpen] = useState(true);
@@ -33,6 +34,20 @@ export function Typography({ className }: TypographyProps) {
     { value: "center", icon: <Icons.TextAlignCenter className="h-4 w-4" /> },
     { value: "right", icon: <Icons.TextAlignRight className="h-4 w-4" /> },
     { value: "justify", icon: <Icons.TextAlignJustified className="h-4 w-4" /> },
+  ];
+
+  const capitalizationOptions = [
+    { value: "uppercase", label: "AA" },
+    { value: "capitalize", label: "Aa" },
+    { value: "lowercase", label: "aa" },
+    { value: "none", icon: <Icons.CrossL className="h-4 w-4" /> },
+  ];
+
+  const decorationOptions = [
+    { value: "underline", icon: <Icons.TextUnderline className="h-4 w-4" /> },
+    { value: "overline", icon: <Icons.TextOverline className="h-4 w-4" /> },
+    { value: "strikethrough", icon: <Icons.TextStrikeThrough className="h-4 w-4" /> },
+    { value: "none", icon: <Icons.CrossL className="h-4 w-4" /> },
   ];
 
   return (
@@ -124,6 +139,32 @@ export function Typography({ className }: TypographyProps) {
               <span className="text-sm text-muted-foreground w-24">Letter</span>
               <div className="flex-1">
                 <InputIcon value={parseFloat(letterSpacing)} onChange={(value) => setLetterSpacing(value.toString())} />
+              </div>
+            </div>
+
+            {/* Capitalization */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground w-24">Capitalize</span>
+              <div className="w-[225px]">
+                <InputRadio 
+                  options={capitalizationOptions} 
+                  value={capitalization} 
+                  onChange={setCapitalization}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            {/* Text Decoration */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground w-24">Decorate</span>
+              <div className="w-[225px]">
+                <InputRadio 
+                  options={decorationOptions} 
+                  value={textDecoration} 
+                  onChange={setTextDecoration}
+                  className="flex-1"
+                />
               </div>
             </div>
           </div>

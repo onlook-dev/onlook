@@ -1851,4 +1851,69 @@ export const Icons = {
             <path d="M4.17969 9.92188H16.2602L10.2199 15.9623L4.17969 9.92188Z" fill="#929292" />
         </svg>
     ),
+    TextUnderline: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="17"
+            height="16"
+            viewBox="0 0 17 16"
+            fill="none"
+            className={cn(className)}
+            {...props}
+        >
+            <path
+                d="M12.1263 2.66406V7.33073C12.1263 9.53987 10.3354 11.3307 8.1263 11.3307C5.91716 11.3307 4.1263 9.53987 4.1263 7.33073V2.66406M2.79297 13.9974H13.4596"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+
+    TextOverline: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="17"
+            height="16"
+            viewBox="0 0 17 16"
+            fill="none"
+            className={cn(className)}
+            {...props}
+        >
+            <path
+                d="M12.375 4.66406V9.33073C12.375 11.5399 10.5841 13.3307 8.375 13.3307C6.16586 13.3307 4.375 11.5399 4.375 9.33073V4.66406"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M3.72656 2.25H12.7266"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+
+    TextStrikeThrough: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="17"
+            height="16"
+            viewBox="0 0 17 16"
+            fill="none"
+            className={cn(className)}
+            {...props}
+        >
+            <path
+                d="M4.625 10.6641C4.625 12.1368 5.81891 13.3307 7.29167 13.3307H9.95833C11.4311 13.3307 12.625 12.1368 12.625 10.6641C12.625 9.1913 11.4311 7.9974 9.95833 7.9974M12.625 5.33073C12.625 3.85797 11.4311 2.66406 9.95833 2.66406H7.29167C5.81891 2.66406 4.625 3.85797 4.625 5.33073M2.625 7.9974H14.625"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
 } satisfies { [key: string]: React.FC<IconProps> };
