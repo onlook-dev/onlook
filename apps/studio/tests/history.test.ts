@@ -19,7 +19,7 @@ describe('updateTransactionActions', () => {
         const existingActions: Action[] = [
             {
                 type: 'insert-element',
-                targets: [{ frameId: 'w1', domId: '1', oid: 'o1' }],
+                targets: [{ webviewId: 'w1', domId: '1', oid: 'o1' }],
                 location: { type: 'append', targetDomId: 'parent', targetOid: 'parent-oid' },
                 element: {
                     domId: '1',
@@ -37,7 +37,7 @@ describe('updateTransactionActions', () => {
         ];
         const newAction: Action = {
             type: 'remove-element',
-            targets: [{ frameId: 'w1', domId: '2', oid: 'o2' }],
+            targets: [{ webviewId: 'w1', domId: '2', oid: 'o2' }],
             location: { type: 'append', targetDomId: 'parent', targetOid: 'parent-oid' },
             element: {
                 domId: '2',
@@ -63,7 +63,7 @@ describe('updateTransactionActions', () => {
         const existingActions: Action[] = [
             {
                 type: 'insert-element',
-                targets: [{ frameId: 'w1', domId: '1', oid: 'o1' }],
+                targets: [{ webviewId: 'w1', domId: '1', oid: 'o1' }],
                 location: { type: 'append', targetDomId: 'parent', targetOid: 'parent-oid' },
                 element: {
                     domId: '1',
@@ -81,7 +81,7 @@ describe('updateTransactionActions', () => {
         ];
         const newAction: Action = {
             type: 'insert-element',
-            targets: [{ frameId: 'w1', domId: '2', oid: 'o2' }],
+            targets: [{ webviewId: 'w1', domId: '2', oid: 'o2' }],
             location: { type: 'append', targetDomId: 'parent', targetOid: 'parent-oid' },
             element: {
                 domId: '2',
@@ -109,7 +109,7 @@ describe('updateTransactionActions', () => {
             targets: [
                 {
                     domId: '1',
-                    frameId: 'w1',
+                    webviewId: 'w1',
                     oid: 'o1',
                     change: {
                         updated: { color: { value: 'red', type: StyleChangeType.Value } },
@@ -124,7 +124,7 @@ describe('updateTransactionActions', () => {
             targets: [
                 {
                     domId: '1',
-                    frameId: 'w1',
+                    webviewId: 'w1',
                     oid: 'o1',
                     change: {
                         updated: { fontSize: { value: '16px', type: StyleChangeType.Value } },
@@ -155,7 +155,7 @@ describe('updateTransactionActions', () => {
             targets: [
                 {
                     domId: '1',
-                    frameId: 'w1',
+                    webviewId: 'w1',
                     oid: 'o1',
                     change: {
                         updated: { color: { value: 'red', type: StyleChangeType.Value } },
@@ -164,7 +164,7 @@ describe('updateTransactionActions', () => {
                 },
                 {
                     domId: '2',
-                    frameId: 'w1',
+                    webviewId: 'w1',
                     oid: 'o2',
                     change: {
                         updated: { color: { value: 'green', type: StyleChangeType.Value } },
@@ -179,7 +179,7 @@ describe('updateTransactionActions', () => {
             targets: [
                 {
                     domId: '1',
-                    frameId: 'w1',
+                    webviewId: 'w1',
                     oid: 'o1',
                     change: {
                         updated: { fontSize: { value: '16px', type: StyleChangeType.Value } },
@@ -211,7 +211,7 @@ describe('updateTransactionActions', () => {
     it('should handle empty actions array', () => {
         const newAction: Action = {
             type: 'insert-element',
-            targets: [{ frameId: 'w1', domId: '1', oid: 'o1' }],
+            targets: [{ webviewId: 'w1', domId: '1', oid: 'o1' }],
             location: { type: 'append', targetDomId: 'parent', targetOid: 'parent-oid' },
             element: {
                 domId: '1',
@@ -236,7 +236,7 @@ describe('updateTransactionActions', () => {
         const existingActions: Action[] = [
             {
                 type: 'insert-element',
-                targets: [{ frameId: 'w1', domId: '1', oid: 'o1' }],
+                targets: [{ webviewId: 'w1', domId: '1', oid: 'o1' }],
                 location: { type: 'append', targetDomId: 'parent', targetOid: 'parent-oid' },
                 element: {
                     domId: '1',
@@ -255,7 +255,7 @@ describe('updateTransactionActions', () => {
         ];
         const newAction: Action = {
             type: 'insert-element',
-            targets: [{ frameId: 'w1', domId: '2', oid: 'o2' }],
+            targets: [{ webviewId: 'w1', domId: '2', oid: 'o2' }],
             location: { type: 'append', targetDomId: 'parent', targetOid: 'parent-oid' },
             element: {
                 domId: '2',
@@ -284,7 +284,7 @@ describe('updateTransactionActions', () => {
             targets: [
                 {
                     domId: '1',
-                    frameId: 'w1',
+                    webviewId: 'w1',
                     oid: 'o1',
                     change: {
                         updated: { customStyle: { value: 'value1', type: StyleChangeType.Custom } },
@@ -301,7 +301,7 @@ describe('updateTransactionActions', () => {
             targets: [
                 {
                     domId: '1',
-                    frameId: 'w1',
+                    webviewId: 'w1',
                     oid: 'o1',
                     change: {
                         updated: { customStyle: { value: 'value2', type: StyleChangeType.Custom } },

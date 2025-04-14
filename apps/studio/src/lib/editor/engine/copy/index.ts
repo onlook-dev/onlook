@@ -26,7 +26,7 @@ export class CopyManager {
             return;
         }
         const selectedEl = this.editorEngine.elements.selected[0];
-        const webviewId = selectedEl.frameId;
+        const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('Failed to get webview');
@@ -73,7 +73,7 @@ export class CopyManager {
         const targets: Array<ActionTarget> = this.editorEngine.elements.selected.map(
             (selectedEl) => {
                 const target: ActionTarget = {
-                    frameId: selectedEl.frameId,
+                    webviewId: selectedEl.webviewId,
                     domId: selectedEl.domId,
                     oid: selectedEl.oid,
                 };
@@ -167,7 +167,7 @@ export class CopyManager {
     }
 
     async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
-        const webviewId = selectedEl.frameId;
+        const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('Failed to get webview');
