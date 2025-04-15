@@ -1,4 +1,5 @@
 "use client";
+import localforage from 'localforage';
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
@@ -34,7 +35,9 @@ export function ThemeProvider({
     const [nextTheme, setNextTheme] = useState<Theme>('dark');
 
     useEffect(() => {
-        setTheme(window?.localStorage?.getItem(storageKey) as Theme || defaultTheme);
+        localforage.getItem(storageKey).then((theme: unknown) => {
+            setTheme(theme as Theme || defaultTheme);
+        });
     }, []);
 
     useEffect(() => {
@@ -72,7 +75,7 @@ export function ThemeProvider({
         theme,
         nextTheme,
         setTheme: (newTheme: Theme) => {
-            localStorage?.setItem(storageKey, newTheme);
+            localforage.setItem(storageKey, newTheme);
             setTheme(newTheme);
         },
     };

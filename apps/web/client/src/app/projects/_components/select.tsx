@@ -1,15 +1,15 @@
 "use client"
 
 // import { useProjectsManager } from '@/components/Context';
-import type { Project } from '@onlook/models/projects';
+import type { Project } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import Carousel from './carousel';
 import ProjectInfo from './info';
 
 export const SelectProject = observer(() => {
-    const { t } = useTranslation();
+    const t = useTranslations();
     // const projectsManager = useProjectsManager();
     // const [projects, setProjects] = useState<Project[]>(sortProjects(projectsManager.projects));
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
@@ -19,40 +19,33 @@ export const SelectProject = observer(() => {
     const mockProjects: Project[] = [{
         id: '1',
         name: 'Project 1',
-        folderPath: 'Project 1',
-        url: 'https://www.tailwindcss.com',
         previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
         updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
-        settings: null,
+        canvas: null,
         commands: null,
         domains: null,
     },
     {
         id: '2',
         name: 'Project 2',
-        folderPath: 'Project 2',
-        url: 'https://www.tailwindcss.com',
         previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
         updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-        settings: null,
+        canvas: null,
         commands: null,
         domains: null,
     },
     {
         id: '3',
         name: 'Project 3',
-        folderPath: 'Project 3',
-        url: 'https://www.tailwindcss.com',
         previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
         createdAt: new Date(Date.now() - 1000 * 60).toISOString(),
         updatedAt: new Date(Date.now() - 1000 * 60).toISOString(),
-        settings: null,
+        canvas: null,
         commands: null,
         domains: null,
-    },
-    ];
+    }];
 
     const sortProjects = (unsortedProjects: Project[]) => {
         return unsortedProjects.sort(

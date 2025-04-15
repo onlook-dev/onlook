@@ -138,8 +138,8 @@ export class TextEditingManager {
             return;
         }
         const selectedEl = selected[0];
-        const webviewId = selectedEl.frameId;
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        const frameId = selectedEl.frameId;
+        const webview = this.editorEngine.webviews.getWebview(frameId);
         if (!webview) {
             return;
         }

@@ -13,23 +13,18 @@ type PenpalRemote = {
 };
 
 // TODO: Move this to a shared package
-export type WebFrameView = HTMLIFrameElement &
-    Pick<
-        Electron.WebviewTag,
-        | 'setZoomLevel'
-        | 'loadURL'
-        | 'openDevTools'
-        | 'canGoForward'
-        | 'canGoBack'
-        | 'goForward'
-        | 'goBack'
-        | 'reload'
-        | 'isLoading'
-        | 'capturePage'
-    > & {
-        supportsOpenDevTools: () => boolean;
-        capturePageAsCanvas: () => Promise<HTMLCanvasElement>;
-    } & PenpalRemote;
+export type WebFrameView = HTMLIFrameElement & {
+    setZoomLevel: (level: number) => void;
+    loadURL: (url: string) => void;
+    supportsOpenDevTools: () => boolean;
+    canGoForward: () => boolean;
+    canGoBack: () => boolean;
+    goForward: () => void;
+    goBack: () => void;
+    reload: () => void;
+    isLoading: () => boolean;
+    capturePageAsCanvas: () => Promise<HTMLCanvasElement>;
+} & PenpalRemote;
 
 interface WebFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: WebFrame;
@@ -97,13 +92,6 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             supportsOpenDevTools: () => {
                 const contentWindow = iframe.contentWindow;
                 return !!contentWindow && 'openDevTools' in contentWindow;
-            },
-            openDevTools: () => {
-                const contentWindow = iframe.contentWindow;
-                if (!contentWindow || !('openDevTools' in contentWindow)) {
-                    throw new Error('openDevTools() is not supported in this browser');
-                }
-                (contentWindow as any as Electron.WebContents).openDevTools();
             },
             setZoomLevel: (level: number) => {
                 zoomLevel.current = level;

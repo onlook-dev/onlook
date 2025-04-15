@@ -24,13 +24,13 @@ export class WindowManager {
     //         console.error('Failed to take screenshot, no webviews found');
     //         return null;
     //     }
-    //     const webviewId = Array.from(this.webviews.webviews.values())[0].webview.id;
-    //     return this.takeWebviewScreenshot(name, webviewId, options);
+    //     const frameId = Array.from(this.webviews.webviews.values())[0].webview.id;
+    //     return this.takeWebviewScreenshot(name, frameId, options);
     // }
 
     // async takeWebviewScreenshot(
     //     name: string,
-    //     webviewId: string,
+    //     frameId: string,
     //     options?: {
     //         save: boolean;
     //     },
@@ -38,7 +38,7 @@ export class WindowManager {
     //     name?: string;
     //     image?: string;
     // } | null> {
-    //     const webview = this.webviews.getWebview(webviewId);
+    //     const webview = this.webviews.getWebview(frameId);
     //     if (!webview) {
     //         console.error('No webview found');
     //         return null;
@@ -80,7 +80,7 @@ export class WindowManager {
         //     console.error('Cannot delete the last window');
         //     return;
         // }
-        // let settings: FrameSettings | null = null;
+        // let settings: Frames | null = null;
         // if (id) {
         //     settings = this.canvas.getFrame(id) || null;
         //     if (!settings) {
@@ -107,7 +107,7 @@ export class WindowManager {
     }
 
     duplicateWindow(id?: string) {
-        // let settings: FrameSettings | null = null;
+        // let settings: Frames | null = null;
         // if (id) {
         //     settings = this.canvas.getFrame(id) || null;
         // } else if (this.webviews.selected.length === 0) {
@@ -121,7 +121,7 @@ export class WindowManager {
         //     return;
         // }
         // const currentFrame = settings;
-        // const newFrame: FrameSettings = {
+        // const newFrame: Frames = {
         //     id: nanoid(),
         //     url: currentFrame.url,
         //     dimension: {

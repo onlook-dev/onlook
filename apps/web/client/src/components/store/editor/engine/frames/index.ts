@@ -1,5 +1,5 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
-import type { Frame } from '@onlook/models/frame';
+import type { Frame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../index.ts';
 // import { isOnlookInDoc } from '/common/helpers';

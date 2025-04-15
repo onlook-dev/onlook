@@ -32,6 +32,7 @@
     },
     "dependencies": {
         "normalize-url": "^8.0.1",
-        "tldts": "^6.1.82"
+        "tldts": "^6.1.82",
+        "@onlook/fonts": "*"
     }
 }

@@ -1,10 +1,10 @@
 import { DefaultSettings } from '@onlook/constants';
-import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import type {
-    FrameSettings,
+    Frame,
     Project,
     RectPosition
-} from '@onlook/models/projects';
+} from '@onlook/models';
+import { FrameType, type WebFrame } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
@@ -88,7 +88,7 @@ export class CanvasManager {
         return this.frames.find((f) => f.id === id);
     }
 
-    saveFrame(id: string, newSettings: Partial<FrameSettings>) {
+    saveFrame(id: string, newSettings: Partial<Frame>) {
         // let frame = this.frames.find((f) => f.id === id);
         // if (!frame) {
         //     return;
@@ -144,8 +144,8 @@ export class CanvasManager {
         this._position = DefaultSettings.PAN_POSITION;
     }
 
-    getFrameMap(frames: FrameSettings[]): Map<string, FrameSettings> {
-        const map = new Map<string, FrameSettings>();
+    getFrameMap(frames: Frame[]): Map<string, Frame> {
+        const map = new Map<string, Frame>();
         frames.forEach((frame) => {
             map.set(frame.id, frame);
         });

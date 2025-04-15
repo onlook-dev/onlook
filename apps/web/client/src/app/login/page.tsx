@@ -3,6 +3,7 @@
 import { Dunes } from '@/components/ui/dunes';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import localforage from 'localforage';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { login } from './actions';
@@ -19,15 +20,14 @@ export default function LoginPage() {
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        const lastSignInMethod = localStorage?.getItem(LAST_SIGN_IN_METHOD_KEY) as SignInMethod | null;
-        if (lastSignInMethod) {
-            setLastSignInMethod(lastSignInMethod);
-        }
+        localforage.getItem(LAST_SIGN_IN_METHOD_KEY).then((lastSignInMethod: unknown) => {
+            setLastSignInMethod(lastSignInMethod as SignInMethod | null);
+        });
     }, []);
 
     const handleLogin = (method: SignInMethod) => {
         login(method);
-        localStorage?.setItem(LAST_SIGN_IN_METHOD_KEY, method);
+        localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
     }
 
     return (

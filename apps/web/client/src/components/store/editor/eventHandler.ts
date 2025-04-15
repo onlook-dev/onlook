@@ -1,7 +1,7 @@
 import { WebviewChannels } from '@onlook/constants';
 import type { DomElement, LayerNode } from '@onlook/models';
+import { EditorMode } from '@onlook/models';
 import { debounce } from 'lodash';
-import { EditorMode } from '../models';
 import type { EditorEngine } from './engine';
 
 export class WebviewEventHandler {

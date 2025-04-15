@@ -5,15 +5,14 @@ import Main from "./_components/main";
 
 export default async function Page({ params }: { params: { id: string } }) {
     const supabase = await createClient()
+    const projectId = await params.id;
 
     // TODO: Get project from supabase
     // const { data, error } = await supabase.from('your_table').select('*')
 
     const newProject: Project = {
-        id: params.id,
+        id: projectId,
         name: "New Project",
-        url: "https://example.com",
-        folderPath: "https://example.com",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         commands: {
@@ -22,13 +21,11 @@ export default async function Page({ params }: { params: { id: string } }) {
             build: "npm run build",
         },
         previewImg: null,
-        settings: null,
+        canvas: null,
         domains: {
             base: null,
             custom: null,
         },
-        metadata: null,
-        env: {},
     };
     return <Main project={newProject} />
 }

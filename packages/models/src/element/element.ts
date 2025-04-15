@@ -1,6 +1,6 @@
 interface BaseDomElement {
     domId: string;
-    webviewId: string;
+    frameId: string;
     oid: string | null;
     instanceId: string | null;
     rect: DOMRect;

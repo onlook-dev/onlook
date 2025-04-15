@@ -81,9 +81,9 @@ export class PagesManager {
         });
     }
 
-    public setActivePath(webviewId: string, path: string) {
-        this.activeRoutesByWebviewId[webviewId] = path;
-        if (webviewId === this.getActiveWebview()?.id) {
+    public setActivePath(frameId: string, path: string) {
+        this.activeRoutesByWebviewId[frameId] = path;
+        if (frameId === this.getActiveWebview()?.id) {
             this.currentPath = path;
         }
         this.updateActiveStates(this.pages, path);
@@ -290,8 +290,8 @@ export class PagesManager {
         this.currentPath = path;
     }
 
-    public handleWebviewUrlChange(webviewId: string) {
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
+    public handleWebviewUrlChange(frameId: string) {
+        const webview = this.editorEngine.webviews.getWebview(frameId);
         if (!webview) {
             return;
         }
@@ -305,7 +305,7 @@ export class PagesManager {
             const urlObj = new URL(url);
             const path = urlObj.pathname;
             const activePath = this.groupedRoutes ? this.groupedRoutes : path;
-            this.setActivePath(webviewId, activePath);
+            this.setActivePath(frameId, activePath);
         } catch (error) {
             console.error('Failed to parse URL:', error);
         }

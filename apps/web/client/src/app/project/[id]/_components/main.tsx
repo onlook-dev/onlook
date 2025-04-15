@@ -18,7 +18,6 @@ export default function Main({ project }: { project: Project }) {
 
     useEffect(() => {
         projectManager.project = project;
-        console.log(projectManager.project);
     }, [project]);
 
     return (

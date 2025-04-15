@@ -4,7 +4,7 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class ErrorManager {
-    private webviewIdToError: Record<string, ParsedError[]> = {};
+    private frameIdToError: Record<string, ParsedError[]> = {};
     private terminalErrors: ParsedError[] = [];
 
     shouldShowErrors: boolean = false;
@@ -30,18 +30,18 @@ export class ErrorManager {
     }
 
     removeErrorsFromMap(errors: ParsedError[]) {
-        for (const [webviewId, existingErrors] of Object.entries(this.webviewIdToError)) {
-            this.webviewIdToError[webviewId] = existingErrors.filter(
+        for (const [frameId, existingErrors] of Object.entries(this.frameIdToError)) {
+            this.frameIdToError[frameId] = existingErrors.filter(
                 (existing) => !errors.some((error) => compareErrors(existing, error)),
             );
         }
     }
 
-    errorByWebviewId(webviewId: string) {
-        return this.webviewIdToError[webviewId];
+    errorByWebviewId(frameId: string) {
+        return this.frameIdToError[frameId];
     }
 
-    addError(webviewId: string, event: Electron.ConsoleMessageEvent) {
+    addError(frameId: string, event: Electron.ConsoleMessageEvent) {
         if (event.sourceId?.includes('localhost')) {
             return;
         }
@@ -50,9 +50,9 @@ export class ErrorManager {
             type: 'webview',
             content: event.message,
         };
-        const existingErrors = this.webviewIdToError[webviewId] || [];
+        const existingErrors = this.frameIdToError[frameId] || [];
         if (!existingErrors.some((e) => compareErrors(e, error))) {
-            this.webviewIdToError[webviewId] = [...existingErrors, error];
+            this.frameIdToError[frameId] = [...existingErrors, error];
         }
     }
 
@@ -70,7 +70,7 @@ export class ErrorManager {
     }
 
     clear() {
-        this.webviewIdToError = {};
+        this.frameIdToError = {};
         this.terminalErrors = [];
     }
 }

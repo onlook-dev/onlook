@@ -122,8 +122,8 @@ export class ChatContext {
         if (this.editorEngine.elements.selected.length === 0) {
             return null;
         }
-        const webviewId = this.editorEngine.elements.selected[0].frameId;
-        if (!webviewId) {
+        const frameId = this.editorEngine.elements.selected[0].frameId;
+        if (!frameId) {
             return null;
         }
 
@@ -131,7 +131,7 @@ export class ChatContext {
         const screenshotName = `chat-screenshot-${timestamp}`;
 
         try {
-            const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, webviewId);
+            const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, frameId);
             if (!result || !result.image) {
                 console.error('Failed to capture screenshot');
                 return null;

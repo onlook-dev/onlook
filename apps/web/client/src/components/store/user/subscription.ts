@@ -11,13 +11,19 @@ export class SubscriptionManager {
     }
 
     private restoreCachedPlan() {
-        const cachedPlan = localStorage?.getItem('currentPlan');
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return;
+        }
+        const cachedPlan = window.localStorage?.getItem('currentPlan');
         this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
     }
 
     async updatePlan(plan: UsagePlanType) {
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return;
+        }
         this.plan = plan;
-        localStorage.setItem('currentPlan', plan);
+        window.localStorage.setItem('currentPlan', plan);
         // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 

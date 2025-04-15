@@ -9,14 +9,14 @@ interface LayerMetadata {
 }
 
 export class LayersManager {
-    webviewIdToLayerMetadata: Map<string, LayerMetadata> = new Map();
+    frameIdToLayerMetadata: Map<string, LayerMetadata> = new Map();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
     get layers(): LayerNode[] {
-        return Array.from(this.webviewIdToLayerMetadata.values()).map(
+        return Array.from(this.frameIdToLayerMetadata.values()).map(
             (metadata) => metadata.rootNode,
         );
     }
@@ -31,29 +31,29 @@ export class LayersManager {
         );
     }
 
-    getRootLayer(webviewId: string): LayerNode | undefined {
-        return this.webviewIdToLayerMetadata.get(webviewId)?.rootNode;
+    getRootLayer(frameId: string): LayerNode | undefined {
+        return this.frameIdToLayerMetadata.get(frameId)?.rootNode;
     }
 
-    getMetadata(webviewId: string): LayerMetadata | undefined {
-        return this.webviewIdToLayerMetadata.get(webviewId);
+    getMetadata(frameId: string): LayerMetadata | undefined {
+        return this.frameIdToLayerMetadata.get(frameId);
     }
 
     setMetadata(
-        webviewId: string,
+        frameId: string,
         doc: Document,
         rootNode: LayerNode,
         domIdToLayerNode: Map<string, LayerNode>,
     ) {
-        this.webviewIdToLayerMetadata.set(webviewId, {
+        this.frameIdToLayerMetadata.set(frameId, {
             document: doc,
             rootNode: rootNode,
             domIdToLayerNode,
         });
     }
 
-    addNewMapping(webviewId: string, domIdToLayerNode: Map<string, LayerNode>) {
-        const metadata = this.getMetadata(webviewId);
+    addNewMapping(frameId: string, domIdToLayerNode: Map<string, LayerNode>) {
+        const metadata = this.getMetadata(frameId);
         if (metadata) {
             metadata.domIdToLayerNode = new Map([
                 ...metadata.domIdToLayerNode,
@@ -62,26 +62,26 @@ export class LayersManager {
         }
     }
 
-    getMapping(webviewId: string): Map<string, LayerNode> | undefined {
-        return this.getMetadata(webviewId)?.domIdToLayerNode;
+    getMapping(frameId: string): Map<string, LayerNode> | undefined {
+        return this.getMetadata(frameId)?.domIdToLayerNode;
     }
 
-    getLayerNode(webviewId: string, domId: string): LayerNode | undefined {
-        return this.getMapping(webviewId)?.get(domId);
+    getLayerNode(frameId: string, domId: string): LayerNode | undefined {
+        return this.getMapping(frameId)?.get(domId);
     }
 
-    updateDocument(webviewId: string, doc: Document) {
-        const metadata = this.getMetadata(webviewId);
+    updateDocument(frameId: string, doc: Document) {
+        const metadata = this.getMetadata(frameId);
         if (metadata) {
             metadata.document = doc;
         }
     }
 
-    remove(webviewId: string) {
-        this.webviewIdToLayerMetadata.delete(webviewId);
+    remove(frameId: string) {
+        this.frameIdToLayerMetadata.delete(frameId);
     }
 
     clear() {
-        this.webviewIdToLayerMetadata.clear();
+        this.frameIdToLayerMetadata.clear();
     }
 }

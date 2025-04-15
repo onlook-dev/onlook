@@ -7,7 +7,7 @@ export type CoreElementType = z.infer<typeof CoreElementTypeEnum>;
 
 const LayerNodeSchema = z.object({
     domId: z.string(),
-    webviewId: z.string(),
+    frameId: z.string(),
     instanceId: z.string().nullable(),
     oid: z.string().nullable(),
     textContent: z.string(),
