@@ -1,12 +1,24 @@
 import { useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui-v4/dropdown-menu";
+import { Icons } from "@onlook/ui-v4/icons";
 
 const UNITS = ["PX", "%", "REM", "VW", "VH"] as const;
 type Unit = typeof UNITS[number];
 
+type IconType = 
+    | "LeftSide" 
+    | "TopSide" 
+    | "RightSide" 
+    | "BottomSide"
+    | "CornerRadius"
+    | "CornerTopRight"
+    | "CornerBottomLeft"
+    | "CornerBottomRight";
+
 interface InputIconProps {
     value: number;
     unit?: Unit;
+    icon?: IconType;
     onChange?: (value: number) => void;
     onUnitChange?: (unit: Unit) => void;
 }
@@ -14,6 +26,7 @@ interface InputIconProps {
 export const InputIcon = ({ 
     value, 
     unit = "PX", 
+    icon,
     onChange,
     onUnitChange 
 }: InputIconProps) => {
@@ -36,17 +49,22 @@ export const InputIcon = ({
         }
     };
 
+    const IconComponent = icon ? Icons[icon] : null;
+
     return (
         <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
-            <input 
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={inputValue}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className="w-full bg-transparent text-sm text-white focus:outline-none uppercase"
-            />
+            <div className="flex items-center gap-2">
+                {IconComponent && <IconComponent className="h-4 w-4 text-muted-foreground" />}
+                <input 
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={inputValue}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase"
+                />
+            </div>
                         
             <DropdownMenu>
                 <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
