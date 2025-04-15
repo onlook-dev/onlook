@@ -413,7 +413,7 @@ const ImagesTab = observer(() => {
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                                     onClick={() => {
-                                                        if (!imageFolder) {
+                                                        if (!imageFolder || !image.folder) {
                                                             return;
                                                         }
                                                         invokeMainChannel(
