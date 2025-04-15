@@ -2,6 +2,26 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 import { detectRouterType, ROOT_PAGE_COPY_NAME, ROOT_PATH_IDENTIFIERS } from './helpers';
 
+async function getUniqueDir(basePath: string, dirName: string): Promise<string> {
+    let uniquePath = dirName;
+    let counter = 1;
+
+    const baseName = dirName.replace(/-copy(-\d+)?$/, '');
+
+    while (true) {
+        try {
+            await fs.access(path.join(basePath, uniquePath));
+            uniquePath = `${baseName}-copy-${counter}`;
+            counter++;
+        } catch (err: any) {
+            if (err.code === 'ENOENT') {
+                return uniquePath;
+            }
+            throw err;
+        }
+    }
+}
+
 export async function duplicateNextJsPage(
     projectRoot: string,
     sourcePath: string,
@@ -17,7 +37,7 @@ export async function duplicateNextJsPage(
 
     if (isRootPath) {
         const sourcePageFile = path.join(routerConfig.basePath, 'page.tsx');
-        const targetDir = path.join(routerConfig.basePath, ROOT_PAGE_COPY_NAME);
+        const targetDir = await getUniqueDir(routerConfig.basePath, ROOT_PAGE_COPY_NAME);
         const targetPageFile = path.join(targetDir, 'page.tsx');
 
         // Check if target already exists
@@ -36,8 +56,9 @@ export async function duplicateNextJsPage(
     }
 
     // Handle non-root pages
+
     const normalizedSourcePath = sourcePath;
-    const normalizedTargetPath = targetPath.endsWith('-copy') ? targetPath : `${targetPath}-copy`;
+    const normalizedTargetPath = await getUniqueDir(routerConfig.basePath, targetPath);
 
     const sourceFull = path.join(routerConfig.basePath, normalizedSourcePath);
     const targetFull = path.join(routerConfig.basePath, normalizedTargetPath);
