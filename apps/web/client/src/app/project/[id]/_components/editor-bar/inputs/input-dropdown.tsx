@@ -9,6 +9,8 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui-v4/dropdown-menu";
 
+const UNITS = ["PX", "%", "EM", "REM"];
+
 interface InputDropdownProps {
     value: string;
     unit?: string;
@@ -28,20 +30,35 @@ export const InputDropdown = ({
 }: InputDropdownProps) => {
     return (
         <div className="flex items-center">
-            <div className="flex items-center bg-background-tertiary/50 justify-between rounded-l-md px-3 h-[36px] w-[80px]">
+            <div className="flex flex-1 items-center bg-background-tertiary/50 justify-between rounded-l-md px-2.5 h-[36px] min-w-[72px]">
                 <input 
                     type="text" 
                     value={value}
                     onChange={(e) => onChange?.(e.target.value)}
-                    className="w-[40px] bg-transparent text-sm text-white focus:outline-none text-left"
+                    className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
                 />
-                <span className="text-[12px] text-muted-foreground">{unit}</span>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                        {unit}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                        {UNITS.map((unitOption: string) => (
+                            <DropdownMenuItem
+                                key={unitOption}
+                                onClick={() => onDropdownChange?.(unitOption)}
+                                className="text-[12px] text-center px-2"
+                            >
+                                {unitOption}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="h-[36px] bg-background-tertiary/50 hover:bg-background-tertiary/80 rounded-l-none rounded-r-md ml-[1px] px-3 flex items-center justify-between w-[80px] cursor-pointer"
+                        className="h-[36px] bg-background-tertiary/50 hover:bg-background-tertiary/80 rounded-l-none rounded-r-md ml-[1px] px-2.5 flex items-center justify-between w-[72px] cursor-pointer"
                     >
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">{dropdownValue}</span>

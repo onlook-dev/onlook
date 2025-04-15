@@ -1,14 +1,18 @@
+import { DropdownMenu, DropdownMenuItem, DropdownMenuContent, DropdownMenuTrigger } from "@onlook/ui-v4/dropdown-menu";
 import { Icons } from "@onlook/ui-v4/icons";
 import { useState, useEffect, useRef } from "react";
+
+const UNITS = ["PX", "%", "EM", "REM"];
 
 interface InputRangeProps {
     value: number;
     icon?: keyof typeof Icons;
     unit?: string;
     onChange?: (value: number) => void;
+    onUnitChange?: (unit: string) => void;
 }
 
-export const InputRange = ({ value, icon, unit = "px", onChange }: InputRangeProps) => {
+export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }: InputRangeProps) => {
     const Icon = icon ? Icons[icon] : Icons.Padding;
     const [inputValue, setInputValue] = useState(String(value));
     const rangeRef = useRef<HTMLInputElement>(null);
@@ -83,7 +87,23 @@ export const InputRange = ({ value, icon, unit = "px", onChange }: InputRangePro
                         onBlur={handleBlur}
                         className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase"
                     />
-                    <span className="text-[12px] text-muted-foreground uppercase">{unit}</span>
+                        
+                        <DropdownMenu>
+                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                        {unit}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                        {UNITS.map((unitOption: string) => (
+                            <DropdownMenuItem
+                                key={unitOption}
+                                onClick={() => onUnitChange?.(unitOption)}
+                                className="text-[12px] text-center px-2"
+                            >
+                                {unitOption}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu> 
                 </div>
             </div>
         </div>
