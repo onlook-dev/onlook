@@ -4,23 +4,21 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 interface PanOverlayProps {
-    isPanning: boolean;
-    setIsPanning: React.Dispatch<React.SetStateAction<boolean>>;
     clampPosition: (position: { x: number; y: number }) => { x: number; y: number };
 }
 
 export const PanOverlay = observer(
-    ({ isPanning, setIsPanning, clampPosition }: PanOverlayProps) => {
+    ({ clampPosition }: PanOverlayProps) => {
         const editorEngine = useEditorEngine();
 
         const startPan = (event: React.MouseEvent<HTMLDivElement>) => {
             event.preventDefault();
             event.stopPropagation();
-            setIsPanning(true);
+            editorEngine.state.canvasPanning = true;
         };
 
         const pan = (event: React.MouseEvent<HTMLDivElement>) => {
-            if (!isPanning) {
+            if (!editorEngine.state.canvasPanning) {
                 return;
             }
 
@@ -33,7 +31,7 @@ export const PanOverlay = observer(
         };
 
         const endPan = () => {
-            setIsPanning(false);
+            editorEngine.state.canvasPanning = false;
         };
 
         return (
@@ -41,7 +39,7 @@ export const PanOverlay = observer(
                 className={cn(
                     'absolute w-full h-full cursor-grab',
                     editorEngine.state.editorMode === EditorMode.PAN ? 'visible ' : 'hidden',
-                    isPanning ? 'cursor-grabbing' : 'cursor-grab',
+                    editorEngine.state.canvasPanning ? 'cursor-grabbing' : 'cursor-grab',
                 )}
                 onMouseDown={startPan}
                 onMouseMove={pan}

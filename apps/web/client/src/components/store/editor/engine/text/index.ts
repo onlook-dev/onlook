@@ -67,7 +67,7 @@ export class TextEditingManager {
             console.error('No target dom element to edit');
             return;
         }
-        const webview = this.editorEngine.webviews.getWebview(this.targetDomEl.frameId);
+        const webview = this.editorEngine.frames.get(this.targetDomEl.frameId);
         if (!webview) {
             console.error('No webview found for text editing');
             return;
@@ -145,7 +145,7 @@ export class TextEditingManager {
         }
 
         const domEl = await webview.executeJavaScript(
-            `window.api?.getDomElementByDomId('${selectedEl.domId}')`,
+            `window.api?.getDomElementByDomId('${selectedEl.domId}', true)`,
         );
         if (!domEl) {
             return;

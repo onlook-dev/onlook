@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/store';
 import type { ClickRectState } from '@/components/store/editor/engine/overlay/state';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { memo, useMemo } from 'react';
 import { OverlayChat } from './elements/chat';
@@ -64,6 +65,12 @@ export const Overlay = observer(({ children }: { children: React.ReactNode }) =>
             <div
                 style={containerStyle as React.CSSProperties}
                 id={EditorAttributes.OVERLAY_CONTAINER_ID}
+                className={cn(
+                    'transition-opacity duration-150',
+                    {
+                        'opacity-0': editorEngine.state.shouldHideOverlay,
+                    }
+                )}
             >
                 {
                     overlayState.hoverRect && (
