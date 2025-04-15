@@ -23,8 +23,8 @@ export const Panels = ({ selectedElement }: EditorBarProps) => {
             }}
         >
             <div className="p-4 pl-0 overflow-y-auto">
-                <LayoutPosition className="hidden" />
-                <Typography className="" />
+                <LayoutPosition className="" />
+                <Typography className="hidden" />
             </div>
         </motion.div>
     );
