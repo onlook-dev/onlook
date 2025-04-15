@@ -4,7 +4,7 @@ import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/
 import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
 import { Theme } from '@onlook/models/assets';
-import { Color } from '@onlook/utility';
+import { Color, generateUniqueName } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
@@ -451,12 +451,19 @@ export class ThemeManager {
                 if (!colorToDuplicate) {
                     throw new Error('Color not found');
                 }
-                // If the color name is a number, we need to add a suffix to the new color name
-                const randomId = customAlphabet('0123456789', 5)();
-                const randomText = customAlphabet('abcdefghijklmnopqrstuvwxyz', 5)();
-                const newName = isNaN(Number(colorName))
-                    ? `${colorName}Copy${randomText}`
-                    : `${colorName}${randomId}`;
+
+                // Generate a unique name for the duplicated color
+                const existingNames = group.map((color) => color.name);
+                let newName: string;
+
+                if (isNaN(Number(colorName))) {
+                    // For non-numeric names, use the generateUniqueName utility
+                    newName = generateUniqueName(colorName, existingNames);
+                } else {
+                    // For numeric names, generate a random numeric suffix
+                    const randomId = customAlphabet('0123456789', 5)();
+                    newName = `${colorName}${randomId}`;
+                }
 
                 const color = Color.from(
                     theme === Theme.DARK
