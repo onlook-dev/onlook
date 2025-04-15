@@ -9,6 +9,8 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui-v4/dropdown-menu";
 
+const UNITS = ["PX", "%", "EM", "REM"];
+
 interface InputDropdownProps {
     value: string;
     unit?: string;
@@ -35,7 +37,22 @@ export const InputDropdown = ({
                     onChange={(e) => onChange?.(e.target.value)}
                     className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
                 />
-                <span className="text-[12px] text-muted-foreground">{unit}</span>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                        {unit}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                        {UNITS.map((unitOption: string) => (
+                            <DropdownMenuItem
+                                key={unitOption}
+                                onClick={() => onDropdownChange?.(unitOption)}
+                                className="text-[12px] text-center px-2"
+                            >
+                                {unitOption}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
