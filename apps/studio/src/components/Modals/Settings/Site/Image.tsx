@@ -29,6 +29,8 @@ const ImagePicker = forwardRef<
             if (image) {
                 setSelectedImage(image.content);
             }
+        } else {
+            setSelectedImage(null);
         }
     }, [url]);
 
