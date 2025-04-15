@@ -52,9 +52,9 @@ export const InputIcon = ({
     const IconComponent = icon ? Icons[icon] : null;
 
     return (
-        <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
-            <div className="flex items-center gap-2">
-                {IconComponent && <IconComponent className="h-4 w-4 text-muted-foreground" />}
+        <div className="flex items-center gap-2">
+            {IconComponent && <IconComponent className="h-5 w-5 min-h-5 min-w-5 text-muted-foreground" />}
+            <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
                 <input 
                     type="text"
                     inputMode="numeric"
@@ -64,24 +64,24 @@ export const InputIcon = ({
                     onBlur={handleBlur}
                     className="w-full bg-transparent text-sm text-white focus:outline-none uppercase"
                 />
-            </div>
                         
-            <DropdownMenu>
-                <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
-                    {unit}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
-                    {UNITS.map((unitOption) => (
-                        <DropdownMenuItem
-                            key={unitOption}
-                            onClick={() => onUnitChange?.(unitOption)}
-                            className="text-[12px] text-center px-2"
-                        >
-                            {unitOption}
-                        </DropdownMenuItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                        {unit}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                        {UNITS.map((unitOption) => (
+                            <DropdownMenuItem
+                                key={unitOption}
+                                onClick={() => onUnitChange?.(unitOption)}
+                                className="text-[12px] text-center px-2"
+                            >
+                                {unitOption}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </div>
     );
 };
