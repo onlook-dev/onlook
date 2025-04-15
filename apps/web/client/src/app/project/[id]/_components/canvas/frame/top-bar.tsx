@@ -12,9 +12,10 @@ export const TopBar = observer(
     }) => {
         const editorEngine = useEditorEngine();
 
-        const startMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
             e.stopPropagation();
+            clearElements();
 
             const startX = e.clientX;
             const startY = e.clientY;
@@ -44,6 +45,11 @@ export const TopBar = observer(
             window.addEventListener('mouseup', endMove);
         };
 
+        const clearElements = () => {
+            editorEngine.elements.clear();
+            editorEngine.overlay.clear();
+        };
+
         return (
             <div
                 className='rounded bg-foreground-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm border-input text-foreground'
@@ -52,7 +58,7 @@ export const TopBar = observer(
                     width: `${frame.dimension.width * editorEngine.canvas.scale}px`,
                     marginBottom: `${20 / editorEngine.canvas.scale}px`,
                 }}
-                onMouseDown={startMove}
+                onMouseDown={handleMouseDown}
             >
                 {children}
             </div>

@@ -112,7 +112,7 @@ export class FramesManager {
         // this.editorEngine?.errors.clear();
     }
 
-    reloadFrameViews() {
+    reload() {
         for (const frame of this.selected) {
             frame.view.reload();
         }

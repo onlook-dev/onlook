@@ -13,7 +13,6 @@ export class ChatCodeManager {
     constructor(
         private chat: ChatManager,
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
         this.processor = new CodeBlockProcessor();
@@ -70,15 +69,15 @@ export class ChatCodeManager {
             this.chat.conversation.saveConversationToStorage();
         }
 
-        const selectedWebviews = this.editorEngine.webviews.selected;
-        for (const webview of selectedWebviews) {
-            await this.editorEngine.ast.refreshAstDoc(webview);
+        const selectedWebviews = this.editorEngine.frames.selected;
+        for (const frame of selectedWebviews) {
+            await this.editorEngine.ast.refreshAstDoc(frame);
         }
 
         this.chat.suggestions.shouldHide = false;
 
         setTimeout(() => {
-            this.editorEngine.webviews.reloadWebviews();
+            this.editorEngine.frames.reload();
             this.editorEngine.errors.clear();
         }, 500);
         sendAnalytics('apply code change');
@@ -115,7 +114,7 @@ export class ChatCodeManager {
         this.chat.conversation.current?.updateMessage(message);
         this.chat.conversation.saveConversationToStorage();
         setTimeout(() => {
-            this.editorEngine.webviews.reloadWebviews();
+            this.editorEngine.frames.reload();
         }, 500);
         sendAnalytics('revert code change');
     }

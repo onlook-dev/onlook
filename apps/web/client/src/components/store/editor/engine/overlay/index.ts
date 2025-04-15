@@ -31,6 +31,7 @@ export class OverlayManager {
             () => ({
                 position: this.editorEngine.canvas?.position,
                 scale: this.editorEngine.canvas?.scale,
+                shouldHideOverlay: this.editorEngine.state.shouldHideOverlay,
             }),
             () => {
                 this.needsRefresh = true;
@@ -66,7 +67,6 @@ export class OverlayManager {
         }
     };
 
-    // Change the public refreshOverlay to trigger the refresh flag
     refreshOverlay = () => {
         // Don't refresh the overlay when the canvas is scrolling
         if (this.editorEngine.state.shouldHideOverlay) {

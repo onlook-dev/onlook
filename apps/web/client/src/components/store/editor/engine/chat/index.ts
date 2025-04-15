@@ -41,7 +41,7 @@ export class ChatManager {
         this.context = new ChatContext(this.editorEngine, this.projectsManager);
         this.conversation = new ConversationManager(this.editorEngine, this.projectsManager);
         this.stream = new StreamResolver();
-        this.code = new ChatCodeManager(this, this.editorEngine, this.projectsManager);
+        this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectsManager);
     }
 
@@ -74,6 +74,11 @@ export class ChatManager {
             return false;
         }
 
+        if (errors.length === 0) {
+            console.error('No errors found');
+            return false;
+        }
+
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const errorContexts = this.context.getMessageContext(errors);
         const projectContexts = this.context.getProjectContext();
@@ -81,7 +86,7 @@ export class ChatManager {
             ...errorContexts,
             ...projectContexts,
         ]);
-        this.conversation.current.updateName(errors[0].content);
+        this.conversation.current.updateName(errors[0]?.content ?? 'Fix errors');
         if (!userMessage) {
             console.error('Failed to add user message');
             return false;
