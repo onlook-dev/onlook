@@ -22,6 +22,7 @@ import { Border } from "./dropdowns/border";
 import { ColorBackground } from "./dropdowns/color-background";
 import { ImageBackground } from "./dropdowns/img-background";
 import { ImgFit } from "./dropdowns/img-fit";
+import { ViewButtons } from "./panels/panel-bar/bar";
 
 export const ImgSelected = () => {
     const [activeTab, setActiveTab] = useState('individual');
@@ -66,7 +67,8 @@ export const ImgSelected = () => {
             <div className="h-6 w-[1px] bg-border" />
 
                 <ImageBackground />
-
+                
+                <ViewButtons />
         </div>
     );
 };

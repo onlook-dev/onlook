@@ -9,6 +9,7 @@ import { InputRadio } from "../inputs/input-radio";
 import { InputColor } from "../inputs/input-color";
 import { Button } from "@onlook/ui-v4/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@onlook/ui-v4/dropdown-menu";
+import { ViewButtons } from "./panel-bar/bar";
 
 interface TypographyProps {
   className?: string;
@@ -186,7 +187,6 @@ export function Typography({ className }: TypographyProps) {
           </div>
         )}
       </div>
-
     </div>
   );
 } 
