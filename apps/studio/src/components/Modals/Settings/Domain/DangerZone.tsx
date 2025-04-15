@@ -5,7 +5,7 @@ import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 
-const DangerZone = observer(() => {
+export const DangerZone = observer(() => {
     const projectsManager = useProjectsManager();
 
     const baseDomain = projectsManager.project?.domains?.base;
@@ -81,5 +81,3 @@ const DangerZone = observer(() => {
         </div>
     );
 });
-
-export default DangerZone;

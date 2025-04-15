@@ -1,5 +1,5 @@
-import type { RectDimensions } from '@/components/store/editor/engine/overlay/rect';
 import { EditorAttributes } from '@onlook/models/constants';
+import type { RectDimensions } from '@onlook/models/element';
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
 

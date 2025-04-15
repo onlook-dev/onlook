@@ -1,8 +1,9 @@
-import type { RemoveElementAction } from '@onlook/models/actions';
-import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
+import type { Frame } from '@onlook/models';
+import type { DomElement } from '@onlook/models/element';
 import { toast } from '@onlook/ui-v4/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import type { FrameData } from '../frames';
 import { adaptRectToCanvas } from '../overlay/utils';
 
 export class ElementsManager {
@@ -25,48 +26,23 @@ export class ElementsManager {
         this.selectedElements = elements;
     }
 
-    mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
-        if (!domEl) {
-            this.editorEngine.overlay.state.updateHoverRect(null);
-            this.clearHoveredElement();
-            return;
-        }
-        if (this.hoveredElement && this.hoveredElement.domId === domEl.domId) {
+    mouseover(domEl: DomElement, frameData: FrameData) {
+        if (this.hoveredElement?.domId && this.hoveredElement.domId === domEl.domId) {
             return;
         }
 
-        const webviewEl: DomElement = {
+        const frameEl: DomElement = {
             ...domEl,
-            webviewId: webview.id,
+            frameId: frameData.frame.id,
         };
-        const adjustedRect = adaptRectToCanvas(webviewEl.rect, webview);
+        const { view } = frameData;
+        const adjustedRect = adaptRectToCanvas(frameEl.rect, view);
         const isComponent = !!domEl.instanceId;
         this.editorEngine.overlay.state.updateHoverRect(adjustedRect, isComponent);
-        this.setHoveredElement(webviewEl);
+        this.setHoveredElement(frameEl);
     }
 
-    showMeasurement() {
-        this.editorEngine.overlay.removeMeasurement();
-        if (!this.selected.length || !this.hovered) {
-            return;
-        }
-
-        const selectedEl = this.selected[0];
-        const hoverEl = this.hovered;
-
-        const webViewId = selectedEl.webviewId;
-        const webview = this.editorEngine.webviews.getWebview(webViewId);
-        if (!webview) {
-            return;
-        }
-
-        const selectedRect = adaptRectToCanvas(selectedEl.rect, webview);
-        const hoverRect = adaptRectToCanvas(hoverEl.rect, webview);
-
-        this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
-    }
-
-    shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
+    shiftClick(domEl: DomElement, frameData: FrameData) {
         const selectedEls = this.selected;
         const isAlreadySelected = selectedEls.some((el) => el.domId === domEl.domId);
         let newSelectedEls: DomElement[] = [];
@@ -75,15 +51,16 @@ export class ElementsManager {
         } else {
             newSelectedEls = [...selectedEls, domEl];
         }
-        this.click(newSelectedEls, webview);
+        this.click(newSelectedEls, frameData);
     }
 
-    click(domEls: DomElement[], webview: Electron.WebviewTag) {
+    click(domEls: DomElement[], frameData: FrameData) {
+        const { view } = frameData;
         this.editorEngine.overlay.state.removeClickRects();
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
-            const adjustedRect = adaptRectToCanvas(domEl.rect, webview);
+            const adjustedRect = adaptRectToCanvas(domEl.rect, view);
             const isComponent = !!domEl.instanceId;
             this.editorEngine.overlay.state.addClickRect(
                 adjustedRect,
@@ -94,19 +71,19 @@ export class ElementsManager {
         }
     }
 
-    async refreshSelectedElements(webview: Electron.WebviewTag) {
-        const newSelected: DomElement[] = [];
-        for (const el of this.selected) {
-            const newEl: DomElement | null = await webview.executeJavaScript(
-                `window.api?.getDomElementByDomId('${el.domId}', true)`,
-            );
-            if (!newEl) {
-                console.error('Element not found');
-                continue;
-            }
-            newSelected.push(newEl);
-        }
-        this.click(newSelected, webview);
+    async refreshSelectedElements(frame: Frame) {
+        // const newSelected: DomElement[] = [];
+        // for (const el of this.selected) {
+        //     const newEl: DomElement | null = await frame.webview.executeJavaScript(
+        //         `window.api?.getDomElementByDomId('${el.domId}', true)`,
+        //     );
+        //     if (!newEl) {
+        //         console.error('Element not found');
+        //         continue;
+        //     }
+        //     newSelected.push(newEl);
+        // }
+        // this.click(newSelected, frame);
     }
 
     setHoveredElement(element: DomElement) {
@@ -121,15 +98,6 @@ export class ElementsManager {
         this.selectedElements.push(element);
     }
 
-    clear() {
-        this.clearHoveredElement();
-        this.clearSelectedElements();
-    }
-
-    private clearSelectedElements() {
-        this.selectedElements = [];
-    }
-
     async delete() {
         const selected = this.selected;
         if (selected.length === 0) {
@@ -137,13 +105,15 @@ export class ElementsManager {
         }
 
         for (const selectedEl of selected) {
-            const webviewId = selectedEl.webviewId;
-            const webview = this.editorEngine.webviews.getWebview(webviewId);
-            if (!webview) {
+            const frameId = selectedEl.frameId;
+            const frameData = this.editorEngine.frames.get(frameId);
+            if (!frameData) {
+                console.error('Frame data not found');
                 return;
             }
+            const { view, frame } = frameData;
 
-            const { shouldDelete, error } = await this.shouldDelete(selectedEl, webview);
+            const { shouldDelete, error } = await this.shouldDelete(selectedEl, frameData);
 
             if (!shouldDelete) {
                 toast({
@@ -154,82 +124,92 @@ export class ElementsManager {
                 return;
             }
 
-            const removeAction = (await webview.executeJavaScript(
-                `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
-            )) as RemoveElementAction | null;
-            if (!removeAction) {
-                console.error('Remove action not found');
-                toast({
-                    title: 'Cannot delete element',
-                    description: 'Remove action not found. Try refreshing the page.',
-                    variant: 'destructive',
-                });
-                return;
-            }
-            const oid = selectedEl.instanceId || selectedEl.oid;
-            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            if (!codeBlock) {
-                toast({
-                    title: 'Cannot delete element',
-                    description: 'Code block not found. Try refreshing the page.',
-                    variant: 'destructive',
-                });
-                return;
-            }
+            // const removeAction = (await view.executeJavaScript(
+            //     `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${frameId}')`,
+            // )) as RemoveElementAction | null;
+            // if (!removeAction) {
+            //     console.error('Remove action not found');
+            //     toast({
+            //         title: 'Cannot delete element',
+            //         description: 'Remove action not found. Try refreshing the page.',
+            //         variant: 'destructive',
+            //     });
+            //     return;
+            // }
+            // const oid = selectedEl.instanceId || selectedEl.oid;
+            // const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            // if (!codeBlock) {
+            //     toast({
+            //         title: 'Cannot delete element',
+            //         description: 'Code block not found. Try refreshing the page.',
+            //         variant: 'destructive',
+            //     });
+            //     return;
+            // }
 
-            removeAction.codeBlock = codeBlock;
-            this.editorEngine.action.run(removeAction);
+            // removeAction.codeBlock = codeBlock;
+            // this.editorEngine.action.run(removeAction);
         }
     }
 
     private async shouldDelete(
         selectedEl: DomElement,
-        webview: Electron.WebviewTag,
+        frameData: FrameData,
     ): Promise<{
         shouldDelete: boolean;
         error?: string;
     }> {
-        const instanceId = selectedEl.instanceId;
+        // const instanceId = selectedEl.instanceId;
 
-        if (!instanceId) {
-            const {
-                dynamicType,
-                coreType,
-            }: {
-                dynamicType: DynamicType;
-                coreType: CoreElementType;
-            } = await webview.executeJavaScript(
-                `window.api?.getElementType('${selectedEl.domId}')`,
-            );
+        // if (!instanceId) {
+        //     const {
+        //         dynamicType,
+        //         coreType,
+        //     }: {
+        //         dynamicType: DynamicType;
+        //         coreType: CoreElementType;
+        //     } = await frameData.view.executeJavaScript(
+        //         `window.api?.getElementType('${selectedEl.domId}')`,
+        //     );
 
-            if (coreType) {
-                const CORE_ELEMENTS_MAP: Record<CoreElementType, string> = {
-                    'component-root': 'Component Root',
-                    'body-tag': 'Body Tag',
-                };
+        //     if (coreType) {
+        //         const CORE_ELEMENTS_MAP: Record<CoreElementType, string> = {
+        //             'component-root': 'Component Root',
+        //             'body-tag': 'Body Tag',
+        //         };
 
-                return {
-                    shouldDelete: false,
-                    error: `This is a ${CORE_ELEMENTS_MAP[coreType]} and cannot be deleted`,
-                };
-            }
+        //         return {
+        //             shouldDelete: false,
+        //             error: `This is a ${CORE_ELEMENTS_MAP[coreType]} and cannot be deleted`,
+        //         };
+        //     }
 
-            if (dynamicType) {
-                const DYNAMIC_TYPES_MAP: Record<DynamicType, string> = {
-                    array: 'Array',
-                    conditional: 'Conditional',
-                    unknown: 'Unknown',
-                };
+        //     if (dynamicType) {
+        //         const DYNAMIC_TYPES_MAP: Record<DynamicType, string> = {
+        //             array: 'Array',
+        //             conditional: 'Conditional',
+        //             unknown: 'Unknown',
+        //         };
 
-                return {
-                    shouldDelete: false,
-                    error: `This element is a(n) ${DYNAMIC_TYPES_MAP[dynamicType]} and cannot be deleted`,
-                };
-            }
-        }
+        //         return {
+        //             shouldDelete: false,
+        //             error: `This element is a(n) ${DYNAMIC_TYPES_MAP[dynamicType]} and cannot be deleted`,
+        //         };
+        //     }
+        // }
 
         return {
             shouldDelete: true,
         };
     }
+
+    clear() {
+        this.clearHoveredElement();
+        this.clearSelectedElements();
+    }
+
+    private clearSelectedElements() {
+        this.selectedElements = [];
+    }
+
 }

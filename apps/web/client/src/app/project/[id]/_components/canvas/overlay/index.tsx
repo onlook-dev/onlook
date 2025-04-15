@@ -94,12 +94,12 @@ export const Overlay = observer(({ children }: { children: React.ReactNode }) =>
                         />
                     )
                 }
-                {
-                    <MemoizedChat
+                {/*
+                 <MemoizedChat
                         elementId={editorEngine.elements.selected[0]?.domId ?? ''}
                         selectedEl={overlayState.clickRects[0]}
-                    />
-                }
+                    /> 
+                */}
             </div>
         </>
     );

@@ -81,6 +81,7 @@ export const DomainSection = observer(
             domainManager.publish({
                 skipBadge: type === DomainType.CUSTOM,
                 buildFlags: userManager.settings.settings?.editor?.buildFlags,
+                envVars: projectsManager.project?.env,
             });
         };
 

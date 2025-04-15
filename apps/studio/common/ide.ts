@@ -7,6 +7,7 @@ export class IDE {
     static readonly CURSOR = new IDE('Cursor', IdeType.CURSOR, 'cursor', 'CursorLogo');
     static readonly ZED = new IDE('Zed', IdeType.ZED, 'zed', 'ZedLogo');
     static readonly WINDSURF = new IDE('Windsurf', IdeType.WINDSURF, 'windsurf', 'WindsurfLogo');
+    static readonly ONLOOK = new IDE('Onlook', IdeType.ONLOOK, 'onlook', 'Code');
 
     private constructor(
         public readonly displayName: string,
@@ -29,19 +30,26 @@ export class IDE {
                 return IDE.ZED;
             case IdeType.WINDSURF:
                 return IDE.WINDSURF;
+            case IdeType.ONLOOK:
+                return IDE.ONLOOK;
             default:
                 throw new Error(`Unknown IDE type: ${type}`);
         }
     }
 
     static getAll(): IDE[] {
-        return [this.VS_CODE, this.CURSOR, this.ZED, this.WINDSURF];
+        return [this.VS_CODE, this.CURSOR, this.ZED, this.WINDSURF, this.ONLOOK];
     }
 
     getCodeCommand(templateNode: TemplateNode) {
         const filePath = templateNode.path;
         const startTag = templateNode.startTag;
         const endTag = templateNode.endTag || startTag;
+
+        if (this.type === IdeType.ONLOOK) {
+            return `internal://${filePath}`;
+        }
+
         let codeCommand = `${this.command}://file/${filePath}`;
 
         if (startTag && endTag) {
@@ -59,6 +67,10 @@ export class IDE {
     }
 
     getCodeFileCommand(filePath: string, line?: number) {
+        if (this.type === IdeType.ONLOOK) {
+            return `internal://${filePath}`;
+        }
+
         let command = `${this.command}://file/${filePath}`;
         if (line) {
             command += `:${line}`;

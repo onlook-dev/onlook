@@ -9,6 +9,7 @@ import generate from '@babel/generator';
 import { formatContent, readFile, writeFile } from '../../code/files';
 import fs from 'fs';
 import { extractFontParts, getFontFileName } from '@onlook/utility';
+import type { CodeDiff } from '@onlook/models';
 
 /**
  * Adds a new font to the project by:
@@ -129,9 +130,12 @@ export async function addFont(projectRoot: string, font: Font) {
         // Generate the new code from the AST
         const { code } = generate(ast);
 
-        // Write the updated content back to the file
-        const formattedCode = await formatContent(fontPath, code);
-        await writeFile(fontPath, formattedCode);
+        const codeDiff: CodeDiff = {
+            original: content,
+            generated: code,
+            path: fontPath,
+        };
+        return codeDiff;
     } catch (error) {
         console.error('Error adding font:', error);
     }
@@ -278,25 +282,30 @@ export async function removeFont(projectRoot: string, font: Font) {
                     /import\s+localFont\s+from\s+['"]next\/font\/local['"];\n?/g;
                 code = code.replace(localFontImportRegex, '');
             }
-            const formattedCode = await formatContent(fontPath, code);
-            await writeFile(fontPath, formattedCode);
+            const codeDiff: CodeDiff = {
+                original: content,
+                generated: code,
+                path: fontPath,
+            };
 
             // Delete font files if found
-            if (fontFilesToDelete.length > 0) {
-                for (const fileRelativePath of fontFilesToDelete) {
-                    const absoluteFilePath = pathModule.join(projectRoot, fileRelativePath);
-                    if (fs.existsSync(absoluteFilePath)) {
-                        try {
-                            fs.unlinkSync(absoluteFilePath);
-                            console.log(`Deleted font file: ${absoluteFilePath}`);
-                        } catch (error) {
-                            console.error(`Error deleting font file ${absoluteFilePath}:`, error);
-                        }
-                    } else {
-                        console.log(`Font file not found: ${absoluteFilePath}`);
-                    }
-                }
-            }
+            // if (fontFilesToDelete.length > 0) {
+            //     for (const fileRelativePath of fontFilesToDelete) {
+            //         const absoluteFilePath = pathModule.join(projectRoot, fileRelativePath);
+            //         if (fs.existsSync(absoluteFilePath)) {
+            //             try {
+            //                 fs.unlinkSync(absoluteFilePath);
+            //                 console.log(`Deleted font file: ${absoluteFilePath}`);
+            //             } catch (error) {
+            //                 console.error(`Error deleting font file ${absoluteFilePath}:`, error);
+            //             }
+            //         } else {
+            //             console.log(`Font file not found: ${absoluteFilePath}`);
+            //         }
+            //     }
+            // }
+            // Commented out for now—since we have undo/redo functionality for adding/removing fonts, we shouldn’t delete these files to ensure proper rollback support.
+            return codeDiff;
         } else {
             console.log(`Font ${fontIdToRemove} not found in font.ts`);
         }
