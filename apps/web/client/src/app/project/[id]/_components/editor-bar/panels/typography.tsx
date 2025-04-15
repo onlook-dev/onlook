@@ -6,6 +6,7 @@ import { InputDropdown } from "../inputs/input-dropdown";
 import { cn } from "@onlook/ui/utils";
 import { InputIcon } from "../inputs/input-icon";
 import { InputRadio } from "../inputs/input-radio";
+import { InputColor } from "../inputs/input-color";
 import { Button } from "@onlook/ui-v4/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@onlook/ui-v4/dropdown-menu";
 
@@ -23,6 +24,8 @@ export function Typography({ className }: TypographyProps) {
   const [textDecoration, setTextDecoration] = useState("none");
   const [fontFamily, setFontFamily] = useState("Inter");
   const [capitalization, setCapitalization] = useState("none");
+  const [textColor, setTextColor] = useState("#FFFFFF");
+  const [textOpacity, setTextOpacity] = useState(100);
 
   // Section collapse states
   const [textOpen, setTextOpen] = useState(true);
@@ -112,6 +115,19 @@ export function Typography({ className }: TypographyProps) {
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
+              </div>
+            </div>
+
+            {/* Text Color */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground w-24">Color</span>
+              <div className="flex-1">
+                <InputColor
+                  color={textColor}
+                  opacity={textOpacity}
+                  onColorChange={setTextColor}
+                  onOpacityChange={setTextOpacity}
+                />
               </div>
             </div>
 

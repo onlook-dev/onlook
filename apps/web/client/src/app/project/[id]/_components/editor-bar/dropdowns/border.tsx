@@ -10,6 +10,7 @@ import {
 import { InputRange } from "../inputs/input-range";
 import { InputIcon } from "../inputs/input-icon";
 import { useState } from "react";
+import { InputColor } from "../inputs/input-color";
 
 export const Border = () => {
     const [activeTab, setActiveTab] = useState('individual');
@@ -59,27 +60,12 @@ export const Border = () => {
                     </div>
                 )}
                 <div className="mt-3">
-                    <div className="flex items-center w-full h-9">
-                        <div className="flex-1 flex mr-[1px] items-center bg-background-tertiary/50 rounded-md px-3 pl-1.5 py-1.5 h-full">
-                            <div 
-                                className="w-6 h-6 min-w-6 min-h-6 rounded-sm mr-2"
-                                style={{ backgroundColor: "#080808" }}
-                            />
-                            <input 
-                                type="text" 
-                                value="#080808"
-                                className="w-full h-full bg-transparent text-sm text-white focus:outline-none"
-                            />
-                        </div>
-                        <div className="min-w-[70px] max-w-[70px] flex items-center justify-start bg-background-tertiary/50 rounded-md px-3 py-1.5 h-full">
-                            <input 
-                                type="text" 
-                                value="100"
-                                className="w-full h-full bg-transparent text-sm text-white focus:outline-none text-left"
-                            />
-                            <span className="text-sm text-muted-foreground ml-1">%</span>
-                        </div>
-                    </div>
+                  <InputColor
+                        color="#080808"
+                        opacity={100}
+                        onColorChange={(color) => console.log('Color changed:', color)}
+                        onOpacityChange={(opacity) => console.log('Opacity changed:', opacity)}
+                    />
                 </div>
             </DropdownMenuContent>
         </DropdownMenu>
