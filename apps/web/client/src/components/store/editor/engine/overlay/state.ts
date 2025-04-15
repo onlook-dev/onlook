@@ -1,6 +1,6 @@
+import type { RectDimensions } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
-import type { RectDimensions } from './rect';
 
 export interface MeasurementState {
     fromRect: RectDimensions;
@@ -38,8 +38,12 @@ export class OverlayState {
         makeAutoObservable(this);
     }
 
-    updateHoverRect = (rect: RectDimensions | null, isComponent?: boolean) => {
-        this.hoverRect = rect ? { rect, isComponent } : null;
+    updateHoverRect = (rect: RectDimensions, isComponent?: boolean) => {
+        this.hoverRect = { rect, isComponent };
+    };
+
+    removeHoverRect = () => {
+        this.hoverRect = null;
     };
 
     updateInsertRect = (rect: RectDimensions | null) => {

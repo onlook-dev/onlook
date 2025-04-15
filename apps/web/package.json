@@ -4,9 +4,10 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "dev": "bun --filter '@onlook/web-client' --filter '@onlook/web-server' dev",
+        "dev": "bun --filter '@onlook/web-client' --filter '@onlook/web-server' --filter '@onlook/web-preload' --filter '@onlook/web-template' dev",
         "dev:client": "bun --filter @onlook/web-client dev",
         "dev:server": "bun --filter @onlook/web-server dev",
+        "dev:preload": "bun --filter @onlook/web-preload dev",
         "docker:up": "docker compose up",
         "docker:build": "docker compose build",
         "docker:down": "docker compose down",

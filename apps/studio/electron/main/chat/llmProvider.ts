@@ -46,6 +46,7 @@ async function getAnthropicProvider(
         config.headers = {
             Authorization: `Bearer ${authTokens.accessToken}`,
             'X-Onlook-Request-Type': payload.requestType,
+            'anthropic-beta': 'output-128k-2025-02-19',
         };
     }
 

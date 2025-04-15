@@ -67,17 +67,17 @@ export class StyleManager {
                 updated:
                     type === StyleChangeType.Custom
                         ? Object.fromEntries(
-                              Object.keys(styles).map((style) => [
-                                  style,
-                                  { value: styles[style], type: StyleChangeType.Custom },
-                              ]),
-                          )
+                            Object.keys(styles).map((style) => [
+                                style,
+                                { value: styles[style], type: StyleChangeType.Custom },
+                            ]),
+                        )
                         : Object.fromEntries(
-                              Object.keys(styles).map((style) => [
-                                  style,
-                                  { value: styles[style], type: StyleChangeType.Value },
-                              ]),
-                          ),
+                            Object.keys(styles).map((style) => [
+                                style,
+                                { value: styles[style], type: StyleChangeType.Value },
+                            ]),
+                        ),
                 original: Object.fromEntries(
                     Object.keys(styles).map((style) => [
                         style,
@@ -92,7 +92,7 @@ export class StyleManager {
                 ),
             };
             const target: StyleActionTarget = {
-                webviewId: selectedEl.webviewId,
+                frameId: selectedEl.frameId,
                 domId: selectedEl.domId,
                 oid: this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid,
                 change: change,

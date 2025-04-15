@@ -49,6 +49,7 @@ export enum MainChannels {
     WRITE_CODE_DIFFS = 'write-code-diffs',
     VIEW_SOURCE_CODE = 'view-source-code',
     VIEW_SOURCE_FILE = 'view-source-file',
+    VIEW_CODE_IN_ONLOOK = 'view-code-in-onlook',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
     CLEAN_CODE_KEYS = 'clean-move-keys',
@@ -145,6 +146,7 @@ export enum MainChannels {
     DELETE_PAGE = 'delete-page',
     RENAME_PAGE = 'rename-page',
     DUPLICATE_PAGE = 'duplicate-page',
+    UPDATE_PAGE_METADATA = 'update-page-metadata',
 
     // Images
     SCAN_IMAGES_IN_PROJECT = 'scan-images-in-project',
@@ -156,6 +158,7 @@ export enum MainChannels {
     SCAN_TAILWIND_CONFIG = 'scan-tailwind-config',
     UPDATE_TAILWIND_CONFIG = 'update-tailwind-config',
     DELETE_TAILWIND_CONFIG = 'delete-tailwind-config',
+    SCAN_PROJECT_METADATA = 'scan-project-metadata',
 
     // Fonts
     SCAN_FONTS = 'scan-fonts-config',
@@ -165,9 +168,17 @@ export enum MainChannels {
     GET_DEFAULT_FONT = 'get-default-font',
     UPLOAD_FONTS = 'upload-fonts',
     WATCH_FONT_FILE = 'watch-font-file',
+    FONTS_CHANGED = 'fonts-changed',
 
     // Trainloop
     SAVE_APPLY_RESULT = 'save-apply-result',
+
+    // Files
+    SCAN_FILES = 'scan-files',
+    GET_PROJECT_FILES = 'get-project-files',
+
+    // Editor
+    SHOW_EDITOR_TAB = 'show-editor-tab',
 }
 
 export enum GitChannels {

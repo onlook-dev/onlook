@@ -1,23 +1,15 @@
 "use client";
 
 import { motion } from "motion/react";
-<<<<<<< HEAD
-import { TextSelected } from "./text-selected";
-=======
-import type { ElementType } from "react";
->>>>>>> 3c70f5e5 (Tys toolbar v4 (#1786))
 import { DivSelected } from "./div-selected";
 import { ImgSelected } from "./img-selected";
+import { TextSelected } from "./text-selected";
 
-<<<<<<< HEAD
 type EditorBarProps = {
     selectedElement: "div" | "text" | "image";
 };
 
 export const EditorBar = ({ selectedElement }: EditorBarProps) => {
-=======
-export const EditorBar = ({ selectedElement }: { selectedElement: ElementType }) => {
->>>>>>> 3c70f5e5 (Tys toolbar v4 (#1786))
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}

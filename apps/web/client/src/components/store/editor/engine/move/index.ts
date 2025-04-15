@@ -10,7 +10,7 @@ export class MoveManager {
     MIN_DRAG_DISTANCE = 5;
     isDraggingAbsolute = false;
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     get isDragging() {
         return !!this.dragOrigin;
@@ -53,7 +53,7 @@ export class MoveManager {
             return;
         }
 
-        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.webviewId);
+        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.frameId);
         if (!webview) {
             console.error('No webview found for drag');
             return;
@@ -87,7 +87,7 @@ export class MoveManager {
             y: dragOrigin.y - dragTarget.rect.y,
         };
 
-        const webview = this.editorEngine.webviews.getWebview(dragTarget.webviewId);
+        const webview = this.editorEngine.webviews.getWebview(dragTarget.frameId);
         if (!webview) {
             console.error('No webview found for drag');
             return;
@@ -125,7 +125,7 @@ export class MoveManager {
             return;
         }
 
-        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.webviewId);
+        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.frameId);
         if (!webview) {
             console.error('No webview found for drag end');
             this.endAllDrag();
@@ -176,7 +176,7 @@ export class MoveManager {
     }
 
     async shiftElement(element: DomElement, direction: 'up' | 'down'): Promise<void> {
-        const webview = this.editorEngine.webviews.getWebview(element.webviewId);
+        const webview = this.editorEngine.webviews.getWebview(element.frameId);
         if (!webview) {
             return;
         }
@@ -225,7 +225,7 @@ export class MoveManager {
     }
 
     createMoveAction(
-        webviewId: string,
+        frameId: string,
         child: DomElement,
         parent: DomElement,
         newIndex: number,
@@ -242,7 +242,7 @@ export class MoveManager {
             },
             targets: [
                 {
-                    webviewId,
+                    frameId: frameId,
                     domId: child.domId,
                     oid: child.instanceId || child.oid,
                 },

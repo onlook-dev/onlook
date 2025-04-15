@@ -1,4 +1,6 @@
+import { EditorTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
+import type { UserManager } from '@/lib/user';
 import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
@@ -24,6 +26,7 @@ import {
 } from '@onlook/models/actions';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
+import { IdeType } from '@onlook/models/ide';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { addTailwindToRequest, getOrCreateCodeDiffRequest } from './helpers';
@@ -37,11 +40,15 @@ export class CodeManager {
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
+        private userManager: UserManager,
     ) {
         makeAutoObservable(this);
     }
 
     viewSource(oid: string | null): void {
+        if (this.userManager.settings.settings?.editor?.ideType === IdeType.ONLOOK) {
+            this.editorEngine.editPanelTab = EditorTabValue.DEV;
+        }
         if (!oid) {
             console.error('No oid found.');
             return;
@@ -51,6 +58,10 @@ export class CodeManager {
     }
 
     viewSourceFile(filePath: string | null, line?: number): void {
+        if (this.userManager.settings.settings?.editor?.ideType === IdeType.ONLOOK) {
+            this.editorEngine.editPanelTab = EditorTabValue.DEV;
+            return;
+        }
         if (!filePath) {
             console.error('No file path found.');
             return;

@@ -1,20 +1,25 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { SettingsTabValue } from '@/lib/models';
+import type { PageNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useMemo } from 'react';
 import AdvancedTab from './Advance';
 import { DomainTab } from './Domain';
 import PreferencesTab from './Preferences';
 import ProjectTab from './Project';
+import { SiteTab } from './Site';
+import { PageTab } from './Site/Page';
 import { VersionsTab } from './Versions';
 import { capitalizeFirstLetter } from '/common/helpers';
 
 interface SettingTab {
-    label: SettingsTabValue;
+    label: SettingsTabValue | string;
     icon: React.ReactNode;
     component: React.ReactNode;
 }
@@ -23,8 +28,36 @@ export const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;
+    const pagesManager = editorEngine.pages;
+
+    useEffect(() => {
+        if (editorEngine.isSettingsOpen && project) {
+            pagesManager.scanPages();
+            editorEngine.image.scanImages();
+            projectsManager.scanProjectMetadata(project);
+        }
+    }, [editorEngine.isSettingsOpen]);
+
+    const flattenPages = useMemo(() => {
+        return pagesManager.tree.reduce((acc, page) => {
+            const flattenNode = (node: typeof page) => {
+                if (node.children?.length) {
+                    node.children.forEach((child) => flattenNode(child));
+                } else {
+                    acc.push(node);
+                }
+            };
+            flattenNode(page);
+            return acc;
+        }, [] as PageNode[]);
+    }, [pagesManager.tree]);
 
     const projectOnlyTabs: SettingTab[] = [
+        {
+            label: SettingsTabValue.SITE,
+            icon: <Icons.File className="mr-2 h-4 w-4" />,
+            component: <SiteTab />,
+        },
         {
             label: SettingsTabValue.DOMAIN,
             icon: <Icons.Globe className="mr-2 h-4 w-4" />,
@@ -55,7 +88,13 @@ export const SettingsModal = observer(() => {
         },
     ];
 
-    const tabs = project ? [...projectOnlyTabs, ...globalTabs] : [...globalTabs];
+    const pagesTabs: SettingTab[] = flattenPages.map((page) => ({
+        label: page.path === '/' ? 'Home' : page.path,
+        icon: <Icons.File className="mr-2 h-4 min-w-4" />,
+        component: <PageTab metadata={page.metadata} path={page.path} />,
+    }));
+
+    const tabs = project ? [...projectOnlyTabs, ...globalTabs, ...pagesTabs] : [...globalTabs];
 
     return (
         <AnimatePresence>
@@ -97,25 +136,92 @@ export const SettingsModal = observer(() => {
                                 {/* Main content */}
                                 <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
-                                    <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
-                                        {tabs.map((tab) => (
-                                            <Button
-                                                key={tab.label}
-                                                variant="ghost"
-                                                className={cn(
-                                                    'w-full justify-start px-0 hover:bg-transparent',
-                                                    editorEngine.settingsTab === tab.label
-                                                        ? 'text-foreground-active'
-                                                        : 'text-muted-foreground',
-                                                )}
-                                                onClick={() =>
-                                                    (editorEngine.settingsTab = tab.label)
-                                                }
-                                            >
-                                                {tab.icon}
-                                                {capitalizeFirstLetter(tab.label.toLowerCase())}
-                                            </Button>
-                                        ))}
+                                    <div className="flex flex-col overflow-y-scroll">
+                                        <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
+                                            <p className="text-muted-foreground text-smallPlus">
+                                                Project
+                                            </p>
+                                            {projectOnlyTabs.map((tab) => (
+                                                <Button
+                                                    key={tab.label}
+                                                    variant="ghost"
+                                                    className={cn(
+                                                        'w-full justify-start px-0 hover:bg-transparent',
+                                                        editorEngine.settingsTab === tab.label
+                                                            ? 'text-foreground-active'
+                                                            : 'text-muted-foreground',
+                                                    )}
+                                                    onClick={() =>
+                                                        (editorEngine.settingsTab = tab.label)
+                                                    }
+                                                >
+                                                    {tab.icon}
+                                                    {capitalizeFirstLetter(tab.label.toLowerCase())}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                        <Separator />
+                                        <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
+                                            <p className="text-muted-foreground text-smallPlus">
+                                                Page Settings
+                                            </p>
+                                            {pagesTabs.map((tab) => (
+                                                <Button
+                                                    key={tab.label}
+                                                    variant="ghost"
+                                                    className={cn(
+                                                        'w-full justify-start px-0 hover:bg-transparent',
+                                                        'truncate',
+                                                        editorEngine.settingsTab === tab.label
+                                                            ? 'text-foreground-active'
+                                                            : 'text-muted-foreground',
+                                                    )}
+                                                    onClick={() =>
+                                                        (editorEngine.settingsTab = tab.label)
+                                                    }
+                                                >
+                                                    {tab.icon}
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <span className="truncate">
+                                                                {capitalizeFirstLetter(
+                                                                    tab.label.toLowerCase(),
+                                                                )}
+                                                            </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            {capitalizeFirstLetter(
+                                                                tab.label.toLowerCase(),
+                                                            )}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </Button>
+                                            ))}
+                                        </div>
+                                        <Separator />
+                                        <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
+                                            <p className="text-muted-foreground text-smallPlus">
+                                                Global Settings
+                                            </p>
+                                            {globalTabs.map((tab) => (
+                                                <Button
+                                                    key={tab.label}
+                                                    variant="ghost"
+                                                    className={cn(
+                                                        'w-full justify-start px-0 hover:bg-transparent',
+                                                        editorEngine.settingsTab === tab.label
+                                                            ? 'text-foreground-active'
+                                                            : 'text-muted-foreground',
+                                                    )}
+                                                    onClick={() =>
+                                                        (editorEngine.settingsTab = tab.label)
+                                                    }
+                                                >
+                                                    {tab.icon}
+                                                    {capitalizeFirstLetter(tab.label.toLowerCase())}
+                                                </Button>
+                                            ))}
+                                        </div>
                                     </div>
                                     <Separator orientation="vertical" className="h-full" />
                                     {/* Right content */}
