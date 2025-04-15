@@ -23,31 +23,28 @@ export class StateManager {
         makeAutoObservable(this);
     }
 
-    get canvasScrolling() {
-        return this._canvasScrolling;
-    }
-
     set canvasScrolling(value: boolean) {
         this._canvasScrolling = value;
         this.resetCanvasScrolling();
     }
 
-    resetCanvasScrolling() {
-        this.resetCanvasScrollingDebounced();
-    }
-
     get shouldHideOverlay() {
-        return this.canvasScrolling || this.canvasPanning;
+        return this._canvasScrolling || this.canvasPanning;
     }
 
     get plansOpen() {
         return this._plansOpen;
     }
+
     set plansOpen(open: boolean) {
         this._plansOpen = open;
         if (open) {
             sendAnalytics('open pro checkout');
         }
+    }
+
+    private resetCanvasScrolling() {
+        this.resetCanvasScrollingDebounced();
     }
 
     private resetCanvasScrollingDebounced = debounce(() => {
