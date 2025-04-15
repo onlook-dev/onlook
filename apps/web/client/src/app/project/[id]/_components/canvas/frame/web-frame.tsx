@@ -12,7 +12,6 @@ type PenpalRemote = {
     getDomElementByDomId: (domId: string, getStyle: boolean) => Promise<DomElement>;
 };
 
-// TODO: Move this to a shared package
 export type WebFrameView = HTMLIFrameElement & {
     setZoomLevel: (level: number) => void;
     loadURL: (url: string) => void;
@@ -35,28 +34,20 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
     const [iframeRemote, setIframeRemote] = useState<any>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const zoomLevel = useRef(1);
+    const hasReloaded = useRef(false);
 
     const setupPenpalConnection = useCallback(async (iframe: HTMLIFrameElement) => {
-        console.log('Initializing penpal connection for frame', frame.id);
-        if (!iframe?.contentWindow) {
-            throw new Error('No content window found');
-        }
+        if (!iframe?.contentWindow) throw new Error('No content window found');
         const messenger = new WindowMessenger({
             remoteWindow: iframe.contentWindow,
-            // TODO: Use a proper origin
             allowedOrigins: ['*'],
         });
-        const connection = connect({
-            messenger,
-            // Methods we are exposing to the iframe window.
-            methods: {}
-        });
-        const remote = (await connection.promise) as unknown as PenpalRemote;
+        const connection = connect({ messenger, methods: {} });
+        const remote = await connection.promise as unknown as PenpalRemote;
         await remote.setFrameId(frame.id);
         await remote.processDom();
         setIframeRemote(remote);
-        console.log('Penpal connection initialized for frame', frame.id);
-    }, [frame.id, setIframeRemote]);
+    }, [frame.id]);
 
     const setupIframe = useCallback(async (iframe: HTMLIFrameElement) => {
         try {
@@ -69,10 +60,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
 
     const handleIframeLoad = useCallback(() => {
         const iframe = iframeRef.current;
-        if (!iframe) {
-            console.error('No iframe found');
-            return;
-        }
+        if (!iframe) return;
 
         if (iframe.contentDocument?.readyState === 'complete') {
             setupIframe(iframe);
@@ -85,69 +73,63 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         handleIframeLoad();
     }, [handleIframeLoad]);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const iframe = iframeRef.current;
+            if (!iframe || hasReloaded.current) return;
+
+            try {
+                const win = iframe.contentWindow;
+                const doc = win?.document;
+                if (doc?.readyState === 'complete') {
+                    const body = doc.body?.innerHTML.trim();
+                    if (!body || body === '') {
+                        hasReloaded.current = true;
+                        iframe.src = iframe.src;
+                    }
+                }
+            } catch (err) {
+                // Cross-origin fallback
+                if (iframe.src === 'about:blank' || iframe.contentWindow?.location.href === 'about:blank') {
+                    hasReloaded.current = true;
+                    iframe.src = iframe.src;
+                }
+            }
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
     useImperativeHandle(ref, () => {
         const iframe = iframeRef.current!;
-
-        Object.assign(iframe, {
-            supportsOpenDevTools: () => {
-                const contentWindow = iframe.contentWindow;
-                return !!contentWindow && 'openDevTools' in contentWindow;
-            },
+        return Object.assign(iframe, {
+            supportsOpenDevTools: () => !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
             setZoomLevel: (level: number) => {
                 zoomLevel.current = level;
                 iframe.style.transform = `scale(${level})`;
                 iframe.style.transformOrigin = 'top left';
             },
-            loadURL: async (url: string) => {
-                iframe.src = url;
-            },
-            canGoForward: () => {
-                return (iframe.contentWindow?.history?.length ?? 0) > 0;
-            },
-            canGoBack: () => {
-                return (iframe.contentWindow?.history?.length ?? 0) > 0;
-            },
-            goForward: () => {
-                iframe.contentWindow?.history.forward();
-            },
-            goBack: () => {
-                iframe.contentWindow?.history.back();
-            },
-            reload: () => {
-                iframe.contentWindow?.location.reload();
-            },
-            isLoading: (): boolean => {
-                const contentDocument = iframe.contentDocument;
-                if (!contentDocument) {
-                    throw new Error(
-                        'Could not call isLoading(): iframe.contentDocument is null/undefined',
-                    );
-                }
-                return contentDocument.readyState !== 'complete';
-            },
+            loadURL: (url: string) => { iframe.src = url; },
+            canGoForward: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
+            canGoBack: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
+            goForward: () => iframe.contentWindow?.history.forward(),
+            goBack: () => iframe.contentWindow?.history.back(),
+            reload: () => iframe.contentWindow?.location.reload(),
+            isLoading: () => iframe.contentDocument?.readyState !== 'complete',
             getElementAtLoc: iframeRemote?.getElementAtLoc,
             getDomElementByDomId: iframeRemote?.getDomElementByDomId,
             setFrameId: iframeRemote?.setFrameId,
-        });
-
-        return iframe as WebFrameView;
+        }) as WebFrameView;
     }, [iframeRemote]);
+
     return (
         <iframe
             ref={iframeRef}
             id={frame.id}
-            className={cn(
-                'backdrop-blur-sm transition outline outline-4',
-                // shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
-                // selected ? getSelectedOutlineColor() : 'outline-transparent',
-            )}
+            className={cn('backdrop-blur-sm transition outline outline-4')}
             src={frame.url}
             sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
             allow="geolocation; microphone; camera; midi; encrypted-media"
-            style={{
-                width: frame.dimension.width,
-                height: frame.dimension.height,
-            }}
+            style={{ width: frame.dimension.width, height: frame.dimension.height }}
             {...props}
         />
     );
