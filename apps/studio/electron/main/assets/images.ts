@@ -129,7 +129,11 @@ export async function saveImageToProject(
         const uniqueFileName = await getUniqueFileName(imageFolder, image.fileName);
         const imagePath = path.join(imageFolder, uniqueFileName);
 
-        const buffer = Buffer.from(image.content, 'base64');
+        if (!image.content) {
+            throw new Error('Can not save image with empty content');
+        }
+
+        const buffer = Buffer.from(image.content.replace(/^data:[^,]+,/, ''), 'base64');
         await fs.writeFile(imagePath, buffer);
         return imagePath;
     } catch (error) {

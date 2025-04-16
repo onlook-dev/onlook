@@ -170,7 +170,6 @@ export class ImageManager {
         } else {
             this.images = [];
         }
-        console.log(this.images);
     }
 
     dispose() {
