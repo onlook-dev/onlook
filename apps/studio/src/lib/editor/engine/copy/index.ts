@@ -160,7 +160,7 @@ export class CopyManager {
         const savedCopied = this.copied;
         try {
             await this.copy();
-            if (!this.copy) {
+            if (!this.copied) {
                 console.error('Nothing to duplicate, Failed to copy element');
                 return;
             }
