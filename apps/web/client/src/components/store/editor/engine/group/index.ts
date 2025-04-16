@@ -1,4 +1,3 @@
-import { createDomId, createOid } from '@/lib/utils';
 import type { DomElement } from '@onlook/models';
 import type {
     ActionElement,
@@ -9,6 +8,8 @@ import type {
 } from '@onlook/models/actions';
 import type { EditorEngine } from '..';
 
+import { createOid } from '@onlook/utility/src/id';
+import { createDomId } from '@onlook/utility/src/id';
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) { }
 

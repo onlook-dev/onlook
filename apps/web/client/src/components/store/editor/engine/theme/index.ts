@@ -1,7 +1,7 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel } from '@/lib/utils';
-import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
-import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
+// import type { ProjectsManager } from '@/lib/projects';
+// import { invokeMainChannel } from '@/lib/utils';
+// import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
+// import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
 import { Theme } from '@onlook/models/assets';
 import { Color } from '@onlook/utility';
@@ -9,6 +9,8 @@ import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
 import { camelCase } from 'lodash';
+import type { TailwindColor } from '@onlook/models/style';
+import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 
 interface ColorValue {
     value: string;
@@ -16,17 +18,17 @@ interface ColorValue {
 }
 
 export class ThemeManager {
-    private brandColors: Record<string, ColorItem[]> = {};
-    private defaultColors: Record<string, ColorItem[]> = {};
+    private brandColors: Record<string, TailwindColor[]> = {};
+    private defaultColors: Record<string, TailwindColor[]> = {};
     private configPath: string | null = null;
     private cssPath: string | null = null;
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
-        this.scanConfig();
+        // this.scanConfig();
     }
 
     async scanConfig() {
@@ -56,7 +58,7 @@ export class ThemeManager {
             const lightModeColors: ThemeColors = cssConfig.root || {};
             const darkModeColors: ThemeColors = cssConfig.dark || {};
             const parsed: ParsedColors = {};
-            const groups: { [key: string]: Set<string> } = {};
+            const groups: Record<string, Set<string>> = {};
 
             const processConfigObject = (obj: any, prefix = '', parentKey = '') => {
                 Object.entries(obj).forEach(([key, value]) => {
@@ -139,14 +141,14 @@ export class ThemeManager {
                 if (typeof value !== 'string') {
                     return null;
                 }
-                const match = value.match(/var\(--([^)]+)\)/);
+                const match = /var\(--([^)]+)\)/.exec(value);
                 return match ? match[1] : null;
             };
 
             processConfigObject(config);
 
             // Convert groups to color items for UI
-            const colorGroupsObj: { [key: string]: ColorItem[] } = {};
+            const colorGroupsObj: Record<string, ColorItem[]> = {};
 
             Object.entries(groups).forEach(([groupName, colorKeys]) => {
                 if (colorKeys.size > 0) {
@@ -218,7 +220,7 @@ export class ThemeManager {
         ];
 
         // Create a record instead of an array
-        const defaultColorsRecord: Record<string, ColorItem[]> = {};
+        const defaultColorsRecord: Record<string, TailwindColor[]> = {};
 
         Object.keys(colors)
             .filter((colorName) => !excludedColors.includes(colorName))
@@ -230,7 +232,7 @@ export class ThemeManager {
                 }
 
                 // Create color items for each shade in the scale
-                const colorItems: ColorItem[] = Object.entries(defaultColorScale)
+                const colorItems: TailwindColor[] = Object.entries(defaultColorScale)
                     .filter(([shade]) => shade !== DEFAULT_COLOR_NAME)
                     .map(([shade, defaultValue]) => {
                         const lightModeValue = lightModeColors[`${colorName}-${shade}`]?.value;
@@ -239,8 +241,8 @@ export class ThemeManager {
                         return {
                             name: shade,
                             originalKey: `${colorName}-${shade}`,
-                            lightColor: lightModeValue || defaultValue,
-                            darkColor: darkModeValue || defaultValue,
+                            lightColor: lightModeValue ?? defaultValue,
+                            darkColor: darkModeValue ?? defaultValue,
                             line: {
                                 config: config[`${colorName}-${shade}`]?.line,
                                 css: {
@@ -248,7 +250,7 @@ export class ThemeManager {
                                     darkMode: darkModeColors[`${colorName}-${shade}`]?.line,
                                 },
                             },
-                            override: !!lightModeValue || !!darkModeValue,
+                            override: !!lightModeValue ?? !!darkModeValue,
                         };
                     });
 
@@ -263,8 +265,8 @@ export class ThemeManager {
                     colorItems.push({
                         name: shade,
                         originalKey: `${colorName}-${shade}`,
-                        lightColor: lightModeValue || '',
-                        darkColor: darkModeValue || '',
+                        lightColor: lightModeValue ?? '',
+                        darkColor: darkModeValue ?? '',
                         line: {
                             config: config[`${colorName}-${shade}`]?.line,
                             css: {
@@ -336,7 +338,7 @@ export class ThemeManager {
         newName: string,
         parentName?: string,
         theme?: Theme,
-        shouldSaveToConfig: boolean = false,
+        shouldSaveToConfig = false,
     ) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {

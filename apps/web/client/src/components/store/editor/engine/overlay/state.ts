@@ -38,8 +38,8 @@ export class OverlayState {
         makeAutoObservable(this);
     }
 
-    updateHoverRect = (rect: RectDimensions, isComponent?: boolean) => {
-        this.hoverRect = { rect, isComponent };
+    updateHoverRect = (rect: RectDimensions | null, isComponent?: boolean) => {
+        this.hoverRect = rect ? { rect, isComponent } : null;
     };
 
     removeHoverRect = () => {

@@ -41,5 +41,9 @@
     "devDependencies": {
         "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
+    },
+    "dependencies": {
+        "react-arborist": "^3.4.3",
+        "use-resize-observer": "^9.1.0"
     }
 }

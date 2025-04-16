@@ -1,27 +1,28 @@
 import { makeAutoObservable } from 'mobx';
 
 import { CanvasManager } from './canvas';
-import { ChatManager } from './chat';
-import { CodeManager } from './code';
+import { type ChatManager } from './chat';
+import { type CodeManager } from './code';
 import { ElementsManager } from './element';
-import { ErrorManager } from './error';
+import { type ErrorManager } from './error';
 import { FontManager } from './font';
 import { FramesManager } from './frames';
 import { HistoryManager } from './history';
-import { ImageManager } from './image';
+import { type ImageManager } from './image';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { StateManager } from './state';
 import { ThemeManager } from './theme';
 
 // import { CopyManager } from './copy';
-// import { GroupManager } from './group';
+ import { GroupManager } from './group';
 // import { InsertManager } from './insert';
 // import { MoveManager } from './move';
 // import { StyleManager } from './style';
 // import { TextEditingManager } from './text';
 // import { ActionManager } from './action';
-// import { AstManager } from './ast';
+import { AstManager } from './ast';
+import type { BrandTabValue } from '@onlook/models';
 // import { ProjectInfoManager } from './projectinfo';
 
 // import { nanoid } from 'nanoid/non-secure';
@@ -53,8 +54,8 @@ export class EditorEngine {
     // readonly move: MoveManager = new MoveManager(this);
     // readonly style: StyleManager = new StyleManager(this);
     // readonly copy: CopyManager = new CopyManager(this);
-    // readonly group: GroupManager = new GroupManager(this);
-    // readonly ast: AstManager = new AstManager(this);
+     readonly group: GroupManager = new GroupManager(this);
+     readonly ast: AstManager = new AstManager(this);
 
     // TODO: Window, Frames, Webviews should be Frames
     // readonly window: WindowManager = new WindowManager(this);
@@ -69,13 +70,18 @@ export class EditorEngine {
             // this.projectsManager
         );
         // this.code = new CodeManager(this, this.projectsManager);
-        // this.pages = new PagesManager(this, this.projectsManager);
+         this.pages = new PagesManager(this, 
+            // this.projectsManager
+         );
         // this.error = new ErrorManager(this, this.projectsManager);
-        // this.image = new ImageManager(this, this.projectsManager);
-        // this.theme = new ThemeManager(this, this.projectsManager);
-        // this.font = new FontManager(this, this.projectsManager);
+        // this.image = new ImageManager(this,this.projectsManager);
+        this.theme = new ThemeManager(this
+            // , this.projectsManager
+        );
+        this.font = new FontManager(this
+            // , this.projectsManager
+        );
     }
-
 
     // get errors() {
     //     return this.errorManager;
@@ -92,7 +98,7 @@ export class EditorEngine {
         // this.history.clear();
         // this.action.dispose();
         // this.overlay.clear();
-        // this.ast.clear();
+        this.ast.clear();
         // this.textEditing.clean();
         // this.insert.dispose();
         // this.move.dispose();
@@ -103,7 +109,7 @@ export class EditorEngine {
         // this.canvasManager?.clear();
         // this.imageManager?.dispose();
         // this.themeManager?.dispose();
-        // this.fontManager?.dispose();
+        this.font?.dispose();
         // this.webviews.deregisterAll();
         // this.errors.clear();
         // this.chatManager?.dispose();

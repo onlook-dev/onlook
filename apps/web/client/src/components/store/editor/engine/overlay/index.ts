@@ -8,7 +8,7 @@ export class OverlayManager {
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
     state: OverlayState = new OverlayState();
     private animationFrameId: number | null = null;
-    private needsRefresh: boolean = false;
+    private needsRefresh = false;
 
     constructor(private editorEngine: EditorEngine) {
         this.listenToScaleChange();
@@ -31,7 +31,7 @@ export class OverlayManager {
             () => ({
                 position: this.editorEngine.canvas?.position,
                 scale: this.editorEngine.canvas?.scale,
-                shouldHideOverlay: this.editorEngine.state.shouldHideOverlay,
+                shouldHideOverlay: this.editorEngine.state?.shouldHideOverlay,
             }),
             () => {
                 this.needsRefresh = true;

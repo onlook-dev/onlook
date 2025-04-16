@@ -6,14 +6,18 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 
 // import AppsTab from './AppsTab';
-// import BrandTab from './BrandTab';
 // import ComponentsTab from './ComponentsTab';
 // import { HelpDropdown } from './HelpDropdown';
-// import ImagesTab from './ImageTab';
-// import LayersTab from './LayersTab';
+import ImagesTab from './image-tab';
+import LayersTab from './layers-tab';
+import PagesTab from './page-tab';
 // import OpenCodeMini from './OpenCodeMini';
 // import PagesTab from './PageTab';
-// import WindowsTab from './WindowsTab';
+import WindowsTab from './windows-tab';
+import BrandTab from './brand-tab';
+import OpenCodeMini from './open-code-mini';
+import ZoomControls from './zoom-controls';
+import { HelpDropdown } from './help-dropdown';
 // import ZoomControls from './ZoomControls';
 
 const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hidden: boolean }[] = [
@@ -137,9 +141,9 @@ export const LeftPanel = observer(() => {
                 ))}
 
                 <div className="mt-auto flex flex-col gap-0 items-center mb-4">
-                    {/* <OpenCodeMini />
-                    <ZoomControls />
-                    <HelpDropdown /> */}
+                        <OpenCodeMini />
+                        <ZoomControls />
+                        <HelpDropdown />
                 </div>
             </div>
 
@@ -148,13 +152,13 @@ export const LeftPanel = observer(() => {
                 <>
                     <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
-                            {/* {selectedTab === LayersPanelTabValue.LAYERS && <LayersTab />}
-                            {selectedTab === LayersPanelTabValue.COMPONENTS && <ComponentsTab components={editorEngine.state.components} />}
-                            {selectedTab === LayersPanelTabValue.PAGES && <PagesTab />}
-                            {selectedTab === LayersPanelTabValue.IMAGES && <ImagesTab />}
-                            {selectedTab === LayersPanelTabValue.WINDOWS && <WindowsTab />}
-                            {selectedTab === LayersPanelTabValue.BRAND && <BrandTab />}
-                            {selectedTab === LayersPanelTabValue.APPS && <AppsTab />} */}
+                            {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
+                            {/* {selectedTab === LayersPanelTabValue.COMPONENTS && <ComponentsTab components={editorEngine.state.components} />} */}
+                            {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
+                            {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
+                            {selectedTab === LeftPanelTabValue.WINDOWS && <WindowsTab />}
+                            {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
+                            {/* {selectedTab === LayersPanelTabValue.APPS && <AppsTab />} */}
                         </div>
                     </div>
 
