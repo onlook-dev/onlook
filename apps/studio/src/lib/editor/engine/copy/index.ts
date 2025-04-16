@@ -9,6 +9,7 @@ import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import { toast } from '@onlook/ui/use-toast';
 
 export class CopyManager {
     copied: {
@@ -157,9 +158,28 @@ export class CopyManager {
 
     async duplicate() {
         const savedCopied = this.copied;
-        await this.copy();
-        await this.paste();
-        this.copied = savedCopied;
+        try {
+            await this.copy();
+            if (!this.copy) {
+                console.error('Nothing to duplicate, Failed to copy element');
+                return;
+            }
+            await this.paste();
+
+            const selectedWebview = this.editorEngine.webviews.selected[0];
+            if (selectedWebview) {
+                await this.editorEngine.elements.refreshSelectedElements(selectedWebview);
+            }
+        } catch (error) {
+            console.error('Failed to suplicate element', error);
+            toast({
+                title: 'Duplication failed',
+                description: 'Failed to duplicate element. Please try again.',
+                variant: 'destructive',
+            });
+        } finally {
+            this.copied = savedCopied;
+        }
     }
 
     clear() {

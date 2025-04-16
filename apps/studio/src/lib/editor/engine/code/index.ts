@@ -64,10 +64,22 @@ export class CodeManager {
             console.error('Failed to get code block. No oid found.');
             return null;
         }
-        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, {
-            oid,
-            stripIds,
-        });
+        try {
+            const codeBlock = (await invokeMainChannel(MainChannels.GET_CODE_BLOCK, {
+                oid,
+                stripIds,
+            })) as string;
+
+            if (!codeBlock) {
+                console.error('No code block found for oid:', oid);
+                return null;
+            }
+
+            return codeBlock;
+        } catch (error) {
+            console.error('Error getting code block:', error);
+            return null;
+        }
     }
 
     async getFileContent(filePath: string, stripIds: boolean): Promise<string | null> {

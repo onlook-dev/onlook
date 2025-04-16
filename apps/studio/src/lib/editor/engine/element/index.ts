@@ -137,48 +137,66 @@ export class ElementManager {
         }
 
         for (const selectedEl of selected) {
-            const webviewId = selectedEl.webviewId;
-            const webview = this.editorEngine.webviews.getWebview(webviewId);
-            if (!webview) {
-                return;
-            }
+            try {
+                const webviewId = selectedEl.webviewId;
+                const webview = this.editorEngine.webviews.getWebview(webviewId);
+                if (!webview) {
+                    return;
+                }
 
-            const { shouldDelete, error } = await this.shouldDelete(selectedEl, webview);
+                const { shouldDelete, error } = await this.shouldDelete(selectedEl, webview);
 
-            if (!shouldDelete) {
+                if (!shouldDelete) {
+                    toast({
+                        title: 'Cannot delete element',
+                        description: error,
+                        variant: 'destructive',
+                    });
+                    return;
+                }
+                const removeAction = (await webview.executeJavaScript(
+                    `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
+                )) as RemoveElementAction | null;
+                if (!removeAction) {
+                    console.error('Remove action not found');
+                    toast({
+                        title: 'Cannot delete element',
+                        description: 'Remove action not found. Try refreshing the page.',
+                        variant: 'destructive',
+                    });
+                    return;
+                }
+                let codeBlock;
+                if (selectedEl.instanceId) {
+                    codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.instanceId);
+                }
+
+                if (!codeBlock) {
+                    codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
+                }
+
+                if (!codeBlock) {
+                    toast({
+                        title: 'Cannot delete element',
+                        description: 'Code block not found. Try refreshing the page.',
+                        variant: 'destructive',
+                    });
+                    return;
+                }
+
+                removeAction.codeBlock = codeBlock;
+                this.editorEngine.action.run(removeAction);
+
+                this.clearSelectedElements();
+                this.editorEngine.overlay.state.removeClickRects();
+            } catch (error) {
+                console.error('Failed to delete element:', error);
                 toast({
-                    title: 'Cannot delete element',
-                    description: error,
+                    title: 'Deletion failed',
+                    description: 'An unexpected error occurred while deleting the element.',
                     variant: 'destructive',
                 });
-                return;
             }
-
-            const removeAction = (await webview.executeJavaScript(
-                `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
-            )) as RemoveElementAction | null;
-            if (!removeAction) {
-                console.error('Remove action not found');
-                toast({
-                    title: 'Cannot delete element',
-                    description: 'Remove action not found. Try refreshing the page.',
-                    variant: 'destructive',
-                });
-                return;
-            }
-            const oid = selectedEl.instanceId || selectedEl.oid;
-            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            if (!codeBlock) {
-                toast({
-                    title: 'Cannot delete element',
-                    description: 'Code block not found. Try refreshing the page.',
-                    variant: 'destructive',
-                });
-                return;
-            }
-
-            removeAction.codeBlock = codeBlock;
-            this.editorEngine.action.run(removeAction);
         }
     }
 
