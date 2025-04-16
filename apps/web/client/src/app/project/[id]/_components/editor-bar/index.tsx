@@ -1,12 +1,15 @@
 "use client";
 
 import { motion } from "motion/react";
+import type { ElementType } from "../main";
 import { DivSelected } from "./div-selected";
 import { ImgSelected } from "./img-selected";
 import { TextSelected } from "./text-selected";
 
-export const EditorBar = () => {
-    const selectedElement = 'div';
+
+export const EditorBar = ({ selectedElement }: {
+    selectedElement: ElementType;
+}) => {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}

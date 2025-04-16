@@ -10,8 +10,8 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { StateDropdown } from "./state-dropdown";
-
+import { StateDropdown } from "./dropdowns/state-dropdown";
+import { ViewButtons } from "./panels/panel-bar/bar";
 type EditorMode = "STATE" | "MEDIUM" | "TYPOGRAPHY" | "POSITION" | "TRANSFORMS";
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
@@ -206,6 +206,7 @@ export const TextSelected = () => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <ViewButtons />
             </div>
         </motion.div>
     );
