@@ -74,7 +74,7 @@ const ZoomControls = observer(() => {
     };
 
     return (
-        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-foreground hover:text-muted-foreground">
+        <div className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-foreground hover:text-muted-foreground">
             <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -139,7 +139,7 @@ const ZoomControls = observer(() => {
                     </button>
                 </PopoverContent>
             </Popover>
-        </button>
+        </div>
     );
 });
 export default ZoomControls;
