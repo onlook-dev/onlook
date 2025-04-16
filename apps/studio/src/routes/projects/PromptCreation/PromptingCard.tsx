@@ -197,7 +197,7 @@ export const PromptingCard = () => {
             setCrawlValue(JSON.stringify(responseData));
 
             toast({
-                title: 'URl crawled',
+                title: 'URL crawled',
                 description: response.success,
             });
         } catch (error) {
