@@ -83,7 +83,7 @@ export class ActionManager {
 
     updateStyle({ targets }: UpdateStyleAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.frameId);
+            const webview = this.editorEngine.frames.get(target.frameId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
@@ -113,7 +113,7 @@ export class ActionManager {
 
     private insertElement({ targets, element, editText, location }: InsertElementAction) {
         targets.forEach((elementMetadata) => {
-            const webview = this.editorEngine.webviews.getWebview(elementMetadata.frameId);
+            const webview = this.editorEngine.frames.get(elementMetadata.frameId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
@@ -155,7 +155,7 @@ export class ActionManager {
 
     private editText({ targets, newContent }: EditTextAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.frameId);
+            const webview = this.editorEngine.frames.get(target.frameId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
@@ -168,7 +168,7 @@ export class ActionManager {
     }
 
     private groupElements({ parent, container, children }: GroupElementsAction) {
-        const webview = this.editorEngine.webviews.getWebview(parent.frameId);
+        const webview = this.editorEngine.frames.get(parent.frameId);
         if (!webview) {
             console.error('Failed to get webview');
             return;
@@ -177,7 +177,7 @@ export class ActionManager {
     }
 
     private ungroupElements({ parent, container, children }: UngroupElementsAction) {
-        const webview = this.editorEngine.webviews.getWebview(parent.frameId);
+        const webview = this.editorEngine.frames.get(parent.frameId);
         if (!webview) {
             console.error('Failed to get webview');
             return;
@@ -187,7 +187,7 @@ export class ActionManager {
 
     private insertImage({ targets, image }: InsertImageAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.frameId);
+            const webview = this.editorEngine.frames.get(target.frameId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
@@ -201,7 +201,7 @@ export class ActionManager {
 
     private removeImage({ targets }: RemoveImageAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.frameId);
+            const webview = this.editorEngine.frames.get(target.frameId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;

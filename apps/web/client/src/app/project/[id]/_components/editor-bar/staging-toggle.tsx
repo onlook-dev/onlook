@@ -1,8 +1,7 @@
 "use client";
 
 import { Icons } from "@onlook/ui/icons";
-
-type ElementType = "div" | "text" | "image";
+import type { ElementType } from "../main";
 
 type StagingToggleProps = {
     selectedElement: ElementType;

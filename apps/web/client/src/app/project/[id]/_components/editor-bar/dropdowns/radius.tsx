@@ -30,8 +30,8 @@ export const Radius = () => {
                     <button
                         onClick={() => setActiveTab('all')}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${activeTab === 'all'
-                                ? 'text-white bg-background-tertiary/20'
-                                : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            ? 'text-white bg-background-tertiary/20'
+                            : 'text-muted-foreground hover:bg-background-tertiary/10'
                             }`}
                     >
                         All sides
@@ -39,8 +39,8 @@ export const Radius = () => {
                     <button
                         onClick={() => setActiveTab('individual')}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors ${activeTab === 'individual'
-                                ? 'text-white bg-background-tertiary/20'
-                                : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            ? 'text-white bg-background-tertiary/20'
+                            : 'text-muted-foreground hover:bg-background-tertiary/10'
                             }`}
                     >
                         Individual
