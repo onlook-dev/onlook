@@ -75,7 +75,7 @@ export class ElementsManager {
         // const newSelected: DomElement[] = [];
         // for (const el of this.selected) {
         //     const newEl: DomElement | null = await frame.webview.executeJavaScript(
-        //         `window.api?.getDomElementByDomId('${el.domId}', true)`,
+        //         `window.api?.getElementByDomId('${el.domId}', true)`,
         //     );
         //     if (!newEl) {
         //         console.error('Element not found');

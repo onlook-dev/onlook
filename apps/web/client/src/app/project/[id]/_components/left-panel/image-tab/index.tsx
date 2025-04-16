@@ -1,6 +1,7 @@
 
-import { useProjectsManager } from '@/components/store';
-import type { ImageContentData } from '@onlook/models';
+import { useEditorEngine, useProjectsManager } from '@/components/store';
+import { sendAnalytics } from '@/utils/analytics';
+import { EditorMode, type ImageContentData } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -14,16 +15,11 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-
-import { useEditorEngine } from '@/components/store';
-// import { invokeMainChannel, platformSlash, sendAnalytics } from '@/components/store/utils';
-import { sendAnalytics } from '@/utils/analytics';
 import { images } from './data.json';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
 
-
-const ImagesTab = observer(() => {
+export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
 
@@ -331,8 +327,8 @@ const ImagesTab = observer(() => {
                                     // }
                                     // editorEngine.mode = EditorMode.DESIGN;
                                 }}
-                            // onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
-                            // onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
+                                onMouseDown={() => (editorEngine.state.editorMode = EditorMode.INSERT_IMAGE)}
+                                onMouseUp={() => (editorEngine.state.editorMode = EditorMode.DESIGN)}
                             >
                                 <div className="w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border">
                                     <img
@@ -364,8 +360,8 @@ const ImagesTab = observer(() => {
                                 </span>
                                 <div
                                     className={`absolute right-2 top-2 ${activeDropdown === image.fileName
-                                            ? 'opacity-100'
-                                            : 'opacity-0'
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
                                         } group-hover:opacity-100 transition-opacity duration-300`}
                                 >
                                     <DropdownMenu
@@ -455,5 +451,3 @@ const ImagesTab = observer(() => {
         </div>
     );
 });
-
-export default ImagesTab;

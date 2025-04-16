@@ -9,12 +9,10 @@ interface TreeRowProps {
     children: React.ReactNode;
 }
 
-const TreeRow = ({ innerRef, attrs, children }: TreeRowProps) => {
+export const TreeRow = ({ innerRef, attrs, children }: TreeRowProps) => {
     return (
         <div ref={innerRef} {...attrs} className="outline-none">
             {children}
         </div>
     );
 };
-
-export default TreeRow;

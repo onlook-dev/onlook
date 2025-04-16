@@ -10,7 +10,8 @@ import { Hotkey } from '@/components/hotkey';
 import { DefaultSettings, EditorAttributes } from '@onlook/constants';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { useTranslations } from 'next-intl';
-const ZoomControls = observer(() => {
+
+export const ZoomControls = observer(() => {
     const editorEngine = useEditorEngine();
     const scale = editorEngine.canvas.scale;
     const t = useTranslations();
@@ -143,4 +144,3 @@ const ZoomControls = observer(() => {
         </Popover>
     );
 });
-export default ZoomControls;

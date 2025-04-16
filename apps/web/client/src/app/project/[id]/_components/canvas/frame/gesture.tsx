@@ -35,6 +35,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
             }
             const pos = getRelativeMousePosition(e);
             const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(action);
+            console.log('shouldGetStyle', shouldGetStyle);
             const el: DomElement = await frameData.view.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
             if (!el) {
                 console.log('No element found');
@@ -44,11 +45,11 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
             switch (action) {
                 case MouseAction.MOVE:
                     editorEngine.elements.mouseover(el, frameData);
-                    // if (e.altKey) {
-                    //     editorEngine.elements.showMeasurement();
-                    // } else {
-                    //     editorEngine.overlay.removeMeasurement();
-                    // }
+                    if (e.altKey) {
+                        editorEngine.overlay.showMeasurement();
+                    } else {
+                        editorEngine.overlay.removeMeasurement();
+                    }
                     break;
                 case MouseAction.MOUSE_DOWN:
                     if (el.tagName.toLocaleLowerCase() === 'body') {
@@ -107,18 +108,17 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
     const handleClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
-            // const webview = getWebview();
-            // editorEngine.webview.deselectAll();
+            editorEngine.frames.deselectAll();
             editorEngine.frames.select(frame);
         },
         [editorEngine.frames],
     );
 
     function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
-        // if (editorEngine.state.editorMode !== EditorMode.DESIGN) {
-        //     return;
-        // }
-        // handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
+        if (editorEngine.state.editorMode !== EditorMode.DESIGN) {
+            return;
+        }
+        handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {

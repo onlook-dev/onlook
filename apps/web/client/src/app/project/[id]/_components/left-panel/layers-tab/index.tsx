@@ -1,14 +1,14 @@
+import { useEditorEngine } from '@/components/store';
 import type { LayerNode } from '@onlook/models/element';
 import { observer } from 'mobx-react-lite';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import TreeNode from './tree/tree-node';
-import TreeRow from './tree/tree-row';
 import { RightClickMenu } from '../../right-click-menu';
-import { useEditorEngine } from '@/components/store';
+import { TreeNode } from './tree/tree-node';
+import { TreeRow } from './tree/tree-row';
 
-const LayersTab = observer(() => {
+export const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>(null);
     const editorEngine = useEditorEngine();
     const [treeHovered, setTreeHovered] = useState(false);
@@ -16,7 +16,7 @@ const LayersTab = observer(() => {
 
     useEffect(handleSelectChange, [
         editorEngine.elements.selected,
-        // editorEngine.ast.mappings.filteredLayers,
+        editorEngine.ast.mappings.filteredLayers,
     ]);
 
     const handleMouseLeaveTree = useCallback(() => {
@@ -25,9 +25,9 @@ const LayersTab = observer(() => {
     }, [editorEngine.overlay.state]);
 
     function handleSelectChange() {
-            if (editorEngine.elements.selected.length > 0) {
-                treeRef.current?.scrollTo(editorEngine.elements.selected[0].domId);
-            }
+        if (editorEngine.elements.selected.length > 0 && editorEngine.elements.selected[0]) {
+            treeRef.current?.scrollTo(editorEngine.elements.selected[0].domId);
+        }
     }
 
     const handleDragEnd = useCallback(
@@ -49,33 +49,30 @@ const LayersTab = observer(() => {
                 return;
             }
             const dragNode = dragNodes[0];
-            const webview = editorEngine.frames.get(dragNode.data.frameId)?.view;
-
-            if (!webview) {
-                console.error('No webview found');
+            if (!dragNode) {
+                console.error('No drag node found');
                 return;
             }
+            const frameData = editorEngine.frames.get(dragNode.data.frameId);
+            if (!frameData) {
+                console.error('No frame data found');
+                return;
+            }
+            const { view } = frameData;
 
-            const originalIndex: number | undefined = (
-                await webview.executeJavaScript(
-                `window.api?.getElementIndex('${dragNode.data.domId}')`,
-            )) as number | undefined;
+            const originalIndex: number | undefined = await view.getElementIndex(dragNode.data.domId);
 
             if (originalIndex === undefined) {
                 console.error('No original index found');
                 return;
             }
 
-            const childEl = await webview.executeJavaScript(
-                `window.api?.getDomElementByDomId('${dragNode.data.domId}')`,
-            );
+            const childEl = await view.getElementByDomId(dragNode.data.domId, false);
             if (!childEl) {
                 console.error('Failed to get element');
                 return;
             }
-            const parentEl = await webview.executeJavaScript(
-                `window.api?.getDomElementByDomId('${parentNode.data.domId}')`,
-            );
+            const parentEl = await view.getElementByDomId(parentNode.data.domId, false);
             if (!parentEl) {
                 console.error('Failed to get parent element');
                 return;
@@ -89,7 +86,7 @@ const LayersTab = observer(() => {
             }
 
             const moveAction = editorEngine.move.createMoveAction(
-                webview.id,
+                view.id,
                 childEl,
                 parentEl,
                 newIndex,
@@ -116,7 +113,7 @@ const LayersTab = observer(() => {
     const childrenAccessor = useCallback(
         (node: LayerNode) => {
             const children = node.children
-                ?.map((child) => editorEngine.ast.mappings.getLayerNode(node.webviewId, child))
+                ?.map((child) => editorEngine.ast.mappings.getLayerNode(node.frameId, child))
                 .filter((child) => child !== undefined)!;
 
             return children?.length ? children : null;
@@ -155,5 +152,3 @@ const LayersTab = observer(() => {
         </div>
     );
 });
-
-export default memo(LayersTab);

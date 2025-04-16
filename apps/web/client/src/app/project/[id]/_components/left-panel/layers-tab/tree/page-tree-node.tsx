@@ -24,7 +24,7 @@ interface PageTreeNodeProps {
     style: React.CSSProperties;
 }
 
-const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
+export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
     const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
@@ -190,6 +190,4 @@ const PageTreeNode: React.FC<PageTreeNodeProps> = ({ node, style }) => {
             />
         </>
     );
-};
-
-export default observer(PageTreeNode);
+});

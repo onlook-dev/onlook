@@ -7,10 +7,9 @@ import { useTranslations } from 'next-intl';
 import FrameDimensions from './frame-dimensions';
 import DeviceSettings from './device-settings';
 
-
-const WindowsTab = observer(() => {
+export const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const t  = useTranslations();
+    const t = useTranslations();
     const settings = null;
 
     // Get settings from the selected element or webview
@@ -60,5 +59,3 @@ const WindowsTab = observer(() => {
         </div>
     );
 });
-
-export default WindowsTab;

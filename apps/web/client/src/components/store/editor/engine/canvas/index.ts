@@ -38,10 +38,6 @@ export class CanvasManager {
     }
 
     getDefaultPanPosition(): RectPosition {
-        if (!window) {
-            return DefaultSettings.PAN_POSITION;
-        }
-
         let x = 200;
         let y = 100;
         const center = false;

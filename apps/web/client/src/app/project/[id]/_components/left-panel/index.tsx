@@ -4,21 +4,15 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-
-// import AppsTab from './AppsTab';
-// import ComponentsTab from './ComponentsTab';
 // import { HelpDropdown } from './HelpDropdown';
-import ImagesTab from './image-tab';
-import LayersTab from './layers-tab';
-import PagesTab from './page-tab';
-// import OpenCodeMini from './OpenCodeMini';
-// import PagesTab from './PageTab';
-import WindowsTab from './windows-tab';
-import BrandTab from './brand-tab';
-import OpenCodeMini from './open-code-mini';
-import ZoomControls from './zoom-controls';
+import { BrandTab } from './brand-tab';
 import { HelpDropdown } from './help-dropdown';
-// import ZoomControls from './ZoomControls';
+import { ImagesTab } from './image-tab';
+import { LayersTab } from './layers-tab';
+import { OpenCodeMini } from './open-code-mini';
+import { PagesTab } from './page-tab';
+import { WindowsTab } from './windows-tab';
+import { ZoomControls } from './zoom-controls';
 
 const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hidden: boolean }[] = [
     {
@@ -141,9 +135,9 @@ export const LeftPanel = observer(() => {
                 ))}
 
                 <div className="mt-auto flex flex-col gap-0 items-center mb-4">
-                        <OpenCodeMini />
-                        <ZoomControls />
-                        <HelpDropdown />
+                    <OpenCodeMini />
+                    <ZoomControls />
+                    <HelpDropdown />
                 </div>
             </div>
 

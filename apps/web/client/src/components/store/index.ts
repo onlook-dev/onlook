@@ -12,9 +12,6 @@ const editorEngine = new EditorEngine(
     // projectsManager, userManager
 );
 // const appStateManager = new AppStateManager();
-
-// projectsManager.editorEngine = editorEngine;
-
 // const AuthContext = createContext(authManager);
 const ProjectContext = createContext(projectManager);
 const UserContext = createContext(userManager);

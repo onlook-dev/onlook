@@ -1,13 +1,9 @@
 import type { PreloadMethods } from '@onlook/penpal';
-// import {
-//     getChildrenCount,
-//     getDomElementByDomId,
-//     getOffsetParent,
-//     getParentElement,
-//     updateElementInstance,
-// } from './elements';
 import { processDom } from './dom';
-import { getDomElementByDomId, getElementAtLoc } from './elements';
+import { getElementAtLoc, getElementByDomId } from './elements';
+import { getElementIndex } from './elements/move';
+import { setFrameId } from './state';
+
 // import {
 //     getActionElementByDomId,
 //     getActionLocation,
@@ -17,24 +13,31 @@ import { getDomElementByDomId, getElementAtLoc } from './elements';
 // } from './elements/dom/helpers';
 // import { getInsertLocation } from './elements/dom/insert';
 // import { getRemoveActionFromDomId } from './elements/dom/remove';
-// import { getElementIndex } from './elements/move';
 // import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
 // import { getComputedStyleByDomId } from './elements/style';
 // import { editText, startEditingText, stopEditingText } from './elements/text';
-import { setFrameId } from './state';
+// import {
+//     getChildrenCount,
+//     getElementByDomId,
+//     getOffsetParent,
+//     getParentElement,
+//     updateElementInstance,
+// } from './elements';
 // import { getTheme, setTheme } from './theme';
 
 export const preloadMethods: PreloadMethods = {
     // Misc
     processDom,
+    setFrameId,
     // getComputedStyleByDomId,
     // updateElementInstance,
-    setFrameId,
     // getFirstOnlookElement,
 
     // Elements
     getElementAtLoc,
-    getDomElementByDomId,
+    getElementByDomId,
+    getElementIndex,
+
     // setElementType,
     // getElementType,
     // getParentElement,
@@ -55,7 +58,6 @@ export const preloadMethods: PreloadMethods = {
     // startDrag,
     // drag,
     // endDrag,
-    // getElementIndex,
     // endAllDrag,
 
     // // Edit text

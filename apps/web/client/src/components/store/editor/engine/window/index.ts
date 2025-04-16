@@ -11,65 +11,67 @@ export class WindowManager {
         return this.editorEngine.elements.selected.length > 0 && this.editorEngine.elements.selected.length === 0;
     }
 
-    // async takeActiveWebviewScreenshot(
-    //     name: string,
-    //     options?: {
-    //         save: boolean;
-    //     },
-    // ): Promise<{
-    //     name?: string;
-    //     image?: string;
-    // } | null> {
-    //     if (this.webviews.webviews.size === 0) {
-    //         console.error('Failed to take screenshot, no webviews found');
-    //         return null;
-    //     }
-    //     const frameId = Array.from(this.webviews.webviews.values())[0].webview.id;
-    //     return this.takeWebviewScreenshot(name, frameId, options);
-    // }
+    async takeActiveWebviewScreenshot(
+        name: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
+        // if (this.webviews.webviews.size === 0) {
+        //     console.error('Failed to take screenshot, no webviews found');
+        //     return null;
+        // }
+        // const frameId = Array.from(this.webviews.webviews.values())[0].webview.id;
+        // return this.takeWebviewScreenshot(name, frameId, options);
+        return null;
+    }
 
-    // async takeWebviewScreenshot(
-    //     name: string,
-    //     frameId: string,
-    //     options?: {
-    //         save: boolean;
-    //     },
-    // ): Promise<{
-    //     name?: string;
-    //     image?: string;
-    // } | null> {
-    //     const webview = this.webviews.getWebview(frameId);
-    //     if (!webview) {
-    //         console.error('No webview found');
-    //         return null;
-    //     }
+    async takeWebviewScreenshot(
+        name: string,
+        frameId: string,
+        options?: {
+            save: boolean;
+        },
+    ): Promise<{
+        name?: string;
+        image?: string;
+    } | null> {
+        // const webview = this.webviews.getWebview(frameId);
+        // if (!webview) {
+        //     console.error('No webview found');
+        //     return null;
+        // }
 
-    //     const hasContent = await webview.executeJavaScript(
-    //         `document.body.innerText.trim().length > 0 || document.body.children.length > 0 `,
-    //     );
-    //     if (!hasContent) {
-    //         console.error('No content found in webview');
-    //         return null;
-    //     }
+        // const hasContent = await webview.executeJavaScript(
+        //     `document.body.innerText.trim().length > 0 || document.body.children.length > 0 `,
+        // );
+        // if (!hasContent) {
+        //     console.error('No content found in webview');
+        //     return null;
+        // }
 
-    //     const image: NativeImage = await webview.capturePage();
+        // const image: NativeImage = await webview.capturePage();
 
-    //     if (options?.save) {
-    //         const imageName = `${name}-preview.png`;
-    //         const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
-    //             img: image.toDataURL(),
-    //             name: imageName,
-    //         });
-    //         return {
-    //             name: imageName,
-    //         };
-    //     }
-    //     return {
-    //         image: image.resize({ quality: 'good', height: 100 }).toDataURL({
-    //             scaleFactor: 0.1,
-    //         }),
-    //     };
-    // }
+        // if (options?.save) {
+        //     const imageName = `${name}-preview.png`;
+        //     const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
+        //         img: image.toDataURL(),
+        //         name: imageName,
+        //     });
+        //     return {
+        //         name: imageName,
+        //     };
+        // }
+        // return {
+        //     image: image.resize({ quality: 'good', height: 100 }).toDataURL({
+        //         scaleFactor: 0.1,
+        //     }),
+        // };
+        return null;
+    }
 
     canDeleteWindow() {
         // return this.canvas.frames.length > 1;

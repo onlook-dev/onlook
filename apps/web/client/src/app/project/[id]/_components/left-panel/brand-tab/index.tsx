@@ -1,11 +1,11 @@
 
-import { Button } from '@onlook/ui/button';
-import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '@/components/store';
 import { BrandTabValue } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
+import { observer } from 'mobx-react-lite';
 import ColorPanel from './color-panel';
-import SystemFont from './font-panel/system-font';
 import FontPanel from './font-panel';
+import SystemFont from './font-panel/system-font';
 
 interface ColorSquareProps {
     color: string;
@@ -18,7 +18,7 @@ const ColorSquare = ({ color }: ColorSquareProps) => (
     />
 );
 
-const BrandTab = observer(() => {
+export const BrandTab = observer(() => {
     const editorEngine = useEditorEngine();
 
     // Sample colors for the brand palette
@@ -93,5 +93,3 @@ const BrandTab = observer(() => {
         </div>
     );
 });
-
-export default BrandTab;

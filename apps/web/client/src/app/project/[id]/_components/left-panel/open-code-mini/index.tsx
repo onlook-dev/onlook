@@ -1,7 +1,6 @@
 
 import { IDE } from '@/components/ide';
-import { useProjectsManager, useUserManager } from '@/components/store';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/store';
 import { SettingsTabValue } from '@onlook/models';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
@@ -17,9 +16,9 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-const OpenCodeMini = observer(() => {
+export const OpenCodeMini = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const userManager = useUserManager();
@@ -157,5 +156,3 @@ const OpenCodeMini = observer(() => {
         </DropdownMenu>
     );
 });
-
-export default OpenCodeMini;

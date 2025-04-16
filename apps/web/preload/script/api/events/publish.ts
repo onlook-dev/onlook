@@ -1,11 +1,11 @@
 import type { ActionLocation, DomElement } from '@onlook/models';
 import { elementFromDomId } from '../../helpers';
 import { buildLayerTree } from '../dom';
-import { getDomElementByDomId } from '../elements';
+import { getElementByDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
 
 export function publishStyleUpdate(domId: string) {
-    const domEl = getDomElementByDomId(domId, true);
+    const domEl = getElementByDomId(domId, true);
     if (!domEl) {
         console.warn('No domEl found for style update event');
         return;

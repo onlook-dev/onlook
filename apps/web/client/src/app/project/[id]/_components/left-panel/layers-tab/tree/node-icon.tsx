@@ -5,7 +5,7 @@ interface NodeIconProps {
     tagName: string;
 }
 
-const NodeIcon = ({ iconClass, tagName: preprocessedTagName }: NodeIconProps) => {
+export const NodeIcon = ({ iconClass, tagName: preprocessedTagName }: NodeIconProps) => {
     const tagName = preprocessedTagName.toUpperCase();
 
     if (tagName === 'H1') {
@@ -58,5 +58,3 @@ const NodeIcon = ({ iconClass, tagName: preprocessedTagName }: NodeIconProps) =>
         return <Icons.Frame className={iconClass} />;
     }
 };
-
-export default NodeIcon;

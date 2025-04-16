@@ -1,6 +1,4 @@
 'use client';
-// import { HotkeysModal } from './HotkeysModal';
-// import { Toolbar } from './Toolbar';
 
 import { useProjectsManager } from "@/components/store";
 import type { Project } from "@onlook/models";
@@ -53,8 +51,6 @@ export default function Main({ project }: { project: Project }) {
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up ">
                     <BottomBar />
                 </div>
-
-                {/* <HotkeysModal /> */}
             </div>
         </TooltipProvider>
     );

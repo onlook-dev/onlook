@@ -3,9 +3,9 @@ import type { DomElement } from '@onlook/models';
 import { elementFromDomId } from '../../helpers';
 import { getDomElement } from './helpers';
 
-export const getDomElementByDomId = (domId: string, style: boolean): DomElement => {
+export const getElementByDomId = (domId: string, getStyle: boolean): DomElement => {
     const el = elementFromDomId(domId) || document.body;
-    return getDomElement(el as HTMLElement, style);
+    return getDomElement(el as HTMLElement, getStyle);
 };
 
 export const getElementAtLoc = (x: number, y: number, getStyle: boolean): DomElement => {

@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/store';
 import { MouseAction } from '@onlook/models/editor';
 import type { DomElement, LayerNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
@@ -9,8 +10,7 @@ import { motion } from 'motion/react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
-import NodeIcon from './node-icon';
-import { useEditorEngine } from '@/components/store';
+import { NodeIcon } from './node-icon';
 
 const isComponentAncestor = (node: NodeApi<LayerNode>): boolean => {
     if (!node) {
@@ -57,7 +57,7 @@ const VisibilityButton = memo(
     ),
 );
 
-const TreeNode = observer(
+export const TreeNode = memo(observer(
     ({
         node,
         style,
@@ -77,7 +77,7 @@ const TreeNode = observer(
         const isWindowSelected =
             isWindow &&
             editorEngine.elements.selected.length === 0 &&
-            editorEngine.frames.selected.some((el) => el.frame.id === node.data.webviewId);
+            editorEngine.frames.selected.some((el) => el.frame.id === node.data.frameId);
 
         const { hovered, selected, isParentSelected } = useMemo(
             () => ({
@@ -88,9 +88,6 @@ const TreeNode = observer(
             [node.data.domId, editorEngine.elements.hovered?.domId, editorEngine.elements.selected],
         );
 
-
-
-
         const sendMouseEvent = useCallback(
             async (e: React.MouseEvent<HTMLDivElement>, node: LayerNode, action: MouseAction) => {
                 const webview = editorEngine.frames.get(node.frameId);
@@ -98,14 +95,12 @@ const TreeNode = observer(
                     console.error('Failed to get webview');
                     return;
                 }
-                const el: DomElement = await webview.executeJavaScript(
-                    `window.api?.getDomElementByDomId('${node.domId}', ${action === MouseAction.MOUSE_DOWN})`,
-                );
+                const el: DomElement = await webview.view.getElementByDomId(node.domId, action === MouseAction.MOUSE_DOWN);
                 if (!el) {
                     console.error('Failed to get element');
                     return;
                 }
-        
+
                 switch (action) {
                     case MouseAction.MOVE:
                         editorEngine.elements.mouseover(el, webview);
@@ -116,12 +111,12 @@ const TreeNode = observer(
                             editorEngine.frames.select(webview.frame);
                             return;
                         }
-                    if (e.shiftKey) {
-                        editorEngine.elements.shiftClick(el, webview);
+                        if (e.shiftKey) {
+                            editorEngine.elements.shiftClick(el, webview);
+                            break;
+                        }
+                        editorEngine.elements.click([el], webview);
                         break;
-                    }
-                    editorEngine.elements.click([el], webview);
-                    break;
                 }
             }, [editorEngine, isWindow]);
 
@@ -237,10 +232,10 @@ const TreeNode = observer(
                 (node.data.component
                     ? node.data.component
                     : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                            node.data.tagName.toLowerCase(),
-                        )
-                      ? ''
-                      : node.data.tagName.toLowerCase()) +
+                        node.data.tagName.toLowerCase(),
+                    )
+                        ? ''
+                        : node.data.tagName.toLowerCase()) +
                 ' ' +
                 node.data.textContent
             );
@@ -285,8 +280,8 @@ const TreeNode = observer(
                                         hovered && !selected
                                             ? 'text-purple-600 dark:text-purple-200 '
                                             : selected
-                                              ? 'text-purple-100 dark:text-purple-100'
-                                              : 'text-purple-500 dark:text-purple-300',
+                                                ? 'text-purple-100 dark:text-purple-100'
+                                                : 'text-purple-500 dark:text-purple-300',
                                     )}
                                 />
                             ) : (
@@ -333,8 +328,8 @@ const TreeNode = observer(
                                         ? selected
                                             ? 'text-purple-100 dark:text-purple-100'
                                             : hovered
-                                              ? 'text-purple-600 dark:text-purple-200'
-                                              : 'text-purple-500 dark:text-purple-300'
+                                                ? 'text-purple-600 dark:text-purple-200'
+                                                : 'text-purple-500 dark:text-purple-300'
                                         : '',
                                     !node.data.isVisible && 'opacity-80',
                                     selected && 'mr-5',
@@ -367,9 +362,4 @@ const TreeNode = observer(
             </Tooltip>
         );
     },
-);
-
-TreeNode.displayName = 'TreeNode';
-VisibilityButton.displayName = 'VisibilityButton';
-
-export default memo(TreeNode);
+));

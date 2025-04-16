@@ -3,7 +3,7 @@ import { cn } from '@onlook/ui/utils';
 import { forwardRef } from 'react';
 import type { RowRendererProps } from 'react-arborist';
 
-const PageTreeRow = forwardRef<
+export const PageTreeRow = forwardRef<
     HTMLDivElement,
     RowRendererProps<PageNode> & { isHighlighted?: boolean }
 >(({ attrs, children, isHighlighted }, ref) => {
@@ -29,6 +29,3 @@ const PageTreeRow = forwardRef<
         </div>
     );
 });
-
-PageTreeRow.displayName = 'PageTreeRow';
-export default PageTreeRow;

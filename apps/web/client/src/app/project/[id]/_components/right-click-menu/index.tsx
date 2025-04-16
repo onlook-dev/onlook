@@ -1,7 +1,6 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
-import { useUserManager } from '@/components/store';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine, useUserManager } from '@/components/store';
 import { EditorTabValue } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
@@ -38,13 +37,13 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
     const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType ?? DEFAULT_IDE);
 
-    // useEffect(() => {
-    //     updateMenuItems();
-    // }, [
-    //     editorEngine.elements.selected,
-    //     editorEngine.ast.mappings.layers,
-    //     editorEngine.webviews.selected,
-    // ]);
+    useEffect(() => {
+        updateMenuItems();
+    }, [
+        editorEngine.elements.selected,
+        editorEngine.ast.mappings.layers,
+        editorEngine.frames.selected,
+    ]);
 
     const OPEN_DEV_TOOL_ITEM: MenuItem = {
         label: 'Open devtool',
@@ -143,7 +142,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         },
         {
             label: 'Delete',
-            action: () => editorEngine.deleteWindow(editorEngine.webviews.selected[0].id),
+            action: () => editorEngine.deleteWindow(editorEngine.frames.selected[0]?.frame.id),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,

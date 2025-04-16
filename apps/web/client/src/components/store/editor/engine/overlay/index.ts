@@ -7,23 +7,9 @@ import { adaptRectToCanvas } from './utils';
 export class OverlayManager {
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
     state: OverlayState = new OverlayState();
-    private animationFrameId: number | null = null;
-    private needsRefresh = false;
 
     constructor(private editorEngine: EditorEngine) {
         this.listenToScaleChange();
-        this.startRefreshLoop();
-    }
-
-    private startRefreshLoop = () => {
-        const loop = () => {
-            if (this.needsRefresh) {
-                this.performRefresh();
-                this.needsRefresh = false;
-            }
-            this.animationFrameId = requestAnimationFrame(loop);
-        };
-        this.animationFrameId = requestAnimationFrame(loop);
     }
 
     listenToScaleChange() {
@@ -34,12 +20,15 @@ export class OverlayManager {
                 shouldHideOverlay: this.editorEngine.state?.shouldHideOverlay,
             }),
             () => {
-                this.needsRefresh = true;
+                this.refreshOverlay();
             },
         );
     }
 
-    private performRefresh = async () => {
+    private refreshOverlay = async () => {
+        if (this.editorEngine.state.shouldHideOverlay) {
+            return;
+        }
         // Refresh hover rect
         this.state.removeHoverRect();
 
@@ -52,7 +41,7 @@ export class OverlayManager {
                 continue;
             }
             const { view } = frameData;
-            const el: DomElement = await view.getDomElementByDomId(selectedElement.domId, true);
+            const el: DomElement = await view.getElementByDomId(selectedElement.domId, true);
             if (!el) {
                 console.error('Element not found');
                 continue;
@@ -65,14 +54,6 @@ export class OverlayManager {
         for (const clickRect of newClickRects) {
             this.state.addClickRect(clickRect.rect, clickRect.styles);
         }
-    };
-
-    refreshOverlay = () => {
-        // Don't refresh the overlay when the canvas is scrolling
-        if (this.editorEngine.state.shouldHideOverlay) {
-            return;
-        }
-        this.needsRefresh = true;
     };
 
     showMeasurement() {

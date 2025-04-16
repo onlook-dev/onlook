@@ -39,7 +39,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         updateMenuItems();
     }, [
         editorEngine.elements.selected,
-        // editorEngine.ast.mappings.layers,
+        editorEngine.ast.mappings.layers,
         editorEngine.frames.selected,
     ]);
 
