@@ -1,3 +1,4 @@
+import type { PreloadMethods } from '@onlook/penpal';
 // import {
 //     getChildrenCount,
 //     getDomElementByDomId,
@@ -23,44 +24,42 @@ import { getDomElementByDomId, getElementAtLoc } from './elements';
 import { setFrameId } from './state';
 // import { getTheme, setTheme } from './theme';
 
-export function getMethods() {
-    return {
-        // Misc
-        processDom,
-        // getComputedStyleByDomId,
-        // updateElementInstance,
-        setFrameId,
-        // getFirstOnlookElement,
+export const preloadMethods: PreloadMethods = {
+    // Misc
+    processDom,
+    // getComputedStyleByDomId,
+    // updateElementInstance,
+    setFrameId,
+    // getFirstOnlookElement,
 
-        // Elements
-        getElementAtLoc,
-        getDomElementByDomId,
-        // setElementType,
-        // getElementType,
-        // getParentElement,
-        // getChildrenCount,
-        // getOffsetParent,
+    // Elements
+    getElementAtLoc,
+    getDomElementByDomId,
+    // setElementType,
+    // getElementType,
+    // getParentElement,
+    // getChildrenCount,
+    // getOffsetParent,
 
-        // // Actions
-        // getActionLocation,
-        // getActionElementByDomId,
-        // getInsertLocation,
-        // getRemoveActionFromDomId,
+    // // Actions
+    // getActionLocation,
+    // getActionElementByDomId,
+    // getInsertLocation,
+    // getRemoveActionFromDomId,
 
-        // // Theme
-        // getTheme,
-        // setTheme,
+    // // Theme
+    // getTheme,
+    // setTheme,
 
-        // // Drag
-        // startDrag,
-        // drag,
-        // endDrag,
-        // getElementIndex,
-        // endAllDrag,
+    // // Drag
+    // startDrag,
+    // drag,
+    // endDrag,
+    // getElementIndex,
+    // endAllDrag,
 
-        // // Edit text
-        // startEditingText,
-        // editText,
-        // stopEditingText,
-    };
-}
+    // // Edit text
+    // startEditingText,
+    // editText,
+    // stopEditingText,
+} satisfies PreloadMethods;

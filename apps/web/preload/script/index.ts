@@ -1,5 +1,5 @@
 import { WindowMessenger, connect } from 'penpal';
-import { getMethods } from './api';
+import { preloadMethods } from './api';
 
 const createMessageConnection = async () => {
     console.log("Preload creating penpal connection");
@@ -13,7 +13,7 @@ const createMessageConnection = async () => {
     const connection = connect({
         messenger,
         // Methods the iframe window is exposing to the parent window.
-        methods: getMethods()
+        methods: preloadMethods
     });
 
     const remote = await connection.promise as any;

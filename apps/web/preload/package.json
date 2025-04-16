@@ -22,6 +22,7 @@
         "nanoid": "^5.1.5",
         "penpal": "^7.0.4",
         "@onlook/constants": "*",
-        "@onlook/models": "*"
+        "@onlook/models": "*",
+        "@onlook/penpal": "*"
     }
 }

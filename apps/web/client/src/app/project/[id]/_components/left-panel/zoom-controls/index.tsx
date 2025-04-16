@@ -6,14 +6,14 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
-import { DefaultSettings, EditorAttributes } from '@onlook/constants';
-import { useTranslations } from 'next-intl';
 import { Hotkey } from '@/components/hotkey';
+import { DefaultSettings, EditorAttributes } from '@onlook/constants';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
+import { useTranslations } from 'next-intl';
 const ZoomControls = observer(() => {
     const editorEngine = useEditorEngine();
     const scale = editorEngine.canvas.scale;
-    const  t = useTranslations();
+    const t = useTranslations();
 
     const [inputValue, setInputValue] = useState(`${Math.round(scale * 100)}%`);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -75,72 +75,72 @@ const ZoomControls = observer(() => {
     };
 
     return (
-        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-foreground hover:text-muted-foreground">
-            <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <PopoverTrigger className="w-full h-full flex items-center justify-center">
+        <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <PopoverTrigger className="w-full h-full flex items-center justify-center" asChild>
+                        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-foreground hover:text-muted-foreground">
                             <span>{Math.round(scale * 100)}%</span>
-                        </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipPortal>
-                        <TooltipContent side="right">{t('editor.zoom.level')}</TooltipContent>
-                    </TooltipPortal>
-                </Tooltip>
-                <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
-                    <Input
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={(e: { key: string }) => {
-                            if (e.key === 'Enter') {
-                                handleCustomZoom(inputValue);
-                            }
-                        }}
-                        className={`p-1 h-6 text-left text-smallPlus rounded border mb-1 focus-visible:border-red-500`}
-                        autoFocus
+                        </button>
+                    </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipPortal>
+                    <TooltipContent side="right">{t('editor.zoom.level')}</TooltipContent>
+                </TooltipPortal>
+            </Tooltip>
+            <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
+                <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e: { key: string }) => {
+                        if (e.key === 'Enter') {
+                            handleCustomZoom(inputValue);
+                        }
+                    }}
+                    className={`p-1 h-6 text-left text-smallPlus rounded border mb-1 focus-visible:border-red-500`}
+                    autoFocus
+                />
+                <button
+                    onClick={() => handleZoom(1)}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
+                >
+                    <HotkeyLabel
+                        className="w-full justify-between text-mini"
+                        hotkey={Hotkey.ZOOM_IN}
                     />
-                    <button
-                        onClick={() => handleZoom(1)}
-                        className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
-                    >
-                        <HotkeyLabel
-                            className="w-full justify-between text-mini"
-                            hotkey={Hotkey.ZOOM_IN}
-                        />
-                    </button>
-                    <button
-                        onClick={() => handleZoom(-1)}
-                        className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
-                    >
-                        <HotkeyLabel
-                            className="w-full justify-between text-mini"
-                            hotkey={Hotkey.ZOOM_OUT}
-                        />
-                    </button>
-                    <button
-                        onClick={handleZoomToFit}
-                        className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
-                    >
-                        <HotkeyLabel
-                            className="w-full justify-between text-mini"
-                            hotkey={Hotkey.ZOOM_FIT}
-                        />
-                    </button>
-                    <button
-                        onClick={() => (editorEngine.canvas.scale = 1)}
-                        className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
-                    >
-                        <span className="flex-grow text-mini">{t('editor.zoom.reset')}</span>
-                    </button>
-                    <button
-                        onClick={() => (editorEngine.canvas.scale = 2)}
-                        className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
-                    >
-                        <span className="flex-grow text-mini">{t('editor.zoom.double')}</span>
-                    </button>
-                </PopoverContent>
-            </Popover>
-        </button>
+                </button>
+                <button
+                    onClick={() => handleZoom(-1)}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
+                >
+                    <HotkeyLabel
+                        className="w-full justify-between text-mini"
+                        hotkey={Hotkey.ZOOM_OUT}
+                    />
+                </button>
+                <button
+                    onClick={handleZoomToFit}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
+                >
+                    <HotkeyLabel
+                        className="w-full justify-between text-mini"
+                        hotkey={Hotkey.ZOOM_FIT}
+                    />
+                </button>
+                <button
+                    onClick={() => (editorEngine.canvas.scale = 1)}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
+                >
+                    <span className="flex-grow text-mini">{t('editor.zoom.reset')}</span>
+                </button>
+                <button
+                    onClick={() => (editorEngine.canvas.scale = 2)}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
+                >
+                    <span className="flex-grow text-mini">{t('editor.zoom.double')}</span>
+                </button>
+            </PopoverContent>
+        </Popover>
     );
 });
 export default ZoomControls;

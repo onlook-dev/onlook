@@ -1,6 +1,6 @@
 {
-    "name": "@onlook/web-shared",
-    "description": "A shared library for Onlook web",
+    "name": "@onlook/rpc",
+    "description": "An rpc library for Onlook web",
     "main": "./src/index.ts",
     "type": "module",
     "module": "src/index.ts",
@@ -19,8 +19,7 @@
     },
     "keywords": [
         "onlook",
-        "web",
-        "shared"
+        "rpc"
     ],
     "author": {
         "name": "Onlook",

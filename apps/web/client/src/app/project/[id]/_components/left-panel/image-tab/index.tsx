@@ -16,12 +16,11 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useEditorEngine } from '@/components/store';
-import { EditorMode } from '@onlook/models';
 // import { invokeMainChannel, platformSlash, sendAnalytics } from '@/components/store/utils';
+import { sendAnalytics } from '@/utils/analytics';
+import { images } from './data.json';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
-import { sendAnalytics } from '@/utils/analytics';
-import {images} from './data.json'
 
 
 const ImagesTab = observer(() => {
@@ -332,8 +331,8 @@ const ImagesTab = observer(() => {
                                     // }
                                     // editorEngine.mode = EditorMode.DESIGN;
                                 }}
-                                // onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
-                                // onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
+                            // onMouseDown={() => (editorEngine.mode = EditorMode.INSERT_IMAGE)}
+                            // onMouseUp={() => (editorEngine.mode = EditorMode.DESIGN)}
                             >
                                 <div className="w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border">
                                     <img
@@ -364,18 +363,17 @@ const ImagesTab = observer(() => {
                                     )}
                                 </span>
                                 <div
-                                    className={`absolute right-2 top-2 ${
-                                        activeDropdown === image.fileName
+                                    className={`absolute right-2 top-2 ${activeDropdown === image.fileName
                                             ? 'opacity-100'
                                             : 'opacity-0'
-                                    } group-hover:opacity-100 transition-opacity duration-300`}
+                                        } group-hover:opacity-100 transition-opacity duration-300`}
                                 >
                                     <DropdownMenu
                                         onOpenChange={(isOpen) =>
                                             setActiveDropdown(isOpen ? image.fileName : null)
                                         }
                                     >
-                                        <DropdownMenuTrigger>
+                                        <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant={'ghost'}
                                                 className="bg-background p-1 inline-flex items-center justify-center h-auto w-auto rounded shadow-sm"

@@ -1,4 +1,4 @@
-import { editorServerConfig, type EditorRouter } from '@onlook/web-shared';
+import { editorServerConfig, type EditorRouter } from '@onlook/rpc';
 import { createTRPCClient, createWSClient, httpBatchLink, splitLink, wsLink } from '@trpc/client';
 import superJSON from 'superjson';
 import { createTRPCRouter, publicProcedure } from '../trpc';
