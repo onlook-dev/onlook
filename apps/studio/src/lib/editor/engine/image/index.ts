@@ -1,7 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { MainChannels } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import mime from 'mime-lite';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
@@ -30,10 +30,16 @@ export class ImageManager {
                 new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
             );
 
-            await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
-                projectFolder,
+            const image: ImageContentData = {
                 content: base64String,
                 fileName: file.name,
+                mimeType: file.type,
+                folder: DefaultSettings.IMAGE_FOLDER,
+            };
+
+            await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
+                projectFolder,
+                image,
             });
 
             setTimeout(() => {
@@ -46,17 +52,16 @@ export class ImageManager {
         }
     }
 
-    async delete(imageName: string): Promise<void> {
+    async delete(image: ImageContentData): Promise<void> {
         try {
             const projectFolder = this.projectsManager.project?.folderPath;
             if (!projectFolder) {
                 throw new Error('Project folder not found');
             }
-            await invokeMainChannel<string, string>(
-                MainChannels.DELETE_IMAGE_FROM_PROJECT,
+            await invokeMainChannel(MainChannels.DELETE_IMAGE_FROM_PROJECT, {
                 projectFolder,
-                imageName,
-            );
+                image,
+            });
             this.scanImages();
             sendAnalytics('image delete');
         } catch (error) {
@@ -65,18 +70,17 @@ export class ImageManager {
         }
     }
 
-    async rename(imageName: string, newName: string): Promise<void> {
+    async rename(image: ImageContentData, newName: string): Promise<void> {
         try {
             const projectFolder = this.projectsManager.project?.folderPath;
             if (!projectFolder) {
                 throw new Error('Project folder not found');
             }
-            await invokeMainChannel<string, string>(
-                MainChannels.RENAME_IMAGE_IN_PROJECT,
+            await invokeMainChannel(MainChannels.RENAME_IMAGE_IN_PROJECT, {
                 projectFolder,
-                imageName,
+                image,
                 newName,
-            );
+            });
             this.scanImages();
             sendAnalytics('image rename');
         } catch (error) {

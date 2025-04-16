@@ -89,6 +89,7 @@ export interface ImageContentData {
     content: string;
     fileName: string;
     mimeType: string;
+    folder?: string;
 }
 
 interface BaseImageAction {

@@ -6,6 +6,7 @@ import {
     deleteImageFromProject,
     renameImageInProject,
 } from '../assets/images';
+import type { ImageContentData } from '@onlook/models/actions';
 
 export function listenForAssetMessages() {
     ipcMain.handle(MainChannels.SCAN_IMAGES_IN_PROJECT, async (_event, projectRoot: string) => {
@@ -19,31 +20,49 @@ export function listenForAssetMessages() {
             _event,
             {
                 projectFolder,
-                content,
-                fileName,
+                image,
             }: {
                 projectFolder: string;
-                content: string;
-                fileName: string;
+                image: ImageContentData;
             },
         ) => {
-            const imagePath = await saveImageToProject(projectFolder, content, fileName);
+            const imagePath = await saveImageToProject(projectFolder, image);
             return imagePath;
         },
     );
 
     ipcMain.handle(
         MainChannels.DELETE_IMAGE_FROM_PROJECT,
-        async (_event, projectRoot: string, imageName: string) => {
-            const imagePath = await deleteImageFromProject(projectRoot, imageName);
+        async (
+            _event,
+            {
+                projectFolder,
+                image,
+            }: {
+                projectFolder: string;
+                image: ImageContentData;
+            },
+        ) => {
+            const imagePath = await deleteImageFromProject(projectFolder, image);
             return imagePath;
         },
     );
 
     ipcMain.handle(
         MainChannels.RENAME_IMAGE_IN_PROJECT,
-        async (_event, projectRoot: string, imageName: string, newName: string) => {
-            const imagePath = await renameImageInProject(projectRoot, imageName, newName);
+        async (
+            _event,
+            {
+                projectFolder,
+                image,
+                newName,
+            }: {
+                projectFolder: string;
+                image: ImageContentData;
+                newName: string;
+            },
+        ) => {
+            const imagePath = await renameImageInProject(projectFolder, image, newName);
             return imagePath;
         },
     );

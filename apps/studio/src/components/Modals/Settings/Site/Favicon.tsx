@@ -108,14 +108,11 @@ export const Favicon = forwardRef<
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                style={{
-                    backgroundImage: selectedImage ? `url(${selectedImage})` : 'none',
-                }}
             >
                 <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept=".ico"
                     className="hidden"
                     id="favicon-upload"
                     onChange={handleFileSelect}
