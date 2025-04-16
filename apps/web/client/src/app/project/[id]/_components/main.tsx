@@ -9,8 +9,6 @@ import { useEffect, useState } from "react";
 import { BottomBar } from "./bottom-bar";
 import { Canvas } from "./canvas";
 import { EditorBar } from "./editor-bar";
-import { Panels } from "./editor-bar/panels";
-import { StagingToggle } from "./editor-bar/staging-toggle";
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from "./top-bar";
@@ -39,18 +37,18 @@ export default function Main({ project }: { project: Project }) {
                     <EditorBar selectedElement={selectedElement} />
                 </div>
 
-                <div className="absolute w-screen h-screen flex items-center justify-center z-30">
+                {/* <div className="absolute w-screen h-screen flex items-center justify-center z-30">
                     <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
-                </div>
+                </div> */}
 
-                {/* Height full minus top bar and editor bar (80px) */}
+                {/* <div className="absolute top-20 left-[80px] z-50 h-[calc(100%-80px)]">
+                    <Panels selectedElement={selectedElement} />
+                </div> */}
+
                 <div className="absolute top-20 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
                     <LeftPanel />
                 </div>
 
-                <div className="absolute top-20 left-[80px] z-50 h-[calc(100%-80px)]">
-                    <Panels selectedElement={selectedElement} />
-                </div>
 
                 <div className="absolute top-20 right-0 animate-edit-panel-in h-[calc(100%-80px)] z-1">
                     <RightPanel />
