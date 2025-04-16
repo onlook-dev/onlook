@@ -30,9 +30,17 @@ export class ThemeManager {
         this.scanConfig();
     }
 
+    private reset() {
+        this.defaultColors = {};
+        this.brandColors = {};
+        this.configPath = null;
+        this.cssPath = null;
+    }
+
     async scanConfig() {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
+            this.reset();
             return;
         }
 
@@ -42,6 +50,7 @@ export class ThemeManager {
             })) as ConfigResult;
 
             if (!configResult) {
+                this.reset();
                 return;
             }
 
@@ -204,6 +213,7 @@ export class ThemeManager {
             }
             this.brandColors = colorGroupsObj;
         } catch (error) {
+            this.reset();
             console.error('Error loading colors:', error);
         }
     }
