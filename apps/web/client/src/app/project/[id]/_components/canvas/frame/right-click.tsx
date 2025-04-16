@@ -1,7 +1,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
 import { useEditorEngine, useUserManager } from '@/components/store';
-import { DEFAULT_IDE, EditorTabValue } from '@onlook/models';
+import { DEFAULT_IDE, EditorTabValue, type DomElement } from '@onlook/models';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -38,9 +38,9 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     useEffect(() => {
         updateMenuItems();
     }, [
-        // editorEngine.elements.selected,
+        editorEngine.elements.selected,
         // editorEngine.ast.mappings.layers,
-        // editorEngine.webviews.selected,
+        editorEngine.frames.selected,
     ]);
 
     const OPEN_DEV_TOOL_ITEM: MenuItem = {
@@ -159,42 +159,42 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     ];
 
     const updateMenuItems = () => {
-        // let instance: string | null = null;
-        // let root: string | null = null;
+        let instance: string | null = null;
+        let root: string | null = null;
 
-        // if (editorEngine.elements.selected.length > 0) {
-        //     const element: DomElement = editorEngine.elements.selected[0];
-        //     instance = element.instanceId;
-        //     root = element.oid;
-        // }
-        // let menuItems: MenuItem[][] = [];
+        if (editorEngine.elements.selected.length > 0 && editorEngine.elements.selected[0]) {
+            const element: DomElement = editorEngine.elements.selected[0];
+            instance = element.instanceId;
+            root = element.oid;
+        }
+        let menuItems: MenuItem[][] = [];
 
-        // if (editorEngine.isWindowSelected) {
-        //     menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
-        // } else {
-        //     const updatedToolItems = [
-        //         instance !== null && {
-        //             label: 'View instance code',
-        //             action: () => viewSource(instance),
-        //             icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
-        //         },
-        //         {
-        //             label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
-        //             disabled: !root,
-        //             action: () => viewSource(root),
-        //             icon: instance ? (
-        //                 <Icons.Component className="mr-2 h-4 w-4" />
-        //             ) : (
-        //                 <Icons.ExternalLink className="mr-2 h-4 w-4" />
-        //             ),
-        //         },
-        //         ...TOOL_ITEMS,
-        //     ].filter(Boolean) as MenuItem[];
+        if (editorEngine.frames.selected.length > 0) {
+            menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
+        } else {
+            const updatedToolItems = [
+                instance !== null && {
+                    label: 'View instance code',
+                    action: () => viewSource(instance),
+                    icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
+                },
+                {
+                    label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
+                    disabled: !root,
+                    action: () => viewSource(root),
+                    icon: instance ? (
+                        <Icons.Component className="mr-2 h-4 w-4" />
+                    ) : (
+                        <Icons.ExternalLink className="mr-2 h-4 w-4" />
+                    ),
+                },
+                ...TOOL_ITEMS,
+            ].filter(Boolean) as MenuItem[];
 
-        //     menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
-        // }
+            menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
+        }
 
-        // setMenuItems(menuItems);
+        setMenuItems(menuItems);
     };
 
     function viewSource(oid: string | null) {

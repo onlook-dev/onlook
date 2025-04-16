@@ -5,7 +5,7 @@
 import { useProjectsManager } from "@/components/store";
 import type { Project } from "@onlook/models";
 import { TooltipProvider } from "@onlook/ui/tooltip";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { BottomBar } from "./bottom-bar";
 import { Canvas } from "./canvas";
 import { EditorBar } from "./editor-bar";
@@ -13,15 +13,11 @@ import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from "./top-bar";
 
-export type ElementType = "div" | "text" | "image" | "video";
-
 export default function Main({ project }: { project: Project }) {
     const projectManager = useProjectsManager();
-    const [selectedElement, setSelectedElement] = useState<ElementType>("div");
 
     useEffect(() => {
         projectManager.project = project;
-        console.log(projectManager.project);
     }, [project]);
 
     return (
@@ -34,7 +30,7 @@ export default function Main({ project }: { project: Project }) {
                 </div>
 
                 <div className="absolute top-10 w-full z-50">
-                    <EditorBar selectedElement={selectedElement} />
+                    <EditorBar />
                 </div>
 
                 {/* <div className="absolute w-screen h-screen flex items-center justify-center z-30">

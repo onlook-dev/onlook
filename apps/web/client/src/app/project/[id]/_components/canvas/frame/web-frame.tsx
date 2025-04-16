@@ -34,9 +34,9 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
     const [iframeRemote, setIframeRemote] = useState<any>(null);
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const zoomLevel = useRef(1);
-    const hasReloaded = useRef(false);
 
     const setupPenpalConnection = useCallback(async (iframe: HTMLIFrameElement) => {
+        console.log("iFrame creating penpal connection frame ID:", frame.id);
         if (!iframe?.contentWindow) throw new Error('No content window found');
         const messenger = new WindowMessenger({
             remoteWindow: iframe.contentWindow,
@@ -47,6 +47,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         await remote.setFrameId(frame.id);
         await remote.processDom();
         setIframeRemote(remote);
+        console.log("Penpal connection set for frame ID:", frame.id);
     }, [frame.id]);
 
     const setupIframe = useCallback(async (iframe: HTMLIFrameElement) => {
@@ -66,6 +67,10 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             setupIframe(iframe);
         } else {
             iframe.addEventListener('load', () => setupIframe(iframe), { once: true });
+            iframe.addEventListener('error', () => {
+                console.error('Iframe failed to load:', iframe.src);
+                setTimeout(() => reloadIframe(), 5000);
+            });
         }
     }, [setupIframe]);
 
@@ -73,31 +78,11 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         handleIframeLoad();
     }, [handleIframeLoad]);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const iframe = iframeRef.current;
-            if (!iframe || hasReloaded.current) return;
-
-            try {
-                const win = iframe.contentWindow;
-                const doc = win?.document;
-                if (doc?.readyState === 'complete') {
-                    const body = doc.body?.innerHTML.trim();
-                    if (!body || body === '') {
-                        hasReloaded.current = true;
-                        iframe.src = iframe.src;
-                    }
-                }
-            } catch (err) {
-                // Cross-origin fallback
-                if (iframe.src === 'about:blank' || iframe.contentWindow?.location.href === 'about:blank') {
-                    hasReloaded.current = true;
-                    iframe.src = iframe.src;
-                }
-            }
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
+    const reloadIframe = () => {
+        const iframe = iframeRef.current;
+        if (!iframe) return;
+        iframe.src = iframe.src;
+    }
 
     useImperativeHandle(ref, () => {
         const iframe = iframeRef.current!;

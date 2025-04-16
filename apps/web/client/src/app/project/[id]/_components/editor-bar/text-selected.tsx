@@ -8,10 +8,10 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { motion } from "motion/react";
 import { useState } from "react";
 import { StateDropdown } from "./dropdowns/state-dropdown";
 import { ViewButtons } from "./panels/panel-bar/bar";
+
 type EditorMode = "STATE" | "MEDIUM" | "TYPOGRAPHY" | "POSITION" | "TRANSFORMS";
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
@@ -27,18 +27,9 @@ export const TextSelected = () => {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+        <div
             className="flex flex-col bg-background backdrop-blur drop-shadow-xl"
-            transition={{
-                type: "spring",
-                bounce: 0.1,
-                duration: 0.4,
-                stiffness: 200,
-                damping: 25,
-            }}
+
         >
             <div className="flex items-center gap-1">
                 <StateDropdown />
@@ -208,6 +199,6 @@ export const TextSelected = () => {
                 </DropdownMenu>
                 <ViewButtons />
             </div>
-        </motion.div>
+        </div>
     );
 };

@@ -42,10 +42,10 @@ export class EditorEngine {
     readonly font: FontManager;
 
     readonly canvas: CanvasManager = new CanvasManager();
-    readonly overlay: OverlayManager = new OverlayManager(this);
     readonly state: StateManager = new StateManager();
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
+    readonly overlay: OverlayManager = new OverlayManager(this);
 
     // readonly action: ActionManager = new ActionManager(this);
     // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
