@@ -171,7 +171,7 @@ export class CopyManager {
                 await this.editorEngine.elements.refreshSelectedElements(selectedWebview);
             }
         } catch (error) {
-            console.error('Failed to suplicate element', error);
+            console.error('Failed to duplicate element', error);
             toast({
                 title: 'Duplication failed',
                 description: 'Failed to duplicate element. Please try again.',
