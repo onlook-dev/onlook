@@ -1,12 +1,13 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { DomElement } from '@onlook/models';
-import { getOrAssignDomId } from '../../ids';
-import { elementFromDomId, getDomElement, isValidHtmlElement, restoreElementStyle } from '../helpers';
+import { getHtmlElement, isValidHtmlElement } from '../../../helpers';
+import { getOrAssignDomId } from '../../../helpers/ids';
+import { getDomElement, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 
 export function startDrag(domId: string): number | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn(`Start drag element not found: ${domId}`);
         return null;
@@ -26,7 +27,7 @@ export function startDrag(domId: string): number | null {
 }
 
 export function drag(domId: string, dx: number, dy: number, x: number, y: number) {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Dragging element not found');
         return;
@@ -52,7 +53,7 @@ export function endDrag(domId: string): {
     child: DomElement;
     parent: DomElement;
 } | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('End drag element not found');
         endAllDrag();
@@ -147,7 +148,7 @@ export function endAllDrag() {
     const draggingElements = document.querySelectorAll(
         `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
     );
-    for (const el of draggingElements) {
+    for (const el of Array.from(draggingElements)) {
         cleanUpElementAfterDragging(el as HTMLElement);
     }
     removeStub();

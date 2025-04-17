@@ -8,7 +8,7 @@ import { getFrameId } from './state';
 const processDebounced = debounce((root: HTMLElement) => {
     const frameId = getFrameId();
     if (!frameId) {
-        console.warn('Webview id not found, skipping dom processing');
+        console.warn('frameView id not found, skipping dom processing');
         return false;
     }
     const layerMap = buildLayerTree(root);
@@ -33,7 +33,7 @@ const processDebounced = debounce((root: HTMLElement) => {
 
 export function processDom(root: HTMLElement = document.body): boolean {
     if (!getFrameId()) {
-        console.warn('Webview id not found, skipping dom processing');
+        console.warn('frameView id not found, skipping dom processing');
         return false;
     }
     processDebounced(root);

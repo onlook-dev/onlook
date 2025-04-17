@@ -1,3 +1,4 @@
+
 export function getTheme() {
     try {
         return window?.localStorage.getItem('theme') || 'light';

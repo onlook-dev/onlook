@@ -3,14 +3,14 @@ import type { DomElement } from '@onlook/models';
 import type { ActionTarget, GroupContainer } from '@onlook/models/actions';
 import { getOrAssignDomId } from '../../ids';
 import { getDomElement } from '../helpers';
-import { elementFromDomId } from '/common/helpers';
+import { getHtmlElement } from '/common/helpers';
 
 export function groupElements(
     parent: ActionTarget,
     container: GroupContainer,
     children: Array<ActionTarget>,
 ): DomElement | null {
-    const parentEl = elementFromDomId(parent.domId);
+    const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn('Failed to find parent element', parent.domId);
         return null;
@@ -55,7 +55,7 @@ export function ungroupElements(
     container: GroupContainer,
     children: Array<ActionTarget>,
 ): DomElement | null {
-    const parentEl = elementFromDomId(parent.domId);
+    const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn('Failed to find parent element', parent.domId);
         return null;

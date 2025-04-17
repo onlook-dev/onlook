@@ -1,8 +1,7 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { StyleChange } from '@onlook/models';
-import type { CssNode, Declaration, Raw, Rule, SelectorList } from 'css-tree';
-import { cssTree } from '../bundles';
-import { selectorFromDomId } from '/common/helpers';
+import { generate, parse, walk, type CssNode, type Declaration, type Raw, type Rule, type SelectorList } from 'css-tree';
+import { getDomIdSelector } from '../../helpers';
 
 class CSSManager {
     private static instance: CSSManager;
@@ -11,7 +10,7 @@ class CSSManager {
     public injectDefaultStyles() {
         try {
             const styleElement = document.createElement('style');
-            styleElement.id = EditorAttributes.ONLOOK_DEFAULT_STYLESHEET_ID;
+            styleElement.id = EditorAttributes.ONLOOK_STYLESHEET_ID;
             styleElement.textContent = `
             [${EditorAttributes.DATA_ONLOOK_EDITING_TEXT}="true"] {
                 opacity: 0;
@@ -35,14 +34,14 @@ class CSSManager {
             EditorAttributes.ONLOOK_STYLESHEET_ID,
         ) || this.createStylesheet()) as HTMLStyleElement;
         styleElement.textContent = styleElement.textContent || '';
-        return cssTree.parse(styleElement.textContent);
+        return parse(styleElement.textContent);
     }
 
     private set stylesheet(ast: CssNode) {
         const styleElement: HTMLStyleElement = (document.getElementById(
             EditorAttributes.ONLOOK_STYLESHEET_ID,
         ) || this.createStylesheet()) as HTMLStyleElement;
-        styleElement.textContent = cssTree.generate(ast);
+        styleElement.textContent = generate(ast);
     }
 
     private createStylesheet(): HTMLStyleElement {
@@ -53,19 +52,19 @@ class CSSManager {
     }
 
     clear() {
-        this.stylesheet = cssTree.parse('');
+        this.stylesheet = parse('');
     }
 
     find(ast: CssNode, selectorToFind: string) {
         const matchingNodes: CssNode[] = [];
-        cssTree.walk(ast, {
+        walk(ast, {
             visit: 'Rule',
             enter: (node: CssNode) => {
                 if (node.type === 'Rule') {
                     const rule = node as Rule;
                     if (rule.prelude.type === 'SelectorList') {
                         (rule.prelude as SelectorList).children.forEach((selector) => {
-                            const selectorText = cssTree.generate(selector);
+                            const selectorText = generate(selector);
                             if (selectorText === selectorToFind) {
                                 matchingNodes.push(node);
                             }
@@ -78,7 +77,7 @@ class CSSManager {
     }
 
     public updateStyle(domId: string, style: Record<string, StyleChange>) {
-        const selector = selectorFromDomId(domId, false);
+        const selector = getDomIdSelector(domId, false);
         const ast = this.stylesheet;
         for (const [property, value] of Object.entries(style)) {
             const cssProperty = this.jsToCssProperty(property);
@@ -132,7 +131,7 @@ class CSSManager {
 
     updateRule(rule: Rule, property: string, value: string) {
         let found = false;
-        cssTree.walk(rule.block, {
+        walk(rule.block, {
             visit: 'Declaration',
             enter: (decl: Declaration) => {
                 if (decl.property === property) {
@@ -172,7 +171,7 @@ class CSSManager {
         }
         matchingNodes.forEach((node) => {
             if (node.type === 'Rule') {
-                cssTree.walk(node, {
+                walk(node, {
                     visit: 'Declaration',
                     enter: (decl: Declaration) => {
                         styles[this.cssToJsProperty(decl.property)] = (decl.value as Raw).value;
@@ -198,7 +197,7 @@ class CSSManager {
     }
 
     public removeStyles(domId: string, jsStyles: string[]) {
-        const selector = selectorFromDomId(domId, false);
+        const selector = getDomIdSelector(domId, false);
         const ast = this.stylesheet;
         const matchingNodes = this.find(ast, selector);
 
@@ -215,4 +214,4 @@ class CSSManager {
     }
 }
 
-export default CSSManager.getInstance();
+export const cssManager = CSSManager.getInstance();

@@ -1,11 +1,11 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { DomElement } from '@onlook/models';
+import { getHtmlElement } from '../../helpers';
 import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle } from './helpers';
-import { elementFromDomId } from '/common/helpers';
 
 export function editTextByDomId(domId: string, content: string): DomElement | null {
-    const el: HTMLElement | null = elementFromDomId(domId);
+    const el: HTMLElement | null = getHtmlElement(domId);
     if (!el) {
         return null;
     }
@@ -16,7 +16,7 @@ export function editTextByDomId(domId: string, content: string): DomElement | nu
 export function startEditingText(domId: string): {
     originalContent: string;
 } | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Start editing text failed. No element for selector:', domId);
         return null;
@@ -43,7 +43,7 @@ export function startEditingText(domId: string): {
 }
 
 export function editText(domId: string, content: string): DomElement | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Edit text failed. No element for selector:', domId);
         return null;
@@ -54,7 +54,7 @@ export function editText(domId: string, content: string): DomElement | null {
 }
 
 export function stopEditingText(domId: string): { newContent: string; domEl: DomElement } | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Stop editing text failed. No element for selector:', domId);
         return null;

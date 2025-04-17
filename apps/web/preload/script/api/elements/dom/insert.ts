@@ -1,11 +1,11 @@
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/constants';
 import type { DomElement } from '@onlook/models';
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
-import { getOrAssignDomId } from '../../ids';
-import cssManager from '../../style';
+import { assertNever } from '@onlook/utility';
+import { getHtmlElement } from '../../../helpers';
+import { getInstanceId, getOid, getOrAssignDomId } from '../../../helpers/ids';
+import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
-import { assertNever, elementFromDomId } from '/common/helpers';
-import { getInstanceId, getOid } from '/common/helpers/ids';
 
 function findClosestIndex(container: HTMLElement, y: number): number {
     const children = Array.from(container.children);
@@ -38,10 +38,10 @@ function findClosestIndex(container: HTMLElement, y: number): number {
     return y > closestMiddle ? closestIndex + 1 : closestIndex;
 }
 
-export function getInsertLocation(x: number, y: number): ActionLocation | undefined {
+export function getInsertLocation(x: number, y: number): ActionLocation | null {
     const targetEl = findNearestBlockLevelContainer(x, y);
     if (!targetEl) {
-        return;
+        return null;
     }
     const display = window.getComputedStyle(targetEl).display;
     const isStackOrGrid = display === 'flex' || display === 'grid';
@@ -82,7 +82,7 @@ export function insertElement(
     element: ActionElement,
     location: ActionLocation,
 ): DomElement | undefined {
-    const targetEl = elementFromDomId(location.targetDomId);
+    const targetEl = getHtmlElement(location.targetDomId);
     if (!targetEl) {
         console.warn(`Target element not found: ${location.targetDomId}`);
         return;
@@ -141,7 +141,7 @@ export function createElement(element: ActionElement) {
 }
 
 export function removeElement(location: ActionLocation): DomElement | null {
-    const targetEl = elementFromDomId(location.targetDomId);
+    const targetEl = getHtmlElement(location.targetDomId);
 
     if (!targetEl) {
         console.warn(`Target element not found: ${location.targetDomId}`);

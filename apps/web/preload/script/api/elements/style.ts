@@ -1,5 +1,5 @@
 import { jsonClone } from '@onlook/utility';
-import { elementFromDomId } from '../../helpers';
+import { getHtmlElement } from '../../helpers';
 
 export function getStyles(element: HTMLElement): {
     defined: Record<string, string>;
@@ -23,7 +23,7 @@ export function getStyles(element: HTMLElement): {
 }
 
 export function getComputedStyleByDomId(domId: string): Record<string, string> {
-    const element = elementFromDomId(domId);
+    const element = getHtmlElement(domId);
     if (!element) {
         return {};
     }

@@ -1,9 +1,9 @@
 import type { DomElement } from '@onlook/models';
-import { elementFromDomId, isValidHtmlElement } from '../../../helpers';
+import { getHtmlElement, isValidHtmlElement } from '../../../helpers';
 import { getDomElement } from '../helpers';
 
 export function moveElement(domId: string, newIndex: number): DomElement | undefined {
-    const el = elementFromDomId(domId) as HTMLElement | null;
+    const el = getHtmlElement(domId) as HTMLElement | null;
     if (!el) {
         console.warn(`Move element not found: ${domId}`);
         return;
@@ -20,7 +20,7 @@ export function moveElement(domId: string, newIndex: number): DomElement | undef
 }
 
 export function getElementIndex(domId: string): number {
-    const el = elementFromDomId(domId) as HTMLElement | null;
+    const el = getHtmlElement(domId) as HTMLElement | null;
     if (!el) {
         console.warn(`Element not found: ${domId}`);
         return -1;

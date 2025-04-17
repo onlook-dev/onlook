@@ -1,28 +1,28 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
+import { getHtmlElement } from '../../../helpers';
 import { getElementLocation } from '../helpers';
 import { getActionElement } from './helpers';
-import { elementFromDomId } from '/common/helpers';
 
-export function getRemoveActionFromDomId(
+export function getRemoveAction(
     domId: string,
     frameId: string,
-): RemoveElementAction | undefined {
-    const el = elementFromDomId(domId);
+): RemoveElementAction | null {
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Element not found for domId:', domId);
-        return;
+        return null;
     }
 
     const location = getElementLocation(el);
     if (!location) {
         console.warn('Failed to get location for element:', el);
-        return;
+        return null;
     }
 
-    const actionEl = getActionElement(el);
+    const actionEl = getActionElement(domId);
     if (!actionEl) {
         console.warn('Failed to get action element for element:', el);
-        return;
+        return null;
     }
 
     return {
