@@ -1,4 +1,4 @@
-import type { ProjectsManager } from '@/lib/projects';
+// import type { ProjectsManager } from '@/lib/projects';
 import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
@@ -17,21 +17,21 @@ export class ChatContext {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
-        reaction(
-            () => this.editorEngine.elements.selected,
-            () => this.getChatContext().then((context) => (this.context = context)),
-        );
-        reaction(
-            () => this.projectsManager.project?.folderPath,
-            (folderPath) => {
-                if (folderPath) {
-                    this.getChatContext().then((context) => (this.context = context));
-                }
-            },
-        );
+        // reaction(
+        //     () => this.editorEngine.elements.selected,
+        //     () => this.getChatContext().then((context) => (this.context = context)),
+        // );
+        // reaction(
+        //     () => this.projectsManager.project?.folderPath,
+        //     (folderPath) => {
+        //         if (folderPath) {
+        //             this.getChatContext().then((context) => (this.context = context));
+        //         }
+        //     },
+        // );
     }
 
     async getChatContext(): Promise<ChatMessageContext[]> {
@@ -132,7 +132,7 @@ export class ChatContext {
 
         try {
             const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, frameId);
-            if (!result || !result.image) {
+            if (!result?.image) {
                 console.error('Failed to capture screenshot');
                 return null;
             }

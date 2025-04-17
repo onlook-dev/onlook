@@ -1,8 +1,8 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { MainChannels } from '@onlook/constants';
+// import type { ProjectsManager } from '@/lib/projects';
+// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+// import { MainChannels } from '@onlook/constants';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
-import type { Project } from '@onlook/models/projects';
+// import type { Project } from '@onlook/models/projects';
 import type { CoreAssistantMessage, CoreToolMessage, CoreUserMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../..';
@@ -11,6 +11,7 @@ import { ToolChatMessageImpl } from '../message/tool';
 import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
+import type { Project } from '@onlook/models/project';
 const USE_MOCK = false;
 
 export class ConversationManager {
@@ -20,13 +21,13 @@ export class ConversationManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
-        reaction(
-            () => this.projectsManager.project,
-            (current) => this.getCurrentProjectConversations(current),
-        );
+        // reaction(
+        //     () => this.projectsManager.project,
+        //     (current) => this.getCurrentProjectConversations(current),
+        // );
     }
 
     async getCurrentProjectConversations(project: Project | null) {
@@ -144,7 +145,7 @@ export class ConversationManager {
     }
 
     async generateConversationSummary(): Promise<void> {
-        if (!this.current || !this.current.needsSummary()) {
+        if (!this.current?.needsSummary()) {
             return;
         }
 

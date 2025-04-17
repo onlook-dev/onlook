@@ -8,7 +8,7 @@ export class StreamResolver {
     requestId: string | null = null;
     errorMessage: string | null = null;
     rateLimited: UsageCheckResult | null = null;
-    id: string = 'stream';
+    id = 'stream';
 
     constructor() {
         makeAutoObservable(this);
@@ -16,10 +16,10 @@ export class StreamResolver {
     }
 
     listen() {
-        window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args: PartialStreamResponse) => {
-            const { payload } = args;
-            this.resolveContent(payload);
-        });
+        // window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args: PartialStreamResponse) => {
+        //     const { payload } = args;
+        //     this.resolveContent(payload);
+        // });
     }
 
     resolveContent(payload: TextStreamPart<ToolSet>) {
@@ -39,7 +39,7 @@ export class StreamResolver {
         if (lastPart.type === 'text' && resolvedPart.type === 'text') {
             const newLastPart = {
                 ...lastPart,
-                text: (lastPart as TextPart).text + (resolvedPart as TextPart).text,
+                text: (lastPart as TextPart).text + (resolvedPart).text,
             } satisfies TextPart;
             this.content[this.content.length - 1] = newLastPart;
             return;

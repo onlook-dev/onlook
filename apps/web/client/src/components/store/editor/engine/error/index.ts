@@ -7,7 +7,7 @@ export class ErrorManager {
     private frameIdToError: Record<string, ParsedError[]> = {};
     private terminalErrors: ParsedError[] = [];
 
-    shouldShowErrors: boolean = false;
+    shouldShowErrean = false;
 
     constructor(
         private editorEngine: EditorEngine,
