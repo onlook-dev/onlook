@@ -109,7 +109,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         const iframe = iframeRef.current;
         if (!iframe) return;
         handleIframeLoad({ currentTarget: iframe } as any);
-    }, [frame, handleIframeLoad, iframeRef.current]);
+    }, [frame, iframeRef.current]);
 
     return (
         <iframe

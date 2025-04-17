@@ -6,9 +6,9 @@ import type {
     GroupElementsAction,
     UngroupElementsAction,
 } from '@onlook/models/actions';
+import { createDomId, createOid } from '@onlook/utility';
 import type { EditorEngine } from '..';
 
-import { createDomId, createOid } from '@onlook/utility/src/id';
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) { }
 

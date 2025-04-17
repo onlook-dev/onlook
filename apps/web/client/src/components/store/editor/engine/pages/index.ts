@@ -1,8 +1,10 @@
 // import type { ProjectsManager } from '@/components/store/projects';
 // import { invokeMainChannel, sendAnalytics } from '@/components/store/utils';
 // import { MainChannels } from '@onlook/constants';
+import { sendAnalytics } from '@/utils/analytics';
 import type { PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
+import type { FrameData } from 'motion/react';
 import type { EditorEngine } from '..';
 import { doesRouteExist, normalizeRoute, validateNextJsRoute } from './helper';
 
@@ -78,7 +80,7 @@ export class PagesManager {
         return frameView ? this.activeRoutesByWebviewId[frameView.id] : undefined;
     }
 
-    private getActiveWebview(): Electron.WebviewTag | undefined {
+    private getActiveWebview(): FrameData | undefined {
         return this.editorEngine.frames.selected[0] ?? this.editorEngine.frames.getAll()[0];
     }
 
@@ -327,7 +329,7 @@ export class PagesManager {
 
             await frameView.loadURL(`${baseUrl}${path}`);
             this.setActivePath(frameView.id, originalPath);
-            await frameView.executeJavaScript('window.api?.processDom()');
+            await frameView.processDom();
 
             sendAnalytics('page navigate');
         } catch (error) {
@@ -340,7 +342,7 @@ export class PagesManager {
     }
 
     public handleWebviewUrlChange(frameId: string) {
-        const frameView = this.editorEngine.frames.getWebview(frameId);
+        const frameView = this.editorEngine.frames.get(frameId);
         if (!frameView) {
             return;
         }

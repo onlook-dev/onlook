@@ -1,3 +1,4 @@
+import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import type { DomElement, ElementPosition } from '@onlook/models';
 import type { MoveElementAction } from '@onlook/models/actions';
 import type React from 'react';
@@ -16,7 +17,7 @@ export class MoveManager {
         return !!this.dragOrigin;
     }
 
-    async start(el: DomElement, position: ElementPosition, frameView: Electron.WebviewTag) {
+    async start(el: DomElement, position: ElementPosition, frameView: WebFrameView) {
         if (this.editorEngine.chat.isWaiting) {
             return;
         }
@@ -32,9 +33,7 @@ export class MoveManager {
             this.editorEngine.history.startTransaction();
             return;
         } else {
-            this.originalIndex = await frameView.executeJavaScript(
-                `window.api?.startDrag('${el.domId}')`,
-            );
+            this.originalIndex = await frameView.startDrag(el.domId);
         }
 
         if (this.originalIndex === null || this.originalIndex === -1) {
@@ -53,7 +52,7 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.getWebview(this.dragTarget.frameId);
+        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
         if (!frameView) {
             console.error('No frameView found for drag');
             return;
@@ -70,9 +69,7 @@ export class MoveManager {
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
-            frameView.executeJavaScript(
-                `window.api?.drag('${this.dragTarget.domId}', ${dx}, ${dy}, ${x}, ${y})`,
-            );
+            frameView.drag(this.dragTarget.domId, dx, dy, x, y)
         }
     }
 
@@ -93,9 +90,7 @@ export class MoveManager {
             return;
         }
 
-        const offsetParent = await frameView.executeJavaScript(
-            `window.api?.getOffsetParent('${dragTarget.domId}')`,
-        );
+        const offsetParent = await frameView.getOffsetParent(dragTarget.domId);
         if (!offsetParent) {
             console.error('No offset parent found for drag');
             return;
@@ -125,7 +120,7 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.getWebview(this.dragTarget.frameId);
+        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
         if (!frameView) {
             console.error('No frameView found for drag end');
             this.endAllDrag();
@@ -136,9 +131,7 @@ export class MoveManager {
             newIndex: number;
             child: DomElement;
             parent: DomElement;
-        } | null = await frameView.executeJavaScript(
-            `window.api?.endDrag('${this.dragTarget.domId}')`,
-        );
+        } | null = await frameView.endDrag(this.dragTarget.domId);
 
         if (res) {
             const { child, parent, newIndex } = res;
@@ -158,7 +151,7 @@ export class MoveManager {
 
     endAllDrag() {
         this.editorEngine.frames.webviews.forEach((frameView) => {
-            frameView.frameView.executeJavaScript(`window.api?.endAllDrag()`);
+            frameView.view.endAllDrag();
         });
     }
 
@@ -176,31 +169,25 @@ export class MoveManager {
     }
 
     async shiftElement(element: DomElement, direction: 'up' | 'down'): Promise<void> {
-        const frameView = this.editorEngine.frames.getWebview(element.frameId);
+        const frameView = this.editorEngine.frames.get(element.frameId);
         if (!frameView) {
             return;
         }
 
         // Get current index and parent
-        const currentIndex = await frameView.executeJavaScript(
-            `window.api?.getElementIndex('${element.domId}')`,
-        );
+        const currentIndex = await frameView.getElementIndex(element.domId);
 
         if (currentIndex === -1) {
             return;
         }
 
-        const parent: DomElement | null = await frameView.executeJavaScript(
-            `window.api?.getParentElement('${element.domId}')`,
-        );
+        const parent: DomElement | null = await frameView.getParentElement(element.domId);
         if (!parent) {
             return;
         }
 
         // Get filtered children count for accurate index calculation
-        const childrenCount = await frameView.executeJavaScript(
-            `window.api?.getChildrenCount('${parent.domId}')`,
-        );
+        const childrenCount = await frameView.getChildrenCount(parent.domId);
 
         // Calculate new index based on direction and bounds
         const newIndex =

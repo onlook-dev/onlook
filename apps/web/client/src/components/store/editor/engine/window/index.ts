@@ -39,7 +39,7 @@ export class WindowManager {
         name?: string;
         image?: string;
     } | null> {
-        // const frameView = this.webviews.getWebview(frameId);
+        // const frameView = this.editorEngine.frames.get(frameId);
         // if (!frameView) {
         //     console.error('No frameView found');
         //     return null;
@@ -74,26 +74,26 @@ export class WindowManager {
     }
 
     canDeleteWindow() {
-        // return this.canvas.frames.length > 1;
+        return this.editorEngine.frames.getAll().length > 1;
     }
 
     deleteWindow(id?: string) {
-        // if (this.canvas.frames.length === 1) {
+        // if (!this.canDeleteWindow()) {
         //     console.error('Cannot delete the last window');
         //     return;
         // }
-        // let settings: Frames | null = null;
+        // let settings = null;
         // if (id) {
-        //     settings = this.canvas.getFrame(id) || null;
+        //     settings = this.editorEngine.frames.get(id);
         //     if (!settings) {
         //         console.error('Window not found');
         //         return;
         //     }
-        // } else if (this.webviews.selected.length === 0) {
+        // } else if (this.editorEngine.frames.selected.length === 0) {
         //     console.error('No window selected');
         //     return;
         // } else {
-        //     settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
+        //     settings = this.editorEngine.frames.get(this.editorEngine.frames.selected[0].id) || null;
         // }
         // if (!settings) {
         //     console.error('Window not found');

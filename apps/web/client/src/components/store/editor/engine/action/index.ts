@@ -128,7 +128,7 @@ export class ActionManager {
 
     private removeElement({ targets, location }: RemoveElementAction) {
         targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.getWebview(target.frameId);
+            const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -141,7 +141,7 @@ export class ActionManager {
 
     private moveElement({ targets, location }: MoveElementAction) {
         targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.getWebview(target.frameId);
+            const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;

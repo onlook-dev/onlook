@@ -1,3 +1,4 @@
+import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { DefaultSettings, EditorAttributes } from '@onlook/constants';
 import type { DropElementProperties, ElementPosition, ImageContentData, RectDimensions } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
@@ -69,7 +70,7 @@ export class InsertManager {
         this.updateInsertRect(currentPos);
     }
 
-    end(e: React.MouseEvent<HTMLDivElement>, frameView: Electron.WebviewTag | null) {
+    end(e: React.MouseEvent<HTMLDivElement>, frameView: WebFrameView | null) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
@@ -138,7 +139,7 @@ export class InsertManager {
     }
 
     async insertElement(
-        frameView: Electron.WebviewTag,
+        frameView: WebFrameView,
         newRect: RectDimensions,
         origin: ElementPosition,
     ) {
@@ -151,18 +152,16 @@ export class InsertManager {
     }
 
     async createInsertAction(
-        frameView: Electron.WebviewTag,
+        frameView: WebFrameView,
         newRect: RectDimensions,
         origin: ElementPosition,
     ): Promise<InsertElementAction | undefined> {
-        const location: ActionLocation | undefined = await frameView.executeJavaScript(
-            `window.api?.getInsertLocation(${origin.x}, ${origin.y})`,
-        );
+        const location = await frameView.getInsertLocation(origin.x, origin.y);
         if (!location) {
             console.error('Insert position not found');
             return;
         }
-        const mode = this.editorEngine.mode;
+        const mode = this.editorEngine.state.editorMode;
         const domId = createDomId();
         const oid = createOid();
         const width = Math.max(Math.round(newRect.width), 30);
@@ -224,7 +223,7 @@ export class InsertManager {
             return;
         }
 
-        const targetElement = await frame.view.getElementAtLoc(dropPosition.x, dropPosition.y);
+        const targetElement = await frame.view.getElementAtLoc(dropPosition.x, dropPosition.y, false);
 
         if (!targetElement) {
             console.error('Failed to get element at drop position');

@@ -1,4 +1,3 @@
-import { createDomId, createOid } from '@/lib/utils';
 import { EditorAttributes } from '@onlook/constants';
 import type { DomElement } from '@onlook/models';
 import type {
@@ -7,6 +6,7 @@ import type {
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
+import { createDomId, createOid } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
@@ -26,16 +26,18 @@ export class CopyManager {
             return;
         }
         const selectedEl = this.editorEngine.elements.selected[0];
+        if (!selectedEl) {
+            console.error('Failed to copy element');
+            return;
+        }
         const frameId = selectedEl.frameId;
-        const frameView = this.editorEngine.frames.getWebview(frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(frameId);
+        if (!frameData) {
             console.error('Failed to get frameView');
             return;
         }
 
-        const targetEl: ActionElement | null = await frameView.executeJavaScript(
-            `window.api?.getActionElement('${selectedEl.domId}')`,
-        );
+        const targetEl: ActionElement | null = await frameData.view.getActionElement(selectedEl.domId);
         if (!targetEl) {
             console.error('Failed to copy element');
             return;
@@ -69,6 +71,11 @@ export class CopyManager {
         }
 
         const selectedEl = this.editorEngine.elements.selected[0];
+
+        if (!selectedEl) {
+            console.error('Failed to paste element');
+            return;
+        }
 
         const targets: Array<ActionTarget> = this.editorEngine.elements.selected.map(
             (selectedEl) => {
@@ -168,8 +175,8 @@ export class CopyManager {
 
     async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
         const frameId = selectedEl.frameId;
-        const frameView = this.editorEngine.frames.getWebview(frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(frameId);
+        if (!frameData) {
             console.error('Failed to get frameView');
             return;
         }
@@ -180,9 +187,7 @@ export class CopyManager {
             selectedEl.oid === this.copied?.element.oid;
 
         if (insertAsSibling) {
-            const location: ActionLocation | null = await frameView.executeJavaScript(
-                `window.api?.getActionLocation('${selectedEl.domId}')`,
-            );
+            const location: ActionLocation | null = await frameData.view.getActionLocation(selectedEl.domId);
             if (!location) {
                 console.error('Failed to get location');
                 return;

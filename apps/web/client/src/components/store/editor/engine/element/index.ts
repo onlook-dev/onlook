@@ -1,4 +1,4 @@
-import type { DomElement, Frame } from '@onlook/models';
+import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -70,19 +70,17 @@ export class ElementsManager {
         }
     }
 
-    async refreshSelectedElements(frame: Frame) {
-        // const newSelected: DomElement[] = [];
-        // for (const el of this.selected) {
-        //     const newEl: DomElement | null = await frame.frameView.executeJavaScript(
-        //         `window.api?.getElementByDomId('${el.domId}', true)`,
-        //     );
-        //     if (!newEl) {
-        //         console.error('Element not found');
-        //         continue;
-        //     }
-        //     newSelected.push(newEl);
-        // }
-        // this.click(newSelected, frame);
+    async refreshSelectedElements(frame: FrameData) {
+        const newSelected: DomElement[] = [];
+        for (const el of this.selected) {
+            const newEl: DomElement | null = await frame.view.getElementByDomId(el.domId, true);
+            if (!newEl) {
+                console.error('Element not found');
+                continue;
+            }
+            newSelected.push(newEl);
+        }
+        this.click(newSelected, frame);
     }
 
     setHoveredElement(element: DomElement) {
@@ -119,31 +117,29 @@ export class ElementsManager {
                 return;
             }
 
-            // const removeAction = (await view.executeJavaScript(
-            //     `window.api?.getRemoveAction('${selectedEl.domId}', '${frameId}')`,
-            // )) as RemoveElementAction | null;
-            // if (!removeAction) {
-            //     console.error('Remove action not found');
-            //     toast({
-            //         title: 'Cannot delete element',
-            //         description: 'Remove action not found. Try refreshing the page.',
-            //         variant: 'destructive',
-            //     });
-            //     return;
-            // }
-            // const oid = selectedEl.instanceId || selectedEl.oid;
-            // const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            // if (!codeBlock) {
-            //     toast({
-            //         title: 'Cannot delete element',
-            //         description: 'Code block not found. Try refreshing the page.',
-            //         variant: 'destructive',
-            //     });
-            //     return;
-            // }
+            const removeAction = await frameData.view.getRemoveAction(selectedEl.domId, frameId);
+            if (!removeAction) {
+                console.error('Remove action not found');
+                toast({
+                    title: 'Cannot delete element',
+                    description: 'Remove action not found. Try refreshing the page.',
+                    variant: 'destructive',
+                });
+                return;
+            }
+            const oid = selectedEl.instanceId || selectedEl.oid;
+            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            if (!codeBlock) {
+                toast({
+                    title: 'Cannot delete element',
+                    description: 'Code block not found. Try refreshing the page.',
+                    variant: 'destructive',
+                });
+                return;
+            }
 
-            // removeAction.codeBlock = codeBlock;
-            // this.editorEngine.action.run(removeAction);
+            removeAction.codeBlock = codeBlock;
+            this.editorEngine.action.run(removeAction);
         }
     }
 
@@ -154,44 +150,40 @@ export class ElementsManager {
         shouldDelete: boolean;
         error?: string;
     }> {
-        // const instanceId = selectedEl.instanceId;
+        const instanceId = selectedEl.instanceId;
 
-        // if (!instanceId) {
-        //     const {
-        //         dynamicType,
-        //         coreType,
-        //     }: {
-        //         dynamicType: DynamicType;
-        //         coreType: CoreElementType;
-        //     } = await frameData.view.executeJavaScript(
-        //         `window.api?.getElementType('${selectedEl.domId}')`,
-        //     );
+        if (!instanceId) {
+            const result = await frameData.view.getElementType(selectedEl.domId);
+            const {
+                dynamicType,
+                coreType,
+            } = result;
 
-        //     if (coreType) {
-        //         const CORE_ELEMENTS_MAP: Record<CoreElementType, string> = {
-        //             'component-root': 'Component Root',
-        //             'body-tag': 'Body Tag',
-        //         };
+            if (coreType) {
+                const CORE_ELEMENTS_MAP: Record<CoreElementType, string> = {
+                    'component-root': 'Component Root',
+                    'body-tag': 'Body Tag',
+                };
 
-        //         return {
-        //             shouldDelete: false,
-        //             error: `This is a ${CORE_ELEMENTS_MAP[coreType]} and cannot be deleted`,
-        //         };
-        //     }
+                return {
+                    shouldDelete: false,
+                    error: `This is a ${CORE_ELEMENTS_MAP[coreType]} and cannot be deleted`,
+                };
+            }
 
-        //     if (dynamicType) {
-        //         const DYNAMIC_TYPES_MAP: Record<DynamicType, string> = {
-        //             array: 'Array',
-        //             conditional: 'Conditional',
-        //             unknown: 'Unknown',
-        //         };
+            if (dynamicType) {
+                const DYNAMIC_TYPES_MAP: Record<DynamicType, string> = {
+                    array: 'Array',
+                    conditional: 'Conditional',
+                    unknown: 'Unknown',
+                };
 
-        //         return {
-        //             shouldDelete: false,
-        //             error: `This element is a(n) ${DYNAMIC_TYPES_MAP[dynamicType]} and cannot be deleted`,
-        //         };
-        //     }
-        // }
+                return {
+                    shouldDelete: false,
+                    error: `This element is a(n) ${DYNAMIC_TYPES_MAP[dynamicType]} and cannot be deleted`,
+                };
+            }
+        }
 
         return {
             shouldDelete: true,

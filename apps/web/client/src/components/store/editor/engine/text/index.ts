@@ -2,6 +2,7 @@
 // import { MainChannels } from '@onlook/constants';
 // import type { WebviewTag } from 'electron';
 
+import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import type { DomElement, ElementPosition } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
 import type { EditorEngine } from '..';
@@ -18,11 +19,8 @@ export class TextEditingManager {
         return this.targetDomEl !== null;
     }
 
-    async start(el: DomElement, frameView: WebviewTag) {
-        const isEditable: boolean | null = await invokeMainChannel(
-            MainChannels.IS_CHILD_TEXT_EDITABLE,
-            { oid: el.oid },
-        );
+    async start(el: DomElement, frameView: WebFrameView) {
+        const isEditable: boolean | null = await frameView.isChildTextEditable(el.oid);
         if (isEditable !== true) {
             toast({
                 title:
@@ -34,9 +32,7 @@ export class TextEditingManager {
             return;
         }
 
-        const res: { originalContent: string } | null = await frameView.executeJavaScript(
-            `window.api?.startEditingText('${el.domId}')`,
-        );
+        const res: { originalContent: string } | null = await frameView.startEditingText(el.domId);
 
         if (!res) {
             console.error('Failed to start editing text, no result returned');
@@ -67,14 +63,12 @@ export class TextEditingManager {
             console.error('No target dom element to edit');
             return;
         }
-        const frameView = this.editorEngine.frames.get(this.targetDomEl.frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
+        if (!frameData) {
             console.error('No frameView found for text editing');
             return;
         }
-        const domEl: DomElement | null = await frameView.executeJavaScript(
-            `window.api?.editText('${this.targetDomEl.domId}', '${jsStringEscape(newContent)}')`,
-        );
+        const domEl: DomElement | null = await frameData.view.editText(this.targetDomEl.domId, newContent);
         if (!domEl) {
             console.error('Failed to edit text. No dom element returned');
             return;
@@ -87,15 +81,13 @@ export class TextEditingManager {
             console.error('No target dom element to stop editing');
             return;
         }
-        const frameView = this.editorEngine.frames.getWebview(this.targetDomEl.frameId);
+        const frameView = this.editorEngine.frames.get(this.targetDomEl.frameId);
         if (!frameView) {
             console.error('No frameView found for end text editing');
             return;
         }
         const res: { newContent: string; domEl: DomElement } | null =
-            await frameView.executeJavaScript(
-                `window.api?.stopEditingText('${this.targetDomEl.domId}')`,
-            );
+            await frameView.stopEditingText(this.targetDomEl.domId);
         if (!res) {
             console.error('Failed to stop editing text. No result returned');
             return;
@@ -112,7 +104,7 @@ export class TextEditingManager {
         this.shouldNotStartEditing = false;
     }
 
-    handleEditedText(domEl: DomElement, newContent: string, frameView: WebviewTag) {
+    handleEditedText(domEl: DomElement, newContent: string, frameView: WebFrameView) {
         this.editorEngine.history.push({
             type: 'edit-text',
             targets: [
@@ -139,24 +131,20 @@ export class TextEditingManager {
         }
         const selectedEl = selected[0];
         const frameId = selectedEl.frameId;
-        const frameView = this.editorEngine.frames.getWebview(frameId);
+        const frameView = this.editorEngine.frames.get(frameId);
         if (!frameView) {
             return;
         }
 
-        const domEl = await frameView.executeJavaScript(
-            `window.api?.getElementByDomId('${selectedEl.domId}', true)`,
-        );
+        const domEl = await frameView.getElementByDomId(selectedEl.domId, true);
         if (!domEl) {
             return;
         }
         this.start(domEl, frameView);
     }
 
-    async editElementAtLoc(pos: ElementPosition, frameView: WebviewTag) {
-        const el: DomElement = await frameView.executeJavaScript(
-            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, true)`,
-        );
+    async editElementAtLoc(pos: ElementPosition, frameView: WebFrameView) {
+        const el: DomElement = await frameView.getElementAtLoc(pos.x, pos.y, true);
         if (!el) {
             console.error('Failed to get element at location');
             return;

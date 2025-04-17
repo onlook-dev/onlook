@@ -204,8 +204,8 @@ export class AstManager {
         this.mappings.updateDocument(frame.id, root.ownerDocument);
     }
 
-    async getBodyFromFrameView(frame: WebFrameView) {
-        const htmlString = await frame.frameView.executeJavaScript('document.documentElement.outerHTML');
+    async getBodyFromFrameView(view: WebFrameView) {
+        const htmlString = await view.executeJavaScript('document.documentElement.outerHTML');
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, 'text/html');
         return doc.body;
