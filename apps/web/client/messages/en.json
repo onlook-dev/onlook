@@ -68,7 +68,7 @@
             "title": "What kind of website do you want to make?",
             "description": "Tell us a bit about your project. Be as detailed as possible.",
             "input": {
-                "placeholder": "Paste a reference screenshot, write a novel, get creative...",
+                "placeholder": "Paste a reference screenshot, write a novel, get creative...\nlink (www.*****.com or anything with an https://) won't work.",
                 "imageUpload": "Upload Image Reference",
                 "fileReference": "File Reference",
                 "submit": "Start building your site"
