@@ -168,7 +168,7 @@ export class ImageManager {
         }
     }
 
-    dispose() {
+    clear() {
         this.images = [];
     }
 }

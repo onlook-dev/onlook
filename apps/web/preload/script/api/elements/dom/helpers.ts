@@ -101,7 +101,11 @@ export function getElementType(domId: string): {
     return { dynamicType, coreType };
 }
 
-export function setElementType(domId: string, dynamicType: string, coreElementType: string) {
+export function setElementType(
+    domId: string,
+    dynamicType: DynamicType | null,
+    coreElementType: CoreElementType | null,
+) {
     const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
 
     if (el) {

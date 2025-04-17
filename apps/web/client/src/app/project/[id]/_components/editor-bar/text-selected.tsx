@@ -11,7 +11,7 @@ import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
 import { StateDropdown } from "./dropdowns/state-dropdown";
 import { ViewButtons } from "./panels/panel-bar/bar";
-
+import { InputSeparator } from "./separator";
 type EditorMode = "STATE" | "MEDIUM" | "TYPOGRAPHY" | "POSITION" | "TRANSFORMS";
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
@@ -33,14 +33,14 @@ export const TextSelected = () => {
         >
             <div className="flex items-center gap-1">
                 <StateDropdown />
-                <div className="h-6 w-[1px] bg-border" />
+                <InputSeparator />
                 <Button
                     variant="ghost"
                     className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
                 >
                     <span className="text-sm truncate">{selectedFont}</span>
                 </Button>
-                <div className="h-6 w-[1px] bg-border" />
+                <InputSeparator />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
@@ -93,7 +93,7 @@ export const TextSelected = () => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <div className="h-6 w-[1px] bg-border" />
+                <InputSeparator />
                 <div className="flex items-center gap-0.5">
                     <Button
                         variant="ghost"
@@ -144,7 +144,7 @@ export const TextSelected = () => {
                         <Icons.Plus className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="h-6 w-[1px] bg-border" />
+                <InputSeparator />
                 <Button
                     variant="ghost"
                     size="icon"

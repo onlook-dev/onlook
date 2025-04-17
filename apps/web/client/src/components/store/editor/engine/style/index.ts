@@ -159,7 +159,7 @@ export class StyleManager {
         this.selectedStyle = newSelectedStyle;
     }
 
-    dispose() {
+    clear() {
         // Clear state
         this.selectedStyle = null;
         this.domIdToStyle = new Map();

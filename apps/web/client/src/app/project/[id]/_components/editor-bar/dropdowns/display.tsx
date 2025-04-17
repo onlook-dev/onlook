@@ -1,5 +1,6 @@
 "use client";
 
+import { useEditorEngine } from "@/components/store";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
@@ -12,6 +13,8 @@ import { InputIcon } from "../inputs/input-icon";
 import { InputRadio } from "../inputs/input-radio";
 
 export const Display = () => {
+    const editorEngine = useEditorEngine();
+
     const [layoutType, setLayoutType] = useState<"--" | "Flex" | "Grid">("Flex");
     const [direction, setDirection] = useState<"vertical" | "horizontal">("horizontal");
     const [verticalAlign, setVerticalAlign] = useState<"top" | "center" | "bottom" | "space-between">("center");
@@ -61,7 +64,10 @@ export const Display = () => {
                         <InputRadio
                             options={typeOptions}
                             value={layoutType}
-                            onChange={(value) => setLayoutType(value as "--" | "Flex" | "Grid")}
+                            onChange={(value) => {
+                                setLayoutType(value as "--" | "Flex" | "Grid")
+                                editorEngine.style.update("display", 'flex')
+                            }}
                             className="flex-1"
                         />
                     </div>

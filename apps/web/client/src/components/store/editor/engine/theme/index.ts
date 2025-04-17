@@ -523,7 +523,7 @@ export class ThemeManager {
         return undefined;
     }
 
-    dispose() {
+    clear() {
         this.brandColors = {};
         this.defaultColors = {};
     }

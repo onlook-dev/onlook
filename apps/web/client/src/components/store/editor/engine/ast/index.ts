@@ -54,7 +54,7 @@ export class AstManager {
             callback(node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.mappings.getLayerNode(frameId, node.children[i]);
+                    const childLayerNode = this.mappings.getLayerNode(frameId, node.children[i] ?? '');
                     if (childLayerNode) {
                         stack.push(childLayerNode);
                     }
@@ -97,8 +97,8 @@ export class AstManager {
 
         frame.view.setElementType(
             node.domId,
-            templateNode.dynamicType ? templateNode.dynamicType : undefined,
-            templateNode.coreElementType ? templateNode.coreElementType : undefined
+            templateNode.dynamicType,
+            templateNode.coreElementType
         );
         this.findNodeInstance(frameId, node, node, templateNode);
     }

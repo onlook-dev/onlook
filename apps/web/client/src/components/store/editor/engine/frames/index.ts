@@ -97,7 +97,7 @@ export class FramesManager {
         this.frameIdToData = new Map(this.frameIdToData);
     }
 
-    dispose() {
+    clear() {
         this.deregisterAll();
 
         // Run all disposers

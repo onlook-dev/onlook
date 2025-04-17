@@ -1,44 +1,39 @@
 import { makeAutoObservable } from 'mobx';
 
+import { ActionManager } from './action';
+import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
-import { type ChatManager } from './chat';
-import { type CodeManager } from './code';
+import { ChatManager } from './chat';
+import { CodeManager } from './code';
+import { CopyManager } from './copy';
 import { ElementsManager } from './element';
-import { type ErrorManager } from './error';
+import { ErrorManager } from './error';
 import { FontManager } from './font';
 import { FramesManager } from './frames';
+import { GroupManager } from './group';
 import { HistoryManager } from './history';
-import { type ImageManager } from './image';
+import { ImageManager } from './image';
+import { InsertManager } from './insert';
+import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
+import { ProjectInfoManager } from './projectinfo';
 import { StateManager } from './state';
+import { StyleManager } from './style';
+import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
-
-// import { CopyManager } from './copy';
-import { GroupManager } from './group';
-// import { InsertManager } from './insert';
-// import { MoveManager } from './move';
-// import { StyleManager } from './style';
-// import { TextEditingManager } from './text';
-// import { ActionManager } from './action';
-import { AstManager } from './ast';
-// import { ProjectInfoManager } from './projectinfo';
-
-// import { nanoid } from 'nanoid/non-secure';
 // import type { ProjectsManager } from '@/lib/projects';
 // import type { UserManager } from '@/lib/user';
-// import { invokeMainChannel } from '@/lib/utils';
 
 export class EditorEngine {
-    readonly frames: FramesManager;
-
     readonly chat: ChatManager;
     readonly code: CodeManager;
-    readonly pages: PagesManager;
     readonly error: ErrorManager;
     readonly image: ImageManager;
+    readonly frames: FramesManager;
     readonly theme: ThemeManager;
     readonly font: FontManager;
+    readonly pages: PagesManager;
 
     readonly canvas: CanvasManager = new CanvasManager();
     readonly state: StateManager = new StateManager();
@@ -46,15 +41,15 @@ export class EditorEngine {
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
 
-    // readonly action: ActionManager = new ActionManager(this);
-    // readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
-    // readonly text: TextEditingManager = new TextEditingManager(this);
-    // readonly insert: InsertManager = new InsertManager(this);
-    // readonly move: MoveManager = new MoveManager(this);
-    // readonly style: StyleManager = new StyleManager(this);
-    // readonly copy: CopyManager = new CopyManager(this);
+    readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
+    readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly insert: InsertManager = new InsertManager(this);
+    readonly move: MoveManager = new MoveManager(this);
+    readonly copy: CopyManager = new CopyManager(this);
     readonly group: GroupManager = new GroupManager(this);
     readonly ast: AstManager = new AstManager(this);
+    readonly action: ActionManager = new ActionManager(this);
+    readonly style: StyleManager = new StyleManager(this);
 
     // TODO: Window, Frames, Webviews should be Frames
     // readonly window: WindowManager = new WindowManager(this);
@@ -90,36 +85,34 @@ export class EditorEngine {
     //     return this.pagesManager;
     // }
 
-    dispose() {
+    clear() {
+        // TODO: Choose dispose or clear
         this.elements.clear();
-        this.frames.dispose();
-
-        // this.history.clear();
-        // this.action.dispose();
-        // this.overlay.clear();
+        this.frames.clear();
+        this.history.clear();
+        this.action.clear();
+        this.overlay.clear();
         this.ast.clear();
-        // this.textEditing.clean();
-        // this.insert.dispose();
-        // this.move.dispose();
-        // this.style.dispose();
-        // this.copy.dispose();
-        // this.group.dispose();
-
-        // this.canvasManager?.clear();
-        // this.imageManager?.dispose();
-        // this.themeManager?.dispose();
-        this.font?.dispose();
-        // this.webviews.deregisterAll();
-        // this.errors.clear();
-        // this.chatManager?.dispose();
-        // this.codeManager?.dispose();
-
+        this.text.clean();
+        this.insert.clear();
+        this.move.clear();
+        this.style.clear();
+        this.copy.clear();
+        this.group.clear();
+        this.canvas.clear();
+        this.image.clear();
+        this.theme.clear();
+        this.font.clear();
+        this.pages.clear();
+        this.chat.clear();
+        this.code.clear();
+        this.error.clear();
     }
 
     clearUI() {
         this.overlay.clear();
-        // this.elements.clear();
-        // this.webviews.deselectAll();
+        this.elements.clear();
+        this.frames.deselectAll();
     }
 
     inspect() {
@@ -137,11 +130,8 @@ export class EditorEngine {
     }
 
     async refreshLayers() {
-        // const webviews = this.webviews.webviews;
-        // if (webviews.size === 0) {
-        //     return;
-        // }
-        // const frameView = Array.from(webviews.values())[0].frameView;
-        // frameView.processDom();
+        for (const frame of this.frames.getAll()) {
+            await frame.view.processDom();
+        }
     }
 }

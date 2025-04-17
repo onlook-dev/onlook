@@ -12,6 +12,7 @@ import { Radius } from "./dropdowns/radius";
 import { StateDropdown } from "./dropdowns/state-dropdown";
 import { Width } from "./dropdowns/width";
 import { ViewButtons } from "./panels/panel-bar/bar";
+import { InputSeparator } from "./separator";
 
 export const ImgSelected = () => {
     const [activeTab, setActiveTab] = useState('individual');
@@ -21,39 +22,39 @@ export const ImgSelected = () => {
 
             <StateDropdown />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Width />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Height />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Padding />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Margin />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Radius />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <ImgFit />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Border />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <ColorBackground />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <ImageBackground />
 

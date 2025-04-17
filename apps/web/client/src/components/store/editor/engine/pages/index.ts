@@ -362,7 +362,7 @@ export class PagesManager {
         }
     }
 
-    dispose() {
+    clear() {
         this.pages = [];
         this.currentPath = '';
         this.editorEngine = null as any;

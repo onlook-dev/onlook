@@ -1,6 +1,6 @@
-import { sendToWebview } from '@/lib/utils';
 import { sendAnalytics } from '@/utils/analytics';
-import { WebviewChannels } from '@onlook/constants';
+import type { DomElement, LayerNode } from '@onlook/models';
+import { EditorMode } from '@onlook/models';
 import {
     type Action,
     type EditTextAction,
@@ -16,6 +16,7 @@ import {
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
 import type { EditorEngine } from '..';
+import type { FrameData } from '../frames';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) { }
@@ -31,7 +32,7 @@ export class ActionManager {
             return;
         }
         this.dispatch(action);
-        this.editorEngine.code.write(action);
+        // this.editorEngine.code.write(action);
         sendAnalytics('undo');
     }
 
@@ -41,7 +42,7 @@ export class ActionManager {
             return;
         }
         this.dispatch(action);
-        this.editorEngine.code.write(action);
+        // this.editorEngine.code.write(action);
         sendAnalytics('redo');
     }
 
@@ -81,10 +82,11 @@ export class ActionManager {
         }
     }
 
-    updateStyle({ targets }: UpdateStyleAction) {
-        targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.get(target.frameId);
-            if (!frameView) {
+    async updateStyle({ targets }: UpdateStyleAction) {
+        let frameIdToDomEls: Record<string, DomElement[]> = {};
+        for (const target of targets) {
+            const frameData = this.editorEngine.frames.get(target.frameId);
+            if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
             }
@@ -101,14 +103,33 @@ export class ActionManager {
                 }),
             );
 
-            sendToWebview(frameView, WebviewChannels.UPDATE_STYLE, {
-                domId: target.domId,
-                change: {
-                    ...target.change,
-                    updated: convertedChange,
-                },
-            });
-        });
+            const change = {
+                ...target.change,
+                updated: convertedChange,
+            };
+
+            const domEl = await frameData.view.updateStyle(target.domId, change);
+            if (!domEl) {
+                console.error('Failed to update style');
+                continue;
+            }
+            frameIdToDomEls[target.frameId] = [domEl];
+
+        }
+
+        console.log('frameIdToDomEls', frameIdToDomEls);
+
+        // Refresh edited elements
+        // TODO: This is a hack. Consider updating the element style and layout without using click.
+        for (const [frameId, domEls] of Object.entries(frameIdToDomEls)) {
+            this.editorEngine.state.editorMode = EditorMode.DESIGN;
+            const frameData = this.editorEngine.frames.get(frameId);
+            if (!frameData) {
+                console.error('Failed to get frameData');
+                continue;
+            }
+            this.editorEngine.elements.click(domEls, frameData);
+        }
     }
 
     private insertElement({ targets, element, editText, location }: InsertElementAction) {
@@ -118,11 +139,11 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(frameView, WebviewChannels.INSERT_ELEMENT, {
-                element,
-                location,
-                editText,
-            });
+            // sendToWebview(frameView, WebviewChannels.INSERT_ELEMENT, {
+            //     element,
+            //     location,
+            //     editText,
+            // });
         });
     }
 
@@ -133,9 +154,9 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(frameView, WebviewChannels.REMOVE_ELEMENT, {
-                location,
-            });
+            // sendToWebview(frameView, WebviewChannels.REMOVE_ELEMENT, {
+            //     location,
+            // });
         });
     }
 
@@ -146,10 +167,10 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(frameView, WebviewChannels.MOVE_ELEMENT, {
-                domId: target.domId,
-                newIndex: location.index,
-            });
+            // sendToWebview(frameView, WebviewChannels.MOVE_ELEMENT, {
+            //     domId: target.domId,
+            //     newIndex: location.index,
+            // });
         });
     }
 
@@ -160,10 +181,10 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(frameView, WebviewChannels.EDIT_ELEMENT_TEXT, {
-                domId: target.domId,
-                content: newContent,
-            });
+            // sendToWebview(frameView, WebviewChannels.EDIT_ELEMENT_TEXT, {
+            //     domId: target.domId,
+            //     content: newContent,
+            // });
         });
     }
 
@@ -173,7 +194,7 @@ export class ActionManager {
             console.error('Failed to get frameView');
             return;
         }
-        sendToWebview(frameView, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
+        // sendToWebview(frameView, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
     }
 
     private ungroupElements({ parent, container, children }: UngroupElementsAction) {
@@ -182,7 +203,7 @@ export class ActionManager {
             console.error('Failed to get frameView');
             return;
         }
-        sendToWebview(frameView, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
+        // sendToWebview(frameView, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
     }
 
     private insertImage({ targets, image }: InsertImageAction) {
@@ -192,10 +213,10 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(frameView, WebviewChannels.INSERT_IMAGE, {
-                domId: target.domId,
-                image,
-            });
+            // sendToWebview(frameView, WebviewChannels.INSERT_IMAGE, {
+            //     domId: target.domId,
+            //     image,
+            // });
         });
     }
 
@@ -206,11 +227,22 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(frameView, WebviewChannels.REMOVE_IMAGE, {
-                domId: target.domId,
-            });
+            // sendToWebview(frameView, WebviewChannels.REMOVE_IMAGE, {
+            //     domId: target.domId,
+            // });
         });
     }
 
-    dispose() { }
+    async refreshAndClickMutatedElement(
+        domEl: DomElement,
+        newMap: Map<string, LayerNode>,
+        frameData: FrameData,
+    ) {
+        this.editorEngine.state.editorMode = EditorMode.DESIGN;
+        await this.editorEngine.ast.refreshAstDoc(frameData.view);
+        this.editorEngine.elements.click([domEl], frameData);
+        this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
+    }
+
+    clear() { }
 }

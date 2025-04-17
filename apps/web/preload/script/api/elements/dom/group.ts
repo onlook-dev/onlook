@@ -1,9 +1,9 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { DomElement } from '@onlook/models';
 import type { ActionTarget, GroupContainer } from '@onlook/models/actions';
-import { getOrAssignDomId } from '../../ids';
+import { getHtmlElement } from '../../../helpers';
+import { getOrAssignDomId } from '../../../helpers/ids';
 import { getDomElement } from '../helpers';
-import { getHtmlElement } from '/common/helpers';
 
 export function groupElements(
     parent: ActionTarget,

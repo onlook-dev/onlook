@@ -243,7 +243,7 @@ export class MoveManager {
         this.dragTarget = undefined;
     }
 
-    dispose() {
+    clear() {
         // Clear state
         this.clear();
 

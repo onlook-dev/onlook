@@ -12,7 +12,7 @@ import { Radius } from "./dropdowns/radius";
 import { StateDropdown } from "./dropdowns/state-dropdown";
 import { Width } from "./dropdowns/width";
 import { ViewButtons } from "./panels/panel-bar/bar";
-
+import { InputSeparator } from "./separator";
 export const DivSelected = () => {
     const [activeTab, setActiveTab] = useState('individual');
 
@@ -20,39 +20,39 @@ export const DivSelected = () => {
         <div className="flex items-center gap-1">
             <StateDropdown />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Display />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Width />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Height />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Padding />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Margin />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Radius />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <Border />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <ColorBackground />
 
-            <div className="h-6 w-[1px] bg-border" />
+            <InputSeparator />
 
             <ImageBackground />
 

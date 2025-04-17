@@ -359,7 +359,7 @@ export class InsertManager {
         this.editorEngine.action.run(action);
     }
 
-    dispose() {
+    clear() {
         // Clear drawing state
         this.isDrawing = false;
         this.drawOrigin = undefined;

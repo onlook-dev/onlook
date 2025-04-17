@@ -261,7 +261,7 @@ export class ChatManager {
         });
     }
 
-    dispose() {
+    clear() {
         this.stream.dispose();
         this.code?.dispose();
         this.context?.dispose();

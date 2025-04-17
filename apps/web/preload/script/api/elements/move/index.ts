@@ -2,17 +2,17 @@ import type { DomElement } from '@onlook/models';
 import { getHtmlElement, isValidHtmlElement } from '../../../helpers';
 import { getDomElement } from '../helpers';
 
-export function moveElement(domId: string, newIndex: number): DomElement | undefined {
+export function moveElement(domId: string, newIndex: number): DomElement | null {
     const el = getHtmlElement(domId) as HTMLElement | null;
     if (!el) {
         console.warn(`Move element not found: ${domId}`);
-        return;
+        return null;
     }
 
     const movedEl = moveElToIndex(el, newIndex);
     if (!movedEl) {
         console.warn(`Failed to move element: ${domId}`);
-        return;
+        return null;
     }
 
     const domEl = getDomElement(movedEl, true);

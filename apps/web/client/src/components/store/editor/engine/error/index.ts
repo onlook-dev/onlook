@@ -1,4 +1,4 @@
-import type { ProjectsManager } from '@/lib/projects';
+import type { ProjectManager } from '@/components/store/projects';
 import { type ParsedError, compareErrors } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -11,7 +11,7 @@ export class ErrorManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this, {});
     }

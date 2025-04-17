@@ -206,7 +206,7 @@ export class CopyManager {
         }
     }
 
-    dispose() {
+    clear() {
         // Clear state
         this.clear();
 

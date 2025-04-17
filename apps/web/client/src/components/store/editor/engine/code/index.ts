@@ -1,6 +1,6 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
-import { MainChannels, WebviewChannels } from '@onlook/constants';
+// import type { ProjectsManager } from '@/lib/projects';
+// import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
+// import { MainChannels, WebviewChannels } from '@onlook/constants';
 import type {
     Action,
     CodeInsertImage,
@@ -24,11 +24,11 @@ import {
     type CodeUngroup,
 } from '@onlook/models/actions';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { addTailwindToRequest, getOrCreateCodeDiffRequest } from './helpers';
 import { getInsertedElement } from './insert';
-import { assertNever } from '/common/helpers';
 
 export class CodeManager {
     isExecuting = false;
@@ -36,7 +36,7 @@ export class CodeManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
     }
@@ -357,7 +357,7 @@ export class CodeManager {
         });
     }
 
-    dispose() {
+    clear() {
         // Clear write queue
         this.writeQueue = [];
         this.isExecuting = false;

@@ -185,7 +185,7 @@ export class GroupManager {
         };
     }
 
-    dispose() {
+    clear() {
         // Clear references
         this.editorEngine = null as any;
     }

@@ -1,10 +1,10 @@
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 // import { invokeMainChannel } from '@/lib/utils';
 // import { fontFamilies, MainChannels } from '@onlook/models';
 // import type { ProjectsManager } from '@/lib/projects';
-import type { Font } from '@onlook/models/assets';
 import { FAMILIES } from '@onlook/fonts';
+import type { Font } from '@onlook/models/assets';
 // import type { FontFile } from '@/routes/editor/LayersPanel/BrandTab/FontPanel/FontFiles';
 
 export class FontManager {
@@ -187,7 +187,7 @@ export class FontManager {
         );
     }
 
-    dispose() {
+    clear() {
         this._fonts = [];
         this._fontFamilies = [];
         this._defaultFont = null;
