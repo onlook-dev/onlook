@@ -1,6 +1,6 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { MainChannels } from '@onlook/constants';
+// import type { ProjectsManager } from '@/lib/projects';
+// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+// import { MainChannels } from '@onlook/constants';
 import type { ChatSuggestion, Project } from '@onlook/models';
 import type { ImageMessageContext, ProjectSuggestions } from '@onlook/models/chat';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
@@ -11,12 +11,14 @@ export class SuggestionManager {
     private _suggestions: ChatSuggestion[] = [];
     private _shouldHide = false;
 
-    constructor(private projectsManager: ProjectsManager) {
+    constructor(
+        // private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this);
-        reaction(
-            () => this.projectsManager.project,
-            (current) => this.getCurrentProjectSuggestions(current),
-        );
+        // reaction(
+        //     () => this.projectsManager.project,
+        //     (current) => this.getCurrentProjectSuggestions(current),
+        // );
     }
 
     get suggestions() {

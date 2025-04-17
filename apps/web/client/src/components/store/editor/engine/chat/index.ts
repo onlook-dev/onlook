@@ -1,7 +1,7 @@
-import type { ProjectsManager } from '@/lib/projects';
-import type { UserManager } from '@/lib/user';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { MainChannels } from '@onlook/constants';
+// import type { ProjectsManager } from '@/lib/projects';
+// import type { UserManager } from '@/lib/user';
+// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+// import { MainChannels } from '@onlook/constants';
 import {
     ChatMessageRole,
     StreamRequestType,
@@ -34,15 +34,21 @@ export class ChatManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
-        private userManager: UserManager,
+        // private projectsManager: ProjectsManager,
+        // private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        this.context = new ChatContext(this.editorEngine, this.projectsManager);
-        this.conversation = new ConversationManager(this.editorEngine, this.projectsManager);
+        this.context = new ChatContext(this.editorEngine
+            // , this.projectsManager
+        );
+        this.conversation = new ConversationManager(this.editorEngine
+            // , this.projectsManager
+        );
         this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
-        this.suggestions = new SuggestionManager(this.projectsManager);
+        this.suggestions = new SuggestionManager(
+            // this.projectsManager
+        );
     }
 
     focusChatInput() {

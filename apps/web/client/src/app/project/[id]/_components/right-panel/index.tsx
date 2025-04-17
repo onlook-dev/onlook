@@ -13,10 +13,11 @@ import { useState } from 'react';
 import { ChatControls } from './chat/controls';
 import { ChatPanelDropdown } from './chat/panel-dropdown';
 
-// import { ChatTab } from './ChatTab';
+
 // import { ChatControls } from './ChatTab/ChatControls';
-// import { ChatHistory } from './ChatTab/ChatControls/ChatHistory';
-// import { DevTab } from './DevTab';
+import { ChatHistory } from './chat/history';
+import { ChatTab } from './chat/chat-tab';
+// import { DevTab } from './DevTab';s
 // import { PropsTab } from './PropsTab';
 // import { StylesTab } from './StylesTab';
 
@@ -29,6 +30,8 @@ export const RightPanel = observer(() => {
     const t = useTranslations();
 
     const [isOpen, setIsOpen] = useState(true);
+    const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+
     const selectedTab = editorEngine.state.rightPanelTab;
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
@@ -87,10 +90,10 @@ export const RightPanel = observer(() => {
                             {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                         </TabsList>
                         < Separator className="mt-0" />
-                        {/* <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} /> */}
+                        <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
                         <div className="overflow-auto" >
                             <TabsContent value={EditorTabValue.CHAT}>
-                                {/* <ChatTab /> */}
+                                <ChatTab />
                             </TabsContent>
                         </div>
                     </Tabs>

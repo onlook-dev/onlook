@@ -4,7 +4,7 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
-import { CodeManager } from './code';
+import { type CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
@@ -12,7 +12,7 @@ import { FontManager } from './font';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
-import { ImageManager } from './image';
+import { type ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
@@ -22,7 +22,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
-// import type { ProjectsManager } from '@/lib/projects';
+import { type ProjectManager } from '@/components/store/projects';
 // import type { UserManager } from '@/lib/user';
 
 export class EditorEngine {
@@ -55,11 +55,14 @@ export class EditorEngine {
     // readonly window: WindowManager = new WindowManager(this);
 
     constructor(
-        // private projectsManager: ProjectsManager,
+        private projectsManager: ProjectManager,
         // private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        // this.chat = new ChatManager(this, this.projectsManager, this.userManager);
+        this.chat = new ChatManager(this
+            // this.projectsManager,
+            // this.userManager
+        );
         this.frames = new FramesManager(this,
             // this.projectsManager
         );
@@ -67,7 +70,7 @@ export class EditorEngine {
         this.pages = new PagesManager(this,
             // this.projectsManager
         );
-        // this.error = new ErrorManager(this, this.projectsManager);
+        this.error = new ErrorManager(this, this.projectsManager);
         // this.image = new ImageManager(this,this.projectsManager);
         this.theme = new ThemeManager(this
             // , this.projectsManager
