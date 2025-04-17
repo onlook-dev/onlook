@@ -111,6 +111,8 @@ function processNode(node: HTMLElement): LayerNode {
         frameId: getFrameId(),
         children: null,
         parent: null,
+        dynamicType: null,
+        coreElementType: null,
     };
     return layerNode;
 }

@@ -2,6 +2,7 @@
 
 import { useTheme } from '@/app/_components/theme';
 import { useEditorEngine, useUserManager } from '@/components/store';
+import { sendAnalytics } from '@/utils/analytics';
 import { SystemTheme } from '@onlook/models';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';

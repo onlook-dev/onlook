@@ -2,7 +2,7 @@ import { WindowMessenger, connect } from 'penpal';
 import { preloadMethods } from './api';
 
 const createMessageConnection = async () => {
-    console.log("Preload creating penpal connection");
+    console.log("Preload - Creating penpal connection");
 
     const messenger = new WindowMessenger({
         remoteWindow: window.parent,

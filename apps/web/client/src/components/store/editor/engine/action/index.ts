@@ -117,8 +117,6 @@ export class ActionManager {
 
         }
 
-        console.log('frameIdToDomEls', frameIdToDomEls);
-
         // Refresh edited elements
         // TODO: This is a hack. Consider updating the element style and layout without using click.
         for (const [frameId, domEls] of Object.entries(frameIdToDomEls)) {

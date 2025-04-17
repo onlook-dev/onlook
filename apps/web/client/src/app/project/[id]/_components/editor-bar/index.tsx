@@ -35,7 +35,6 @@ const getSelectedTag = (selected: DomElement[]): "div" | "text" | "image" | "vid
 export const EditorBar = observer(() => {
     const editorEngine = useEditorEngine();
     const selectedTag = getSelectedTag(editorEngine.elements.selected);
-    console.log('selectedTag', selectedTag);
 
     return (
         <motion.div

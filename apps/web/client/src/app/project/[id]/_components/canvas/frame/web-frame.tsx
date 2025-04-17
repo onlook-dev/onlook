@@ -1,10 +1,12 @@
+'use client';
+
 import { useEditorEngine } from "@/components/store";
 import type { WebFrame } from "@onlook/models";
 import { cn } from "@onlook/ui/utils";
 import type { PreloadMethods } from '@onlook/web-preload/script/api';
 import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
 
 // Preload methods should be treated as promises
 type PromisifiedPreloadMethods = {
@@ -43,39 +45,12 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const zoomLevel = useRef(1);
     const [iframeRemote, setIframeRemote] = useState<any>(null);
-    const connectionInitialized = useRef(false);
 
-    const setupPenpalConnection = useCallback(async (iframe: HTMLIFrameElement) => {
-        if (connectionInitialized.current) return;
-        console.log("iFrame creating penpal connection frame ID:", frame.id);
-        if (!iframe?.contentWindow) throw new Error('No content window found');
-        const messenger = new WindowMessenger({
-            remoteWindow: iframe.contentWindow,
-            allowedOrigins: ['*'],
-        });
-        const connection = connect({ messenger, methods: {} });
-        const remote = (await connection.promise) as unknown as PreloadMethods;
-        await remote.setFrameId(frame.id);
-        await remote.processDom();
-        setIframeRemote(remote);
-        connectionInitialized.current = true;
-        console.log("Penpal connection set for frame ID:", frame.id);
-    }, [frame.id]);
-
-    const handleIframeLoad = async (e: React.SyntheticEvent<HTMLIFrameElement>) => {
-        try {
-            const iframe = e.currentTarget;
-            await setupPenpalConnection(iframe);
-            editorEngine.frames.register(frame, iframe as WebFrameView);
-        } catch (error) {
-            console.error('Initialize penpal connection failed:', error);
+    useEffect(() => {
+        if (iframeRemote) {
+            console.log('Iframe - Penpal connection set for frame ID:', frame.id);
         }
-    }
-
-    const handleIframeError = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
-        console.error('Iframe failed to load:', e);
-        setTimeout(() => reloadIframe(), 5000);
-    }
+    }, [iframeRemote]);
 
     const reloadIframe = () => {
         const iframe = iframeRef.current;
@@ -86,8 +61,12 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
     useImperativeHandle(ref, () => {
         const iframe = iframeRef.current;
         if (!iframe) {
-            throw new Error('Iframe not found');
+            console.error('Iframe - Not found');
+            return {} as WebFrameView;
         }
+
+        // Register the iframe with the editor engine
+        editorEngine.frames.register(frame, iframe as WebFrameView);
 
         const syncMethods = {
             supportsOpenDevTools: () => !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
@@ -104,6 +83,11 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             reload: () => iframe.contentWindow?.location.reload(),
             isLoading: () => iframe.contentDocument?.readyState !== 'complete',
         };
+
+        if (!iframeRemote) {
+            console.error('Iframe - Failed to setup penpal connection: iframeRemote is null');
+            return Object.assign(iframe, syncMethods) as WebFrameView;
+        }
 
         const remoteMethods = {
             processDom: promisifyRemoteMethod(iframeRemote?.processDom),
@@ -143,19 +127,49 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         };
 
         return Object.assign(iframe, { ...syncMethods, ...remoteMethods }) satisfies WebFrameView;
-    }, [iframeRemote]);
+    }, [iframeRemote, frame, iframeRef]);
 
     useEffect(() => {
-        const iframe = iframeRef.current;
-        if (!iframe) return;
+        if (!iframeRef.current || !iframeRef.current.contentWindow) {
+            console.error('No iframe found');
+            return;
+        }
+        const messenger = new WindowMessenger({
+            remoteWindow: iframeRef.current.contentWindow,
+            allowedOrigins: ['*'],
+        });
 
-        // Reset the connection flag when frame changes
-        connectionInitialized.current = false;
-        handleIframeLoad({ currentTarget: iframe } as any);
+        const connection = connect({
+            // iframe: ref.current,
+            messenger,
+            methods: {},
+            timeout: 10000,
+        });
+
+        connection.promise.then((child) => {
+            if (!child) {
+                console.error('Iframe - Failed to setup penpal connection: child is null');
+                return;
+            }
+            const remote = child as unknown as PreloadMethods;
+            setIframeRemote(remote);
+            remote.setFrameId(frame.id);
+            remote.processDom();
+            console.log('Iframe - Penpal connection set for frame ID:', frame.id);
+        });
+
+        connection.promise.catch((error) => {
+            console.error('Iframe - Failed to setup penpal connection:', error);
+            setTimeout(() => {
+                reloadIframe();
+            }, 1000);
+        });
+
         return () => {
-            connectionInitialized.current = false;
+            connection.destroy();
+            setIframeRemote(null);
         };
-    }, [frame]);
+    }, []);
 
     return (
         <iframe
@@ -166,8 +180,6 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
             allow="geolocation; microphone; camera; midi; encrypted-media"
             style={{ width: frame.dimension.width, height: frame.dimension.height }}
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
             {...props}
         />
     );

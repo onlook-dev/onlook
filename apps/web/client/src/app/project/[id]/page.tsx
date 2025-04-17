@@ -5,7 +5,7 @@ import Main from "./_components/main";
 
 export default async function Page({ params }: { params: { id: string } }) {
     const supabase = await createClient()
-    const projectId = await params.id;
+    const projectId = (await params).id;
 
     // TODO: Get project from supabase
     // const { data, error } = await supabase.from('your_table').select('*')
