@@ -69,7 +69,7 @@ export class InsertManager {
         this.updateInsertRect(currentPos);
     }
 
-    end(e: React.MouseEvent<HTMLDivElement>, webview: Electron.WebviewTag | null) {
+    end(e: React.MouseEvent<HTMLDivElement>, frameView: Electron.WebviewTag | null) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
@@ -77,15 +77,15 @@ export class InsertManager {
         this.isDrawing = false;
         this.editorEngine.overlay.state.updateInsertRect(null);
 
-        if (!webview) {
-            console.error('Webview not found');
+        if (!frameView) {
+            console.error('frameView not found');
             return;
         }
         const currentPos = { x: e.clientX, y: e.clientY };
         const newRect = this.getDrawRect(currentPos);
 
-        const origin = getRelativeMousePositionToWebview(e, webview);
-        this.insertElement(webview, newRect, origin);
+        const origin = getRelativeMousePositionToWebview(e, frameView);
+        this.insertElement(frameView, newRect, origin);
         this.drawOrigin = undefined;
     }
 
@@ -138,11 +138,11 @@ export class InsertManager {
     }
 
     async insertElement(
-        webview: Electron.WebviewTag,
+        frameView: Electron.WebviewTag,
         newRect: RectDimensions,
         origin: ElementPosition,
     ) {
-        const insertAction = await this.createInsertAction(webview, newRect, origin);
+        const insertAction = await this.createInsertAction(frameView, newRect, origin);
         if (!insertAction) {
             console.error('Failed to create insert action');
             return;
@@ -151,11 +151,11 @@ export class InsertManager {
     }
 
     async createInsertAction(
-        webview: Electron.WebviewTag,
+        frameView: Electron.WebviewTag,
         newRect: RectDimensions,
         origin: ElementPosition,
     ): Promise<InsertElementAction | undefined> {
-        const location: ActionLocation | undefined = await webview.executeJavaScript(
+        const location: ActionLocation | undefined = await frameView.executeJavaScript(
             `window.api?.getInsertLocation(${origin.x}, ${origin.y})`,
         );
         if (!location) {
@@ -195,7 +195,7 @@ export class InsertManager {
 
         const targets: Array<ActionTarget> = [
             {
-                frameId: webview.id,
+                frameId: frameView.id,
                 domId,
                 oid: null,
             },

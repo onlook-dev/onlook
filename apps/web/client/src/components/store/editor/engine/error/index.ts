@@ -47,7 +47,7 @@ export class ErrorManager {
         }
         const error: ParsedError = {
             sourceId: event.sourceId,
-            type: 'webview',
+            type: 'frameView',
             content: event.message,
         };
         const existingErrors = this.frameIdToError[frameId] || [];

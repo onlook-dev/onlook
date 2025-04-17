@@ -9,7 +9,7 @@ interface LayerMetadata {
 }
 
 const FAKE_DATA = [
-    {   
+    {
         "frameId": "ia9vdOL0zThOaSEawxIu3",
         "domId": "odid-59964449-8fdf-4e22-bf9f-e430b6c8cbdc",
         "oid": "mwz9mme",
@@ -64,7 +64,7 @@ export class LayersManager {
             return this.layers;
         }
         return this.layers.filter((layer) =>
-            selectedWebviews.some((webview) => webview.frame.id === layer.frameId),
+            selectedWebviews.some((frameView) => frameView.frame.id === layer.frameId),
         );
     }
 

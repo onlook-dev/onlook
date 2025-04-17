@@ -1,5 +1,7 @@
 
-import { Theme } from '@onlook/models/assets';
+import { useEditorEngine } from '@/components/store';
+import { SystemTheme } from '@onlook/models/assets';
+import type { TailwindColor } from '@onlook/models/style';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -10,12 +12,10 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Color, toNormalCase } from '@onlook/utility';
-import { useState } from 'react';
 import { customAlphabet } from 'nanoid/non-secure';
-import { useEditorEngine } from '@/components/store';
+import { useState } from 'react';
 import { ColorNameInput } from './color-name-input';
 import { ColorPopover } from './color-popover';
-import type { TailwindColor } from '@onlook/models/style';
 
 
 interface BrandPalletGroupProps {
@@ -85,7 +85,7 @@ export const BrandPalletGroup = ({
     };
 
     const getColorValue = (color: TailwindColor) => {
-        return theme === Theme.DARK ? color.darkColor ?? color.lightColor : color.lightColor;
+        return theme === SystemTheme.DARK ? color.darkColor ?? color.lightColor : color.lightColor;
     };
 
     const handleRenameClick = () => {
@@ -97,7 +97,7 @@ export const BrandPalletGroup = ({
             return;
         }
 
-        const line = theme === Theme.DARK ? color.line.css?.darkMode : color.line.css?.lightMode;
+        const line = theme === SystemTheme.DARK ? color.line.css?.darkMode : color.line.css?.lightMode;
 
         // invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, {
         //     filePath: themeManager.tailwindConfigPath,

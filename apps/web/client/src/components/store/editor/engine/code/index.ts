@@ -335,8 +335,8 @@ export class CodeManager {
             return false;
         }
 
-        this.editorEngine.webviews.getAll().forEach((webview) => {
-            sendToWebview(webview, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+        this.editorEngine.frames.getAll().forEach((frameView) => {
+            sendToWebview(frameView, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
         });
 
         return true;

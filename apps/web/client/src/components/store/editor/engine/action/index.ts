@@ -83,9 +83,9 @@ export class ActionManager {
 
     updateStyle({ targets }: UpdateStyleAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.frames.get(target.frameId);
-            if (!webview) {
-                console.error('Failed to get webview');
+            const frameView = this.editorEngine.frames.get(target.frameId);
+            if (!frameView) {
+                console.error('Failed to get frameView');
                 return;
             }
             const convertedChange = Object.fromEntries(
@@ -101,7 +101,7 @@ export class ActionManager {
                 }),
             );
 
-            sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
+            sendToWebview(frameView, WebviewChannels.UPDATE_STYLE, {
                 domId: target.domId,
                 change: {
                     ...target.change,
@@ -113,12 +113,12 @@ export class ActionManager {
 
     private insertElement({ targets, element, editText, location }: InsertElementAction) {
         targets.forEach((elementMetadata) => {
-            const webview = this.editorEngine.frames.get(elementMetadata.frameId);
-            if (!webview) {
-                console.error('Failed to get webview');
+            const frameView = this.editorEngine.frames.get(elementMetadata.frameId);
+            if (!frameView) {
+                console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.INSERT_ELEMENT, {
+            sendToWebview(frameView, WebviewChannels.INSERT_ELEMENT, {
                 element,
                 location,
                 editText,
@@ -128,12 +128,12 @@ export class ActionManager {
 
     private removeElement({ targets, location }: RemoveElementAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.frameId);
-            if (!webview) {
-                console.error('Failed to get webview');
+            const frameView = this.editorEngine.frames.getWebview(target.frameId);
+            if (!frameView) {
+                console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.REMOVE_ELEMENT, {
+            sendToWebview(frameView, WebviewChannels.REMOVE_ELEMENT, {
                 location,
             });
         });
@@ -141,12 +141,12 @@ export class ActionManager {
 
     private moveElement({ targets, location }: MoveElementAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.webviews.getWebview(target.frameId);
-            if (!webview) {
-                console.error('Failed to get webview');
+            const frameView = this.editorEngine.frames.getWebview(target.frameId);
+            if (!frameView) {
+                console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.MOVE_ELEMENT, {
+            sendToWebview(frameView, WebviewChannels.MOVE_ELEMENT, {
                 domId: target.domId,
                 newIndex: location.index,
             });
@@ -155,12 +155,12 @@ export class ActionManager {
 
     private editText({ targets, newContent }: EditTextAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.frames.get(target.frameId);
-            if (!webview) {
-                console.error('Failed to get webview');
+            const frameView = this.editorEngine.frames.get(target.frameId);
+            if (!frameView) {
+                console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.EDIT_ELEMENT_TEXT, {
+            sendToWebview(frameView, WebviewChannels.EDIT_ELEMENT_TEXT, {
                 domId: target.domId,
                 content: newContent,
             });
@@ -168,31 +168,31 @@ export class ActionManager {
     }
 
     private groupElements({ parent, container, children }: GroupElementsAction) {
-        const webview = this.editorEngine.frames.get(parent.frameId);
-        if (!webview) {
-            console.error('Failed to get webview');
+        const frameView = this.editorEngine.frames.get(parent.frameId);
+        if (!frameView) {
+            console.error('Failed to get frameView');
             return;
         }
-        sendToWebview(webview, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
+        sendToWebview(frameView, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
     }
 
     private ungroupElements({ parent, container, children }: UngroupElementsAction) {
-        const webview = this.editorEngine.frames.get(parent.frameId);
-        if (!webview) {
-            console.error('Failed to get webview');
+        const frameView = this.editorEngine.frames.get(parent.frameId);
+        if (!frameView) {
+            console.error('Failed to get frameView');
             return;
         }
-        sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
+        sendToWebview(frameView, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
     }
 
     private insertImage({ targets, image }: InsertImageAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.frames.get(target.frameId);
-            if (!webview) {
-                console.error('Failed to get webview');
+            const frameView = this.editorEngine.frames.get(target.frameId);
+            if (!frameView) {
+                console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.INSERT_IMAGE, {
+            sendToWebview(frameView, WebviewChannels.INSERT_IMAGE, {
                 domId: target.domId,
                 image,
             });
@@ -201,12 +201,12 @@ export class ActionManager {
 
     private removeImage({ targets }: RemoveImageAction) {
         targets.forEach((target) => {
-            const webview = this.editorEngine.frames.get(target.frameId);
-            if (!webview) {
-                console.error('Failed to get webview');
+            const frameView = this.editorEngine.frames.get(target.frameId);
+            if (!frameView) {
+                console.error('Failed to get frameView');
                 return;
             }
-            sendToWebview(webview, WebviewChannels.REMOVE_IMAGE, {
+            sendToWebview(frameView, WebviewChannels.REMOVE_IMAGE, {
                 domId: target.domId,
             });
         });

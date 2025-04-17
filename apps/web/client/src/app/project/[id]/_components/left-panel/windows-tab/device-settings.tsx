@@ -1,12 +1,12 @@
 
 import { useEditorEngine } from '@/components/store';
-import { Theme } from '@onlook/models/assets';
+import type { Frame } from '@onlook/models';
+import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { useEffect, useState } from 'react';
-import type {Frame} from '@onlook/models'
 
-const DeviceSettings = ({ settings }: { settings: Frame }) => {
+export const DeviceSettings = ({ settings }: { settings: Frame }) => {
     const editorEngine = useEditorEngine();
     const [deviceTheme, setDeviceTheme] = useState(settings.theme);
 
@@ -26,22 +26,18 @@ const DeviceSettings = ({ settings }: { settings: Frame }) => {
     //     return editorEngine.canvas.unobserveSettings(settings.id, observer);
     // }, []);
 
-    async function changeTheme(theme: Theme) {
-        const webview = editorEngine.frames.get(settings.id)?.view;
-        if (!webview) {
+    async function changeTheme(theme: SystemTheme) {
+        const frameView = editorEngine.frames.get(settings.id)?.view;
+        if (!frameView) {
             return;
         }
 
-        const themeValue =
-            theme === Theme.SYSTEM ? 'device' : theme === Theme.DARK ? 'dark' : 'light';
+        frameView.setTheme(theme);
+        setDeviceTheme(theme);
 
-        webview.executeJavaScript(`window.api?.setTheme("${themeValue}")`).then((res) => {
-            setDeviceTheme(theme);
-        });
-
-        editorEngine.canvas.saveFrame(settings.id, {
-            theme: theme,
-        });
+        // editorEngine.canvas.saveFrame(settings.id, {
+        //     theme,
+        // });
     }
 
     return (
@@ -52,37 +48,34 @@ const DeviceSettings = ({ settings }: { settings: Frame }) => {
                 <div className="flex flex-row p-0.5 w-3/5 bg-background-secondary rounded">
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === Theme.SYSTEM
-                                ? 'bg-background-tertiary hover:bg-background-tertiary'
-                                : 'hover:bg-background-tertiary/50 text-foreground-onlook'
-                        }`}
+                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.SYSTEM
+                            ? 'bg-background-tertiary hover:bg-background-tertiary'
+                            : 'hover:bg-background-tertiary/50 text-foreground-onlook'
+                            }`}
                         variant={'ghost'}
-                        onClick={() => changeTheme(Theme.SYSTEM)}
+                        onClick={() => changeTheme(SystemTheme.SYSTEM)}
                     >
                         <Icons.Laptop />
                     </Button>
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === Theme.DARK
-                                ? 'bg-background-tertiary hover:bg-background-tertiary'
-                                : 'hover:bg-background-tertiary/50 text-foreground-onlook'
-                        }`}
+                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.DARK
+                            ? 'bg-background-tertiary hover:bg-background-tertiary'
+                            : 'hover:bg-background-tertiary/50 text-foreground-onlook'
+                            }`}
                         variant={'ghost'}
-                        onClick={() => changeTheme(Theme.DARK)}
+                        onClick={() => changeTheme(SystemTheme.DARK)}
                     >
                         <Icons.Moon />
                     </Button>
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === Theme.LIGHT
-                                ? 'bg-background-tertiary hover:bg-background-tertiary'
-                                : 'hover:bg-background-tertiary/50 text-foreground-onlook'
-                        }`}
+                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.LIGHT
+                            ? 'bg-background-tertiary hover:bg-background-tertiary'
+                            : 'hover:bg-background-tertiary/50 text-foreground-onlook'
+                            }`}
                         variant={'ghost'}
-                        onClick={() => changeTheme(Theme.LIGHT)}
+                        onClick={() => changeTheme(SystemTheme.LIGHT)}
                     >
                         <Icons.Sun />
                     </Button>
@@ -91,5 +84,3 @@ const DeviceSettings = ({ settings }: { settings: Frame }) => {
         </div>
     );
 };
-
-export default DeviceSettings;

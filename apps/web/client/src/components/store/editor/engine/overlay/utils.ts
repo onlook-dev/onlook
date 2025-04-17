@@ -36,7 +36,7 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
 }
 
 /**
- * Adapts a rectangle from a webview element to the overlay coordinate space.
+ * Adapts a rectangle from a frameView element to the overlay coordinate space.
  * This ensures that overlay rectangles perfectly match the source elements,
  * similar to design tools like Figma/Framer.
  */
@@ -81,14 +81,14 @@ export function adaptValueToCanvas(value: number, inverse = false): number {
 }
 
 /**
- * Get the relative mouse position a webview element inside the canvas container.
+ * Get the relative mouse position a frameView element inside the canvas container.
  */
 export function getRelativeMousePositionToWebview(
     e: React.MouseEvent<HTMLDivElement>,
-    webview: WebFrameView,
+    frameView: WebFrameView,
     inverse: boolean = false,
 ): ElementPosition {
-    const rect = webview.getBoundingClientRect();
+    const rect = frameView.getBoundingClientRect();
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
     if (!canvasContainer) {
         console.error('Canvas container not found');

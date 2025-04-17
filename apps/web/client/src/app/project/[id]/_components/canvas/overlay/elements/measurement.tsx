@@ -78,12 +78,12 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
     const frameData = editorEngine.frames.get(editorEngine.elements.selected[0]?.frameId);
 
     const fromRectAdjusted = useMemo(
-        () => (webview ? adaptRectToCanvas(fromRect, webview) : fromRect),
-        [fromRect, webview],
+        () => (frameView ? adaptRectToCanvas(fromRect, frameView) : fromRect),
+        [fromRect, frameView],
     );
     const toRectAdjusted = useMemo(
-        () => (webview ? adaptRectToCanvas(toRect, webview) : toRect),
-        [toRect, webview],
+        () => (frameView ? adaptRectToCanvas(toRect, frameView) : toRect),
+        [toRect, frameView],
     );
 
     const fromRectPoint = useMemo(() => toRectPoint(fromRect), [fromRect]);
@@ -115,7 +115,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
     };
 
     const distances = useMemo(() => {
-        if (!webview) {
+        if (!frameView) {
             return [];
         }
         const result: Distance[] = [];

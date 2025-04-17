@@ -1,7 +1,8 @@
 
 import { useTheme } from '@/app/_components/theme';
-import { useUserManager } from '@/components/store';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine, useUserManager } from '@/components/store';
+import { Language, LANGUAGE_DISPLAY_NAMES, Links } from '@onlook/constants';
+import { SystemTheme } from '@onlook/models/assets';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,10 +15,8 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Language, LANGUAGE_DISPLAY_NAMES, Links } from '@onlook/constants';
-import { Theme } from '@onlook/models/assets';
+import { useState } from 'react';
 // import { invokeMainChannel } from '@/lib/utils';
 
 export const HelpDropdown = observer(() => {
@@ -48,16 +47,16 @@ export const HelpDropdown = observer(() => {
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">
-                        {theme === Theme.DARK && <Icons.Moon className="w-4 h-4 mr-2" />}
-                        {theme === Theme.LIGHT && <Icons.Sun className="w-4 h-4 mr-2" />}
-                        {theme === Theme.SYSTEM && <Icons.Laptop className="w-4 h-4 mr-2" />}
+                        {theme === SystemTheme.DARK && <Icons.Moon className="w-4 h-4 mr-2" />}
+                        {theme === SystemTheme.LIGHT && <Icons.Sun className="w-4 h-4 mr-2" />}
+                        {theme === SystemTheme.SYSTEM && <Icons.Laptop className="w-4 h-4 mr-2" />}
                         {t('help.menu.theme.title')}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-32 ml-2">
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => {
-                                setTheme(Theme.LIGHT);
+                                setTheme(SystemTheme.LIGHT);
                             }}
                         >
                             <Icons.Sun className="w-4 h-4 mr-2" />
@@ -66,7 +65,7 @@ export const HelpDropdown = observer(() => {
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => {
-                                setTheme(Theme.DARK);
+                                setTheme(SystemTheme.DARK);
                             }}
                         >
                             <Icons.Moon className="w-4 h-4 mr-2" />
@@ -75,7 +74,7 @@ export const HelpDropdown = observer(() => {
                         <DropdownMenuItem
                             className="text-sm"
                             onClick={() => {
-                                setTheme(Theme.SYSTEM);
+                                setTheme(SystemTheme.SYSTEM);
                             }}
                         >
                             <Icons.Laptop className="w-4 h-4 mr-2" />

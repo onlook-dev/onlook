@@ -1,25 +1,25 @@
 "use client";
+
+import { SystemTheme } from '@onlook/models';
 import localforage from 'localforage';
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
-
 type ThemeProviderProps = {
     children: React.ReactNode;
-    defaultTheme?: Theme;
+    defaultTheme?: SystemTheme;
     storageKey?: string;
 };
 
 type ThemeProviderState = {
-    theme: Theme;
-    nextTheme: Theme;
-    setTheme: (theme: Theme) => void;
+    theme: SystemTheme;
+    nextTheme: SystemTheme;
+    setTheme: (theme: SystemTheme) => void;
 };
 
 const initialState: ThemeProviderState = {
-    theme: 'system',
-    nextTheme: 'dark',
+    theme: SystemTheme.SYSTEM,
+    nextTheme: SystemTheme.DARK,
     setTheme: () => null,
 };
 
@@ -27,16 +27,16 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
     children,
-    defaultTheme = 'system',
+    defaultTheme = SystemTheme.SYSTEM,
     storageKey = 'vite-ui-theme',
     ...props
 }: ThemeProviderProps) {
-    const [theme, setTheme] = useState<Theme>(() => defaultTheme);
-    const [nextTheme, setNextTheme] = useState<Theme>('dark');
+    const [theme, setTheme] = useState<SystemTheme>(() => defaultTheme);
+    const [nextTheme, setNextTheme] = useState<SystemTheme>(SystemTheme.DARK);
 
     useEffect(() => {
         localforage.getItem(storageKey).then((theme: unknown) => {
-            setTheme(theme as Theme || defaultTheme);
+            setTheme(theme as SystemTheme || defaultTheme);
         });
     }, []);
 
@@ -45,26 +45,26 @@ export function ThemeProvider({
 
         root.classList.remove('light', 'dark');
 
-        if (theme === 'system') {
+        if (theme === SystemTheme.SYSTEM) {
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light';
+                ? SystemTheme.DARK
+                : SystemTheme.LIGHT;
 
             root.classList.add(systemTheme);
         } else {
             root.classList.add(theme);
         }
 
-        const next: Theme = (() => {
+        const next: SystemTheme = (() => {
             switch (theme) {
-                case 'dark':
-                    return 'light';
-                case 'light':
-                    return 'system';
-                case 'system':
-                    return 'dark';
+                case SystemTheme.DARK:
+                    return SystemTheme.LIGHT;
+                case SystemTheme.LIGHT:
+                    return SystemTheme.SYSTEM;
+                case SystemTheme.SYSTEM:
+                    return SystemTheme.DARK;
                 default:
-                    return 'dark';
+                    return SystemTheme.DARK;
             }
         })();
 
@@ -74,7 +74,7 @@ export function ThemeProvider({
     const value = {
         theme,
         nextTheme,
-        setTheme: (newTheme: Theme) => {
+        setTheme: (newTheme: SystemTheme) => {
             localforage.setItem(storageKey, newTheme);
             setTheme(newTheme);
         },

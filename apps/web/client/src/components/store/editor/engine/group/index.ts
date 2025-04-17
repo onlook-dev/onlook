@@ -8,8 +8,7 @@ import type {
 } from '@onlook/models/actions';
 import type { EditorEngine } from '..';
 
-import { createOid } from '@onlook/utility/src/id';
-import { createDomId } from '@onlook/utility/src/id';
+import { createDomId, createOid } from '@onlook/utility/src/id';
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) { }
 
@@ -154,7 +153,7 @@ export class GroupManager {
         }
 
         // Container is the selected element
-        const actionContainer: ActionElement = await frame.view.getActionElementByDomId(
+        const actionContainer: ActionElement = await frame.view.getActionElement(
             selectedEl.domId, true
         );
         if (!actionContainer) {

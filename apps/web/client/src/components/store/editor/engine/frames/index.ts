@@ -72,7 +72,7 @@ export class FramesManager {
         if (data) {
             data.selected = true;
             this.frameIdToData.set(frame.id, data);
-            // this.editorEngine.pages.handleWebviewUrlChange(webview.id);
+            // this.editorEngine.pages.handleWebviewUrlChange(frameView.id);
             this.notify();
         }
     }

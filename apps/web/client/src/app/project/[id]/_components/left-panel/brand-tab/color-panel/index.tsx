@@ -1,16 +1,16 @@
 import { useEditorEngine } from '@/components/store';
-import { Theme } from '@onlook/models/assets';
+import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import type { Color } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
-import { BrandPalletGroup } from './color-pallet-group';
+import { useState } from 'react';
 import { ColorNameInput } from './color-name-input';
+import { BrandPalletGroup } from './color-pallet-group';
 
 const ColorPanel = observer(() => {
-    const [theme, setTheme] = useState<Theme>(Theme.LIGHT);
+    const [theme, setTheme] = useState<SystemTheme>(SystemTheme.LIGHT);
     const [isAddingNewGroup, setIsAddingNewGroup] = useState(false);
 
     const editorEngine = useEditorEngine();
@@ -83,23 +83,23 @@ const ColorPanel = observer(() => {
             {/* Theme Toggle */}
             <div className="flex gap-2 px-4 py-3 border-b border-border mt-[2.5rem]">
                 <Button
-                    variant={theme === Theme.LIGHT ? 'default' : 'outline'}
+                    variant={theme === SystemTheme.LIGHT ? 'default' : 'outline'}
                     className={cn(
                         'flex-1 gap-2 px-0 w-full border-none text-gray-200 bg-transparent hover:bg-background-secondary shadow-none',
-                        theme === Theme.LIGHT && 'bg-gray-900 text-white',
+                        theme === SystemTheme.LIGHT && 'bg-gray-900 text-white',
                     )}
-                    onClick={() => setTheme(Theme.LIGHT)}
+                    onClick={() => setTheme(SystemTheme.LIGHT)}
                 >
                     <Icons.Sun className="h-4 w-4" />
                     Light mode
                 </Button>
                 <Button
-                    variant={theme === Theme.DARK ? 'default' : 'outline'}
+                    variant={theme === SystemTheme.DARK ? 'default' : 'outline'}
                     className={cn(
                         'flex-1 gap-2 px-0 w-full border-none text-gray-200 bg-transparent hover:bg-background-secondary shadow-none',
-                        theme === Theme.DARK && 'bg-gray-900 text-white',
+                        theme === SystemTheme.DARK && 'bg-gray-900 text-white',
                     )}
-                    onClick={() => setTheme(Theme.DARK)}
+                    onClick={() => setTheme(SystemTheme.DARK)}
                 >
                     <Icons.Moon className="h-4 w-4" />
                     Dark mode

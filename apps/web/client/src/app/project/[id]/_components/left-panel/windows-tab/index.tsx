@@ -4,19 +4,19 @@ import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import FrameDimensions from './frame-dimensions';
-import DeviceSettings from './device-settings';
+import { DeviceSettings } from './device-settings';
+import { FrameDimensions } from './frame-dimensions';
 
 export const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const settings = null;
 
-    // Get settings from the selected element or webview
+    // Get settings from the selected element or frameView
     // if (editorEngine.elements.selected.length > 0) {
     //     settings = editorEngine.canvas.getFrame(editorEngine.elements.selected[0].webviewId);
-    // } else if (editorEngine.webviews.selected.length > 0) {
-    //     settings = editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id);
+    // } else if (editorEngine.frames.selected.length > 0) {
+    //     settings = editorEngine.canvas.getFrame(editorEngine.frames.selected[0].id);
     // }
 
     const WIDTH = 'w-[275px]';

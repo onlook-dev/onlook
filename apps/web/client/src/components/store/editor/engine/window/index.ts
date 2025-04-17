@@ -24,7 +24,7 @@ export class WindowManager {
         //     console.error('Failed to take screenshot, no webviews found');
         //     return null;
         // }
-        // const frameId = Array.from(this.webviews.webviews.values())[0].webview.id;
+        // const frameId = Array.from(this.webviews.webviews.values())[0].frameView.id;
         // return this.takeWebviewScreenshot(name, frameId, options);
         return null;
     }
@@ -39,21 +39,21 @@ export class WindowManager {
         name?: string;
         image?: string;
     } | null> {
-        // const webview = this.webviews.getWebview(frameId);
-        // if (!webview) {
-        //     console.error('No webview found');
+        // const frameView = this.webviews.getWebview(frameId);
+        // if (!frameView) {
+        //     console.error('No frameView found');
         //     return null;
         // }
 
-        // const hasContent = await webview.executeJavaScript(
+        // const hasContent = await frameView.executeJavaScript(
         //     `document.body.innerText.trim().length > 0 || document.body.children.length > 0 `,
         // );
         // if (!hasContent) {
-        //     console.error('No content found in webview');
+        //     console.error('No content found in frameView');
         //     return null;
         // }
 
-        // const image: NativeImage = await webview.capturePage();
+        // const image: NativeImage = await frameView.capturePage();
 
         // if (options?.save) {
         //     const imageName = `${name}-preview.png`;
@@ -101,9 +101,9 @@ export class WindowManager {
         // }
         // this.ast.mappings.remove(settings.id);
         // this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);
-        // const webview = this.webviews.getWebview(settings.id);
-        // if (webview) {
-        //     this.webviews.deregister(webview);
+        // const frameView = this.webviews.getWebview(settings.id);
+        // if (frameView) {
+        //     this.webviews.deregister(frameView);
         // }
         sendAnalytics('window delete');
     }

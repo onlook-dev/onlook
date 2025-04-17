@@ -4,7 +4,7 @@ import type { PreloadMethods } from '@onlook/penpal';
 import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
 
 export type WebFrameView = HTMLIFrameElement & {
     setZoomLevel: (level: number) => void;
@@ -88,8 +88,28 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             getElementByDomId: iframeRemote?.getElementByDomId,
             setFrameId: iframeRemote?.setFrameId,
             getElementIndex: iframeRemote?.getElementIndex,
+            getComputedStyleByDomId: iframeRemote?.getComputedStyleByDomId,
+            updateElementInstance: iframeRemote?.updateElementInstance,
+            getFirstOnlookElement: iframeRemote?.getFirstOnlookElement,
+            setElementType: iframeRemote?.setElementType,
+            getElementType: iframeRemote?.getElementType,
+            getParentElement: iframeRemote?.getParentElement,
+            getChildrenCount: iframeRemote?.getChildrenCount,
+            getOffsetParent: iframeRemote?.getOffsetParent,
+            getActionLocation: iframeRemote?.getActionLocation,
+            getActionElement: iframeRemote?.getActionElement,
+            getInsertLocation: iframeRemote?.getInsertLocation,
+            getRemoveAction: iframeRemote?.getRemoveAction,
+            getTheme: iframeRemote?.getTheme,
+            setTheme: iframeRemote?.setTheme,
         }) satisfies WebFrameView;
     }, [iframeRemote]);
+
+    useEffect(() => {
+        const iframe = iframeRef.current;
+        if (!iframe) return;
+        handleIframeLoad({ currentTarget: iframe } as any);
+    }, [frame, handleIframeLoad, iframeRef.current]);
 
     return (
         <iframe

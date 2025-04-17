@@ -15,14 +15,13 @@ import { StateManager } from './state';
 import { ThemeManager } from './theme';
 
 // import { CopyManager } from './copy';
- import { GroupManager } from './group';
+import { GroupManager } from './group';
 // import { InsertManager } from './insert';
 // import { MoveManager } from './move';
 // import { StyleManager } from './style';
 // import { TextEditingManager } from './text';
 // import { ActionManager } from './action';
 import { AstManager } from './ast';
-import type { BrandTabValue } from '@onlook/models';
 // import { ProjectInfoManager } from './projectinfo';
 
 // import { nanoid } from 'nanoid/non-secure';
@@ -54,8 +53,8 @@ export class EditorEngine {
     // readonly move: MoveManager = new MoveManager(this);
     // readonly style: StyleManager = new StyleManager(this);
     // readonly copy: CopyManager = new CopyManager(this);
-     readonly group: GroupManager = new GroupManager(this);
-     readonly ast: AstManager = new AstManager(this);
+    readonly group: GroupManager = new GroupManager(this);
+    readonly ast: AstManager = new AstManager(this);
 
     // TODO: Window, Frames, Webviews should be Frames
     // readonly window: WindowManager = new WindowManager(this);
@@ -70,9 +69,9 @@ export class EditorEngine {
             // this.projectsManager
         );
         // this.code = new CodeManager(this, this.projectsManager);
-         this.pages = new PagesManager(this, 
+        this.pages = new PagesManager(this,
             // this.projectsManager
-         );
+        );
         // this.error = new ErrorManager(this, this.projectsManager);
         // this.image = new ImageManager(this,this.projectsManager);
         this.theme = new ThemeManager(this
@@ -130,11 +129,11 @@ export class EditorEngine {
         // }
         // const selectedEl = selected[0];
         // const frameId = selectedEl.frameId;
-        // const webview = this.webviews.getWebview(frameId);
-        // if (!webview) {
+        // const frameView = this.webviews.getWebview(frameId);
+        // if (!frameView) {
         //     return;
         // }
-        // webview.openDevTools();
+        // frameView.openDevTools();
     }
 
     async refreshLayers() {
@@ -142,7 +141,7 @@ export class EditorEngine {
         // if (webviews.size === 0) {
         //     return;
         // }
-        // const webview = Array.from(webviews.values())[0].webview;
-        // webview.executeJavaScript('window.api?.processDom()');
+        // const frameView = Array.from(webviews.values())[0].frameView;
+        // frameView.executeJavaScript('window.api?.processDom()');
     }
 }

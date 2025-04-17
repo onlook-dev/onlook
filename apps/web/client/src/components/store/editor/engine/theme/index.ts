@@ -2,15 +2,15 @@
 // import { invokeMainChannel } from '@/lib/utils';
 // import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
 // import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
+import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
-import { Theme } from '@onlook/models/assets';
+import { SystemTheme } from '@onlook/models/assets';
+import type { TailwindColor } from '@onlook/models/style';
 import { Color } from '@onlook/utility';
+import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
-import { camelCase } from 'lodash';
-import type { TailwindColor } from '@onlook/models/style';
-import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 
 interface ColorValue {
     value: string;
@@ -337,7 +337,7 @@ export class ThemeManager {
         newColor: Color,
         newName: string,
         parentName?: string,
-        theme?: Theme,
+        theme?: SystemTheme,
         shouldSaveToConfig = false,
     ) {
         const projectRoot = this.projectsManager.project?.folderPath;
@@ -370,7 +370,7 @@ export class ThemeManager {
                 this.scanConfig();
 
                 // Force a theme refresh for all frames
-                await this.editorEngine.webviews.reloadWebviews();
+                await this.editorEngine.frames.reloadWebviews();
             }
         } catch (error) {
             console.error('Error updating color:', error);
@@ -401,7 +401,7 @@ export class ThemeManager {
         colorFamily: string,
         index: number,
         newColor: Color,
-        theme?: Theme,
+        theme?: SystemTheme,
     ) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
@@ -427,7 +427,7 @@ export class ThemeManager {
         groupName: string,
         colorName: string,
         isDefaultPalette?: boolean,
-        theme?: Theme,
+        theme?: SystemTheme,
     ) {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
@@ -456,7 +456,7 @@ export class ThemeManager {
                 const newName = `${colorName}Copy`;
 
                 const color = Color.from(
-                    theme === Theme.DARK
+                    theme === SystemTheme.DARK
                         ? colorToDuplicate.darkColor || colorToDuplicate.lightColor
                         : colorToDuplicate.lightColor,
                 );

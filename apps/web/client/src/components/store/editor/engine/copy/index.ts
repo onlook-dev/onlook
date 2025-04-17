@@ -27,14 +27,14 @@ export class CopyManager {
         }
         const selectedEl = this.editorEngine.elements.selected[0];
         const frameId = selectedEl.frameId;
-        const webview = this.editorEngine.webviews.getWebview(frameId);
-        if (!webview) {
-            console.error('Failed to get webview');
+        const frameView = this.editorEngine.frames.getWebview(frameId);
+        if (!frameView) {
+            console.error('Failed to get frameView');
             return;
         }
 
-        const targetEl: ActionElement | null = await webview.executeJavaScript(
-            `window.api?.getActionElementByDomId('${selectedEl.domId}')`,
+        const targetEl: ActionElement | null = await frameView.executeJavaScript(
+            `window.api?.getActionElement('${selectedEl.domId}')`,
         );
         if (!targetEl) {
             console.error('Failed to copy element');
@@ -168,9 +168,9 @@ export class CopyManager {
 
     async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
         const frameId = selectedEl.frameId;
-        const webview = this.editorEngine.webviews.getWebview(frameId);
-        if (!webview) {
-            console.error('Failed to get webview');
+        const frameView = this.editorEngine.frames.getWebview(frameId);
+        if (!frameView) {
+            console.error('Failed to get frameView');
             return;
         }
 
@@ -180,7 +180,7 @@ export class CopyManager {
             selectedEl.oid === this.copied?.element.oid;
 
         if (insertAsSibling) {
-            const location: ActionLocation | null = await webview.executeJavaScript(
+            const location: ActionLocation | null = await frameView.executeJavaScript(
                 `window.api?.getActionLocation('${selectedEl.domId}')`,
             );
             if (!location) {

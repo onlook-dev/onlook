@@ -90,12 +90,12 @@ export const TreeNode = memo(observer(
 
         const sendMouseEvent = useCallback(
             async (e: React.MouseEvent<HTMLDivElement>, node: LayerNode, action: MouseAction) => {
-                const webview = editorEngine.frames.get(node.frameId);
-                if (!webview) {
-                    console.error('Failed to get webview');
+                const frameView = editorEngine.frames.get(node.frameId);
+                if (!frameView) {
+                    console.error('Failed to get frameView');
                     return;
                 }
-                const el: DomElement = await webview.view.getElementByDomId(node.domId, action === MouseAction.MOUSE_DOWN);
+                const el: DomElement = await frameView.view.getElementByDomId(node.domId, action === MouseAction.MOUSE_DOWN);
                 if (!el) {
                     console.error('Failed to get element');
                     return;
@@ -103,19 +103,19 @@ export const TreeNode = memo(observer(
 
                 switch (action) {
                     case MouseAction.MOVE:
-                        editorEngine.elements.mouseover(el, webview);
+                        editorEngine.elements.mouseover(el, frameView);
                         break;
                     case MouseAction.MOUSE_DOWN:
                         if (isWindow) {
                             editorEngine.clearUI();
-                            editorEngine.frames.select(webview.frame);
+                            editorEngine.frames.select(frameView.frame);
                             return;
                         }
                         if (e.shiftKey) {
-                            editorEngine.elements.shiftClick(el, webview);
+                            editorEngine.elements.shiftClick(el, frameView);
                             break;
                         }
-                        editorEngine.elements.click([el], webview);
+                        editorEngine.elements.click([el], frameView);
                         break;
                 }
             }, [editorEngine, isWindow]);

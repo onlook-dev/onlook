@@ -86,8 +86,8 @@ export const BottomBar = observer(() => {
         // editorEngine.state.editorMode = mode;
 
         // // Disable pointer-events on webviews during drag
-        // for (const webview of editorEngine.webviews.webviews.values()) {
-        //     webview.webview.style.pointerEvents = 'none';
+        // for (const frameView of editorEngine.frames.webviews.values()) {
+        //     frameView.frameView.style.pointerEvents = 'none';
         // }
 
         // const dragPreview = createDragPreview(properties);

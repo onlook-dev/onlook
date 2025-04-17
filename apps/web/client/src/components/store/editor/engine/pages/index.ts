@@ -74,8 +74,8 @@ export class PagesManager {
     }
 
     get activeRoute(): string | undefined {
-        const webview = this.getActiveWebview();
-        return webview ? this.activeRoutesByWebviewId[webview.id] : undefined;
+        const frameView = this.getActiveWebview();
+        return frameView ? this.activeRoutesByWebviewId[frameView.id] : undefined;
     }
 
     private getActiveWebview(): Electron.WebviewTag | undefined {
@@ -83,8 +83,8 @@ export class PagesManager {
     }
 
     public isNodeActive(node: PageNode): boolean {
-        const webview = this.getActiveWebview();
-        if (!webview) {
+        const frameView = this.getActiveWebview();
+        if (!frameView) {
             return false;
         }
 
@@ -292,10 +292,10 @@ export class PagesManager {
     }
 
     async navigateTo(path: string) {
-        const webview = this.getActiveWebview();
+        const frameView = this.getActiveWebview();
 
-        if (!webview) {
-            console.warn('No webview available');
+        if (!frameView) {
+            console.warn('No frameView available');
             return;
         }
 
@@ -317,7 +317,7 @@ export class PagesManager {
         }
 
         try {
-            const currentUrl = await webview.getURL();
+            const currentUrl = await frameView.getURL();
             const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
 
             if (!baseUrl) {
@@ -325,9 +325,9 @@ export class PagesManager {
                 return;
             }
 
-            await webview.loadURL(`${baseUrl}${path}`);
-            this.setActivePath(webview.id, originalPath);
-            await webview.executeJavaScript('window.api?.processDom()');
+            await frameView.loadURL(`${baseUrl}${path}`);
+            this.setActivePath(frameView.id, originalPath);
+            await frameView.executeJavaScript('window.api?.processDom()');
 
             sendAnalytics('page navigate');
         } catch (error) {
@@ -340,13 +340,13 @@ export class PagesManager {
     }
 
     public handleWebviewUrlChange(frameId: string) {
-        const webview = this.editorEngine.webviews.getWebview(frameId);
-        if (!webview) {
+        const frameView = this.editorEngine.frames.getWebview(frameId);
+        if (!frameView) {
             return;
         }
 
         try {
-            const url = webview.getURL();
+            const url = frameView.getURL();
             if (!url) {
                 return;
             }

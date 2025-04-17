@@ -35,7 +35,6 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
             }
             const pos = getRelativeMousePosition(e);
             const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(action);
-            console.log('shouldGetStyle', shouldGetStyle);
             const el: DomElement = await frameData.view.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
             if (!el) {
                 console.log('No element found');
@@ -66,12 +65,12 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                     if (e.shiftKey) {
                         editorEngine.elements.shiftClick(el, frameData);
                     } else {
-                        // editorEngine.move.start(el, pos, webview);
+                        // editorEngine.move.start(el, pos, frameView);
                         editorEngine.elements.click([el], frameData);
                     }
                     break;
                 case MouseAction.DOUBLE_CLICK:
-                    // editorEngine.text.start(el, webview);
+                    // editorEngine.text.start(el, frameView);
                     break;
             }
         },
@@ -158,13 +157,13 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         //     const properties = JSON.parse(propertiesData);
 
         //     if (properties.type === 'image') {
-        //         const webview = getWebview();
+        //         const frameView = getWebview();
         //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedImage(webview, dropPosition, properties);
+        //         await editorEngine.insert.insertDroppedImage(frameView, dropPosition, properties);
         //     } else {
-        //         const webview = getWebview();
+        //         const frameView = getWebview();
         //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
+        //         await editorEngine.insert.insertDroppedElement(frameView, dropPosition, properties);
         //     }
 
         //     editorEngine.state.editorMode = EditorMode.DESIGN;

@@ -208,8 +208,8 @@ export const ImagesTab = observer(() => {
             }),
         );
 
-        // for (const webview of editorEngine.webviews.webviews.values()) {
-        //     webview.webview.style.pointerEvents = 'none';
+        // for (const frameView of editorEngine.frames.webviews.values()) {
+        //     frameView.frameView.style.pointerEvents = 'none';
         // }
 
         // editorEngine.mode = EditorMode.INSERT_IMAGE;
@@ -322,8 +322,8 @@ export const ImagesTab = observer(() => {
                                 draggable
                                 onDragStart={(e) => handleImageDragStart(e, image)}
                                 onDragEnd={() => {
-                                    // for (const webview of editorEngine.webviews.webviews.values()) {
-                                    //     webview.webview.style.pointerEvents = 'auto';
+                                    // for (const frameView of editorEngine.frames.webviews.values()) {
+                                    //     frameView.frameView.style.pointerEvents = 'auto';
                                     // }
                                     // editorEngine.mode = EditorMode.DESIGN;
                                 }}

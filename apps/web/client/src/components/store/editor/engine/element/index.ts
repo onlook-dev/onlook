@@ -5,7 +5,6 @@ import type { EditorEngine } from '..';
 import type { FrameData } from '../frames';
 import { adaptRectToCanvas } from '../overlay/utils';
 
-
 export class ElementsManager {
     private _hovered: DomElement | undefined;
     private _selected: DomElement[] = [];
@@ -74,7 +73,7 @@ export class ElementsManager {
     async refreshSelectedElements(frame: Frame) {
         // const newSelected: DomElement[] = [];
         // for (const el of this.selected) {
-        //     const newEl: DomElement | null = await frame.webview.executeJavaScript(
+        //     const newEl: DomElement | null = await frame.frameView.executeJavaScript(
         //         `window.api?.getElementByDomId('${el.domId}', true)`,
         //     );
         //     if (!newEl) {
@@ -121,7 +120,7 @@ export class ElementsManager {
             }
 
             // const removeAction = (await view.executeJavaScript(
-            //     `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${frameId}')`,
+            //     `window.api?.getRemoveAction('${selectedEl.domId}', '${frameId}')`,
             // )) as RemoveElementAction | null;
             // if (!removeAction) {
             //     console.error('Remove action not found');

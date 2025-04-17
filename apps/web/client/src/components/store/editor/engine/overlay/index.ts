@@ -20,12 +20,12 @@ export class OverlayManager {
                 shouldHideOverlay: this.editorEngine.state?.shouldHideOverlay,
             }),
             () => {
-                this.refreshOverlay();
+                this.refresh();
             },
         );
     }
 
-    private refreshOverlay = async () => {
+    refresh = async () => {
         if (this.editorEngine.state.shouldHideOverlay) {
             return;
         }
@@ -91,10 +91,6 @@ export class OverlayManager {
     };
 
     clear = () => {
-        if (this.animationFrameId !== null) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
-        }
         this.removeMeasurement();
         this.state.clear();
     };
