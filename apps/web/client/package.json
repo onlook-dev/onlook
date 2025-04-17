@@ -62,7 +62,15 @@
         "zod": "^3.24.2",
         "@onlook/rpc": "*",
         "@onlook/penpal": "*",
-        "@onlook/models": "*"
+        "@onlook/models": "*",
+        "@shikijs/monaco": "^3.2.2",
+        "monaco-editor": "^0.52.2",
+        "mime-lite": "^1.0.3",
+        "react-arborist": "^3.4.3",
+        "react-markdown": "^10.1.0",
+        "remark-gfm": "^4.0.1",
+        "shiki": "^3.2.2",
+        "use-resize-observer": "^9.1.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",

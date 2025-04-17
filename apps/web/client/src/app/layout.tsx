@@ -6,7 +6,7 @@ import { type Metadata } from "next";
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
-
+import { Modals } from "@/components/modal";
 export const metadata: Metadata = {
     title: "Onlook",
     description: "Onlook – Cursor for Designers",
@@ -30,6 +30,7 @@ export default async function RootLayout({
             <body>
                 <TRPCReactProvider>
                     <NextIntlClientProvider>
+                        <Modals />
                         {children}
                     </NextIntlClientProvider>
                 </TRPCReactProvider>

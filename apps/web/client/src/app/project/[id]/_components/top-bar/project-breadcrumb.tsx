@@ -1,6 +1,8 @@
 // import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
 // import { ProjectTabs } from '@/lib/projects';
 // import { Route } from '@/lib/routes';
+import { useEditorEngine } from '@/components/store';
+import { SettingsTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -19,7 +21,7 @@ import { redirect } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = () => {
-    // const editorEngine = useEditorEngine();
+    const editorEngine = useEditorEngine();
     // const projectsManager = useProjectsManager();
     // const routeManager = useRouteManager();
     const t = useTranslations();
@@ -167,15 +169,15 @@ export const ProjectBreadcrumb = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
-                            // editorEngine.isPlansOpen = true;
+                            editorEngine.state.plansOpen = true;
                         }}
                     >
                         {t('projects.actions.subscriptions')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
-                            // editorEngine.isSettingsOpen = true;
-                            // editorEngine.settingsTab = SettingsTabValue.PROJECT;
+                            editorEngine.state.settingsOpen = true;
+                            editorEngine.state.settingsTab = SettingsTabValue.PROJECT;
                         }}
                     >
                         {t('projects.actions.settings')}

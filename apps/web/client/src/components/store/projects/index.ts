@@ -1,16 +1,21 @@
-import type { Project } from '@onlook/models/projects';
+import type { Project } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 
 export class ProjectManager {
     private _project: Project | null = null;
-
+    // private _domains: DomainsManager | null = null;
+    // private _versions: VersionsManager | null = null;
     constructor() {
         makeAutoObservable(this);
     }
 
     get project() {
         return this._project;
+    }
+
+    get versions(): VersionsManager | null {
+        return this._versions;
     }
 
     set project(project: Project | null) {

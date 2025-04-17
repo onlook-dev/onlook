@@ -18,6 +18,7 @@ export enum EditorTabValue {
 }
 
 export enum SettingsTabValue {
+    SITE = 'site',
     DOMAIN = 'domain',
     PROJECT = 'project',
     PREFERENCES = 'preferences',

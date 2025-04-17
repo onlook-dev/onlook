@@ -13,7 +13,7 @@ export class StateManager {
     canvasPanning = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
-    settingsTab: SettingsTabValue = SettingsTabValue.PREFERENCES;
+    settingsTab: SettingsTabValue | string = SettingsTabValue.PREFERENCES;
 
     leftPanelTab: LeftPanelTabValue | null = null;
     rightPanelTab: EditorTabValue = EditorTabValue.CHAT;

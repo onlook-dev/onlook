@@ -1,6 +1,6 @@
-import type { ProjectsManager } from '@/lib/projects';
-import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { MainChannels } from '@onlook/constants';
+// import type { ProjectsManager } from '@/lib/projects';
+// import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
+// import { MainChannels } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import mime from 'mime-lite';
 import { makeAutoObservable } from 'mobx';
@@ -12,10 +12,10 @@ export class ImageManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectsManager,
+        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
-        this.scanImages();
+        // this.scanImages();
     }
 
     async upload(file: File): Promise<void> {

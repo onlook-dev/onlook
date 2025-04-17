@@ -1,10 +1,11 @@
 import { makeAutoObservable } from 'mobx';
 
+import { type ProjectManager } from '@/components/store/projects';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
-import { type CodeManager } from './code';
+import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
@@ -12,7 +13,7 @@ import { FontManager } from './font';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
-import { type ImageManager } from './image';
+import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
@@ -22,8 +23,6 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
-import { type ProjectManager } from '@/components/store/projects';
-// import type { UserManager } from '@/lib/user';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -72,6 +71,10 @@ export class EditorEngine {
         );
         this.error = new ErrorManager(this, this.projectsManager);
         // this.image = new ImageManager(this,this.projectsManager);
+        // this.error = new ErrorManager(this, this.projectsManager);
+        this.image = new ImageManager(this
+            // ,this.projectsManager
+        );
         this.theme = new ThemeManager(this
             // , this.projectsManager
         );
