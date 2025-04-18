@@ -230,6 +230,8 @@ export const PromptingCard = () => {
                 title: 'URL Crawled',
                 description: `Data for ${trimmedUrlInput} has been crawled successfully.`,
             });
+
+            setUrlInput('');
         } catch (error) {
             console.error('Failed to crawl URL:', error);
             toast({
@@ -239,7 +241,6 @@ export const PromptingCard = () => {
             });
         } finally {
             setIsCrawling(false);
-            setUrlInput('');
         }
     };
 
@@ -476,6 +477,7 @@ export const PromptingCard = () => {
                                     type="url"
                                     value={urlInput}
                                     onChange={(e) => setUrlInput(e.target.value)}
+                                    aria-label={t('projects.prompt.crawl.input.ariaLabel')}
                                     placeholder={t('projects.prompt.crawl.input.placeholder')}
                                     className={cn(
                                         'flex-1 h-9 px-3 rounded-md',

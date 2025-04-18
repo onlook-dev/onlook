@@ -78,6 +78,7 @@
                 "description": "Paste a link to a website that you want to duplicate",
                 "input": {
                     "placeholder": "Paste a link to a website",
+                    "arialLabel": "URL input for web page crawling",
                     "crawling": "Getting Data",
                     "submit": "Get Data"
                 }
