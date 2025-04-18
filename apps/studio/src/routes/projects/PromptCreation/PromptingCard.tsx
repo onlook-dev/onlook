@@ -186,13 +186,14 @@ export const PromptingCard = () => {
     };
 
     const handleCrawlSubmit = async () => {
-        if (!urlInput.trim()) {
+        const trimmedUrlInput = urlInput.trim();
+        if (!trimmedUrlInput) {
             console.warn('URL input is empty');
             return;
         }
 
         try {
-            const url = new URL(urlInput);
+            const url = new URL(trimmedUrlInput);
             if (!['http:', 'https:'].includes(url.protocol)) {
                 console.warn('URL must start with http or https');
                 toast({
@@ -203,7 +204,7 @@ export const PromptingCard = () => {
                 return;
             }
         } catch (error) {
-            console.warn('Invalid URL:', urlInput);
+            console.warn('Invalid URL:', trimmedUrlInput);
             toast({
                 title: 'Invalid URL',
                 description: 'Please enter a valid URL format.',
@@ -217,7 +218,7 @@ export const PromptingCard = () => {
         try {
             const crawler = CrawlerService.getInstance();
 
-            const response = await crawler.crawlUrl(urlInput);
+            const response = await crawler.crawlUrl(trimmedUrlInput);
 
             const responseData = response.data;
             const html = responseData[0]?.html || '';
@@ -227,7 +228,7 @@ export const PromptingCard = () => {
 
             toast({
                 title: 'URL Crawled',
-                description: `Data for ${urlInput} has been crawled successfully.`,
+                description: `Data for ${trimmedUrlInput} has been crawled successfully.`,
             });
         } catch (error) {
             console.error('Failed to crawl URL:', error);
@@ -238,6 +239,7 @@ export const PromptingCard = () => {
             });
         } finally {
             setIsCrawling(false);
+            setUrlInput('');
         }
     };
 

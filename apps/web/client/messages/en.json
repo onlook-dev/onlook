@@ -77,7 +77,7 @@
                 "title": "Duplicate a website",
                 "description": "Paste a link to a website that you want to duplicate",
                 "input": {
-                    "placeholder": "Paste a link of a website",
+                    "placeholder": "Paste a link to a website",
                     "crawling": "Getting Data",
                     "submit": "Get Data"
                 }
