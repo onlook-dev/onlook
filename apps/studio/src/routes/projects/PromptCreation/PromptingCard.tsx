@@ -189,6 +189,28 @@ export const PromptingCard = () => {
             console.warn('URL input is empty');
             return;
         }
+
+        try {
+            const url = new URL(urlInput);
+            if (!['http:', 'https:'].includes(url.protocol)) {
+                console.warn('URL must start with http or https');
+                toast({
+                    title: 'Invalid URL',
+                    description: 'Please enter a URL that starts with http or https.',
+                    variant: 'destructive',
+                });
+                return;
+            }
+        } catch (error) {
+            console.warn('Invalid URL:', urlInput);
+            toast({
+                title: 'Invalid URL',
+                description: 'Please enter a valid URL format.',
+                variant: 'destructive',
+            });
+            return;
+        }
+
         setIsCrawling(true);
 
         try {

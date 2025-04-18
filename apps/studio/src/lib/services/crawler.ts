@@ -19,7 +19,7 @@ export interface CrawlOptions {
 }
 
 export class CrawlerService {
-    private static intance: CrawlerService;
+    private static instance: CrawlerService;
 
     private app: FirecrawlApp;
 
@@ -28,10 +28,10 @@ export class CrawlerService {
     }
 
     static getInstance(): CrawlerService {
-        if (!this.intance) {
-            this.intance = new CrawlerService();
+        if (!this.instance) {
+            this.instance = new CrawlerService();
         }
-        return this.intance;
+        return this.instance;
     }
 
     async crawlUrl(
