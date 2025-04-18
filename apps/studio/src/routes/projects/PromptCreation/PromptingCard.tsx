@@ -14,7 +14,8 @@ import { useEffect, useRef, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import { DraftImagePill } from '../../editor/EditPanel/ChatTab/ContextPills/DraftingImagePill';
 import { useTranslation } from 'react-i18next';
-import { CrawlerService } from '@/lib/services/crawler';
+import { CrawlerService, validateCrawlerResponse } from '@/lib/services/crawler';
+import type { CrawledContent } from '@/lib/services/crawler';
 import { toast } from '@onlook/ui/use-toast';
 
 export const PromptingCard = () => {
@@ -32,7 +33,7 @@ export const PromptingCard = () => {
     const { t } = useTranslation();
     const [urlInput, setUrlInput] = useState('');
     const [isCrawling, setIsCrawling] = useState(false);
-    const [crawledValue, setCrawledValue] = useState('');
+    const [crawledValue, setCrawledValue] = useState<CrawledContent>({ markdown: '', html: '' });
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -51,11 +52,11 @@ export const PromptingCard = () => {
             return;
         }
         projectsManager.create.sendPrompt(inputValue, selectedImages, crawledValue, false);
-        setCrawledValue('');
+        setCrawledValue({ markdown: '', html: '' });
     };
 
     const handleBlankSubmit = async () => {
-        projectsManager.create.sendPrompt('', [], '', true);
+        projectsManager.create.sendPrompt('', [], { html: '', markdown: '' }, true);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -188,7 +189,11 @@ export const PromptingCard = () => {
     const handleCrawlSubmit = async () => {
         const trimmedUrlInput = urlInput.trim();
         if (!trimmedUrlInput) {
-            console.warn('URL input is empty');
+            toast({
+                title: 'URL Required',
+                description: 'Please enter a URL before submitting.',
+                variant: 'destructive',
+            });
             return;
         }
 
@@ -217,14 +222,17 @@ export const PromptingCard = () => {
 
         try {
             const crawler = CrawlerService.getInstance();
-
             const response = await crawler.crawlUrl(trimmedUrlInput);
 
-            const responseData = response.data;
-            const html = responseData[0]?.html || '';
-            const markdown = responseData[0]?.markdown || '';
+            if (!validateCrawlerResponse(response)) {
+                throw new Error('Invalid response format from crawler');
+            }
 
-            setCrawledValue(`---MARKDOWN---\n${markdown}\n\n---HTML---\n${html}`);
+            const responseData = response.data;
+            setCrawledValue({
+                html: responseData[0]?.html || '',
+                markdown: responseData[0]?.markdown || '',
+            });
 
             toast({
                 title: 'URL Crawled',

@@ -18,6 +18,47 @@ export interface CrawlOptions {
     };
 }
 
+export interface CrawlerResponse {
+    success: boolean;
+    error?: string;
+    data: Array<{
+        html?: string;
+        markdown?: string;
+    }>;
+}
+
+export interface CrawledContent {
+    markdown?: string;
+    html?: string;
+}
+
+export function validateCrawlerResponse(response: unknown): response is CrawlerResponse {
+    if (!response || typeof response !== 'object') {
+        return false;
+    }
+
+    if (!('success' in response) || typeof response.success !== 'boolean') {
+        return false;
+    }
+
+    if (!('data' in response) || !Array.isArray(response.data)) {
+        return false;
+    }
+
+    if (response.data.length === 0) {
+        return false;
+    }
+
+    const firstItem = response.data[0];
+    return (
+        typeof firstItem === 'object' &&
+        firstItem !== null &&
+        ('html' in firstItem || 'markdown' in firstItem) &&
+        (firstItem.html === undefined || typeof firstItem.html === 'string') &&
+        (firstItem.markdown === undefined || typeof firstItem.markdown === 'string')
+    );
+}
+
 export class CrawlerService {
     private static instance: CrawlerService;
 
