@@ -1,4 +1,6 @@
 import { useEditorEngine } from '@/components/store';
+import { ChatConversationImpl } from '@/components/store/editor/engine/chat/conversation/conversation';
+import { MOCK_CHAT_MESSAGES } from '@/components/store/editor/engine/chat/mockData';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -41,11 +43,15 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
     };
 
     const groups = [{ name: 'Today' }];
+     const MOCK = new ChatConversationImpl('1', MOCK_CHAT_MESSAGES);
+    
 
     // Sort conversations by creation time, newest first
-    const sortedConversations = [...editorEngine.chat.conversation.conversations].sort((a, b) => {
+    const sortedConversations = [MOCK].sort((a, b) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
+    console.log(sortedConversations);
+    
 
     return (
         <Popover open={isOpen} onOpenChange={handlePopoverOpenChange}>

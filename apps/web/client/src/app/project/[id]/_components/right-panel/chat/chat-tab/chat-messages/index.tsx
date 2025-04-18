@@ -42,6 +42,9 @@ export const ChatMessages = observer(() => {
         [],
     );
 
+    console.log(editorEngine.chat.conversation.current);
+    
+
     // Render in reverse order to make the latest message appear at the bottom
     return (
         <AnimatePresence mode="wait">

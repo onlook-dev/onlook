@@ -1,6 +1,6 @@
-// import type { ProjectsManager } from '@/lib/projects';
 // import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 // import { MainChannels } from '@onlook/constants';
+import { type ProjectManager } from '@/components/store/projects';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 // import type { Project } from '@onlook/models/projects';
 import type { CoreAssistantMessage, CoreToolMessage, CoreUserMessage } from 'ai';
@@ -12,7 +12,7 @@ import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
 import type { Project } from '@onlook/models/project';
-const USE_MOCK = false;
+const USE_MOCK = true;
 
 export class ConversationManager {
     projectId: string | null = null;
@@ -21,13 +21,13 @@ export class ConversationManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        // private projectsManager: ProjectsManager,
+        private projectsManager: ProjectManager,
     ) {
         makeAutoObservable(this);
-        // reaction(
-        //     () => this.projectsManager.project,
-        //     (current) => this.getCurrentProjectConversations(current),
-        // );
+        reaction(
+            () => this.projectsManager.project,
+            (current) => void this.getCurrentProjectConversations(current),
+        );
     }
 
     async getCurrentProjectConversations(project: Project | null) {
@@ -40,6 +40,10 @@ export class ConversationManager {
         }
         this.projectId = project.id;
 
+        if (USE_MOCK) {
+            this.current = new ChatConversationImpl(project.id, MOCK_CHAT_MESSAGES);
+        }
+        
         this.conversations = await this.getConversations(project.id);
         if (this.conversations.length === 0) {
             this.current = new ChatConversationImpl(project.id, []);
@@ -47,9 +51,7 @@ export class ConversationManager {
             this.current = this.conversations[0];
         }
 
-        if (USE_MOCK) {
-            this.current = new ChatConversationImpl(project.id, MOCK_CHAT_MESSAGES);
-        }
+
     }
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
