@@ -89,9 +89,15 @@ export class CreateManager {
         }
     }
 
-    async sendPrompt(prompt: string, images: ImageMessageContext[], blank: boolean = false) {
+    async sendPrompt(
+        prompt: string,
+        images: ImageMessageContext[],
+        crawledContent?: string,
+        blank: boolean = false,
+    ) {
         sendAnalytics('prompt create project', {
             prompt,
+            crawledContent,
             blank,
         });
 
@@ -104,6 +110,7 @@ export class CreateManager {
         } else {
             result = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
                 prompt,
+                crawledContent,
                 images,
             });
         }

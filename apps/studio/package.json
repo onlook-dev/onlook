@@ -53,6 +53,7 @@
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",
         "@fontsource-variable/inter": "^5.1.0",
+        "@mendable/firecrawl-js": "^1.24.0",
         "@onlook/foundation": "*",
         "@onlook/supabase": "*",
         "@onlook/ui": "*",

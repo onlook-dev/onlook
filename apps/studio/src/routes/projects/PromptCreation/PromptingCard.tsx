@@ -14,6 +14,8 @@ import { useEffect, useRef, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import { DraftImagePill } from '../../editor/EditPanel/ChatTab/ContextPills/DraftingImagePill';
 import { useTranslation } from 'react-i18next';
+import { CrawlerService } from '@/lib/services/crawler';
+import { toast } from '@onlook/ui/use-toast';
 
 export const PromptingCard = () => {
     const projectsManager = useProjectsManager();
@@ -28,6 +30,9 @@ export const PromptingCard = () => {
     const [isComposing, setIsComposing] = useState(false);
     const imageRef = useRef<HTMLInputElement>(null);
     const { t } = useTranslation();
+    const [urlInput, setUrlInput] = useState('');
+    const [isCrawling, setIsCrawling] = useState(false);
+    const [crawledValue, setCrawledValue] = useState('');
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -45,11 +50,11 @@ export const PromptingCard = () => {
             console.warn('Input is too short');
             return;
         }
-        projectsManager.create.sendPrompt(inputValue, selectedImages, false);
+        projectsManager.create.sendPrompt(inputValue, selectedImages, crawledValue, false);
     };
 
     const handleBlankSubmit = async () => {
-        projectsManager.create.sendPrompt('', [], true);
+        projectsManager.create.sendPrompt('', [], '', true);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -176,6 +181,40 @@ export const PromptingCard = () => {
 
             const newHeight = Math.min(textareaRef.current.scrollHeight, maxHeight);
             textareaRef.current.style.height = `${newHeight}px`;
+        }
+    };
+
+    const handleCrawlSubmit = async () => {
+        if (!urlInput.trim()) {
+            console.warn('URL input is empty');
+            return;
+        }
+        setIsCrawling(true);
+
+        try {
+            const crawler = CrawlerService.getInstance();
+
+            const response = await crawler.crawlUrl(urlInput);
+
+            const responseData = response.data;
+            const html = responseData[0]?.html || '';
+            const markdown = responseData[0]?.markdown || '';
+
+            setCrawledValue(`---MARKDOWN---\n${markdown}\n\n---HTML---\n${html}`);
+
+            toast({
+                title: 'URL Crawled',
+                description: `Data for ${urlInput} has been crawled successfully.`,
+            });
+        } catch (error) {
+            console.error('Failed to crawl URL:', error);
+            toast({
+                title: 'Failed to Crawl URL',
+                description: error instanceof Error ? error.message : 'An unknown error occurred',
+                variant: 'destructive',
+            });
+        } finally {
+            setIsCrawling(false);
         }
     };
 
@@ -381,6 +420,63 @@ export const PromptingCard = () => {
                             </div>
                         </CardContent>
                     </motion.div>
+                </MotionCard>
+                <MotionCard
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="w-[600px] backdrop-blur-md bg-background/30 overflow-hidden"
+                >
+                    <CardHeader>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-2xl text-foreground-primary"
+                        >
+                            {t('projects.prompt.crawl.title')}
+                        </motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-sm text-foreground-secondary"
+                        >
+                            {t('projects.prompt.crawl.description')}
+                        </motion.p>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-row gap-2">
+                                <input
+                                    type="url"
+                                    value={urlInput}
+                                    onChange={(e) => setUrlInput(e.target.value)}
+                                    placeholder="Enter URL to crawl..."
+                                    className={cn(
+                                        'flex-1 h-9 px-3 rounded-md',
+                                        'bg-background-secondary/80 backdrop-blur-sm',
+                                        'border border-border',
+                                        'text-sm text-foreground-primary',
+                                        'placeholder:text-foreground-secondary',
+                                        'focus:outline-none focus:ring-2 focus:ring-ring',
+                                    )}
+                                />
+                                <Button
+                                    variant="secondary"
+                                    className="gap-2"
+                                    disabled={!urlInput.trim() || isCrawling}
+                                    onClick={handleCrawlSubmit}
+                                >
+                                    {isCrawling ? (
+                                        <Icons.Circle className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Icons.ArrowRight className="w-4 h-4" />
+                                    )}
+                                    <span>{isCrawling ? 'Crawling...' : 'Crawl URL'}</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
                 </MotionCard>
                 <Button
                     variant="outline"
