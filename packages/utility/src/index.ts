@@ -8,5 +8,6 @@ export * from './math';
 export * from './null';
 export * from './string';
 export * from './time';
+export * from './unit';
 export * from './urls';
 

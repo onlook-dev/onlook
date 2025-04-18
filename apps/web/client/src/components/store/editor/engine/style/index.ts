@@ -69,13 +69,13 @@ export class StyleManager {
                         ? Object.fromEntries(
                             Object.keys(styles).map((style) => [
                                 style,
-                                { value: styles[style], type: StyleChangeType.Custom },
+                                { value: styles[style] ?? '', type: StyleChangeType.Custom },
                             ]),
                         )
                         : Object.fromEntries(
                             Object.keys(styles).map((style) => [
                                 style,
-                                { value: styles[style], type: StyleChangeType.Value },
+                                { value: styles[style] ?? '', type: StyleChangeType.Value },
                             ]),
                         ),
                 original: Object.fromEntries(
@@ -157,6 +157,10 @@ export class StyleManager {
         }
         this.domIdToStyle = newMap;
         this.selectedStyle = newSelectedStyle;
+    }
+
+    getValue(style: string): string | null {
+        return this.selectedStyle?.styles[style] ?? null;
     }
 
     clear() {

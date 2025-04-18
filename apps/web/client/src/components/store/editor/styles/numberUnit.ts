@@ -1,22 +1,6 @@
 import type { SingleStyle } from '@/lib/editor/styles/models';
 import { toast } from '@onlook/ui/use-toast';
 
-export function stringToParsedValue(
-    val: string,
-    percent = false,
-): { numberVal: string; unitVal: string } {
-    const matches = val.match(/([-+]?[0-9]*\.?[0-9]+)([a-zA-Z%]*)/);
-
-    let num = matches ? Number.parseFloat(matches[1]) : 0;
-    let unit = matches && matches[2] ? matches[2] : '';
-
-    if (percent && unit === '') {
-        unit = '%';
-        num = num <= 1 ? num * 100 : num;
-    }
-    return { numberVal: num.toString(), unitVal: unit };
-}
-
 export function parsedValueToString(num: string, unit: string): string {
     return `${num}${unit}`;
 }
