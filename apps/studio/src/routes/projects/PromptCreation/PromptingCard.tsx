@@ -51,6 +51,7 @@ export const PromptingCard = () => {
             return;
         }
         projectsManager.create.sendPrompt(inputValue, selectedImages, crawledValue, false);
+        setCrawledValue('');
     };
 
     const handleBlankSubmit = async () => {
@@ -473,7 +474,7 @@ export const PromptingCard = () => {
                                     type="url"
                                     value={urlInput}
                                     onChange={(e) => setUrlInput(e.target.value)}
-                                    placeholder="Enter URL to crawl..."
+                                    placeholder={t('projects.prompt.crawl.input.placeholder')}
                                     className={cn(
                                         'flex-1 h-9 px-3 rounded-md',
                                         'bg-background-secondary/80 backdrop-blur-sm',
@@ -490,11 +491,16 @@ export const PromptingCard = () => {
                                     onClick={handleCrawlSubmit}
                                 >
                                     {isCrawling ? (
-                                        <Icons.Circle className="w-4 h-4 animate-spin" />
+                                        <>
+                                            <Icons.Circle className="w-4 h-4 animate-spin" />{' '}
+                                            {t('projects.prompt.crawl.input.crawling')}
+                                        </>
                                     ) : (
-                                        <Icons.ArrowRight className="w-4 h-4" />
+                                        <>
+                                            <Icons.ArrowRight className="w-4 h-4" />{' '}
+                                            {t('projects.prompt.crawl.input.submit')}
+                                        </>
                                     )}
-                                    <span>{isCrawling ? 'Crawling...' : 'Crawl URL'}</span>
                                 </Button>
                             </div>
                         </div>

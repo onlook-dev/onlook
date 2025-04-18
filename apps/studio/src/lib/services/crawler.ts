@@ -24,7 +24,7 @@ export class CrawlerService {
     private app: FirecrawlApp;
 
     private constructor() {
-        this.app = new FirecrawlApp({ apiKey: process.env.VITE_FIRECRAWL_API_KEY });
+        this.app = new FirecrawlApp({ apiKey: import.meta.env.VITE_FIRECRAWL_API_KEY });
     }
 
     static getInstance(): CrawlerService {
