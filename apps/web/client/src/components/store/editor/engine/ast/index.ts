@@ -1,7 +1,7 @@
-import { invokeMainChannel } from '@/lib/utils';
+// import { invokeMainChannel } from '@/lib/utils';
+import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
-import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { LayersManager } from './layers';
@@ -19,32 +19,32 @@ export class AstManager {
     }
 
     setMapRoot(
-        webviewId: string,
+        frameId: string,
         root: Element,
         rootNode: LayerNode,
         layerMap: Map<string, LayerNode>,
     ) {
-        this.mappings.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
-        this.processNode(webviewId, rootNode);
+        this.mappings.setMetadata(frameId, root.ownerDocument, rootNode, layerMap);
+        this.processNode(frameId, rootNode);
     }
 
-    updateMap(webviewId: string, newMap: Map<string, LayerNode>, domId: string | null) {
-        this.mappings.addNewMapping(webviewId, newMap);
-        const node = domId ? this.mappings.getLayerNode(webviewId, domId) : null;
+    updateMap(frameId: string, newMap: Map<string, LayerNode>, domId: string | null) {
+        this.mappings.addNewMapping(frameId, newMap);
+        const node = domId ? this.mappings.getLayerNode(frameId, domId) : null;
         if (!node) {
             console.warn('Failed to replaceElement: Node not found');
             return;
         }
-        this.processNode(webviewId, node);
+        this.processNode(frameId, node);
     }
 
-    processNode(webviewId: string, node: LayerNode) {
-        this.dfs(webviewId, node, (n) => {
-            this.processNodeForMap(webviewId, n);
+    processNode(frameId: string, node: LayerNode) {
+        this.dfs(frameId, node, (n) => {
+            this.processNodeForMap(frameId, n);
         });
     }
 
-    dfs(webviewId: string, root: LayerNode, callback: (node: LayerNode) => void) {
+    dfs(frameId: string, root: LayerNode, callback: (node: LayerNode) => void) {
         const stack = [root];
         while (stack.length > 0) {
             const node = stack.pop();
@@ -54,7 +54,7 @@ export class AstManager {
             callback(node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i]);
+                    const childLayerNode = this.mappings.getLayerNode(frameId, node.children[i]);
                     if (childLayerNode) {
                         stack.push(childLayerNode);
                     }
@@ -63,7 +63,7 @@ export class AstManager {
         }
     }
 
-    private async processNodeForMap(webviewId: string, node: LayerNode) {
+    private async processNodeForMap(frameId: string, node: LayerNode) {
         if (!node.oid) {
             console.warn('Failed to processNodeForMap: No oid found');
             return;
@@ -77,13 +77,13 @@ export class AstManager {
         // Check if node needs type assignment
         const hasSpecialType = templateNode.dynamicType || templateNode.coreElementType;
         if (!hasSpecialType) {
-            this.findNodeInstance(webviewId, node, node, templateNode);
+            this.findNodeInstance(frameId, node, node, templateNode);
             return;
         }
 
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
-        if (!webview) {
-            console.warn('Failed: Webview not found');
+        const frame = this.editorEngine.frames.get(frameId);
+        if (!frame) {
+            console.warn('Failed: Frame not found');
             return;
         }
 
@@ -95,18 +95,16 @@ export class AstManager {
             node.coreElementType = templateNode.coreElementType;
         }
 
-        webview.executeJavaScript(
-            `window.api?.setElementType(
-            '${node.domId}', 
-            ${templateNode.dynamicType ? `'${templateNode.dynamicType}'` : 'undefined'}, 
-            ${templateNode.coreElementType ? `'${templateNode.coreElementType}'` : 'undefined'}
-        )`,
+        frame.view.setElementType(
+            node.domId,
+            templateNode.dynamicType ? templateNode.dynamicType : undefined,
+            templateNode.coreElementType ? templateNode.coreElementType : undefined
         );
-        this.findNodeInstance(webviewId, node, node, templateNode);
+        this.findNodeInstance(frameId, node, node, templateNode);
     }
 
     private async findNodeInstance(
-        webviewId: string,
+        frameId: string,
         originalNode: LayerNode,
         node: LayerNode,
         templateNode: TemplateNode,
@@ -119,7 +117,7 @@ export class AstManager {
             return;
         }
 
-        const parent = this.mappings.getLayerNode(webviewId, node.parent);
+        const parent = this.mappings.getLayerNode(frameId, node.parent);
         if (!parent) {
             console.warn('Failed to findNodeInstance: Parent not found in layer map');
             return;
@@ -136,7 +134,7 @@ export class AstManager {
         }
 
         if (parentTemplateNode.component !== templateNode.component) {
-            const htmlParent = this.getElementFromDomId(parent.domId, webviewId);
+            const htmlParent = this.getElementFromDomId(parent.domId, frameId);
             if (!htmlParent) {
                 console.warn('Failed to findNodeInstance: Parent node not found');
                 return;
@@ -144,7 +142,7 @@ export class AstManager {
             const children = htmlParent.querySelectorAll(
                 `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
             );
-            const htmlOriginalNode = this.getElementFromDomId(originalNode.domId, webviewId);
+            const htmlOriginalNode = this.getElementFromDomId(originalNode.domId, frameId);
             if (!htmlOriginalNode) {
                 console.warn('Failed to findNodeInstance: Original node not found');
                 return;
@@ -160,19 +158,19 @@ export class AstManager {
                 originalNode.instanceId = res.instanceId;
                 originalNode.component = res.component;
                 this.updateElementInstance(
-                    webviewId,
+                    frameId,
                     originalNode.domId,
                     res.instanceId,
                     res.component,
                 );
             } else {
-                await this.findNodeInstance(webviewId, originalNode, parent, templateNode);
+                await this.findNodeInstance(frameId, originalNode, parent, templateNode);
             }
         }
     }
 
-    getElementFromDomId(domId: string, webviewId: string): HTMLElement | null {
-        const doc = this.mappings.getMetadata(webviewId)?.document;
+    getElementFromDomId(domId: string, frameId: string): HTMLElement | null {
+        const doc = this.mappings.getMetadata(frameId)?.document;
         if (!doc) {
             console.warn('Failed to getNodeFromDomId: Document not found');
             return null;
@@ -188,28 +186,26 @@ export class AstManager {
         return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
     }
 
-    updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
-        if (!webview) {
-            console.warn('Failed to updateElementInstanceId: Webview not found');
+    updateElementInstance(frameId: string, domId: string, instanceId: string, component: string) {
+        const frame = this.editorEngine.frames.get(frameId);
+        if (!frame) {
+            console.warn('Failed to updateElementInstanceId: Frame not found');
             return;
         }
-        webview.executeJavaScript(
-            `window.api?.updateElementInstance('${domId}', '${instanceId}', '${component}')`,
-        );
+        frame.view.updateElementInstance(domId, instanceId, component);
     }
 
     clear() {
         this.layersManager.clear();
     }
 
-    async refreshAstDoc(webview: WebviewTag) {
-        const root = await this.getBodyFromWebview(webview);
-        this.mappings.updateDocument(webview.id, root.ownerDocument);
+    async refreshAstDoc(frame: WebFrameView) {
+        const root = await this.getBodyFromFrameView(frame);
+        this.mappings.updateDocument(frame.id, root.ownerDocument);
     }
 
-    async getBodyFromWebview(webview: WebviewTag) {
-        const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
+    async getBodyFromFrameView(frame: WebFrameView) {
+        const htmlString = await frame.webview.executeJavaScript('document.documentElement.outerHTML');
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, 'text/html');
         return doc.body;

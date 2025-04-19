@@ -15,6 +15,7 @@ import {
     removeFontsFromClassName,
 } from './utils';
 import type { TraverseCallback } from './types';
+import type { CodeDiff } from '@onlook/models/code';
 
 /**
  * Traverses JSX elements in a file to find and modify className attributes
@@ -33,6 +34,7 @@ export async function traverseClassName(
 
         const content = await readFile(filePath);
         if (!content) {
+            console.error(`Failed to read file: ${filePath}`);
             return;
         }
 
@@ -124,6 +126,7 @@ export async function addFontVariableToElement(
 
         const content = await readFile(filePath);
         if (!content) {
+            console.error(`Failed to read file: ${filePath}`);
             return;
         }
 
@@ -235,6 +238,7 @@ export async function removeFontVariableFromLayout(
 
         const content = await readFile(filePath);
         if (!content) {
+            console.error(`Failed to read file: ${filePath}`);
             return;
         }
 
@@ -293,10 +297,16 @@ export async function updateFontInLayout(
     filePath: string,
     font: Font,
     targetElements: string[],
-): Promise<void> {
+): Promise<null | CodeDiff> {
     let updatedAst = false;
     const fontClassName = `font-${font.id}`;
     let result = null;
+
+    const content = await readFile(filePath);
+    if (!content) {
+        console.error(`Failed to read file: ${filePath}`);
+        return null;
+    }
 
     await traverseClassName(filePath, targetElements, (classNameAttr, ast) => {
         if (t.isStringLiteral(classNameAttr.value)) {
@@ -322,13 +332,16 @@ export async function updateFontInLayout(
         }
         if (updatedAst) {
             const { code } = generate(ast);
-            result = code;
+            const codeDiff: CodeDiff = {
+                original: content,
+                generated: code,
+                path: filePath,
+            };
+            result = codeDiff;
         }
     });
 
-    if (result) {
-        fs.writeFileSync(filePath, result);
-    }
+    return result;
 }
 
 /**
@@ -399,10 +412,10 @@ export async function setDefaultFont(projectRoot: string, font: Font) {
 
         if (routerConfig.type === 'app') {
             const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-            await updateFontInLayout(layoutPath, font, ['html']);
+            return await updateFontInLayout(layoutPath, font, ['html']);
         } else {
             const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-            await updateFontInLayout(appPath, font, ['div', 'main', 'section', 'body']);
+            return await updateFontInLayout(appPath, font, ['div', 'main', 'section', 'body']);
         }
     } catch (error) {
         console.error('Error setting default font:', error);
