@@ -40,9 +40,7 @@ export class ConversationManager {
         }
         this.projectId = project.id;
 
-        if (USE_MOCK) {
-            this.current = new ChatConversationImpl(project.id, MOCK_CHAT_MESSAGES);
-        }
+
         
         this.conversations = await this.getConversations(project.id);
         if (this.conversations.length === 0) {
@@ -51,6 +49,9 @@ export class ConversationManager {
             this.current = this.conversations[0];
         }
 
+        if (USE_MOCK) {
+            this.current = new ChatConversationImpl(project.id, MOCK_CHAT_MESSAGES);
+        }
 
     }
 

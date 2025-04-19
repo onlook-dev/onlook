@@ -22,7 +22,7 @@ export const DivSelected = () => {
 
             <InputSeparator />
 
-            {/* <Display /> */}
+            <Display />
 
             <InputSeparator />
 
