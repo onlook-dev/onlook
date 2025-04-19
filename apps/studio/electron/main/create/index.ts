@@ -16,6 +16,7 @@ import { mainWindow } from '..';
 import Chat from '../chat';
 import { getCreateProjectPath } from './helpers';
 import { createProject } from './install';
+import { LintingService } from '@onlook/foundation/src/linting';
 
 export class ProjectCreator {
     private static instance: ProjectCreator;
@@ -65,7 +66,20 @@ export class ProjectCreator {
                 throw new Error('AbortError');
             }
 
+            // Apply the generated page with linting
             await this.applyGeneratedPage(projectPath, generatedPage);
+
+            // Run a full project lint
+            const lintingService = LintingService.getInstance();
+            const lintSummary = await lintingService.lintProject(projectPath);
+
+            this.emitPromptProgress(
+                `Project linting completed: ${lintSummary.totalErrors} errors, ${
+                    lintSummary.totalWarnings
+                } warnings, ${lintSummary.fixedFiles} files auto-fixed`,
+                95,
+            );
+
             return { projectPath, content: generatedPage.content };
         });
     }
@@ -202,10 +216,30 @@ ${PAGE_SYSTEM_PROMPT.defaultContent}`;
         projectPath: string,
         generatedPage: { path: string; content: string },
     ): Promise<void> {
-        const pagePath = path.join(projectPath, generatedPage.path);
-        // Create recursive directories if they don't exist
-        await fs.promises.mkdir(path.dirname(pagePath), { recursive: true });
-        await fs.promises.writeFile(pagePath, generatedPage.content);
+        const fullPath = path.join(projectPath, generatedPage.path);
+        await fs.promises.mkdir(path.dirname(fullPath), { recursive: true });
+
+        // Lint and fix the generated content
+        const lintingService = LintingService.getInstance();
+        const lintResult = await lintingService.lintAndFix(fullPath, generatedPage.content);
+
+        // Write the linted content
+        await fs.promises.writeFile(fullPath, lintResult.output || generatedPage.content);
+
+        // Report linting results
+        if (lintResult.messages.length > 0) {
+            const errors = lintResult.messages.filter((m) => m.severity === 2);
+            const warnings = lintResult.messages.filter((m) => m.severity === 1);
+
+            this.emitPromptProgress(
+                `Linting completed: ${errors.length} errors, ${warnings.length} warnings${
+                    lintResult.fixed ? ' (auto-fixed)' : ''
+                }`,
+                90,
+            );
+        } else {
+            this.emitPromptProgress('Linting completed: No issues found', 90);
+        }
     }
 
     private getStreamErrorMessage(
