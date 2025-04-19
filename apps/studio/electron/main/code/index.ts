@@ -8,6 +8,9 @@ import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
+import fs from 'fs';
+import { CopyStage, type CopyCallback } from '@onlook/models';
+import path from 'path';
 
 export async function readCodeBlock(
     templateNode: TemplateNode,
@@ -92,6 +95,36 @@ export function openFileInIde(filePath: string, line?: number) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeFileCommand(filePath, line);
     shell.openExternal(command);
+}
+
+export async function moveFolderPath(
+    currentPath: string,
+    updatedPath: string,
+    onProgress: CopyCallback,
+): Promise<void> {
+    try {
+        onProgress(CopyStage.STARTING, 'Starting to copy the data');
+
+        if (!fs.existsSync(currentPath)) {
+            throw new Error('Could not find the source path');
+        }
+
+        const parentDir = path.dirname(updatedPath);
+        if (!fs.existsSync(parentDir)) {
+            await fs.promises.mkdir(parentDir, { recursive: true });
+        }
+
+        onProgress(CopyStage.COPYING, 'Copying the code folder');
+
+        await fs.promises.cp(currentPath, updatedPath, { recursive: true });
+
+        onProgress(CopyStage.COMPLETE, 'Successfully copied the source code');
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown Error';
+        onProgress(CopyStage.ERROR, errorMessage);
+        console.error(error);
+        throw error;
+    }
 }
 
 export function pickDirectory() {

@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '../editor/engine';
 import { invokeMainChannel, sendAnalytics } from '../utils';
 import { CreateManager } from './create';
+import { CopyManager } from './copy';
 import { DomainsManager } from './domains';
 import { RunManager } from './run';
 import { VersionsManager } from './versions';
@@ -22,6 +23,7 @@ export class ProjectsManager {
     editorEngine: EditorEngine | null = null;
 
     private createManager: CreateManager;
+    private copyManager: CopyManager;
     private _project: Project | null = null;
     private _projects: Project[] = [];
     private _run: RunManager | null = null;
@@ -31,11 +33,16 @@ export class ProjectsManager {
     constructor() {
         makeAutoObservable(this);
         this.createManager = new CreateManager(this);
+        this.copyManager = new CopyManager(this);
         this.restoreProjects();
     }
 
     get create() {
         return this.createManager;
+    }
+
+    get copy() {
+        return this.copyManager;
     }
 
     async restoreProjects() {

@@ -2,7 +2,14 @@ import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { ipcMain } from 'electron';
-import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } from '../code/';
+import {
+    moveFolderPath,
+    openFileInIde,
+    openInIde,
+    pickDirectory,
+    readCodeBlock,
+    writeCode,
+} from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
@@ -17,6 +24,8 @@ import {
     updateTailwindColorConfig,
     deleteTailwindColorGroup,
 } from '../assets/styles';
+import type { CopyCallback, CopyStage } from '@onlook/models';
+import { mainWindow } from '..';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -102,6 +111,23 @@ export function listenForCodeMessages() {
 
         return result.filePaths.at(0) ?? null;
     });
+
+    ipcMain.handle(
+        MainChannels.UPDATE_PROJECT_PATH,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const progressCallback: CopyCallback = (stage: CopyStage, message: string) => {
+                mainWindow?.webContents.send(MainChannels.COPY_PROJECT_CALLBACK, {
+                    stage,
+                    message,
+                });
+            };
+            const { currentPath, updatedPath } = args as {
+                currentPath: string;
+                updatedPath: string;
+            };
+            return moveFolderPath(currentPath, updatedPath, progressCallback);
+        },
+    );
 
     ipcMain.handle(MainChannels.GET_COMPONENTS, async (_, args) => {
         if (typeof args !== 'string') {
