@@ -13,7 +13,7 @@ export class SubscriptionManager {
     }
 
     private restoreCachedPlan() {
-        const cachedPlan = localStorage.getItem('currentPlan');
+        const cachedPlan = localStorage?.getItem('currentPlan');
         this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
     }
 

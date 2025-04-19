@@ -1,13 +1,17 @@
 import type { CodeDiff } from '@onlook/models/code';
+import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
-import { DEFAULT_IDE } from '@onlook/models/ide';
+import { DEFAULT_IDE, IdeType } from '@onlook/models/ide';
 import { dialog, shell } from 'electron';
+import { mainWindow } from '..';
+
 import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
 import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
+
 import fs from 'fs';
 import { CopyStage, type CopyCallback } from '@onlook/models';
 import path from 'path';
@@ -88,12 +92,45 @@ function getIdeFromUserSettings(): IDE {
 export function openInIde(templateNode: TemplateNode) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeCommand(templateNode);
+
+    if (ide.type === IdeType.ONLOOK) {
+        // Send an event to the renderer process to view the file in Onlook's internal IDE
+        const startTag = templateNode.startTag;
+        const endTag = templateNode.endTag || startTag;
+
+        if (startTag && endTag) {
+            mainWindow?.webContents.send(MainChannels.VIEW_CODE_IN_ONLOOK, {
+                filePath: templateNode.path,
+                startLine: startTag.start.line,
+                startColumn: startTag.start.column,
+                endLine: endTag.end.line,
+                endColumn: endTag.end.column - 1,
+            });
+        } else {
+            mainWindow?.webContents.send(MainChannels.VIEW_CODE_IN_ONLOOK, {
+                filePath: templateNode.path,
+            });
+        }
+        return;
+    }
+
     shell.openExternal(command);
 }
 
 export function openFileInIde(filePath: string, line?: number) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeFileCommand(filePath, line);
+
+    if (ide.type === IdeType.ONLOOK) {
+        // Send an event to the renderer process to view the file in Onlook's internal IDE
+        mainWindow?.webContents.send(MainChannels.VIEW_CODE_IN_ONLOOK, {
+            filePath,
+            line,
+            startLine: line,
+        });
+        return;
+    }
+
     shell.openExternal(command);
 }
 

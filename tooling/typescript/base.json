@@ -1,26 +1,26 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Base",
-  "docs": "https://bun.sh/docs/typescript",
-
-  "compilerOptions": {
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM"],
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "allowJs": true,
-
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
-
-    "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
-  }
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Base",
+    "docs": "https://bun.sh/docs/typescript",
+    "compilerOptions": {
+        "target": "ES2023",
+        "lib": [
+            "ES2023",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "module": "ESNext",
+        "moduleDetection": "force",
+        "allowJs": true,
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noPropertyAccessFromIndexSignature": false
+    }
 }

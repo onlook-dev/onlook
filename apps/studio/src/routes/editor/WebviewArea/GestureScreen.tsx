@@ -2,12 +2,12 @@ import { useEditorEngine } from '@/components/Context';
 import { getRelativeMousePositionToWebview } from '@/lib/editor/engine/overlay/utils';
 import { EditorMode } from '@/lib/models';
 import { MouseAction } from '@onlook/models/editor';
-import type { DomElement, DropElementProperties, ElementPosition } from '@onlook/models/element';
+import type { DomElement, ElementPosition } from '@onlook/models/element';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
-import RightClickMenu from '../RightClickMenu';
+import { RightClickMenu } from '../RightClickMenu';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;

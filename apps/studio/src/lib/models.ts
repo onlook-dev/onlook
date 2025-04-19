@@ -17,6 +17,7 @@ export enum EditorTabValue {
     STYLES = 'styles',
     CHAT = 'chat',
     PROPS = 'properties',
+    DEV = 'dev',
 }
 
 export enum SettingsTabValue {
@@ -25,4 +26,20 @@ export enum SettingsTabValue {
     PREFERENCES = 'preferences',
     VERSIONS = 'versions',
     ADVANCED = 'advanced',
+    SITE = 'site',
+}
+
+export enum LayersPanelTabValue {
+    PAGES = 'pages',
+    LAYERS = 'layers',
+    COMPONENTS = 'components',
+    IMAGES = 'images',
+    WINDOWS = 'windows',
+    BRAND = 'brand',
+    APPS = 'apps',
+}
+
+export enum BrandTabValue {
+    COLORS = 'colors',
+    FONTS = 'fonts',
 }

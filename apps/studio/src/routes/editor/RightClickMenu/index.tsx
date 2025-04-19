@@ -227,5 +227,3 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         </ContextMenu>
     );
 });
-
-export default RightClickMenu;

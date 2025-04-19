@@ -8,65 +8,93 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { cn } from '@onlook/ui/utils';
+import { camelCase } from 'lodash';
 
 interface FontVariantProps {
     name: string;
     isActive?: boolean;
 }
 
-const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
-    <div className="text-sm font-normal text-muted-foreground">{name}</div>
-);
+const FontVariant = ({ name }: FontVariantProps) => {
+    const fontVariant = `font-${camelCase(name).toLowerCase()}`;
+
+    return <div className={cn('text-sm text-muted-foreground', fontVariant)}>{name}</div>;
+};
 
 export interface FontFamilyProps {
     name: string;
     variants: string[];
-    isExpanded?: boolean; // Kept for API compatibility but not used for initial state
-    isLast?: boolean;
+    onRemoveFont?: () => void;
+    onAddFont?: () => void;
+    onSetFont?: () => void;
     showDropdown?: boolean;
     showAddButton?: boolean; // New property to control Add button visibility
+    isDefault?: boolean;
 }
 
 export const FontFamily = ({
     name,
     variants = [],
-    isExpanded = false, // This prop is kept for API compatibility but not used for initial state
-    isLast = false,
+    onAddFont,
+    onRemoveFont,
+    onSetFont,
     showDropdown = false,
-    showAddButton = true, // Default to false
+    showAddButton = true,
+    isDefault = false,
 }: FontFamilyProps) => {
-    // Always initialize to false, ensuring all font families start closed regardless of isExpanded prop
     const [expanded, setExpanded] = useState(false);
-    // State to track if this font is set as default
-    const [isDefault, setIsDefault] = useState(false);
 
-    // Toggle default font status
     const handleToggleDefault = () => {
-        setIsDefault(!isDefault);
-        // Here you would typically also update this in your global state or backend
+        onSetFont?.();
     };
 
     return (
-        <div className="w-full group">
+        <div
+            className="w-full group"
+            style={{
+                fontFamily: name,
+            }}
+        >
             <div className="flex justify-between items-center py-3">
                 <div
-                    className="flex items-center cursor-pointer"
+                    className="flex flex-1 items-center cursor-pointer max-w-52"
                     onClick={() => setExpanded(!expanded)}
                 >
                     <Icons.ChevronRight
                         className={`h-4 w-4 mr-2 transition-transform ${expanded ? 'rotate-90' : ''}`}
                     />
-                    <span className="text-sm font-normal">{name}</span>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className={`text-sm truncate transition-opacity duration-200`}>
+                                {name}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipPortal container={document.getElementById('style-panel')}>
+                            <TooltipContent
+                                side="right"
+                                align="center"
+                                sideOffset={10}
+                                className="animation-none max-w-[200px] shadow"
+                            >
+                                <TooltipArrow className="fill-foreground" />
+                                <p className="break-words">{name}</p>
+                            </TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
                     {isDefault && (
                         <span className="ml-2 text-xs text-muted-foreground">(Default)</span>
                     )}
                 </div>
                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-100">
-                    {showAddButton && (
+                    {showAddButton && onAddFont && (
                         <Button
                             variant="secondary"
                             size="sm"
                             className="h-7 pl-2 pr-1.5 rounded-md bg-background-secondary"
+                            onClick={() => onAddFont()}
                         >
                             Add <Icons.Plus className="ml-1 h-3 w-3" />
                         </Button>
@@ -90,7 +118,10 @@ export const FontFamily = ({
                                 >
                                     <span>Set as default font</span>
                                 </DropdownMenuCheckboxItem>
-                                <DropdownMenuItem className="flex items-center">
+                                <DropdownMenuItem
+                                    className="flex items-center"
+                                    onClick={() => onRemoveFont?.()}
+                                >
                                     <Icons.Trash className="h-4 w-4 mr-2" />
                                     <span>Remove</span>
                                 </DropdownMenuItem>
@@ -103,11 +134,7 @@ export const FontFamily = ({
             {expanded && variants.length > 0 && (
                 <div className="pl-7 flex flex-col gap-2 pb-6">
                     {variants.map((variant) => (
-                        <FontVariant
-                            key={`${name}-${variant}`}
-                            name={variant}
-                            isActive={variant === 'SemiBold' || variant === 'Bold'}
-                        />
+                        <FontVariant key={`${name}-${variant}`} name={variant} />
                     ))}
                 </div>
             )}

@@ -4,11 +4,12 @@ import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/
 import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
 import { Theme } from '@onlook/models/assets';
-import { Color } from '@onlook/utility';
+import { Color, generateUniqueName } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
 import type { EditorEngine } from '..';
 import { camelCase } from 'lodash';
+import { customAlphabet } from 'nanoid/non-secure';
 
 interface ColorValue {
     value: string;
@@ -29,9 +30,17 @@ export class ThemeManager {
         this.scanConfig();
     }
 
+    private reset() {
+        this.defaultColors = {};
+        this.brandColors = {};
+        this.configPath = null;
+        this.cssPath = null;
+    }
+
     async scanConfig() {
         const projectRoot = this.projectsManager.project?.folderPath;
         if (!projectRoot) {
+            this.reset();
             return;
         }
 
@@ -41,6 +50,7 @@ export class ThemeManager {
             })) as ConfigResult;
 
             if (!configResult) {
+                this.reset();
                 return;
             }
 
@@ -203,6 +213,7 @@ export class ThemeManager {
             }
             this.brandColors = colorGroupsObj;
         } catch (error) {
+            this.reset();
             console.error('Error loading colors:', error);
         }
     }
@@ -451,7 +462,18 @@ export class ThemeManager {
                     throw new Error('Color not found');
                 }
 
-                const newName = `${colorName}Copy`;
+                // Generate a unique name for the duplicated color
+                const existingNames = group.map((color) => color.name);
+                let newName: string;
+
+                if (isNaN(Number(colorName))) {
+                    // For non-numeric names, use the generateUniqueName utility
+                    newName = generateUniqueName(colorName, existingNames);
+                } else {
+                    // For numeric names, generate a random numeric suffix
+                    const randomId = customAlphabet('0123456789', 5)();
+                    newName = `${colorName}${randomId}`;
+                }
 
                 const color = Color.from(
                     theme === Theme.DARK
@@ -459,15 +481,7 @@ export class ThemeManager {
                         : colorToDuplicate.lightColor,
                 );
 
-                await this.update(
-                    groupName,
-                    group.length,
-                    color,
-                    newName,
-                    groupName.toLowerCase(),
-                    theme,
-                    true,
-                );
+                await this.update(groupName, group.length, color, newName, groupName, theme, true);
 
                 this.scanConfig();
             }
