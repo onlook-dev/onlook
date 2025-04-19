@@ -22,11 +22,6 @@ import { toast } from '@onlook/ui/use-toast';
 import { Progress } from '@onlook/ui/progress';
 import { t } from 'i18next';
 
-// type MoveProjectFolderResponse = {
-//     success: boolean;
-//     message: string;
-// };
-
 const ProjectTab = observer(() => {
     const projectsManager = useProjectsManager();
     const project = projectsManager.project;

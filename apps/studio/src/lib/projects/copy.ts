@@ -1,7 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { MainChannels } from '@onlook/models/constants';
 import type { ProjectsManager } from '.';
-import { toast } from '@onlook/ui/use-toast';
 import { invokeMainChannel } from '../utils';
 import { CopyStage, RunState } from '@onlook/models';
 
@@ -19,7 +18,7 @@ export class CopyManager {
         return this.copyStage;
     }
 
-    async createCopy(updatedPath: string) {
+    async createCopy(updatedPath: string): Promise<void> {
         try {
             const currentPath = this.projectsManager.project?.folderPath ?? '';
             if (!currentPath) {
