@@ -115,10 +115,9 @@ export function listenForCodeMessages() {
     ipcMain.handle(
         MainChannels.UPDATE_PROJECT_PATH,
         async (e: Electron.IpcMainInvokeEvent, args) => {
-            const progressCallback: CopyCallback = (stage: CopyStage, message: string) => {
+            const progressCallback: CopyCallback = (stage: CopyStage) => {
                 mainWindow?.webContents.send(MainChannels.COPY_PROJECT_CALLBACK, {
                     stage,
-                    message,
                 });
             };
             const { currentPath, updatedPath } = args as {

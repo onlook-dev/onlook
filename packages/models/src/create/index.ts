@@ -40,4 +40,4 @@ export interface CreateProjectResponse {
 export type CreateCallback = (stage: CreateStage, message: string) => void;
 export type VerifyCallback = (stage: VerifyStage, message: string) => void;
 export type SetupCallback = (stage: SetupStage, message: string) => void;
-export type CopyCallback = (stage: CopyStage, message: string) => void;
+export type CopyCallback = (stage: CopyStage) => void;

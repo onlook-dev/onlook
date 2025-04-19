@@ -7,8 +7,6 @@ import { CopyStage, RunState } from '@onlook/models';
 
 export class CopyManager {
     copyStage: CopyStage = CopyStage.STARTING;
-    progress: number = 0;
-    message: string = '';
     error: string | null = null;
     private cleanupListener: (() => void) | null = null;
     private slowConnectionTimer: ReturnType<typeof setTimeout> | null = null;
@@ -25,12 +23,7 @@ export class CopyManager {
         try {
             const currentPath = this.projectsManager.project?.folderPath ?? '';
             if (!currentPath) {
-                toast({
-                    title: 'Error',
-                    description: 'No valid path found',
-                    variant: 'destructive',
-                });
-                return;
+                throw Error('Valid current path not found');
             }
 
             if (this.projectsManager.runner?.state === RunState.RUNNING) {
@@ -46,24 +39,15 @@ export class CopyManager {
                 folderPath: updatedPath,
             });
         } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'No valid path found',
-                variant: 'destructive',
-            });
             console.error(error);
             throw error;
         }
     }
 
     listenForPromptProgress() {
-        window.api.on(
-            MainChannels.COPY_PROJECT_CALLBACK,
-            ({ message, stage }: { message: string; stage: CopyStage }) => {
-                this.copyStage = stage;
-                this.message = message;
-            },
-        );
+        window.api.on(MainChannels.COPY_PROJECT_CALLBACK, ({ stage }: { stage: CopyStage }) => {
+            this.copyStage = stage;
+        });
 
         this.cleanupListener = () => {
             window.api.removeAllListeners(MainChannels.COPY_PROJECT_CALLBACK);

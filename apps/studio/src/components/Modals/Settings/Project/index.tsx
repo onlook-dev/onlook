@@ -7,7 +7,7 @@ import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { ReinstallButton } from './ReinstallButon';
-import { CopyStage, RunState } from '@onlook/models';
+import { RunState } from '@onlook/models';
 import { useEffect, useMemo, useState } from 'react';
 import {
     AlertDialog,
@@ -19,6 +19,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { toast } from '@onlook/ui/use-toast';
 import { Progress } from '@onlook/ui/progress';
+import { t } from 'i18next';
 
 const ProjectTab = observer(() => {
     const projectsManager = useProjectsManager();
@@ -30,13 +31,12 @@ const ProjectTab = observer(() => {
     const folderPath = project?.folderPath || '';
     const name = project?.name || '';
     const url = project?.url || '';
+    const state = projectsManager.copy.copyStage;
     const isTerminalRunning = projectsManager.runner?.state === RunState.RUNNING;
 
     const [showWarningModal, setWarningModal] = useState<boolean>(false);
     const [updatedPath, setUpdatedPath] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [message, setMessage] = useState<string>('');
-    const state = projectsManager.copy.copyStage;
 
     useEffect(() => {
         return () => {
@@ -44,26 +44,57 @@ const ProjectTab = observer(() => {
         };
     }, []);
 
+    const loadingStatus: { status: string; message: string } = useMemo(() => {
+        switch (state) {
+            case 'Starting...': {
+                return {
+                    status: t('projects.copy.loadingModal.status.starting'),
+                    message: t('projects.copy.loadingModal.message.starting'),
+                };
+            }
+            case 'Copying...': {
+                return {
+                    status: t('projects.copy.loadingModal.status.copying'),
+                    message: t('projects.copy.loadingModal.message.copying'),
+                };
+            }
+            case 'Complete': {
+                return {
+                    status: t('projects.copy.loadingModal.status.complete'),
+                    message: t('projects.copy.loadingModal.message.complete'),
+                };
+            }
+            case 'Error': {
+                return {
+                    status: t('projects.copy.loadingModal.status.error'),
+                    message: t('projects.copy.loadingModal.message.error'),
+                };
+            }
+            default: {
+                return {
+                    status: t('projects.copy.loadingModal.status.copying'),
+                    message: t('projects.copy.loadingModal.message.copying'),
+                };
+            }
+        }
+    }, [state]);
+
     const progress = useMemo(() => {
         switch (state) {
             case 'Starting...': {
-                setMessage(projectsManager.copy.message);
                 return 30;
             }
             case 'Copying...': {
-                setMessage(projectsManager.copy.message);
                 return 60;
             }
             case 'Complete': {
-                setMessage(projectsManager.copy.message);
                 return 100;
             }
             case 'Error': {
-                setMessage(projectsManager.copy.message);
                 return 0;
             }
         }
-    }, [projectsManager.copy.copyStage]);
+    }, [state]);
 
     const handleUpdatePath = async () => {
         const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
@@ -90,14 +121,14 @@ const ProjectTab = observer(() => {
             setIsLoading(true);
             await projectsManager.copy.createCopy(updatedPath);
             toast({
-                title: 'Path changed',
-                description: 'Path has been modified',
+                title: t('projects.copy.toasts.success.title'),
+                description: t('projects.copy.toasts.success.description'),
                 variant: 'warning',
             });
         } catch (error) {
             toast({
-                title: 'Error',
-                description: 'Failed to move path',
+                title: t('projects.copy.toasts.error.title'),
+                description: t('projects.copy.toasts.error.description'),
                 variant: 'destructive',
             });
             console.error(error);
@@ -226,19 +257,19 @@ const ProjectTab = observer(() => {
             <AlertDialog open={showWarningModal} onOpenChange={setWarningModal}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Move Folder</AlertDialogTitle>
+                        <AlertDialogTitle>{t('projects.copy.warningModal.title')}</AlertDialogTitle>
                         <AlertDialogDescription>
                             {isTerminalRunning
-                                ? 'Your app is currently running. Confirming will stop the running instance. Do you want to continue?'
-                                : 'Your application will be copied to the selected location. Are you sure?'}
+                                ? t('projects.copy.warningModal.instanceRunning')
+                                : t('projects.copy.warningModal.instanceNotRunning')}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <Button variant="ghost" onClick={cancelMoveFolder}>
-                            Cancel
+                            {t('projects.copy.warningModal.cancel')}
                         </Button>
                         <Button variant="destructive" onClick={confirmMoveFolder}>
-                            Confirm
+                            {t('projects.copy.warningModal.confirm')}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -247,15 +278,17 @@ const ProjectTab = observer(() => {
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            <span>Creating Copying...</span>
+                            <span>{t('projects.copy.loadingModal.title')}</span>
                             <span>
-                                <p className="text-sm font-normal mt-2 mb-4">{message}</p>
+                                <p className="text-sm font-normal mt-2 mb-4">
+                                    {loadingStatus.message}
+                                </p>
                             </span>
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             {/* <div className="mb-4"></div> */}
                             <Progress value={progress} className="w-full" />
-                            <p className="mt-2">{state}</p>
+                            <p className="mt-2">{loadingStatus.status}</p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -264,7 +297,7 @@ const ProjectTab = observer(() => {
                             variant="secondary"
                             onClick={() => setIsLoading(false)}
                         >
-                            Finish
+                            {t('projects.copy.loadingModal.finish')}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>

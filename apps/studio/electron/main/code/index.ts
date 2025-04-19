@@ -103,7 +103,7 @@ export async function moveFolderPath(
     onProgress: CopyCallback,
 ): Promise<void> {
     try {
-        onProgress(CopyStage.STARTING, 'Starting to copy the data');
+        onProgress(CopyStage.STARTING);
 
         if (!fs.existsSync(currentPath)) {
             throw new Error('Could not find the source path');
@@ -114,14 +114,13 @@ export async function moveFolderPath(
             await fs.promises.mkdir(parentDir, { recursive: true });
         }
 
-        onProgress(CopyStage.COPYING, 'Copying the code folder');
+        onProgress(CopyStage.COPYING);
 
         await fs.promises.cp(currentPath, updatedPath, { recursive: true });
 
-        onProgress(CopyStage.COMPLETE, 'Successfully copied the source code');
+        onProgress(CopyStage.COMPLETE);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown Error';
-        onProgress(CopyStage.ERROR, errorMessage);
+        onProgress(CopyStage.ERROR);
         console.error(error);
         throw error;
     }
