@@ -42,12 +42,12 @@ export class ConversationManager {
 
 
         
-        this.conversations = await this.getConversations(project.id);
-        if (this.conversations.length === 0) {
-            this.current = new ChatConversationImpl(project.id, []);
-        } else {
-            this.current = this.conversations[0];
-        }
+        // this.conversations = await this.getConversations(project.id);
+        // if (this.conversations.length === 0) {
+        //     this.current = new ChatConversationImpl(project.id, []);
+        // } else {
+        //     this.current = this.conversations[0];
+        // }
 
         if (USE_MOCK) {
             this.current = new ChatConversationImpl(project.id, MOCK_CHAT_MESSAGES);

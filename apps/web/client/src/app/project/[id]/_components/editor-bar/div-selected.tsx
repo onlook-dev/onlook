@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Border } from "./dropdowns/border";
 import { ColorBackground } from "./dropdowns/color-background";
-import { Display } from "./dropdowns/display";
+// import { Display } from "./dropdowns/display";
 import { Height } from "./dropdowns/height";
 import { ImageBackground } from "./dropdowns/img-background";
 import { Margin } from "./dropdowns/margin";
@@ -22,7 +22,7 @@ export const DivSelected = () => {
 
             <InputSeparator />
 
-            <Display />
+            {/* <Display /> */}
 
             <InputSeparator />
 
