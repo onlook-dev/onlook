@@ -154,113 +154,118 @@ const ProjectTab = observer(() => {
     };
 
     return (
-        // <div className="text-sm">
         <>
-            <div className="flex flex-col gap-4 p-6 text-sm">
-                <h2 className="text-lg">Metadata</h2>
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <p className=" text-muted-foreground">Name</p>
-                        <Input
-                            id="name"
-                            value={name}
-                            onChange={(e) =>
-                                projectsManager.updatePartialProject({
-                                    name: e.target.value,
-                                })
-                            }
-                            className="w-2/3"
-                        />
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <p className=" text-muted-foreground">URL</p>
-                        <Input
-                            id="url"
-                            value={url}
-                            onChange={(e) => handleUpdateUrl(e.target.value)}
-                            className="w-2/3"
-                        />
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <p className=" text-muted-foreground">Path</p>
-                        <div className="flex items-center gap-2 w-2/3">
-                            <Input id="folderPath" value={folderPath} readOnly={true} />
-                            <Button size={'icon'} variant={'outline'} onClick={handleUpdatePath}>
-                                <Icons.Directory />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex flex-col gap-4 p-6">
-                    <div className="flex flex-col gap-2">
-                        <h2 className="text-lg">Commands</h2>
-                        <p className="text-small text-foreground-secondary">
-                            {"Only update these if you know what you're doing!"}
-                        </p>
-                    </div>
+            <div className="text-sm">
+                <div className="flex flex-col gap-4 p-6 text-sm">
+                    <h2 className="text-lg">Metadata</h2>
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <p className="text-muted-foreground">Install</p>
+                            <p className=" text-muted-foreground">Name</p>
                             <Input
-                                id="install"
-                                value={installCommand}
-                                className="w-2/3"
+                                id="name"
+                                value={name}
                                 onChange={(e) =>
                                     projectsManager.updatePartialProject({
-                                        commands: {
-                                            ...project?.commands,
-                                            install: e.target.value,
-                                        },
+                                        name: e.target.value,
                                     })
                                 }
+                                className="w-2/3"
                             />
                         </div>
                         <div className="flex justify-between items-center">
-                            <p className=" text-muted-foreground">Run</p>
+                            <p className=" text-muted-foreground">URL</p>
                             <Input
-                                id="run"
-                                value={runCommand}
+                                id="url"
+                                value={url}
+                                onChange={(e) => handleUpdateUrl(e.target.value)}
                                 className="w-2/3"
-                                onChange={(e) =>
-                                    projectsManager.updatePartialProject({
-                                        commands: {
-                                            ...project?.commands,
-                                            run: e.target.value,
-                                        },
-                                    })
-                                }
                             />
                         </div>
                         <div className="flex justify-between items-center">
-                            <p className=" text-muted-foreground">Build</p>
-                            <Input
-                                id="build"
-                                value={buildCommand}
-                                onChange={(e) =>
-                                    projectsManager.updatePartialProject({
-                                        commands: {
-                                            ...project?.commands,
-                                            build: e.target.value,
-                                        },
-                                    })
-                                }
-                                className="w-2/3"
-                            />
+                            <p className=" text-muted-foreground">Path</p>
+                            <div className="flex items-center gap-2 w-2/3">
+                                <Input id="folderPath" value={folderPath} readOnly={true} />
+                                <Button
+                                    size={'icon'}
+                                    variant={'outline'}
+                                    onClick={handleUpdatePath}
+                                >
+                                    <Icons.Directory />
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center p-6">
-                    <div className="flex flex-col gap-2">
-                        <p className="text-largePlus">Reinstall Dependencies</p>
-                        <p className="text-foreground-onlook text-small">
-                            For when project failed to install dependencies
-                        </p>
+
+                    <Separator />
+
+                    <div className="flex flex-col gap-4 p-6">
+                        <div className="flex flex-col gap-2">
+                            <h2 className="text-lg">Commands</h2>
+                            <p className="text-small text-foreground-secondary">
+                                {"Only update these if you know what you're doing!"}
+                            </p>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <p className="text-muted-foreground">Install</p>
+                                <Input
+                                    id="install"
+                                    value={installCommand}
+                                    className="w-2/3"
+                                    onChange={(e) =>
+                                        projectsManager.updatePartialProject({
+                                            commands: {
+                                                ...project?.commands,
+                                                install: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <p className=" text-muted-foreground">Run</p>
+                                <Input
+                                    id="run"
+                                    value={runCommand}
+                                    className="w-2/3"
+                                    onChange={(e) =>
+                                        projectsManager.updatePartialProject({
+                                            commands: {
+                                                ...project?.commands,
+                                                run: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <p className=" text-muted-foreground">Build</p>
+                                <Input
+                                    id="build"
+                                    value={buildCommand}
+                                    onChange={(e) =>
+                                        projectsManager.updatePartialProject({
+                                            commands: {
+                                                ...project?.commands,
+                                                build: e.target.value,
+                                            },
+                                        })
+                                    }
+                                    className="w-2/3"
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <ReinstallButton />
+                    <Separator />
+                    <div className="flex justify-between items-center p-6">
+                        <div className="flex flex-col gap-2">
+                            <p className="text-largePlus">Reinstall Dependencies</p>
+                            <p className="text-foreground-onlook text-small">
+                                For when project failed to install dependencies
+                            </p>
+                        </div>
+                        <ReinstallButton />
+                    </div>
                 </div>
             </div>
             <AlertDialog open={showWarningModal} onOpenChange={setWarningModal}>
@@ -289,7 +294,7 @@ const ProjectTab = observer(() => {
                         <AlertDialogTitle>
                             <span>{t('projects.copy.loadingModal.title')}</span>
                             <span>
-                                <p className="text-sm font-normal mt-2 mb-4">
+                                <p className="text-sm font-normal text-muted-foreground mt-2 mb-4">
                                     {loadingStatus.message}
                                 </p>
                             </span>
