@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises';
 import { z } from 'zod';
 import { ONLOOK_PROMPT } from '../prompt/onlook';
 import { getAllFiles } from './helpers';
+import { CrawlerService } from './crawler';
 
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
@@ -130,8 +131,65 @@ export const getStrReplaceEditorTool = (handlers: FileOperationHandlers) => {
     return strReplaceEditorTool;
 };
 
+export const crawlUrlTool = tool({
+    description: 'Crawl webpage content from provided URL',
+    parameters: z.object({
+        urls: z.array(z.string()).describe('Array of URLs to crawl'),
+        options: z
+            .object({
+                limit: z.number().optional(),
+                scrapeOptions: z
+                    .object({
+                        formats: z
+                            .array(
+                                z.enum([
+                                    'markdown',
+                                    'html',
+                                    'rawHtml',
+                                    'content',
+                                    'links',
+                                    'screenshot',
+                                    'screenshot@fullPage',
+                                    'extract',
+                                    'json',
+                                    'changeTracking',
+                                ]),
+                            )
+                            .optional(),
+                    })
+                    .optional(),
+            })
+            .optional(),
+    }),
+    execute: async ({ urls, options }) => {
+        try {
+            const crawler = CrawlerService.getInstance();
+            const results = await Promise.all(
+                urls.map(async (url) => {
+                    try {
+                        const result = await crawler.crawlUrl(url, options);
+                        if (!result.success) {
+                            return { url, error: result.status };
+                        }
+                        return { url, data: result.data[0] };
+                    } catch (error) {
+                        return {
+                            url,
+                            error: error instanceof Error ? error.message : 'Unknown error',
+                        };
+                    }
+                }),
+            );
+            return results;
+        } catch (error) {
+            return `Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        }
+    },
+});
+
 export const chatToolSet: ToolSet = {
     list_files: listFilesTool,
     read_files: readFilesTool,
     onlook_instructions: onlookInstructionsTool,
+    crawl_url: crawlUrlTool,
 };

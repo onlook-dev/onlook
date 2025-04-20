@@ -73,16 +73,6 @@
                 "fileReference": "File Reference",
                 "submit": "Start building your site"
             },
-            "crawl": {
-                "title": "Duplicate a website",
-                "description": "Paste a link to a website that you want to duplicate",
-                "input": {
-                    "placeholder": "Paste a link to a website",
-                    "ariaLabel": "URL input for web page crawling",
-                    "crawling": "Getting Data",
-                    "submit": "Get Data"
-                }
-            },
             "blankStart": "Start from a blank page"
         }
     },
