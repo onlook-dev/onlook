@@ -1,6 +1,6 @@
 import type { ImageContentData } from '@onlook/models/actions';
 import { DefaultSettings } from '@onlook/models/constants';
-import { promises as fs, readFileSync } from 'fs';
+import { promises as fs } from 'fs';
 import mime from 'mime-lite';
 import path from 'path';
 import { detectRouterType } from '../pages';
@@ -21,8 +21,8 @@ async function getImageFolderPath(projectRoot: string, folder?: string): Promise
 }
 
 // Helper function to validate and process image file
-function processImageFile(filePath: string, folder: string): ImageContentData {
-    const image = readFileSync(filePath, { encoding: 'base64' });
+async function processImageFile(filePath: string, folder: string): Promise<ImageContentData> {
+    const image = await fs.readFile(filePath, { encoding: 'base64' });
     const mimeType = mime.getType(filePath) || 'application/octet-stream';
 
     return {
@@ -45,7 +45,7 @@ async function scanImagesDirectory(projectRoot: string): Promise<ImageContentDat
                 SUPPORTED_IMAGE_EXTENSIONS.includes(path.extname(entry.name).toLowerCase())
             ) {
                 const imagePath = path.join(publicImagesPath, entry.name);
-                images.push(processImageFile(imagePath, DefaultSettings.IMAGE_FOLDER));
+                images.push(await processImageFile(imagePath, DefaultSettings.IMAGE_FOLDER));
             }
         }
     } catch (error) {
@@ -57,7 +57,7 @@ async function scanImagesDirectory(projectRoot: string): Promise<ImageContentDat
     try {
         const appImages = await findImagesInDirectory(appDir);
         for (const imagePath of appImages) {
-            images.push(processImageFile(imagePath, 'app'));
+            images.push(await processImageFile(imagePath, 'app'));
         }
     } catch (error) {
         console.error('Error scanning app directory images:', error);
