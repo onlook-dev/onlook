@@ -1,6 +1,8 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { useMetadataForm } from '@/hooks/useMetadataForm';
-import { DefaultSettings, type PageMetadata } from '@onlook/models';
+import { DefaultSettings, type ImageContentData, type PageMetadata } from '@onlook/models';
+import { MainChannels } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -53,10 +55,44 @@ export const SiteTab = observer(() => {
             }
 
             if (uploadedFavicon) {
-                await editorEngine.image.upload(uploadedFavicon);
-                const faviconPath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedFavicon.name}`;
+                // Delete old favicon if it exists
+                if (siteSetting?.icons?.icon) {
+                    const oldFavicon = editorEngine.image.assets.find(
+                        (image) => image.fileName === 'favicon.ico',
+                    );
+                    if (oldFavicon) {
+                        try {
+                            await invokeMainChannel(MainChannels.DELETE_IMAGE_FROM_PROJECT, {
+                                projectFolder: project.folderPath,
+                                image: oldFavicon,
+                            });
+                        } catch (error) {
+                            console.warn('Failed to delete old favicon:', error);
+                        }
+                    }
+                }
+
+                const buffer = await uploadedFavicon.arrayBuffer();
+                const base64String = btoa(
+                    new Uint8Array(buffer).reduce(
+                        (data, byte) => data + String.fromCharCode(byte),
+                        '',
+                    ),
+                );
+
+                const image: ImageContentData = {
+                    content: base64String,
+                    fileName: 'favicon.ico',
+                    mimeType: 'image/x-icon',
+                };
+
+                await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
+                    projectFolder: project.folderPath,
+                    image,
+                });
+
                 updatedMetadata.icons = {
-                    icon: faviconPath,
+                    icon: '/favicon.ico',
                 };
             }
             if (uploadedImage) {
@@ -86,6 +122,8 @@ export const SiteTab = observer(() => {
             });
 
             await editorEngine.pages.updateMetadataPage('/', updatedMetadata);
+            await editorEngine.image.scanImages();
+
             setUploadedFavicon(null);
             setIsDirty(false);
             toast({
