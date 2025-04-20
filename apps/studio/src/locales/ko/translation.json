@@ -27,8 +27,9 @@
         "copy": {
             "warningModal": {
                 "title": "폴더 이동",
-                "instanceRunning": "애플리케이션이 현재 실행 중입니다. 확인하면 실행 중인 인스턴스가 중지됩니다. 계속하시겠습니까?",
-                "instanceNotRunning": "애플리케이션이 선택한 위치에 복사됩니다. 계속하시겠습니까?",
+                "instanceRunning": "앱이 현재 실행 중입니다. 확인하면 선택한 위치로 경로를 설정하기 전에 실행 중인 인스턴스가 중지됩니다. 계속하시겠습니까?",
+                "instanceNotRunning": "경로가 선택한 위치로 설정됩니다. 계속하시겠습니까?",
+                "createCopy": "복사본을 만들고 새 경로로 전환",
                 "cancel": "취소",
                 "confirm": "확인"
             },

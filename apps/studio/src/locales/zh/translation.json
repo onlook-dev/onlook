@@ -27,8 +27,9 @@
         "copy": {
             "warningModal": {
                 "title": "移动文件夹",
-                "instanceRunning": "您的应用程序正在运行。确认将停止当前运行的实例。您确定要继续吗？",
-                "instanceNotRunning": "您的应用程序将被复制到所选位置。您确定要继续吗？",
+                "instanceRunning": "您的应用当前正在运行。确认后将停止正在运行的实例，并将路径设置为所选位置。是否继续？",
+                "instanceNotRunning": "路径将被设置为所选位置。您确定吗？",
+                "createCopy": "복사본을 만들고 새 경로로 전환",
                 "cancel": "取消",
                 "confirm": "确认"
             },

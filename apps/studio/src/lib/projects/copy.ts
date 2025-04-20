@@ -33,10 +33,6 @@ export class CopyManager {
                 currentPath,
                 updatedPath,
             });
-
-            this.projectsManager.updatePartialProject({
-                folderPath: updatedPath,
-            });
         } catch (error) {
             console.error(error);
             throw error;

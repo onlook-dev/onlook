@@ -27,8 +27,9 @@
         "copy": {
             "warningModal": {
                 "title": "Move Folder",
-                "instanceRunning": "Your app is currently running. Confirming will stop the running instance. Do you want to continue?",
-                "instanceNotRunning": "Your application will be copied to the selected location. Are you sure?",
+                "instanceRunning": "Your app is currently running. Confirming will stop the running instance before setting path to selected location. Do you want to continue?",
+                "instanceNotRunning": "Path will be set to the selected location. Are you sure?",
+                "createCopy": "Create a copy and switch to new path",
                 "cancel": "Cancel",
                 "confirm": "Confirm"
             },
