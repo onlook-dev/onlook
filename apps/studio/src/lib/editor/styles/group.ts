@@ -171,9 +171,6 @@ export const LayoutGroup = [
 ];
 
 export const StyleGroup = [
-    new SingleStyleImpl('overflow', 'visible', 'Overflow', StyleType.Select, {
-        options: ['visible', 'hidden', 'scroll', 'auto'],
-    }),
     new SingleStyleImpl('opacity', '100', 'Opacity', StyleType.Number, {
         units: ['%'],
         min: 0,
@@ -242,6 +239,9 @@ export const StyleGroup = [
             }),
         ],
     ),
+    new SingleStyleImpl('overflow', 'visible', 'Overflow', StyleType.Select, {
+        options: ['visible', 'hidden', 'scroll', 'auto'],
+    }),
 ];
 
 export const TextGroup = [
