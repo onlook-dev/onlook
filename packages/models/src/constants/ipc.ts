@@ -176,6 +176,10 @@ export enum MainChannels {
     // Files
     SCAN_FILES = 'scan-files',
     GET_PROJECT_FILES = 'get-project-files',
+    FILE_CHANGED = 'file-changed',
+    WATCH_FILE = 'watch-file',
+    UNWATCH_FILE = 'unwatch-file',
+    MARK_FILE_MODIFIED = 'mark-file-modified',
 
     // Editor
     SHOW_EDITOR_TAB = 'show-editor-tab',
