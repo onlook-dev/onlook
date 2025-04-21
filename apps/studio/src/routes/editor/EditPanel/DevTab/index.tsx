@@ -73,6 +73,20 @@ export const DevTab = observer(() => {
     const treeRef = useRef<TreeApi<FileNode>>();
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Scan project files when the component is mounted
+    useEffect(() => {
+        loadProjectFiles();
+    }, []);
+
+    // Load files from the project
+    async function loadProjectFiles() {
+        try {
+            await editorEngine.files.scanFiles();
+        } catch (error) {
+            console.error('Error loading project files:', error);
+        }
+    }
+
     // Prevents false "conflicts" where the user didn't actually modify anything
     const applyingExternalChanges = useRef(false);
 
@@ -105,7 +119,6 @@ export const DevTab = observer(() => {
         }
     };
 
-    // Add an effect to ensure the editor view content matches our state
     useEffect(() => {
         if (!activeFile) {
             return;
@@ -154,20 +167,6 @@ export const DevTab = observer(() => {
         }
         return editorViewsRef.current.get(activeFile.id);
     };
-
-    // Scan project files when the component is mounted
-    useEffect(() => {
-        loadProjectFiles();
-    }, []);
-
-    // Load files from the project
-    async function loadProjectFiles() {
-        try {
-            await editorEngine.files.scanFiles();
-        } catch (error) {
-            console.error('Error loading project files:', error);
-        }
-    }
 
     useEffect(() => {
         const handleOpenCodeInOnlook = async (data: any) => {
@@ -601,7 +600,6 @@ export const DevTab = observer(() => {
 
             if (openedFile.isDirty) {
                 // If the file is dirty, ONLY mark it as having external changes
-                // DO NOT update any content or the editor view
                 const updatedFiles = openedFiles.map((file) =>
                     file.path === data.path
                         ? {
@@ -617,13 +615,11 @@ export const DevTab = observer(() => {
                 setOpenedFiles(updatedFiles);
 
                 // If this is the active file, only update the conflict flags
-                // DO NOT update any content properties or the editor view
                 if (activeFile && activeFile.path === data.path) {
                     setActiveFile({
                         ...activeFile,
                         hasExternalChanges: true,
                         externalContent: data.content,
-                        // Preserve both content and isDirty flag
                         isDirty: true,
                     });
 
@@ -830,7 +826,6 @@ export const DevTab = observer(() => {
                       ...f,
                       hasExternalChanges: false,
                       externalContent: undefined,
-                      // Ensure the file remains marked as dirty
                       isDirty: true,
                   }
                 : f,
@@ -844,7 +839,6 @@ export const DevTab = observer(() => {
                 ...activeFile,
                 hasExternalChanges: false,
                 externalContent: undefined,
-                // Ensure the file remains marked as dirty
                 isDirty: true,
             });
 
