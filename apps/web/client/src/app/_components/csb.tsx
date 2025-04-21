@@ -4,45 +4,32 @@ import { api } from "@/trpc/react";
 import { Button } from "@onlook/ui/button";
 
 export function Csb() {
-    const { mutateAsync: start, isPending: isStarting } = api.csb.start.useMutation();
-    const { mutateAsync: stop, isPending: isStopping } = api.csb.stop.useMutation();
-    const { mutateAsync: list, isPending: isListing } = api.csb.list.useMutation();
+    const { mutateAsync: start, isPending: isStarting } = api.external.sandbox.start.useMutation();
+    const { mutateAsync: stop, isPending: isStopping } = api.external.sandbox.stop.useMutation();
+    const { data: status, isPending: isListing, refetch: refetchStatus } = api.external.sandbox.status.useQuery({ sandboxId: 's6tryk' });
 
-    const handleStart = async () => {
-        const startData = await start("123");
-        console.log("startData", startData);
-    }
-
-    const handleStop = async () => {
-        const stopData = await stop("s6tryk");
-        console.log("stopData", stopData);
-    }
-
-    const handleList = async () => {
-        const listData = await list();
-        console.log("listData", listData);
-    }
 
     return (
         <div>
             <Button
-                onClick={handleStart}
+                onClick={() => start({ projectId: '123' })}
                 disabled={isStarting}
             >
                 Start Client
             </Button>
             <Button
-                onClick={handleStop}
+                onClick={() => stop({ sandboxId: 's6tryk' })}
                 disabled={isStopping}
             >
                 Stop Client
             </Button>
             <Button
-                onClick={handleList}
+                onClick={() => refetchStatus()}
                 disabled={isListing}
             >
                 List Clients
             </Button>
+            <pre>{JSON.stringify(status, null, 2)}</pre>
         </div>
     );
 }

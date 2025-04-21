@@ -85,7 +85,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         };
 
         if (!iframeRemote) {
-            console.error('Iframe - Failed to setup penpal connection: iframeRemote is null');
+            console.warn('Iframe - Failed to setup penpal connection: iframeRemote is null');
             return Object.assign(iframe, syncMethods) as WebFrameView;
         }
 

@@ -1,5 +1,5 @@
 {
-    "name": "@onlook/web-server",
+    "name": "@onlook/provision-service",
     "module": "index.ts",
     "type": "module",
     "private": true,

@@ -66,7 +66,7 @@ export const Overlay = observer(({ children }: { children: React.ReactNode }) =>
                 style={containerStyle as React.CSSProperties}
                 id={EditorAttributes.OVERLAY_CONTAINER_ID}
                 className={cn(
-                    'opacity-100',
+                    'opacity-100 transition-opacity duration-150',
                     {
                         'opacity-0': editorEngine.state.shouldHideOverlay,
                     }

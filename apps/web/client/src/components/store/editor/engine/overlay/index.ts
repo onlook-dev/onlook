@@ -26,10 +26,6 @@ export class OverlayManager {
     }
 
     refresh = async () => {
-        if (this.editorEngine.state.shouldHideOverlay) {
-            return;
-        }
-        // Refresh hover rect
         this.state.removeHoverRect();
 
         // Refresh click rects
