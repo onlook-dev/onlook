@@ -21,7 +21,7 @@ export class CanvasManager {
 
         const webFrame: WebFrame = {
             id: '1',
-            url: 'http://localhost:8084',
+            url: 'https://nmjn32-8084.csb.app',
             position: { x: 0, y: 0 },
             dimension: { width: 1000, height: 1000 },
             type: FrameType.WEB,
@@ -29,7 +29,7 @@ export class CanvasManager {
 
         const webFrame1 = {
             id: '2',
-            url: 'http://localhost:8084',
+            url: 'https://nmjn32-8084.csb.app',
             position: { x: 1100, y: 0 },
             dimension: { width: 1000, height: 1000 },
             type: FrameType.WEB,
