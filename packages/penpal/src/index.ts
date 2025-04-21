@@ -1,3 +1,2 @@
-export * from './iframe';
-export * from './preload';
+export * from './parent';
 

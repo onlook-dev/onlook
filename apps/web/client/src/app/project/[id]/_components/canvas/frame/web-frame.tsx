@@ -2,6 +2,7 @@
 
 import { useEditorEngine } from "@/components/store";
 import type { WebFrame } from "@onlook/models";
+import type { PenpalParentMethods } from '@onlook/penpal';
 import { cn } from "@onlook/ui/utils";
 import type { PreloadMethods } from '@onlook/web-preload/script/api';
 import { observer } from "mobx-react-lite";
@@ -142,7 +143,9 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         const connection = connect({
             // iframe: ref.current,
             messenger,
-            methods: {},
+            methods: {
+                getFrameId: () => frame.id,
+            } satisfies PenpalParentMethods,
             timeout: 10000,
         });
 

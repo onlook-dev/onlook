@@ -12,7 +12,8 @@ export default async function Page({ params }: { params: { id: string } }) {
 
     const newFrame: WebFrame = {
         id: '1',
-        url: 'https://nmjn32-8084.csb.app',
+        // url: 'https://nmjn32-8084.csb.app',
+        url: 'http://localhost:8084',
         position: { x: 200, y: 200 },
         dimension: { width: 500, height: 500 },
         type: FrameType.WEB,
@@ -21,14 +22,11 @@ export default async function Page({ params }: { params: { id: string } }) {
     const newProject: Project = {
         id: projectId,
         name: "New Project",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        previewImg: null,
         previewUrl: '',
-        commands: {
-            install: "npm install",
-            run: "npm run dev",
-            build: "npm run build",
+        metadata: {
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            previewImg: null,
         },
         canvas: {
             scale: 1,
