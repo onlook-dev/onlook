@@ -28,6 +28,7 @@ import { nanoid } from 'nanoid';
 import { useTheme } from '@/app/_components/theme';
 import { useEditorEngine } from '@/components/store';
 import { EditorTabValue } from '@onlook/models/editor';
+import { SystemTheme } from '@onlook/models';
 
 
 enum TabValue {
@@ -742,9 +743,9 @@ export const DevTab = observer(() => {
                                         key={file.id}
                                         value={file.content}
                                         height="100%"
-                                        theme={theme === Theme.Dark ? 'dark' : 'light'}
+                                        theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
                                         extensions={[
-                                            ...getBasicSetup(theme === Theme.Dark, saveFile),
+                                            ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
                                             ...getExtensions(file.language),
                                         ]}
                                         onChange={(value) => {

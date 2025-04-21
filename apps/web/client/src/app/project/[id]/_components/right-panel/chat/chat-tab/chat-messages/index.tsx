@@ -42,6 +42,8 @@ export const ChatMessages = observer(() => {
         [],
     );
 
+    
+
     // Render in reverse order to make the latest message appear at the bottom
     return (
         <AnimatePresence mode="wait">

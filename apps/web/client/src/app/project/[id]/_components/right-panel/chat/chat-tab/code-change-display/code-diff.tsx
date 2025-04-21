@@ -1,115 +1,36 @@
-
-import { cn } from '@onlook/ui/utils';
-import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
-import * as monaco from 'monaco-editor';
-import { useEffect, useRef } from 'react';
-import { createHighlighter } from 'shiki';
-import { VARIANTS } from './variants';
-import { useTheme } from '@/app/_components/theme';
-
+import { useTheme } from "@/app/_components/theme";
+import { SystemTheme } from "@onlook/models";
+import { getBasicSetup } from "../../../dev/code-mirror-config";
+import { getExtensions } from "../../../dev/code-mirror-config";
+import CodeMirrorMerge from "react-codemirror-merge";
 interface CodeDiffProps {
-    originalCode: string;
-    modifiedCode: string;
-    language?: string;
-    showLineNumbers?: boolean;
-    variant?: 'minimal' | 'normal';
+  originalCode: string;
+  modifiedCode: string;
+  language?: string;
+  showLineNumbers?: boolean;
+  variant?: "minimal" | "normal";
 }
 
-export const CodeDiff = ({ originalCode, modifiedCode, variant }: CodeDiffProps) => {
-    const { theme } = useTheme();
-    const diffContainer = useRef<HTMLDivElement | null>(null);
-    const diffEditor = useRef<monaco.editor.IStandaloneDiffEditor | null>(null);
-    const setting = VARIANTS[variant || 'normal'];
+const Original = CodeMirrorMerge.Original;
+const Modified = CodeMirrorMerge.Modified;
 
-    useEffect(() => {
-        initMonaco();
-        return () => {
-            if (diffEditor.current) {
-                diffEditor.current.dispose();
-            }
-        };
-    }, []);
+export const CodeDiff = ({ originalCode, modifiedCode }: CodeDiffProps) => {
+  const { theme } = useTheme();
 
-    useEffect(() => {
-        if (diffEditor.current) {
-            updateDiffContent(originalCode, modifiedCode);
-        }
-    }, [originalCode, modifiedCode]);
+  const languageExtension = getExtensions("javascript");
+  const extensions = [
+    ...getBasicSetup(() => {
+      // No-op save function since this is a read-only display
+    }),
+    ...languageExtension,
+  ];
 
-    useEffect(() => {
-        if (diffEditor.current) {
-            diffEditor.current.updateOptions({
-                // @ts-expect-error - Option exists
-                theme: theme === 'light' ? 'light-plus' : 'dark-plus',
-            });
-        }
-    }, [theme]);
-
-    async function initMonaco() {
-        if (diffContainer.current) {
-            await initHighlighter();
-
-            diffEditor.current = monaco.editor.createDiffEditor(diffContainer.current, {
-                theme: theme === 'light' ? 'light-plus' : 'dark-plus',
-                automaticLayout: true,
-                scrollbar: {
-                    vertical: 'hidden',
-                    horizontal: 'hidden',
-                },
-                overviewRulerBorder: false,
-                overviewRulerLanes: 0,
-                hideCursorInOverviewRuler: true,
-                renderLineHighlight: 'none',
-                contextmenu: false,
-                folding: false,
-                readOnly: true,
-                stickyScroll: { enabled: false },
-                glyphMargin: false,
-                renderSideBySide: true,
-                originalEditable: false,
-                diffWordWrap: 'on',
-                guides: {
-                    indentation: false,
-                    highlightActiveIndentation: false,
-                    bracketPairs: false,
-                },
-                scrollBeyondLastLine: false,
-                ...setting,
-            });
-
-            updateDiffContent(originalCode, modifiedCode);
-        }
-    }
-
-    async function initHighlighter() {
-        const LANGS = ['javascript', 'typescript', 'jsx', 'tsx'];
-
-        const highlighter = await createHighlighter({
-            themes: ['dark-plus', 'light-plus'],
-            langs: LANGS,
-        });
-
-        LANGS.forEach((lang) => {
-            monaco.languages.register({ id: lang });
-        });
-
-        shikiToMonaco(highlighter, monaco);
-    }
-
-    function updateDiffContent(original: string, modified: string) {
-        if (!diffEditor.current) {
-            console.error('Diff editor not initialized.');
-            return;
-        }
-
-        const originalModel = monaco.editor.createModel(original, 'javascript');
-        const modifiedModel = monaco.editor.createModel(modified, 'javascript');
-
-        diffEditor.current.setModel({
-            original: originalModel,
-            modified: modifiedModel,
-        });
-    }
-
-    return <div ref={diffContainer} className={cn('w-full h-full overflow-hidden')} />;
+  return (
+    <CodeMirrorMerge orientation="a-b" theme={
+      theme === SystemTheme.DARK ? SystemTheme.DARK : SystemTheme.LIGHT
+    }>
+      <Original value={originalCode} extensions={extensions} readOnly />
+      <Modified value={modifiedCode} extensions={extensions} readOnly />
+    </CodeMirrorMerge>
+  );
 };

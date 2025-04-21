@@ -5,7 +5,7 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
-import { CodeManager } from './code';
+import { type CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
@@ -58,8 +58,8 @@ export class EditorEngine {
         // private userManager: UserManager,
     ) {
         makeAutoObservable(this);
-        this.chat = new ChatManager(this
-            // this.projectsManager,
+        this.chat = new ChatManager(this,
+            this.projectsManager,
             // this.userManager
         );
         this.frames = new FramesManager(this,
