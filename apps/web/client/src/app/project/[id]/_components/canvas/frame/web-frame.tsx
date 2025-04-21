@@ -65,9 +65,6 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             return {} as WebFrameView;
         }
 
-        // Register the iframe with the editor engine
-        editorEngine.frames.register(frame, iframe as WebFrameView);
-
         const syncMethods = {
             supportsOpenDevTools: () => !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
             setZoomLevel: (level: number) => {
@@ -125,6 +122,9 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             insertImage: promisifyRemoteMethod(iframeRemote?.insertImage),
             removeImage: promisifyRemoteMethod(iframeRemote?.removeImage),
         };
+
+        // Register the iframe with the editor engine
+        editorEngine.frames.register(frame, iframe as WebFrameView);
 
         return Object.assign(iframe, { ...syncMethods, ...remoteMethods }) satisfies WebFrameView;
     }, [iframeRemote, frame, iframeRef]);
