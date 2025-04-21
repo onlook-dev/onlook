@@ -2,13 +2,14 @@ import { DefaultSettings } from '@onlook/constants';
 import type {
     Frame,
     Project,
-    RectPosition
+    RectPosition,
+    WebFrame
 } from '@onlook/models';
-import { FrameType, type WebFrame } from '@onlook/models';
+import { FrameType } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
-import { WebFrameImpl, type FrameImpl } from './frame';
+import { FrameImpl, WebFrameImpl } from './frame';
 
 export class CanvasManager {
     private _scale: number = DefaultSettings.SCALE;
@@ -18,23 +19,22 @@ export class CanvasManager {
     constructor() {
         makeAutoObservable(this);
         this._position = this.getDefaultPanPosition();
+    }
 
-        const webFrame: WebFrame = {
-            id: '1',
-            url: 'https://nmjn32-8084.csb.app',
-            position: { x: 0, y: 0 },
-            dimension: { width: 1000, height: 1000 },
-            type: FrameType.WEB,
-        };
+    applyProject(project: Project) {
+        this.scale = project.canvas?.scale ?? DefaultSettings.SCALE;
+        this.position = project.canvas?.position ?? this.getDefaultPanPosition();
+        this.applyFrames(project.canvas?.frames ?? []);
+    }
 
-        const webFrame1 = {
-            id: '2',
-            url: 'https://nmjn32-8084.csb.app',
-            position: { x: 1100, y: 0 },
-            dimension: { width: 1000, height: 1000 },
-            type: FrameType.WEB,
-        };
-        this._frames = [WebFrameImpl.fromJSON(webFrame), WebFrameImpl.fromJSON(webFrame1)];
+    applyFrames(frames: Frame[]) {
+        this.frames = frames.map((frame) => {
+            if (frame.type === FrameType.WEB) {
+                return WebFrameImpl.fromJSON(frame as WebFrame);
+            } else {
+                return FrameImpl.fromJSON(frame);
+            }
+        });
     }
 
     getDefaultPanPosition(): RectPosition {
@@ -75,9 +75,8 @@ export class CanvasManager {
         return this._frames;
     }
 
-    set frames(frames: Frame[]) {
+    set frames(frames: FrameImpl[]) {
         this._frames = frames;
-        this.saveSettings();
     }
 
     getFrame(id: string) {
