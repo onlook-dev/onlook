@@ -8,21 +8,23 @@ import {
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
-import { InputIcon } from "../inputs/input-icon";
 import { InputRange } from "../inputs/input-range";
+import { SpacingInputs } from "../inputs/spacing-inputs";
+import { useBoxControl } from "../hooks/use-box-control";
 
 export const Padding = () => {
     const [activeTab, setActiveTab] = useState('individual');
+    const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                    className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                 >
-                    <Icons.Padding className="h-4 w-4 min-h-4 min-w-4" />
-                    <span className="text-sm">Mixed</span>
+                    <Icons.Padding className="h-4 min-h-4 w-4 min-w-4" />
+                    <span className="text-sm">{boxState.padding.value}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
@@ -47,14 +49,23 @@ export const Padding = () => {
                     </button>
                 </div>
                 {activeTab === 'all' ? (
-                    <InputRange value={12} onChange={(value) => console.log(value)} />
+                    <InputRange
+                        value={boxState.padding.num ?? 0}
+                        onChange={(value) => handleBoxChange('padding', value.toString())}
+                        unit={boxState.padding.unit}
+                        onUnitChange={(unit) => handleUnitChange('padding', unit)}
+                    />
                 ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                        <InputIcon icon="LeftSide" value={12} />
-                        <InputIcon icon="TopSide" value={18} />
-                        <InputIcon icon="RightSide" value={12} />
-                        <InputIcon icon="BottomSide" value={18} />
-                    </div>
+                    <SpacingInputs
+                        type="padding"
+                        values={{
+                            top: boxState.paddingTop.num ?? 0,
+                            right: boxState.paddingRight.num ?? 0,
+                            bottom: boxState.paddingBottom.num ?? 0,
+                            left: boxState.paddingLeft.num ?? 0
+                        }}
+                        onChange={handleIndividualChange}
+                    />
                 )}
             </DropdownMenuContent>
         </DropdownMenu>
