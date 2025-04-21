@@ -8,7 +8,9 @@ export function getFrameId(): string {
     const frameId = (window as any)._onlookFrameId;
     if (!frameId) {
         console.warn('Frame id not found');
-        return remote?.getFrameId() ?? '';
+        const frameId = remote?.getFrameId() ?? '';
+        setFrameId(frameId);
+        return frameId;
     }
     return frameId;
 }
