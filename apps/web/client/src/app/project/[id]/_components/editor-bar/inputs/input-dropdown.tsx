@@ -11,6 +11,11 @@ import { Icons } from "@onlook/ui/icons";
 
 const UNITS = ["PX", "%", "EM", "REM"];
 
+const OPTION_OVERRIDES: Record<string, string | undefined> = {
+    Fit: 'Hug',
+    Relative: 'Rel',
+};
+
 interface InputDropdownProps {
     value: string;
     unit?: string;
@@ -18,6 +23,7 @@ interface InputDropdownProps {
     dropdownOptions?: string[];
     onChange?: (value: string) => void;
     onDropdownChange?: (value: string) => void;
+    onUnitChange?: (value: string) => void;
 }
 
 export const InputDropdown = ({
@@ -27,6 +33,7 @@ export const InputDropdown = ({
     dropdownOptions = ["Hug"],
     onChange,
     onDropdownChange,
+    onUnitChange
 }: InputDropdownProps) => {
     return (
         <div className="flex items-center">
@@ -45,7 +52,7 @@ export const InputDropdown = ({
                         {UNITS.map((unitOption: string) => (
                             <DropdownMenuItem
                                 key={unitOption}
-                                onClick={() => onDropdownChange?.(unitOption)}
+                                onClick={() => onUnitChange?.(unitOption)}
                                 className="text-[12px] text-center px-2"
                             >
                                 {unitOption}
@@ -61,7 +68,7 @@ export const InputDropdown = ({
                         className="h-[36px] bg-background-tertiary/50 hover:bg-background-tertiary/80 rounded-l-none rounded-r-md ml-[1px] px-2.5 flex items-center justify-between w-[72px] cursor-pointer"
                     >
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">{dropdownValue}</span>
+                            <span className="text-sm text-muted-foreground">{OPTION_OVERRIDES[dropdownValue] ?? dropdownValue}</span>
                         </div>
                         <Icons.ChevronDown className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
                     </Button>
@@ -73,7 +80,7 @@ export const InputDropdown = ({
                             onClick={() => onDropdownChange?.(option)}
                             className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
                         >
-                            {option}
+                             {OPTION_OVERRIDES[option] ?? option}
                         </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>

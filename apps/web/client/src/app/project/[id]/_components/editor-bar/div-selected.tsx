@@ -13,6 +13,8 @@ import { StateDropdown } from "./dropdowns/state-dropdown";
 import { Width } from "./dropdowns/width";
 import { ViewButtons } from "./panels/panel-bar/bar";
 import { InputSeparator } from "./separator";
+import { Display } from "./dropdowns/display";
+
 export const DivSelected = () => {
     const [activeTab, setActiveTab] = useState('individual');
 
@@ -22,7 +24,7 @@ export const DivSelected = () => {
 
             <InputSeparator />
 
-            {/* <Display /> */}
+            <Display />
 
             <InputSeparator />
 

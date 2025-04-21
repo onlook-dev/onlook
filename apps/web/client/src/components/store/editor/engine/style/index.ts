@@ -21,8 +21,8 @@ export enum StyleMode {
 
 export class StyleManager {
     selectedStyle: SelectedStyle | null = null;
-    domIdToStyle: Map<string, SelectedStyle> = new Map();
-    prevSelected: string = '';
+    domIdToStyle = new Map<string, SelectedStyle>();
+    prevSelected = '';
     mode: StyleMode = StyleMode.Root;
 
     constructor(private editorEngine: EditorEngine) {
