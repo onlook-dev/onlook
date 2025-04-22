@@ -26,15 +26,18 @@ const editorClient = createTRPCClient<EditorRouter>({
 // Export the router with all the forwarded procedures
 export const editorForwardRouter = createTRPCRouter({
     sandbox: createTRPCRouter({
-        start: publicProcedure.input(z.object({ projectId: z.string() })).mutation(({ input }) => {
+        create: publicProcedure.input(z.string()).mutation(({ input }) => {
+            return editorClient.sandbox.create.mutate(input);
+        }),
+        start: publicProcedure.input(z.string()).mutation(({ input }) => {
             return editorClient.sandbox.start.mutate(input);
         }),
-        status: publicProcedure.input(z.object({ sandboxId: z.string() })).query(({ input }) => {
-            return editorClient.sandbox.status.query(input);
-        }),
 
-        stop: publicProcedure.input(z.object({ sandboxId: z.string() })).mutation(({ input }) => {
+        stop: publicProcedure.input(z.string()).mutation(({ input }) => {
             return editorClient.sandbox.stop.mutate(input);
+        }),
+        status: publicProcedure.input(z.string()).query(({ input }) => {
+            return editorClient.sandbox.status.query(input);
         }),
     }),
 });

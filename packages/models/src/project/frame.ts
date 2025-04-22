@@ -7,9 +7,6 @@ export interface Frame {
     position: RectPosition;
     dimension: RectDimension;
     type: FrameType;
-    device: string;
-    orientation: string;
-    aspectRatioLocked: boolean;
 }
 
 export interface WebFrame extends Frame {

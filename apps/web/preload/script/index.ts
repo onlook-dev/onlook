@@ -1,5 +1,8 @@
+import type { PromisifiedPenpalParentMethods } from '@onlook/penpal';
 import { WindowMessenger, connect } from 'penpal';
 import { preloadMethods } from './api';
+
+export let penpalParent: PromisifiedPenpalParentMethods | null = null;
 
 const createMessageConnection = async () => {
     console.log("Preload - Creating penpal connection");
@@ -16,7 +19,8 @@ const createMessageConnection = async () => {
         methods: preloadMethods
     });
 
-    const remote = await connection.promise as any;
+    penpalParent = await connection.promise as unknown as PromisifiedPenpalParentMethods;
+    return penpalParent;
 }
 
 createMessageConnection();

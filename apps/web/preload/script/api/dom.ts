@@ -5,8 +5,8 @@ import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
 import { getFrameId } from './state';
 
-const processDebounced = debounce((root: HTMLElement) => {
-    const frameId = getFrameId();
+const processDebounced = debounce(async (root: HTMLElement) => {
+    const frameId = await getFrameId();
     if (!frameId) {
         console.warn('frameView id not found, skipping dom processing');
         return false;

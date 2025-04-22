@@ -2,18 +2,12 @@
 
 import { useEditorEngine } from "@/components/store";
 import type { WebFrame } from "@onlook/models";
+import type { PenpalChildMethods } from '@onlook/penpal';
+import { promisifyMethod, type PenpalParentMethods, type PromisifiedPendpalChildMethods } from '@onlook/penpal';
 import { cn } from "@onlook/ui/utils";
-import type { PreloadMethods } from '@onlook/web-preload/script/api';
 import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
-
-// Preload methods should be treated as promises
-type PromisifiedPreloadMethods = {
-    [K in keyof PreloadMethods]: (
-        ...args: Parameters<PreloadMethods[K]>
-    ) => Promise<ReturnType<PreloadMethods[K]>>;
-}
 
 export type WebFrameView = HTMLIFrameElement & {
     setZoomLevel: (level: number) => void;
@@ -25,32 +19,18 @@ export type WebFrameView = HTMLIFrameElement & {
     goBack: () => void;
     reload: () => void;
     isLoading: () => boolean;
-} & PromisifiedPreloadMethods;
+} & PromisifiedPendpalChildMethods;
 
 interface WebFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: WebFrame;
 }
 
-const promisifyRemoteMethod = <T extends (...args: any[]) => any>(
-    method: T | undefined
-): ((...args: Parameters<T>) => Promise<ReturnType<T>>) => {
-    return async (...args: Parameters<T>) => {
-        if (!method) throw new Error('Remote method not initialized');
-        return method(...args);
-    };
-};
-
 export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewProps>(({ frame, ...props }, ref) => {
     const editorEngine = useEditorEngine();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const zoomLevel = useRef(1);
-    const [iframeRemote, setIframeRemote] = useState<any>(null);
-
-    useEffect(() => {
-        if (iframeRemote) {
-            console.log('Iframe - Penpal connection set for frame ID:', frame.id);
-        }
-    }, [iframeRemote]);
+    const [penpalChild, setPenpalChild] = useState<any>(null);
+    const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
 
     const reloadIframe = () => {
         const iframe = iframeRef.current;
@@ -64,9 +44,6 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             console.error('Iframe - Not found');
             return {} as WebFrameView;
         }
-
-        // Register the iframe with the editor engine
-        editorEngine.frames.register(frame, iframe as WebFrameView);
 
         const syncMethods = {
             supportsOpenDevTools: () => !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
@@ -84,75 +61,88 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             isLoading: () => iframe.contentDocument?.readyState !== 'complete',
         };
 
-        if (!iframeRemote) {
+        if (!penpalChild) {
             console.warn('Iframe - Failed to setup penpal connection: iframeRemote is null');
             return Object.assign(iframe, syncMethods) as WebFrameView;
         }
 
         const remoteMethods = {
-            processDom: promisifyRemoteMethod(iframeRemote?.processDom),
-            getElementAtLoc: promisifyRemoteMethod(iframeRemote?.getElementAtLoc),
-            getElementByDomId: promisifyRemoteMethod(iframeRemote?.getElementByDomId),
-            setFrameId: promisifyRemoteMethod(iframeRemote?.setFrameId),
-            getElementIndex: promisifyRemoteMethod(iframeRemote?.getElementIndex),
-            getComputedStyleByDomId: promisifyRemoteMethod(iframeRemote?.getComputedStyleByDomId),
-            updateElementInstance: promisifyRemoteMethod(iframeRemote?.updateElementInstance),
-            getFirstOnlookElement: promisifyRemoteMethod(iframeRemote?.getFirstOnlookElement),
-            setElementType: promisifyRemoteMethod(iframeRemote?.setElementType),
-            getElementType: promisifyRemoteMethod(iframeRemote?.getElementType),
-            getParentElement: promisifyRemoteMethod(iframeRemote?.getParentElement),
-            getChildrenCount: promisifyRemoteMethod(iframeRemote?.getChildrenCount),
-            getOffsetParent: promisifyRemoteMethod(iframeRemote?.getOffsetParent),
-            getActionLocation: promisifyRemoteMethod(iframeRemote?.getActionLocation),
-            getActionElement: promisifyRemoteMethod(iframeRemote?.getActionElement),
-            getInsertLocation: promisifyRemoteMethod(iframeRemote?.getInsertLocation),
-            getRemoveAction: promisifyRemoteMethod(iframeRemote?.getRemoveAction),
-            getTheme: promisifyRemoteMethod(iframeRemote?.getTheme),
-            setTheme: promisifyRemoteMethod(iframeRemote?.setTheme),
-            startDrag: promisifyRemoteMethod(iframeRemote?.startDrag),
-            drag: promisifyRemoteMethod(iframeRemote?.drag),
-            endDrag: promisifyRemoteMethod(iframeRemote?.endDrag),
-            endAllDrag: promisifyRemoteMethod(iframeRemote?.endAllDrag),
-            startEditingText: promisifyRemoteMethod(iframeRemote?.startEditingText),
-            editText: promisifyRemoteMethod(iframeRemote?.editText),
-            stopEditingText: promisifyRemoteMethod(iframeRemote?.stopEditingText),
-            updateStyle: promisifyRemoteMethod(iframeRemote?.updateStyle),
-            insertElement: promisifyRemoteMethod(iframeRemote?.insertElement),
-            removeElement: promisifyRemoteMethod(iframeRemote?.removeElement),
-            moveElement: promisifyRemoteMethod(iframeRemote?.moveElement),
-            groupElements: promisifyRemoteMethod(iframeRemote?.groupElements),
-            ungroupElements: promisifyRemoteMethod(iframeRemote?.ungroupElements),
-            insertImage: promisifyRemoteMethod(iframeRemote?.insertImage),
-            removeImage: promisifyRemoteMethod(iframeRemote?.removeImage),
+            processDom: promisifyMethod(penpalChild?.processDom),
+            getElementAtLoc: promisifyMethod(penpalChild?.getElementAtLoc),
+            getElementByDomId: promisifyMethod(penpalChild?.getElementByDomId),
+            setFrameId: promisifyMethod(penpalChild?.setFrameId),
+            getElementIndex: promisifyMethod(penpalChild?.getElementIndex),
+            getComputedStyleByDomId: promisifyMethod(penpalChild?.getComputedStyleByDomId),
+            updateElementInstance: promisifyMethod(penpalChild?.updateElementInstance),
+            getFirstOnlookElement: promisifyMethod(penpalChild?.getFirstOnlookElement),
+            setElementType: promisifyMethod(penpalChild?.setElementType),
+            getElementType: promisifyMethod(penpalChild?.getElementType),
+            getParentElement: promisifyMethod(penpalChild?.getParentElement),
+            getChildrenCount: promisifyMethod(penpalChild?.getChildrenCount),
+            getOffsetParent: promisifyMethod(penpalChild?.getOffsetParent),
+            getActionLocation: promisifyMethod(penpalChild?.getActionLocation),
+            getActionElement: promisifyMethod(penpalChild?.getActionElement),
+            getInsertLocation: promisifyMethod(penpalChild?.getInsertLocation),
+            getRemoveAction: promisifyMethod(penpalChild?.getRemoveAction),
+            getTheme: promisifyMethod(penpalChild?.getTheme),
+            setTheme: promisifyMethod(penpalChild?.setTheme),
+            startDrag: promisifyMethod(penpalChild?.startDrag),
+            drag: promisifyMethod(penpalChild?.drag),
+            endDrag: promisifyMethod(penpalChild?.endDrag),
+            endAllDrag: promisifyMethod(penpalChild?.endAllDrag),
+            startEditingText: promisifyMethod(penpalChild?.startEditingText),
+            editText: promisifyMethod(penpalChild?.editText),
+            stopEditingText: promisifyMethod(penpalChild?.stopEditingText),
+            updateStyle: promisifyMethod(penpalChild?.updateStyle),
+            insertElement: promisifyMethod(penpalChild?.insertElement),
+            removeElement: promisifyMethod(penpalChild?.removeElement),
+            moveElement: promisifyMethod(penpalChild?.moveElement),
+            groupElements: promisifyMethod(penpalChild?.groupElements),
+            ungroupElements: promisifyMethod(penpalChild?.ungroupElements),
+            insertImage: promisifyMethod(penpalChild?.insertImage),
+            removeImage: promisifyMethod(penpalChild?.removeImage),
         };
 
+        // Register the iframe with the editor engine
+        editorEngine.frames.register(frame, iframe as WebFrameView);
+
         return Object.assign(iframe, { ...syncMethods, ...remoteMethods }) satisfies WebFrameView;
-    }, [iframeRemote, frame, iframeRef]);
+    }, [penpalChild, frame, iframeRef]);
 
     useEffect(() => {
         if (!iframeRef.current || !iframeRef.current.contentWindow) {
             console.error('No iframe found');
             return;
         }
+
+        // Destroy any existing connection before creating a new one
+        if (connectionRef.current) {
+            connectionRef.current.destroy();
+            connectionRef.current = null;
+        }
+
         const messenger = new WindowMessenger({
             remoteWindow: iframeRef.current.contentWindow,
             allowedOrigins: ['*'],
         });
 
         const connection = connect({
-            // iframe: ref.current,
             messenger,
-            methods: {},
-            timeout: 10000,
+            methods: {
+                getFrameId: () => frame.id,
+            } satisfies PenpalParentMethods,
         });
+
+        // Store the connection reference
+        connectionRef.current = connection;
 
         connection.promise.then((child) => {
             if (!child) {
                 console.error('Iframe - Failed to setup penpal connection: child is null');
                 return;
             }
-            const remote = child as unknown as PreloadMethods;
-            setIframeRemote(remote);
+            const remote = child as unknown as PenpalChildMethods;
+            setPenpalChild(remote);
             remote.setFrameId(frame.id);
             remote.processDom();
             console.log('Iframe - Penpal connection set for frame ID:', frame.id);
@@ -166,8 +156,11 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         });
 
         return () => {
-            connection.destroy();
-            setIframeRemote(null);
+            if (connectionRef.current) {
+                connectionRef.current.destroy();
+                connectionRef.current = null;
+            }
+            setPenpalChild(null);
         };
     }, []);
 

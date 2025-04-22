@@ -134,7 +134,7 @@ export class AstManager {
         }
 
         if (parentTemplateNode.component !== templateNode.component) {
-            const htmlParent = this.getgetHtmlElement(parent.domId, frameId);
+            const htmlParent = this.getHtmlElement(parent.domId, frameId);
             if (!htmlParent) {
                 console.warn('Failed to findNodeInstance: Parent node not found');
                 return;
@@ -142,7 +142,7 @@ export class AstManager {
             const children = htmlParent.querySelectorAll(
                 `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
             );
-            const htmlOriginalNode = this.getgetHtmlElement(originalNode.domId, frameId);
+            const htmlOriginalNode = this.getHtmlElement(originalNode.domId, frameId);
             if (!htmlOriginalNode) {
                 console.warn('Failed to findNodeInstance: Original node not found');
                 return;
@@ -169,7 +169,7 @@ export class AstManager {
         }
     }
 
-    getgetHtmlElement(domId: string, frameId: string): HTMLElement | null {
+    getHtmlElement(domId: string, frameId: string): HTMLElement | null {
         const doc = this.mappings.getMetadata(frameId)?.document;
         if (!doc) {
             console.warn('Failed to getNodeFromDomId: Document not found');

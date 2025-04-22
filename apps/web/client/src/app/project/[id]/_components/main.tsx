@@ -1,6 +1,6 @@
 'use client';
 
-import { useProjectsManager } from "@/components/store";
+import { useEditorEngine, useProjectsManager } from "@/components/store";
 import type { Project } from "@onlook/models";
 import { TooltipProvider } from "@onlook/ui/tooltip";
 import { useEffect } from "react";
@@ -13,9 +13,11 @@ import { TopBar } from "./top-bar";
 
 export default function Main({ project }: { project: Project }) {
     const projectManager = useProjectsManager();
+    const editorEngine = useEditorEngine();
 
     useEffect(() => {
         projectManager.project = project;
+        editorEngine.canvas.applyProject(project);
     }, [project]);
 
     return (
