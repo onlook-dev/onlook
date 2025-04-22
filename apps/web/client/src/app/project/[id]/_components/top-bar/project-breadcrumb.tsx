@@ -1,7 +1,7 @@
 // import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
 // import { ProjectTabs } from '@/lib/projects';
 // import { Route } from '@/lib/routes';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine, useProjectsManager } from '@/components/store';
 import { SettingsTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
@@ -16,23 +16,19 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect } from 'next/navigation';
 import { useRef, useState } from 'react';
 
-export const ProjectBreadcrumb = () => {
+export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
-    // const projectsManager = useProjectsManager();
-    // const routeManager = useRouteManager();
+    const projectsManager = useProjectsManager();
+    const project = projectsManager.project;
     const t = useTranslations();
-    const project = {
-        name: 'My Project',
-        folderPath: '/Users/johndoe/Projects/my-project',
-        previewImg: 'https://via.placeholder.com/150',
-        updatedAt: '2021-01-01',
-    };
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer | null>(null);
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
 
     async function handleNavigateToProjects(route?: 'create' | 'import') {
@@ -106,7 +102,7 @@ export const ProjectBreadcrumb = () => {
                         <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
                             {isClosingProject
                                 ? 'Stopping project...'
-                                : project.name}
+                                : project?.name}
                         </span>
                         <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
                     </Button>
@@ -186,4 +182,4 @@ export const ProjectBreadcrumb = () => {
             </DropdownMenu>
         </div>
     );
-};
+});

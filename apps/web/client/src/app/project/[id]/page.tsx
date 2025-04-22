@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
     const newProject: Project = {
         id: projectId,
-        name: "New Project",
+        name: "My Project",
         previewUrl: '',
         metadata: {
             createdAt: new Date().toISOString(),
