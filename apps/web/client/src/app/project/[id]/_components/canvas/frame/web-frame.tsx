@@ -2,9 +2,9 @@
 
 import { useEditorEngine } from "@/components/store";
 import type { WebFrame } from "@onlook/models";
+import type { PenpalChildMethods } from '@onlook/penpal';
 import { promisifyMethod, type PenpalParentMethods, type PromisifiedPendpalChildMethods } from '@onlook/penpal';
 import { cn } from "@onlook/ui/utils";
-import type { PenpalChildMethods } from '@onlook/web-preload/script/api';
 import { observer } from "mobx-react-lite";
 import { WindowMessenger, connect } from 'penpal';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
