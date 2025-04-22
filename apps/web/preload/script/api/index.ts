@@ -76,4 +76,4 @@ export const preloadMethods = {
     removeImage,
 }
 
-export type PreloadMethods = typeof preloadMethods;
+export type PenpalChildMethods = typeof preloadMethods;
