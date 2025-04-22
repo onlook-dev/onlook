@@ -75,7 +75,8 @@ const getInsideRect = (rectA: RectPoint, rectB: RectPoint): RectPoint | null => 
 
 export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, toRect }) => {
     const editorEngine = useEditorEngine();
-    const frameData = editorEngine.frames.get(editorEngine.elements.selected[0]?.frameId);
+    const frameData = editorEngine.frames.get(editorEngine.elements.selected[0]?.frameId ?? '');
+    const frameView = frameData?.view;
 
     const fromRectAdjusted = useMemo(
         () => (frameView ? adaptRectToCanvas(fromRect, frameView) : fromRect),

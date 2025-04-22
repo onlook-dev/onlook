@@ -38,6 +38,53 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
         iframe.src = iframe.src;
     }
 
+    const setupPenpalConnection = () => {
+        if (!iframeRef.current || !iframeRef.current.contentWindow) {
+            console.error('No iframe found');
+            return;
+        }
+
+        // Destroy any existing connection before creating a new one
+        if (connectionRef.current) {
+            connectionRef.current.destroy();
+            connectionRef.current = null;
+        }
+
+        const messenger = new WindowMessenger({
+            remoteWindow: iframeRef.current.contentWindow,
+            allowedOrigins: ['*'],
+        });
+
+        const connection = connect({
+            messenger,
+            methods: {
+                getFrameId: () => frame.id,
+            } satisfies PenpalParentMethods,
+        });
+
+        // Store the connection reference
+        connectionRef.current = connection;
+
+        connection.promise.then((child) => {
+            if (!child) {
+                console.error('Iframe - Failed to setup penpal connection: child is null');
+                return;
+            }
+            const remote = child as unknown as PenpalChildMethods;
+            setPenpalChild(remote);
+            remote.setFrameId(frame.id);
+            remote.processDom();
+            console.log('Iframe - Penpal connection set for frame ID:', frame.id);
+        });
+
+        connection.promise.catch((error) => {
+            console.error('Iframe - Failed to setup penpal connection:', error);
+            setTimeout(() => {
+                reloadIframe();
+            }, 1000);
+        });
+    };
+
     useImperativeHandle(ref, () => {
         const iframe = iframeRef.current;
         if (!iframe) {
@@ -110,50 +157,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
     }, [penpalChild, frame, iframeRef]);
 
     useEffect(() => {
-        if (!iframeRef.current || !iframeRef.current.contentWindow) {
-            console.error('No iframe found');
-            return;
-        }
-
-        // Destroy any existing connection before creating a new one
-        if (connectionRef.current) {
-            connectionRef.current.destroy();
-            connectionRef.current = null;
-        }
-
-        const messenger = new WindowMessenger({
-            remoteWindow: iframeRef.current.contentWindow,
-            allowedOrigins: ['*'],
-        });
-
-        const connection = connect({
-            messenger,
-            methods: {
-                getFrameId: () => frame.id,
-            } satisfies PenpalParentMethods,
-        });
-
-        // Store the connection reference
-        connectionRef.current = connection;
-
-        connection.promise.then((child) => {
-            if (!child) {
-                console.error('Iframe - Failed to setup penpal connection: child is null');
-                return;
-            }
-            const remote = child as unknown as PenpalChildMethods;
-            setPenpalChild(remote);
-            remote.setFrameId(frame.id);
-            remote.processDom();
-            console.log('Iframe - Penpal connection set for frame ID:', frame.id);
-        });
-
-        connection.promise.catch((error) => {
-            console.error('Iframe - Failed to setup penpal connection:', error);
-            setTimeout(() => {
-                reloadIframe();
-            }, 1000);
-        });
+        setupPenpalConnection();
 
         return () => {
             if (connectionRef.current) {
@@ -173,6 +177,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
             allow="geolocation; microphone; camera; midi; encrypted-media"
             style={{ width: frame.dimension.width, height: frame.dimension.height }}
+            onLoad={setupPenpalConnection}
             {...props}
         />
     );

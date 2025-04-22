@@ -11,7 +11,7 @@ export function getFrameId(): string {
         penpalParent?.getFrameId().then((id) => {
             setFrameId(id);
         });
-        return frameId;
+        return '';
     }
     return frameId;
 }
