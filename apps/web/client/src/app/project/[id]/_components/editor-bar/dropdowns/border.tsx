@@ -21,28 +21,19 @@ export const Border = () => {
     const editorEngine = useEditorEngine();
 
     const [borderColor, setBorderColor] = useState(Color.from(editorEngine.style.getValue('borderColor') ?? '#080808').toHex());
-    const [borderOpacity, setBorderOpacity] = useState(parseInt(editorEngine.style.getValue('borderOpacity') ?? '100'));
 
     useEffect(() => {
         setBorderColor(Color.from(editorEngine.style.getValue('borderColor') ?? '#080808').toHex());
-        setBorderOpacity(parseInt(editorEngine.style.getValue('borderOpacity') ?? '100'));
-    }, [editorEngine.style]);
+    }, [editorEngine.style.selectedStyle]);
 
     const handleColorChange = (color: string) => {
         setBorderColor(color);
         editorEngine.style.update('borderColor', color);
     };
 
-    const handleOpacityChange = (opacity: number) => {
-        setBorderOpacity(opacity);
-        editorEngine.style.update('borderOpacity', `${opacity}%`);
-    };    
-
     const borderStyle = {
         borderWidth: boxState.border.num ? `1px`: '0px',
         borderStyle: 'solid',
-        borderColor: borderColor,
-        opacity: borderOpacity / 100
     };
 
     return (
@@ -104,9 +95,7 @@ export const Border = () => {
                 <div className="mt-3">
                     <InputColor
                         color={borderColor}
-                        opacity={borderOpacity}
                         onColorChange={handleColorChange}
-                        onOpacityChange={handleOpacityChange}
                     />
                 </div>
             </DropdownMenuContent>

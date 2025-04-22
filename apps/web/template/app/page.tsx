@@ -9,6 +9,8 @@ export default function Page() {
                 <h1 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">Be</h1>
                 <h1 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight">Happy</h1>
             </div>
+            <img src="./favicon.ico" alt="Don't worry be happy" className="object-" />
+
         </div>
     );
 }

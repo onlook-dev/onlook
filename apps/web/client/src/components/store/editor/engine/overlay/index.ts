@@ -1,4 +1,4 @@
-import type { DomElement, RectDimensions } from '@onlook/models';
+import type { DomElement, DomElementStyles, RectDimensions } from '@onlook/models';
 import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { OverlayState } from './state';
@@ -29,7 +29,7 @@ export class OverlayManager {
         this.state.removeHoverRect();
 
         // Refresh click rects
-        const newClickRects: { rect: RectDimensions; styles: Record<string, string> }[] = [];
+        const newClickRects: { rect: RectDimensions; styles: DomElementStyles | null }[] = [];
         for (const selectedElement of this.editorEngine.elements.selected) {
             const frameData = this.editorEngine.frames.get(selectedElement.frameId);
             if (!frameData) {
@@ -43,7 +43,7 @@ export class OverlayManager {
                 continue;
             }
             const adaptedRect = adaptRectToCanvas(el.rect, view);
-            newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
+            newClickRects.push({ rect: adaptedRect, styles: el.styles });
         }
 
         this.state.removeClickRects();

@@ -63,8 +63,9 @@ export class ElementsManager {
             const isComponent = !!domEl.instanceId;
             this.editorEngine.overlay.state.addClickRect(
                 adjustedRect,
-                { ...domEl.styles?.computed, ...domEl.styles?.defined },
+                domEl.styles,
                 isComponent,
+                domEl.domId,
             );
             this._selected.push(domEl);
         }
@@ -127,7 +128,7 @@ export class ElementsManager {
                 });
                 return;
             }
-            const oid = selectedEl.instanceId || selectedEl.oid;
+            const oid = selectedEl.instanceId ?? selectedEl.oid;
             const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
             if (!codeBlock) {
                 toast({

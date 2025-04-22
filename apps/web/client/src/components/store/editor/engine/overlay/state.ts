@@ -1,4 +1,4 @@
-import type { RectDimensions } from '@onlook/models';
+import type { DomElementStyles, RectDimensions } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -9,7 +9,7 @@ export interface MeasurementState {
 
 export interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
-    styles?: Record<string, string>;
+    styles: DomElementStyles | null;
     id: string;
 }
 
@@ -52,8 +52,9 @@ export class OverlayState {
 
     addClickRect = (
         rect: RectDimensions,
-        styles: Record<string, string>,
+        styles: DomElementStyles | null,
         isComponent?: boolean,
+        domId?: string,
     ) => {
         this.clickRects = [
             ...this.clickRects,
@@ -61,7 +62,7 @@ export class OverlayState {
                 ...rect,
                 styles,
                 isComponent,
-                id: nanoid(4),
+                id: domId ?? nanoid(4),
             },
         ];
     };
@@ -71,6 +72,28 @@ export class OverlayState {
             ...rect,
             ...newRect,
         }));
+    };
+
+    updateClickRectStyles = (id: string, styles: DomElementStyles | null, rect?: RectDimensions) => {
+        this.clickRects = this.clickRects.map((clickRect) => {
+            if (clickRect.id === id) {
+                return {
+                    ...clickRect,
+                    ...(rect ?? {}),
+                    styles: {
+                        defined: {
+                            ...clickRect.styles?.defined,
+                            ...styles?.defined,
+                        },
+                        computed: {
+                            ...clickRect.styles?.computed,
+                            ...styles?.computed,
+                        },
+                    },
+                };
+            }
+            return clickRect;
+        });
     };
 
     removeClickRects = () => {

@@ -1,5 +1,5 @@
 import { sendAnalytics } from '@/utils/analytics';
-import type { DomElement, LayerNode } from '@onlook/models';
+import type { DomElement, LayerNode, StyleActionTarget } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import {
     type Action,
@@ -17,6 +17,7 @@ import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
 import type { EditorEngine } from '..';
 import type { FrameData } from '../frames';
+import { adaptRectToCanvas } from '../overlay/utils';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) { }
@@ -49,7 +50,7 @@ export class ActionManager {
     private dispatch(action: Action) {
         switch (action.type) {
             case 'update-style':
-                this.updateStyle(action);
+                void this.updateStyle(action);
                 break;
             case 'insert-element':
                 this.insertElement(action);
@@ -83,7 +84,6 @@ export class ActionManager {
     }
 
     async updateStyle({ targets }: UpdateStyleAction) {
-        let frameIdToDomEls: Record<string, DomElement[]> = {};
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
             if (!frameData) {
@@ -113,20 +113,35 @@ export class ActionManager {
                 console.error('Failed to update style');
                 continue;
             }
-            frameIdToDomEls[target.frameId] = [domEl];
 
+            this.refreshDomElement(domEl, target);
         }
+    }
 
-        // Refresh edited elements
-        // TODO: This is a hack. Consider updating the element style and layout without using click.
-        for (const [frameId, domEls] of Object.entries(frameIdToDomEls)) {
-            this.editorEngine.state.editorMode = EditorMode.DESIGN;
-            const frameData = this.editorEngine.frames.get(frameId);
-            if (!frameData) {
-                console.error('Failed to get frameData');
-                continue;
+    refreshDomElement(domEl: DomElement, target: StyleActionTarget) {
+        console.log('refreshDomElement', domEl, target);
+        const frameData = this.editorEngine.frames.get(domEl.frameId);
+        if (!frameData) {
+            console.error('Failed to get frameData');
+            return;
+        }
+        // Update overlay state directly
+        const selectedElement = this.editorEngine.elements.selected.find(
+            (el) => el.domId === target.domId
+        );
+
+        if (selectedElement) {
+            const clickRect = this.editorEngine.overlay.state.clickRects.find(
+                (rect) => rect.id === selectedElement.domId
+            );
+            if (clickRect) {
+                const adaptedRect = adaptRectToCanvas(domEl.rect, frameData.view);
+                this.editorEngine.overlay.state.updateClickRectStyles(
+                    clickRect.id,
+                    domEl.styles,
+                    adaptedRect
+                );
             }
-            this.editorEngine.elements.click(domEls, frameData);
         }
     }
 
@@ -242,5 +257,7 @@ export class ActionManager {
         this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
     }
 
-    clear() { }
+    clear() {
+        this.editorEngine.history.clear();
+    }
 }
