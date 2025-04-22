@@ -27,7 +27,7 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
         <ButtonMotion
             size="default"
             variant={'outline'}
-            className="gap-2 bg-background-active border-[0.5px] border-border-active w-full lg:w-auto"
+            className="gap-2 bg-background-active border-[0.5px] border-border-active w-auto"
             onClick={() => selectProject(project)}
             {...props}
         >

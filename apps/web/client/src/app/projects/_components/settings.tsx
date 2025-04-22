@@ -1,5 +1,4 @@
-// import { useProjectsManager } from '@/components/Context';
-import type { Project } from '@onlook/models/projects';
+import type { Project } from '@onlook/models';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -48,9 +47,9 @@ export function Settings({ project }: { project: Project }) {
     };
 
     const handleOpenProjectFolder = () => {
-        if (project.folderPath) {
-            // invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
-        }
+        // if (project.folderPath) {
+        // invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
+        // }
     };
 
     return (

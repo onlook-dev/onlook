@@ -1,16 +1,14 @@
 "use client"
 
-// import { useProjectsManager } from '@/components/Context';
+import { useProjectsManager } from '@/components/store';
 import type { Project } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import Carousel from './carousel';
 import ProjectInfo from './info';
 
 export const SelectProject = observer(() => {
-    const t = useTranslations();
-    // const projectsManager = useProjectsManager();
+    const projectsManager = useProjectsManager();
     // const [projects, setProjects] = useState<Project[]>(sortProjects(projectsManager.projects));
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
@@ -19,37 +17,43 @@ export const SelectProject = observer(() => {
     const mockProjects: Project[] = [{
         id: '1',
         name: 'Project 1',
-        previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
+        previewUrl: 'http://localhost:8084',
         canvas: null,
-        commands: null,
         domains: null,
+        metadata: {
+            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
+            updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
+            previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+        },
     },
     {
         id: '2',
         name: 'Project 2',
-        previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        previewUrl: 'http://localhost:8084',
         canvas: null,
-        commands: null,
         domains: null,
+        metadata: {
+            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+            updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+            previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+        },
     },
     {
         id: '3',
         name: 'Project 3',
-        previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
-        createdAt: new Date(Date.now() - 1000 * 60).toISOString(),
-        updatedAt: new Date(Date.now() - 1000 * 60).toISOString(),
+        previewUrl: 'http://localhost:8084',
         canvas: null,
-        commands: null,
         domains: null,
+        metadata: {
+            createdAt: new Date(Date.now() - 1000 * 60).toISOString(),
+            updatedAt: new Date(Date.now() - 1000 * 60).toISOString(),
+            previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+        },
     }];
 
     const sortProjects = (unsortedProjects: Project[]) => {
         return unsortedProjects.sort(
-            (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+            (a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime(),
         );
     }
 
@@ -64,8 +68,8 @@ export const SelectProject = observer(() => {
     };
 
     return (
-        <div className="flex flex-row w-full h-full">
-            <div className="w-3/5">
+        <div className="flex flex-row w-full">
+            <div className="w-3/5 h-full">
                 <Carousel slides={projects} onSlideChange={handleProjectChange} />
             </div>
             <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">

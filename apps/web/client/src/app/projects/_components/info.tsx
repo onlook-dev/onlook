@@ -1,4 +1,4 @@
-import type { Project } from '@onlook/models/projects';
+import type { Project } from '@onlook/models';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
@@ -43,10 +43,10 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                 <div className="text-foreground-onlook flex flex-col md:flex-row gap-2 md:gap-7 text-small">
                     <p>
                         {t('projects.select.lastEdited', {
-                            time: timeAgo(new Date(project.updatedAt).toISOString()),
+                            time: timeAgo(new Date(project.metadata.updatedAt).toISOString()),
                         })}
                     </p>
-                    <p>{project.url}</p>
+                    <p>{project.previewUrl}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
                     <EditAppButton project={project} />

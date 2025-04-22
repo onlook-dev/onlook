@@ -237,7 +237,7 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
 
     return (
         <div
-            className="embla relative h-[calc(100vh-5.5rem)] overflow-hidden"
+            className="embla relative h-full overflow-hidden"
             style={{ zIndex: 0 }}
         >
             <div
@@ -264,9 +264,10 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
                                 marginTop: index === 0 ? '6rem' : '-3rem',
                                 marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
                                 opacity: index === currentIndex ? 1 : 0.6,
+                                zIndex: index === currentIndex ? 2 : 1,
                             }}
                         >
-                            <div className="relative">
+                            <div className="relative bg-background">
                                 {previewImages[slide.id] ? (
                                     <img
                                         src={previewImages[slide.id]}
