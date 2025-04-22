@@ -1,3 +1,3 @@
-export * from './defaults';
-export * from './families';
+export * from './default';
+export * from './family';
 export * from './variants';

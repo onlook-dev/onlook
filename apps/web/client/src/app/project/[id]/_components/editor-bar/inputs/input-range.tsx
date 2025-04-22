@@ -18,8 +18,11 @@ export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }:
     const rangeRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
+    // Only update inputValue when value prop changes and we're not currently editing
     useEffect(() => {
-        setInputValue(String(value));
+        if (!document.activeElement?.classList.contains('input-range-text')) {
+            setInputValue(String(value));
+        }
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +88,7 @@ export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }:
                         value={inputValue}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase"
+                        className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
                     />
 
                     <DropdownMenu>

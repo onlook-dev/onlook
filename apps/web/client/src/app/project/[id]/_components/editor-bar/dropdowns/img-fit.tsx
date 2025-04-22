@@ -1,5 +1,6 @@
 "use client";
 
+import { useEditorEngine } from "@/components/store";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
@@ -7,10 +8,20 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const ImgFit = () => {
-    const [objectFit, setObjectFit] = useState('cover');
+    const editorEngine = useEditorEngine();
+    const [objectFit, setObjectFit] = useState(editorEngine.style.getValue("objectFit") ?? "fill");
+
+    useEffect(() => {
+        setObjectFit(editorEngine.style.getValue("objectFit") ?? "fill");
+    }, [editorEngine.style.selectedStyle]);
+
+    const handleFitChange = (newFit: string) => {
+        setObjectFit(newFit);
+        editorEngine.style.update("objectFit", newFit);
+    };
 
     return (
         <DropdownMenu>
@@ -29,7 +40,7 @@ export const ImgFit = () => {
                         <span className="text-sm text-muted-foreground">Type</span>
                         <div className="flex gap-1">
                             <button
-                                onClick={() => setObjectFit('cover')}
+                                onClick={() => handleFitChange('cover')}
                                 className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'cover'
                                     ? 'bg-background-tertiary/20 text-white'
                                     : 'text-muted-foreground hover:bg-background-tertiary/10'
@@ -38,7 +49,7 @@ export const ImgFit = () => {
                                 Cover
                             </button>
                             <button
-                                onClick={() => setObjectFit('contain')}
+                                onClick={() => handleFitChange('contain')}
                                 className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'contain'
                                     ? 'bg-background-tertiary/20 text-white'
                                     : 'text-muted-foreground hover:bg-background-tertiary/10'
@@ -47,7 +58,7 @@ export const ImgFit = () => {
                                 Contain
                             </button>
                             <button
-                                onClick={() => setObjectFit('fill')}
+                                onClick={() => handleFitChange('fill')}
                                 className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'fill'
                                     ? 'bg-background-tertiary/20 text-white'
                                     : 'text-muted-foreground hover:bg-background-tertiary/10'
