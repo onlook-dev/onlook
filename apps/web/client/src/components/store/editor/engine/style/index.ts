@@ -41,16 +41,13 @@ export class StyleManager {
     }
 
     update(style: string, value: string) {
-        const styleObj = { [style]: value };
-        const action = this.getUpdateStyleAction(styleObj);
-        this.editorEngine.action.run(action);
-        this.updateStyleNoAction(styleObj);
+        this.updateMultiple({ [style]: value });
     }
 
     updateMultiple(styles: Record<string, string>) {
-        this.updateStyleNoAction(styles);
         const action = this.getUpdateStyleAction(styles);
         this.editorEngine.action.run(action);
+        this.updateStyleNoAction(styles);
     }
 
     getUpdateStyleAction(

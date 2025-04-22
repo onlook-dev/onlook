@@ -3,6 +3,8 @@
 import { type ProjectManager } from '@/components/store/projects';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 // import type { Project } from '@onlook/models/projects';
+import { sendAnalytics } from '@/utils/analytics';
+import type { Project } from '@onlook/models/project';
 import type { CoreAssistantMessage, CoreToolMessage, CoreUserMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../..';
@@ -11,7 +13,6 @@ import { ToolChatMessageImpl } from '../message/tool';
 import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
-import type { Project } from '@onlook/models/project';
 const USE_MOCK = true;
 
 export class ConversationManager {
@@ -41,7 +42,7 @@ export class ConversationManager {
         this.projectId = project.id;
 
 
-        
+
         // this.conversations = await this.getConversations(project.id);
         // if (this.conversations.length === 0) {
         //     this.current = new ChatConversationImpl(project.id, []);

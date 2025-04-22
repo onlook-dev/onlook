@@ -82,6 +82,7 @@ interface ResizablePanelProps {
     maxWidth?: number;
     forceWidth?: number;
     className?: string;
+    [key: string]: any;
 }
 
 export const ResizablePanel: React.FC<ResizablePanelProps> = ({
@@ -92,6 +93,7 @@ export const ResizablePanel: React.FC<ResizablePanelProps> = ({
     maxWidth = 600,
     forceWidth,
     className,
+    ...props
 }) => {
     const { width, handleMouseDown, isAnimating } = useResizable({
         defaultWidth,
@@ -110,6 +112,7 @@ export const ResizablePanel: React.FC<ResizablePanelProps> = ({
                 side === 'left' ? 'left-0' : 'right-0',
                 className,
             )}
+            {...props}
         >
             <div className="h-full">{children}</div>
             <div

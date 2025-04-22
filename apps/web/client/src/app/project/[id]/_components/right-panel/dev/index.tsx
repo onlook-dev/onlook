@@ -16,19 +16,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { FileTab } from './file-tab';
-import {FileTreeNode} from './file-tree-node';
-import {FileTreeRow} from './file-tree-row';
+import { FileTreeNode } from './file-tree-node';
+import { FileTreeRow } from './file-tree-row';
 
 import { getBasicSetup, getExtensions, getLanguageFromFileName } from './code-mirror-config';
 
-import { EditorSelection } from '@codemirror/state';
-import { type EditorView } from '@codemirror/view';
-import CodeMirror from '@uiw/react-codemirror';
-import { nanoid } from 'nanoid';
 import { useTheme } from '@/app/_components/theme';
 import { useEditorEngine } from '@/components/store';
-import { EditorTabValue } from '@onlook/models/editor';
+import { type EditorView } from '@codemirror/view';
 import { SystemTheme } from '@onlook/models';
+import CodeMirror from '@uiw/react-codemirror';
+import { nanoid } from 'nanoid';
 
 
 enum TabValue {
@@ -502,10 +500,10 @@ export const DevTab = observer(() => {
         const updatedFiles = openedFiles.map((file) =>
             file.id === fileId
                 ? {
-                      ...file,
-                      content: content,
-                      isDirty: hasChanged,
-                  }
+                    ...file,
+                    content: content,
+                    isDirty: hasChanged,
+                }
                 : file,
         );
 
@@ -586,8 +584,7 @@ export const DevTab = observer(() => {
                 {isFilesVisible && (
                     <div
                         ref={filesContainerRef}
-                        className="w-64 border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
-                        style={{ height: 'calc(100% - 0px)' }}
+                        className="w-64 h-full border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
                     >
                         <div className="flex flex-col h-full overflow-hidden">
                             <div className="p-3 flex-shrink-0">

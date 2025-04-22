@@ -19,27 +19,10 @@ const MemoizedTextEditor = memo(TextEditor);
 const MemoizedChat = memo(OverlayChat);
 const MemoizedMeasurementOverlay = memo(MeasurementOverlay);
 
-export const Overlay = observer(({ children }: { children: React.ReactNode }) => {
+export const Overlay = observer(() => {
     const editorEngine = useEditorEngine();
-
-    // Memoize overlay state values
     const overlayState = editorEngine.overlay.state;
-    const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
     const isSingleSelection = editorEngine.elements.selected.length === 1;
-
-    // Memoize the container style object
-    const containerStyle = useMemo(
-        () => ({
-            position: 'absolute',
-            height: 0,
-            width: 0,
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            visibility: isPreviewMode ? 'hidden' : 'visible',
-        }),
-        [isPreviewMode],
-    );
 
     // Memoize the clickRects rendering
     const clickRectsElements = useMemo(
@@ -60,54 +43,49 @@ export const Overlay = observer(({ children }: { children: React.ReactNode }) =>
     );
 
     return (
-        <>
-            {children}
-            <div
-                style={containerStyle as React.CSSProperties}
-                id={EditorAttributes.OVERLAY_CONTAINER_ID}
-                className={cn(
-                    'opacity-100 transition-opacity duration-150',
-                    {
-                        'opacity-0': editorEngine.state.shouldHideOverlay,
-                    }
+        <div
+            id={EditorAttributes.OVERLAY_CONTAINER_ID}
+            className={cn(
+                'opacity-100 transition-opacity duration-150 absolute top-0 left-0 h-0 w-0 pointer-events-none',
+                editorEngine.state.shouldHideOverlay && 'opacity-0',
+                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden'
+            )}
+        >
+            {
+                overlayState.hoverRect && (
+                    <HoverRect
+                        rect={overlayState.hoverRect.rect}
+                        isComponent={overlayState.hoverRect.isComponent}
+                    />
                 )}
-            >
-                {
-                    overlayState.hoverRect && (
-                        <HoverRect
-                            rect={overlayState.hoverRect.rect}
-                            isComponent={overlayState.hoverRect.isComponent}
-                        />
-                    )}
-                {overlayState.insertRect && <MemoizedInsertRect rect={overlayState.insertRect} />}
-                {clickRectsElements}
-                {
-                    overlayState.textEditor && (
-                        <MemoizedTextEditor
-                            rect={overlayState.textEditor.rect}
-                            content={overlayState.textEditor.content}
-                            styles={overlayState.textEditor.styles}
-                            onChange={overlayState.textEditor.onChange}
-                            onStop={overlayState.textEditor.onStop}
-                            isComponent={overlayState.textEditor.isComponent}
-                        />
-                    )
-                }
-                {
-                    overlayState.measurement && (
-                        <MemoizedMeasurementOverlay
-                            fromRect={overlayState.measurement.fromRect}
-                            toRect={overlayState.measurement.toRect}
-                        />
-                    )
-                }
-                {/*
+            {overlayState.insertRect && <MemoizedInsertRect rect={overlayState.insertRect} />}
+            {clickRectsElements}
+            {
+                overlayState.textEditor && (
+                    <MemoizedTextEditor
+                        rect={overlayState.textEditor.rect}
+                        content={overlayState.textEditor.content}
+                        styles={overlayState.textEditor.styles}
+                        onChange={overlayState.textEditor.onChange}
+                        onStop={overlayState.textEditor.onStop}
+                        isComponent={overlayState.textEditor.isComponent}
+                    />
+                )
+            }
+            {
+                overlayState.measurement && (
+                    <MemoizedMeasurementOverlay
+                        fromRect={overlayState.measurement.fromRect}
+                        toRect={overlayState.measurement.toRect}
+                    />
+                )
+            }
+            {/*
                  <MemoizedChat
                         elementId={editorEngine.elements.selected[0]?.domId ?? ''}
                         selectedEl={overlayState.clickRects[0]}
                     /> 
                 */}
-            </div>
-        </>
+        </div>
     );
 });

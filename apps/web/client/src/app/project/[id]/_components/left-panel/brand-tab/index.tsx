@@ -50,12 +50,12 @@ export const BrandTab = observer(() => {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full p-0">
+        <div className="flex flex-col h-full text-xs text-active flex-grow w-full p-0">
             {/* Brand Palette Section */}
             <div className="flex flex-col gap-3 px-4 pt-4 pb-6 border-b border-border">
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                        <span className="text-base font-normal">Brand Colors</span>
+                        <span className="text-sm">Brand Colors</span>
                     </div>
 
                     <div className="grid grid-cols-6 gap-1">
@@ -78,7 +78,7 @@ export const BrandTab = observer(() => {
             <div className="flex flex-col gap-1.5 px-4 pt-5 pb-6">
                 <div className="flex flex-col">
                     <div className="flex justify-between items-center">
-                        <span className="text-base font-normal">Site Fonts</span>
+                        <span className="text-sm">Site Fonts</span>
                     </div>
                     <SystemFont />
                 </div>

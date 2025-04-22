@@ -25,7 +25,10 @@ export const DirectionInput = () => {
                 value={value}
                 onChange={(newValue) => {
                     setValue(newValue);
-                    editorEngine.style.update("flex-direction", newValue);
+                    editorEngine.style.updateMultiple({
+                        "flex-direction": newValue,
+                        "display": "flex",
+                    });
                 }}
                 className="flex-1"
             />

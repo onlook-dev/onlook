@@ -1,7 +1,8 @@
 "use client";
 
 import { useEditorEngine } from "@/components/store";
-import type { DomElement } from "@onlook/models";
+import { EditorMode, type DomElement } from "@onlook/models";
+import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
 import { motion } from "motion/react";
 import { DivSelected } from "./div-selected";
@@ -41,7 +42,10 @@ export const EditorBar = observer(() => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="flex flex-col border-b-[0.5px] border-border p-1 px-1.5 bg-background backdrop-blur drop-shadow-xl z-50"
+            className={cn(
+                "flex flex-col border-b-[0.5px] border-border p-1 px-1.5 bg-background backdrop-blur drop-shadow-xl z-50",
+                editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
+            )}
             transition={{
                 type: "spring",
                 bounce: 0.1,

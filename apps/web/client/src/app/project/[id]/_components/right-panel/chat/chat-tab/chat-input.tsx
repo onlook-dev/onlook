@@ -1,4 +1,7 @@
 
+import { useEditorEngine, useProjectsManager } from '@/components/store';
+import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/engine/chat';
+import { EditorTabValue } from '@onlook/models';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -8,15 +11,12 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
+import { DraftContextPill } from './context-pills/draft-context-pill';
+import { DraftImagePill } from './context-pills/draft-image-pill';
 import type { SuggestionsRef } from './suggestions';
 import Suggestions from './suggestions';
-import { useEditorEngine, useProjectsManager } from '@/components/store';
-import { EditorTabValue } from '@onlook/models';
-import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/engine/chat';
-import { DraftImagePill } from './context-pills/draft-image-pill';
-import { DraftContextPill } from './context-pills/draft-context-pill';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -122,7 +122,7 @@ export const ChatInput = observer(() => {
             console.warn('Already waiting for response');
             return;
         }
-        editorEngine.chat.conversation.sendNewMessage(inputValue);
+        editorEngine.chat.sendNewMessage(inputValue);
         setInputValue('');
     }
 
@@ -135,7 +135,8 @@ export const ChatInput = observer(() => {
     };
 
     const handleOpenFileDialog = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.currentTarget.blur(); // Removes focus from the button to prevent tooltip from showing
+        // Removes focus from the button to prevent tooltip from showing
+        e.currentTarget.blur();
         const inputElement = document.createElement('input');
         inputElement.type = 'file';
         inputElement.accept = 'image/*';
@@ -221,8 +222,7 @@ export const ChatInput = observer(() => {
     return (
         <div
             className={cn(
-                'flex flex-col w-full text-foreground-tertiary border-t text-small transition-colors duration-200',
-                '[&[data-dragging-image=true]]:bg-teal-500/40',
+                'flex flex-col w-full text-foreground-tertiary border-t text-small transition-colors duration-200 [&[data-dragging-image=true]]:bg-teal-500/40',
                 isDragging && 'cursor-copy',
             )}
             onDrop={(e) => {

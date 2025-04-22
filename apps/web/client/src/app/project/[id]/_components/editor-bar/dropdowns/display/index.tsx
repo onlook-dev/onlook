@@ -8,6 +8,7 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { useEffect, useState } from "react";
 import { HorizontalAlignInput, VerticalAlignInput } from "./align";
 import { DirectionInput } from "./direction";
 import { GapInput } from "./gap";
@@ -27,7 +28,11 @@ export const layoutTypeOptions: Record<string, CssValue> = {
 
 export const Display = () => {
     const editorEngine = useEditorEngine();
-    const layoutType = editorEngine.style.getValue("display") ?? "block";
+    const [layoutType, setLayoutType] = useState(editorEngine.style.getValue("display") ?? "block");
+
+    useEffect(() => {
+        setLayoutType(editorEngine.style.getValue("display") ?? "block");
+    }, [editorEngine.style.selectedStyle]);
 
     return (
         <DropdownMenu>

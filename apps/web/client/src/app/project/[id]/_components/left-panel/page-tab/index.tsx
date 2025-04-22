@@ -166,7 +166,7 @@ export const PagesTab = observer(() => {
     return (
         <div
             ref={ref}
-            className="text-active flex h-[calc(100vh-8.25rem)] w-full flex-grow flex-col gap-2 overflow-hidden p-3 text-xs"
+            className="text-active flex h-full w-full flex-grow flex-col gap-2 overflow-hidden p-3 text-xs"
         >
             <div className="m-0 flex flex-row items-center justify-between gap-2">
                 <div className="relative flex-grow">

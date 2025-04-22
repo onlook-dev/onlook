@@ -1,4 +1,4 @@
-import type { Project } from '@onlook/models/projects';
+import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import type { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -112,8 +112,8 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
         const loadPreviewImages = async () => {
             const images: { [key: string]: string } = {};
             for (const slide of slides) {
-                if (slide.previewImg) {
-                    const img = await getPreviewImage(slide.previewImg);
+                if (slide.metadata.previewImg) {
+                    const img = await getPreviewImage(slide.metadata.previewImg);
                     if (img) {
                         images[slide.id] = img;
                     } else {
@@ -237,7 +237,7 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
 
     return (
         <div
-            className="embla relative h-[calc(100vh-5.5rem)] overflow-hidden"
+            className="embla relative h-full overflow-hidden"
             style={{ zIndex: 0 }}
         >
             <div
@@ -264,9 +264,10 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
                                 marginTop: index === 0 ? '6rem' : '-3rem',
                                 marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
                                 opacity: index === currentIndex ? 1 : 0.6,
+                                zIndex: index === currentIndex ? 2 : 1,
                             }}
                         >
-                            <div className="relative">
+                            <div className="relative bg-background">
                                 {previewImages[slide.id] ? (
                                     <img
                                         src={previewImages[slide.id]}

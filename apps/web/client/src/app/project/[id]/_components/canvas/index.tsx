@@ -161,11 +161,10 @@ export const Canvas = observer(() => {
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
             >
-                <Overlay>
-                    <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                        <Frames />
-                    </div>
-                </Overlay>
+                <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
+                    <Frames />
+                </div>
+                <Overlay />
                 <PanOverlay
                     clampPosition={(position: { x: number; y: number }) => clampPosition(position, scale)}
                 />
