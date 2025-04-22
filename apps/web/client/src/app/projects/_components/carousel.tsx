@@ -1,4 +1,4 @@
-import type { Project } from '@onlook/models/projects';
+import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import type { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -112,8 +112,8 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
         const loadPreviewImages = async () => {
             const images: { [key: string]: string } = {};
             for (const slide of slides) {
-                if (slide.previewImg) {
-                    const img = await getPreviewImage(slide.previewImg);
+                if (slide.metadata.previewImg) {
+                    const img = await getPreviewImage(slide.metadata.previewImg);
                     if (img) {
                         images[slide.id] = img;
                     } else {

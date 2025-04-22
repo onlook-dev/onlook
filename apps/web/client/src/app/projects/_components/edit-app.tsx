@@ -1,6 +1,6 @@
 import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
-import type { Project } from '@onlook/models/projects';
+import type { Project } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -19,7 +19,7 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
     const t = useTranslations();
 
     const selectProject = (project: Project) => {
-        sendAnalytics('open project', { id: project.id, url: project.url });
+        sendAnalytics('open project', { id: project.id });
         redirect(`${Routes.PROJECT}/${project.id}`);
     };
 
