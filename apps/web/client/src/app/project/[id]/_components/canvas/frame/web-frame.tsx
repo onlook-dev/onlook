@@ -47,12 +47,6 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
     const zoomLevel = useRef(1);
     const [iframeRemote, setIframeRemote] = useState<any>(null);
 
-    useEffect(() => {
-        if (iframeRemote) {
-            console.log('Iframe - Penpal connection set for frame ID:', frame.id);
-        }
-    }, [iframeRemote]);
-
     const reloadIframe = () => {
         const iframe = iframeRef.current;
         if (!iframe) return;

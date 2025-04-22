@@ -2,7 +2,14 @@ import type { PenpalParentMethods } from '@onlook/penpal';
 import { WindowMessenger, connect } from 'penpal';
 import { preloadMethods } from './api';
 
-export let remote: PenpalParentMethods | null = null;
+// Parent methods should be treated as promises
+type PromisifiedPenpalParentMethods = {
+    [K in keyof PenpalParentMethods]: (
+        ...args: Parameters<PenpalParentMethods[K]>
+    ) => Promise<ReturnType<PenpalParentMethods[K]>>;
+}
+
+export let remote: PromisifiedPenpalParentMethods | null = null;
 
 const createMessageConnection = async () => {
     console.log("Preload - Creating penpal connection");
@@ -19,7 +26,7 @@ const createMessageConnection = async () => {
         methods: preloadMethods
     });
 
-    remote = await connection.promise as unknown as PenpalParentMethods;
+    remote = await connection.promise as unknown as PromisifiedPenpalParentMethods;
     return remote;
 }
 
