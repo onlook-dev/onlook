@@ -39,7 +39,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
     }
 
     const setupPenpalConnection = () => {
-        if (!iframeRef.current || !iframeRef.current.contentWindow) {
+        if (!iframeRef.current?.contentWindow) {
             console.error('No iframe found');
             return;
         }
@@ -176,7 +176,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             src={frame.url}
             sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
             allow="geolocation; microphone; camera; midi; encrypted-media"
-            style={{ width: frame.dimension.width, height: frame.dimension.height }}
+            style={{ width: frame.dimension.width * editorEngine.canvas.scale, height: frame.dimension.height * editorEngine.canvas.scale }}
             onLoad={setupPenpalConnection}
             {...props}
         />

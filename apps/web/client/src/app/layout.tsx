@@ -1,40 +1,45 @@
 import "@/styles/globals.css";
-import '@onlook/ui/globals.css';
+import "@onlook/ui/globals.css";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import { type Metadata } from "next";
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale } from 'next-intl/server';
-import { Inter } from 'next/font/google';
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
+import { Inter } from "next/font/google";
 import { Modals } from "@/components/modal";
+import { ThemeProvider } from "./_components/theme";
+import { SystemTheme } from "@onlook/models";
+
 export const metadata: Metadata = {
-    title: "Onlook",
-    description: "Onlook – Cursor for Designers",
-    icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: "Onlook",
+  description: "Onlook – Cursor for Designers",
+  icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 const inter = Inter({
-    subsets: ["latin"],
-    variable: "--font-inter",
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export default async function RootLayout({
-    children
+  children,
 }: {
-    children: React.ReactNode
+  children: React.ReactNode;
 }) {
-    const locale = await getLocale();
+  const locale = await getLocale();
 
-    return (
-        <html lang={locale} className={`${inter.variable} dark`}>
-            <body>
-                <TRPCReactProvider>
-                    <NextIntlClientProvider>
-                        <Modals />
-                        {children}
-                    </NextIntlClientProvider>
-                </TRPCReactProvider>
-            </body>
-        </html >
-    );
+  return (
+    <html lang={locale} className={`${inter.variable} dark`}>
+      <body>
+        <ThemeProvider defaultTheme={SystemTheme.DARK} storageKey="vite-ui-theme">
+          <TRPCReactProvider>
+            <NextIntlClientProvider>
+              <Modals />
+              {children}
+            </NextIntlClientProvider>
+          </TRPCReactProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
 }
