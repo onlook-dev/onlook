@@ -176,7 +176,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             src={frame.url}
             sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
             allow="geolocation; microphone; camera; midi; encrypted-media"
-            style={{ width: frame.dimension.width * editorEngine.canvas.scale, height: frame.dimension.height * editorEngine.canvas.scale }}
+            style={{ width: frame.dimension.width, height: frame.dimension.height }}
             onLoad={setupPenpalConnection}
             {...props}
         />

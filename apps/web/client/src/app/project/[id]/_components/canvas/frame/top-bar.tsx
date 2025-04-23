@@ -54,7 +54,8 @@ export const TopBar = observer(
             <div
                 className='rounded bg-foreground-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm border-input text-foreground'
                 style={{
-                    width: `${frame.dimension.width * editorEngine.canvas.scale}px`,
+                    height: `${28 / editorEngine.canvas.scale}px`,
+                    width: `${frame.dimension.width}px`,
                     marginBottom: `${20 / editorEngine.canvas.scale}px`,
                 }}
                 onMouseDown={handleMouseDown}
