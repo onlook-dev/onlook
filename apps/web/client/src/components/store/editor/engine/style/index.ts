@@ -7,9 +7,11 @@ import {
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
+import type { CSSProperties } from 'react';
+
 
 export interface SelectedStyle {
-    styles: Record<string, string>;
+    styles: CSSProperties;
     parentRect: DOMRect;
     rect: DOMRect;
 }
@@ -44,14 +46,14 @@ export class StyleManager {
         this.updateMultiple({ [style]: value });
     }
 
-    updateMultiple(styles: Record<string, string>) {
+    updateMultiple(styles: CSSProperties) {
         const action = this.getUpdateStyleAction(styles);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(styles);
     }
 
     getUpdateStyleAction(
-        styles: Record<string, string>,
+        styles: CSSProperties,
         domIds: string[] = [],
         type: StyleChangeType = StyleChangeType.Value,
     ): UpdateStyleAction {
@@ -66,13 +68,13 @@ export class StyleManager {
                         ? Object.fromEntries(
                             Object.keys(styles).map((style) => [
                                 style,
-                                { value: styles[style] ?? '', type: StyleChangeType.Custom },
+                                { value: styles[style as keyof CSSProperties]?.toString() ?? '', type: StyleChangeType.Custom },
                             ]),
                         )
                         : Object.fromEntries(
                             Object.keys(styles).map((style) => [
                                 style,
-                                { value: styles[style] ?? '', type: StyleChangeType.Value },
+                                { value: styles[style as keyof CSSProperties]?.toString() ?? '', type: StyleChangeType.Value },
                             ]),
                         ),
                 original: Object.fromEntries(
@@ -103,7 +105,7 @@ export class StyleManager {
         };
     }
 
-    updateStyleNoAction(styles: Record<string, string>) {
+    updateStyleNoAction(styles: CSSProperties) {
         for (const [selector, selectedStyle] of this.domIdToStyle.entries()) {
             this.domIdToStyle.set(selector, {
                 ...selectedStyle,
@@ -136,29 +138,29 @@ export class StyleManager {
         }
 
         const newMap = new Map<string, SelectedStyle>();
-        let newSelectedStyle = null;
+        let newSelectedStyle: SelectedStyle | null = null;
         for (const selectedEl of selectedElements) {
-            const styles = {
-                ...selectedEl.styles?.computed,
-                ...selectedEl.styles?.defined,
+            const computedStyles = selectedEl.styles?.computed ?? {};
+            const definedStyles = selectedEl.styles?.defined ?? {};
+            const styles: Partial<CSSProperties> = {
+                ...computedStyles,
+                ...definedStyles,
             };
             const selectedStyle: SelectedStyle = {
-                styles,
+                styles: styles as CSSProperties,
                 parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
                 rect: selectedEl?.rect ?? ({} as DOMRect),
             };
             newMap.set(selectedEl.domId, selectedStyle);
-            if (newSelectedStyle == null) {
-                newSelectedStyle = selectedStyle;
-            }
+            newSelectedStyle ??= selectedStyle;
         }
         this.domIdToStyle = newMap;
         this.selectedStyle = newSelectedStyle;
     }
 
-    getValue(style: string): string | null {
-        return this.selectedStyle?.styles[style] ?? null;
-    }
+    // getValue(style: keyof CSSProperties): string | null {
+    //     return this.selectedStyle?.styles[style] ?? null;
+    // }
 
     clear() {
         // Clear state
@@ -168,6 +170,6 @@ export class StyleManager {
         this.mode = StyleMode.Root;
 
         // Clear references
-        this.editorEngine = null as any;
+        this.editorEngine = null as unknown as EditorEngine;
     }
 }

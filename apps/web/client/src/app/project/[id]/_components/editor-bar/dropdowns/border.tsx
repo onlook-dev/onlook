@@ -20,11 +20,11 @@ export const Border = () => {
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('border');
     const editorEngine = useEditorEngine();
 
-    const [borderColor, setBorderColor] = useState(Color.from(editorEngine.style.getValue('borderColor') ?? '#080808').toHex());
+    const [borderColor, setBorderColor] = useState(Color.from(editorEngine.style.selectedStyle?.styles.borderColor ?? '#080808').toHex());
 
     useEffect(() => {
-        setBorderColor(Color.from(editorEngine.style.getValue('borderColor') ?? '#080808').toHex());
-    }, [editorEngine.style.selectedStyle]);
+        setBorderColor(Color.from(editorEngine.style.selectedStyle?.styles.borderColor ?? '#080808').toHex());
+    }, [editorEngine.style.selectedStyle?.styles.borderColor]);
 
     const handleColorChange = (color: string) => {
         setBorderColor(color);

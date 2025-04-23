@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type {
     CompoundStyle,
     CompoundStyleKey,
@@ -16,8 +17,8 @@ export class SingleStyleImpl implements SingleStyle {
         public readonly params?: StyleParams,
     ) {}
 
-    getValue(styleRecord: Record<string, string>) {
-        return styleRecord[this.key] ?? this.defaultValue;
+    getValue(styleRecord: CSSProperties) {
+        return styleRecord[this.key as keyof CSSProperties]?.toString() ?? this.defaultValue;
     }
 }
 
@@ -29,7 +30,7 @@ export class CompoundStyleImpl implements CompoundStyle {
         public readonly children: SingleStyleImpl[],
     ) {}
 
-    isHeadSameAsChildren(style: Record<string, string>) {
+    isHeadSameAsChildren(style: CSSProperties) {
         const headValue = this.head.getValue(style);
         const childrenValues = this.children.map((child) => child.getValue(style));
         return !childrenValues.every((value) => value === headValue);

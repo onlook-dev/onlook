@@ -1,11 +1,26 @@
 import { useEditorEngine } from "@/components/store";
 import { capitalizeFirstLetter, stringToParsedValue } from "@onlook/utility";
 import { useEffect, useState } from "react";
+import type { CSSProperties } from 'react';
 
 export type BoxType = 'margin' | 'padding' | 'border' | 'radius';
 export type BoxSide = 'Top' | 'Right' | 'Bottom' | 'Left';
 export type RadiusCorner = 'TopLeftRadius' | 'TopRightRadius' | 'BottomRightRadius' | 'BottomLeftRadius';
 export type BoxProperty = BoxType | `${BoxType}${BoxSide}` | `border${RadiusCorner}`;
+
+type CSSBoxProperty = keyof Pick<CSSProperties, 
+    | 'margin' | 'marginTop' | 'marginRight' | 'marginBottom' | 'marginLeft'
+    | 'padding' | 'paddingTop' | 'paddingRight' | 'paddingBottom' | 'paddingLeft'
+    | 'border' | 'borderTop' | 'borderRight' | 'borderBottom' | 'borderLeft'
+    | 'borderRadius' | 'borderTopLeftRadius' | 'borderTopRightRadius' | 'borderBottomRightRadius' | 'borderBottomLeftRadius'
+>;
+
+const boxTypeToCSSProperty: Record<BoxType, CSSBoxProperty> = {
+    margin: 'margin',
+    padding: 'padding',
+    border: 'border',
+    radius: 'borderRadius'
+};
 
 interface BoxState {
     num: number | undefined;
@@ -55,7 +70,13 @@ export const useBoxControl = (type: BoxType) => {
     const getInitialState = (): BoxStateMap => {
         const defaultState = createDefaultState(type);
 
-        const { num, unit } = stringToParsedValue(editorEngine.style.getValue(type) ?? "--");
+        if (!editorEngine.style.selectedStyle?.styles) {
+            return defaultState;
+        }
+
+        const styles = editorEngine.style.selectedStyle?.styles;
+
+        const { num, unit } = stringToParsedValue(styles[boxTypeToCSSProperty[type]]?.toString() ?? "--");
         defaultState[type] = {
             num,
             unit,
@@ -66,7 +87,8 @@ export const useBoxControl = (type: BoxType) => {
             const corners: RadiusCorner[] = ['TopLeftRadius', 'TopRightRadius', 'BottomRightRadius', 'BottomLeftRadius'];
             corners.forEach(corner => {
                 const property = `border${corner}` as BoxProperty;
-                const { num, unit } = stringToParsedValue(editorEngine.style.getValue(property) ?? "--");
+                const cssProperty = `border${corner}` as CSSBoxProperty;
+                const { num, unit } = stringToParsedValue(styles[cssProperty]?.toString() ?? "--");
                 defaultState[property] = {
                     num,
                     unit,
@@ -77,7 +99,8 @@ export const useBoxControl = (type: BoxType) => {
             const sides: BoxSide[] = ['Top', 'Right', 'Bottom', 'Left'];
             sides.forEach(side => {
                 const property = `${type}${side}` as BoxProperty;
-                const { num, unit } = stringToParsedValue(editorEngine.style.getValue(property) ?? "--");
+                const cssProperty = `${type}${side}` as CSSBoxProperty;
+                const { num, unit } = stringToParsedValue(styles[cssProperty]?.toString() ?? "--");
                 defaultState[property] = {
                     num,
                     unit,

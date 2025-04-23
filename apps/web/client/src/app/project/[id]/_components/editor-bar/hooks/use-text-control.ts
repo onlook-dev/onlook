@@ -25,11 +25,11 @@ export const useTextControl = () => {
 
     const getInitialState = (): TextState => {
         return {
-            fontFamily: convertFontString(editorEngine.style.getValue("fontFamily") ?? DefaultState.fontFamily),
-            fontSize: parseInt(editorEngine.style.getValue("fontSize") ?? DefaultState.fontSize.toString()),
-            fontWeight: editorEngine.style.getValue("fontWeight") ?? DefaultState.fontWeight,
-            textAlign: (editorEngine.style.getValue("textAlign") ?? DefaultState.textAlign) as TextAlign,
-            textColor: editorEngine.style.getValue("color") ?? DefaultState.textColor,
+            fontFamily: convertFontString(editorEngine.style.selectedStyle?.styles.fontFamily ?? DefaultState.fontFamily),
+            fontSize: parseInt(editorEngine.style.selectedStyle?.styles.fontSize?.toString() ?? DefaultState.fontSize.toString()),
+            fontWeight: editorEngine.style.selectedStyle?.styles.fontWeight?.toString() ?? DefaultState.fontWeight,
+            textAlign: (editorEngine.style.selectedStyle?.styles.textAlign ?? DefaultState.textAlign) as TextAlign,
+            textColor: editorEngine.style.selectedStyle?.styles.color ?? DefaultState.textColor,
         };
     };
     

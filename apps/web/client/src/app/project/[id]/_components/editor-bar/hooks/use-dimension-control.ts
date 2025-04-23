@@ -2,6 +2,7 @@ import { useEditorEngine } from "@/components/store";
 import { getAutolayoutStyles, LayoutMode, LayoutProperty, parseModeAndValue } from "@/components/store/editor/styles/autolayout";
 import { stringToParsedValue } from "@onlook/utility";
 import { useEffect, useState } from "react";
+import type { CSSProperties } from 'react';
 
 type DimensionType = 'width' | 'height';
 type DimensionProperty<T extends DimensionType> = T | `min${Capitalize<T>}` | `max${Capitalize<T>}`;
@@ -43,9 +44,13 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
     const editorEngine = useEditorEngine();
     
     const getInitialState = (): DimensionStateMap<T> => {
-        const { num, unit } = stringToParsedValue(editorEngine.style.getValue(dimension) ?? "--");
-        const { num: maxNum, unit: maxUnit } = stringToParsedValue(editorEngine.style.getValue(`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`) ?? "--");
-        const { num: minNum, unit: minUnit } = stringToParsedValue(editorEngine.style.getValue(`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`) ?? "--");
+        const styles = editorEngine.style.selectedStyle?.styles;
+        if (!styles) {
+            return createDefaultState(dimension);
+        }
+        const { num, unit } = stringToParsedValue(styles[dimension]?.toString() ?? "--");
+        const { num: maxNum, unit: maxUnit } = stringToParsedValue(styles[`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
+        const { num: minNum, unit: minUnit } = stringToParsedValue(styles[`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
 
         const defaultState = createDefaultState(dimension);
         const capitalized = dimension.charAt(0).toUpperCase() + dimension.slice(1) as Capitalize<T>;

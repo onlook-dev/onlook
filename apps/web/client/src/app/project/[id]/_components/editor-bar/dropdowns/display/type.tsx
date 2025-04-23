@@ -5,11 +5,11 @@ import { layoutTypeOptions } from "./index";
 
 export const TypeInput = () => {
     const editorEngine = useEditorEngine();
-    const [value, setValue] = useState<string>(editorEngine.style.getValue("display") ?? "block");
+    const [value, setValue] = useState<string>(editorEngine.style.selectedStyle?.styles.display ?? "block");
 
     useEffect(() => {
-        setValue(editorEngine.style.getValue("display") ?? "block");
-    }, [editorEngine.style.selectedStyle]);
+        setValue(editorEngine.style.selectedStyle?.styles.display ?? "block");
+    }, [editorEngine.style.selectedStyle?.styles.display]);
 
     return (
         <div className="flex items-center gap-3" >

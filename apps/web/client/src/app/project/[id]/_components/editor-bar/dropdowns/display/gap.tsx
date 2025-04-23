@@ -5,15 +5,15 @@ import { InputIcon } from "../../inputs/input-icon";
 
 export const GapInput = () => {
     const editorEngine = useEditorEngine();
-    const { num, unit } = stringToParsedValue(editorEngine.style.getValue("gap") ?? "12px");
+    const { num, unit } = stringToParsedValue(editorEngine.style.selectedStyle?.styles.gap?.toString() ?? "12px");
     const [numValue, setNumValue] = useState(num);
     const [unitValue, setUnitValue] = useState(unit);
 
     useEffect(() => {
-        const { num, unit } = stringToParsedValue(editorEngine.style.getValue("gap") ?? "12px");
+        const { num, unit } = stringToParsedValue(editorEngine.style.selectedStyle?.styles.gap?.toString() ?? "12px");
         setNumValue(num);
         setUnitValue(unit);
-    }, [editorEngine.style.selectedStyle]);
+    }, [editorEngine.style.selectedStyle?.styles.gap]);
 
     return (
         <div className="flex items-center gap-3">

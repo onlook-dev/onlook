@@ -11,11 +11,11 @@ const directionOptions: Record<string, CssValue> = {
 
 export const DirectionInput = () => {
     const editorEngine = useEditorEngine();
-    const [value, setValue] = useState<string>(editorEngine.style.getValue("flex-direction") ?? "column");
+    const [value, setValue] = useState<string>(editorEngine.style.selectedStyle?.styles.flexDirection ?? "column");
 
     useEffect(() => {
-        setValue(editorEngine.style.getValue("flex-direction") ?? "column");
-    }, [editorEngine.style.selectedStyle]);
+        setValue(editorEngine.style.selectedStyle?.styles.flexDirection ?? "column");
+    }, [editorEngine.style.selectedStyle?.styles.flexDirection]);
 
     return (
         <div className="flex items-center gap-3">

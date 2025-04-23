@@ -10,15 +10,17 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { useEffect, useState } from "react";
 
+type ObjectFitValue = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+
 export const ImgFit = () => {
     const editorEngine = useEditorEngine();
-    const [objectFit, setObjectFit] = useState(editorEngine.style.getValue("objectFit") ?? "fill");
+    const [objectFit, setObjectFit] = useState<ObjectFitValue>(editorEngine.style.selectedStyle?.styles.objectFit as ObjectFitValue ?? "fill");
 
     useEffect(() => {
-        setObjectFit(editorEngine.style.getValue("objectFit") ?? "fill");
-    }, [editorEngine.style.selectedStyle]);
+        setObjectFit(editorEngine.style.selectedStyle?.styles.objectFit as ObjectFitValue ?? "fill");
+    }, [editorEngine.style.selectedStyle?.styles.objectFit]);
 
-    const handleFitChange = (newFit: string) => {
+    const handleFitChange = (newFit: ObjectFitValue) => {
         setObjectFit(newFit);
         editorEngine.style.update("objectFit", newFit);
     };

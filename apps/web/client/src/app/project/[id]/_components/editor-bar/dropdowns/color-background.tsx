@@ -14,8 +14,8 @@ export const ColorBackground = () => {
   const editorEngine = useEditorEngine();
 
   useEffect(() => {
-    setTempColor(editorEngine.style.getValue("backgroundColor") ?? "#000000");
-  }, [editorEngine.style.selectedStyle]);
+    setTempColor(editorEngine.style.selectedStyle?.styles.backgroundColor ?? "#000000");
+  }, [editorEngine.style.selectedStyle?.styles.backgroundColor]);
 
   const handleColorChange = (newColor: Color) => {
     setTempColor(newColor.toHex());
