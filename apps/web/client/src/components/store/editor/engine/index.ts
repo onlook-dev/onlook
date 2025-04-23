@@ -19,6 +19,7 @@ import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { ProjectInfoManager } from './projectinfo';
+import { SandboxManager } from './sandbox';
 import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
@@ -49,6 +50,7 @@ export class EditorEngine {
     readonly ast: AstManager = new AstManager(this);
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
+    readonly sandbox: SandboxManager = new SandboxManager(this);
 
     // TODO: Window, Frames, Webviews should be Frames
     // readonly window: WindowManager = new WindowManager(this);
@@ -113,6 +115,7 @@ export class EditorEngine {
         this.chat.clear();
         this.code.clear();
         this.error.clear();
+        this.sandbox.clear();
     }
 
     clearUI() {

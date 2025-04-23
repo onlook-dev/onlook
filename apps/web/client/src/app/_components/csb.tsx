@@ -1,18 +1,50 @@
 'use client';
 
+import { useEditorEngine } from "@/components/store";
 import { api } from "@/trpc/react";
 import type { SandboxSession } from "@codesandbox/sdk";
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { CSB_TEMPLATE_ID } from "@onlook/constants";
 import { Button } from "@onlook/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 
 export function Csb() {
+    const editorEngine = useEditorEngine();
     const [session, setSession] = useState<SandboxSession | null>(null);
+    const [fileContent, setFileContent] = useState<string | null>(null);
+    const [filePath, setFilePath] = useState<string>("package.json");
+    const [files, setFiles] = useState<string[]>([]);
+
     const { mutateAsync: create, isPending: isCreating } = api.csb.create.useMutation();
     const { mutateAsync: start, isPending: isStarting } = api.csb.start.useMutation();
     const { mutateAsync: hibernate, isPending: isStopping } = api.csb.hibernate.useMutation();
     const { data: status, refetch: refetchStatus } = api.csb.list.useQuery();
+
+    useEffect(() => {
+        if (session) {
+            const manager = editorEngine.sandbox;
+            manager.register(session);
+        }
+    }, [session]);
+
+    useEffect(() => {
+        return () => {
+            editorEngine.sandbox.clear();
+        };
+    }, []);
+
+    const handleReadFile = async () => {
+        if (!filePath) return;
+
+        const content = await editorEngine.sandbox.readFile(filePath);
+        setFileContent(content);
+    };
+
+    const listFiles = async () => {
+        const files = await editorEngine.sandbox.listFiles();
+        setFiles(files);
+    };
 
     return (
         <div>
@@ -63,8 +95,27 @@ export function Csb() {
             <Button
                 onClick={() => refetchStatus()}
             >
-                List
+                List sandboxes
             </Button>
+            <Button
+                onClick={() => listFiles()}
+            >
+                List files
+            </Button>
+            <div>
+                <input
+                    type="text"
+                    value={filePath}
+                    onChange={(e) => setFilePath(e.target.value)}
+                    placeholder="File path"
+                />
+                <Button onClick={handleReadFile}>Read File</Button>
+            </div>
+            {fileContent && (
+                <pre style={{ maxHeight: '300px', overflow: 'auto', border: '1px solid #ccc', padding: '8px' }}>
+                    {fileContent}
+                </pre>
+            )}
             <pre>{JSON.stringify(status, null, 2)}</pre>
         </div>
     );
