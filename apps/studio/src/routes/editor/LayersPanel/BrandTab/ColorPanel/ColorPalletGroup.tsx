@@ -11,12 +11,10 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { Color, toNormalCase } from '@onlook/utility';
+import { Color, toNormalCase, generateUniqueName } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorPopover } from './ColorPopover';
 import { ColorNameInput } from './ColorNameInput';
-import { customAlphabet } from 'nanoid/non-secure';
-
 export interface ColorItem {
     name: string;
     originalKey: string;
@@ -125,10 +123,7 @@ export const BrandPalletGroup = ({
     };
 
     const generateUniqueColorName = () => {
-        const randomIdText = customAlphabet('abcdefghijklmnopqrstuvwxyz', 5)();
-        const randomIdNumber = customAlphabet('0123456789', 5)();
-        const randomId = isNaN(Number(title)) ? randomIdText : randomIdNumber;
-        return `${title} ${randomId}`;
+        return generateUniqueName(title, existedName);
     };
 
     return (
