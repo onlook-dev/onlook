@@ -7,7 +7,7 @@ export class WindowManager {
         makeAutoObservable(this);
     }
 
-    get isWindowSelected() {
+    get areAnyWindowsSelected() {
         return this.editorEngine.elements.selected.length > 0 && this.editorEngine.elements.selected.length === 0;
     }
 
@@ -73,11 +73,11 @@ export class WindowManager {
         return null;
     }
 
-    canDeleteWindow() {
+    canDelete() {
         return this.editorEngine.frames.getAll().length > 1;
     }
 
-    deleteWindow(id?: string) {
+    delete(id?: string) {
         // if (!this.canDeleteWindow()) {
         //     console.error('Cannot delete the last window');
         //     return;
@@ -108,7 +108,7 @@ export class WindowManager {
         sendAnalytics('window delete');
     }
 
-    duplicateWindow(id?: string) {
+    duplicate(id?: string) {
         // let settings: Frames | null = null;
         // if (id) {
         //     settings = this.canvas.getFrame(id) || null;

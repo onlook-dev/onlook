@@ -1,6 +1,6 @@
-import { sendAnalytics } from '@/utils/analytics';
-import type { DomElement, LayerNode, StyleActionTarget } from '@onlook/models';
-import { EditorMode } from '@onlook/models';
+import { sendAnalytics } from "@/utils/analytics";
+import type { DomElement, LayerNode, StyleActionTarget } from "@onlook/models";
+import { EditorMode } from "@onlook/models";
 import {
     type Action,
     type EditTextAction,
@@ -12,69 +12,70 @@ import {
     type RemoveImageAction,
     type UngroupElementsAction,
     type UpdateStyleAction,
-} from '@onlook/models/actions';
-import { StyleChangeType } from '@onlook/models/style';
-import { assertNever } from '@onlook/utility';
-import type { EditorEngine } from '..';
-import type { FrameData } from '../frames';
+} from "@onlook/models/actions";
+import { StyleChangeType } from "@onlook/models/style";
+import { assertNever } from "@onlook/utility";
+import type { EditorEngine } from "..";
+import type { FrameData } from "../frames";
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) { }
 
-    run(action: Action) {
-        this.editorEngine.history.push(action);
-        this.dispatch(action);
+    async run(action: Action) {
+        await this.editorEngine.history.push(action);
+        await this.dispatch(action);
     }
 
-    undo() {
+    async undo() {
         const action = this.editorEngine.history.undo();
+
         if (action == null) {
             return;
         }
-        this.dispatch(action);
+        await this.dispatch(action);
         // this.editorEngine.code.write(action);
-        sendAnalytics('undo');
+        sendAnalytics("undo");
     }
 
-    redo() {
+    async redo() {
         const action = this.editorEngine.history.redo();
         if (action == null) {
             return;
         }
-        this.dispatch(action);
+        await this.dispatch(action);
         // this.editorEngine.code.write(action);
-        sendAnalytics('redo');
+        sendAnalytics("redo");
     }
 
-    private dispatch(action: Action) {
+    private async dispatch(action: Action) {
         switch (action.type) {
-            case 'update-style':
-                void this.updateStyle(action);
+            case "update-style":
+                await this.updateStyle(action);
                 break;
-            case 'insert-element':
-                this.insertElement(action);
+            case "insert-element":
+                await this.insertElement(action);
                 break;
-            case 'remove-element':
-                this.removeElement(action);
+            case "remove-element":
+                await this.removeElement(action);
                 break;
-            case 'move-element':
-                this.moveElement(action);
+            case "move-element":
+                await this.moveElement(action);
                 break;
-            case 'edit-text':
-                this.editText(action);
+            case "edit-text":
+                await this.editText(action);
                 break;
-            case 'group-elements':
-                this.groupElements(action);
+            case "group-elements":
+                await this.groupElements(action);
                 break;
-            case 'ungroup-elements':
-                this.ungroupElements(action);
+            case "ungroup-elements":
+                await this.ungroupElements(action);
                 break;
-            case 'write-code':
+            case "write-code":
                 break;
-            case 'insert-image':
+            case "insert-image":
                 this.insertImage(action);
                 break;
-            case 'remove-image':
+            case "remove-image":
                 this.removeImage(action);
                 break;
             default:
@@ -86,7 +87,7 @@ export class ActionManager {
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
             if (!frameData) {
-                console.error('Failed to get frameView');
+                console.error("Failed to get frameView");
                 return;
             }
             const convertedChange = Object.fromEntries(
@@ -96,7 +97,7 @@ export class ActionManager {
                         value.value = newValue;
                     }
                     if (value.type === StyleChangeType.Custom && !newValue) {
-                        value.value = '';
+                        value.value = "";
                     }
                     return [key, value];
                 }),
@@ -109,7 +110,7 @@ export class ActionManager {
 
             const domEl = await frameData.view.updateStyle(target.domId, change);
             if (!domEl) {
-                console.error('Failed to update style');
+                console.error("Failed to update style");
                 continue;
             }
 
@@ -120,84 +121,143 @@ export class ActionManager {
     refreshDomElement(domEl: DomElement, target: StyleActionTarget) {
         const frameData = this.editorEngine.frames.get(domEl.frameId);
         if (!frameData) {
-            console.error('Failed to get frameData');
+            console.error("Failed to get frameData");
             return;
         }
 
         this.editorEngine.elements.click([domEl], frameData);
     }
-
-    private insertElement({ targets, element, editText, location }: InsertElementAction) {
-        targets.forEach((elementMetadata) => {
+    private async insertElement({
+        targets,
+        element,
+        editText,
+        location,
+    }: InsertElementAction) {
+        for (const elementMetadata of targets) {
             const frameView = this.editorEngine.frames.get(elementMetadata.frameId);
             if (!frameView) {
-                console.error('Failed to get frameView');
+                console.error("Failed to get frameView");
                 return;
             }
-            // sendToWebview(frameView, WebviewChannels.INSERT_ELEMENT, {
-            //     element,
-            //     location,
-            //     editText,
-            // });
-        });
+
+            try {
+                const domEl = await frameView.view.insertElement(element, location);
+                if (!domEl) {
+                    console.error("Failed to insert element");
+                    return;
+                }
+                // sendToWebview(frameView, WebviewChannels.INSERT_ELEMENT, {
+                //     element,
+                //     location,
+                //     editText,
+                // });
+            } catch (err) {
+                console.error("Error inserting element:", err);
+            }
+        }
     }
 
-    private removeElement({ targets, location }: RemoveElementAction) {
-        targets.forEach((target) => {
+    private async removeElement({ targets, location }: RemoveElementAction) {
+        for (const target of targets) {
             const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
-                console.error('Failed to get frameView');
+                console.error("Failed to get frameView");
                 return;
             }
+
+            const domEl = await frameView.view.removeElement(location);
+
+            if (!domEl) {
+                console.error("Failed to remove element");
+                return;
+            }
+
+            await this.editorEngine.overlay.refresh();
+
+            // this.editorEngine.elements.click([domEl], frameView);
             // sendToWebview(frameView, WebviewChannels.REMOVE_ELEMENT, {
             //     location,
             // });
-        });
+        }
     }
 
-    private moveElement({ targets, location }: MoveElementAction) {
-        targets.forEach((target) => {
+    private async moveElement({ targets, location }: MoveElementAction) {
+        for (const target of targets) {
             const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
-                console.error('Failed to get frameView');
+                console.error("Failed to get frameView");
+                return;
+            }
+            const domEl = await frameView.view.moveElement(target.domId, location.index);
+            if (!domEl) {
+                console.error("Failed to move element");
                 return;
             }
             // sendToWebview(frameView, WebviewChannels.MOVE_ELEMENT, {
             //     domId: target.domId,
             //     newIndex: location.index,
             // });
-        });
+        }
     }
 
-    private editText({ targets, newContent }: EditTextAction) {
-        targets.forEach((target) => {
+    private async editText({ targets, newContent }: EditTextAction) {
+        for (const target of targets) {
             const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
-                console.error('Failed to get frameView');
+                console.error("Failed to get frameView");
+                return;
+            }
+            const domEl = await frameView.view.editText(target.domId, newContent);
+            if (!domEl) {
+                console.error("Failed to edit text");
                 return;
             }
             // sendToWebview(frameView, WebviewChannels.EDIT_ELEMENT_TEXT, {
             //     domId: target.domId,
             //     content: newContent,
             // });
-        });
+        }
     }
 
-    private groupElements({ parent, container, children }: GroupElementsAction) {
+    private async groupElements({ parent, container, children }: GroupElementsAction) {
         const frameView = this.editorEngine.frames.get(parent.frameId);
         if (!frameView) {
-            console.error('Failed to get frameView');
+            console.error("Failed to get frameView");
             return;
         }
+
+        const domEl = await frameView.view.groupElements(parent, container, children) as DomElement;
+
+        if (!domEl) {
+            console.error("Failed to group elements");
+            return;
+        }
+
+        const result = [domEl] as DomElement[];
+
+        this.editorEngine.elements.click(result, frameView);
+
         // sendToWebview(frameView, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
     }
 
-    private ungroupElements({ parent, container, children }: UngroupElementsAction) {
+    private async ungroupElements({
+        parent,
+        container
+    }: UngroupElementsAction) {
+
         const frameView = this.editorEngine.frames.get(parent.frameId);
         if (!frameView) {
-            console.error('Failed to get frameView');
+            console.error("Failed to get frameView");
             return;
         }
+
+        const domEl = await frameView.view.ungroupElements(parent, container) as DomElement;
+
+        if (!domEl) {
+            console.error("Failed to ungroup elements");
+            return;
+        }
+
         // sendToWebview(frameView, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
     }
 
@@ -205,7 +265,7 @@ export class ActionManager {
         targets.forEach((target) => {
             const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
-                console.error('Failed to get frameView');
+                console.error("Failed to get frameView");
                 return;
             }
             // sendToWebview(frameView, WebviewChannels.INSERT_IMAGE, {
@@ -219,7 +279,7 @@ export class ActionManager {
         targets.forEach((target) => {
             const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
-                console.error('Failed to get frameView');
+                console.error("Failed to get frameView");
                 return;
             }
             // sendToWebview(frameView, WebviewChannels.REMOVE_IMAGE, {

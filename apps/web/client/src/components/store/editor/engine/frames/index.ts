@@ -24,7 +24,7 @@ const DEFAULT_DATA = {
 };
 
 export class FramesManager {
-    private frameIdToData: Map<string, FrameData> = new Map();
+    private frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
 
     constructor(

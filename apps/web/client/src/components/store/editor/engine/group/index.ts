@@ -27,7 +27,7 @@ export class GroupManager {
             return;
         }
 
-        this.editorEngine.action.run(groupAction);
+        await this.editorEngine.action.run(groupAction);
     }
 
     async ungroupSelectedElement() {
@@ -37,13 +37,18 @@ export class GroupManager {
         }
 
         const selectedEl = this.editorEngine.elements.selected[0];
+        if (!selectedEl) {
+            console.error('No selected element');
+            return;
+        }
+
         const ungroupAction = await this.getUngroupAction(selectedEl);
         if (!ungroupAction) {
             console.error('Failed to get ungroup action');
             return;
         }
 
-        this.editorEngine.action.run(ungroupAction);
+        await this.editorEngine.action.run(ungroupAction);
     }
 
     getGroupParentId(
@@ -57,7 +62,7 @@ export class GroupManager {
             return null;
         }
 
-        const frameId = elements[0].frameId;
+        const frameId = elements[0]?.frameId;
         const sameFrame = elements.every((el) => el.frameId === frameId);
 
         if (!sameFrame) {
@@ -67,7 +72,7 @@ export class GroupManager {
             return null;
         }
 
-        const parentDomId = elements[0].parent?.domId;
+        const parentDomId = elements[0]?.parent?.domId;
         if (!parentDomId) {
             if (log) {
                 console.error('No parent found');
@@ -146,8 +151,7 @@ export class GroupManager {
             return null;
         }
 
-        const parent = selectedEl.parent;
-        if (!parent) {
+        if (!selectedEl.parent) {
             console.error('Failed to get parent');
             return null;
         }
@@ -156,6 +160,7 @@ export class GroupManager {
         const actionContainer: ActionElement = await frame.view.getActionElement(
             selectedEl.domId, true
         );
+
         if (!actionContainer) {
             console.error('Failed to get container');
             return null;
@@ -168,6 +173,13 @@ export class GroupManager {
             attributes: actionContainer.attributes,
         };
 
+        const parent: ActionTarget = {
+            frameId: selectedEl.frameId,
+            domId: selectedEl.parent.domId,
+            oid: selectedEl.parent.oid,
+        };
+        
+
         // Children to be spread where container was
         const targets: ActionTarget[] = actionContainer.children.map((child) => {
             return {
@@ -175,7 +187,7 @@ export class GroupManager {
                 domId: child.domId,
                 oid: child.oid,
             };
-        });
+        });        
 
         return {
             type: 'ungroup-elements',

@@ -17,7 +17,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 {/* Production */}
                 {/* <Script type="module" src="https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js" /> */}
                 {/* Development */}
-                <Script type="module" src={`http://localhost:8083/?${Math.random()}`} />
+                <Script type="module" src={`http://localhost:8083/?${Math.random()}`} crossOrigin="anonymous" />
 
             </head>
             <body className={inter.className} data-oid="mwz9mme">

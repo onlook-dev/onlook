@@ -21,7 +21,7 @@ import { getRemoveAction } from './elements/dom/remove';
 import { getElementIndex, moveElement } from './elements/move';
 import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
-import { editText, startEditingText, stopEditingText } from './elements/text';
+import { editText, isChildTextEditable, startEditingText, stopEditingText } from './elements/text';
 import { setFrameId } from './state';
 import { updateStyle } from './style';
 import { getTheme, setTheme } from './theme';
@@ -64,6 +64,7 @@ export const preloadMethods = {
     startEditingText,
     editText,
     stopEditingText,
+    isChildTextEditable,
 
     // Edit elements
     updateStyle,

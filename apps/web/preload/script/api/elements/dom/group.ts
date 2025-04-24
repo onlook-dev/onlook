@@ -53,7 +53,6 @@ export function groupElements(
 export function ungroupElements(
     parent: ActionTarget,
     container: GroupContainer,
-    children: Array<ActionTarget>,
 ): DomElement | null {
     const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {

@@ -29,14 +29,15 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { addTailwindToRequest, getOrCreateCodeDiffRequest } from './helpers';
 import { getInsertedElement } from './insert';
-
+import type { ProjectManager } from '@/components/store/projects';
+import { sendAnalytics } from '@/utils/analytics';
 export class CodeManager {
     isExecuting = false;
     private writeQueue: Action[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
-        // private projectsManager: ProjectsManager,
+        private projectsManager: ProjectManager,
     ) {
         makeAutoObservable(this);
     }
@@ -46,7 +47,7 @@ export class CodeManager {
             console.error('No oid found.');
             return;
         }
-        invokeMainChannel(MainChannels.VIEW_SOURCE_CODE, oid);
+        // invokeMainChannel(MainChannels.VIEW_SOURCE_CODE, oid);
         sendAnalytics('view source code');
     }
 
@@ -55,11 +56,11 @@ export class CodeManager {
             console.error('No file path found.');
             return;
         }
-        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, { filePath, line });
+        // invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, { filePath, line });
         sendAnalytics('view source code');
     }
 
-    async getCodeBlock(oid: string | null, stripIds: boolean = false): Promise<string | null> {
+    async getCodeBlock(oid: string | null, stripIds = false): Promise<string | null> {
         if (!oid) {
             console.error('Failed to get code block. No oid found.');
             return null;
@@ -116,19 +117,19 @@ export class CodeManager {
                 await this.writeEditText(action);
                 break;
             case 'group-elements':
-                this.writeGroup(action);
+                await this.writeGroup(action);
                 break;
             case 'ungroup-elements':
-                this.writeUngroup(action);
+                await this.writeUngroup(action);
                 break;
             case 'write-code':
-                this.writeCode(action);
+                await this.writeCode(action);
                 break;
             case 'insert-image':
-                this.writeInsertImage(action);
+                await this.writeInsertImage(action);
                 break;
             case 'remove-image':
-                this.writeRemoveImage(action);
+                await this.writeRemoveImage(action);
                 break;
             default:
                 assertNever(action);
@@ -149,7 +150,7 @@ export class CodeManager {
             addTailwindToRequest(request, target.change.updated);
         }
 
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        // await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     async writeInsert({ location, element, pasteParams, codeBlock }: InsertElementAction) {
@@ -166,7 +167,7 @@ export class CodeManager {
             oidToCodeChange,
         );
         request.structureChanges.push(insertedEl);
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        // await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeRemove({ element, codeBlock }: RemoveElementAction) {
@@ -179,7 +180,7 @@ export class CodeManager {
 
         const request = await getOrCreateCodeDiffRequest(removedEl.oid, oidToCodeChange);
         request.structureChanges.push(removedEl);
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        // await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
@@ -263,11 +264,11 @@ export class CodeManager {
     }
 
     private async writeCode(action: WriteCodeAction) {
-        const res = await invokeMainChannel(MainChannels.WRITE_CODE_DIFFS, action.diffs);
-        if (!res) {
-            console.error('Failed to write code');
-            return false;
-        }
+        // const res = await invokeMainChannel(MainChannels.WRITE_CODE_DIFFS, action.diffs);
+        // if (!res) {
+        //     console.error('Failed to write code');
+        //     return false;
+        // }
         return true;
     }
 
@@ -317,7 +318,7 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
-    async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory: boolean = false) {
+    async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory = false) {
         let codeDiffs: CodeDiff[];
         if (useHistory) {
             codeDiffs = await this.getCodeDiffs(requests);

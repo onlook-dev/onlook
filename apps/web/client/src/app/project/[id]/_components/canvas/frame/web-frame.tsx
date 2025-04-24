@@ -148,6 +148,7 @@ export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewP
             ungroupElements: promisifyMethod(penpalChild?.ungroupElements),
             insertImage: promisifyMethod(penpalChild?.insertImage),
             removeImage: promisifyMethod(penpalChild?.removeImage),
+            isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
         };
 
         // Register the iframe with the editor engine

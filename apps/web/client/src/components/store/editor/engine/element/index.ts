@@ -1,4 +1,5 @@
 import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
+import type { RemoveElementAction } from '@onlook/models/actions';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -105,8 +106,6 @@ export class ElementsManager {
                 console.error('Frame data not found');
                 return;
             }
-            const { view, frame } = frameData;
-
             const { shouldDelete, error } = await this.shouldDelete(selectedEl, frameData);
 
             if (!shouldDelete) {
@@ -118,7 +117,8 @@ export class ElementsManager {
                 return;
             }
 
-            const removeAction = await frameData.view.getRemoveAction(selectedEl.domId, frameId);
+            const removeAction: RemoveElementAction | null = await frameData.view.getRemoveAction(selectedEl.domId, frameId);
+            
             if (!removeAction) {
                 console.error('Remove action not found');
                 toast({
@@ -128,19 +128,23 @@ export class ElementsManager {
                 });
                 return;
             }
-            const oid = selectedEl.instanceId ?? selectedEl.oid;
-            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            if (!codeBlock) {
-                toast({
-                    title: 'Cannot delete element',
-                    description: 'Code block not found. Try refreshing the page.',
-                    variant: 'destructive',
-                });
-                return;
-            }
+            // const oid = selectedEl.instanceId ?? selectedEl.oid;
+            // const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            
+            // if (!codeBlock) {
+            //     toast({
+            //         title: 'Cannot delete element',
+            //         description: 'Code block not found. Try refreshing the page.',
+            //         variant: 'destructive',
+            //     });
+            //     return;
+            // }
 
-            removeAction.codeBlock = codeBlock;
-            this.editorEngine.action.run(removeAction);
+            // removeAction.codeBlock = codeBlock;
+            
+            this.editorEngine.action.run(removeAction).catch((err) => {
+                console.error('Error deleting element', err);
+            });
         }
     }
 

@@ -1,4 +1,3 @@
-
 import { useEditorEngine, useProjectsManager } from '@/components/store';
 import { sendAnalytics } from '@/utils/analytics';
 import { EditorMode, type ImageContentData } from '@onlook/models';
@@ -15,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { images } from './data.json';
+import imageData from './data.json';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
 
@@ -39,9 +38,9 @@ export const ImagesTab = observer(() => {
     // }, []);
 
     const imageAssets = useMemo(() => {
-        return images
+        return imageData.images
         // return editorEngine.image.assets;
-    }, [images]);
+    }, [imageData.images]);
 
     const scanImages = async () => {
         await editorEngine.image.scanImages();

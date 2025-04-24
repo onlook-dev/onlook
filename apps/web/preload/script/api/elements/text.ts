@@ -1,5 +1,5 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { DomElement } from '@onlook/models';
+import type { DomElement, EditTextResult } from '@onlook/models';
 import { getHtmlElement } from '../../helpers';
 import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle } from './helpers';
@@ -13,9 +13,7 @@ export function editTextByDomId(domId: string, content: string): DomElement | nu
     return getDomElement(el, true);
 }
 
-export function startEditingText(domId: string): {
-    originalContent: string;
-} | null {
+export function startEditingText(domId: string): EditTextResult | null {
     const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Start editing text failed. No element for selector:', domId);
@@ -79,4 +77,8 @@ function removeEditingAttributes(el: HTMLElement) {
 
 function updateTextContent(el: HTMLElement, content: string): void {
     el.textContent = content;
+}
+
+export function isChildTextEditable(oid: string): boolean | null {
+    return true;
 }

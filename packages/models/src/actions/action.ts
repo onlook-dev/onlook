@@ -57,6 +57,10 @@ export interface EditTextAction {
     newContent: string;
 }
 
+export interface EditTextResult {
+    originalContent: string;
+}
+
 export interface GroupContainer {
     domId: string;
     oid: string;

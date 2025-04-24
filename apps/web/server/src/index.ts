@@ -3,4 +3,4 @@ import { createServer } from './server';
 
 const server = createServer(editorServerConfig);
 
-void server.start();
+server.start();

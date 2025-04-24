@@ -27,7 +27,7 @@ export class ConversationManager {
         makeAutoObservable(this);
         reaction(
             () => this.projectsManager.project,
-            (current) => void this.getCurrentProjectConversations(current),
+            (current) => this.getCurrentProjectConversations(current),
         );
     }
 

@@ -24,6 +24,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
+import { WindowManager } from './window';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -53,7 +54,7 @@ export class EditorEngine {
     readonly sandbox: SandboxManager = new SandboxManager(this);
 
     // TODO: Window, Frames, Webviews should be Frames
-    // readonly window: WindowManager = new WindowManager(this);
+    readonly window: WindowManager = new WindowManager(this);
 
     constructor(
         private projectsManager: ProjectManager,

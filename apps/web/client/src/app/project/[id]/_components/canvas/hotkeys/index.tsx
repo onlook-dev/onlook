@@ -52,20 +52,16 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.OPEN_DEV_TOOL.command, () => (editorEngine.inspect()));
 
     // Group
-    useHotkeys(Hotkey.GROUP.command, () => (
-        editorEngine.group.groupSelectedElements()
-    ));
-    useHotkeys(Hotkey.UNGROUP.command, () => (
-        editorEngine.group.ungroupSelectedElement()
-    ));
+    useHotkeys(Hotkey.GROUP.command, () => (editorEngine.group.groupSelectedElements()));
+    useHotkeys(Hotkey.UNGROUP.command, () => (editorEngine.group.ungroupSelectedElement()));
 
     // Copy
     useHotkeys(Hotkey.COPY.command, () => (editorEngine.copy.copy()));
     useHotkeys(Hotkey.PASTE.command, () => (editorEngine.copy.paste()));
     useHotkeys(Hotkey.CUT.command, () => (editorEngine.copy.cut()));
     useHotkeys(Hotkey.DUPLICATE.command, () => {
-        if (editorEngine.window.isWindowSelected) {
-            editorEngine.window.duplicateWindow();
+        if (editorEngine.window.areAnyWindowsSelected) {
+            editorEngine.window.duplicate();
         } else {
             editorEngine.copy.duplicate();
         }

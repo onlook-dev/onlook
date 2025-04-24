@@ -136,17 +136,17 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const WINDOW_ITEMS: MenuItem[] = [
         {
             label: 'Duplicate',
-            action: () => editorEngine.duplicateWindow(),
+            action: () => editorEngine.window.duplicate(),
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
         },
         {
             label: 'Delete',
-            action: () => editorEngine.deleteWindow(editorEngine.frames.selected[0]?.frame.id),
+            action: () => editorEngine.window.delete(),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
-            // disabled: !editorEngine.canDeleteWindow(),
+            disabled: !editorEngine.window.canDelete(),
         },
     ];
 
@@ -155,13 +155,15 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         let root: string | null = null;
 
         if (editorEngine.elements.selected.length > 0) {
-            const element: DomElement = editorEngine.elements.selected[0];
-            instance = element.instanceId;
-            root = element.oid;
+            const element: DomElement | undefined = editorEngine.elements.selected[0];
+            if (element) {
+                instance = element.instanceId;
+                root = element.oid;
+            }
         }
         let menuItems: MenuItem[][] = [];
 
-        if (editorEngine.isWindowSelected) {
+        if (editorEngine.window.areAnyWindowsSelected) {
             menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
         } else {
             const updatedToolItems = [

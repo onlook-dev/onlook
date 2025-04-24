@@ -3,7 +3,7 @@ import type { Action } from '@onlook/models/actions';
 import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { undoAction, updateTransactionActions } from './helpers';
+import { transformRedoAction, undoAction, updateTransactionActions } from './helpers';
 
 enum TransactionType {
     IN_TRANSACTION = 'in-transaction',
@@ -51,7 +51,7 @@ export class HistoryManager {
         this.inTransaction = { type: TransactionType.IN_TRANSACTION, actions: [] };
     };
 
-    commitTransaction = () => {
+    commitTransaction = async () => {
         if (
             this.inTransaction.type === TransactionType.NOT_IN_TRANSACTION ||
             this.inTransaction.actions.length === 0
@@ -62,11 +62,11 @@ export class HistoryManager {
         const actionsToCommit = this.inTransaction.actions;
         this.inTransaction = { type: TransactionType.NOT_IN_TRANSACTION };
         for (const action of actionsToCommit) {
-            this.push(action);
+            await this.push(action);
         }
     };
 
-    push = (action: Action) => {
+    push = async (action: Action) => {
         if (this.inTransaction.type === TransactionType.IN_TRANSACTION) {
             this.inTransaction.actions = updateTransactionActions(
                 this.inTransaction.actions,
@@ -80,7 +80,7 @@ export class HistoryManager {
         }
 
         this.undoStack.push(action);
-        // this.editorEngine.code.write(action);
+        // await this.editorEngine.code.write(action);
 
         switch (action.type) {
             case 'update-style':
@@ -113,9 +113,11 @@ export class HistoryManager {
         if (top == null) {
             return null;
         }
+        const action = undoAction(top);
 
         this.redoStack.push(top);
-        return undoAction(top);
+
+        return action;
     };
 
     redo = (): Action | null => {
@@ -128,8 +130,9 @@ export class HistoryManager {
             return null;
         }
 
-        this.undoStack.push(top);
-        return top;
+        const action = transformRedoAction(top);
+        this.undoStack.push(action);
+        return action;
     };
 
     clear = () => {

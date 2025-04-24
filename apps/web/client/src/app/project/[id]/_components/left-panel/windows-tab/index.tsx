@@ -4,24 +4,15 @@ import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { DeviceSettings } from './device-settings';
 import { FrameDimensions } from './frame-dimensions';
 
 export const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    const settings = null;
-
-    // Get settings from the selected element or frameView
-    // if (editorEngine.elements.selected.length > 0) {
-    //     settings = editorEngine.canvas.getFrame(editorEngine.elements.selected[0].webviewId);
-    // } else if (editorEngine.frames.selected.length > 0) {
-    //     settings = editorEngine.canvas.getFrame(editorEngine.frames.selected[0].id);
-    // }
-
+    const frameData = editorEngine.frames.get(editorEngine.elements.selected[0]?.frameId ?? '');
     const WIDTH = 'w-[275px]';
 
-    if (!settings) {
+    if (!frameData) {
         return (
             <p
                 className={`${WIDTH} h-full flex items-center justify-center p-2 text-center text-sm text-foreground-secondary`}
@@ -31,13 +22,15 @@ export const WindowsTab = observer(() => {
         );
     }
 
+    const { frame } = frameData;
+
     return (
         <div className={`${WIDTH} flex flex-col gap-3 p-4`}>
             <div className="flex flex-row gap-1">
                 <Button
                     variant={'outline'}
                     className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
-                    onClick={() => editorEngine.duplicateWindow(settings.id)}
+                    onClick={() => editorEngine.window.duplicate(frame.id)}
                 >
                     <Icons.Copy className="mr-2" />
                     <span className="text-xs">Duplicate</span>
@@ -45,17 +38,17 @@ export const WindowsTab = observer(() => {
                 <Button
                     variant={'outline'}
                     className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
-                    disabled={!editorEngine.canDeleteWindow()}
-                    onClick={() => editorEngine.deleteWindow(settings.id)}
+                    disabled={!editorEngine.window.canDelete()}
+                    onClick={() => editorEngine.window.delete(frame.id)}
                 >
                     <Icons.Trash className="mr-2" />
                     <span className="text-xs">Delete</span>
                 </Button>
             </div>
 
-            <FrameDimensions settings={settings} />
+            <FrameDimensions frame={frame} />
             <Separator />
-            <DeviceSettings settings={settings} />
+            {/* <DeviceSettings frame={frame} /> */}
         </div>
     );
 });

@@ -9,6 +9,7 @@ import type {
 import { createDomId, createOid } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import { getCleanedElement } from '../history/helpers';
 
 export class CopyManager {
     copied: {
@@ -37,19 +38,20 @@ export class CopyManager {
             return;
         }
 
-        const targetEl: ActionElement | null = await frameData.view.getActionElement(selectedEl.domId);
+        const targetEl: ActionElement | null = await frameData.view.getActionElement(selectedEl.domId) as ActionElement | null;
+        
         if (!targetEl) {
             console.error('Failed to copy element');
             return;
         }
-        const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
-        this.copied = { element: targetEl, codeBlock };
-        this.clearClipboard();
+        // const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
+        this.copied = { element: targetEl, codeBlock: null };
+        await this.clearClipboard();
     }
 
-    clearClipboard() {
+    async clearClipboard() {
         try {
-            navigator.clipboard.writeText('');
+            await navigator.clipboard.writeText('');
         } catch (error) {
             console.warn('Failed to clear clipboard:', error);
         }
@@ -100,7 +102,7 @@ export class CopyManager {
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
-            element: this.getCleanedCopyEl(this.copied.element, newDomId, newOid),
+            element: getCleanedElement(this.copied.element, newDomId, newOid),
             location,
             editText: null,
             pasteParams: {
@@ -110,7 +112,7 @@ export class CopyManager {
             codeBlock: this.copied.codeBlock,
         };
 
-        this.editorEngine.action.run(action);
+        await this.editorEngine.action.run(action);
     }
 
     async pasteImageFromClipboard(): Promise<boolean> {
@@ -122,9 +124,9 @@ export class CopyManager {
                     const blob = await item.getType(imageType);
                     const reader = new FileReader();
                     reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
+                    reader.onloadend = async () => {
                         const base64data = reader.result as string;
-                        this.editorEngine.image.insert(base64data, imageType);
+                        await this.editorEngine.image.insert(base64data, imageType);
                     };
                     return true;
                 }
@@ -135,31 +137,9 @@ export class CopyManager {
         return false;
     }
 
-    getCleanedCopyEl(copiedEl: ActionElement, domId: string, oid: string): ActionElement {
-        const filteredAttr: Record<string, string> = {
-            class: copiedEl.attributes['class'] || '',
-            [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
-            [EditorAttributes.DATA_ONLOOK_ID]: oid,
-            [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-        };
-
-        // Process children recursively
-        const processedChildren = copiedEl.children?.map((child) => {
-            const newChildDomId = createDomId();
-            const newChildOid = createOid();
-            return this.getCleanedCopyEl(child, newChildDomId, newChildOid);
-        });
-
-        return {
-            ...copiedEl,
-            attributes: filteredAttr,
-            children: processedChildren || [],
-        };
-    }
-
     async cut() {
         await this.copy();
-        this.editorEngine.elements.delete();
+        await this.editorEngine.elements.delete();
     }
 
     async duplicate() {
@@ -167,10 +147,6 @@ export class CopyManager {
         await this.copy();
         await this.paste();
         this.copied = savedCopied;
-    }
-
-    clear() {
-        this.copied = null;
     }
 
     async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
@@ -201,16 +177,12 @@ export class CopyManager {
             return {
                 type: 'append',
                 targetDomId: selectedEl.domId,
-                targetOid: selectedEl.instanceId || selectedEl.oid,
+                targetOid: selectedEl.instanceId ?? selectedEl.oid,
             };
         }
     }
 
     clear() {
-        // Clear state
-        this.clear();
-
-        // Clear references
-        this.editorEngine = null as any;
+        this.copied = null;
     }
 }

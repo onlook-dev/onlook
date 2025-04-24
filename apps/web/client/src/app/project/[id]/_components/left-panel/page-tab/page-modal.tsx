@@ -127,7 +127,7 @@ export function PageModal({
                             disabled={isLoading}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !isComposing) {
-                                    void handleSubmit();
+                                    handleSubmit();
                                 }
                             }}
                             onCompositionStart={() => setIsComposing(true)}
@@ -151,7 +151,7 @@ export function PageModal({
                     </Button>
                     <Button
                         variant="outline"
-                        onClick={() => void handleSubmit()}
+                        onClick={() => handleSubmit()}
                         disabled={isLoading || !!warning || !pageName}
                     >
                         {isLoading ? <>{loadingText}</> : buttonText}
