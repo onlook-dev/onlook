@@ -1,5 +1,6 @@
 import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
+import type { DomElementStyles } from '@onlook/models/element';
 import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
 import { BaseRect } from './BaseRect';
@@ -90,7 +91,7 @@ const parseCssBoxValues = (
 
 interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
-    styles: Record<string, string>;
+    styles: DomElementStyles | null;
     shouldShowResizeHandles: boolean;
 }
 
@@ -104,10 +105,10 @@ export const ClickRect = ({
     shouldShowResizeHandles,
 }: ClickRectProps) => {
     const renderMarginLabels = () => {
-        if (!styles?.margin) {
+        if (!styles?.computed.margin) {
             return null;
         }
-        const { adjusted, original } = parseCssBoxValues(styles.margin);
+        const { adjusted, original } = parseCssBoxValues(styles.computed.margin);
 
         const patternId = `margin-pattern-${nanoid()}`;
         const maskId = `margin-mask-${nanoid()}`;
@@ -201,10 +202,10 @@ export const ClickRect = ({
     };
 
     const renderPaddingLabels = () => {
-        if (!styles?.padding) {
+        if (!styles?.computed.padding) {
             return null;
         }
-        const { adjusted, original } = parseCssBoxValues(styles.padding);
+        const { adjusted, original } = parseCssBoxValues(styles.computed.padding);
 
         const patternId = `padding-pattern-${nanoid()}`;
         const maskId = `padding-mask-${nanoid()}`;
@@ -301,8 +302,8 @@ export const ClickRect = ({
 
     const renderDimensionLabels = () => {
         const rectColor = isComponent ? colors.purple[500] : colors.red[500];
-        const displayWidth = parseFloat(styles?.width || '0').toFixed(0);
-        const displayHeight = parseFloat(styles?.height || '0').toFixed(0);
+        const displayWidth = parseFloat(styles?.defined.width || '0').toFixed(0);
+        const displayHeight = parseFloat(styles?.defined.height || '0').toFixed(0);
         const text = `${displayWidth} × ${displayHeight}`;
 
         // Constants from showDimensions
@@ -355,9 +356,9 @@ export const ClickRect = ({
                     height={height}
                     left={left}
                     top={top}
-                    borderRadius={parseInt(styles?.['borderRadius'] || '0')}
+                    borderRadius={parseInt(styles?.computed['borderRadius'] || '0')}
                     isComponent={isComponent}
-                    styles={styles}
+                    styles={styles?.computed ?? {}}
                 />
             )}
         </BaseRect>

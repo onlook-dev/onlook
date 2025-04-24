@@ -85,11 +85,7 @@ export class ElementManager {
         for (const domEl of domEls) {
             const adjustedRect = adaptRectToCanvas(domEl.rect, webview);
             const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.state.addClickRect(
-                adjustedRect,
-                { ...domEl.styles?.computed, ...domEl.styles?.defined },
-                isComponent,
-            );
+            this.editorEngine.overlay.state.addClickRect(adjustedRect, domEl.styles, isComponent);
             this.addSelectedElement(domEl);
         }
     }

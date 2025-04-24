@@ -239,6 +239,9 @@ export const StyleGroup = [
             }),
         ],
     ),
+    new SingleStyleImpl('overflow', 'visible', 'Overflow', StyleType.Select, {
+        options: ['visible', 'hidden', 'scroll', 'auto'],
+    }),
 ];
 
 export const TextGroup = [

@@ -29,11 +29,11 @@ import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { isChildTextEditable } from '../code/diff/text';
 import { readFile } from '../code/files';
+import { fileWatcher } from '../code/fileWatcher';
+import { getTemplateNodeProps } from '../code/props';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
-
-import { getTemplateNodeProps } from '../code/props';
 import type { CopyCallback, CopyStage } from '@onlook/models';
 import { mainWindow } from '..';
 
@@ -220,5 +220,22 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.WATCH_FONT_FILE, async (_, args) => {
         const { projectRoot } = args;
         return fontFileWatcher.watch(projectRoot);
+    });
+
+    ipcMain.handle(MainChannels.WATCH_FILE, async (e: Electron.IpcMainInvokeEvent, args) => {
+        const { filePath } = args as { filePath: string };
+        return fileWatcher.watchFile(filePath);
+    });
+
+    ipcMain.handle(MainChannels.UNWATCH_FILE, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { filePath } = args as { filePath: string };
+        fileWatcher.unwatchFile(filePath);
+        return true;
+    });
+
+    ipcMain.handle(MainChannels.MARK_FILE_MODIFIED, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { filePath } = args as { filePath: string };
+        fileWatcher.markFileAsModified(filePath);
+        return true;
     });
 }

@@ -225,7 +225,9 @@ export const EditPanel = observer(() => {
                 </TabsList>
                 <Separator className="mt-0" />
                 <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto">
+                <div
+                    className={`h-[calc(100vh-7.75rem)] ${selectedTab === EditorTabValue.DEV ? 'overflow-hidden' : 'overflow-auto'}`}
+                >
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
                     </TabsContent>

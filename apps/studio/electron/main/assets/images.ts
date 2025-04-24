@@ -1,40 +1,89 @@
 import type { ImageContentData } from '@onlook/models/actions';
 import { DefaultSettings } from '@onlook/models/constants';
-import { promises as fs, readFileSync } from 'fs';
+import { promises as fs } from 'fs';
 import mime from 'mime-lite';
 import path from 'path';
+import { detectRouterType } from '../pages';
+
+const SUPPORTED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico'];
+const MAX_FILENAME_LENGTH = 255;
+const VALID_FILENAME_REGEX = /^[a-zA-Z0-9-_. ]+$/;
+
+async function getImageFolderPath(projectRoot: string, folder?: string): Promise<string> {
+    if (folder) {
+        return path.join(projectRoot, folder);
+    }
+
+    const routerType = await detectRouterType(projectRoot);
+    return routerType?.basePath
+        ? routerType.basePath
+        : path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
+}
+
+// Helper function to validate and process image file
+async function processImageFile(filePath: string, folder: string): Promise<ImageContentData> {
+    const image = await fs.readFile(filePath, { encoding: 'base64' });
+    const mimeType = mime.getType(filePath) || 'application/octet-stream';
+
+    return {
+        fileName: path.basename(filePath),
+        content: `data:${mimeType};base64,${image}`,
+        mimeType,
+        folder,
+    };
+}
 
 async function scanImagesDirectory(projectRoot: string): Promise<ImageContentData[]> {
-    const imagesPath = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
     const images: ImageContentData[] = [];
 
+    const publicImagesPath = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
     try {
-        const entries = await fs.readdir(imagesPath, { withFileTypes: true });
-
-        for (const entry of entries) {
-            if (entry.isFile()) {
-                const extension = path.extname(entry.name).toLowerCase();
-                // Common image extensions
-                if (
-                    ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico'].includes(extension)
-                ) {
-                    const imagePath = path.join(imagesPath, entry.name);
-                    const image = readFileSync(imagePath, { encoding: 'base64' });
-                    const mimeType = mime.getType(imagePath) || 'application/octet-stream';
-                    images.push({
-                        fileName: entry.name,
-                        content: `data:${mimeType};base64,${image}`,
-                        mimeType,
-                    });
-                }
+        const publicEntries = await fs.readdir(publicImagesPath, { withFileTypes: true });
+        for (const entry of publicEntries) {
+            if (
+                entry.isFile() &&
+                SUPPORTED_IMAGE_EXTENSIONS.includes(path.extname(entry.name).toLowerCase())
+            ) {
+                const imagePath = path.join(publicImagesPath, entry.name);
+                images.push(await processImageFile(imagePath, DefaultSettings.IMAGE_FOLDER));
             }
         }
-
-        return images;
     } catch (error) {
-        console.error('Error scanning images directory:', error);
-        return [];
+        console.error('Error scanning public images directory:', error);
     }
+
+    // Scan app directory images
+    const appDir = path.join(projectRoot, 'app');
+    try {
+        const appImages = await findImagesInDirectory(appDir);
+        for (const imagePath of appImages) {
+            images.push(await processImageFile(imagePath, 'app'));
+        }
+    } catch (error) {
+        console.error('Error scanning app directory images:', error);
+    }
+
+    return images;
+}
+
+async function findImagesInDirectory(dirPath: string): Promise<string[]> {
+    const imageFiles: string[] = [];
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+
+        if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+            imageFiles.push(...(await findImagesInDirectory(fullPath)));
+        } else if (
+            entry.isFile() &&
+            SUPPORTED_IMAGE_EXTENSIONS.includes(path.extname(entry.name).toLowerCase())
+        ) {
+            imageFiles.push(fullPath);
+        }
+    }
+
+    return imageFiles;
 }
 
 export async function scanNextJsImages(projectRoot: string): Promise<ImageContentData[]> {
@@ -72,16 +121,19 @@ async function getUniqueFileName(imageFolder: string, fileName: string): Promise
 }
 
 export async function saveImageToProject(
-    projectFolder: string,
-    content: string,
-    fileName: string,
+    projectRoot: string,
+    image: ImageContentData,
 ): Promise<string> {
     try {
-        const imageFolder = path.join(projectFolder, DefaultSettings.IMAGE_FOLDER);
-        const uniqueFileName = await getUniqueFileName(imageFolder, fileName);
+        const imageFolder = await getImageFolderPath(projectRoot, image.folder);
+        const uniqueFileName = await getUniqueFileName(imageFolder, image.fileName);
         const imagePath = path.join(imageFolder, uniqueFileName);
 
-        const buffer = Buffer.from(content, 'base64');
+        if (!image.content) {
+            throw new Error('Can not save image with empty content');
+        }
+
+        const buffer = Buffer.from(image.content.replace(/^data:[^,]+,/, ''), 'base64');
         await fs.writeFile(imagePath, buffer);
         return imagePath;
     } catch (error) {
@@ -92,11 +144,11 @@ export async function saveImageToProject(
 
 export async function deleteImageFromProject(
     projectRoot: string,
-    imageName: string,
+    image: ImageContentData,
 ): Promise<string> {
     try {
-        const imageFolder = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
-        const imagePath = path.join(imageFolder, imageName);
+        const imageFolder = await getImageFolderPath(projectRoot, image.folder);
+        const imagePath = path.join(imageFolder, image.fileName);
         await fs.unlink(imagePath);
         return imagePath;
     } catch (error) {
@@ -107,31 +159,27 @@ export async function deleteImageFromProject(
 
 export async function renameImageInProject(
     projectRoot: string,
-    imageName: string,
+    image: ImageContentData,
     newName: string,
 ): Promise<string> {
-    if (!imageName || !newName) {
+    if (!image.fileName || !newName) {
         throw new Error('Image name and new name are required');
     }
 
-    const imageFolder = path.join(projectRoot, DefaultSettings.IMAGE_FOLDER);
-    const oldImagePath = path.join(imageFolder, imageName);
+    const imageFolder = await getImageFolderPath(projectRoot, image.folder);
+    const oldImagePath = path.join(imageFolder, image.fileName);
     const newImagePath = path.join(imageFolder, newName);
 
     try {
         await validateRename(oldImagePath, newImagePath);
         await fs.rename(oldImagePath, newImagePath);
-
-        await updateImageReferences(projectRoot, imageName, newName);
+        await updateImageReferences(projectRoot, image.fileName, newName);
         return newImagePath;
     } catch (error) {
         console.error('Error renaming image:', error);
         throw error;
     }
 }
-
-const MAX_FILENAME_LENGTH = 255;
-const VALID_FILENAME_REGEX = /^[a-zA-Z0-9-_. ]+$/;
 
 async function validateRename(oldImagePath: string, newImagePath: string): Promise<void> {
     try {

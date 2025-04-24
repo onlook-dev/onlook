@@ -28,10 +28,10 @@ const ImagesTab = observer(() => {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const imageFolder: string | null = projectsManager.project?.folderPath
-        ? `${projectsManager.project.folderPath}${platformSlash}${DefaultSettings.IMAGE_FOLDER}`
+        ? `${projectsManager.project.folderPath}${platformSlash}`
         : null;
-    const [imageToDelete, setImageToDelete] = useState<string | null>(null);
-    const [imageToRename, setImageToRename] = useState<string | null>(null);
+    const [imageToDelete, setImageToDelete] = useState<ImageContentData | null>(null);
+    const [imageToRename, setImageToRename] = useState<ImageContentData | null>(null);
     const [newImageName, setNewImageName] = useState<string>('');
     const [renameError, setRenameError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +136,7 @@ const ImagesTab = observer(() => {
     };
 
     const handleDeleteImage = (image: ImageContentData) => {
-        setImageToDelete(image.fileName);
+        setImageToDelete(image);
     };
 
     const onDeleteImage = () => {
@@ -147,7 +147,7 @@ const ImagesTab = observer(() => {
     };
 
     const handleRenameImage = (image: ImageContentData) => {
-        setImageToRename(image.fileName);
+        setImageToRename(image);
         setNewImageName(image.fileName);
     };
 
@@ -157,11 +157,11 @@ const ImagesTab = observer(() => {
             return;
         }
         if (imageToRename) {
-            const extension = imageToRename.split('.').pop() || '';
+            const extension = imageToRename.fileName.split('.').pop() || '';
             const newBaseName = value.replace(`.${extension}`, '');
             const proposedNewName = `${newBaseName}.${extension}`;
 
-            if (proposedNewName !== imageToRename) {
+            if (proposedNewName !== imageToRename.fileName) {
                 setNewImageName(proposedNewName);
             } else {
                 setImageToRename(null);
@@ -171,7 +171,7 @@ const ImagesTab = observer(() => {
 
     const onRenameImage = async (newName: string) => {
         try {
-            if (imageToRename && newName && newName !== imageToRename) {
+            if (imageToRename && newName && newName !== imageToRename.fileName) {
                 await editorEngine.image.rename(imageToRename, newName);
             }
         } catch (error) {
@@ -339,7 +339,7 @@ const ImagesTab = observer(() => {
                                     />
                                 </div>
                                 <span className="text-xs block w-full text-center truncate">
-                                    {imageToRename === image.fileName ? (
+                                    {imageToRename?.fileName === image.fileName ? (
                                         <input
                                             type="text"
                                             className="w-full p-1 text-center bg-background-active rounded "
@@ -413,12 +413,12 @@ const ImagesTab = observer(() => {
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                                     onClick={() => {
-                                                        if (!imageFolder) {
+                                                        if (!imageFolder || !image.folder) {
                                                             return;
                                                         }
                                                         invokeMainChannel(
                                                             MainChannels.OPEN_IN_EXPLORER,
-                                                            imageFolder,
+                                                            `${imageFolder}${image.folder}`,
                                                         );
                                                     }}
                                                 >
@@ -443,7 +443,9 @@ const ImagesTab = observer(() => {
             />
             <RenameImageModal
                 onRename={onRenameImage}
-                isOpen={!!imageToRename && !!newImageName && newImageName !== imageToRename}
+                isOpen={
+                    !!imageToRename && !!newImageName && newImageName !== imageToRename.fileName
+                }
                 toggleOpen={() => {
                     setImageToRename(null);
                     setNewImageName('');
