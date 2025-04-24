@@ -129,7 +129,7 @@ const ColorInput = observer(
                         colorValue = colorValue.split(`-${DEFAULT_COLOR_NAME}`)[0];
                     }
                     editorEngine.style.updateCustom(elementStyle.key, colorValue);
-                    onValueChange?.(elementStyle.key, colorValue);
+                    onValueChange?.(elementStyle.key, newValue.lightColor);
                 }
             },
             [editorEngine.style, elementStyle.key, onValueChange],
