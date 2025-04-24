@@ -18,10 +18,10 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
+import { FileConflictAlert } from './FileConflictAlert';
 import { FileTab } from './FileTab';
 import FileTreeNode from './FileTreeNode';
 import FileTreeRow from './FileTreeRow';
-import { FileConflictAlert } from './FileConflictAlert';
 
 import { getBasicSetup, getExtensions, getLanguageFromFileName } from './CodeMirrorConfig';
 
@@ -851,7 +851,7 @@ export const DevTab = observer(() => {
     };
 
     return (
-        <div className="h-full flex flex-col w-full border-l-[0.5px] border-t-[0.5px] border-b-[0.5px] backdrop-blur shadow rounded-tl-xl">
+        <div className="h-full flex flex-col w-full backdrop-blur shadow">
             <div className="flex items-center justify-between h-11 pl-4 pr-2 rounded-tl-xl border-b-[0.5px]">
                 <div className="flex items-center space-x-5 h-full">
                     <DropdownMenu>
