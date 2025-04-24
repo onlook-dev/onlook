@@ -10,11 +10,13 @@ export interface ParentDomElement extends BaseDomElement {}
 
 export interface DomElement extends BaseDomElement {
     tagName: string;
-    styles: {
-        defined: Record<string, string>; // Styles from stylesheets or inline
-        computed: Record<string, string>; // Browser computed styles
-    } | null;
+    styles: DomElementStyles | null;
     parent: ParentDomElement | null;
+}
+
+export interface DomElementStyles {
+    defined: Record<string, string>; // Styles from stylesheets or inline
+    computed: Record<string, string>; // Browser computed styles
 }
 
 export interface ElementPosition {
