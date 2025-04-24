@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
+import { FileConflictAlert } from './FileConflictAlert';
 import { FileTab } from './FileTab';
 import FileTreeNode from './FileTreeNode';
 import FileTreeRow from './FileTreeRow';
@@ -42,6 +43,8 @@ interface EditorFile {
     content: string;
     language: string;
     isDirty: boolean;
+    hasExternalChanges?: boolean;
+    externalContent?: string;
 }
 
 interface CodeRange {
@@ -70,13 +73,6 @@ export const DevTab = observer(() => {
     const treeRef = useRef<TreeApi<FileNode>>();
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const getActiveEditorView = (): EditorView | undefined => {
-        if (!activeFile) {
-            return undefined;
-        }
-        return editorViewsRef.current.get(activeFile.id);
-    };
-
     // Scan project files when the component is mounted
     useEffect(() => {
         loadProjectFiles();
@@ -90,6 +86,87 @@ export const DevTab = observer(() => {
             console.error('Error loading project files:', error);
         }
     }
+
+    // Prevents false "conflicts" where the user didn't actually modify anything
+    const applyingExternalChanges = useRef(false);
+
+    // Function to ensure editor view matches file state
+    const syncEditorViewWithState = (fileId: string) => {
+        const file = openedFiles.find((f) => f.id === fileId);
+        if (!file) {
+            return;
+        }
+
+        const editorView = editorViewsRef.current.get(fileId);
+        if (!editorView) {
+            return;
+        }
+
+        const editorContent = editorView.state.doc.toString();
+        if (editorContent !== file.content) {
+            applyingExternalChanges.current = true;
+            editorView.dispatch({
+                changes: {
+                    from: 0,
+                    to: editorView.state.doc.length,
+                    insert: file.content,
+                },
+            });
+
+            setTimeout(() => {
+                applyingExternalChanges.current = false;
+            }, 300);
+        }
+    };
+
+    useEffect(() => {
+        if (!activeFile) {
+            return;
+        }
+
+        const editorView = editorViewsRef.current.get(activeFile.id);
+        if (!editorView) {
+            return;
+        }
+
+        // Skip synchronization if the file has external changes and isDirty
+        // This prevents overwriting local changes with external content
+        if (activeFile.hasExternalChanges && activeFile.isDirty) {
+            return;
+        }
+
+        // Skip synchronization if the file is dirty
+        // This prevents any automatic updates to dirty files
+        if (activeFile.isDirty) {
+            return;
+        }
+
+        // Check if editor content matches our state
+        const editorContent = editorView.state.doc.toString();
+
+        // Only update if applyingExternalChanges is false (to avoid loops)
+        // and the content doesn't match
+        if (!applyingExternalChanges.current && editorContent !== activeFile.content) {
+            applyingExternalChanges.current = true;
+            editorView.dispatch({
+                changes: {
+                    from: 0,
+                    to: editorView.state.doc.length,
+                    insert: activeFile.content,
+                },
+            });
+            setTimeout(() => {
+                applyingExternalChanges.current = false;
+            }, 300);
+        }
+    }, [activeFile]);
+
+    const getActiveEditorView = (): EditorView | undefined => {
+        if (!activeFile) {
+            return undefined;
+        }
+        return editorViewsRef.current.get(activeFile.id);
+    };
 
     useEffect(() => {
         const handleOpenCodeInOnlook = async (data: any) => {
@@ -278,12 +355,19 @@ export const DevTab = observer(() => {
                 isDirty: false,
             };
 
+            window.api.invoke(MainChannels.WATCH_FILE, { filePath });
+
             setOpenedFiles([...openedFiles, newFile]);
             setActiveFile(newFile);
             setIsDirty(false);
             return newFile;
         } catch (error) {
             console.error('Error loading file:', error);
+            toast({
+                title: 'Error loading file',
+                description: 'Could not load the file content.',
+                variant: 'destructive',
+            });
             return null;
         } finally {
             setIsLoading(false);
@@ -318,7 +402,6 @@ export const DevTab = observer(() => {
         return null;
     }
 
-    // Add saving functionality
     async function saveFile() {
         if (!activeFile) {
             return;
@@ -326,9 +409,11 @@ export const DevTab = observer(() => {
 
         setIsLoading(true);
         try {
+            await window.api.invoke(MainChannels.MARK_FILE_MODIFIED, { filePath: activeFile.path });
+
             const originalContent =
                 (await editorEngine.code.getFileContent(activeFile.path, false)) || '';
-            editorEngine.code.runCodeDiffs([
+            await editorEngine.code.runCodeDiffs([
                 {
                     path: activeFile.path,
                     original: originalContent,
@@ -336,13 +421,25 @@ export const DevTab = observer(() => {
                 },
             ]);
 
-            // Mark the file as no longer dirty
+            // Mark the file as no longer dirty and clear conflict flags
             const updatedFiles = openedFiles.map((file: EditorFile) =>
-                file.id === activeFile.id ? { ...file, isDirty: false } : file,
+                file.id === activeFile.id
+                    ? {
+                          ...file,
+                          isDirty: false,
+                          hasExternalChanges: false,
+                          externalContent: undefined,
+                      }
+                    : file,
             );
 
             setOpenedFiles(updatedFiles);
-            setActiveFile({ ...activeFile, isDirty: false });
+            setActiveFile({
+                ...activeFile,
+                isDirty: false,
+                hasExternalChanges: false,
+                externalContent: undefined,
+            });
             setIsDirty(false);
 
             toast({
@@ -488,7 +585,111 @@ export const DevTab = observer(() => {
         setIsDirty(false);
     }
 
+    // Subscribe to file change events
+    useEffect(() => {
+        const handleFileChanged = (data: { path: string; content: string }) => {
+            if (!data?.path || typeof data.content !== 'string') {
+                console.warn('Received invalid file change data:', data);
+                return;
+            }
+
+            const openedFile = openedFiles.find((file) => file.path === data.path);
+            if (!openedFile) {
+                return;
+            }
+
+            if (openedFile.isDirty) {
+                // If the file is dirty, ONLY mark it as having external changes
+                const updatedFiles = openedFiles.map((file) =>
+                    file.path === data.path
+                        ? {
+                              ...file,
+                              hasExternalChanges: true,
+                              externalContent: data.content,
+                              // Preserve the isDirty flag
+                              isDirty: true,
+                          }
+                        : file,
+                ) as EditorFile[];
+
+                setOpenedFiles(updatedFiles);
+
+                // If this is the active file, only update the conflict flags
+                if (activeFile && activeFile.path === data.path) {
+                    setActiveFile({
+                        ...activeFile,
+                        hasExternalChanges: true,
+                        externalContent: data.content,
+                        isDirty: true,
+                    });
+
+                    // Ensure the editor shows the correct local content
+                    syncEditorViewWithState(activeFile.id);
+                }
+            } else {
+                // Safe update for non-dirty files
+                const updatedFiles = openedFiles.map((file) =>
+                    file.path === data.path
+                        ? {
+                              ...file,
+                              content: data.content,
+                              isDirty: false,
+                          }
+                        : file,
+                ) as EditorFile[];
+
+                setOpenedFiles(updatedFiles);
+
+                // If this is the active file, update it safely
+                if (activeFile && activeFile.path === data.path) {
+                    applyingExternalChanges.current = true;
+
+                    setActiveFile({
+                        ...activeFile,
+                        content: data.content,
+                        isDirty: false,
+                    });
+                    setIsDirty(false);
+
+                    // Refresh the editor view for non-dirty files only
+                    const editorView = editorViewsRef.current.get(activeFile.id);
+                    if (editorView) {
+                        editorView.dispatch(
+                            {
+                                changes: {
+                                    from: 0,
+                                    to: editorView.state.doc.length,
+                                    insert: data.content,
+                                },
+                            },
+                            {
+                                scrollIntoView: true,
+                            },
+                        );
+                    }
+
+                    setTimeout(() => {
+                        applyingExternalChanges.current = false;
+                    }, 300);
+                }
+            }
+        };
+
+        // Subscribe to the file changed event
+        window.api.on(MainChannels.FILE_CHANGED, handleFileChanged);
+
+        // Cleanup
+        return () => {
+            window.api.removeListener(MainChannels.FILE_CHANGED, handleFileChanged);
+        };
+    }, [openedFiles, activeFile, toast]);
+
     const updateFileContent = (fileId: string, content: string) => {
+        // If we're applying external changes, don't mark as dirty
+        if (applyingExternalChanges.current) {
+            return;
+        }
+
         const file = openedFiles.find((f) => f.id === fileId);
         if (!file) {
             return;
@@ -497,26 +698,49 @@ export const DevTab = observer(() => {
         // Check if content has actually changed
         const hasChanged = content !== file.content;
 
-        const updatedFiles = openedFiles.map((file) =>
-            file.id === fileId
-                ? {
-                      ...file,
-                      content: content,
-                      isDirty: hasChanged,
-                  }
-                : file,
-        );
+        try {
+            const updatedFiles = openedFiles.map((f) =>
+                f.id === fileId
+                    ? {
+                          ...f,
+                          content: content,
+                          isDirty: hasChanged,
+                          // Clears external changes when the content is modified
+                          ...(hasChanged
+                              ? {
+                                    hasExternalChanges: false,
+                                    externalContent: undefined,
+                                }
+                              : {}),
+                      }
+                    : f,
+            );
 
-        setOpenedFiles(updatedFiles);
+            setOpenedFiles(updatedFiles as EditorFile[]);
 
-        // If this is the active file, update the dirty state
-        if (activeFile && activeFile.id === fileId) {
-            setActiveFile({
-                ...activeFile,
-                content: content,
-                isDirty: hasChanged,
+            // If this is the active file, update the dirty state
+            if (activeFile && activeFile.id === fileId) {
+                setActiveFile({
+                    ...activeFile,
+                    content: content,
+                    isDirty: hasChanged,
+                    // Clears external changes when the content is modified
+                    ...(hasChanged
+                        ? {
+                              hasExternalChanges: false,
+                              externalContent: undefined,
+                          }
+                        : {}),
+                });
+                setIsDirty(hasChanged);
+            }
+        } catch (error) {
+            console.error('Error updating file content:', error);
+            toast({
+                title: 'Update failed',
+                description: 'Could not update the file content.',
+                variant: 'destructive',
             });
-            setIsDirty(hasChanged);
         }
     };
 
@@ -536,8 +760,98 @@ export const DevTab = observer(() => {
         [filesWidth],
     );
 
+    // Handles using external changes when file has conflict
+    const handleUseExternalChanges = (fileId: string) => {
+        const file = openedFiles.find((f) => f.id === fileId);
+        if (!file || !file.externalContent) {
+            return;
+        }
+
+        // Updates file with external content
+        const updatedFiles = openedFiles.map((f) =>
+            f.id === fileId
+                ? {
+                      ...f,
+                      content: file.externalContent,
+                      isDirty: false,
+                      hasExternalChanges: false,
+                      externalContent: undefined,
+                  }
+                : f,
+        );
+
+        setOpenedFiles(updatedFiles as EditorFile[]);
+
+        // If this is the active file, update it safely
+        if (activeFile && activeFile.id === fileId) {
+            setActiveFile({
+                ...activeFile,
+                content: file.externalContent,
+                isDirty: false,
+                hasExternalChanges: false,
+                externalContent: undefined,
+            });
+            setIsDirty(false);
+
+            applyingExternalChanges.current = true;
+
+            const editorView = editorViewsRef.current.get(fileId);
+            if (editorView) {
+                editorView.dispatch({
+                    changes: {
+                        from: 0,
+                        to: editorView.state.doc.length,
+                        insert: file.externalContent,
+                    },
+                });
+            }
+
+            setTimeout(() => {
+                applyingExternalChanges.current = false;
+            }, 300);
+        }
+    };
+
+    // Handle keeping local changes when file has conflict
+    const handleKeepLocalChanges = (fileId: string) => {
+        // Clear the conflict flag but keep local content
+        const file = openedFiles.find((f) => f.id === fileId);
+        if (!file) {
+            return;
+        }
+
+        const updatedFiles = openedFiles.map((f) =>
+            f.id === fileId
+                ? {
+                      ...f,
+                      hasExternalChanges: false,
+                      externalContent: undefined,
+                      isDirty: true,
+                  }
+                : f,
+        ) as EditorFile[];
+
+        setOpenedFiles(updatedFiles);
+
+        // If this is the active file, update its state
+        if (activeFile && activeFile.id === fileId) {
+            setActiveFile({
+                ...activeFile,
+                hasExternalChanges: false,
+                externalContent: undefined,
+                isDirty: true,
+            });
+
+            // Make sure the global dirty state is set
+            setIsDirty(true);
+
+            // Force sync with local content to be absolutely sure
+            syncEditorViewWithState(fileId);
+        }
+    };
+
     return (
-        <div className="h-full flex flex-col w-full border-l-[0.5px] border-t-[0.5px] border-b-[0.5px] backdrop-blur shadow rounded-tl-xl">
+        <div className="h-full flex flex-col w-full backdrop-blur shadow">
             <div className="flex items-center justify-between h-11 pl-4 pr-2 rounded-tl-xl border-b-[0.5px]">
                 <div className="flex items-center space-x-5 h-full">
                     <DropdownMenu>
@@ -732,11 +1046,22 @@ export const DevTab = observer(() => {
                             {openedFiles.map((file) => (
                                 <div
                                     key={file.id}
-                                    className="h-full"
+                                    className="h-full flex flex-col"
                                     style={{
-                                        display: activeFile?.id === file.id ? 'block' : 'none',
+                                        display: activeFile?.id === file.id ? 'flex' : 'none',
                                     }}
                                 >
+                                    {file.hasExternalChanges && (
+                                        <FileConflictAlert
+                                            filename={file.filename}
+                                            onUseExternalChanges={() =>
+                                                handleUseExternalChanges(file.id)
+                                            }
+                                            onKeepLocalChanges={() =>
+                                                handleKeepLocalChanges(file.id)
+                                            }
+                                        />
+                                    )}
                                     <CodeMirror
                                         key={file.id}
                                         value={file.content}
@@ -752,7 +1077,7 @@ export const DevTab = observer(() => {
                                             }
                                             updateFileContent(file.id, value);
                                         }}
-                                        className="h-full overflow-hidden"
+                                        className="h-full overflow-hidden flex-1"
                                         onCreateEditor={(editor) => {
                                             editorViewsRef.current.set(file.id, editor);
 
