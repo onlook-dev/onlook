@@ -1,10 +1,8 @@
+import type { DomElementStyles } from '@onlook/models/element';
 import { jsonClone } from '@onlook/utility';
 import { elementFromDomId } from '/common/helpers';
 
-export function getStyles(element: HTMLElement): {
-    defined: Record<string, string>;
-    computed: Record<string, string>;
-} {
+export function getStyles(element: HTMLElement): DomElementStyles {
     const computed = getComputedStyle(element);
     const inline = getInlineStyles(element);
     const stylesheet = getStylesheetStyles(element);

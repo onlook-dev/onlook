@@ -1,3 +1,4 @@
+import type { DomElementStyles } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { RectDimensions } from './rect';
@@ -9,7 +10,7 @@ export interface MeasurementState {
 
 export interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
-    styles?: Record<string, string>;
+    styles: DomElementStyles | null;
     id: string;
 }
 
@@ -48,7 +49,7 @@ export class OverlayState {
 
     addClickRect = (
         rect: RectDimensions,
-        styles: Record<string, string>,
+        styles: DomElementStyles | null,
         isComponent?: boolean,
     ) => {
         this.clickRects = [
