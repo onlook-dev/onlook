@@ -4,7 +4,7 @@ import { invokeMainChannel } from '@/lib/utils';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
 import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
-import { Color, isColorEmpty } from '@onlook/utility';
+import { Color, isColorEmpty, resolveCssVariables } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { BrandPopoverPicker } from './ColorBrandPicker';
@@ -98,12 +98,17 @@ const ColorInput = observer(
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
 
+            const resolvedValue = resolveCssVariables(
+                newValue,
+                editorEngine.style.selectedStyle.styles,
+            );
+
             const color = editorEngine.theme.getColorByName(newValue);
             if (color) {
                 return Color.from(color);
             }
 
-            return Color.from(newValue);
+            return Color.from(resolvedValue);
         }, [editorEngine.style.selectedStyle?.styles, elementStyle, isFocused, editorEngine.theme]);
 
         // Update color state when getColor changes
