@@ -156,12 +156,4 @@ describe('SandboxManager', () => {
         );
     });
 
-    test('should index files with ids', async () => {
-        // await sandboxManager.index();
-
-        // Check if writeFile was called with the appropriate content
-        // expect(mockSession.fs.writeTextFile).toHaveBeenCalled();
-        // expect(mockSession.fs.readTextFile).toHaveBeenCalled();
-    });
-
 });

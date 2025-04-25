@@ -14,7 +14,6 @@ export function Csb() {
     const [session, setSession] = useState<SandboxSession | null>(null);
     const [fileContent, setFileContent] = useState<string | null>(null);
     const [filePath, setFilePath] = useState<string>("package.json");
-    const [files, setFiles] = useState<string[]>([]);
 
     const { mutateAsync: create, isPending: isCreating } = api.csb.create.useMutation();
     const { mutateAsync: start, isPending: isStarting } = api.csb.start.useMutation();
@@ -24,7 +23,7 @@ export function Csb() {
     useEffect(() => {
         if (session) {
             const manager = editorEngine.sandbox;
-            manager.register(session);
+            manager.init(session);
         }
     }, [session]);
 
@@ -39,11 +38,6 @@ export function Csb() {
 
         const content = await editorEngine.sandbox.readFile(filePath);
         setFileContent(content);
-    };
-
-    const listFiles = async () => {
-        const files = await editorEngine.sandbox.listFiles();
-        setFiles(files);
     };
 
     return (
@@ -96,11 +90,6 @@ export function Csb() {
                 onClick={() => refetchStatus()}
             >
                 List sandboxes
-            </Button>
-            <Button
-                onClick={() => listFiles()}
-            >
-                List files
             </Button>
             <div>
                 <input
