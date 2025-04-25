@@ -8,3 +8,5 @@ export type PromisifiedPenpalParentMethods = {
         ...args: Parameters<PenpalParentMethods[K]>
     ) => Promise<ReturnType<PenpalParentMethods[K]>>;
 }
+
+export const PENPAL_PARENT_CHANNEL = 'PENPAL_PARENT';

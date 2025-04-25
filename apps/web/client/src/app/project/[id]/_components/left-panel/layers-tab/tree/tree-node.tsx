@@ -103,7 +103,7 @@ export const TreeNode = memo(observer(
 
                 switch (action) {
                     case MouseAction.MOVE:
-                        editorEngine.elements.mouseover(el, frameView);
+                        editorEngine.elements.mouseover(el);
                         break;
                     case MouseAction.MOUSE_DOWN:
                         if (isWindow) {
@@ -112,10 +112,10 @@ export const TreeNode = memo(observer(
                             return;
                         }
                         if (e.shiftKey) {
-                            editorEngine.elements.shiftClick(el, frameView);
+                            editorEngine.elements.shiftClick(el);
                             break;
                         }
-                        editorEngine.elements.click([el], frameView);
+                        editorEngine.elements.click([el]);
                         break;
                 }
             }, [editorEngine, isWindow]);

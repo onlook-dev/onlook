@@ -8,3 +8,5 @@ export type PromisifiedPendpalChildMethods = {
 }
 
 export type PenpalChildMethods = PenpalChildMethodsType;
+
+export const PENPAL_CHILD_CHANNEL = 'PENPAL_CHILD';

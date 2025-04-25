@@ -1,5 +1,5 @@
 import { sendAnalytics } from "@/utils/analytics";
-import type { DomElement, LayerNode, StyleActionTarget } from "@onlook/models";
+import type { DomElement, LayerNode } from "@onlook/models";
 import { EditorMode } from "@onlook/models";
 import {
     type Action,
@@ -15,9 +15,9 @@ import {
 } from "@onlook/models/actions";
 import { StyleChangeType } from "@onlook/models/style";
 import { assertNever } from "@onlook/utility";
+import { debounce } from "lodash";
 import type { EditorEngine } from "..";
 import type { FrameData } from "../frames";
-
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) { }
 
@@ -84,6 +84,7 @@ export class ActionManager {
     }
 
     async updateStyle({ targets }: UpdateStyleAction) {
+        let domEls: DomElement[] = [];
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
             if (!frameData) {
@@ -114,19 +115,19 @@ export class ActionManager {
                 continue;
             }
 
-            this.refreshDomElement(domEl, target);
-        }
-    }
-
-    refreshDomElement(domEl: DomElement, target: StyleActionTarget) {
-        const frameData = this.editorEngine.frames.get(domEl.frameId);
-        if (!frameData) {
-            console.error("Failed to get frameData");
-            return;
+            domEls.push(domEl);
         }
 
-        this.editorEngine.elements.click([domEl], frameData);
+        this.refreshDomElement(domEls);
     }
+
+
+    debouncedRefreshDomElement(domEls: DomElement[]) {
+        this.editorEngine.elements.click(domEls);
+    }
+
+    refreshDomElement = debounce(this.debouncedRefreshDomElement, 100);
+
     private async insertElement({
         targets,
         element,
@@ -235,7 +236,7 @@ export class ActionManager {
 
         const result = [domEl] as DomElement[];
 
-        this.editorEngine.elements.click(result, frameView);
+        this.editorEngine.elements.click(result);
 
         // sendToWebview(frameView, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
     }
@@ -295,7 +296,7 @@ export class ActionManager {
     ) {
         this.editorEngine.state.editorMode = EditorMode.DESIGN;
         await this.editorEngine.ast.refreshAstDoc(frameData.view);
-        this.editorEngine.elements.click([domEl], frameData);
+        this.editorEngine.elements.click([domEl]);
         this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
     }
 

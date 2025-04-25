@@ -22,8 +22,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         if (!frameData) {
             return { x: 0, y: 0 };
         }
-        const { view } = frameData;
-        return getRelativeMousePositionToWebview(e, view);
+        return getRelativeMousePositionToWebview(e, frameData.view);
     }
 
     const handleMouseEvent = useCallback(
@@ -43,7 +42,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
             switch (action) {
                 case MouseAction.MOVE:
-                    editorEngine.elements.mouseover(el, frameData);
+                    editorEngine.elements.mouseover(el);
                     if (e.altKey) {
                         editorEngine.overlay.showMeasurement();
                     } else {
@@ -63,10 +62,10 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                     //     editorEngine.text.end();
                     // }
                     if (e.shiftKey) {
-                        editorEngine.elements.shiftClick(el, frameData);
+                        editorEngine.elements.shiftClick(el);
                     } else {
                         // editorEngine.move.start(el, pos, frameView);
-                        editorEngine.elements.click([el], frameData);
+                        editorEngine.elements.click([el]);
                     }
                     break;
                 case MouseAction.DOUBLE_CLICK:

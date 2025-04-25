@@ -45,7 +45,7 @@ async function getProject(id: string) {
 }
 
 export default async function Page({ params }: { params: { id: string } }) {
-    const projectId = (await params).id;
+    const projectId = params.id;
     const project = await getProject(projectId);
     return (
         <Main project={project} />

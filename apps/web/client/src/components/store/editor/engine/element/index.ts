@@ -26,7 +26,12 @@ export class ElementsManager {
         this._selected = elements;
     }
 
-    mouseover(domEl: DomElement, frameData: FrameData) {
+    mouseover(domEl: DomElement) {
+        const frameData = this.editorEngine.frames.get(domEl.frameId);
+        if (!frameData) {
+            console.error('Frame data not found');
+            return;
+        }
         if (this._hovered?.domId && this._hovered.domId === domEl.domId) {
             return;
         }
@@ -42,7 +47,7 @@ export class ElementsManager {
         this.setHoveredElement(frameEl);
     }
 
-    shiftClick(domEl: DomElement, frameData: FrameData) {
+    shiftClick(domEl: DomElement) {
         const selectedEls = this.selected;
         const isAlreadySelected = selectedEls.some((el) => el.domId === domEl.domId);
         let newSelectedEls: DomElement[] = [];
@@ -51,15 +56,20 @@ export class ElementsManager {
         } else {
             newSelectedEls = [...selectedEls, domEl];
         }
-        this.click(newSelectedEls, frameData);
+        this.click(newSelectedEls);
     }
 
-    click(domEls: DomElement[], frameData: FrameData) {
-        const { view } = frameData;
+    click(domEls: DomElement[]) {
         this.editorEngine.overlay.state.removeClickRects();
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
+            const frameData = this.editorEngine.frames.get(domEl.frameId);
+            if (!frameData) {
+                console.error('Frame data not found');
+                continue;
+            }
+            const { view } = frameData;
             const adjustedRect = adaptRectToCanvas(domEl.rect, view);
             const isComponent = !!domEl.instanceId;
             this.editorEngine.overlay.state.addClickRect(
@@ -82,7 +92,7 @@ export class ElementsManager {
             }
             newSelected.push(newEl);
         }
-        this.click(newSelected, frame);
+        this.click(newSelected);
     }
 
     setHoveredElement(element: DomElement) {
@@ -118,7 +128,7 @@ export class ElementsManager {
             }
 
             const removeAction: RemoveElementAction | null = await frameData.view.getRemoveAction(selectedEl.domId, frameId);
-            
+
             if (!removeAction) {
                 console.error('Remove action not found');
                 toast({
@@ -130,7 +140,7 @@ export class ElementsManager {
             }
             // const oid = selectedEl.instanceId ?? selectedEl.oid;
             // const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            
+
             // if (!codeBlock) {
             //     toast({
             //         title: 'Cannot delete element',
@@ -141,7 +151,7 @@ export class ElementsManager {
             // }
 
             // removeAction.codeBlock = codeBlock;
-            
+
             this.editorEngine.action.run(removeAction).catch((err) => {
                 console.error('Error deleting element', err);
             });
