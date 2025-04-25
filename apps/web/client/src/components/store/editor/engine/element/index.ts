@@ -11,7 +11,7 @@ export class ElementsManager {
     private _selected: DomElement[] = [];
 
     constructor(private editorEngine: EditorEngine) {
-        makeAutoObservable(this, {});
+        makeAutoObservable(this);
     }
 
     get hovered() {
@@ -80,19 +80,6 @@ export class ElementsManager {
             );
             this._selected.push(domEl);
         }
-    }
-
-    async refreshSelectedElements(frame: FrameData) {
-        const newSelected: DomElement[] = [];
-        for (const el of this.selected) {
-            const newEl: DomElement | null = await frame.view.getElementByDomId(el.domId, true);
-            if (!newEl) {
-                console.error('Element not found');
-                continue;
-            }
-            newSelected.push(newEl);
-        }
-        this.click(newSelected);
     }
 
     setHoveredElement(element: DomElement) {

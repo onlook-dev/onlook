@@ -5,11 +5,11 @@ import { makeAutoObservable } from "mobx";
 
 export class StateManager {
     private _plansOpen = false;
+    private _canvasScrolling = false;
     settingsOpen = false;
     hotkeysOpen = false;
     publishOpen = false;
     leftPanelLocked = false;
-    private _canvasScrolling = false;
     canvasPanning = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;

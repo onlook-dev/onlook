@@ -126,7 +126,7 @@ export class ActionManager {
         this.editorEngine.elements.click(domEls);
     }
 
-    refreshDomElement = debounce(this.debouncedRefreshDomElement, 100);
+    refreshDomElement = debounce(this.debouncedRefreshDomElement, 100, { leading: true });
 
     private async insertElement({
         targets,
