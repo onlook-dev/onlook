@@ -4,6 +4,7 @@ import { useEditorEngine, useProjectsManager } from "@/components/store";
 import type { Project } from "@onlook/models";
 import { TooltipProvider } from "@onlook/ui/tooltip";
 import { useEffect } from "react";
+import { useSandbox } from "../_hooks/use-sandbox";
 import { BottomBar } from "./bottom-bar";
 import { Canvas } from "./canvas";
 import { EditorBar } from "./editor-bar";
@@ -11,14 +12,29 @@ import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from "./top-bar";
 
-export default function Main({ project }: { project: Project }) {
-    const projectManager = useProjectsManager();
+export function Main({ project }: { project: Project }) {
     const editorEngine = useEditorEngine();
+    const projectManager = useProjectsManager();
+    const sandbox = useSandbox();
 
     useEffect(() => {
         projectManager.project = project;
         editorEngine.canvas.applyProject(project);
     }, [project]);
+
+    useEffect(() => {
+        registerSandbox();
+    }, []);
+
+    const registerSandbox = async () => {
+        if (!project.sandbox) {
+            console.error('No sandbox found');
+            return;
+        }
+
+        const session = await sandbox.startSandbox(project.sandbox.id);
+        editorEngine.sandbox.register(session);
+    }
 
     return (
         <TooltipProvider>

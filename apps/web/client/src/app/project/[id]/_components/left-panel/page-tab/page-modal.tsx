@@ -151,7 +151,7 @@ export function PageModal({
                     </Button>
                     <Button
                         variant="outline"
-                        onClick={() => handleSubmit()}
+                        onClick={handleSubmit}
                         disabled={isLoading || !!warning || !pageName}
                     >
                         {isLoading ? <>{loadingText}</> : buttonText}

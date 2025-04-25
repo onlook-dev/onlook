@@ -1,10 +1,8 @@
 import { useEditorEngine } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { FrameDimensions } from './frame-dimensions';
 
 export const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -46,8 +44,8 @@ export const WindowsTab = observer(() => {
                 </Button>
             </div>
 
-            <FrameDimensions frame={frame} />
-            <Separator />
+            {/* <FrameDimensions frame={frame} /> */}
+            {/* <Separator /> */}
             {/* <DeviceSettings frame={frame} /> */}
         </div>
     );

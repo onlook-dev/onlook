@@ -1,11 +1,10 @@
 "use client";
 
 import { Icons } from "@onlook/ui/icons";
-import type { ElementType } from "../main";
 
 type StagingToggleProps = {
-    selectedElement: ElementType;
-    onElementSelect: (element: ElementType) => void;
+    selectedElement: string;
+    onElementSelect: (element: string) => void;
 };
 
 export const StagingToggle = ({ selectedElement, onElementSelect }: StagingToggleProps) => {

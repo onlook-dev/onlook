@@ -6,13 +6,13 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { useEffect, useState } from 'react';
 
-export const DeviceSettings = ({ settings }: { settings: Frame }) => {
+export const DeviceSettings = ({ frame }: { frame: Frame }) => {
     const editorEngine = useEditorEngine();
-    const [deviceTheme, setDeviceTheme] = useState(settings.theme);
+    const [deviceTheme, setDeviceTheme] = useState(frame.theme);
 
     useEffect(() => {
-        setDeviceTheme(settings.theme);
-    }, [settings.id]);
+        setDeviceTheme(frame.theme);
+    }, [frame.id]);
 
     // useEffect(() => {
     //     const observer = (newSettings: Frame) => {

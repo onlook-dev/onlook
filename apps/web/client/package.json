@@ -71,6 +71,7 @@
         "@onlook/rpc": "*",
         "@onlook/penpal": "*",
         "@onlook/models": "*",
+        "@onlook/parser": "*",
         "mime-lite": "^1.0.3",
         "react-arborist": "^3.4.3",
         "react-markdown": "^10.1.0",

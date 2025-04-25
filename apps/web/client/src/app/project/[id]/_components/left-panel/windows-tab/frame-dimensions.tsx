@@ -101,23 +101,23 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
             }
         };
 
-        editorEngine.canvas.observeSettings(settings.id, observer);
+        editorEngine.canvas.observeSettings(frame.id, observer);
 
-        return editorEngine.canvas.unobserveSettings(settings.id, observer);
+        return editorEngine.canvas.unobserveSettings(frame.id, observer);
     }, []);
 
     useEffect(() => {
-        setDevice(settings.device || DefaultSettings.DEVICE);
-        setOrientation(settings.orientation || DefaultSettings.ORIENTATION);
-        setWidth(settings.dimension.width || DefaultSettings.FRAME_DIMENSION.width);
-        setHeight(settings.dimension.height || DefaultSettings.FRAME_DIMENSION.height);
-        setAspectRatioLocked(settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED);
-    }, [settings.id]);
+        setDevice(frame.device || DefaultSettings.DEVICE);
+        setOrientation(frame.orientation || DefaultSettings.ORIENTATION);
+        setWidth(frame.dimension.width || DefaultSettings.FRAME_DIMENSION.width);
+        setHeight(frame.dimension.height || DefaultSettings.FRAME_DIMENSION.height);
+        setAspectRatioLocked(frame.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED);
+    }, [frame.id]);
 
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
         if (deviceName === 'Custom') {
-            editorEngine.canvas.saveFrame(settings.id, {
+            editorEngine.canvas.saveFrame(frame.id, {
                 device: device,
             });
             return;

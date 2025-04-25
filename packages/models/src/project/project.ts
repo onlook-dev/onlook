@@ -15,4 +15,8 @@ export interface Project {
         updatedAt: string;
         previewImg: string | null;
     }
+    sandbox: {
+        id: string;
+        url: string;
+    } | null;
 }
