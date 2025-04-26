@@ -1,3 +1,4 @@
+export * from './code-edit';
 export * from './helpers';
 export * from './ids';
 export * from './packages';

@@ -278,9 +278,9 @@ export class ChatManager {
     }
 
     clear() {
-        this.stream.dispose();
-        this.code?.dispose();
-        this.context?.dispose();
+        this.stream.clear();
+        this.code.clear();
+        this.context.clear();
         if (this.conversation) {
             this.conversation.current = null;
         }

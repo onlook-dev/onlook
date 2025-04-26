@@ -152,15 +152,15 @@ export async function getUngroupRequests(action: UngroupElementsAction): Promise
     return Array.from(oidToCodeChange.values());
 }
 
-export async function getCodeRequests(action: WriteCodeAction) {
+export async function getWriteCodeRequests(action: WriteCodeAction): Promise<CodeDiffRequest[]> {
     // TODO: Implement
     return [];
     const res = await this.editorEngine.sandbox?.writeCodeDiffs(action.diffs);
     if (!res) {
         console.error('Failed to write code');
-        return false;
+        return [];
     }
-    return true;
+    return [];
 }
 
 export async function getInsertImageRequests(action: InsertImageAction): Promise<CodeDiffRequest[]> {

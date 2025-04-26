@@ -2,6 +2,7 @@ import traverse, { type NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
 import { type CodeAction, CodeActionType } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
+import { assertNever } from '@onlook/utility';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { getOidFromJsxElement } from './helpers';
 import { insertImageToNode, removeImageFromNode } from './image';
@@ -10,7 +11,6 @@ import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
 import { addClassToNode, replaceNodeClasses, updateNodeProp } from './style';
 import { updateNodeTextContent } from './text';
-import { assertNever } from '/common/helpers';
 
 export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffRequest>): void {
     traverse(ast, {

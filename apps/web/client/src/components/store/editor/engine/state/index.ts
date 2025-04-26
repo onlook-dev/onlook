@@ -51,7 +51,7 @@ export class StateManager {
         this.canvasScrolling = false;
     }, 150);
 
-    dispose() {
+    clear() {
         this.plansOpen = false;
         this.settingsOpen = false;
         this.hotkeysOpen = false;

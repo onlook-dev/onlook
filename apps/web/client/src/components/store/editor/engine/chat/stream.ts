@@ -1,5 +1,4 @@
-import { MainChannels } from '@onlook/constants';
-import type { PartialStreamResponse, UsageCheckResult } from '@onlook/models/chat';
+import type { UsageCheckResult } from '@onlook/models/chat';
 import type { TextPart, TextStreamPart, ToolCallPart, ToolResultPart, ToolSet } from 'ai';
 import { makeAutoObservable } from 'mobx';
 
@@ -82,7 +81,7 @@ export class StreamResolver {
         this.content = [];
     }
 
-    dispose() {
+    clear() {
         this.content = [];
         this.requestId = null;
         this.rateLimited = null;
