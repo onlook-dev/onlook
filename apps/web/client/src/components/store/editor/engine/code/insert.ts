@@ -3,7 +3,7 @@ import type { ActionElement, ActionLocation, PasteParams } from '@onlook/models/
 import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { twMerge } from 'tailwind-merge';
-import { getTailwindClasses } from './helpers';
+import { getTailwindClasses } from './tailwind';
 
 export function getInsertedElement(
     actionElement: ActionElement,
