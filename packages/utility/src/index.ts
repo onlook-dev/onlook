@@ -7,6 +7,7 @@ export * from './id';
 export * from './math';
 export * from './null';
 export * from './string';
+export * from './tailwind';
 export * from './time';
 export * from './unit';
 export * from './urls';

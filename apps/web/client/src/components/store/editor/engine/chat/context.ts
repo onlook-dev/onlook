@@ -1,4 +1,4 @@
-// import type { ProjectsManager } from '@/lib/projects';
+import type { ProjectManager } from '@/components/store/projects';
 import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
@@ -17,21 +17,21 @@ export class ChatContext {
 
     constructor(
         private editorEngine: EditorEngine,
-        // private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
-        // reaction(
-        //     () => this.editorEngine.elements.selected,
-        //     () => this.getChatContext().then((context) => (this.context = context)),
-        // );
-        // reaction(
-        //     () => this.projectsManager.project?.folderPath,
-        //     (folderPath) => {
-        //         if (folderPath) {
-        //             this.getChatContext().then((context) => (this.context = context));
-        //         }
-        //     },
-        // );
+        reaction(
+            () => this.editorEngine.elements.selected,
+            () => this.getChatContext().then((context) => (this.context = context)),
+        );
+        reaction(
+            () => this.projectManager.project?.folderPath,
+            (folderPath) => {
+                if (folderPath) {
+                    this.getChatContext().then((context) => (this.context = context));
+                }
+            },
+        );
     }
 
     async getChatContext(): Promise<ChatMessageContext[]> {
@@ -122,7 +122,7 @@ export class ChatContext {
         if (this.editorEngine.elements.selected.length === 0) {
             return null;
         }
-        const frameId = this.editorEngine.elements.selected[0].frameId;
+        const frameId = this.editorEngine.elements.selected[0]?.frameId;
         if (!frameId) {
             return null;
         }
@@ -131,7 +131,7 @@ export class ChatContext {
         const screenshotName = `chat-screenshot-${timestamp}`;
 
         try {
-            const result = await this.editorEngine.takeWebviewScreenshot(screenshotName, frameId);
+            const result = await this.editorEngine.canvas?.takeWebviewScreenshot(screenshotName, frameId);
             if (!result?.image) {
                 console.error('Failed to capture screenshot');
                 return null;
@@ -151,7 +151,7 @@ export class ChatContext {
     }
 
     getProjectContext(): ProjectMessageContext[] {
-        const folderPath = this.projectsManager.project?.folderPath;
+        const folderPath = this.projectManager.project?.folderPath;
         if (!folderPath) {
             return [];
         }
@@ -185,10 +185,7 @@ export class ChatContext {
     }
 
     dispose() {
-        // Clear context
         this.clear();
-
-        // Clear references
         this.editorEngine = null as any;
     }
 }

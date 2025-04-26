@@ -33,7 +33,7 @@ export class ActionManager {
             return;
         }
         await this.dispatch(action);
-        // this.editorEngine.code.write(action);
+        this.editorEngine.code.write(action);
         sendAnalytics("undo");
     }
 
@@ -43,7 +43,7 @@ export class ActionManager {
             return;
         }
         await this.dispatch(action);
-        // this.editorEngine.code.write(action);
+        this.editorEngine.code.write(action);
         sendAnalytics("redo");
     }
 

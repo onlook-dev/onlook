@@ -1,10 +1,15 @@
-// import type { ProjectsManager } from '@/lib/projects';
-// import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
-// import { MainChannels, WebviewChannels } from '@onlook/constants';
+import type { EditorEngine } from '@/components/store/editor/engine';
+import type { ProjectManager } from '@/components/store/projects';
+import { sendAnalytics } from '@/utils/analytics';
 import type {
     Action,
+    CodeDiff, CodeDiffRequest,
+    CodeGroup,
     CodeInsertImage,
+    CodeMove,
+    CodeRemove,
     CodeRemoveImage,
+    CodeUngroup,
     EditTextAction,
     GroupElementsAction,
     InsertElementAction,
@@ -15,22 +20,14 @@ import type {
     UngroupElementsAction,
     UpdateStyleAction,
     WriteCodeAction,
-} from '@onlook/models/actions';
-import {
-    CodeActionType,
-    type CodeGroup,
-    type CodeMove,
-    type CodeRemove,
-    type CodeUngroup,
-} from '@onlook/models/actions';
-import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+} from '@onlook/models';
+import { CodeActionType } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
-import { addTailwindToRequest, getOrCreateCodeDiffRequest } from './helpers';
+import { getOrCreateCodeDiffRequest } from './helpers';
 import { getInsertedElement } from './insert';
-import type { ProjectManager } from '@/components/store/projects';
-import { sendAnalytics } from '@/utils/analytics';
+import { addTailwindToRequest } from './tailwind';
+
 export class CodeManager {
     isExecuting = false;
     private writeQueue: Action[] = [];
@@ -40,39 +37,6 @@ export class CodeManager {
         private projectsManager: ProjectManager,
     ) {
         makeAutoObservable(this);
-    }
-
-    viewSource(oid: string | null): void {
-        if (!oid) {
-            console.error('No oid found.');
-            return;
-        }
-        // invokeMainChannel(MainChannels.VIEW_SOURCE_CODE, oid);
-        sendAnalytics('view source code');
-    }
-
-    viewSourceFile(filePath: string | null, line?: number): void {
-        if (!filePath) {
-            console.error('No file path found.');
-            return;
-        }
-        // invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, { filePath, line });
-        sendAnalytics('view source code');
-    }
-
-    async getCodeBlock(oid: string | null, stripIds = false): Promise<string | null> {
-        if (!oid) {
-            console.error('Failed to get code block. No oid found.');
-            return null;
-        }
-        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, {
-            oid,
-            stripIds,
-        });
-    }
-
-    async getFileContent(filePath: string, stripIds: boolean): Promise<string | null> {
-        return invokeMainChannel(MainChannels.GET_FILE_CONTENT, { filePath, stripIds });
     }
 
     async write(action: Action) {
@@ -150,7 +114,7 @@ export class CodeManager {
             addTailwindToRequest(request, target.change.updated);
         }
 
-        // await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     async writeInsert({ location, element, pasteParams, codeBlock }: InsertElementAction) {
@@ -167,7 +131,7 @@ export class CodeManager {
             oidToCodeChange,
         );
         request.structureChanges.push(insertedEl);
-        // await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     private async writeRemove({ element, codeBlock }: RemoveElementAction) {
@@ -180,7 +144,7 @@ export class CodeManager {
 
         const request = await getOrCreateCodeDiffRequest(removedEl.oid, oidToCodeChange);
         request.structureChanges.push(removedEl);
-        // await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
@@ -195,7 +159,7 @@ export class CodeManager {
             request.textContent = newContent;
         }
 
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
@@ -222,7 +186,7 @@ export class CodeManager {
             request.structureChanges.push(movedEl);
         }
 
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     private async writeGroup(action: GroupElementsAction) {
@@ -241,7 +205,7 @@ export class CodeManager {
         const request = await getOrCreateCodeDiffRequest(groupEl.oid, oidToCodeChange);
         request.structureChanges.push(groupEl);
 
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     private async writeUngroup(action: UngroupElementsAction) {
@@ -260,15 +224,15 @@ export class CodeManager {
         const request = await getOrCreateCodeDiffRequest(ungroupEl.oid, oidToCodeChange);
         request.structureChanges.push(ungroupEl);
 
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     private async writeCode(action: WriteCodeAction) {
-        // const res = await invokeMainChannel(MainChannels.WRITE_CODE_DIFFS, action.diffs);
-        // if (!res) {
-        //     console.error('Failed to write code');
-        //     return false;
-        // }
+        const res = await this.editorEngine.sandbox?.writeCodeDiffs(action.diffs);
+        if (!res) {
+            console.error('Failed to write code');
+            return false;
+        }
         return true;
     }
 
@@ -296,7 +260,7 @@ export class CodeManager {
             request.structureChanges.push(insertImage);
         }
 
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
     private async writeRemoveImage(action: RemoveImageAction) {
@@ -315,30 +279,23 @@ export class CodeManager {
             request.structureChanges.push(removeImage);
         }
 
-        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+        await this.writeRequest(Array.from(oidToCodeChange.values()));
     }
 
-    async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory = false) {
+    async writeRequest(requests: CodeDiffRequest[], useHistory = false) {
         let codeDiffs: CodeDiff[];
         if (useHistory) {
-            codeDiffs = await this.getCodeDiffs(requests);
+            codeDiffs = await this.editorEngine.sandbox?.getCodeDiffs(requests);
             this.runCodeDiffs(codeDiffs);
         } else {
             // Write code directly
-            codeDiffs = await invokeMainChannel(MainChannels.GET_AND_WRITE_CODE_DIFFS, {
-                requests,
-                write: true,
-            });
+            codeDiffs = await this.editorEngine.sandbox?.getAndWriteCodeDiffs(requests, true);
         }
 
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
             return false;
         }
-
-        this.editorEngine.frames.getAll().forEach((frameView) => {
-            sendToWebview(frameView, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-        });
 
         return true;
     }
@@ -351,19 +308,9 @@ export class CodeManager {
         this.editorEngine.action.run(writeCodeAction);
     }
 
-    async getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return invokeMainChannel(MainChannels.GET_AND_WRITE_CODE_DIFFS, {
-            requests,
-            write: false,
-        });
-    }
-
     clear() {
-        // Clear write queue
         this.writeQueue = [];
         this.isExecuting = false;
-
-        // Clear references
         this.editorEngine = null as any;
     }
 }
