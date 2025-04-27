@@ -335,6 +335,8 @@ export class ThemeManager {
 
             // Refresh colors after deletion
             this.scanConfig();
+
+            await this.editorEngine.webviews.reloadWebviews();
         } catch (error) {
             console.error('Error deleting color:', error);
         }

@@ -108,6 +108,21 @@ const ColorInput = observer(
 
         // Update color state when getColor changes
         const [color, setColor] = useState(getColor);
+
+        useEffect(() => {
+            const styles = editorEngine.style.selectedStyle?.styles || {};
+            const currentValue = elementStyle.getValue(styles);
+
+            if (currentValue && !currentValue.startsWith('#')) {
+                const colorExists = editorEngine.theme.getColorByName(currentValue);
+
+                if (!colorExists) {
+                    const defaultColor = Color.from(elementStyle.defaultValue);
+                    sendStyleUpdate(defaultColor);
+                }
+            }
+        }, [editorEngine.theme.colorGroups, editorEngine.theme.colorDefaults]);
+
         useEffect(() => {
             if (!isFocused) {
                 setColor(getColor);
