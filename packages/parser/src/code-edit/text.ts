@@ -1,7 +1,5 @@
 import * as t from '@babel/types';
-import { readCodeBlock } from '..';
-import runManager from '../../run';
-import { parseJsxCodeBlock } from '../helpers';
+import { getAstFromCodeblock } from '../parse';
 
 export function updateNodeTextContent(node: t.JSXElement, textContent: string): void {
     const textNode = node.children.find((child) => t.isJSXText(child)) as t.JSXText | undefined;
@@ -23,7 +21,7 @@ export async function isChildTextEditable(oid: string): Promise<boolean | null> 
         console.error('Failed to get code block. No code found.');
         return null;
     }
-    const jsxElement = await parseJsxCodeBlock(code);
+    const jsxElement = await getAstFromCodeblock(code);
     if (!jsxElement) {
         console.error('Failed to parse code block. No AST found.');
         return null;

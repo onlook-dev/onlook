@@ -125,8 +125,8 @@ export class ElementsManager {
                 });
                 return;
             }
-            // const oid = selectedEl.instanceId ?? selectedEl.oid;
-            // const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            const oid = selectedEl.instanceId ?? selectedEl.oid;
+            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
 
             // if (!codeBlock) {
             //     toast({

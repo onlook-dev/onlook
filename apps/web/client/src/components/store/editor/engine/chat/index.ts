@@ -42,7 +42,7 @@ export class ChatManager {
         makeAutoObservable(this);
         this.context = new ChatContext(
             this.editorEngine,
-            // , this.projectsManager
+            this.projectsManager,
         );
         this.conversation = new ConversationManager(
             this.editorEngine,

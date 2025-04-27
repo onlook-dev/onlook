@@ -3,7 +3,6 @@ import * as t from '@babel/types';
 import { type CodeInsertImage, type CodeRemoveImage } from '@onlook/models/actions';
 import { DefaultSettings } from '@onlook/constants';
 import { join } from 'path';
-import { writeFile } from '../files';
 import { addClassToNode } from './style';
 
 export function insertImageToNode(path: NodePath<t.JSXElement>, action: CodeInsertImage): void {

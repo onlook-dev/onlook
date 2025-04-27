@@ -4,11 +4,13 @@ import { addOidsToAst, getAstFromContent, getContentFromAst } from '@onlook/pars
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { FileSyncManager } from './file-sync';
+import type { TemplateNode } from '@onlook/models';
 
 export class SandboxManager {
     private session: SandboxSession | null = null;
     private watcher: Watcher | null = null;
     private fileSync: FileSyncManager | null = null;
+    private templateMap: Map<string, TemplateNode> = new Map();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -113,6 +115,15 @@ export class SandboxManager {
         });
 
         this.watcher = watcher;
+    }
+
+    async getCodeBlock(oid: string): Promise<string | null> {
+        if (!this.fileSync) {
+            console.error('No file cache found');
+            return null;
+        }
+
+        return this.fileSync.readOrFetch(oid);
     }
 
     clear() {

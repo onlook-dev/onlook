@@ -1,10 +1,10 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import type { CodeInsert, PasteParams } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
-import { parseJsxCodeBlock } from '../helpers';
+import { EditorAttributes } from '@onlook/constants';
+import type { CodeInsert, PasteParams } from '@onlook/models';
+import { assertNever } from '@onlook/utility';
+import { getAstFromCodeblock } from '../parse';
 import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
-import { assertNever } from '/common/helpers';
 
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);
@@ -32,7 +32,7 @@ export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     let element: t.JSXElement;
     if (insertedChild.codeBlock) {
         element =
-            parseJsxCodeBlock(insertedChild.codeBlock, true) || createJSXElement(insertedChild);
+            getAstFromCodeblock(insertedChild.codeBlock, true) || createJSXElement(insertedChild);
         addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, insertedChild.oid);
     } else {
         element = createJSXElement(insertedChild);

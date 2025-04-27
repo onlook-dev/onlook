@@ -1,19 +1,15 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
 import type { ProjectManager } from '@/components/store/projects';
-import { sendAnalytics } from '@/utils/analytics';
 import type {
     Action,
     CodeDiff, CodeDiffRequest,
     WriteCodeAction
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
-import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { getEditTextRequests, getGroupRequests, getInsertImageRequests, getInsertRequests, getMoveRequests, getRemoveImageRequests, getRemoveRequests, getStyleRequests, getUngroupRequests, getWriteCodeRequests } from './requests';
 
 export class CodeManager {
-    isExecuting = false;
-
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectManager,
@@ -26,11 +22,8 @@ export class CodeManager {
      */
 
     async write(action: Action) {
-        this.writeQueue.push(action);
-        if (!this.isExecuting) {
-            this.isExecuting = true;
-            this.debouncedProcessQueue();
-        }
+        const requests = await this.collectRequests(action);
+        this.writeRequest(requests);
     }
 
     private async collectRequests(action: Action): Promise<CodeDiffRequest[]> {
@@ -62,6 +55,7 @@ export class CodeManager {
 
     async writeRequest(requests: CodeDiffRequest[]) {
         console.log('writeRequest', requests);
+        // Translates request to file changes
     }
 
     runCodeDiffs(codeDiffs: CodeDiff[]) {
@@ -72,6 +66,5 @@ export class CodeManager {
         this.editorEngine.action.run(writeCodeAction);
     }
 
-    clear() {
-    }
+    clear() { }
 }

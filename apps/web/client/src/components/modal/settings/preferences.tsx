@@ -1,5 +1,9 @@
+import { useTheme } from '@/app/_components/theme';
+import { IDE } from '@/components/ide';
 import { useUserManager } from '@/components/store';
-// import { type Language, LANGUAGE_DISPLAY_NAMES, MainChannels } from '@onlook/models/constants';
+import type { Language } from '@onlook/constants';
+import { LANGUAGE_DISPLAY_NAMES } from '@onlook/constants';
+import { SystemTheme } from '@onlook/models';
 import { DEFAULT_IDE } from '@onlook/models/ide';
 import { Button } from '@onlook/ui/button';
 import {
@@ -10,12 +14,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useTheme } from '@/app/_components/theme';
-import { IDE } from '@/components/ide';
 import { useLocale } from 'next-intl';
-import { SystemTheme } from '@onlook/models';
-import type { Language } from '@onlook/constants';
-import { LANGUAGE_DISPLAY_NAMES } from '@onlook/constants';
 
 export const PreferencesTab = observer(() => {
     const userManager = useUserManager();

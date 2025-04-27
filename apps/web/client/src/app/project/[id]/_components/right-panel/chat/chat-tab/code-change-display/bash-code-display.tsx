@@ -1,6 +1,5 @@
 
 import { useProjectsManager } from '@/components/store';
-// import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
