@@ -106,6 +106,11 @@ const Copy = observer(() => {
     const confirmMoveFolder = async () => {
         try {
             setWarningModal(false);
+
+            if (projectsManager.runner?.state === RunState.RUNNING) {
+                await projectsManager.runner?.stop();
+            }
+
             if (createCopy) {
                 setIsLoading(true);
                 await projectsManager.copy.createCopy(updatedPath);

@@ -25,10 +25,6 @@ export class CopyManager {
                 throw Error('Valid current path not found');
             }
 
-            if (this.projectsManager.runner?.state === RunState.RUNNING) {
-                await this.projectsManager.runner?.stop();
-            }
-
             await invokeMainChannel(MainChannels.UPDATE_PROJECT_PATH, {
                 currentPath,
                 updatedPath,
