@@ -33,7 +33,7 @@ export class ActionManager {
             return;
         }
         await this.dispatch(action);
-        // this.editorEngine.code.write(action);
+        this.editorEngine.code.write(action);
         sendAnalytics("undo");
     }
 
@@ -43,7 +43,7 @@ export class ActionManager {
             return;
         }
         await this.dispatch(action);
-        // this.editorEngine.code.write(action);
+        this.editorEngine.code.write(action);
         sendAnalytics("redo");
     }
 
@@ -126,7 +126,7 @@ export class ActionManager {
         this.editorEngine.elements.click(domEls);
     }
 
-    refreshDomElement = debounce(this.debouncedRefreshDomElement, 100);
+    refreshDomElement = debounce(this.debouncedRefreshDomElement, 100, { leading: true });
 
     private async insertElement({
         targets,

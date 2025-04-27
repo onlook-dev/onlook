@@ -1,3 +1,4 @@
+import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/constants';
 import { createOid } from '@onlook/utility';
@@ -67,4 +68,33 @@ export function getExistingOid(attributes: (t.JSXAttribute | t.JSXSpreadAttribut
         index: existingAttrIndex,
         value: existingAttrValue.value
     }
+}
+
+export function removeOidsFromAst(ast: t.File) {
+    traverse(ast, {
+        JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
+            if (isReactFragment(path.node)) {
+                return;
+            }
+            const attributes = path.node.attributes;
+            const existingAttrIndex = attributes.findIndex(
+                (attr: any) => attr.name?.name === EditorAttributes.DATA_ONLOOK_ID,
+            );
+
+            if (existingAttrIndex !== -1) {
+                attributes.splice(existingAttrIndex, 1);
+            }
+        },
+        JSXAttribute(path: NodePath<t.JSXAttribute>) {
+            if (path.node.name.name === 'key') {
+                const value = path.node.value;
+                if (
+                    t.isStringLiteral(value) &&
+                    value.value.startsWith(EditorAttributes.ONLOOK_MOVE_KEY_PREFIX)
+                ) {
+                    return path.remove();
+                }
+            }
+        },
+    });
 }

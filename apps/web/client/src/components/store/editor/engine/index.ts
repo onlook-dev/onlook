@@ -5,7 +5,7 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
-import { type CodeManager } from './code';
+import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
@@ -84,6 +84,7 @@ export class EditorEngine {
         this.font = new FontManager(this
             // , this.projectsManager
         );
+        this.code = new CodeManager(this, this.projectsManager);
     }
 
     // get errors() {

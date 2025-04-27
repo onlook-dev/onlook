@@ -178,7 +178,7 @@ export class GroupManager {
             domId: selectedEl.parent.domId,
             oid: selectedEl.parent.oid,
         };
-        
+
 
         // Children to be spread where container was
         const targets: ActionTarget[] = actionContainer.children.map((child) => {
@@ -187,7 +187,7 @@ export class GroupManager {
                 domId: child.domId,
                 oid: child.oid,
             };
-        });        
+        });
 
         return {
             type: 'ungroup-elements',
@@ -197,8 +197,5 @@ export class GroupManager {
         };
     }
 
-    clear() {
-        // Clear references
-        this.editorEngine = null as any;
-    }
+    clear() { }
 }

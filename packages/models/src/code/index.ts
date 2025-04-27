@@ -13,3 +13,10 @@ export interface CodeDiff {
     generated: string;
     path: string;
 }
+
+export type RequestsByPath = Map<string, RequestsByOid>;
+
+export interface RequestsByOid {
+    oidToCodeDiff: Map<string, CodeDiffRequest>;
+    codeBlock: string;
+}

@@ -11,7 +11,7 @@ export class ElementsManager {
     private _selected: DomElement[] = [];
 
     constructor(private editorEngine: EditorEngine) {
-        makeAutoObservable(this, {});
+        makeAutoObservable(this);
     }
 
     get hovered() {
@@ -82,19 +82,6 @@ export class ElementsManager {
         }
     }
 
-    async refreshSelectedElements(frame: FrameData) {
-        const newSelected: DomElement[] = [];
-        for (const el of this.selected) {
-            const newEl: DomElement | null = await frame.view.getElementByDomId(el.domId, true);
-            if (!newEl) {
-                console.error('Element not found');
-                continue;
-            }
-            newSelected.push(newEl);
-        }
-        this.click(newSelected);
-    }
-
     setHoveredElement(element: DomElement) {
         this._hovered = element;
     }
@@ -138,8 +125,8 @@ export class ElementsManager {
                 });
                 return;
             }
-            // const oid = selectedEl.instanceId ?? selectedEl.oid;
-            // const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            const oid = selectedEl.instanceId ?? selectedEl.oid;
+            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
 
             // if (!codeBlock) {
             //     toast({

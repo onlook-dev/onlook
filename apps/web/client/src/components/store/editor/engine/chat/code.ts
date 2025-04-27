@@ -156,12 +156,5 @@ export class ChatCodeManager {
         return fileToCode;
     }
 
-    dispose() {
-        // Clean up processor
-        this.processor = null as any;
-
-        // Clear references
-        this.chat = null as any;
-        this.editorEngine = null as any;
-    }
+    clear() { }
 }

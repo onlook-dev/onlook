@@ -1,14 +1,15 @@
 import type { DomElement, DomElementStyles, RectDimensions } from '@onlook/models';
-import { reaction } from 'mobx';
+import { debounce } from 'lodash';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { OverlayState } from './state';
 import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
-    scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
     state: OverlayState = new OverlayState();
 
     constructor(private editorEngine: EditorEngine) {
+        makeAutoObservable(this);
         this.listenToScaleChange();
     }
 
@@ -25,7 +26,7 @@ export class OverlayManager {
         );
     }
 
-    refresh = async () => {
+    undebouncedRefresh = async () => {
         this.state.removeHoverRect();
 
         // Refresh click rects
@@ -51,6 +52,8 @@ export class OverlayManager {
             this.state.addClickRect(clickRect.rect, clickRect.styles);
         }
     };
+
+    refresh = debounce(this.undebouncedRefresh, 100, { leading: true });
 
     showMeasurement() {
         this.editorEngine.overlay.removeMeasurement();

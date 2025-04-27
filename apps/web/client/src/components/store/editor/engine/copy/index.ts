@@ -39,12 +39,12 @@ export class CopyManager {
         }
 
         const targetEl: ActionElement | null = await frameData.view.getActionElement(selectedEl.domId) as ActionElement | null;
-        
+
         if (!targetEl) {
             console.error('Failed to copy element');
             return;
         }
-        // const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
+        const codeBlock = await this.editorEngine.sandbox.getCodeBlock(selectedEl.oid);
         this.copied = { element: targetEl, codeBlock: null };
         await this.clearClipboard();
     }
