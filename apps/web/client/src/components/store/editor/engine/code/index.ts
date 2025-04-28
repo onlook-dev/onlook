@@ -20,7 +20,15 @@ export class CodeManager {
 
     async write(action: Action) {
         const requests = await this.collectRequests(action);
-        this.writeRequest(requests);
+        await this.writeRequest(requests);
+    }
+
+    async writeRequest(requests: CodeDiffRequest[]) {
+        const groupedRequests = await this.groupRequestByFile(requests);
+        const codeDiffs = await processGroupedRequests(groupedRequests);
+        for (const diff of codeDiffs) {
+            await this.editorEngine.sandbox.writeFile(diff.path, diff.generated);
+        }
     }
 
     private async collectRequests(action: Action): Promise<CodeDiffRequest[]> {
@@ -48,15 +56,6 @@ export class CodeManager {
             default:
                 assertNever(action);
         }
-    }
-
-    async writeRequest(requests: CodeDiffRequest[]) {
-        const groupedRequests = await this.groupRequestByFile(requests);
-        const codeDiffs = await processGroupedRequests(groupedRequests);
-        for (const diff of codeDiffs) {
-            await this.editorEngine.sandbox.writeFile(diff.path, diff.generated);
-        }
-        console.log('Code written', codeDiffs);
     }
 
     async groupRequestByFile(requests: CodeDiffRequest[]): Promise<FileToRequests> {

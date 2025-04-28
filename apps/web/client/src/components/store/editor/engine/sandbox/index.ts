@@ -37,8 +37,6 @@ export class SandboxManager {
 
             await this.processFileForMapping(file);
         }
-
-        console.log(Array.from(this.templateNodeMap.getTemplateNodeMap().entries()));
     }
 
     private async readRemoteFile(filePath: string): Promise<string | null> {
