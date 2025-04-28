@@ -28,6 +28,10 @@ export function findInsertionIndex(
     y: number,
     displayDirection: DisplayDirection,
 ): number {
+    if (elements.length === 0) {
+        return 0;
+    }
+    
     const midPoints = elements.map((el) => {
         const rect = el.getBoundingClientRect();
         return {
@@ -36,17 +40,23 @@ export function findInsertionIndex(
         };
     });
 
-    for (let i = 0; i < midPoints.length; i++) {
-        if (displayDirection === DisplayDirection.VERTICAL) {
-            if (y < midPoints[i].y) {
-                return i;
-            }
-        } else {
+    // For horizontal layouts
+    if (displayDirection === DisplayDirection.HORIZONTAL) {
+        for (let i = 0; i < midPoints.length; i++) {
             if (x < midPoints[i].x) {
                 return i;
             }
         }
+    } 
+    // For vertical layouts
+    else {
+        for (let i = 0; i < midPoints.length; i++) {
+            if (y < midPoints[i].y) {
+                return i;
+            }
+        }
     }
+    
     return elements.length;
 }
 

@@ -8,7 +8,7 @@ export default function Page() {
                 <h1 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight" data-oid="4">Worry</h1>
                 <h1 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight" data-oid="5">Be</h1>
                 <h1 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight" data-oid="6">Happy</h1>
-                <img src="./favicon.ico" alt="Don't worry be happy" className="object-contain" data-oid="7" />
+                <img src="./favicon.ico" alt="Don't worry be happy" className="object-contain absolute" data-oid="7" />
             </div>
         </div>
     );

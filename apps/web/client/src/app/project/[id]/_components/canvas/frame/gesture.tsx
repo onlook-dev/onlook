@@ -13,17 +13,17 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const editorEngine = useEditorEngine();
     const isResizing = false;
 
-    const getFrameData: () => FrameData | undefined = () => {
+    const getFrameData: () => FrameData | undefined = useCallback(() => {
         return editorEngine.frames.get(frame.id);
-    }
+    }, [editorEngine.frames, frame.id]);
 
-    const getRelativeMousePosition = (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
+    const getRelativeMousePosition = useCallback((e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
         const frameData = getFrameData();
         if (!frameData) {
             return { x: 0, y: 0 };
         }
         return getRelativeMousePositionToWebview(e, frameData.view);
-    }
+    }, [getFrameData]);
 
     const handleMouseEvent = useCallback(
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
@@ -58,14 +58,14 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                     if (e.button == 2) {
                         break;
                     }
-                    // if (editorEngine.text.isEditing) {
-                    //     editorEngine.text.end();
-                    // }
+                    if (editorEngine.text.isEditing) {
+                        await editorEngine.text.end();
+                    }
                     if (e.shiftKey) {
                         editorEngine.elements.shiftClick(el);
                     } else {
-                        // editorEngine.move.start(el, pos, frameView);
                         editorEngine.elements.click([el]);
+                        await editorEngine.move.start(el, pos, frameData);
                     }
                     break;
                 case MouseAction.DOUBLE_CLICK:
@@ -78,22 +78,22 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
     const throttledMouseMove = useMemo(
         () =>
-            throttle((e: React.MouseEvent<HTMLDivElement>) => {
-                handleMouseEvent(e, MouseAction.MOVE);
+            throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
+                // await handleMouseEvent(e, MouseAction.MOVE);
 
-                // if (editorEngine.move.isDragging) {
-                //     editorEngine.move.drag(e, getRelativeMousePosition);
-                // } else if (
-                //     editorEngine.state.editorMode === EditorMode.DESIGN ||
-                //     ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-                //         editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-                //         editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
-                //         !editorEngine.insert.isDrawing)
-                // ) {
-                //     handleMouseEvent(e, MouseAction.MOVE);
-                // } else if (editorEngine.insert.isDrawing) {
-                //     editorEngine.insert.draw(e);
-                // }
+                if (editorEngine.move.isDragging) {
+                    await editorEngine.move.drag(e, getRelativeMousePosition);
+                } else if (
+                    editorEngine.state.editorMode === EditorMode.DESIGN ||
+                    ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
+                        editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
+                        editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
+                        !editorEngine.insert.isDrawing)
+                ) {
+                    await handleMouseEvent(e, MouseAction.MOVE);
+                } else if (editorEngine.insert.isDrawing) {
+                    editorEngine.insert.draw(e);
+                }
             }, 16),
         [editorEngine, getRelativeMousePosition, handleMouseEvent],
     );
@@ -112,34 +112,41 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         [editorEngine.frames],
     );
 
-    function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
+    async function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.state.editorMode !== EditorMode.DESIGN) {
             return;
         }
-        handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
+        await handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
     }
 
-    function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+    async function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.state.editorMode === EditorMode.DESIGN) {
-            handleMouseEvent(e, MouseAction.MOUSE_DOWN);
+            await handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
             editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
             editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
             editorEngine.state.editorMode === EditorMode.INSERT_IMAGE
         ) {
-            // editorEngine.insert.start(e);
+            editorEngine.insert.start(e);
         }
     }
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        // editorEngine.insert.end(e, webviewRef.current);
-        // editorEngine.move.end(e);
+        const frameData = getFrameData();
+        if (!frameData) {
+            return;
+        }
+
+        await editorEngine.insert.end(e, frameData.view);
+        if (editorEngine.move.isDragging) {
+            await editorEngine.move.end(e);
+        }
     }
 
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        // e.preventDefault();
-        // e.stopPropagation();
-        // handleMouseEvent(e, MouseAction.MOVE);
+    const handleDragOver = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await handleMouseEvent(e, MouseAction.MOVE);
     };
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {

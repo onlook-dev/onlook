@@ -1,6 +1,6 @@
 import { EditorAttributes } from '@onlook/constants';
 import {
-    type DisplayDirection,
+    DisplayDirection,
     findInsertionIndex as findFlexBlockInsertionIndex,
     findGridInsertionIndex,
     getDisplayDirection,
@@ -9,6 +9,7 @@ import {
 export function createStub(el: HTMLElement) {
     const stub = document.createElement('div');
     const styles = window.getComputedStyle(el);
+    const className = el.className;
 
     stub.id = EditorAttributes.ONLOOK_STUB_ID;
     stub.style.width = styles.width;
@@ -18,7 +19,7 @@ export function createStub(el: HTMLElement) {
     stub.style.borderRadius = styles.borderRadius;
     stub.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
     stub.style.display = 'none';
-
+    stub.className = className;
     document.body.appendChild(stub);
 }
 
@@ -38,9 +39,14 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
         displayDirection = getDisplayDirection(parent);
     }
 
-    // Check if the parent is using grid layout
     const parentStyle = window.getComputedStyle(parent);
     const isGridLayout = parentStyle.display === 'grid';
+    const isFlexRow = !isGridLayout && parentStyle.display === 'flex' && 
+                      (parentStyle.flexDirection === 'row' || parentStyle.flexDirection === '');
+
+    if (isFlexRow) {
+        displayDirection = DisplayDirection.HORIZONTAL;
+    }
 
     const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
 
@@ -58,7 +64,6 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
 
     stub.remove();
 
-    // Append element at the insertion index
     if (insertionIndex >= siblings.length) {
         parent.appendChild(stub);
     } else {

@@ -27,6 +27,12 @@ export interface HoverRectState {
     isComponent?: boolean;
 }
 
+export interface DragElementState {
+    rect: RectDimensions;
+    styles: Record<string, string>;
+    isComponent?: boolean;
+    id: string;
+}
 export class OverlayState {
     clickRects: ClickRectState[] = [];
     insertRect: RectDimensions | null = null;

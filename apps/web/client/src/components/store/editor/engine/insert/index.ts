@@ -70,7 +70,7 @@ export class InsertManager {
         this.updateInsertRect(currentPos);
     }
 
-    end(e: React.MouseEvent<HTMLDivElement>, frameView: WebFrameView | null) {
+    async end(e: React.MouseEvent<HTMLDivElement>, frameView: WebFrameView | null) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
@@ -86,7 +86,7 @@ export class InsertManager {
         const newRect = this.getDrawRect(currentPos);
 
         const origin = getRelativeMousePositionToWebview(e, frameView);
-        this.insertElement(frameView, newRect, origin);
+        await this.insertElement(frameView, newRect, origin);
         this.drawOrigin = undefined;
     }
 
@@ -148,7 +148,7 @@ export class InsertManager {
             console.error('Failed to create insert action');
             return;
         }
-        this.editorEngine.action.run(insertAction);
+        await this.editorEngine.action.run(insertAction);
     }
 
     async createInsertAction(

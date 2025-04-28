@@ -7,8 +7,7 @@ import type {
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import { processGroupedRequests } from './diff';
-import { getEditTextRequests, getGroupRequests, getInsertImageRequests, getInsertRequests, getMoveRequests, getRemoveImageRequests, getRemoveRequests, getStyleRequests, getUngroupRequests, getWriteCodeRequests } from './requests';
+import { getEditTextRequests, getGroupRequests, getInsertImageRequests, getInsertRequests, getMoveRequests, getRemoveImageRequests, getRemoveRequests, getStyleRequests, getUngroupRequests, getWriteCodeRequests, processGroupedRequests } from './requests';
 
 export class CodeManager {
     constructor(

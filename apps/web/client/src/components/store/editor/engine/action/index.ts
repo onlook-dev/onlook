@@ -33,7 +33,7 @@ export class ActionManager {
             return;
         }
         await this.dispatch(action);
-        this.editorEngine.code.write(action);
+        await this.editorEngine.code.write(action);
         sendAnalytics("undo");
     }
 
@@ -43,7 +43,7 @@ export class ActionManager {
             return;
         }
         await this.dispatch(action);
-        this.editorEngine.code.write(action);
+        await this.editorEngine.code.write(action);
         sendAnalytics("redo");
     }
 
@@ -84,7 +84,7 @@ export class ActionManager {
     }
 
     async updateStyle({ targets }: UpdateStyleAction) {
-        let domEls: DomElement[] = [];
+        const domEls: DomElement[] = [];
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
             if (!frameData) {

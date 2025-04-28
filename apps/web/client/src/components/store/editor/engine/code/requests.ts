@@ -1,4 +1,5 @@
 import type {
+    CodeDiff,
     CodeDiffRequest,
     CodeGroup,
     CodeInsertImage,
@@ -7,6 +8,7 @@ import type {
     CodeRemoveImage,
     CodeUngroup,
     EditTextAction,
+    FileToRequests,
     GroupElementsAction,
     InsertElementAction,
     InsertImageAction,
@@ -18,9 +20,28 @@ import type {
     WriteCodeAction
 } from '@onlook/models';
 import { CodeActionType } from '@onlook/models';
+import { getAstFromContent, getContentFromAst, transformAst } from "@onlook/parser";
 import { getOrCreateCodeDiffRequest } from './helpers';
 import { getInsertedElement } from './insert';
 import { addTailwindToRequest } from './tailwind';
+
+export async function processGroupedRequests(groupedRequests: FileToRequests): Promise<CodeDiff[]> {
+    const diffs: CodeDiff[] = [];
+    for (const [path, request] of groupedRequests) {
+        const { oidToRequest, content } = request;
+        const ast = getAstFromContent(content);
+
+        if (!ast) {
+            continue;
+        }
+
+        const original = await getContentFromAst(ast);
+        transformAst(ast, oidToRequest);
+        const generated = await getContentFromAst(ast);
+        diffs.push({ original, generated, path });
+    }
+    return diffs;
+}
 
 export async function getStyleRequests({ targets }: UpdateStyleAction): Promise<CodeDiffRequest[]> {
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
