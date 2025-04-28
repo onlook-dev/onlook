@@ -1,7 +1,3 @@
-// import type { ProjectsManager } from '@/lib/projects';
-// import type { UserManager } from '@/lib/user';
-// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-// import { MainChannels } from '@onlook/constants';
 import type { ProjectManager } from "@/components/store/projects";
 import { sendAnalytics } from "@/utils/analytics";
 import {

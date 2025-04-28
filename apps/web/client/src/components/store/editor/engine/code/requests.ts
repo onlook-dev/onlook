@@ -83,8 +83,6 @@ export async function getEditTextRequests({ targets, newContent }: EditTextActio
     return Array.from(oidToCodeChange.values());
 }
 
-
-
 export async function getMoveRequests({ targets, location }: MoveElementAction): Promise<CodeDiffRequest[]> {
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
 

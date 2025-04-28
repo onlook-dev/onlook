@@ -12,6 +12,7 @@ import {
 import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
+
 export class ChatContext {
     context: ChatMessageContext[] = [];
 
@@ -58,7 +59,7 @@ export class ChatContext {
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
         const fileContext: FileMessageContext[] = [];
         for (const fileName of fileNames) {
-            const fileContent = await this.editorEngine.code.getFileContent(fileName, false);
+            const fileContent = await this.editorEngine.sandbox.readFile(fileName);
             if (fileContent === null) {
                 continue;
             }
@@ -83,12 +84,12 @@ export class ChatContext {
                 continue;
             }
 
-            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid, true);
+            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
             if (codeBlock === null) {
                 continue;
             }
 
-            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
+            const templateNode = await this.editorEngine.sandbox.getTemplateNode(oid);
             if (!templateNode) {
                 continue;
             }

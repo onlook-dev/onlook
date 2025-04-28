@@ -14,9 +14,7 @@ export interface CodeDiff {
     path: string;
 }
 
-export type RequestsByPath = Map<string, RequestsByOid>;
-
-export interface RequestsByOid {
-    oidToCodeDiff: Map<string, CodeDiffRequest>;
-    codeBlock: string;
-}
+export type FileToRequests = Map<string, {
+    oidToRequest: Map<string, CodeDiffRequest>;
+    content: string;
+}>;

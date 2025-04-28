@@ -29,7 +29,6 @@ export class FramesManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        // private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this, {});
     }

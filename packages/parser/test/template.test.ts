@@ -9,7 +9,7 @@ import {
     getCoreElementInfo,
     getDynamicTypeInfo,
     isNodeElementArray
-} from 'src/template';
+} from 'src/template-node/map';
 
 describe('Template Tests', () => {
     describe('createTemplateNodeMap', () => {

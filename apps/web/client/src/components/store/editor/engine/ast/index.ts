@@ -178,14 +178,6 @@ export class AstManager {
         return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
     }
 
-    async getTemplateNodeById(oid: string | null): Promise<TemplateNode | null> {
-        if (!oid) {
-            console.warn('Failed to getTemplateNodeById: No oid found');
-            return null;
-        }
-        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
-    }
-
     updateElementInstance(frameId: string, domId: string, instanceId: string, component: string) {
         const frame = this.editorEngine.frames.get(frameId);
         if (!frame) {

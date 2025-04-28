@@ -5,8 +5,9 @@ import { createOid } from '@onlook/utility';
 import { isReactFragment } from './helpers';
 import { traverse } from './packages';
 
-export function addOidsToAst(ast: t.File) {
+export function addOidsToAst(ast: t.File): { ast: t.File, modified: boolean } {
     const oids: Set<string> = new Set();
+    let modified = false;
 
     traverse(ast, {
         JSXOpeningElement(path) {
@@ -25,6 +26,7 @@ export function addOidsToAst(ast: t.File) {
                     const attr = attributes[index] as t.JSXAttribute;
                     attr.value = t.stringLiteral(newOid);
                     oids.add(newOid);
+                    modified = true;
                 } else {
                     // If the oid is unique, we can add it to the set
                     oids.add(value);
@@ -38,10 +40,11 @@ export function addOidsToAst(ast: t.File) {
                 );
                 attributes.push(newOidAttribute);
                 oids.add(newOid);
+                modified = true;
             }
         },
     });
-    return ast;
+    return { ast, modified };
 }
 
 export function getExistingOid(attributes: (t.JSXAttribute | t.JSXSpreadAttribute)[]): { value: string, index: number } | null {

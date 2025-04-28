@@ -1,5 +1,6 @@
 import { sendAnalytics } from '@/utils/analytics';
 import { CodeBlockProcessor } from '@onlook/ai';
+import type { WriteCodeAction } from '@onlook/models/actions';
 import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { toast } from '@onlook/ui/use-toast';
@@ -131,7 +132,11 @@ export class ChatCodeManager {
                 generated: content,
             },
         ];
-        this.editorEngine.code.runCodeDiffs(codeDiff);
+        const action: WriteCodeAction = {
+            type: 'write-code',
+            diffs: codeDiff,
+        };
+        this.editorEngine.action.run(action);
         return true;
     }
 

@@ -1,5 +1,9 @@
 // import type { FileNode } from '@/lib/editor/engine/files';
 // import { MainChannels, Theme } from '@onlook/models/constants';
+import { useTheme } from '@/app/_components/theme';
+import { useEditorEngine } from '@/components/store';
+import { type EditorView } from '@codemirror/view';
+import { EditorTabValue, SystemTheme } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,23 +15,16 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toast } from '@onlook/ui/use-toast';
+import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
+import { getBasicSetup, getExtensions, getLanguageFromFileName } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
-
-import { getBasicSetup, getExtensions, getLanguageFromFileName } from './code-mirror-config';
-
-import { useTheme } from '@/app/_components/theme';
-import { useEditorEngine } from '@/components/store';
-import { type EditorView } from '@codemirror/view';
-import { SystemTheme } from '@onlook/models';
-import CodeMirror from '@uiw/react-codemirror';
-import { nanoid } from 'nanoid';
-
 
 enum TabValue {
     CONSOLE = 'console',
@@ -78,9 +75,9 @@ export const DevTab = observer(() => {
     };
 
     // Scan project files when the component is mounted
-    // useEffect(() => {
-    //     loadProjectFiles();
-    // }, []);
+    useEffect(() => {
+        loadProjectFiles();
+    }, []);
 
     // Load files from the project
     async function loadProjectFiles() {
@@ -91,80 +88,80 @@ export const DevTab = observer(() => {
         }
     }
 
-    // useEffect(() => {
-    //     const handleOpenCodeInOnlook = async (data: any) => {
-    //         if (data?.filePath) {
-    //             editorEngine.editPanelTab = EditorTabValue.DEV;
+    useEffect(() => {
+        const handleOpenCodeInOnlook = async (data: any) => {
+            if (data?.filePath) {
+                editorEngine.editPanelTab = EditorTabValue.DEV;
 
-    //             const file = await loadFile(data.filePath);
+                const file = await loadFile(data.filePath);
 
-    //             // Only set highlight range if file was successfully loaded
-    //             if (file) {
-    //                 setTimeout(() => {
-    //                     if (data.startLine) {
-    //                         setHighlightRange({
-    //                             startLineNumber: data.startLine,
-    //                             startColumn: data.startColumn || 1,
-    //                             endLineNumber: data.endLine || data.startLine,
-    //                             endColumn: data.endColumn || 80,
-    //                         });
-    //                     } else if (data.line) {
-    //                         setHighlightRange({
-    //                             startLineNumber: data.line,
-    //                             startColumn: 1,
-    //                             endLineNumber: data.line,
-    //                             endColumn: 80,
-    //                         });
-    //                     }
-    //                 }, 300);
-    //             }
-    //         }
-    //     };
+                // Only set highlight range if file was successfully loaded
+                if (file) {
+                    setTimeout(() => {
+                        if (data.startLine) {
+                            setHighlightRange({
+                                startLineNumber: data.startLine,
+                                startColumn: data.startColumn || 1,
+                                endLineNumber: data.endLine || data.startLine,
+                                endColumn: data.endColumn || 80,
+                            });
+                        } else if (data.line) {
+                            setHighlightRange({
+                                startLineNumber: data.line,
+                                startColumn: 1,
+                                endLineNumber: data.line,
+                                endColumn: 80,
+                            });
+                        }
+                    }, 300);
+                }
+            }
+        };
 
-    //     // Subscribe to the event using the standard IPC API
-    //     window.api.on(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
+        // Subscribe to the event using the standard IPC API
+        window.api.on(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
 
-    //     // Cleanup
-    //     return () => {
-    //         window.api.removeListener(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
-    //     };
-    // }, [editorEngine]);
+        // Cleanup
+        return () => {
+            window.api.removeListener(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
+        };
+    }, [editorEngine]);
 
-    // useEffect(() => {
-    //     const checkSelectedElement = async () => {
-    //         const selectedElements = editorEngine.elements.selected;
-    //         if (selectedElements.length === 0) {
-    //             return;
-    //         }
+    useEffect(() => {
+        const checkSelectedElement = async () => {
+            const selectedElements = editorEngine.elements.selected;
+            if (selectedElements.length === 0) {
+                return;
+            }
 
-    //         const element = selectedElements[0];
-    //         setIsLoading(true);
+            const element = selectedElements[0];
+            setIsLoading(true);
 
-    //         try {
-    //             const filePath = await getFilePathFromOid(element?.oid || '');
+            try {
+                const filePath = await getFilePathFromOid(element?.oid || '');
 
-    //             if (filePath) {
-    //                 const file = await loadFile(filePath);
+                if (filePath) {
+                    const file = await loadFile(filePath);
 
-    //                 // Only get range information if file was successfully loaded
-    //                 if (file) {
-    //                     // Gets range information for the selected element
-    //                     const range = await getElementCodeRange(element);
+                    // Only get range information if file was successfully loaded
+                    if (file) {
+                        // Gets range information for the selected element
+                        const range = await getElementCodeRange(element);
 
-    //                     if (range) {
-    //                         setHighlightRange(range);
-    //                     }
-    //                 }
-    //             }
-    //         } catch (error) {
-    //             console.error('Error loading file for selected element:', error);
-    //         } finally {
-    //             setIsLoading(false);
-    //         }
-    //     };
+                        if (range) {
+                            setHighlightRange(range);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading file for selected element:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    //     checkSelectedElement();
-    // }, [editorEngine.elements.selected]);
+        checkSelectedElement();
+    }, [editorEngine.elements.selected]);
 
     async function getElementCodeRange(element: any): Promise<CodeRange | null> {
         if (!activeFile || !element.oid) {
@@ -172,7 +169,7 @@ export const DevTab = observer(() => {
         }
 
         try {
-            const templateNode = await editorEngine.ast.getTemplateNodeById(element.oid);
+            const templateNode = await editorEngine.sandbox.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
                 return {
                     startLineNumber: templateNode.startTag.start.line,
@@ -307,7 +304,7 @@ export const DevTab = observer(() => {
     async function getFilePathFromOid(oid: string): Promise<string | null> {
         // Try to get the actual file path from the object ID
         try {
-            const templateNode = await editorEngine.ast.getTemplateNodeById(oid);
+            const templateNode = await editorEngine.sandbox.getTemplateNode(oid);
             if (templateNode?.path) {
                 return templateNode.path;
             }
@@ -326,15 +323,21 @@ export const DevTab = observer(() => {
 
         setIsLoading(true);
         try {
-            const originalContent =
-                (await editorEngine.code.getFileContent(activeFile.path, false)) || '';
-            editorEngine.code.runCodeDiffs([
+            const originalContent = await editorEngine.sandbox.readFile(activeFile.path);
+            editorEngine.action.run(
                 {
-                    path: activeFile.path,
-                    original: originalContent,
-                    generated: activeFile.content,
+                    type: 'write-code',
+                    diffs: [
+                        {
+                            path: activeFile.path,
+                            original: originalContent || '',
+                            generated: activeFile.content,
+                        },
+                    ],
                 },
-            ]);
+            );
+
+
 
             // Mark the file as no longer dirty
             const updatedFiles = openedFiles.map((file: EditorFile) =>

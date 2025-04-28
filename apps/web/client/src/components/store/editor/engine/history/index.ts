@@ -80,7 +80,7 @@ export class HistoryManager {
         }
 
         this.undoStack.push(action);
-        // await this.editorEngine.code.write(action);
+        await this.editorEngine.code.write(action);
 
         switch (action.type) {
             case 'update-style':

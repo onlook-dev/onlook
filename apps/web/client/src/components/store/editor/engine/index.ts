@@ -1,6 +1,5 @@
-import { makeAutoObservable } from 'mobx';
-
 import { type ProjectManager } from '@/components/store/projects';
+import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
@@ -31,17 +30,16 @@ export class EditorEngine {
     readonly code: CodeManager;
     readonly error: ErrorManager;
     readonly image: ImageManager;
-    readonly frames: FramesManager;
     readonly theme: ThemeManager;
     readonly font: FontManager;
     readonly pages: PagesManager;
 
     readonly canvas: CanvasManager = new CanvasManager();
     readonly state: StateManager = new StateManager();
+    readonly sandbox: SandboxManager = new SandboxManager();
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
-
     readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
     readonly text: TextEditingManager = new TextEditingManager(this);
     readonly insert: InsertManager = new InsertManager(this);
@@ -51,9 +49,9 @@ export class EditorEngine {
     readonly ast: AstManager = new AstManager(this);
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
-    readonly sandbox: SandboxManager = new SandboxManager(this);
+    readonly frames: FramesManager = new FramesManager(this);
 
-    // TODO: Window, Frames, Webviews should be Frames
+    // TODO: This could be part of frames manager
     readonly window: WindowManager = new WindowManager(this);
 
     constructor(
@@ -64,9 +62,6 @@ export class EditorEngine {
         this.chat = new ChatManager(this,
             this.projectsManager,
             // this.userManager
-        );
-        this.frames = new FramesManager(this,
-            // this.projectsManager
         );
         // this.code = new CodeManager(this, this.projectsManager);
         this.pages = new PagesManager(this,
@@ -86,14 +81,6 @@ export class EditorEngine {
         );
         this.code = new CodeManager(this, this.projectsManager);
     }
-
-    // get errors() {
-    //     return this.errorManager;
-    // }
-
-    // get pages() {
-    //     return this.pagesManager;
-    // }
 
     clear() {
         // TODO: Choose dispose or clear

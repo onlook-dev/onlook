@@ -3,14 +3,14 @@ import * as t from '@babel/types';
 import {
     CoreElementType,
     DynamicType,
-    type TemplateNode,
-    type TemplateTag
+    type TemplateNode
 } from '@onlook/models';
-import { isReactFragment } from './helpers';
-import { getExistingOid } from './ids';
-import { traverse } from './packages';
+import { isReactFragment } from '../helpers';
+import { getExistingOid } from '../ids';
+import { traverse } from '../packages';
+import { createTemplateNode } from './helpers';
 
-export function createTemplateNodeMap(ast: t.File, filename: string): Map<string, TemplateNode> | null {
+export function createTemplateNodeMap(ast: t.File, filename: string): Map<string, TemplateNode> {
     const mapping: Map<string, TemplateNode> = new Map();
     const componentStack: string[] = [];
     const dynamicTypeStack: DynamicType[] = [];
@@ -95,25 +95,18 @@ export function createTemplateNodeMap(ast: t.File, filename: string): Map<string
             const dynamicType = getDynamicTypeInfo(path);
             const coreElementType = getCoreElementInfo(path);
 
-            mapping.set(oid, getTemplateNode(
+            const newTemplateNode = createTemplateNode(
                 path,
                 filename,
                 componentStack,
                 dynamicType,
                 coreElementType,
-            ));
+            );
 
+            mapping.set(oid, newTemplateNode);
         },
     });
     return mapping;
-}
-
-export function isNodeElementArray(node: t.CallExpression): boolean {
-    return (
-        t.isMemberExpression(node.callee) &&
-        t.isIdentifier(node.callee.property) &&
-        node.callee.property.name === 'map'
-    );
 }
 
 export function getDynamicTypeInfo(path: NodePath<t.JSXElement>): DynamicType | null {
@@ -150,39 +143,56 @@ export function getCoreElementInfo(path: NodePath<t.JSXElement>): CoreElementTyp
     return coreElementType ?? null;
 }
 
+export async function getContentFromTemplateNode(
+    templateNode: TemplateNode,
+    content: string
+): Promise<string | null> {
+    try {
+        const filePath = templateNode.path;
 
-export function getTemplateNode(
-    path: NodePath<t.JSXElement>,
-    filename: string,
-    componentStack: string[],
-    dynamicType: DynamicType | null,
-    coreElementType: CoreElementType | null,
-): TemplateNode {
-    const startTag: TemplateTag = getTemplateTag(path.node.openingElement);
-    const endTag: TemplateTag | null = path.node.closingElement
-        ? getTemplateTag(path.node.closingElement)
-        : null;
-    const component = componentStack.length > 0 ? componentStack[componentStack.length - 1] : null;
-    const domNode: TemplateNode = {
-        path: filename,
-        startTag,
-        endTag,
-        component,
-        dynamicType,
-        coreElementType,
-    };
-    return domNode;
+        const startTag = templateNode.startTag;
+        const startRow = startTag.start.line;
+        const startColumn = startTag.start.column;
+
+        const endTag = templateNode.endTag || startTag;
+        const endRow = endTag.end.line;
+        const endColumn = endTag.end.column;
+
+        if (content == null) {
+            console.error(`Failed to read file: ${filePath}`);
+            return null;
+        }
+        const lines = content.split('\n');
+
+        const selectedText = lines
+            .slice(startRow - 1, endRow)
+            .map((line: string, index: number, array: string[]) => {
+                if (index === 0 && array.length === 1) {
+                    // Only one line
+                    return line.substring(startColumn - 1, endColumn);
+                } else if (index === 0) {
+                    // First line of multiple
+                    return line.substring(startColumn - 1);
+                } else if (index === array.length - 1) {
+                    // Last line
+                    return line.substring(0, endColumn);
+                }
+                // Full lines in between
+                return line;
+            })
+            .join('\n');
+
+        return selectedText;
+    } catch (error: any) {
+        console.error('Error reading range from file:', error);
+        throw error;
+    }
 }
 
-function getTemplateTag(element: t.JSXOpeningElement | t.JSXClosingElement): TemplateTag {
-    return {
-        start: {
-            line: element.loc?.start?.line ?? 0,
-            column: element.loc?.start?.column ?? 0 + 1,
-        },
-        end: {
-            line: element.loc?.end?.line ?? 0,
-            column: element.loc?.end?.column ?? 0,
-        },
-    };
+export function isNodeElementArray(node: t.CallExpression): boolean {
+    return (
+        t.isMemberExpression(node.callee) &&
+        t.isIdentifier(node.callee.property) &&
+        node.callee.property.name === 'map'
+    );
 }
