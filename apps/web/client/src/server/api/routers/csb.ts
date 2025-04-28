@@ -13,6 +13,12 @@ export const csbRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             return await start(input);
         }),
+    // Same as start - Separate endpoint for different state management
+    reconnect: publicProcedure
+        .input(z.string())
+        .mutation(async ({ input }) => {
+            return await start(input);
+        }),
     hibernate: publicProcedure
         .input(z.string())
         .mutation(async ({ input }) => {
@@ -22,4 +28,5 @@ export const csbRouter = createTRPCRouter({
         .query(async () => {
             return await list();
         }),
+
 });  
