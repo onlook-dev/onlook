@@ -5,12 +5,13 @@ import { getContentFromTemplateNode } from '@onlook/parser';
 import localforage from 'localforage';
 import { makeAutoObservable } from 'mobx';
 import { FileSyncManager } from './file-sync';
+import { isSubdirectory, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 
 export class SandboxManager {
     private session: SandboxSession | null = null;
     private watcher: Watcher | null = null;
-    private fileSync: FileSyncManager = new FileSyncManager(localforage);
+    private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
 
     constructor() {
@@ -29,13 +30,14 @@ export class SandboxManager {
 
         const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS);
         for (const file of files) {
-            const content = await this.readFile(file);
+            const normalizedPath = normalizePath(file);
+            const content = await this.readFile(normalizedPath);
             if (!content) {
-                console.error(`Failed to read file ${file}`);
+                console.error(`Failed to read file ${normalizedPath}`);
                 continue;
             }
 
-            await this.processFileForMapping(file);
+            await this.processFileForMapping(normalizedPath);
         }
     }
 
@@ -69,11 +71,13 @@ export class SandboxManager {
     }
 
     async readFile(path: string): Promise<string | null> {
-        return this.fileSync.readOrFetch(path, this.readRemoteFile.bind(this));
+        const normalizedPath = normalizePath(path);
+        return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
     }
 
     async writeFile(path: string, content: string): Promise<boolean> {
-        return this.fileSync.write(path, content, this.writeRemoteFile.bind(this));
+        const normalizedPath = normalizePath(path);
+        return this.fileSync.write(normalizedPath, content, this.writeRemoteFile.bind(this));
     }
 
     async listFilesRecursively(dir: string, ignore: string[] = [], extensions: string[] = []): Promise<string[]> {
@@ -86,19 +90,19 @@ export class SandboxManager {
         const entries = await this.session.fs.readdir(dir);
 
         for (const entry of entries) {
-            const fullPath = dir === './' ? entry.name : `${dir}/${entry.name}`;
+            const fullPath = `${dir}/${entry.name}`;
+            const normalizedPath = normalizePath(fullPath);
             if (entry.type === 'directory') {
-                const dirName = entry.name;
-                if (ignore.includes(dirName)) {
+                if (ignore.includes(entry.name)) {
                     continue;
                 }
-                const subFiles = await this.listFilesRecursively(fullPath, ignore, extensions);
+                const subFiles = await this.listFilesRecursively(normalizedPath, ignore, extensions);
                 results.push(...subFiles);
             } else {
                 if (extensions.length > 0 && !extensions.includes(entry.name.split('.').pop() || '')) {
                     continue;
                 }
-                results.push(fullPath);
+                results.push(normalizedPath);
             }
         }
 
@@ -115,8 +119,12 @@ export class SandboxManager {
 
         watcher.onEvent((event) => {
             for (const path of event.paths) {
-                this.fileSync.updateCache(path, event.type);
-                this.processFileForMapping(path);
+                if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
+                    continue;
+                }
+                const normalizedPath = normalizePath(path);
+                this.fileSync.updateCache(normalizedPath, event.type);
+                this.processFileForMapping(normalizedPath);
             }
         });
 
@@ -124,7 +132,8 @@ export class SandboxManager {
     }
 
     async processFileForMapping(file: string) {
-        await this.templateNodeMap.processFileForMapping(file, this.readFile.bind(this), this.writeFile.bind(this));
+        const normalizedPath = normalizePath(file);
+        await this.templateNodeMap.processFileForMapping(normalizedPath, this.readFile.bind(this), this.writeFile.bind(this));
     }
 
     async getTemplateNode(oid: string): Promise<TemplateNode | null> {
