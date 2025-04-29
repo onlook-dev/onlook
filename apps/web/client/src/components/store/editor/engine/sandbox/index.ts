@@ -1,5 +1,5 @@
 import type { SandboxSession, Watcher } from '@codesandbox/sdk';
-import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import localforage from 'localforage';
@@ -28,7 +28,7 @@ export class SandboxManager {
             return;
         }
 
-        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS);
+        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS]);
         for (const file of files) {
             const normalizedPath = normalizePath(file);
             const content = await this.readFile(normalizedPath);
@@ -39,6 +39,8 @@ export class SandboxManager {
 
             await this.processFileForMapping(normalizedPath);
         }
+
+        await this.watchFiles()
     }
 
     private async readRemoteFile(filePath: string): Promise<string | null> {
@@ -137,14 +139,24 @@ export class SandboxManager {
 
         const watcher = await this.session.fs.watch("./", { recursive: true, excludes: IGNORED_DIRECTORIES });
 
-        watcher.onEvent((event) => {
+        watcher.onEvent(async (event) => {
             for (const path of event.paths) {
                 if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
                     continue;
                 }
                 const normalizedPath = normalizePath(path);
-                this.fileSync.updateCache(normalizedPath, event.type);
-                this.processFileForMapping(normalizedPath);
+                const eventType = event.type;
+                if(event.type === 'remove') {
+                    await this.fileSync.delete(normalizedPath);
+                } else if (eventType === 'change' || eventType === 'add') {
+                    const content = await this.readRemoteFile(normalizedPath);
+                    if (!content) {
+                        console.error(`Failed to read file ${normalizedPath}`);
+                        continue;
+                    }
+                    await this.fileSync.updateCache(normalizedPath, content);
+                    await this.processFileForMapping(normalizedPath);
+                }
             }
         });
 

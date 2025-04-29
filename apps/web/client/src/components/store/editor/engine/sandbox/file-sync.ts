@@ -59,6 +59,10 @@ export class FileSyncManager {
         return Array.from(this.cache.keys());
     }
 
+    getFileContent(filePath: string) {
+        return this.cache.get(filePath) ?? null;
+    }
+
     private async restoreFromLocalStorage() {
         try {
             const storedCache = await localforage.getItem<Record<string, string>>(this.storageKey);

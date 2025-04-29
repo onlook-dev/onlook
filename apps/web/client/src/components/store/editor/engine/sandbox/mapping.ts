@@ -2,7 +2,7 @@ import type { TemplateNode } from '@onlook/models';
 import { addOidsToAst, createTemplateNodeMap, getAstFromContent, getContentFromAst } from '@onlook/parser';
 
 export class TemplateNodeMapper {
-    private oidToTemplateNodeMap: Map<string, TemplateNode> = new Map();
+    private oidToTemplateNodeMap = new Map<string, TemplateNode>();
     private storageKey = 'template-node-map';
 
     constructor(private localforage: LocalForage) {
@@ -43,7 +43,7 @@ export class TemplateNodeMapper {
             return;
         }
 
-        const ast = await getAstFromContent(content);
+        const ast = getAstFromContent(content);
         if (!ast) {
             console.error(`Failed to get ast for file ${file}`);
             return;

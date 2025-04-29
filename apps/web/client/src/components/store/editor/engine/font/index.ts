@@ -23,6 +23,7 @@ import {
   findFontClass,
   removeFontsFromClassName
 } from "./util";
+import { normalizePath } from "../sandbox/helpers";
 
 
 type TraverseCallback = (
@@ -135,37 +136,46 @@ export class FontManager {
     this.initializeFonts();
 
     const fontConfigDisposer = reaction(
-      async () =>
-        await this.editorEngine.sandbox?.readFile(DefaultSettings.FONT_CONFIG),
+      () => this.fileSync.getFileContent(normalizePath(DefaultSettings.FONT_CONFIG)),
       () => {
+
         this.syncFontsWithConfigs();
       },
       { fireImmediately: true },
     );
 
-    const defaultFontDisposer = reaction(
-      async () => {
-        const defaultPath = await this.detectRouterType();
-        if (defaultPath) {
-          return this.editorEngine.sandbox?.readFile(defaultPath.basePath);
-        }
-        return null;
-      },
-      async () => {
-        const defaultFont = await this.getDefaultFont();
-        if (defaultFont) {
-          this.setProjectDefaultFont(defaultFont);
-        }
-      },
-      { fireImmediately: true },
-    );
+    // Set up a periodic check for changes to the font config file
+    // const defaultFontDisposer = reaction(
+    //   async () => {
+    //     const defaultPath = await this.detectRouterType();
+    //     if (defaultPath) {
+    //       return this.editorEngine.sandbox?.readFile(defaultPath.basePath);
+    //     }
+    //     return null;
+    //   },
+    //   async () => {
+    //     const defaultFont = await this.getDefaultFont();
+    //     if (defaultFont) {
+    //       this.setProjectDefaultFont(defaultFont);
+    //     }
+    //   },
+    //   { fireImmediately: true },
+    // );
 
-    this.disposers.push(fontConfigDisposer, defaultFontDisposer);
+    this.disposers.push(fontConfigDisposer);
   }
 
   private async initializeFonts() {
     this.convertFont();
     await this.loadInitialFonts();
+    
+    if (this.editorEngine.sandbox) {
+      const path = normalizePath(DefaultSettings.FONT_CONFIG);
+      const content = await this.editorEngine.sandbox.readFile(path);
+      if (content !== null) {
+        await this.fileSync.updateCache(path, content);
+      }
+    }
   }
 
   private convertFont() {
@@ -479,8 +489,8 @@ export class FontManager {
       }
 
       this._fonts.push(font);
-      await this.scanFonts();
 
+      await this.scanFonts();
       await this.loadFontBatch([font]);
 
       return true;
@@ -538,7 +548,6 @@ export class FontManager {
                 return true;
               },
             );
-
             if (importSpecifiers.length === 0) {
               path.remove();
             } else if (
@@ -1281,7 +1290,7 @@ export class FontManager {
 
     try {
       const currentFonts = await this.scanFonts();
-
+      
       const removedFonts = this.previousFonts.filter(
         (prevFont) =>
           !currentFonts.some((currFont) => currFont.id === prevFont.id),
@@ -1295,12 +1304,14 @@ export class FontManager {
       const tailwindConfigPath = this.fileSync
         .listFiles()
         .find((file) => file.startsWith("tailwind.config"));
+
       if (tailwindConfigPath) {
         this.selfModified.add(tailwindConfigPath);
       }
 
       for (const font of removedFonts) {
         const routerConfig = await this.detectRouterType();
+
         if (routerConfig) {
           if (routerConfig.type === "app") {
             const layoutPath = pathModule.join(
@@ -1374,7 +1385,8 @@ export class FontManager {
 
     try {
       // Check for app router (app/layout.tsx)
-      const appFiles = await sandbox.listFilesRecursively("app", [], [".tsx"]);
+      const appFiles = await sandbox.listFilesRecursively("./app", [], [".tsx"]);
+
       if (appFiles.some((file) => file.endsWith("layout.tsx"))) {
         return { type: "app", basePath: "app" };
       }
