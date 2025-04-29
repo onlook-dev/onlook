@@ -15,7 +15,7 @@ export class FileSyncManager {
 
     async readOrFetch(filePath: string, readFile: (path: string) => Promise<string | null>): Promise<string | null> {
         if (this.has(filePath)) {
-            return this.cache.get(filePath) || null;
+            return this.cache.get(filePath) ?? null;
         }
 
         try {
