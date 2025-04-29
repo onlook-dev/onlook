@@ -2,7 +2,7 @@ import { makeAutoObservable, reaction } from "mobx";
 import type { EditorEngine } from "..";
 import { FAMILIES } from "@onlook/fonts";
 import type { Font } from "@onlook/models/assets";
-import { FileSyncManager } from "../sandbox/file-sync";
+import { type FileSyncManager } from "../sandbox/file-sync";
 import localforage from "localforage";
 import * as FlexSearch from "flexsearch";
 import * as WebFont from "webfontloader";
@@ -87,7 +87,6 @@ export class FontManager {
   private _fontFamilies: Font[] = [];
   private _defaultFont: string | null = null;
   private _lastDefaultFont: string | null = null;
-  private fileSync: FileSyncManager;
   private _currentFontIndex = 0;
   private _batchSize = 20;
   private _isFetching = false;
@@ -97,14 +96,14 @@ export class FontManager {
   private previousFonts: Font[] = [];
   private selfModified = new Set<string>();
 
+  fontConfigPath = normalizePath(DefaultSettings.FONT_CONFIG);
+  tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
+
   constructor(
     private editorEngine: EditorEngine,
-    private projectManager: ProjectManager,
+    private projectManager: ProjectManager
   ) {
     makeAutoObservable(this);
-
-    // Initialize file sync manager
-    this.fileSync = new FileSyncManager();
 
     // Initialize FlexSearch index
     this._fontSearchIndex = new FlexSearch.Document({
@@ -136,10 +135,11 @@ export class FontManager {
     this.initializeFonts();
 
     const fontConfigDisposer = reaction(
-      () => this.fileSync.getFileContent(normalizePath(DefaultSettings.FONT_CONFIG)),
-      () => {
-
-        this.syncFontsWithConfigs();
+      () => this.editorEngine.sandbox?.readFile(this.fontConfigPath),
+      (content) => {        
+        if (content) {          
+          this.syncFontsWithConfigs();
+        }
       },
       { fireImmediately: true },
     );
@@ -168,15 +168,7 @@ export class FontManager {
   private async initializeFonts() {
     this.convertFont();
     await this.loadInitialFonts();
-    
-    if (this.editorEngine.sandbox) {
-      const path = normalizePath(DefaultSettings.FONT_CONFIG);
-      const content = await this.editorEngine.sandbox.readFile(path);
-      if (content !== null) {
-        await this.fileSync.updateCache(path, content);
-      }
-    }
-  }
+  } 
 
   private convertFont() {
     this._fontFamilies = FAMILIES.map((font) => ({
@@ -251,13 +243,7 @@ export class FontManager {
       //     plugins: ["typescript", "jsx"],
       //   });
       // }
-      if (!this.fileSync.has(DefaultSettings.FONT_CONFIG)) {
-        return [];
-      }
-
-      const content = await this.editorEngine.sandbox?.readFile(
-        DefaultSettings.FONT_CONFIG,
-      );
+      const content = await this.editorEngine.sandbox?.readFile(this.fontConfigPath);
       if (!content) {
         return [];
       }
@@ -365,7 +351,7 @@ export class FontManager {
 
     try {
       const content =
-        (await sandbox.readFile(DefaultSettings.FONT_CONFIG)) ?? "";
+        (await sandbox.readFile(this.fontConfigPath)) ?? "";
 
       // Convert the font family to the import name format (Pascal case, no spaces)
       const importName = font.family.replace(/\s+/g, "_");
@@ -481,7 +467,7 @@ export class FontManager {
       const { code } = generate(ast);
 
       const success = await sandbox.writeFile(
-        DefaultSettings.FONT_CONFIG,
+        this.fontConfigPath,
         code,
       );
       if (!success) {
@@ -516,7 +502,7 @@ export class FontManager {
     }
 
     try {
-      const content = await sandbox.readFile(DefaultSettings.FONT_CONFIG);
+      const content = await sandbox.readFile(this.fontConfigPath);
       if (!content) {
         return false;
       }
@@ -655,11 +641,11 @@ export class FontManager {
         const codeDiff: CodeDiff = {
           original: content,
           generated: code,
-          path: DefaultSettings.FONT_CONFIG,
+          path: this.fontConfigPath,
         };
 
         const success = await sandbox.writeFile(
-          DefaultSettings.FONT_CONFIG,
+          this.fontConfigPath,
           code,
         );
         if (!success) {
@@ -858,7 +844,6 @@ export class FontManager {
     this._lastDefaultFont = null;
     this._currentFontIndex = 0;
     this._isFetching = false;
-    void this.fileSync.clear();
 
     // Clean up all reactions
     this.disposers.forEach((disposer) => disposer());
@@ -880,7 +865,7 @@ export class FontManager {
     }
 
     const { code } = generate(ast);
-    const fontPath = DefaultSettings.FONT_CONFIG.replace(/^\.\//, "").replace(
+    const fontPath = DefaultSettings.FONT_CONFIG.replace(/^\.\/app\//, "./").replace(
       /\.ts$/,
       "",
     );
@@ -1301,13 +1286,6 @@ export class FontManager {
           !this.previousFonts.some((prevFont) => currFont.id === prevFont.id),
       );
 
-      const tailwindConfigPath = this.fileSync
-        .listFiles()
-        .find((file) => file.startsWith("tailwind.config"));
-
-      if (tailwindConfigPath) {
-        this.selfModified.add(tailwindConfigPath);
-      }
 
       for (const font of removedFonts) {
         const routerConfig = await this.detectRouterType();
@@ -1385,19 +1363,15 @@ export class FontManager {
 
     try {
       // Check for app router (app/layout.tsx)
-      const appFiles = await sandbox.listFilesRecursively("./app", [], [".tsx"]);
+      const appFiles = await sandbox.listFilesRecursively("app").then((files) => files.filter((file) => file.includes("layout.tsx")));
 
-      if (appFiles.some((file) => file.endsWith("layout.tsx"))) {
+      if (appFiles.length > 0) {
         return { type: "app", basePath: "app" };
       }
 
       // Check for pages router (pages/_app.tsx)
-      const pagesFiles = await sandbox.listFilesRecursively(
-        "pages",
-        [],
-        [".tsx"],
-      );
-      if (pagesFiles.some((file) => file.endsWith("_app.tsx"))) {
+      const pagesFiles = await sandbox.listFilesRecursively("pages").then((files) => files.filter((file) => file.includes("_app.tsx")));
+      if (pagesFiles.length > 0) {
         return { type: "pages", basePath: "pages" };
       }
 
@@ -1418,15 +1392,12 @@ export class FontManager {
       return false;
     }
 
-    try {
-      const tailwindConfigPath = this.fileSync
-        .listFiles()
-        .find((file) => file.startsWith("tailwind.config"));
-      if (!tailwindConfigPath) {
+    try {      
+      if (!this.tailwindConfigPath) {
         return false;
       }
 
-      const content = await sandbox.readFile(tailwindConfigPath);
+      const content = await sandbox.readFile(this.tailwindConfigPath);
       if (!content) {
         return false;
       }
@@ -1486,7 +1457,7 @@ export class FontManager {
       }
 
       const { code } = generate(ast);
-      return await sandbox.writeFile(tailwindConfigPath, code);
+      return await sandbox.writeFile(this.tailwindConfigPath, code);
     } catch (error) {
       console.error("Error removing font from Tailwind config:", error);
       return false;
@@ -1503,14 +1474,11 @@ export class FontManager {
     }
 
     try {
-      const tailwindConfigPath = this.fileSync
-        .listFiles()
-        .find((file) => file.startsWith("tailwind.config"));
-      if (!tailwindConfigPath) {
+      if (!this.tailwindConfigPath) {
         return false;
       }
 
-      const content = await sandbox.readFile(tailwindConfigPath);
+      const content = await sandbox.readFile(this.tailwindConfigPath);
       if (!content) {
         return false;
       }
@@ -1634,7 +1602,7 @@ export class FontManager {
       }
 
       const { code } = generate(ast);
-      return await sandbox.writeFile(tailwindConfigPath, code);
+      return await sandbox.writeFile(this.tailwindConfigPath, code);
     } catch (error) {
       console.error("Error updating Tailwind font config:", error);
       return false;
