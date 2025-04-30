@@ -1,6 +1,6 @@
 import { ColorPicker } from '@onlook/ui/color-picker';
 import { Icons } from '@onlook/ui/icons';
-import { PopoverScrollArea, PopoverSeparator } from '@onlook/ui/popover';
+import { Separator } from '@onlook/ui/separator';
 import { Color, type Palette } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 
@@ -83,7 +83,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange
                     setPalette(val.palette);
                 }}
             />
-            <PopoverSeparator />
+            <Separator />
             <div className="flex flex-row items-center justify-between w-full px-2.5 py-1.5">
                 <span className="text-foreground-secondary text-smallPlus">{palette.name}</span>
                 <button
@@ -98,10 +98,10 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange
                     )}
                 </button>
             </div>
-            <PopoverSeparator />
-            <PopoverScrollArea className="h-28 px-1 overflow-hidden overflow-y-auto">
+            <Separator />
+            <div className="h-28 px-1 overflow-hidden overflow-y-auto">
                 {renderPalette()}
-            </PopoverScrollArea>
+            </div>
         </div>
     );
 };

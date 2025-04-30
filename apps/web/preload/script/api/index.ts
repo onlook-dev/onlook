@@ -22,7 +22,7 @@ import { getElementIndex, moveElement } from './elements/move';
 import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, isChildTextEditable, startEditingText, stopEditingText } from './elements/text';
-import { handleDocumentBody } from './ready';
+import { handleBodyReady } from './ready';
 import { setFrameId } from './state';
 import { updateStyle } from './style';
 import { getTheme, setTheme } from './theme';
@@ -76,7 +76,7 @@ export const preloadMethods = {
     ungroupElements,
     insertImage,
     removeImage,
-    handleDocumentBody
+    handleBodyReady
 }
 
 export type PenpalChildMethods = typeof preloadMethods;
