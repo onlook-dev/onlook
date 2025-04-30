@@ -95,7 +95,7 @@ export const ProjectBreadcrumb = observer(() => {
                     >
                         <Icons.OnlookLogo
                             className={cn(
-                                'w-6 h-6 hidden md:block',
+                                'w-8 h-8 hidden md:block',
                                 isClosingProject && 'animate-pulse',
                             )}
                         />

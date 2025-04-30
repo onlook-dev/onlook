@@ -1,5 +1,5 @@
-import { useTheme } from "@/app/_components/theme";
 import { SystemTheme } from "@onlook/models";
+import { useTheme } from "next-themes";
 import CodeMirrorMerge from "react-codemirror-merge";
 import { getBasicSetup, getExtensions } from "../../dev-tab/code-mirror-config";
 interface CodeDiffProps {

@@ -133,8 +133,7 @@ export const Icons = {
     OnlookLogo: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
-            width={22}
-            height={22}
+            viewBox="0 0 22 22"
             fill="none"
             className={className}
             {...props}

@@ -1,6 +1,5 @@
 
 
-import { useTheme } from '@/app/_components/theme';
 import { useEditorEngine, useUserManager } from '@/components/store';
 import { sendAnalytics } from '@/utils/analytics';
 import { SystemTheme } from '@onlook/models';
@@ -11,6 +10,7 @@ import { toast } from '@onlook/ui/use-toast';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { useTheme } from "next-themes";
 import { useEffect, useState } from 'react';
 import { PricingCard } from './pricing-card';
 

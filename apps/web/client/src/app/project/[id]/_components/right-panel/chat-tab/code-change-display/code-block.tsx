@@ -1,4 +1,3 @@
-import { useTheme } from "@/app/_components/theme";
 import {
     getBasicSetup,
     getExtensions,
@@ -6,6 +5,7 @@ import {
 import { SystemTheme } from "@onlook/models";
 import { cn } from "@onlook/ui/utils";
 import CodeMirror from "@uiw/react-codemirror";
+import { useTheme } from "next-themes";
 
 export const CodeBlock = ({
     className,

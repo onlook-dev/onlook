@@ -130,7 +130,7 @@ export const CollapsibleCodeBlock = ({
                                         {content}
                                     </code>
                                 ) : (
-                                    <CodeBlock code={replaceContent} variant="minimal" />
+                                    <CodeBlock code={replaceContent} />
                                 )}
                                 <div className="flex justify-end gap-1.5 p-1 border-t">
                                     <Button

@@ -1,4 +1,3 @@
-import { useTheme } from '@/app/_components/theme';
 import { IDE } from '@/components/ide';
 import { useUserManager } from '@/components/store';
 import type { Language } from '@onlook/constants';
@@ -15,6 +14,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useLocale } from 'next-intl';
+import { useTheme } from "next-themes";
 
 export const PreferencesTab = observer(() => {
     const userManager = useUserManager();

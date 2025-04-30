@@ -1,6 +1,5 @@
 // import type { FileNode } from '@/lib/editor/engine/files';
 // import { MainChannels, Theme } from '@onlook/models/constants';
-import { useTheme } from '@/app/_components/theme';
 import { useEditorEngine } from '@/components/store';
 import { type EditorView } from '@codemirror/view';
 import { EditorTabValue, SystemTheme } from '@onlook/models';
@@ -18,6 +17,7 @@ import { toast } from '@onlook/ui/use-toast';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
+import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';

@@ -1,9 +1,9 @@
 'use client';
 
+import { Color } from '@onlook/utility';
 import { useCallback, useMemo } from 'react';
 import useEyeDropper from 'use-eye-dropper';
 import { Button } from '../button';
-import { Color } from '@onlook/utility';
 import { Icons } from '../icons';
 
 type EyeDropperButtonProps = React.ComponentProps<'button'> & {
