@@ -98,7 +98,7 @@ export async function checkIfCacheDirectoryExists(projectDir: string): Promise<v
 }
 
 export async function removeCacheDirectory(projectDir: string): Promise<void> {
-    const cacheDir = path.join(projectDir, '.onlook', 'cache');
+    const cacheDir = path.join(projectDir, '.onlook');
 
     try {
         await fs.rm(cacheDir, { recursive: true, force: true });

@@ -187,9 +187,14 @@ export async function cacheFile(filePath: string, projectDir: string): Promise<v
 
     const cacheDir = path.join(projectDir, '.onlook', 'cache');
 
-    const fileName = path.basename(filePath);
+    const baseName = path.basename(filePath, path.extname(filePath));
 
-    const cacheFilePath = path.join(cacheDir, fileName);
+    const ext = path.extname(filePath);
+    const fileNameHash = createHash('sha256').update(filePath).digest('hex').slice(0, 10);
+
+    const cacheFileName = `${baseName}-${fileNameHash}${ext}`;
+
+    const cacheFilePath = path.join(cacheDir, cacheFileName);
 
     await writeFile(cacheFilePath, content);
 }
@@ -220,9 +225,13 @@ export async function generateAndStoreHash(filePath: string, projectDir: string)
         console.log('No existing hashes.json found, creating new one.');
     }
 
-    const fileName = path.basename(filePath);
+    const baseName = path.basename(filePath, path.extname(filePath));
+    const ext = path.extname(filePath);
+    const fileNameHash = createHash('sha256').update(filePath).digest('hex').slice(0, 10);
 
-    const cacheFilePath = path.join(cacheDir, fileName);
+    const cacheFileName = `${baseName}-${fileNameHash}${ext}`;
+
+    const cacheFilePath = path.join(cacheDir, cacheFileName);
 
     hashesJson[filePath] = {
         hash,

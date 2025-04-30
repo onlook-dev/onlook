@@ -91,7 +91,7 @@ export async function checkIfFileChanged(projectDir: string, filePath: string): 
         }
     } catch (error) {
         console.error('Failed to read hashes.json. Proceeding without cache.');
-        return false;
+        return true;
     }
 
     const storedEntry = hashesJson[filePath];
