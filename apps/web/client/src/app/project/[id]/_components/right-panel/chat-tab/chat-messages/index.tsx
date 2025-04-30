@@ -1,21 +1,24 @@
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store';
+import type { AssistantChatMessageImpl } from '@/components/store/editor/engine/chat/message/assistant';
+import type { UserChatMessageImpl } from '@/components/store/editor/engine/chat/message/user';
 import { ChatMessageRole } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
+import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import { useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import type { AssistantChatMessageImpl } from '@/components/store/editor/engine/chat/message/assistant';
+import { useCallback, useEffect, useRef } from 'react';
 import { AssistantMessage } from './assistant-message';
-import type { UserChatMessageImpl } from '@/components/store/editor/engine/chat/message/user';
-import type { ToolChatMessageImpl } from '@/components/store/editor/engine/chat/message/tool';
-import { UserMessage } from './user-message';
-import { ErrorMessage } from './error-message';
 import { StreamMessage } from './stream-message';
+import { UserMessage } from './user-message';
+// import { ErrorMessage } from './error-message';
+
 export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const chatMessagesRef = useRef<HTMLDivElement>(null);
+    const { messages } = useChatContext();
 
     useEffect(() => {
         if (chatMessagesRef.current) {
@@ -24,7 +27,7 @@ export const ChatMessages = observer(() => {
     }, [editorEngine.chat.conversation.current?.messages.length]);
 
     const renderMessage = useCallback(
-        (message: AssistantChatMessageImpl | UserChatMessageImpl | ToolChatMessageImpl) => {
+        (message: AssistantChatMessageImpl | UserChatMessageImpl) => {
             let messageNode;
             switch (message.role) {
                 case ChatMessageRole.ASSISTANT:
@@ -33,22 +36,19 @@ export const ChatMessages = observer(() => {
                 case ChatMessageRole.USER:
                     messageNode = <UserMessage message={message} />;
                     break;
-                case ChatMessageRole.TOOL:
-                    // No need to render tool results messages
-                    break;
+                default:
+                    assertNever(message);
             }
             return <div key={message.id}>{messageNode}</div>;
         },
         [],
     );
 
-    
-
     // Render in reverse order to make the latest message appear at the bottom
     return (
         <AnimatePresence mode="wait">
             {editorEngine.chat.conversation.current &&
-            editorEngine.chat.conversation.current?.messages.length !== 0 ? (
+                editorEngine.chat.conversation.current?.messages.length !== 0 ? (
                 <motion.div
                     className="flex flex-col-reverse gap-2 select-text overflow-auto"
                     ref={chatMessagesRef}
@@ -59,7 +59,7 @@ export const ChatMessages = observer(() => {
                     transition={{ duration: 0.15 }}
                 >
                     <StreamMessage />
-                    <ErrorMessage />
+                    {/* <ErrorMessage /> */}
                     {[...editorEngine.chat.conversation.current.messages]
                         .reverse()
                         .map((message) => renderMessage(message))}
@@ -73,7 +73,7 @@ export const ChatMessages = observer(() => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.15 }}
-                        className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80"
+                        className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80  h-full"
                     >
                         <div className="w-32 h-32">
                             <Icons.EmptyState className="w-full h-full" />

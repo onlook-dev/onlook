@@ -7,11 +7,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { CodeBlock } from './code-block';
 import { CodeModal } from './code-modal';
-import { getExtensions } from '../../../dev/code-mirror-config';
-import { SystemTheme } from '@onlook/models';
-import CodeMirror from '@uiw/react-codemirror';
-import { getBasicSetup } from '../../../dev/code-mirror-config';
-import { javascript } from '@codemirror/lang-javascript';
 
 interface CollapsibleCodeBlockProps {
     path: string;

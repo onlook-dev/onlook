@@ -1,4 +1,4 @@
-import type { AssistantContent } from 'ai';
+import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
@@ -6,26 +6,19 @@ import { ToolCallDisplay } from './tool-call-display';
 export const MessageContent = observer(
     ({
         messageId,
-        content,
+        parts,
         applied,
         isStream,
     }: {
         messageId: string;
-        content: AssistantContent;
+        parts: Message['parts'];
         applied: boolean;
         isStream: boolean;
     }) => {
-        if (typeof content === 'string') {
-            return (
-                <MarkdownRenderer
-                    messageId={messageId}
-                    content={content}
-                    applied={applied}
-                    isStream={isStream}
-                />
-            );
+        if (!parts) {
+            return null;
         }
-        return content.map((part) => {
+        return parts.map((part) => {
             if (part.type === 'text') {
                 return (
                     <MarkdownRenderer
@@ -36,13 +29,13 @@ export const MessageContent = observer(
                         isStream={isStream}
                     />
                 );
-            } else if (part.type === 'tool-call') {
+            } else if (part.type === 'tool-invocation') {
                 return (
-                    <ToolCallDisplay key={part.toolCallId} toolCall={part} isStream={isStream} />
+                    <ToolCallDisplay key={part.toolInvocation.toolCallId} toolInvocation={part.toolInvocation} isStream={isStream} />
                 );
             } else if (part.type === 'reasoning') {
                 return (
-                    <div key={part.text} className="border-2 border-green-500">
+                    <div key={part.reasoning} className="border-2 border-green-500">
                         reasoning: {JSON.stringify(part, null, 2)}
                     </div>
                 );

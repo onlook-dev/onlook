@@ -1,6 +1,6 @@
 {
-    "name": "@onlook/utility",
-    "description": "A utility library for Onlook",
+    "name": "@onlook/mastra",
+    "description": "A Mastra AI library for Onlook",
     "main": "./src/index.ts",
     "type": "module",
     "module": "src/index.ts",
@@ -19,7 +19,8 @@
     },
     "keywords": [
         "onlook",
-        "utility"
+        "AI",
+        "Mastra"
     ],
     "author": {
         "name": "Onlook",
@@ -31,9 +32,11 @@
         "@onlook/typescript": "*"
     },
     "dependencies": {
-        "@onlook/fonts": "*",
-        "browser-image-compression": "^2.0.2",
-        "normalize-url": "^8.0.1",
-        "tldts": "^6.1.82"
+        "@ai-sdk/anthropic": "^1.2.10",
+        "@mastra/core": "^0.9.0",
+        "ai": "^4.2.6",
+        "diff-match-patch": "^1.0.5",
+        "fg": "^0.0.3",
+        "marked": "^15.0.7"
     }
 }

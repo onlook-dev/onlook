@@ -25,7 +25,7 @@ export const MarkdownRenderer = ({
     return (
         <div
             className={cn(
-                'prose prose-stone dark:prose-invert prose-compact text-small break-words',
+                'prose prose-stone prose-invert dark:prose-invert prose-compact text-small break-words',
                 className,
             )}
         >

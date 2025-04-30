@@ -1,39 +1,32 @@
 import type { ProjectManager } from "@/components/store/projects";
+import type { UserManager } from "@/components/store/user";
 import { sendAnalytics } from "@/utils/analytics";
 import {
     ChatMessageRole,
     StreamRequestType,
-    type AssistantChatMessage,
-    type CompletedStreamResponse,
-    type ErrorStreamResponse,
-    type RateLimitedStreamResponse,
+    type AssistantChatMessage
 } from "@onlook/models/chat";
 import type { ParsedError } from "@onlook/utility";
-import type { CoreMessage } from "ai";
+import type { Message } from "ai";
 import { makeAutoObservable } from "mobx";
-import { nanoid } from "nanoid/non-secure";
 import type { EditorEngine } from "..";
 import { ChatCodeManager } from "./code";
 import { ChatContext } from "./context";
 import { ConversationManager } from "./conversation";
-import { isPromptTooLongError, PROMPT_TOO_LONG_ERROR } from "./helpers";
-import { StreamResolver } from "./stream";
 import { SuggestionManager } from "./suggestions";
 
 export const FOCUS_CHAT_INPUT_EVENT = "focus-chat-input";
 
 export class ChatManager {
-    isWaiting = false;
     conversation: ConversationManager;
     code: ChatCodeManager;
     context: ChatContext;
-    stream: StreamResolver;
     suggestions: SuggestionManager;
 
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectManager,
-        // private userManager: UserManager,
+        private userManager: UserManager,
     ) {
         makeAutoObservable(this);
         this.context = new ChatContext(
@@ -44,20 +37,18 @@ export class ChatManager {
             this.editorEngine,
             this.projectsManager,
         );
-        this.stream = new StreamResolver();
         this.code = new ChatCodeManager(this, this.editorEngine);
-        this.suggestions = new SuggestionManager();
-        // this.projectsManager
+        this.suggestions = new SuggestionManager(this.projectsManager);
     }
 
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    async sendNewMessage(content: string): Promise<void> {
+    async getStreamMessages(content: string): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error("No conversation found");
-            return;
+            return null;
         }
 
         const context = await this.context.getChatContext();
@@ -65,23 +56,23 @@ export class ChatManager {
         this.conversation.current.updateName(content);
         if (!userMessage) {
             console.error("Failed to add user message");
-            return;
+            return null;
         }
         sendAnalytics("send chat message", {
             content,
         });
-        await this.sendChatToAi(StreamRequestType.CHAT, content);
+        return this.generateStreamMessages(content);
     }
 
-    async sendFixErrorToAi(errors: ParsedError[]): Promise<boolean> {
+    async getFixErrorMessages(errors: ParsedError[]): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error("No conversation found");
-            return false;
+            return null;
         }
 
         if (errors.length === 0) {
             console.error("No errors found");
-            return false;
+            return null;
         }
 
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
@@ -94,67 +85,15 @@ export class ChatManager {
         this.conversation.current.updateName(errors[0]?.content ?? "Fix errors");
         if (!userMessage) {
             console.error("Failed to add user message");
-            return false;
+            return null;
         }
         sendAnalytics("send fix error chat message", {
             errors: errors.map((e) => e.content),
         });
-        await this.sendChatToAi(StreamRequestType.ERROR_FIX, prompt);
-        return true;
+        return this.generateStreamMessages(prompt);
     }
 
-    async sendChatToAi(
-        requestType: StreamRequestType,
-        userPrompt?: string,
-    ): Promise<void> {
-        if (!this.conversation.current) {
-            console.error("No conversation found");
-            return;
-        }
-        // Save current changes before sending to AI
-        this.projectsManager.versions?.createCommit(
-            userPrompt ?? "Save before applying code",
-            false,
-        );
-
-        this.stream.clearBeforeSend();
-        this.isWaiting = true;
-        const messages = this.conversation.current.getMessagesForStream();
-        const res: CompletedStreamResponse | null = await this.sendStreamRequest(
-            messages,
-            requestType,
-        );
-        if (res) {
-            this.handleChatResponse(res, requestType);
-        } else {
-            console.error("No stream response found");
-        }
-        this.stream.clearAfterSend();
-        this.isWaiting = false;
-        sendAnalytics("receive chat response");
-    }
-
-    sendStreamRequest(
-        messages: CoreMessage[],
-        requestType: StreamRequestType,
-    ): Promise<CompletedStreamResponse | null> {
-        const requestId = nanoid();
-        return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
-            messages,
-            requestId,
-            requestType,
-        });
-    }
-
-    stopStream() {
-        const requestId = nanoid();
-        invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
-            requestId,
-        });
-        sendAnalytics("stop chat stream");
-    }
-
-    resubmitMessage(id: string, newMessageContent: string) {
+    getResubmitMessages(id: string, newMessageContent: string) {
         if (!this.conversation.current) {
             console.error("No conversation found");
             return;
@@ -169,80 +108,26 @@ export class ChatManager {
             return;
         }
 
-        message.updateStringContent(newMessageContent);
+        message.updateContent(newMessageContent);
         this.conversation.current.removeAllMessagesAfter(message);
-        this.sendChatToAi(StreamRequestType.CHAT);
-        sendAnalytics("resubmit chat message");
+        return this.generateStreamMessages(StreamRequestType.CHAT);
     }
 
-    async handleChatResponse(
-        res: CompletedStreamResponse,
-        requestType: StreamRequestType,
-    ) {
-        if (!res) {
-            console.error("No response found");
-            return;
-        }
-
-        if (res.type === "rate-limited") {
-            this.handleRateLimited(res);
-            return;
-        } else if (res.type === "error") {
-            this.handleError(res);
-            return;
-        }
-
+    private async generateStreamMessages(
+        userPrompt?: string,
+    ): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error("No conversation found");
-            return;
+            return null;
         }
+        // Save current changes before sending to AI
+        this.projectsManager.versions?.createCommit(
+            userPrompt ?? "Save before chat",
+            false,
+        );
 
-        if (res.usage) {
-            this.conversation.current.updateTokenUsage(res.usage);
-        }
-
-        if (this.conversation.current.needsSummary()) {
-            await this.conversation.generateConversationSummary();
-        }
-
-        this.handleNewCoreMessages(res.payload);
-
-        if (
-            requestType === StreamRequestType.CHAT &&
-            this.conversation.current?.messages &&
-            this.conversation.current.messages.length > 0
-        ) {
-            this.suggestions.shouldHide = true;
-            this.suggestions.generateNextSuggestions(
-                this.conversation.current.getMessagesForStream(),
-            );
-        }
-
-        this.context.clearAttachments();
-    }
-
-    handleNewCoreMessages(messages: CoreMessage[]) {
-        for (const message of messages) {
-            if (message.role === ChatMessageRole.ASSISTANT) {
-                const assistantMessage =
-                    this.conversation.addCoreAssistantMessage(message);
-                if (!assistantMessage) {
-                    console.error("Failed to add assistant message");
-                } else {
-                    this.autoApplyCode(assistantMessage);
-                }
-            } else if (message.role === ChatMessageRole.USER) {
-                const userMessage = this.conversation.addCoreUserMessage(message);
-                if (!userMessage) {
-                    console.error("Failed to add user message");
-                }
-            } else if (message.role === ChatMessageRole.TOOL) {
-                const toolMessage = this.conversation.addCoreToolMessage(message);
-                if (!toolMessage) {
-                    console.error("Failed to add tool message");
-                }
-            }
-        }
+        const messages = this.conversation.current.getMessagesForStream();
+        return messages;
     }
 
     autoApplyCode(assistantMessage: AssistantChatMessage) {
@@ -253,28 +138,7 @@ export class ChatManager {
         }
     }
 
-    handleRateLimited(res: RateLimitedStreamResponse) {
-        this.stream.errorMessage = res.rateLimitResult?.reason;
-        this.stream.rateLimited = res.rateLimitResult ?? null;
-        sendAnalytics("rate limited", {
-            rateLimitResult: res.rateLimitResult,
-        });
-    }
-
-    handleError(res: ErrorStreamResponse) {
-        console.error("Error found in chat response", res.message);
-        if (isPromptTooLongError(res.message)) {
-            this.stream.errorMessage = PROMPT_TOO_LONG_ERROR;
-        } else {
-            this.stream.errorMessage = res.message;
-        }
-        sendAnalytics("chat error", {
-            content: res.message,
-        });
-    }
-
     clear() {
-        this.stream.clear();
         this.code.clear();
         this.context.clear();
         if (this.conversation) {

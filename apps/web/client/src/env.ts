@@ -8,8 +8,9 @@ export const env = createEnv({
      */
     server: {
         NODE_ENV: z.enum(["development", "test", "production"]),
+        CSB_API_KEY: z.string(),
+        ANTHROPIC_API_KEY: z.string(),
     },
-
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
      * isn't built with invalid env vars. To expose them to the client, prefix them with
@@ -25,7 +26,8 @@ export const env = createEnv({
      */
     runtimeEnv: {
         NODE_ENV: process.env.NODE_ENV,
-        // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+        CSB_API_KEY: process.env.CSB_API_KEY,
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

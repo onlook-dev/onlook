@@ -14,7 +14,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class ChatContext {
-    context: ChatMessageContext[] = [];
+    context: ChatMessageContext[] = this.getProjectContext();
 
     constructor(
         private editorEngine: EditorEngine,
@@ -24,14 +24,6 @@ export class ChatContext {
         reaction(
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
-        );
-        reaction(
-            () => this.projectManager.project?.folderPath,
-            (folderPath) => {
-                if (folderPath) {
-                    this.getChatContext().then((context) => (this.context = context));
-                }
-            },
         );
     }
 
@@ -152,17 +144,12 @@ export class ChatContext {
     }
 
     getProjectContext(): ProjectMessageContext[] {
-        const folderPath = this.projectManager.project?.folderPath;
-        if (!folderPath) {
-            return [];
-        }
-
         return [
             {
                 type: MessageContextType.PROJECT,
                 content: '',
                 displayName: 'Project',
-                path: folderPath,
+                path: './',
             },
         ];
     }

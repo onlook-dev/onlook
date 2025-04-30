@@ -1,9 +1,9 @@
 import { MessageContextType, type ChatMessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons/index';
+import { getTruncatedFileName } from '@onlook/ui/utils';
 import { assertNever } from '@onlook/utility';
 import React from 'react';
-import { NodeIcon } from '../../../../left-panel/layers-tab/tree/node-icon';
-import { getTruncatedFileName } from '@onlook/ui/utils';
+import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
 export function getTruncatedName(context: ChatMessageContext) {
     let name = context.displayName;
     if (context.type === MessageContextType.FILE || context.type === MessageContextType.IMAGE) {

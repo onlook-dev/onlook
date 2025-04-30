@@ -1,5 +1,4 @@
-import { useUserManager } from '@/components/store';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine, useUserManager } from '@/components/store';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
@@ -10,7 +9,7 @@ export interface SuggestionsRef {
     handleEnterSelection: () => boolean;
 }
 
-const Suggestions = forwardRef<
+export const Suggestions = observer(forwardRef<
     SuggestionsRef,
     {
         disabled: boolean;
@@ -60,7 +59,7 @@ const Suggestions = forwardRef<
     };
 
     const handleEnterSelection = () => {
-        if (focusedIndex === -1 || shouldHideSuggestions) {
+        if (focusedIndex === -1 || shouldHideSuggestions || !suggestions[focusedIndex]) {
             return false;
         }
         setInput(suggestions[focusedIndex].prompt);
@@ -91,7 +90,7 @@ const Suggestions = forwardRef<
             >
                 {suggestions.map((suggestion, index) => (
                     <motion.button
-                        ref={(el) => (buttonRefs.current[index] = el)}
+                        ref={(el) => { buttonRefs.current[index] = el }}
                         initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
                         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                         transition={{
@@ -129,8 +128,4 @@ const Suggestions = forwardRef<
             </motion.div>
         </motion.div>
     );
-})
-
-Suggestions.displayName = 'Suggestions';
-
-export default observer(Suggestions);
+}));

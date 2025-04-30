@@ -1,13 +1,12 @@
 import { MAX_NAME_LENGTH } from '@onlook/constants';
-import { ChatMessageRole, type ChatConversation, type TokenUsage } from '@onlook/models/chat';
-import type { CoreMessage, ToolCallPart, ToolResultPart } from 'ai';
+import { ChatMessageRole, type AssistantChatMessage, type ChatConversation, type TokenUsage, type UserChatMessage } from '@onlook/models/chat';
+import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { AssistantChatMessageImpl } from '../message/assistant';
-import { ToolChatMessageImpl } from '../message/tool';
 import { UserChatMessageImpl } from '../message/user';
 
-type ChatMessageImpl = UserChatMessageImpl | AssistantChatMessageImpl | ToolChatMessageImpl;
+type ChatMessageImpl = UserChatMessageImpl | AssistantChatMessageImpl;
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
@@ -16,12 +15,6 @@ export class ChatConversationImpl implements ChatConversation {
     messages: ChatMessageImpl[];
     createdAt: string;
     updatedAt: string;
-
-    // Summary
-    private readonly TOKEN_LIMIT = 200000;
-    private readonly SUMMARY_THRESHOLD = this.TOKEN_LIMIT * 0.75; // Trigger at 75% of token limit
-    private readonly RETAINED_MESSAGES = 10;
-    summaryMessage: AssistantChatMessageImpl | null = null;
 
     public tokenUsage: TokenUsage = {
         promptTokens: 0,
@@ -49,9 +42,9 @@ export class ChatConversationImpl implements ChatConversation {
         conversation.messages = data.messages
             .map((m) => {
                 if (m.role === ChatMessageRole.USER) {
-                    return UserChatMessageImpl.fromJSON(m);
+                    return UserChatMessageImpl.fromJSON(m as UserChatMessage);
                 } else if (m.role === ChatMessageRole.ASSISTANT) {
-                    return AssistantChatMessageImpl.fromJSON(m);
+                    return AssistantChatMessageImpl.fromJSON(m as AssistantChatMessage);
                 } else {
                     console.error('Invalid message role', m.role);
                     return null;
@@ -61,109 +54,17 @@ export class ChatConversationImpl implements ChatConversation {
         conversation.createdAt = data.createdAt;
         conversation.updatedAt = data.updatedAt;
 
-        if (data.tokenUsage) {
-            conversation.tokenUsage = data.tokenUsage;
-        }
-        if (data.summaryMessage) {
-            conversation.summaryMessage = AssistantChatMessageImpl.fromJSON(data.summaryMessage);
-        }
-
         return conversation;
-    }
-
-    needsSummary(): boolean {
-        return this.tokenUsage.totalTokens > this.SUMMARY_THRESHOLD;
     }
 
     updateTokenUsage(usage: TokenUsage) {
         this.tokenUsage = usage;
     }
 
-    getMessagesForStream(): CoreMessage[] {
-        const messages: CoreMessage[] = [];
-
-        if (this.summaryMessage) {
-            messages.push(this.summaryMessage.toCoreMessage());
-            const retainedMessages = this.messages.slice(-this.RETAINED_MESSAGES);
-            messages.push(...retainedMessages.map((m) => m.toCoreMessage()));
-        } else {
-            messages.push(...this.messages.map((m) => m.toCoreMessage()));
-        }
-
-        return this.validateAndFixToolMessages(messages);
+    getMessagesForStream(): Message[] {
+        return this.messages.map((m) => m.toStreamMessage());
     }
 
-    /**
-     * Validates that each tool_use message has a corresponding tool_result message after it.
-     * If not, a stub tool_result message will be created to prevent API errors.
-     */
-    private validateAndFixToolMessages(messages: CoreMessage[]): CoreMessage[] {
-        const result: CoreMessage[] = [];
-
-        for (let i = 0; i < messages.length; i++) {
-            const currentMessage = messages[i];
-            if (!currentMessage) continue;
-
-            result.push(currentMessage);
-
-            if (currentMessage.role === 'assistant' &&
-                Array.isArray(currentMessage.content)) {
-
-                const toolCallParts = currentMessage.content.filter(
-                    (part): part is ToolCallPart => part.type === 'tool-call'
-                );
-
-                if (toolCallParts.length > 0) {
-                    const nextMessage = i + 1 < messages.length ? messages[i + 1] : null;
-                    const missingToolResults: ToolResultPart[] = [];
-
-                    for (const toolCall of toolCallParts) {
-                        let hasCorrespondingResult = false;
-
-                        if (nextMessage?.role === 'tool' && Array.isArray(nextMessage.content)) {
-                            hasCorrespondingResult = nextMessage.content.some(
-                                (part): part is ToolResultPart =>
-                                    part.type === 'tool-result' &&
-                                    part.toolCallId === toolCall.toolCallId
-                            );
-                        }
-
-                        if (!hasCorrespondingResult) {
-                            console.error(
-                                `Missing tool_result for tool call ${toolCall.toolCallId} (${toolCall.toolName}). Adding stub result.`
-                            );
-                            missingToolResults.push({
-                                type: 'tool-result',
-                                toolCallId: toolCall.toolCallId,
-                                toolName: toolCall.toolName,
-                                result: "success",
-                                isError: true
-                            });
-                        }
-                    }
-
-                    if (missingToolResults.length > 0) {
-                        console.warn(
-                            `Adding ${missingToolResults.length} stub tool result(s) for message without corresponding tool_result`
-                        );
-
-                        result.push({
-                            role: 'tool',
-                            content: missingToolResults
-                        });
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    setSummaryMessage(content: string) {
-        this.summaryMessage = new AssistantChatMessageImpl(
-            `Technical Summary of Previous Conversations:\n${content}`,
-        );
-    }
 
     appendMessage(message: ChatMessageImpl) {
         this.messages = [...this.messages, message];

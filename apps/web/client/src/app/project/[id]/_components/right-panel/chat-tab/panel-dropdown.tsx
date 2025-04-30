@@ -21,7 +21,7 @@ export const ChatPanelDropdown = ({ children }: { children: React.ReactNode }) =
 
     const updateChatSettings = (e: React.MouseEvent, settings: Partial<ChatSettings>) => {
         e.preventDefault();
-        // userManager.settings.updateChat(settings);
+        userManager.settings.updateChat(settings);
     };
 
     return (

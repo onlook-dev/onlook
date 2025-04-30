@@ -32,12 +32,12 @@ export class ChatCodeManager {
 
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
 
-        for (const [file, codeBlocks] of fileToCodeBlocks) {
+        for (const [filePath, codeBlocks] of fileToCodeBlocks) {
             // If file doesn't exist, we'll assume it's a new file and create it
             const originalContent =
-                (await this.editorEngine.code.getFileContent(file, false)) || '';
+                (await this.editorEngine.sandbox.readFile(filePath)) || '';
             if (originalContent == null) {
-                console.error('Failed to get file content', file);
+                console.error('Failed to get file content', filePath);
                 continue;
             }
             let content = originalContent;
@@ -54,15 +54,15 @@ export class ChatCodeManager {
                 content = result.text;
             }
 
-            const success = await this.writeFileContent(file, content, originalContent);
+            const success = await this.editorEngine.sandbox.writeFile(filePath, content);
             if (!success) {
                 console.error('Failed to write file content');
                 continue;
             }
 
             message.applied = true;
-            message.snapshots[file] = {
-                path: file,
+            message.snapshots[filePath] = {
+                path: filePath,
                 original: originalContent,
                 generated: content,
             };
@@ -72,14 +72,14 @@ export class ChatCodeManager {
 
         const selectedWebviews = this.editorEngine.frames.selected;
         for (const frame of selectedWebviews) {
-            await this.editorEngine.ast.refreshAstDoc(frame);
+            await this.editorEngine.ast.refreshAstDoc(frame.view);
         }
 
         this.chat.suggestions.shouldHide = false;
 
         setTimeout(() => {
             this.editorEngine.frames.reload();
-            this.editorEngine.errors.clear();
+            this.editorEngine.error.clear();
         }, 500);
         sendAnalytics('apply code change');
     }

@@ -15,6 +15,7 @@ export enum EditorMode {
 
 export enum EditorTabValue {
     CHAT = 'chat',
+    DEV = 'dev',
 }
 
 export enum SettingsTabValue {

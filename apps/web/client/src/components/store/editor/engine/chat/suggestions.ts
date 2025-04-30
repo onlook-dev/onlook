@@ -1,24 +1,24 @@
-// import type { ProjectsManager } from '@/lib/projects';
-// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-// import { MainChannels } from '@onlook/constants';
+import { ProjectManager } from '@/components/store/projects';
+import { sendAnalytics } from '@/utils/analytics';
 import type { ChatSuggestion, Project } from '@onlook/models';
-import type { ImageMessageContext, ProjectSuggestions } from '@onlook/models/chat';
+import type { ImageMessageContext } from '@onlook/models/chat';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 
+// TODO: Use hooks
 export class SuggestionManager {
     projectId: string | null = null;
+    shouldHide = false;
     private _suggestions: ChatSuggestion[] = [];
-    private _shouldHide = false;
 
     constructor(
-        // private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
-        // reaction(
-        //     () => this.projectsManager.project,
-        //     (current) => this.getCurrentProjectSuggestions(current),
-        // );
+        reaction(
+            () => this.projectManager.project,
+            (current) => this.getCurrentProjectSuggestions(current),
+        );
     }
 
     get suggestions() {
@@ -30,14 +30,6 @@ export class SuggestionManager {
         this.saveSuggestionsToStorage();
     }
 
-    get shouldHide() {
-        return this._shouldHide;
-    }
-
-    set shouldHide(value: boolean) {
-        this._shouldHide = value;
-    }
-
     async getCurrentProjectSuggestions(project: Project | null) {
         if (!project) {
             return;
@@ -46,41 +38,47 @@ export class SuggestionManager {
             return;
         }
         this.projectId = project.id;
-        this._suggestions = await this.getSuggestions(project.id);
+        this._suggestions = await this.getSuggestionsFromStorage(project.id);
     }
 
-    async getSuggestions(projectId: string): Promise<ChatSuggestion[]> {
-        const res: ChatSuggestion[] | null = await invokeMainChannel(
-            MainChannels.GET_SUGGESTIONS_BY_PROJECT,
-            { projectId },
-        );
-        if (!res) {
-            console.error('No suggestions found');
-            return [];
-        }
-        return res;
+    private async getSuggestionsFromStorage(projectId: string): Promise<ChatSuggestion[]> {
+        const res: ChatSuggestion[] | null = [
+            {
+                title: 'Suggestion 1',
+                prompt: 'Suggestion 1 prompt',
+            },
+            {
+                title: 'Suggestion 2',
+                prompt: 'Suggestion 2 prompt',
+            },
+
+        ]
+        return res || [];
     }
 
-    saveSuggestionsToStorage() {
+    private saveSuggestionsToStorage() {
         if (!this.projectId) {
             console.error('No project id found');
             return;
         }
 
-        invokeMainChannel(MainChannels.SAVE_SUGGESTIONS, {
-            suggestions: {
-                id: this.projectId,
-                projectId: this.projectId,
-                suggestions: this._suggestions,
-            } satisfies ProjectSuggestions,
-        });
+        console.log('saveSuggestionsToStorage', this._suggestions);
+
+        // invokeMainChannel(MainChannels.SAVE_SUGGESTIONS, {
+        //     suggestions: {
+        //         id: this.projectId,
+        //         projectId: this.projectId,
+        //         suggestions: this._suggestions,
+        //     } satisfies ProjectSuggestions,
+        // });
     }
 
-    async generateCreatedSuggestions(
+
+    async getCreatedSuggestionsMessages(
         prompt: string,
         response: string,
         images: ImageMessageContext[],
-    ) {
+    ): Promise<CoreMessage[]> {
         sendAnalytics('generate suggestions');
 
         const systemMessage: CoreSystemMessage = {
@@ -93,23 +91,10 @@ export class SuggestionManager {
         };
 
         const messages = this.getMessages(prompt, response, images);
-        const newSuggestions: ChatSuggestion[] | null = await invokeMainChannel(
-            MainChannels.GENERATE_SUGGESTIONS,
-            {
-                messages: [systemMessage, ...messages],
-            },
-        );
-
-        if (newSuggestions) {
-            this.suggestions = newSuggestions;
-            sendAnalytics('generated suggestions');
-        } else {
-            console.error('Failed to generate suggestions');
-            sendAnalytics('generate suggestions failed');
-        }
+        return [systemMessage, ...messages]
     }
 
-    async generateNextSuggestions(messages: CoreMessage[]) {
+    async getNextSuggestionsMessages(messages: CoreMessage[]): Promise<CoreMessage[]> {
         const systemMessage: CoreSystemMessage = {
             role: 'system',
             content:
@@ -119,19 +104,7 @@ export class SuggestionManager {
             },
         };
 
-        const newSuggestions: ChatSuggestion[] | null = await invokeMainChannel(
-            MainChannels.GENERATE_SUGGESTIONS,
-            {
-                messages: [...messages, systemMessage],
-            },
-        );
-        if (newSuggestions) {
-            this.suggestions = newSuggestions;
-            sendAnalytics('generated suggestions');
-        } else {
-            console.error('Failed to generate suggestions');
-            sendAnalytics('generate suggestions failed');
-        }
+        return [systemMessage, ...messages]
     }
 
     private getMessages(

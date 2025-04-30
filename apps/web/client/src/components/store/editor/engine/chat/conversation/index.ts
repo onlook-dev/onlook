@@ -1,19 +1,14 @@
-// import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-// import { MainChannels } from '@onlook/constants';
 import { type ProjectManager } from '@/components/store/projects';
-import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
-// import type { Project } from '@onlook/models/projects';
 import { sendAnalytics } from '@/utils/analytics';
+import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import type { Project } from '@onlook/models/project';
-import type { CoreAssistantMessage, CoreToolMessage, CoreUserMessage } from 'ai';
+import type { Message } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../..';
 import { AssistantChatMessageImpl } from '../message/assistant';
-import { ToolChatMessageImpl } from '../message/tool';
 import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
-const USE_MOCK = true;
 
 export class ConversationManager {
     projectId: string | null = null;
@@ -32,7 +27,6 @@ export class ConversationManager {
     }
 
     async getCurrentProjectConversations(project: Project | null) {
-        this.editorEngine.chat.stream.clear();
         if (!project) {
             return;
         }
@@ -42,25 +36,16 @@ export class ConversationManager {
         this.projectId = project.id;
 
 
-
-        // this.conversations = await this.getConversations(project.id);
-        // if (this.conversations.length === 0) {
-        //     this.current = new ChatConversationImpl(project.id, []);
-        // } else {
-        //     this.current = this.conversations[0];
-        // }
-
-        if (USE_MOCK) {
-            this.current = new ChatConversationImpl(project.id, MOCK_CHAT_MESSAGES);
+        this.conversations = await this.getConversations(project.id);
+        if (this.conversations.length === 0 && !!this.conversations[0]) {
+            this.current = new ChatConversationImpl(project.id, []);
+        } else {
+            this.current = this.conversations[0] ?? null;
         }
-
     }
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
-        const res: ChatConversation[] | null = await invokeMainChannel(
-            MainChannels.GET_CONVERSATIONS_BY_PROJECT,
-            { projectId },
-        );
+        const res: ChatConversation[] | null = await this.getConversationFromStorage(projectId);
         if (!res) {
             console.error('No conversations found');
             return [];
@@ -90,7 +75,6 @@ export class ConversationManager {
         }
         this.current = new ChatConversationImpl(this.projectId, []);
         this.conversations.push(this.current);
-        this.editorEngine.chat.stream.clear();
         sendAnalytics('start new conversation');
     }
 
@@ -101,7 +85,6 @@ export class ConversationManager {
             return;
         }
         this.current = match;
-        this.editorEngine.chat.stream.clear();
         sendAnalytics('select conversation');
     }
 
@@ -124,91 +107,55 @@ export class ConversationManager {
         this.deleteConversationInStorage(id);
         if (this.current.id === id) {
             if (this.conversations.length > 0) {
-                this.current = this.conversations[0];
+                this.current = this.conversations[0] ?? null;
             } else {
                 this.current = new ChatConversationImpl(this.projectId, []);
                 this.conversations.push(this.current);
             }
         }
-        this.editorEngine.chat.stream.clear();
         sendAnalytics('delete conversation');
     }
 
+
+    async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
+        return [new ChatConversationImpl(id, MOCK_CHAT_MESSAGES)];
+    }
+
     deleteConversationInStorage(id: string) {
-        invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
+        console.log('deleteConversationInStorage', id);
+        // invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
     }
 
     saveConversationToStorage() {
         if (!this.current) {
             console.error('No conversation found');
-            return;
+            return Promise.resolve();
         }
-        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
-            conversation: this.current,
-        });
+        console.log('saveConversationToStorage', this.current);
+        // invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
+        //     conversation: this.current,
+        // });
     }
 
-    async generateConversationSummary(): Promise<void> {
-        if (!this.current?.needsSummary()) {
-            return;
-        }
-
-        const res: string | null = await invokeMainChannel(MainChannels.GENERATE_CHAT_SUMMARY, {
-            messages: this.current.getMessagesForStream(),
-        });
-
-        if (!res) {
-            console.log(`Failed to generate summary for conversation`);
-            return;
-        }
-        this.current.setSummaryMessage(res);
-        this.saveConversationToStorage();
-    }
-
-    addUserMessage(
-        stringContent: string,
-        context: ChatMessageContext[],
-    ): UserChatMessageImpl | undefined {
+    addUserMessage(content: string, context: ChatMessageContext[]): UserChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = UserChatMessageImpl.fromStringContent(stringContent, context);
+        const newMessage = UserChatMessageImpl.fromStringContent(content, context);
         this.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
     }
 
-    addCoreUserMessage(coreMessage: CoreUserMessage): UserChatMessageImpl | undefined {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const newMessage = UserChatMessageImpl.fromCoreMessage(coreMessage);
-        this.current.appendMessage(newMessage);
-        this.saveConversationToStorage();
-        return newMessage;
-    }
-
-    addCoreAssistantMessage(
-        coreMessage: CoreAssistantMessage,
+    addAssistantMessage(
+        message: Message,
     ): AssistantChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = AssistantChatMessageImpl.fromCoreMessage(coreMessage);
-        this.current.appendMessage(newMessage);
-        this.saveConversationToStorage();
-        return newMessage;
-    }
-
-    addCoreToolMessage(coreMessage: CoreToolMessage): ToolChatMessageImpl | undefined {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const newMessage = ToolChatMessageImpl.fromCoreMessage(coreMessage);
+        const newMessage = AssistantChatMessageImpl.fromMessage(message);
         this.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;

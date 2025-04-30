@@ -5,24 +5,29 @@ import { EditorEngine } from './editor/engine';
 import { ProjectManager } from './projects';
 import { UserManager } from './user';
 
-// const authManager = new AuthManager();
 const projectManager = new ProjectManager();
 const userManager = new UserManager();
 const editorEngine = new EditorEngine(
     projectManager,
-    // userManager
+    userManager
 );
-// const appStateManager = new AppStateManager();
-// const AuthContext = createContext(authManager);
+
 const ProjectContext = createContext(projectManager);
 const UserContext = createContext(userManager);
 const EditorEngineContext = createContext(editorEngine);
+
+export const useProjectsManager = () => useContext(ProjectContext);
+export const useUserManager = () => useContext(UserContext);
+export const useEditorEngine = () => useContext(EditorEngineContext);
+
+
+// TODO: Likely deprecated
+// const authManager = new AuthManager();
+// const appStateManager = new AppStateManager();
+// const AuthContext = createContext(authManager);
 // const AppStateContext = createContext(appStateManager);
 
 // export const useAuthManager = () => useContext(AuthContext);
 // export const useRouteManager = () => useContext(RouteContext);
 // export const useUpdateManager = () => useContext(UpdateContext);
-export const useProjectsManager = () => useContext(ProjectContext);
-export const useUserManager = () => useContext(UserContext);
-export const useEditorEngine = () => useContext(EditorEngineContext);
 // export const useAppStateManager = () => useContext(AppStateContext);

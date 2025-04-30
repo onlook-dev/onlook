@@ -2,13 +2,14 @@ import { useUserManager } from '@/components/store';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import type { ToolCallPart } from 'ai';
+import type { ToolInvocation } from 'ai';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { CodeBlock } from '../../code-change-display/code-block';
+
 export const ToolCallDisplay = observer(
-    ({ toolCall, isStream }: { toolCall: ToolCallPart; isStream: boolean }) => {
+    ({ toolInvocation, isStream }: { toolInvocation: ToolInvocation; isStream: boolean }) => {
         const userManager = useUserManager();
         const [isOpen, setIsOpen] = useState(false);
 
@@ -53,7 +54,7 @@ export const ToolCallDisplay = observer(
                         </CollapsibleTrigger>
 
                         <div className="flex items-center mr-2 px-2 py-0 border rounded-md bg-background-secondary">
-                            {toolCall.toolName}
+                            {toolInvocation.toolName}
                         </div>
                     </div>
 
@@ -68,8 +69,7 @@ export const ToolCallDisplay = observer(
                             >
                                 <div className="border-t">
                                     <CodeBlock
-                                        code={JSON.stringify(toolCall.args, null, 2)}
-                                        variant="minimal"
+                                        code={JSON.stringify(toolInvocation.args, null, 2)}
                                     />
                                 </div>
                             </motion.div>

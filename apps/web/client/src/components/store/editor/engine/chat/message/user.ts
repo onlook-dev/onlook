@@ -1,17 +1,17 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
-import type { CoreUserMessage, UserContent } from 'ai';
+import type { Message } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;
     role: ChatMessageRole.USER = ChatMessageRole.USER;
-    content: UserContent;
+    content: string;
     context: ChatMessageContext[] = [];
     promptProvider: PromptProvider;
 
-    constructor(content: UserContent, context: ChatMessageContext[] = []) {
+    constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
         this.content = content;
         this.context = context;
@@ -33,39 +33,26 @@ export class UserChatMessageImpl implements UserChatMessage {
         };
     }
 
-    static fromCoreMessage(message: CoreUserMessage): UserChatMessageImpl {
-        return new UserChatMessageImpl(message.content);
+    static fromMessage(message: Message, context: ChatMessageContext[]): UserChatMessageImpl {
+        return new UserChatMessageImpl(message.content, context);
     }
 
     static fromStringContent(
         content: string,
-        context: ChatMessageContext[] = [],
+        context: ChatMessageContext[]
     ): UserChatMessageImpl {
-        const message = new UserChatMessageImpl([{ type: 'text', text: content }], context);
-        return message;
+        return new UserChatMessageImpl(content, context);
     }
 
-    toCoreMessage(): CoreUserMessage {
-        return this.promptProvider.getHydratedUserMessage(this.content, this.context);
+    toStreamMessage(): Message {
+        return this.promptProvider.getHydratedUserMessage(this.id, this.content, this.context);
     }
 
-    updateContent(content: UserContent) {
+    updateContent(content: string) {
         this.content = content;
     }
 
-    updateStringContent(content: string) {
-        this.content = [
-            {
-                type: 'text',
-                text: content,
-            },
-        ];
-    }
-
     getStringContent(): string {
-        if (typeof this.content === 'string') {
-            return this.content;
-        }
-        return this.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+        return this.content;
     }
 }

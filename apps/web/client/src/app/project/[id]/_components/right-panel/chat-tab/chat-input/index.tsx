@@ -1,33 +1,32 @@
 
-import { useEditorEngine, useProjectsManager } from '@/components/store';
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+import { useEditorEngine } from '@/components/store';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/engine/chat';
-import { EditorTabValue } from '@onlook/models';
-import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
+import { EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
+import { compressImage } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { DraftContextPill } from './context-pills/draft-context-pill';
-import { DraftImagePill } from './context-pills/draft-image-pill';
-import type { SuggestionsRef } from './suggestions';
-import Suggestions from './suggestions';
+import { Suggestions, type SuggestionsRef } from '../suggestions';
+import { ActionButtons } from './action-buttons';
 
 export const ChatInput = observer(() => {
+    const { messages, setMessages, stop, reload, status } = useChatContext();
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
     const t = useTranslations();
-
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const isWaiting = status === 'streaming' || status === 'submitted';
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -36,7 +35,7 @@ export const ChatInput = observer(() => {
     };
 
     useEffect(() => {
-        if (textareaRef.current && !editorEngine.chat.isWaiting) {
+        if (textareaRef.current && !isWaiting) {
             focusInput();
         }
     }, [editorEngine.chat.conversation.current?.messages.length]);
@@ -49,7 +48,7 @@ export const ChatInput = observer(() => {
 
     useEffect(() => {
         const focusHandler = () => {
-            if (textareaRef.current && !editorEngine.chat.isWaiting) {
+            if (textareaRef.current && !isWaiting) {
                 focusInput();
             }
         };
@@ -75,7 +74,7 @@ export const ChatInput = observer(() => {
         return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
     }, []);
 
-    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
+    const disabled = isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -113,42 +112,28 @@ export const ChatInput = observer(() => {
         }
     };
 
-    function sendMessage() {
+    async function sendMessage() {
         if (inputEmpty) {
             console.warn('Empty message');
             return;
         }
-        if (editorEngine.chat.isWaiting) {
+        if (isWaiting) {
             console.warn('Already waiting for response');
             return;
         }
-        editorEngine.chat.sendNewMessage(inputValue);
+        const streamMessages = await editorEngine.chat.getStreamMessages(inputValue);
+        if (!streamMessages) {
+            toast({
+                title: 'Error',
+                description: 'Failed to send message. Please try again.',
+            });
+            return;
+        }
+
+        setMessages(streamMessages);
+        reload();
         setInputValue('');
     }
-
-    const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
-        const newContext = [...editorEngine.chat.context.context].filter(
-            (context) => context !== contextToRemove,
-        );
-
-        editorEngine.chat.context.context = newContext;
-    };
-
-    const handleOpenFileDialog = (e: React.MouseEvent<HTMLButtonElement>) => {
-        // Removes focus from the button to prevent tooltip from showing
-        e.currentTarget.blur();
-        const inputElement = document.createElement('input');
-        inputElement.type = 'file';
-        inputElement.accept = 'image/*';
-        inputElement.onchange = async () => {
-            if (inputElement.files && inputElement.files.length > 0) {
-                const file = inputElement.files[0];
-                const fileName = file.name;
-                await handleImageEvent(file, fileName);
-            }
-        };
-        inputElement.click();
-    };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
         const items = e.clipboardData.items;
@@ -219,6 +204,14 @@ export const ChatInput = observer(() => {
 
     const suggestionRef = useRef<SuggestionsRef>(null);
 
+    const bubbleDragEvent = (e: React.DragEvent<HTMLTextAreaElement>, eventType: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.currentTarget.parentElement?.dispatchEvent(
+            new DragEvent(eventType, { bubbles: true, cancelable: true, dataTransfer: e.dataTransfer }),
+        );
+    };
+
     return (
         <div
             className={cn(
@@ -259,37 +252,7 @@ export const ChatInput = observer(() => {
                     }
                 }}
             />
-
             <div className="flex flex-col w-full p-4">
-                <div
-                    className={cn(
-                        'flex flex-row flex-wrap w-full gap-1.5 text-micro mb-1 text-foreground-secondary',
-                        editorEngine.chat.context.context.length > 0 ? 'min-h-6' : 'h-0',
-                    )}
-                >
-                    <AnimatePresence mode="popLayout">
-                        {editorEngine.chat.context.context.map(
-                            (context: ChatMessageContext, index: number) => {
-                                if (context.type === MessageContextType.IMAGE) {
-                                    return (
-                                        <DraftImagePill
-                                            key={`image-${context.content}`}
-                                            context={context}
-                                            onRemove={() => handleRemoveContext(context)}
-                                        />
-                                    );
-                                }
-                                return (
-                                    <DraftContextPill
-                                        key={`${context.type}-${context.content}`}
-                                        context={context}
-                                        onRemove={() => handleRemoveContext(context)}
-                                    />
-                                );
-                            },
-                        )}
-                    </AnimatePresence>
-                </div>
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}
@@ -299,14 +262,11 @@ export const ChatInput = observer(() => {
                             : t('editor.panels.edit.tabs.chat.input.placeholder')
                     }
                     className={cn(
-                        'mt-2 overflow-auto max-h-32 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C]',
-                        'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary',
-                        'placeholder:text-foreground-primary/50',
-                        'cursor-text',
+                        'mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
+                        'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50 cursor-text',
                         isDragging ? 'pointer-events-none' : 'pointer-events-auto',
                     )}
                     rows={3}
-                    style={{ resize: 'none' }}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onInput={handleInput}
@@ -317,118 +277,25 @@ export const ChatInput = observer(() => {
                         setIsComposing(false);
                     }}
                     onDragEnter={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.parentElement?.dispatchEvent(
-                            new DragEvent('dragenter', {
-                                bubbles: true,
-                                cancelable: true,
-                                dataTransfer: e.dataTransfer,
-                            }),
-                        );
+                        bubbleDragEvent(e, 'dragenter');
                     }}
                     onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.parentElement?.dispatchEvent(
-                            new DragEvent('dragover', {
-                                bubbles: true,
-                                cancelable: true,
-                                dataTransfer: e.dataTransfer,
-                            }),
-                        );
+                        bubbleDragEvent(e, 'dragover');
                     }}
                     onDragLeave={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                            e.currentTarget.parentElement?.dispatchEvent(
-                                new DragEvent('dragleave', {
-                                    bubbles: true,
-                                    cancelable: true,
-                                    dataTransfer: e.dataTransfer,
-                                }),
-                            );
-                        }
+                        bubbleDragEvent(e, 'dragleave');
                     }}
                     onDrop={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.parentElement?.dispatchEvent(
-                            new DragEvent('drop', {
-                                bubbles: true,
-                                cancelable: true,
-                                dataTransfer: e.dataTransfer,
-                            }),
-                        );
+                        bubbleDragEvent(e, 'drop');
                     }}
                 />
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
-                <div className="flex flex-row justify-start gap-1.5">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
-                                onClick={handleOpenFileDialog}
-                                disabled={disabled}
-                            >
-                                <Icons.Image
-                                    className={cn(
-                                        'w-5 h-5',
-                                        disabled
-                                            ? 'text-foreground-tertiary'
-                                            : 'group-hover:text-foreground',
-                                    )}
-                                />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipPortal>
-                            <TooltipContent side="top" sideOffset={5}>
-                                {disabled ? 'Select an element to start' : 'Upload Image Reference'}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
-                                onClick={() => {
-                                    editorEngine.chat.context.addScreenshotContext();
-                                }}
-                                disabled={disabled}
-                            >
-                                <Icons.Laptop
-                                    className={cn(
-                                        'w-5 h-5',
-                                        disabled
-                                            ? 'text-foreground-tertiary'
-                                            : 'group-hover:text-foreground',
-                                    )}
-                                />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipPortal>
-                            <TooltipContent side="top" sideOffset={5}>
-                                {disabled
-                                    ? 'Select an element to start'
-                                    : 'Add screenshot of the current page'}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    </Tooltip>
-                    <Button
-                        variant={'outline'}
-                        className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary hidden"
-                    >
-                        <Icons.FilePlus className="mr-2" />
-                        <span className="text-smallPlus">File Reference</span>
-                    </Button>
-                </div>
-                {editorEngine.chat.isWaiting ? (
+                <ActionButtons
+                    disabled={disabled}
+                    handleImageEvent={handleImageEvent}
+                />
+                {isWaiting ? (
                     <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
                         <TooltipTrigger asChild>
                             <Button
@@ -437,7 +304,7 @@ export const ChatInput = observer(() => {
                                 className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                                 onClick={() => {
                                     setActionTooltipOpen(false);
-                                    editorEngine.chat.stopStream();
+                                    stop();
                                 }}
                             >
                                 <Icons.Stop />
@@ -450,7 +317,7 @@ export const ChatInput = observer(() => {
                         size={'icon'}
                         variant={'secondary'}
                         className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                        disabled={inputEmpty || editorEngine.chat.isWaiting}
+                        disabled={inputEmpty || status !== 'ready'}
                         onClick={sendMessage}
                     >
                         <Icons.ArrowRight />

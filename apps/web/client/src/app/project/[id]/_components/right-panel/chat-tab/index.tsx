@@ -12,4 +12,4 @@ export const ChatTab = () => {
             <ChatInput />
         </div>
     );
-};
+}
