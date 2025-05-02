@@ -75,9 +75,30 @@ export class SandboxManager {
         return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
     }
 
+    async readFiles(paths: string[]): Promise<Record<string, string>> {
+        const results: Record<string, string> = {};
+        for (const path of paths) {
+            const content = await this.readFile(path);
+            if (!content) {
+                console.error(`Failed to read file ${path}`);
+                continue;
+            }
+            results[path] = content;
+        }
+        return results;
+    }
+
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
         return this.fileSync.write(normalizedPath, content, this.writeRemoteFile.bind(this));
+    }
+
+    async listAllFiles() {
+        return this.fileSync.listAllFiles();
+    }
+
+    async listFiles(dir: string) {
+        return this.session?.fs.readdir(dir);
     }
 
     async listFilesRecursively(dir: string, ignore: string[] = [], extensions: string[] = []): Promise<string[]> {
@@ -105,7 +126,6 @@ export class SandboxManager {
                 results.push(normalizedPath);
             }
         }
-
         return results;
     }
 

@@ -14,11 +14,12 @@ import { compressImage } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 
 export const ChatInput = observer(() => {
-    const { messages, setMessages, stop, reload, status } = useChatContext();
+    const { setMessages, stop, reload, status } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -253,6 +254,7 @@ export const ChatInput = observer(() => {
                 }}
             />
             <div className="flex flex-col w-full p-4">
+                <InputContextPills />
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}
@@ -262,7 +264,7 @@ export const ChatInput = observer(() => {
                             : t('editor.panels.edit.tabs.chat.input.placeholder')
                     }
                     className={cn(
-                        'mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
+                        'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50 cursor-text',
                         isDragging ? 'pointer-events-none' : 'pointer-events-auto',
                     )}

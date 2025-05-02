@@ -1,5 +1,6 @@
 import { assistant1, assistant2 } from '@onlook/ai/src/prompt/edit/example';
 import { MessageContextType } from '@onlook/models/chat';
+import { nanoid } from 'nanoid';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
 
@@ -7,7 +8,7 @@ const GREETING_MSG_CONTENT = 'Click on any element to chat with it. Try to be as
 
 export const GREETING_MSG = new AssistantChatMessageImpl(
     {
-        id: '1',
+        id: nanoid(),
         role: 'assistant',
         content: GREETING_MSG_CONTENT,
         parts: [
@@ -42,7 +43,7 @@ const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected f
 ]);
 
 const MOCK_ASSISTANT_MSG_1 = new AssistantChatMessageImpl({
-    id: '1',
+    id: nanoid(),
     role: 'assistant',
     content: assistant1,
     parts: [
@@ -50,11 +51,29 @@ const MOCK_ASSISTANT_MSG_1 = new AssistantChatMessageImpl({
             type: 'text',
             text: assistant1,
         },
+        {
+            type: 'tool-invocation',
+            toolInvocation: {
+                state: 'result',
+                toolName: 'listFiles',
+                args: {
+                    path: '/Users/kietho/workplace/onlook/test/test/app',
+                },
+                toolCallId: nanoid(),
+                result: {
+                    files: [
+                        {
+                            path: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
+                        },
+                    ],
+                },
+            },
+        },
     ],
 });
 
 const MOCK_ASSISTANT_MSG_2 = new AssistantChatMessageImpl({
-    id: '2',
+    id: nanoid(),
     role: 'assistant',
     content: assistant2,
     parts: [

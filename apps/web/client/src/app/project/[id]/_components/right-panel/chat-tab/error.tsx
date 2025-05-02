@@ -1,4 +1,4 @@
-    import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
@@ -6,14 +6,17 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { useChatContext } from '../../../_hooks/use-chat';
 
 export const Error = observer(() => {
+    const { status } = useChatContext();
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const errorCount = editorEngine.error.errors.length;
+    const isWaiting = status === 'streaming' || status === 'submitted';
 
     return (
-        <Collapsible 
+        <Collapsible
             open={isOpen}
             onOpenChange={setIsOpen}
             className={cn(
@@ -58,7 +61,7 @@ export const Error = observer(() => {
                         <Button
                             variant="ghost"
                             size="sm"
-                            disabled={editorEngine.chat.isWaiting}
+                            disabled={isWaiting}
                             className="h-7 px-2 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none"
                             onClick={async (e) => {
                                 e.stopPropagation();

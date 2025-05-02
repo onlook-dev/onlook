@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import { colors, fontSize } from './tokens';
+import { fontSize } from './tokens';
 
 const config = {
     darkMode: ['class', '[data-mode="dark"]'],
@@ -122,7 +122,6 @@ const config = {
                 },
                 input: 'hsl(var(--input))',
                 ring: 'hsl(var(--ring))',
-                ...colors,
             },
             fontSize: {
                 title1: [

@@ -1,10 +1,12 @@
+import { useEditorEngine } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useEditorEngine } from '@/components/store';
+
 export const ErrorMessage = observer(() => {
     const editorEngine = useEditorEngine();
-    const rateLimited = editorEngine.chat.stream.rateLimited;
+    // TODO: Add rate limiting
+    const rateLimited = null;
 
     if (rateLimited) {
         const requestLimit =
@@ -27,7 +29,8 @@ export const ErrorMessage = observer(() => {
         );
     }
 
-    const errorMessage = editorEngine.chat.stream.errorMessage;
+    // TODO: Add error message
+    const errorMessage = null;
     if (errorMessage) {
         return (
             <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">

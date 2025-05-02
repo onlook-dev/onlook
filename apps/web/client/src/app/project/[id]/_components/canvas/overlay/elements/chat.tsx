@@ -173,7 +173,7 @@ export const OverlayChat = observer(
                                             textareaRef.current.scrollHeight;
                                     }
                                 }}
-                                placeholder="Type your message..."
+                                placeholder={t('editor.panels.edit.tabs.chat.input.placeholder')}
                                 style={{
                                     resize: 'none',
                                     minHeight: DIMENSIONS.singleLineHeight,

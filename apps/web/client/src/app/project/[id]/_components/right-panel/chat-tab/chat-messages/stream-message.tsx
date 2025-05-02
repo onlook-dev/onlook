@@ -6,20 +6,12 @@ import { MessageContent } from './message-content';
 export const StreamMessage = () => {
     const { messages, status } = useChatContext();
     const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    const isAssistantStreamMessage = streamMessage?.role === ChatMessageRole.ASSISTANT;
     const isWaiting = status === 'streaming' || status === 'submitted';
-    const isAssistantMessage = streamMessage?.role === ChatMessageRole.ASSISTANT;
-
-    if (!streamMessage || !isAssistantMessage || !isWaiting) {
-        return null;
-    }
 
     return (
         <>
-            <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
-                <Icons.Shadow className="animate-spin" />
-                <p>Thinking ...</p>
-            </div>
-            {streamMessage.parts && (
+            {streamMessage && isAssistantStreamMessage && streamMessage.parts && (
                 <div className="px-4 py-2 text-small content-start">
                     <div className="flex flex-col text-wrap gap-2">
                         <MessageContent
@@ -29,6 +21,12 @@ export const StreamMessage = () => {
                             isStream={true}
                         />
                     </div>
+                </div>
+            )}
+            {isWaiting && (
+                <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                    <Icons.Shadow className="animate-spin" />
+                    <p>Thinking ...</p>
                 </div>
             )}
         </>

@@ -3,6 +3,7 @@
 import { ChatProvider } from "@/app/project/[id]/_hooks/use-chat";
 import { useEditorEngine, useProjectsManager } from "@/components/store";
 import type { Project } from "@onlook/models";
+import { Icons } from "@onlook/ui/icons/index";
 import { TooltipProvider } from "@onlook/ui/tooltip";
 import { useEffect } from "react";
 import { useSandbox } from "../_hooks/use-sandbox";
@@ -23,7 +24,7 @@ export function Main({ project }: { project: Project }) {
     useEffect(() => {
         projectManager.project = project;
         editorEngine.canvas.applyProject(project);
-        // registerSandbox(project);
+        registerSandbox(project);
 
         return () => {
             editorEngine.sandbox.clear();
@@ -52,14 +53,14 @@ export function Main({ project }: { project: Project }) {
         }
     }, [tabState, session]);
 
-    // if (isStarting) {
-    //     return (
-    //         <div className="h-screen w-screen flex items-center justify-center gap-2">
-    //             <Icons.Shadow className="h-6 w-6 animate-spin" />
-    //             <div className="text-xl">Starting animation goes here...</div>
-    //         </div>
-    //     );
-    // }
+    if (isStarting) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center gap-2">
+                <Icons.Shadow className="h-6 w-6 animate-spin" />
+                <div className="text-xl">Starting animation goes here...</div>
+            </div>
+        );
+    }
 
     return (
         <ChatProvider>

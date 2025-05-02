@@ -3,9 +3,16 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": [
+                "./src/*"
+            ]
         }
     },
-    "include": ["src", "tokens.ts"],
-    "exclude": ["node_modules"]
+    "include": [
+        "src",
+        "tokens.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
 }

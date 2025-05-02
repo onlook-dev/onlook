@@ -12,7 +12,7 @@ export class ChatConversationImpl implements ChatConversation {
     id: string;
     projectId: string;
     displayName: string | null = null;
-    messages: ChatMessageImpl[];
+    messages: ChatMessageImpl[] = [];
     createdAt: string;
     updatedAt: string;
 
@@ -64,7 +64,6 @@ export class ChatConversationImpl implements ChatConversation {
     getMessagesForStream(): Message[] {
         return this.messages.map((m) => m.toStreamMessage());
     }
-
 
     appendMessage(message: ChatMessageImpl) {
         this.messages = [...this.messages, message];

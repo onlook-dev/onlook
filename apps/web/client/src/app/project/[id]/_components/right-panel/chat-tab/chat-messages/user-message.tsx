@@ -1,4 +1,6 @@
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store';
+import type { UserChatMessageImpl } from '@/components/store/editor/engine/chat/message/user';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
@@ -6,7 +8,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
 import { SentContextPill } from '../context-pills/sent-context-pill';
-import type { UserChatMessageImpl } from '@/components/store/editor/engine/chat/message/user';
 
 interface UserMessageProps {
     message: UserChatMessageImpl;
@@ -14,6 +15,7 @@ interface UserMessageProps {
 
 export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
+    const { reload, setMessages } = useChatContext();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -38,11 +40,6 @@ export const UserMessage = ({ message }: UserMessageProps) => {
         setEditValue('');
     };
 
-    const handleSubmit = () => {
-        editorEngine.chat.resubmitMessage(message.id, editValue);
-        setIsEditing(false);
-    };
-
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
@@ -60,9 +57,24 @@ export const UserMessage = ({ message }: UserMessageProps) => {
         setTimeout(() => setIsCopied(false), 2000);
     }
 
-    const handleRetry = () => {
-        editorEngine.chat.resubmitMessage(message.id, message.getStringContent());
+    const handleSubmit = async () => {
+        await sendMessage(editValue);
+        setIsEditing(false);
     };
+
+    const handleRetry = async () => {
+        await sendMessage(message.getStringContent());
+    };
+
+    const sendMessage = async (newContent: string) => {
+        const newMessages = await editorEngine.chat.getResubmitMessages(message.id, newContent);
+        if (!newMessages) {
+            console.error('Failed to resubmit message');
+            return;
+        }
+        setMessages(newMessages);
+        await reload();
+    }
 
     function renderEditingInput() {
         return (

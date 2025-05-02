@@ -55,7 +55,7 @@ export class FileSyncManager {
         await this.saveToLocalStorage();
     }
 
-    listFiles() {
+    listAllFiles() {
         return Array.from(this.cache.keys());
     }
 

@@ -7,7 +7,6 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../..';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
-import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
 
 export class ConversationManager {
@@ -37,7 +36,7 @@ export class ConversationManager {
 
 
         this.conversations = await this.getConversations(project.id);
-        if (this.conversations.length === 0 && !!this.conversations[0]) {
+        if (this.conversations.length === 0 && !this.conversations[0]) {
             this.current = new ChatConversationImpl(project.id, []);
         } else {
             this.current = this.conversations[0] ?? null;
@@ -116,9 +115,9 @@ export class ConversationManager {
         sendAnalytics('delete conversation');
     }
 
-
     async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
-        return [new ChatConversationImpl(id, MOCK_CHAT_MESSAGES)];
+        // return [new ChatConversationImpl(id, MOCK_CHAT_MESSAGES)];
+        return null;
     }
 
     deleteConversationInStorage(id: string) {
