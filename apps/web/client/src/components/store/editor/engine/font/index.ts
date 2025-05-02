@@ -135,10 +135,8 @@ export class FontManager {
 
     const fontConfigDisposer = reaction(
       () => this.editorEngine.sandbox?.readFile(this.fontConfigPath),
-      (content) => {
-        if (content) {
-          void this.syncFontsWithConfigs();
-        }
+      () => {
+        this.syncFontsWithConfigs();
       },
       { fireImmediately: true },
     );
@@ -251,8 +249,9 @@ export class FontManager {
       }
 
       const content =
-        (await this.editorEngine.sandbox?.readFile(this.fontConfigPath)) ?? "";
+        (await this.editorEngine.sandbox?.readFile(this.fontConfigPath)) ?? "";        
       if (!content) {
+        this._fonts = [];
         return [];
       }
 

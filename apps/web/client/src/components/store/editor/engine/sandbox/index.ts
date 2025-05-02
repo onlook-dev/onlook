@@ -199,11 +199,10 @@ export class SandboxManager {
                     if(event.type === 'remove') {
                         await this.fileSync.delete(normalizedPath);
                     } else if (eventType === 'change' || eventType === 'add') {
-                        const content = await this.readRemoteFile(normalizedPath);
-                        if (!content) {
-                            console.error(`Failed to read file ${normalizedPath}`);
-                            continue;
-                        }
+                        // Sometimes we delete the content of the file, so we should allow empty content
+                        const content = await this.readRemoteFile(normalizedPath) ?? "";
+                        console.log("content", normalizedPath, content);
+                        
                         await this.fileSync.updateCache(normalizedPath, content);
                         await this.processFileForMapping(normalizedPath);
                     }
