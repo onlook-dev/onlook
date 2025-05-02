@@ -22,7 +22,7 @@ export class SandboxManager {
         this.session = session;
     }
 
-    async index() {
+    async index() {        
         if (!this.session) {
             console.error('No session found');
             return;
