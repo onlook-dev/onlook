@@ -420,6 +420,33 @@ export const ChatInput = observer(() => {
                             </TooltipContent>
                         </TooltipPortal>
                     </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
+                                onClick={() => {
+                                    editorEngine.chat.context.addTerminalContext();
+                                }}
+                                disabled={disabled}
+                            >
+                                <Icons.Terminal
+                                    className={cn(
+                                        'w-5 h-5',
+                                        disabled
+                                            ? 'text-foreground-tertiary'
+                                            : 'group-hover:text-foreground',
+                                    )}
+                                />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipPortal>
+                            <TooltipContent side="top" sideOffset={5}>
+                                {disabled ? 'Select an element to start' : 'Add terminal output'}
+                            </TooltipContent>
+                        </TooltipPortal>
+                    </Tooltip>
                     <Button
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary hidden"
