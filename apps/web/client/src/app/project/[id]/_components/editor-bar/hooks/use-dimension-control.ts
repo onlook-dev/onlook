@@ -1,8 +1,7 @@
 import { useEditorEngine } from "@/components/store";
-import { getAutolayoutStyles, LayoutMode, LayoutProperty, parseModeAndValue } from "@/components/store/editor/styles/autolayout";
-import { stringToParsedValue } from "@onlook/utility";
-import { useEffect, useState } from "react";
+import { getAutolayoutStyles, LayoutMode, LayoutProperty, parseModeAndValue, stringToParsedValue } from "@onlook/utility";
 import type { CSSProperties } from 'react';
+import { useEffect, useState } from "react";
 
 type DimensionType = 'width' | 'height';
 type DimensionProperty<T extends DimensionType> = T | `min${Capitalize<T>}` | `max${Capitalize<T>}`;
@@ -42,7 +41,7 @@ const createDefaultState = <T extends DimensionType>(dimension: T): DimensionSta
 
 export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
     const editorEngine = useEditorEngine();
-    
+
     const getInitialState = (): DimensionStateMap<T> => {
         const styles = editorEngine.style.selectedStyle?.styles;
         if (!styles) {
@@ -87,7 +86,7 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
     const handleDimensionChange = (property: DimensionProperty<T>, value: string) => {
         const parsedValue = value === '--' ? undefined : value;
         const currentState = dimensionState[property];
-        
+
         if (!currentState) return;
 
         setDimensionState(prev => ({
@@ -97,13 +96,13 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
                 num: parsedValue,
                 value: parsedValue ? `${parsedValue}${currentState.unit}` : 'auto'
             }
-        }));        
+        }));
         editorEngine.style.update(property, `${parsedValue}${currentState.unit}`);
     };
 
     const handleUnitChange = (property: DimensionProperty<T>, unit: string) => {
         const currentState = dimensionState[property];
-        
+
         if (!currentState) return;
 
         setDimensionState(prev => ({
@@ -118,7 +117,7 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
         if (currentState.num !== undefined) {
             editorEngine.style.update(property, `${currentState.num}${unit}`);
         }
-    }; 
+    };
 
     const handleLayoutChange = (property: DimensionProperty<T>, value: string) => {
         const { layoutValue } = parseModeAndValue(value);
@@ -136,11 +135,11 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
             selectedStyle.parentRect,
         );
 
-        const {num,unit} = stringToParsedValue(newLayoutValue);
+        const { num, unit } = stringToParsedValue(newLayoutValue);
 
 
         const currentState = dimensionState[property];
-        
+
         if (!currentState) return;
         setDimensionState(prev => ({
             ...prev,
@@ -148,10 +147,10 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
                 ...currentState,
                 num,
                 unit,
-                value:`${num}${unit}`,
+                value: `${num}${unit}`,
                 dropdownValue: value
             }
-        }));     
+        }));
         if (num !== undefined) {
             editorEngine.style.update(property, `${num}${unit}`);
         }

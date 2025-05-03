@@ -7,9 +7,9 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { InputDropdown } from "../inputs/input-dropdown";
+import { LayoutMode } from "@onlook/utility";
 import { useDimensionControl } from "../hooks/use-dimension-control";
-import { LayoutMode } from "@/components/store/editor/styles/autolayout";
+import { InputDropdown } from "../inputs/input-dropdown";
 
 export const Width = () => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } = useDimensionControl('width');
@@ -37,7 +37,7 @@ export const Width = () => {
                             onChange={(value) => handleDimensionChange('width', value)}
                             onUnitChange={(value) => handleUnitChange('width', value)}
                             onDropdownChange={(value) => handleLayoutChange("width", value)}
-                            />
+                        />
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Min</span>

@@ -1,4 +1,5 @@
 export * from './assert';
+export * from './autolayout';
 export * from './clone';
 export * from './color';
 export * from './errors';

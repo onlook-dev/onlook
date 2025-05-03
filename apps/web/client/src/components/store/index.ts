@@ -3,8 +3,10 @@
 import { createContext, useContext } from 'react';
 import { EditorEngine } from './editor/engine';
 import { ProjectManager } from './project';
+import { ProjectsManager } from './projects';
 import { UserManager } from './user';
 
+const projectsManager = new ProjectsManager();
 const projectManager = new ProjectManager();
 const userManager = new UserManager();
 const editorEngine = new EditorEngine(
@@ -15,11 +17,12 @@ const editorEngine = new EditorEngine(
 const ProjectContext = createContext(projectManager);
 const UserContext = createContext(userManager);
 const EditorEngineContext = createContext(editorEngine);
+const ProjectsContext = createContext(projectsManager);
 
-export const useProjectManager = () => useContext(ProjectContext);
 export const useUserManager = () => useContext(UserContext);
 export const useEditorEngine = () => useContext(EditorEngineContext);
-
+export const useProjectManager = () => useContext(ProjectContext);
+export const useProjectsManager = () => useContext(ProjectsContext);
 
 // TODO: Likely deprecated
 // const authManager = new AuthManager();
