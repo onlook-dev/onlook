@@ -117,7 +117,7 @@ export class ConversationManager {
     }
 
     async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
-        // return null;
+        return null;
         return [new ChatConversationImpl(id, MOCK_CHAT_MESSAGES)];
     }
 
