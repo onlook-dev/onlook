@@ -20,7 +20,7 @@ export class PromptProvider {
         this.shouldWrapXml = shouldWrapXml;
     }
 
-    getSystemPrompt(platform: NodeJS.Platform) {
+    getSystemPrompt() {
         let prompt = '';
 
         if (this.shouldWrapXml) {
@@ -35,7 +35,7 @@ export class PromptProvider {
             prompt += EDIT_PROMPTS.searchReplaceRules;
             prompt += this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
         }
-        prompt = prompt.replace(PLATFORM_SIGNATURE, platform);
+        prompt = prompt.replace(PLATFORM_SIGNATURE, 'linux');
         return prompt;
     }
 

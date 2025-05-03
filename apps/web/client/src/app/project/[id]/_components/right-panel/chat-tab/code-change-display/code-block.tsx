@@ -1,9 +1,9 @@
 import {
-    getBasicSetup,
-    getExtensions,
+    getExtensions
 } from "@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config";
 import { SystemTheme } from "@onlook/models";
 import { cn } from "@onlook/ui/utils";
+import { basicSetup } from '@uiw/codemirror-extensions-basic-setup';
 import CodeMirror from "@uiw/react-codemirror";
 import { useTheme } from "next-themes";
 
@@ -18,19 +18,23 @@ export const CodeBlock = ({
     const { theme } = useTheme();
     const languageExtension = getExtensions("javascript");
     const extensions = [
-        ...getBasicSetup(() => {
-            // No-op save function since this is a read-only display
+        basicSetup({
+            lineNumbers: false,
+            foldGutter: false,
+            highlightActiveLineGutter: false,
         }),
         ...languageExtension,
     ];
 
     return (
-        <CodeMirror
-            value={code}
-            readOnly={true}
-            className={cn("flex w-full", className)}
-            theme={theme === SystemTheme.DARK ? SystemTheme.DARK : SystemTheme.LIGHT}
-            extensions={extensions}
-        />
+        <div className="flex flex-col w-full h-full">
+            <CodeMirror
+                value={code}
+                readOnly={true}
+                className={cn("flex-1 w-full h-full min-h-full max-h-full overflow-auto", className)}
+                theme={theme === SystemTheme.DARK ? SystemTheme.DARK : SystemTheme.LIGHT}
+                extensions={extensions}
+            />
+        </div>
     );
 };

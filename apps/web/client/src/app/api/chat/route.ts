@@ -1,14 +1,16 @@
-import { chatToolSet, initModel } from '@onlook/ai';
+import { chatToolSet, initModel, PromptProvider } from '@onlook/ai';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 
 const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET);
+const promptProvider = new PromptProvider();
 
 export async function POST(req: Request) {
     const { messages, maxSteps, maxTokens } = await req.json();
 
     const result = streamText({
         model,
+        system: promptProvider.getSystemPrompt(),
         messages,
         maxSteps,
         tools: chatToolSet,

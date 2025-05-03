@@ -11,7 +11,7 @@ export const StreamMessage = () => {
 
     return (
         <>
-            {streamMessage && isAssistantStreamMessage && streamMessage.parts && (
+            {streamMessage && isAssistantStreamMessage && streamMessage.parts && isWaiting && (
                 <div className="px-4 py-2 text-small content-start">
                     <div className="flex flex-col text-wrap gap-2">
                         <MessageContent

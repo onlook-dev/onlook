@@ -22,7 +22,7 @@ export const GREETING_MSG = new AssistantChatMessageImpl(
 const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
     {
         type: MessageContextType.FILE,
-        path: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
+        path: 'app/page.tsx',
         content: 'export const Hello = 0;',
         displayName: 'page.tsx',
     },

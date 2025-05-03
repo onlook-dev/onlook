@@ -141,16 +141,11 @@ export class ChatCodeManager {
     }
 
     getFileToCodeBlocks(message: AssistantChatMessage) {
-        // TODO: Need to handle failure cases
-        const content = message.content;
-        const contentString =
-            typeof content === 'string'
-                ? content
-                : content.map((part) => (part.type === 'text' ? part.text : '')).join('');
-        const codeBlocks = this.processor.extractCodeBlocks(contentString);
+        const codeBlocks = this.processor.extractCodeBlocks(message.content);
         const fileToCode: Map<string, CodeBlock[]> = new Map();
         for (const codeBlock of codeBlocks) {
             if (!codeBlock.fileName) {
+                console.error('No file name found in code block', codeBlock);
                 continue;
             }
             fileToCode.set(codeBlock.fileName, [

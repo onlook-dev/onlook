@@ -20,6 +20,12 @@ export const ToolCallDisplay = observer(
             return isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 };
         };
 
+        const getInvocationCode = () => {
+            if (toolInvocation.state === 'result') {
+                return JSON.stringify({ inputs: toolInvocation.args, result: toolInvocation.result }, null, 2);
+            }
+            return JSON.stringify({ inputs: toolInvocation.args }, null, 2);
+        }
         return (
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <div
@@ -68,9 +74,7 @@ export const ToolCallDisplay = observer(
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div className="border-t">
-                                    <CodeBlock
-                                        code={JSON.stringify(toolInvocation.args, null, 2)}
-                                    />
+                                    <CodeBlock code={getInvocationCode()} />
                                 </div>
                             </motion.div>
                         </AnimatePresence>
