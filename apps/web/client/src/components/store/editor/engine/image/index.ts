@@ -1,18 +1,16 @@
-// import type { ProjectsManager } from '@/lib/projects';
-// import { compressImage, invokeMainChannel, sendAnalytics } from '@/lib/utils';
-// import { MainChannels } from '@onlook/constants';
+import type { ProjectManager } from '@/components/store/project';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
+import { compressImage } from '@onlook/utility';
 import mime from 'mime-lite';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
-
 export class ImageManager {
     private images: ImageContentData[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
-        // private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
         // this.scanImages();
@@ -20,7 +18,7 @@ export class ImageManager {
 
     async upload(file: File): Promise<void> {
         try {
-            const projectFolder = this.projectsManager.project?.folderPath;
+            const projectFolder = this.projectManager.project?.folderPath;
             if (!projectFolder) {
                 throw new Error('Project folder not found');
             }
@@ -48,7 +46,7 @@ export class ImageManager {
 
     async delete(imageName: string): Promise<void> {
         try {
-            const projectFolder = this.projectsManager.project?.folderPath;
+            const projectFolder = this.projectManager.project?.folderPath;
             if (!projectFolder) {
                 throw new Error('Project folder not found');
             }
@@ -67,7 +65,7 @@ export class ImageManager {
 
     async rename(imageName: string, newName: string): Promise<void> {
         try {
-            const projectFolder = this.projectsManager.project?.folderPath;
+            const projectFolder = this.projectManager.project?.folderPath;
             if (!projectFolder) {
                 throw new Error('Project folder not found');
             }
@@ -151,7 +149,7 @@ export class ImageManager {
     }
 
     async scanImages() {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
 
         if (!projectRoot) {
             console.warn('No project root found');

@@ -1,5 +1,5 @@
 
-import { useProjectsManager } from '@/components/store';
+import { useProjectManager } from '@/components/store';
 import { DefaultSettings } from '@onlook/constants';
 import { RunState } from '@onlook/models/run';
 import {
@@ -17,10 +17,10 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
 export const ReinstallButton = observer(() => {
-    const projectsManager = useProjectsManager();
+    const projectManager = useProjectManager();
 
-    const project = projectsManager.project;
-    const isTerminalRunning = projectsManager.runner?.state === RunState.RUNNING;
+    const project = projectManager.project;
+    const isTerminalRunning = projectManager.runner?.state === RunState.RUNNING;
     const installCommand = project?.commands?.install ?? DefaultSettings.COMMANDS.install;
 
     const [isReinstalling, setIsReinstalling] = useState(false);
@@ -70,9 +70,9 @@ export const ReinstallButton = observer(() => {
 
     const stopAndReinstall = async () => {
         setShowReinstallDialog(false);
-        await projectsManager.runner?.stop();
+        await projectManager.runner?.stop();
         await reinstallDependencies();
-        projectsManager.runner?.start();
+        projectManager.runner?.start();
     };
 
     return (

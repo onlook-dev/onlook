@@ -1,16 +1,15 @@
 
+import { useEditorEngine, useProjectManager } from '@/components/store';
 import { type PageMetadata } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { MetadataForm } from './metadata-form';
-import { useProjectsManager } from '@/components/store';
-import { useEditorEngine } from '@/components/store';
 import { useMetadataForm } from './use-metadata-form';
 
 export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
     const project = projectsManager.project;
     const siteSetting = project?.metadata;
     const baseUrl = project?.domains?.custom?.url ?? project?.domains?.base?.url ?? project?.url;

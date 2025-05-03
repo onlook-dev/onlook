@@ -1,4 +1,4 @@
-import { type ProjectManager } from '@/components/store/projects';
+import { type ProjectManager } from '@/components/store/project';
 import { sendAnalytics } from '@/utils/analytics';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import type { Project } from '@onlook/models/project';
@@ -17,11 +17,11 @@ export class ConversationManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectManager,
+        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
         reaction(
-            () => this.projectsManager.project,
+            () => this.projectManager.project,
             (current) => this.getCurrentProjectConversations(current),
         );
     }

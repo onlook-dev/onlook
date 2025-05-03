@@ -8,7 +8,6 @@ import { BrandTab } from './brand-tab';
 import { HelpDropdown } from './help-dropdown';
 import { ImagesTab } from './image-tab';
 import { LayersTab } from './layers-tab';
-import { OpenCodeMini } from './open-code-mini';
 import { PagesTab } from './page-tab';
 import { WindowsTab } from './windows-tab';
 import { ZoomControls } from './zoom-controls';
@@ -134,7 +133,6 @@ export const LeftPanel = observer(() => {
                 ))}
 
                 <div className="mt-auto flex flex-col gap-0 items-center mb-4">
-                    <OpenCodeMini />
                     <ZoomControls />
                     <HelpDropdown />
                 </div>

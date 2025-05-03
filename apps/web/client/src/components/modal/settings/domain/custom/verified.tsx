@@ -1,5 +1,5 @@
 
-import { useProjectsManager } from '@/components/store';
+import { useProjectManager } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -12,7 +12,7 @@ import { Input } from '@onlook/ui/input';
 import { timeAgo } from '@onlook/utility';
 
 export const Verified = () => {
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
     const domainsManager = projectsManager.domains;
     const customDomain = projectsManager.project?.domains?.custom;
     const lastUpdated = customDomain?.publishedAt ? timeAgo(customDomain.publishedAt) : null;

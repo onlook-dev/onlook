@@ -1,4 +1,4 @@
-import { ProjectManager } from '@/components/store/projects';
+import { ProjectManager } from '@/components/store/project';
 import { sendAnalytics } from '@/utils/analytics';
 import type { ChatSuggestion, Project } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';

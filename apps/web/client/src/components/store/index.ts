@@ -2,7 +2,7 @@
 // import { AppStateManager } from '@/lib/state';
 import { createContext, useContext } from 'react';
 import { EditorEngine } from './editor/engine';
-import { ProjectManager } from './projects';
+import { ProjectManager } from './project';
 import { UserManager } from './user';
 
 const projectManager = new ProjectManager();
@@ -16,7 +16,7 @@ const ProjectContext = createContext(projectManager);
 const UserContext = createContext(userManager);
 const EditorEngineContext = createContext(editorEngine);
 
-export const useProjectsManager = () => useContext(ProjectContext);
+export const useProjectManager = () => useContext(ProjectContext);
 export const useUserManager = () => useContext(UserContext);
 export const useEditorEngine = () => useContext(EditorEngineContext);
 

@@ -1,14 +1,14 @@
+import { useProjectManager } from '@/components/store';
+import { DefaultSettings } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useProjectsManager } from '@/components/store';
-import { DefaultSettings } from '@onlook/constants';
 import { ReinstallButton } from './reinstall-button';
 
 export const ProjectTab = observer(() => {
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
     const project = projectsManager.project;
 
     const installCommand = project?.commands?.install ?? DefaultSettings.COMMANDS.install;

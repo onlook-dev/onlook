@@ -1,4 +1,4 @@
-import type { ProjectManager } from '@/components/store/projects';
+import type { ProjectManager } from '@/components/store/project';
 import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
@@ -102,45 +102,6 @@ export class ChatContext {
 
     clear() {
         this.context = [];
-    }
-
-    async addScreenshotContext() {
-        const screenshot = await this.getScreenshotContext();
-        if (screenshot) {
-            this.context.push(screenshot);
-        }
-    }
-
-    async getScreenshotContext(): Promise<ImageMessageContext | null> {
-        if (this.editorEngine.elements.selected.length === 0) {
-            return null;
-        }
-        const frameId = this.editorEngine.elements.selected[0]?.frameId;
-        if (!frameId) {
-            return null;
-        }
-
-        const timestamp = Date.now();
-        const screenshotName = `chat-screenshot-${timestamp}`;
-
-        try {
-            const result = await this.editorEngine.canvas?.takeWebviewScreenshot(screenshotName, frameId);
-            if (!result?.image) {
-                console.error('Failed to capture screenshot');
-                return null;
-            }
-            const { image } = result;
-
-            return {
-                type: MessageContextType.IMAGE,
-                content: image,
-                mimeType: 'image/png',
-                displayName: 'screen',
-            };
-        } catch (error) {
-            console.error('Failed to capture screenshot:', error);
-            return null;
-        }
     }
 
     getProjectContext(): ProjectMessageContext[] {

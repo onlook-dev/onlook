@@ -1,4 +1,3 @@
-import { EditorAttributes } from '@onlook/constants';
 import type { DomElement } from '@onlook/models';
 import type {
     ActionElement,
@@ -44,8 +43,12 @@ export class CopyManager {
             console.error('Failed to copy element');
             return;
         }
+        if (!selectedEl.oid) {
+            console.error('Failed to copy element');
+            return;
+        }
         const codeBlock = await this.editorEngine.sandbox.getCodeBlock(selectedEl.oid);
-        this.copied = { element: targetEl, codeBlock: null };
+        this.copied = { element: targetEl, codeBlock: codeBlock };
         await this.clearClipboard();
     }
 

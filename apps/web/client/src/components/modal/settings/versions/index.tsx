@@ -1,15 +1,15 @@
+import { useProjectManager } from '@/components/store';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { useProjectsManager } from '@/components/store';
 import { Versions } from './versions';
 
 export const VersionsTab = observer(() => {
-    const projectsManager = useProjectsManager();
-    const commits = projectsManager.versions?.commits;
+    const projectManager = useProjectManager();
+    const commits = projectManager.versions?.commits;
 
-    // useEffect(() => {
-    //     projectsManager.versions?.listCommits();
-    // }, []);
+    useEffect(() => {
+        projectManager.versions?.listCommits();
+    }, []);
 
     return (
         <div className="flex flex-col h-full relative text-sm">

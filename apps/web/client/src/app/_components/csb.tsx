@@ -8,7 +8,6 @@ import { CSB_TEMPLATE_ID } from "@onlook/constants";
 import { Button } from "@onlook/ui/button";
 import { useEffect, useState } from "react";
 
-
 export function Csb() {
     const editorEngine = useEditorEngine();
     const [session, setSession] = useState<SandboxSession | null>(null);
@@ -25,13 +24,10 @@ export function Csb() {
             const manager = editorEngine.sandbox;
             manager.init(session);
         }
-    }, [session]);
-
-    useEffect(() => {
         return () => {
             editorEngine.sandbox.clear();
         };
-    }, []);
+    }, [session, editorEngine.sandbox]);
 
     const handleReadFile = async () => {
         if (!filePath) return;

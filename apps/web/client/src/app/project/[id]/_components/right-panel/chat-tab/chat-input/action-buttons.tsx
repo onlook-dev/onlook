@@ -63,26 +63,6 @@ export const ActionButtons = (
                 </TooltipPortal>
             </Tooltip>
             <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant={'ghost'}
-                        size={'icon'}
-                        className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
-                        onClick={() => {
-                            editorEngine.chat.context.addScreenshotContext();
-                        }}
-                        disabled={disabled}
-                    >
-                        <Icons.Laptop
-                            className={cn(
-                                'w-5 h-5',
-                                disabled
-                                    ? 'text-foreground-tertiary'
-                                    : 'group-hover:text-foreground',
-                            )}
-                        />
-                    </Button>
-                </TooltipTrigger>
                 <TooltipPortal>
                     <TooltipContent side="top" sideOffset={5}>
                         {disabled

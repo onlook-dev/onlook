@@ -1,12 +1,12 @@
+import { useProjectManager } from '@/components/store';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { NoSavedVersions } from './EmptyState/Saved';
 import { VersionRow, VersionRowType } from './version-row';
-import { useProjectsManager } from '@/components/store';
 
 export const SavedVersions = observer(() => {
-    const projectsManager = useProjectsManager();
-    const commits = projectsManager.versions?.savedCommits;
+    const projectManager = useProjectManager();
+    const commits = projectManager.versions?.savedCommits;
 
     return (
         <div className="flex flex-col gap-4 p-4">

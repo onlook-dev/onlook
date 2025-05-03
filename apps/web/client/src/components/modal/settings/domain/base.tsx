@@ -1,5 +1,5 @@
 
-import { useProjectsManager } from '@/components/store';
+import { useProjectManager } from '@/components/store';
 import { HOSTING_DOMAIN } from '@onlook/constants';
 // import { invokeMainChannel } from '@/lib/utils';
 
@@ -10,7 +10,7 @@ import { getValidSubdomain, getValidUrl, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 
 export const BaseDomain = observer(() => {
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
     if (!projectsManager.project) {
         return null;
     }

@@ -1,15 +1,14 @@
+import { useEditorEngine, useProjectManager, useUserManager } from '@/components/store';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import { UpgradePrompt } from '../upgrade-prompt';
 import { Verification } from './verification';
 import { Verified } from './verified';
-import { useEditorEngine, useUserManager } from '@/components/store';
-import { useProjectsManager } from '@/components/store';
 
 export const CustomDomain = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();   
+    const projectsManager = useProjectManager();
     const userManager = useUserManager();
     const plan = userManager.subscription.plan;
 

@@ -1,5 +1,5 @@
 
-import { useProjectsManager } from '@/components/store';
+import { useProjectManager } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -7,8 +7,8 @@ import { useState } from 'react';
 
 export const BashCodeDisplay = observer(
     ({ content, isStream }: { content: string; isStream: boolean }) => {
-        const projectsManager = useProjectsManager();
-        // const projectPath = projectsManager.project?.folderPath;
+        const projectManager = useProjectManager();
+        // const projectPath = projectManager.project?.folderPath;
         const [running, setRunning] = useState(false);
         const [stdOut, setStdOut] = useState<string | null>(null);
         const [stdErr, setStdErr] = useState<string | null>(null);

@@ -6,8 +6,8 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '..';
 import type { CSSProperties } from 'react';
+import type { EditorEngine } from '..';
 
 
 export interface SelectedStyle {
@@ -46,7 +46,7 @@ export class StyleManager {
         this.updateMultiple({ [style]: value });
     }
 
-    updateMultiple(styles: CSSProperties) {
+    updateMultiple(styles: Record<string, string>) {
         const action = this.getUpdateStyleAction(styles);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(styles);

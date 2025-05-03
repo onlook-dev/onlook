@@ -1,5 +1,4 @@
-import { useProjectsManager } from '@/components/store';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine, useProjectManager } from '@/components/store';
 import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -29,7 +28,7 @@ export const VersionRow = observer(
         autoRename?: boolean;
         onRename?: () => void;
     }) => {
-        const projectsManager = useProjectsManager();
+        const projectsManager = useProjectManager();
         const editorEngine = useEditorEngine();
         const inputRef = useRef<HTMLInputElement>(null);
         const [isRenaming, setIsRenaming] = useState(autoRename);

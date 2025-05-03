@@ -2,6 +2,7 @@
 // import { invokeMainChannel } from '@/lib/utils';
 // import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
 // import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
+import type { ProjectManager } from '@/components/store/project';
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
 import { SystemTheme } from '@onlook/models/assets';
@@ -25,14 +26,14 @@ export class ThemeManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        // private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
         // this.scanConfig();
     }
 
     async scanConfig() {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             return;
         }
@@ -292,7 +293,7 @@ export class ThemeManager {
     }
 
     async rename(oldName: string, newName: string) {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             return;
         }
@@ -312,7 +313,7 @@ export class ThemeManager {
     }
 
     async delete(groupName: string, colorName?: string) {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             return;
         }
@@ -340,7 +341,7 @@ export class ThemeManager {
         theme?: SystemTheme,
         shouldSaveToConfig = false,
     ) {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             return;
         }
@@ -378,7 +379,7 @@ export class ThemeManager {
     }
 
     async add(newName: string) {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot || !newName.trim()) {
             return;
         }
@@ -403,7 +404,7 @@ export class ThemeManager {
         newColor: Color,
         theme?: SystemTheme,
     ) {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             return;
         }
@@ -429,7 +430,7 @@ export class ThemeManager {
         isDefaultPalette?: boolean,
         theme?: SystemTheme,
     ) {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             return;
         }

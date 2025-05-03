@@ -1,5 +1,4 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
-import type { ProjectManager } from '@/components/store/projects';
 import type {
     Action,
     CodeDiffRequest,
@@ -12,7 +11,6 @@ import { getEditTextRequests, getGroupRequests, getInsertImageRequests, getInser
 export class CodeManager {
     constructor(
         private editorEngine: EditorEngine,
-        private projectsManager: ProjectManager,
     ) {
         makeAutoObservable(this);
     }

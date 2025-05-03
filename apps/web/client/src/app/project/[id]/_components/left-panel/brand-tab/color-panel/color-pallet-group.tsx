@@ -21,7 +21,7 @@ import { ColorPopover } from './color-popover';
 interface BrandPalletGroupProps {
     title: string;
     colors: TailwindColor[];
-    theme: 'dark' | 'light';
+    theme: SystemTheme;
     onRename: (groupName: string, newName: string) => void;
     onDelete: (colorName?: string) => void;
     onColorChange?: (

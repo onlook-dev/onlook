@@ -1,12 +1,11 @@
 "use client";
 
 import { motion } from "motion/react";
-import type { ElementType } from "../../main";
 import { LayoutPosition } from "./layout-position";
 import { Typography } from "./typography";
 
 export const Panels = ({ selectedElement }: {
-    selectedElement: ElementType;
+    selectedElement: string;
 }) => {
     return (
         <motion.div

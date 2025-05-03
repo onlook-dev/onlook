@@ -1,4 +1,4 @@
-import { useEditorEngine, useProjectsManager } from '@/components/store';
+import { useEditorEngine, useProjectManager } from '@/components/store';
 import { sendAnalytics } from '@/utils/analytics';
 import { EditorMode, type ImageContentData } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
@@ -20,7 +20,7 @@ import RenameImageModal from './rename-modal';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
+    const projectManager = useProjectManager();
 
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [search, setSearch] = useState('');

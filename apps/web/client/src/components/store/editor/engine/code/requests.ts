@@ -186,7 +186,7 @@ export async function getInsertImageRequests(action: InsertImageAction): Promise
     // TODO: Implement
     return [];
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
-    const projectFolder = this.projectsManager.project?.folderPath;
+    const projectFolder = this.projectManager.project?.folderPath;
 
     if (!projectFolder) {
         console.error('Failed to write image, projectFolder not found');

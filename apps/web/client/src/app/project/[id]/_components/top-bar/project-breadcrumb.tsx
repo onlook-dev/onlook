@@ -1,7 +1,4 @@
-// import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
-// import { ProjectTabs } from '@/lib/projects';
-// import { Route } from '@/lib/routes';
-import { useEditorEngine, useProjectsManager } from '@/components/store';
+import { useEditorEngine, useProjectManager } from '@/components/store';
 import { SettingsTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
@@ -23,8 +20,8 @@ import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
-    const project = projectsManager.project;
+    const projectManager = useProjectManager();
+    const project = projectManager.project;
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
 

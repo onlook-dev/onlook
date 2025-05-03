@@ -17,13 +17,11 @@ export const FrameView =
                 className="flex flex-col fixed"
                 style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
             >
-                <TopBar frame={frame}>
-                </TopBar>
+                <TopBar frame={frame} />
                 <div className="relative">
                     <ResizeHandles frame={frame} />
                     {frame.type === FrameType.WEB && <WebFrameComponent frame={frame as WebFrame} ref={webFrameRef} />}
                     <GestureScreen frame={frame as WebFrame} />
-                    {/* {domFailed && shouldShowDomFailed && renderNotRunning()} */}
                 </div>
             </div>
         );

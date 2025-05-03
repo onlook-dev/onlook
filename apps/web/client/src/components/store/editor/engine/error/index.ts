@@ -1,4 +1,4 @@
-import type { ProjectManager } from '@/components/store/projects';
+import type { ProjectManager } from '@/components/store/project';
 import { type ParsedError, compareErrors } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';

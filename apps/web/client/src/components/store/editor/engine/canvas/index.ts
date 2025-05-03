@@ -59,7 +59,7 @@ export class CanvasManager {
 
     set scale(value: number) {
         this._scale = value;
-        // this.saveSettings();
+        this.saveSettings();
     }
 
     get position() {
@@ -83,54 +83,20 @@ export class CanvasManager {
         return this.frames.find((f) => f.id === id);
     }
 
-    saveFrame(id: string, newSettings: Partial<Frame>) {
-        // let frame = this.frames.find((f) => f.id === id);
-        // if (!frame) {
-        //     return;
-        // }
+    saveFrame(id: string, newFrame: Frame) {
+        let frame = this.frames.find((f) => f.id === id);
+        if (!frame) {
+            return;
+        }
 
-        // frame = { ...frame, ...newSettings };
-        // this.frames = this.frames.map((f) => (f.id === id ? frame : f));
-        // this.saveSettings();
+        frame = { ...frame, ...newFrame };
+        this.frames = this.frames.map((f) => (f.id === id ? frame : f));
+        this.saveSettings();
     }
 
-    saveFrames(frames: Frame[]) {
-        // this.frames = frames;
-        // this.saveSettings();
-    }
-
-    async applySettings(project: Project) {
-        // this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
-        // this.panPosition = project.settings?.position || this.getDefaultPanPosition();
-
-        // if (project.settings?.frames && project.settings.frames.length) {
-        //     this.frames = project.settings.frames;
-        // } else {
-        //     // Find desktop and mobile presets
-        //     const desktopPreset = SIZE_PRESETS.find((preset) => preset.name === 'Desktop');
-        //     const mobilePreset = SIZE_PRESETS.find((preset) => preset.name === 'Mobile');
-
-        //     // Create desktop frame
-        //     const desktopFrame = this.getDefaultFrame({
-        //         url: project.url,
-        //         dimension: desktopPreset
-        //             ? { width: desktopPreset.width, height: desktopPreset.height }
-        //             : DefaultSettings.FRAME_DIMENSION,
-        //         device: 'Desktop',
-        //     });
-
-        //     // Create mobile frame with position offset to avoid overlap
-        //     const mobileFrame = this.getDefaultFrame({
-        //         url: project.url,
-        //         dimension: mobilePreset
-        //             ? { width: mobilePreset.width, height: mobilePreset.height }
-        //             : { width: 320, height: 568 },
-        //         position: { x: desktopFrame.dimension.width + 100, y: 0 },
-        //         device: 'Mobile',
-        //     });
-
-        //     this.frames = [desktopFrame, mobileFrame];
-        // }
+    saveFrames(newFrames: Frame[]) {
+        this.frames = newFrames;
+        this.saveSettings();
     }
 
     clear() {
@@ -159,6 +125,8 @@ export class CanvasManager {
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);
 
     private undebouncedSaveSettings() {
+        // TODO: Save settings in persistence
+
         // const settings: ProjectSettings = {
         //     scale: this.zoomScale,
         //     position: this.panPosition,

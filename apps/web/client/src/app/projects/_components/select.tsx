@@ -1,14 +1,15 @@
 "use client"
 
-import { useProjectsManager } from '@/components/store';
+import { useProjectManager } from '@/components/store';
 import type { Project } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import Carousel from './carousel';
 import ProjectInfo from './info';
 
+// TODO: This will use a projects manager, not project manager
 export const SelectProject = observer(() => {
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
     // const [projects, setProjects] = useState<Project[]>(sortProjects(projectsManager.projects));
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
@@ -20,6 +21,7 @@ export const SelectProject = observer(() => {
         previewUrl: 'http://localhost:8084',
         canvas: null,
         domains: null,
+        sandbox: null,
         metadata: {
             createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
             updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
@@ -32,6 +34,7 @@ export const SelectProject = observer(() => {
         previewUrl: 'http://localhost:8084',
         canvas: null,
         domains: null,
+        sandbox: null,
         metadata: {
             createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
             updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
@@ -44,6 +47,7 @@ export const SelectProject = observer(() => {
         previewUrl: 'http://localhost:8084',
         canvas: null,
         domains: null,
+        sandbox: null,
         metadata: {
             createdAt: new Date(Date.now() - 1000 * 60).toISOString(),
             updatedAt: new Date(Date.now() - 1000 * 60).toISOString(),

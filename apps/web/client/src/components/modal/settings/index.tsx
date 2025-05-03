@@ -1,23 +1,22 @@
+import { useEditorEngine, useProjectManager } from '@/components/store';
 import type { PageNode } from '@onlook/models';
+import { SettingsTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
+import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo } from 'react';
-import { useProjectsManager } from '@/components/store';
-import { useEditorEngine } from '@/components/store';
-import { capitalizeFirstLetter } from '@onlook/utility';
-import { SettingsTabValue } from '@onlook/models';
-import { SiteTab } from './site';
-import { DomainTab } from './domain';
-import {ProjectTab} from './project';
-import { VersionsTab } from './versions';
-import { PreferencesTab } from './preferences';
+import { useMemo } from 'react';
 import AdvancedTab from './advance';
+import { DomainTab } from './domain';
+import { PreferencesTab } from './preferences';
+import { ProjectTab } from './project';
+import { SiteTab } from './site';
 import { PageTab } from './site/page';
+import { VersionsTab } from './versions';
 
 interface SettingTab {
     label: SettingsTabValue | string;
@@ -27,7 +26,7 @@ interface SettingTab {
 
 export const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
     const project = projectsManager.project;
     const pagesManager = editorEngine.pages;
 

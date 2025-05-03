@@ -1,4 +1,4 @@
-// import { useEditorEngine, useUserManager } from '@/components/Context';
+import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine, useUserManager } from '@/components/store';
 import {
     AlertDialog,
@@ -11,6 +11,7 @@ import {
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 import { useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export const DeleteKey = () => {
     const editorEngine = useEditorEngine();
@@ -20,21 +21,21 @@ export const DeleteKey = () => {
         userManager.settings.settings?.editor?.shouldWarnDelete ?? true,
     );
 
-    // useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
-    //     if (editorEngine.frames.selected.length > 0 && editorEngine.frames.selected[0]) {
-    //         editorEngine.frames.disposeFrame(editorEngine.frames.selected[0].frame.id);
-    //     } else {
-    //         if (shouldWarnDelete) {
-    //             setShowDeleteDialog(true);
-    //         } else {
-    //             editorEngine.elements.delete();
-    //         }
-    //     }
-    // });
+    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
+        if (editorEngine.frames.selected.length > 0 && editorEngine.frames.selected[0]) {
+            editorEngine.frames.disposeFrame(editorEngine.frames.selected[0].frame.id);
+        } else {
+            if (shouldWarnDelete) {
+                setShowDeleteDialog(true);
+            } else {
+                editorEngine.elements.delete();
+            }
+        }
+    });
 
     function disableWarning(disable: boolean) {
-        // userManager.settings.updateEditor({ shouldWarnDelete: disable });
-        // setShouldWarnDelete(disable);
+        userManager.settings.updateEditor({ shouldWarnDelete: disable });
+        setShouldWarnDelete(disable);
     }
 
     const handleDelete = async () => {

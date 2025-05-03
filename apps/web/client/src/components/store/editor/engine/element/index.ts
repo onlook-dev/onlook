@@ -90,6 +90,15 @@ export class ElementsManager {
         this._hovered = undefined;
     }
 
+    emitError(error: string) {
+        console.error(error);
+        toast({
+            title: 'Cannot delete element',
+            description: error,
+            variant: 'destructive',
+        });
+    }
+
     async delete() {
         const selected = this.selected;
         if (selected.length === 0) {
@@ -106,38 +115,29 @@ export class ElementsManager {
             const { shouldDelete, error } = await this.shouldDelete(selectedEl, frameData);
 
             if (!shouldDelete) {
-                toast({
-                    title: 'Cannot delete element',
-                    description: error,
-                    variant: 'destructive',
-                });
+                this.emitError(error ?? 'Unknown error');
                 return;
             }
 
             const removeAction: RemoveElementAction | null = await frameData.view.getRemoveAction(selectedEl.domId, frameId);
 
             if (!removeAction) {
-                console.error('Remove action not found');
-                toast({
-                    title: 'Cannot delete element',
-                    description: 'Remove action not found. Try refreshing the page.',
-                    variant: 'destructive',
-                });
+                this.emitError('Remove action not found. Try refreshing the page.');
                 return;
             }
             const oid = selectedEl.instanceId ?? selectedEl.oid;
+            if (!oid) {
+                this.emitError('OID not found. Try refreshing the page.');
+                return;
+            }
             const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
 
-            // if (!codeBlock) {
-            //     toast({
-            //         title: 'Cannot delete element',
-            //         description: 'Code block not found. Try refreshing the page.',
-            //         variant: 'destructive',
-            //     });
-            //     return;
-            // }
+            if (!codeBlock) {
+                this.emitError('Code block not found. Try refreshing the page.');
+                return;
+            }
 
-            // removeAction.codeBlock = codeBlock;
+            removeAction.codeBlock = codeBlock;
 
             this.editorEngine.action.run(removeAction).catch((err) => {
                 console.error('Error deleting element', err);

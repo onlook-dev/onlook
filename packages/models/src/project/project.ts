@@ -4,11 +4,6 @@ import type { DomainSettings } from './domain';
 export interface Project {
     id: string;
     name: string;
-    canvas: CanvasSettings | null;
-    domains: {
-        base: DomainSettings | null;
-        custom: DomainSettings | null;
-    } | null;
     previewUrl: string;
     metadata: {
         createdAt: string;
@@ -19,4 +14,10 @@ export interface Project {
         id: string;
         url: string;
     } | null;
+    domains: {
+        base: DomainSettings | null;
+        custom: DomainSettings | null;
+    } | null;
+    canvas: CanvasSettings | null;
+
 }

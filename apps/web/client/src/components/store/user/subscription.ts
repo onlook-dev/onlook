@@ -28,6 +28,7 @@ export class SubscriptionManager {
     }
 
     async getPlanFromServer(): Promise<UsagePlanType> {
+        return UsagePlanType.BASIC;
         // try {
         //     const res:
         //         | {

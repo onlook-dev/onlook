@@ -29,7 +29,7 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const userManager = useUserManager();
-        const { status } = useChatContext();
+        const { status, setMessages, reload } = useChatContext();
         const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
@@ -83,6 +83,12 @@ export const OverlayChat = observer(
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
             const streamMessages = await editorEngine.chat.getStreamMessages(messageToSend);
             // TODO: Send messages to the chat
+            if (!streamMessages) {
+                console.error('No stream messages');
+                return;
+            }
+            setMessages(streamMessages);
+            reload();
 
             setInputState(DEFAULT_INPUT_STATE);
         };

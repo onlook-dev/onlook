@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/store';
+import { useProjectManager } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
 export const EnvVars = observer(() => {
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
     const project = projectsManager.project;
     const [newVarKey, setNewVarKey] = useState('');
     const [newVarValue, setNewVarValue] = useState('');

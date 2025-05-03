@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/store';
+import { useProjectManager } from '@/components/store';
 import type { DomainType } from '@onlook/models';
 import { PublishStatus } from '@onlook/models/hosting';
 
@@ -7,7 +7,7 @@ import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 
 export const DangerZone = observer(() => {
-    const projectsManager = useProjectsManager();
+    const projectsManager = useProjectManager();
 
     const baseDomain = projectsManager.project?.domains?.base;
     const baseDomainManager = projectsManager.domains?.base;

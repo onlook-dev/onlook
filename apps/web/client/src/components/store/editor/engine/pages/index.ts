@@ -1,6 +1,4 @@
-// import type { ProjectsManager } from '@/components/store/projects';
-// import { invokeMainChannel, sendAnalytics } from '@/components/store/utils';
-// import { MainChannels } from '@onlook/constants';
+import type { ProjectManager } from '@/components/store/project';
 import { sendAnalytics } from '@/utils/analytics';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
@@ -64,7 +62,7 @@ export class PagesManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        // private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
         // this.scanPages();
@@ -157,7 +155,7 @@ export class PagesManager {
 
     async scanPages() {
         try {
-            const projectRoot = this.projectsManager.project?.folderPath;
+            const projectRoot = this.projectManager.project?.folderPath;
 
             if (!projectRoot) {
                 console.warn('No project root found');
@@ -182,7 +180,7 @@ export class PagesManager {
     }
 
     public async createPage(baseRoute: string, pageName: string): Promise<void> {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             throw new Error('No project root found');
         }
@@ -214,7 +212,7 @@ export class PagesManager {
     }
 
     public async renamePage(oldPath: string, newName: string): Promise<void> {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             throw new Error('No project root found');
         }
@@ -245,7 +243,7 @@ export class PagesManager {
     }
 
     public async duplicatePage(sourcePath: string, targetPath: string): Promise<void> {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             throw new Error('No project root found');
         }
@@ -267,7 +265,7 @@ export class PagesManager {
     }
 
     public async deletePage(pageName: string, isDir: boolean): Promise<void> {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             throw new Error('No project root found');
         }
@@ -294,7 +292,7 @@ export class PagesManager {
     }
 
     public async updateMetadataPage(pagePath: string, metadata: PageMetadata) {
-        const projectRoot = this.projectsManager.project?.folderPath;
+        const projectRoot = this.projectManager.project?.folderPath;
         if (!projectRoot) {
             throw new Error('No project root found');
         }
