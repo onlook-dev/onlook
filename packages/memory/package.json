@@ -1,0 +1,25 @@
+{
+  "name": "@onlook/memory",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "jest --config jest.config.js"
+  },
+  "dependencies": {
+    "@onlook/types": "*",
+    "fs-extra": "^11.0.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  }
+}
