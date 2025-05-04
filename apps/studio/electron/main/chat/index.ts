@@ -25,6 +25,7 @@ import { z } from 'zod';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { initModel } from './llmProvider';
+import { extractUrls } from '@onlook/ai/src/tools/helpers';
 
 class LlmManager {
     private static instance: LlmManager;
@@ -59,6 +60,43 @@ class LlmManager {
         return LlmManager.instance;
     }
 
+    private async processUrls(content: string): Promise<string> {
+        const urls = extractUrls(content);
+
+        if (urls.length === 0) {
+            return content;
+        }
+
+        try {
+            const result = await streamText({
+                model: await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
+                    requestType: StreamRequestType.SUGGESTIONS,
+                }),
+                messages: [
+                    {
+                        role: 'user',
+                        content: content,
+                    },
+                ],
+                tools: { crawl_urls: chatToolSet.crawl_urls },
+                maxTokens: 4000,
+            });
+
+            const crawledContent = `
+            Original request:
+            ${content}
+
+            Referenced content from URLs:
+            ${JSON.stringify(result, null, 2)}
+            `;
+
+            return crawledContent;
+        } catch (error) {
+            console.error('Error processing URLs:', error);
+            return content;
+        }
+    }
+
     public async stream(
         messages: CoreMessage[],
         requestType: StreamRequestType,
@@ -67,6 +105,10 @@ class LlmManager {
             skipSystemPrompt?: boolean;
         },
     ): Promise<CompletedStreamResponse> {
+        const lastUserMessage = messages.findLast((m) => m.role === 'user');
+        if (lastUserMessage && typeof lastUserMessage.content === 'string') {
+            lastUserMessage.content = await this.processUrls(lastUserMessage.content);
+        }
         const { abortController, skipSystemPrompt } = options || {};
         this.abortController = abortController || new AbortController();
         try {
