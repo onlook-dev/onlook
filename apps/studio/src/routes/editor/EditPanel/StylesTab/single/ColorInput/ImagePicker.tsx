@@ -9,6 +9,8 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { memo, useCallback, useState } from 'react';
+import ImageSelectionModal from './ImageSelection';
+import type { ImageContentData } from '@onlook/models';
 
 enum ImageFit {
     FILL = 'fill',
@@ -60,6 +62,8 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
 }) => {
     const editorEngine = useEditorEngine();
     const [isDragging, setIsDragging] = useState(false);
+    const [isImageSelectionOpen, setIsImageSelectionOpen] = useState(false);
+
     const getDefaultImageData = () => {
         const selectedStyle = editorEngine.style.selectedStyle?.styles;
         const url = backgroundImage;
@@ -96,6 +100,18 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
             mimeType: '',
         };
     };
+
+    const handleImageSelection = (selectedImage: ImageContentData) => {
+        const newImageData: ImageData = {
+            url: selectedImage.content,
+            base64: selectedImage.content,
+            mimeType: selectedImage.mimeType,
+            fit: imageData?.fit || ImageFit.FILL,
+        };
+        setImageData(newImageData);
+        editorEngine.image.insert(selectedImage.content, selectedImage.mimeType);
+    };
+
     const [imageData, setImageData] = useState<ImageData | null>(getDefaultImageData());
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -175,14 +191,23 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
-                <UploadButton onButtonClick={handleButtonClick} />
-                <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    id="image-upload"
-                    onChange={handleFileSelect}
-                />
+                <div className="flex flex-col gap-2 p-2">
+                    <UploadButton onButtonClick={handleButtonClick} />
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        id="image-upload"
+                        onChange={handleFileSelect}
+                    />
+                    <SelectImageButton onButtonClick={() => setIsImageSelectionOpen(true)} />
+
+                    <ImageSelectionModal
+                        isOpen={isImageSelectionOpen}
+                        onClose={() => setIsImageSelectionOpen(false)}
+                        onSelect={handleImageSelection}
+                    />
+                </div>
             </div>
 
             <DropdownMenu>
@@ -219,6 +244,22 @@ const UploadButton: React.FC<{ onButtonClick: (e: React.MouseEvent) => void }> =
         </Button>
     ),
 );
+
+const SelectImageButton: React.FC<{ onButtonClick: (e: React.MouseEvent) => void }> = memo(
+    ({ onButtonClick }) => (
+        <Button
+            variant="secondary"
+            className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20 opacity-0 group-hover:opacity-90 transition-opacity"
+            type="button"
+            onClick={onButtonClick}
+        >
+            <Icons.Image className="w-3 h-3" />
+            <span>Select Images</span>
+        </Button>
+    ),
+);
+
+SelectImageButton.displayName = 'SelectImageButton';
 
 UploadButton.displayName = 'UploadButton';
 
