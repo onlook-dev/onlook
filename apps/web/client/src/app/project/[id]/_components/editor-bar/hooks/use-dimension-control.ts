@@ -43,13 +43,13 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
     const editorEngine = useEditorEngine();
 
     const getInitialState = (): DimensionStateMap<T> => {
-        const styles = editorEngine.style.selectedStyle?.styles;
-        if (!styles) {
+        const computedStyles = editorEngine.style.selectedStyle?.styles.computed;
+        if (!computedStyles) {
             return createDefaultState(dimension);
         }
-        const { num, unit } = stringToParsedValue(styles[dimension]?.toString() ?? "--");
-        const { num: maxNum, unit: maxUnit } = stringToParsedValue(styles[`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
-        const { num: minNum, unit: minUnit } = stringToParsedValue(styles[`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
+        const { num, unit } = stringToParsedValue(computedStyles[dimension]?.toString() ?? "--");
+        const { num: maxNum, unit: maxUnit } = stringToParsedValue(computedStyles[`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
+        const { num: minNum, unit: minUnit } = stringToParsedValue(computedStyles[`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
 
         const defaultState = createDefaultState(dimension);
         const capitalized = dimension.charAt(0).toUpperCase() + dimension.slice(1) as Capitalize<T>;

@@ -6,7 +6,7 @@ export const truncate = (str: string | null | undefined, length: number): string
     return `${str.slice(0, length - 3)}...`;
 };
 
-export function getTruncatedFileName(fileName: string) {
+export function getTruncatedFileName(fileName: string): string {
     const parts = fileName.split(platformSlash);
     return parts[parts.length - 1];
 }

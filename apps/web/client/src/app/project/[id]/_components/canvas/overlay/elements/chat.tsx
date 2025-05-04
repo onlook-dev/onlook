@@ -29,14 +29,13 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const userManager = useUserManager();
-        const { status, setMessages, reload } = useChatContext();
+        const { setMessages, reload, isWaiting } = useChatContext();
         const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
         const t = useTranslations();
-        const isWaiting = status === 'streaming' || status === 'submitted';
         const shouldHideButton =
             !selectedEl ||
             isPreviewMode ||

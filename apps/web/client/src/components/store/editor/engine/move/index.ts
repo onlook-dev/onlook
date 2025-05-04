@@ -4,7 +4,6 @@ import type React from 'react';
 import type { EditorEngine } from '..';
 import type { FrameData } from '../frames';
 
-
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
     dragTarget: DomElement | undefined;
@@ -31,14 +30,14 @@ export class MoveManager {
         this.dragOrigin = position;
         this.dragTarget = el;
         this.isDragInProgress = true;
-        
+
         if (el.styles?.computed?.position === 'absolute') {
             this.isDraggingAbsolute = true;
             this.editorEngine.history.startTransaction();
             return;
         } else {
             try {
-                const index = await frameView.view.startDrag(el.domId) as number; 
+                const index = await frameView.view.startDrag(el.domId) as number;
                 if (index === null || index === -1) {
                     this.clear();
                     this.isDragInProgress = false;
@@ -76,7 +75,7 @@ export class MoveManager {
         if (this.isDraggingAbsolute) {
             await this.handleDragAbsolute(this.dragOrigin, this.dragTarget, x, y);
             return;
-        }        
+        }
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
@@ -85,7 +84,7 @@ export class MoveManager {
             } catch (error) {
                 console.error('Error during drag:', error);
             }
-        }        
+        }
     }
 
     async handleDragAbsolute(
@@ -111,7 +110,7 @@ export class MoveManager {
                 console.error('No offset parent found for drag');
                 return;
             }
-            
+
             const parentRect = offsetParent.rect;
             if (!parentRect) {
                 console.error('No parent rect found for drag');
@@ -120,7 +119,7 @@ export class MoveManager {
 
             const newX = Math.round(x - parentRect.x - initialOffset.x);
             const newY = Math.round(y - parentRect.y - initialOffset.y);
-            
+
             this.editorEngine.overlay.clear();
             this.editorEngine.style.updateMultiple({
                 left: `${newX}px`,
@@ -138,7 +137,7 @@ export class MoveManager {
             await this.endAllDrag();
             return;
         }
-        
+
         if (this.isDraggingAbsolute) {
             await this.editorEngine.history.commitTransaction();
             this.isDraggingAbsolute = false;
@@ -162,13 +161,13 @@ export class MoveManager {
         try {
             const targetDomId = this.dragTarget.domId;
             this.isDragInProgress = false;
-            
+
             const res = await frameView.view.endDrag(targetDomId) as {
                 newIndex: number;
                 child: DomElement;
                 parent: DomElement;
             } | null;
-            
+
             if (res) {
                 const { child, parent, newIndex } = res;
                 if (newIndex !== this.originalIndex) {
@@ -180,7 +179,7 @@ export class MoveManager {
                         this.originalIndex,
                     );
                     await this.editorEngine.action.run(moveAction);
-                } 
+                }
             }
         } catch (error) {
             console.error('Error ending drag:', error);
@@ -192,7 +191,7 @@ export class MoveManager {
 
     async endAllDrag() {
         const promises: Promise<unknown>[] = [];
-        
+
         this.editorEngine.frames.webviews.forEach((frameView) => {
             try {
                 const promise = frameView.view.endAllDrag() as Promise<unknown>;
@@ -201,7 +200,7 @@ export class MoveManager {
                 console.error('Error in endAllDrag:', error);
             }
         });
-        
+
         await Promise.all(promises);
     }
 

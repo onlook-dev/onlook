@@ -9,11 +9,10 @@ import { useState } from 'react';
 import { useChatContext } from '../../../_hooks/use-chat';
 
 export const Error = observer(() => {
-    const { status } = useChatContext();
+    const { isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const errorCount = editorEngine.error.errors.length;
-    const isWaiting = status === 'streaming' || status === 'submitted';
 
     return (
         <Collapsible

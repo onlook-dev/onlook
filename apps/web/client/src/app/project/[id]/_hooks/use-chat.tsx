@@ -26,7 +26,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 export function useChatContext() {
     const context = useContext(ChatContext);
     if (!context) throw new Error('useChatContext must be used within a ChatProvider');
-    return context;
+    const isWaiting = context.status === 'streaming' || context.status === 'submitted';
+    return { ...context, isWaiting };
 }
 
 function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {

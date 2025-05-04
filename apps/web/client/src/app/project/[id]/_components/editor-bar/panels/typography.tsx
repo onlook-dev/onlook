@@ -123,9 +123,7 @@ export function Typography({ className }: TypographyProps) {
                             <div className="flex-1">
                                 <InputColor
                                     color={textColor}
-                                    opacity={textOpacity}
                                     onColorChange={setTextColor}
-                                    onOpacityChange={setTextOpacity}
                                 />
                             </div>
                         </div>

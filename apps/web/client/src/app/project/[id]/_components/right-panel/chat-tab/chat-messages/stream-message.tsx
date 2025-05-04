@@ -4,10 +4,9 @@ import { Icons } from '@onlook/ui/icons/index';
 import { MessageContent } from './message-content';
 
 export const StreamMessage = () => {
-    const { messages, status } = useChatContext();
+    const { messages, isWaiting } = useChatContext();
     const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
     const isAssistantStreamMessage = streamMessage?.role === ChatMessageRole.ASSISTANT;
-    const isWaiting = status === 'streaming' || status === 'submitted';
 
     return (
         <>

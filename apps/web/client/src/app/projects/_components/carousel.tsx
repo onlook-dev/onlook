@@ -22,7 +22,7 @@ interface CarouselProps {
 const numberWithinRange = (number: number, min: number, max: number): number =>
     Math.min(Math.max(number, min), max);
 
-const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
+export const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
     const WHEEL_SENSITIVITY = 13;
     const SCROLL_COOLDOWN = 50;
     const TWEEN_FACTOR_BASE = 0.3;
@@ -319,5 +319,3 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
         </div>
     );
 };
-
-export default Carousel;

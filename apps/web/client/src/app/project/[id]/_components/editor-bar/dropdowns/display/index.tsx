@@ -28,10 +28,10 @@ export const layoutTypeOptions: Record<string, CssValue> = {
 
 export const Display = () => {
     const editorEngine = useEditorEngine();
-    const [layoutType, setLayoutType] = useState(editorEngine.style.selectedStyle?.styles.display ?? "block");
+    const [layoutType, setLayoutType] = useState(editorEngine.style.selectedStyle?.styles.computed.display ?? "block");
 
     useEffect(() => {
-        setLayoutType(editorEngine.style.selectedStyle?.styles.display ?? "block");
+        setLayoutType(editorEngine.style.selectedStyle?.styles.computed.display ?? "block");
     }, [editorEngine.style.selectedStyle]);
 
     return (

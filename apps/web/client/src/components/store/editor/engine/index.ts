@@ -18,7 +18,6 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
-import { ProjectInfoManager } from './projectinfo';
 import { SandboxManager } from './sandbox';
 import { StateManager } from './state';
 import { StyleManager } from './style';
@@ -40,7 +39,6 @@ export class EditorEngine {
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
-    readonly projectInfo: ProjectInfoManager = new ProjectInfoManager();
     readonly text: TextEditingManager = new TextEditingManager(this);
     readonly insert: InsertManager = new InsertManager(this);
     readonly move: MoveManager = new MoveManager(this);

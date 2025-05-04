@@ -25,15 +25,15 @@ export const useTextControl = () => {
 
     const getInitialState = (): TextState => {
         return {
-            fontFamily: convertFontString(editorEngine.style.selectedStyle?.styles.fontFamily ?? DefaultState.fontFamily),
-            fontSize: parseInt(editorEngine.style.selectedStyle?.styles.fontSize?.toString() ?? DefaultState.fontSize.toString()),
-            fontWeight: editorEngine.style.selectedStyle?.styles.fontWeight?.toString() ?? DefaultState.fontWeight,
-            textAlign: (editorEngine.style.selectedStyle?.styles.textAlign ?? DefaultState.textAlign) as TextAlign,
-            textColor: editorEngine.style.selectedStyle?.styles.color ?? DefaultState.textColor,
+            fontFamily: convertFontString(editorEngine.style.selectedStyle?.styles.computed.fontFamily ?? DefaultState.fontFamily),
+            fontSize: parseInt(editorEngine.style.selectedStyle?.styles.computed.fontSize?.toString() ?? DefaultState.fontSize.toString()),
+            fontWeight: editorEngine.style.selectedStyle?.styles.computed.fontWeight?.toString() ?? DefaultState.fontWeight,
+            textAlign: (editorEngine.style.selectedStyle?.styles.computed.textAlign ?? DefaultState.textAlign) as TextAlign,
+            textColor: editorEngine.style.selectedStyle?.styles.computed.color ?? DefaultState.textColor,
         };
     };
-    
- 
+
+
     const [textState, setTextState] = useState<TextState>(getInitialState());
 
     useEffect(() => {

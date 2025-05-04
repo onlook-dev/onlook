@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Border } from "./dropdowns/border";
 import { ColorBackground } from "./dropdowns/color-background";
 import { Height } from "./dropdowns/height";
@@ -15,49 +14,28 @@ import { ViewButtons } from "./panels/panel-bar/bar";
 import { InputSeparator } from "./separator";
 
 export const ImgSelected = () => {
-    const [activeTab, setActiveTab] = useState('individual');
 
     return (
         <div className="flex items-center gap-1">
-
             <StateDropdown />
-
             <InputSeparator />
-
             <Width />
-
             <InputSeparator />
-
             <Height />
-
             <InputSeparator />
-
             <Padding />
-
             <InputSeparator />
-
             <Margin />
-
             <InputSeparator />
-
             <Radius />
-
             <InputSeparator />
-
             <ImgFit />
-
             <InputSeparator />
-
             <Border />
-
             <InputSeparator />
-
             <ColorBackground />
-
             <InputSeparator />
-
             <ImageBackground />
-
             <ViewButtons />
         </div>
     );

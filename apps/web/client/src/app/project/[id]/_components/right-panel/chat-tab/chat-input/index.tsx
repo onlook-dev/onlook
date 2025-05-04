@@ -19,7 +19,7 @@ import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 
 export const ChatInput = observer(() => {
-    const { setMessages, stop, reload, status } = useChatContext();
+    const { setMessages, stop, reload, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -27,7 +27,6 @@ export const ChatInput = observer(() => {
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const isWaiting = status === 'streaming' || status === 'submitted';
 
     const focusInput = () => {
         requestAnimationFrame(() => {

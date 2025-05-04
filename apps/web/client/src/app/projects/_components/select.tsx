@@ -4,16 +4,16 @@ import { useProjectManager } from '@/components/store';
 import type { Project } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import Carousel from './carousel';
-import ProjectInfo from './info';
+import { Carousel } from './carousel';
+import { ProjectInfo } from './info';
 
 // TODO: This will use a projects manager, not project manager
 export const SelectProject = observer(() => {
     const projectsManager = useProjectManager();
-    // const [projects, setProjects] = useState<Project[]>(sortProjects(projectsManager.projects));
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
+    // const [projects, setProjects] = useState<Project[]>(sortProjects(projectsManager.projects));
     // TODO: remove this
     const mockProjects: Project[] = [{
         id: '1',

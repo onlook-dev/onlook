@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { EditAppButton } from './edit-app';
 import { Settings } from './settings';
 
-const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
+export const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
     const t = useTranslations();
     const variants = {
         enter: (direction: number) => ({
@@ -56,5 +56,3 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
         )
     );
 });
-
-export default ProjectInfo;

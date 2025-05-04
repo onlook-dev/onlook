@@ -1,5 +1,6 @@
 "use client";
 
+import { useEditorEngine } from "@/components/store";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
@@ -7,24 +8,22 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { Color } from "@onlook/utility";
 import { useEffect, useState } from "react";
+import { useBoxControl } from "../hooks/use-box-control";
 import { InputColor } from "../inputs/input-color";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
-import { useBoxControl } from "../hooks/use-box-control";
-import { useEditorEngine } from "@/components/store";
-import { Color } from "@onlook/utility";
 
 export const Border = () => {
+    const editorEngine = useEditorEngine();
     const [activeTab, setActiveTab] = useState('individual');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('border');
-    const editorEngine = useEditorEngine();
-
-    const [borderColor, setBorderColor] = useState(Color.from(editorEngine.style.selectedStyle?.styles.borderColor ?? '#080808').toHex());
+    const [borderColor, setBorderColor] = useState(Color.from(editorEngine.style.selectedStyle?.styles.computed.borderColor ?? '#080808').toHex());
 
     useEffect(() => {
-        setBorderColor(Color.from(editorEngine.style.selectedStyle?.styles.borderColor ?? '#080808').toHex());
-    }, [editorEngine.style.selectedStyle?.styles.borderColor]);
+        setBorderColor(Color.from(editorEngine.style.selectedStyle?.styles.computed.borderColor ?? '#080808').toHex());
+    }, [editorEngine.style.selectedStyle?.styles.computed.borderColor]);
 
     const handleColorChange = (color: string) => {
         setBorderColor(color);
@@ -32,7 +31,7 @@ export const Border = () => {
     };
 
     const borderStyle = {
-        borderWidth: boxState.border.num ? `1px`: '0px',
+        borderWidth: boxState.border.num ? `1px` : '0px',
         borderStyle: 'solid',
     };
 
@@ -46,10 +45,10 @@ export const Border = () => {
                     <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
                     <span className="text-sm">{boxState.border.value}</span>
 
-                    <div 
-                            className="w-5 h-5 rounded-md"
-                            style={borderStyle}
-                        />
+                    <div
+                        className="w-5 h-5 rounded-md"
+                        style={borderStyle}
+                    />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">

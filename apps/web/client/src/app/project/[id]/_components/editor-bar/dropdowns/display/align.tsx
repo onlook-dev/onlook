@@ -20,11 +20,11 @@ const horizontalAlignOptions: Record<string, CssValue> = {
 
 export const VerticalAlignInput = () => {
     const editorEngine = useEditorEngine();
-    const [value, setValue] = useState<string>(editorEngine.style.selectedStyle?.styles.alignItems ?? "flex-start");
+    const [value, setValue] = useState<string>(editorEngine.style.selectedStyle?.styles.computed.alignItems ?? "flex-start");
 
     useEffect(() => {
-        setValue(editorEngine.style.selectedStyle?.styles.alignItems ?? "flex-start");
-    }, [editorEngine.style.selectedStyle?.styles.alignItems]);
+        setValue(editorEngine.style.selectedStyle?.styles.computed.alignItems ?? "flex-start");
+    }, [editorEngine.style.selectedStyle?.styles.computed.alignItems]);
 
     return (
         <div className="flex items-center gap-3">
@@ -44,11 +44,11 @@ export const VerticalAlignInput = () => {
 
 export const HorizontalAlignInput = () => {
     const editorEngine = useEditorEngine();
-    const [value, setValue] = useState<string>(editorEngine.style.selectedStyle?.styles.justifyContent ?? "flex-start");
+    const [value, setValue] = useState<string>(editorEngine.style.selectedStyle?.styles.computed.justifyContent ?? "flex-start");
 
     useEffect(() => {
-        setValue(editorEngine.style.selectedStyle?.styles.justifyContent ?? "flex-start");
-    }, [editorEngine.style.selectedStyle?.styles.justifyContent]);
+        setValue(editorEngine.style.selectedStyle?.styles.computed.justifyContent ?? "flex-start");
+    }, [editorEngine.style.selectedStyle?.styles.computed.justifyContent]);
 
     return (
         <div className="flex items-center gap-3">

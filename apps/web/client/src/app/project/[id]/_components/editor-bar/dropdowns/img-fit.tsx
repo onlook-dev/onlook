@@ -14,11 +14,11 @@ type ObjectFitValue = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
 
 export const ImgFit = () => {
     const editorEngine = useEditorEngine();
-    const [objectFit, setObjectFit] = useState<ObjectFitValue>(editorEngine.style.selectedStyle?.styles.objectFit as ObjectFitValue ?? "fill");
+    const [objectFit, setObjectFit] = useState<ObjectFitValue>(editorEngine.style.selectedStyle?.styles.computed.objectFit as ObjectFitValue ?? "fill");
 
     useEffect(() => {
-        setObjectFit(editorEngine.style.selectedStyle?.styles.objectFit as ObjectFitValue ?? "fill");
-    }, [editorEngine.style.selectedStyle?.styles.objectFit]);
+        setObjectFit(editorEngine.style.selectedStyle?.styles.computed.objectFit as ObjectFitValue ?? "fill");
+    }, [editorEngine.style.selectedStyle?.styles.computed.objectFit]);
 
     const handleFitChange = (newFit: ObjectFitValue) => {
         setObjectFit(newFit);
