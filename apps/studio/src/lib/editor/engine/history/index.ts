@@ -1,5 +1,5 @@
 import { sendAnalytics } from '@/lib/utils';
-import type { Action } from '@onlook/models/actions';
+import type { Action, UpdateStyleAction } from '@onlook/models/actions';
 import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -27,6 +27,7 @@ export class HistoryManager {
         private undoStack: Action[] = [],
         private redoStack: Action[] = [],
         private inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION },
+        private originalStyleMap: Map<string, UpdateStyleAction> = new Map(),
     ) {
         makeAutoObservable(this);
     }
@@ -72,6 +73,12 @@ export class HistoryManager {
                 this.inTransaction.actions,
                 action,
             );
+            if (action.type === 'update-style') {
+                const oid = action.targets[0].oid || '';
+                if (!this.originalStyleMap.has(oid)) {
+                    this.originalStyleMap.set(action.targets[0].oid || '', action);
+                }
+            }
             return;
         }
 
@@ -79,14 +86,41 @@ export class HistoryManager {
             this.redoStack = [];
         }
 
-        this.undoStack.push(action);
-        this.editorEngine.code.write(action);
+        let updatedAction = action;
 
-        switch (action.type) {
+        if (action.type === 'update-style' && action.targets.length > 0) {
+            const oid = action.targets[0].oid || '';
+            if (this.originalStyleMap.has(oid)) {
+                const originalValue = this.originalStyleMap.get(oid);
+
+                updatedAction = {
+                    ...action,
+                    targets: action.targets.map((target, idx) => {
+                        const original = originalValue?.targets[idx]?.change.original ?? {};
+                        return {
+                            ...target,
+                            change: {
+                                original,
+                                updated: target.change.updated,
+                            },
+                        };
+                    }),
+                };
+            }
+        }
+
+        this.undoStack.push(updatedAction);
+        this.editorEngine.code.write(updatedAction);
+
+        this.originalStyleMap.clear();
+
+        switch (updatedAction.type) {
             case 'update-style':
                 sendAnalytics('style action', {
                     style: jsonClone(
-                        action.targets.length > 0 ? action.targets[0].change.updated : {},
+                        updatedAction.targets.length > 0
+                            ? updatedAction.targets[0].change.updated
+                            : {},
                     ),
                 });
                 break;
