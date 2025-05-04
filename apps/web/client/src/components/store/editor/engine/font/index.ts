@@ -134,30 +134,33 @@ export class FontManager {
     this.initializeFonts();
 
     const fontConfigDisposer = reaction(
-      () => this.editorEngine.sandbox?.readFile(this.fontConfigPath),
-      () => {
+      () => this.editorEngine.sandbox.readFile(this.fontConfigPath),
+      (content) => {
         this.syncFontsWithConfigs();
       },
       { fireImmediately: true },
     );
 
     const defaultFontDisposer = reaction(
-      async () => {
-        const defaultPath = await this.detectRouterType();
-        if (defaultPath) {
-          return this.editorEngine.sandbox?.readFile(defaultPath.basePath);
-        }
-        return null;
-      },
-      async () => {
-        const defaultFont = await this.getDefaultFont();
-        if (defaultFont) {
-          const codeDiff = await this.setProjectDefaultFont(defaultFont);
-          if (codeDiff) {
-            await this.editorEngine.history.push({
-              type: "write-code",
-              diffs: [codeDiff],
-            });
+      () => this._fonts.length,
+      async (fontsCount) => {
+        if (fontsCount > 0 && this.editorEngine.sandbox) {
+          try {
+            const defaultFontId = await this.getDefaultFont();
+            if (defaultFontId) {
+              const fontObj = this._fonts.find((f) => f.id === defaultFontId);
+              if (fontObj) {
+                const codeDiff = await this.setProjectDefaultFont(fontObj);
+                if (codeDiff) {
+                  await this.editorEngine.history.push({
+                    type: "write-code",
+                    diffs: [codeDiff],
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            console.error("Error setting default font:", error);
           }
         }
       },
@@ -249,7 +252,7 @@ export class FontManager {
       }
 
       const content =
-        (await this.editorEngine.sandbox?.readFile(this.fontConfigPath)) ?? "";        
+        (await this.editorEngine.sandbox?.readFile(this.fontConfigPath)) ?? "";
       if (!content) {
         this._fonts = [];
         return [];
@@ -1466,6 +1469,9 @@ export class FontManager {
           /^\.\//,
           "",
         ).replace(/\.ts$/, "");
+        console.log("fontPath", fontPath);
+        console.log(this.fontConfigPath);
+
         const importRegex = new RegExp(
           `import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`,
         );
@@ -1501,7 +1507,7 @@ export class FontManager {
       }
       return false;
     } catch (error) {
-      console.error(`Error removing font variable from ${layoutPath}:`, error);
+      console.error(`Error removing font variable`, error);
       return false;
     }
   }

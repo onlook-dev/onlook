@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-
+import { makeAutoObservable } from 'mobx';
 export class FileSyncManager {
     private cache: Map<string, string>;
     private storageKey = 'file-sync-cache';
@@ -7,6 +7,7 @@ export class FileSyncManager {
     constructor() {
         this.cache = new Map();
         this.restoreFromLocalStorage();
+        makeAutoObservable(this);
     }
 
     has(filePath: string) {

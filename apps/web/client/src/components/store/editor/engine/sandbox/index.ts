@@ -1,4 +1,4 @@
-import type { SandboxSession, Watcher } from '@codesandbox/sdk';
+import type { SandboxSession, Watcher, WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
@@ -186,31 +186,37 @@ export class SandboxManager {
             return;
         }
 
-        const watcher = await this.session.fs.watch("./", { recursive: true, excludes: IGNORED_DIRECTORIES });
-
-        watcher.onEvent((event) => {
-            void (async () => {
-                for (const path of event.paths) {
-                    if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
-                        continue;
-                    }
-                    const normalizedPath = normalizePath(path);
-                    const eventType = event.type;
-                    if(event.type === 'remove') {
-                        await this.fileSync.delete(normalizedPath);
-                    } else if (eventType === 'change' || eventType === 'add') {
-                        // Sometimes we delete the content of the file, so we should allow empty content
-                        const content = await this.readRemoteFile(normalizedPath) ?? "";
-                        console.log("content", normalizedPath, content);
-                        
-                        await this.fileSync.updateCache(normalizedPath, content);
-                        await this.processFileForMapping(normalizedPath);
-                    }
-                }
-            })();
+        // Convert ignored directories to glob patterns with ** wildcard
+        const excludePatterns = IGNORED_DIRECTORIES.map(dir => `${dir}/**`);
+        
+        const watcher = await this.session.fs.watch("./", { 
+            recursive: true, 
+            excludes: excludePatterns 
         });
+        
+
+        watcher.onEvent((event) => this.handleFileEvent(event));
 
         this.watcher = watcher;
+    }
+
+    async handleFileEvent(event: WatchEvent) {
+        for (const path of event.paths) {
+            if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
+                continue;
+            }
+            const normalizedPath = normalizePath(path);
+            const eventType = event.type;
+            if (event.type === 'remove') {
+                await this.fileSync.delete(normalizedPath);
+            } else if (eventType === 'change' || eventType === 'add') {
+                // Sometimes we delete the content of the file, so we should allow empty content
+                const content = await this.readRemoteFile(normalizedPath) ?? "";
+
+                await this.fileSync.updateCache(normalizedPath, content);
+                await this.processFileForMapping(normalizedPath);
+            }
+        }
     }
 
     async processFileForMapping(file: string) {
@@ -241,8 +247,8 @@ export class SandboxManager {
 
     clear() {
         this.watcher?.dispose();
-        void this.fileSync.clear();
-        void this.templateNodeMap.clear();
+        this.fileSync.clear();
+        this.templateNodeMap.clear();
         this.session = null;
     }
 }

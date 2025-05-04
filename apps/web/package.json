@@ -19,9 +19,5 @@
     "peerDependencies": {
         "typescript": "^5"
     },
-    "dependencies": {
-        "@types/webfontloader": "^1.6.38",
-        "flexsearch": "^0.8.158",
-        "webfontloader": "^1.6.28"
-    }
+    "dependencies": {}
 }

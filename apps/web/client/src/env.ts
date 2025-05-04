@@ -8,7 +8,7 @@ export const env = createEnv({
      */
     server: {
         NODE_ENV: z.enum(["development", "test", "production"]),
-        // CSB_API_KEY: z.string(),
+        CSB_API_KEY: z.string(),
         // ANTHROPIC_API_KEY: z.string(),
     },
     /**
@@ -26,7 +26,7 @@ export const env = createEnv({
      */
     runtimeEnv: {
         NODE_ENV: process.env.NODE_ENV,
-        // CSB_API_KEY: process.env.CSB_API_KEY,
+        CSB_API_KEY: process.env.CSB_API_KEY,
         // ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     },
     /**
