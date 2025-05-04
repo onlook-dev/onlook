@@ -9,6 +9,7 @@ describe('LongTermMemory', () => {
   beforeEach(async () => {
     await fs.remove(testRulesDir);
     memory = new LongTermMemory(testRulesDir);
+    await memory.init();
   });
 
   afterEach(async () => {

@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import crypto from 'crypto';
 
 export interface Rule {
   id: string;
@@ -16,7 +17,10 @@ export class LongTermMemory {
   constructor(rulesDir: string = path.join(process.cwd(), 'rules')) {
     this.rulesDir = rulesDir;
     this.rules = new Map();
-    this.initialize();
+  }
+
+  async init() {
+    await this.initialize();
   }
 
   private async initialize() {
