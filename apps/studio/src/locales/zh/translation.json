@@ -24,6 +24,43 @@
                 "backToPrompt": "返回提示"
             }
         },
+        "copy": {
+            "warningModal": {
+                "title": "移动文件夹",
+                "instanceRunning": "您的应用当前正在运行。确认后将停止正在运行的实例，并将路径设置为所选位置。是否继续？",
+                "instanceNotRunning": "路径将被设置为所选位置。您确定吗？",
+                "createCopy": "복사본을 만들고 새 경로로 전환",
+                "cancel": "取消",
+                "confirm": "确认"
+            },
+            "loadingModal": {
+                "title": "正在创建副本...",
+                "message": {
+                    "starting": "正在为您的项目创建副本...",
+                    "copying": "正在创建副本，请稍候，这可能需要一些时间。",
+                    "complete": "副本创建成功",
+                    "error": "找不到源路径，请确保源路径存在。"
+                },
+                "status": {
+                    "starting": "开始中",
+                    "copying": "复制中...",
+                    "complete": "已完成",
+                    "error": "错误"
+                },
+                "finish": "完成"
+            },
+            "toasts": {
+                "success": {
+                    "title": "路径已更改",
+                    "description": "路径已被修改"
+                },
+                "error": {
+                    "title": "错误",
+                    "description": "移动路径失败"
+                }
+            }
+        },
+
         "select": {
             "empty": "未找到项目",
             "sort": {

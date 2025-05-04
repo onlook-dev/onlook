@@ -51,6 +51,8 @@ export enum MainChannels {
     VIEW_SOURCE_FILE = 'view-source-file',
     VIEW_CODE_IN_ONLOOK = 'view-code-in-onlook',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
+    COPY_PROJECT_CALLBACK = 'copy-project-callback',
+    UPDATE_PROJECT_PATH = 'update-project-path',
     GET_COMPONENTS = 'get-components',
     CLEAN_CODE_KEYS = 'clean-move-keys',
 

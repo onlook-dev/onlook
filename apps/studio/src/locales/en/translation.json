@@ -24,6 +24,42 @@
                 "backToPrompt": "Back to Prompting"
             }
         },
+        "copy": {
+            "warningModal": {
+                "title": "Move Folder",
+                "instanceRunning": "Your app is currently running. Confirming will stop the running instance before setting path to selected location. Do you want to continue?",
+                "instanceNotRunning": "Path will be set to the selected location. Are you sure?",
+                "createCopy": "Create a copy and switch to new path",
+                "cancel": "Cancel",
+                "confirm": "Confirm"
+            },
+            "loadingModal": {
+                "title": "Creating Copying...",
+                "message": {
+                    "starting": "Creating a copy for your project...",
+                    "copying": "Please sit back while we create a copy, this might take a while.",
+                    "complete": "Successfully created a copy",
+                    "error": "Could not find the source path, make sure the source path exist."
+                },
+                "status": {
+                    "starting": "Starting",
+                    "copying": "Copying...",
+                    "complete": "Completed",
+                    "error": "Error"
+                },
+                "finish": "Finish"
+            },
+            "toasts": {
+                "success": {
+                    "title": "Path changed",
+                    "description": "Path has been modified"
+                },
+                "error": {
+                    "title": "Error",
+                    "description": "Failed to move path"
+                }
+            }
+        },
         "select": {
             "empty": "No projects found",
             "sort": {

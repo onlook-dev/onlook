@@ -24,6 +24,43 @@
                 "backToPrompt": "프롬프트로 돌아가기"
             }
         },
+        "copy": {
+            "warningModal": {
+                "title": "폴더 이동",
+                "instanceRunning": "앱이 현재 실행 중입니다. 확인하면 선택한 위치로 경로를 설정하기 전에 실행 중인 인스턴스가 중지됩니다. 계속하시겠습니까?",
+                "instanceNotRunning": "경로가 선택한 위치로 설정됩니다. 계속하시겠습니까?",
+                "createCopy": "복사본을 만들고 새 경로로 전환",
+                "cancel": "취소",
+                "confirm": "확인"
+            },
+            "loadingModal": {
+                "title": "복사본 생성 중...",
+                "message": {
+                    "starting": "프로젝트 복사본을 생성 중입니다...",
+                    "copying": "복사본을 생성하는 중입니다. 잠시만 기다려 주세요.",
+                    "complete": "복사본이 성공적으로 생성되었습니다",
+                    "error": "소스 경로를 찾을 수 없습니다. 소스 경로가 존재하는지 확인해 주세요."
+                },
+                "status": {
+                    "starting": "시작 중",
+                    "copying": "복사 중...",
+                    "complete": "완료",
+                    "error": "오류"
+                },
+                "finish": "완료"
+            },
+            "toasts": {
+                "success": {
+                    "title": "경로가 변경되었습니다",
+                    "description": "경로가 수정되었습니다"
+                },
+                "error": {
+                    "title": "오류",
+                    "description": "경로 이동에 실패했습니다"
+                }
+            }
+        },
+
         "select": {
             "empty": "프로젝트를 찾을 수 없습니다.",
             "sort": {

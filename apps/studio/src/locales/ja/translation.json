@@ -219,6 +219,43 @@
                 "backToPrompt": "プロンプトに戻る"
             }
         },
+        "copy": {
+            "warningModal": {
+                "title": "フォルダーの移動",
+                "instanceRunning": "アプリケーションが現在実行中です。確認すると、選択した場所にパスを設定する前に実行中のインスタンスが停止されます。続行しますか？",
+                "instanceNotRunning": "パスは選択した場所に設定されます。よろしいですか？",
+                "createCopy": "コピーを作成して新しいパスに切り替える",
+                "cancel": "キャンセル",
+                "confirm": "確認"
+            },
+            "loadingModal": {
+                "title": "コピーを作成中...",
+                "message": {
+                    "starting": "プロジェクトのコピーを作成しています...",
+                    "copying": "コピーを作成中です。しばらくお待ちください。",
+                    "complete": "コピーが正常に作成されました",
+                    "error": "ソースパスが見つかりません。ソースパスが存在することを確認してください。"
+                },
+                "status": {
+                    "starting": "開始中",
+                    "copying": "コピー中...",
+                    "complete": "完了",
+                    "error": "エラー"
+                },
+                "finish": "完了"
+            },
+            "toasts": {
+                "success": {
+                    "title": "パスが変更されました",
+                    "description": "パスが変更されました"
+                },
+                "error": {
+                    "title": "エラー",
+                    "description": "パスの移動に失敗しました"
+                }
+            }
+        },
+
         "select": {
             "empty": "プロジェクトがありません",
             "sort": {

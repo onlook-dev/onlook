@@ -20,6 +20,13 @@ export enum SetupStage {
     ERROR = 'error',
 }
 
+export enum CopyStage {
+    STARTING = 'Starting...',
+    COPYING = 'Copying...',
+    COMPLETE = 'Complete',
+    ERROR = 'Error',
+}
+
 export interface CreateProjectResponse {
     success: boolean;
     error?: string;
@@ -33,3 +40,4 @@ export interface CreateProjectResponse {
 export type CreateCallback = (stage: CreateStage, message: string) => void;
 export type VerifyCallback = (stage: VerifyStage, message: string) => void;
 export type SetupCallback = (stage: SetupStage, message: string) => void;
+export type CopyCallback = (stage: CopyStage) => void;

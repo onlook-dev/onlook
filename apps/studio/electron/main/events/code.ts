@@ -16,7 +16,14 @@ import {
     scanTailwindConfig,
     updateTailwindColorConfig,
 } from '../assets/styles';
-import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } from '../code/';
+import {
+    moveFolderPath,
+    openFileInIde,
+    openInIde,
+    pickDirectory,
+    readCodeBlock,
+    writeCode,
+} from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
@@ -27,6 +34,8 @@ import { getTemplateNodeProps } from '../code/props';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
+import type { CopyCallback, CopyStage } from '@onlook/models';
+import { mainWindow } from '..';
 
 const fontFileWatcher = new FontFileWatcher();
 
@@ -114,6 +123,22 @@ export function listenForCodeMessages() {
 
         return result.filePaths.at(0) ?? null;
     });
+
+    ipcMain.handle(
+        MainChannels.UPDATE_PROJECT_PATH,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const progressCallback: CopyCallback = (stage: CopyStage) => {
+                mainWindow?.webContents.send(MainChannels.COPY_PROJECT_CALLBACK, {
+                    stage,
+                });
+            };
+            const { currentPath, updatedPath } = args as {
+                currentPath: string;
+                updatedPath: string;
+            };
+            return moveFolderPath(currentPath, updatedPath, progressCallback);
+        },
+    );
 
     ipcMain.handle(MainChannels.GET_COMPONENTS, async (_, args) => {
         if (typeof args !== 'string') {
