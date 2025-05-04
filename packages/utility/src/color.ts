@@ -337,3 +337,13 @@ function rgb2hsv({ r, g, b }: { r: number; g: number; b: number }): {
     const h = c && (v === r ? (g - b) / c : v === g ? 2 + (b - r) / c : 4 + (r - g) / c);
     return { h: (h < 0 ? h + 6 : h) / 6, s: v && c / v, v };
 }
+
+export function resolveCssVariables(
+    valueWithVars: string,
+    styleRecord: Record<string, string>,
+    fallback = '1',
+): string {
+    return valueWithVars.replace(/var\((--[^)]+)\)/g, (_, varName: string) => {
+        return styleRecord[varName] ?? fallback;
+    });
+}
