@@ -126,6 +126,17 @@ export class ElementManager {
         this.selectedElements = [];
     }
 
+    getElementByDomId(domId: string): DomElement | null {
+        // Check all webviews for the element
+        for (const webviewId of this.editorEngine.webviews.getWebviewIds()) {
+            const layerNode = this.editorEngine.ast.mappings.getLayerNode(webviewId, domId);
+            if (layerNode) {
+                return layerNode;
+            }
+        }
+        return null;
+    }
+
     async delete() {
         const selected = this.selected;
         if (selected.length === 0) {
