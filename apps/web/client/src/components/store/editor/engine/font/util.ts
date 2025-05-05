@@ -205,6 +205,21 @@ export function removeFontsFromClassName(
           (_, i) => !fontVarIndices.includes(i),
         );
 
+        // Check if we're removing all expressions (all fonts)
+        if (newExpressions.length === 0) {
+          // Convert to string literal to avoid empty template expression
+          let combinedString = "";
+          expr.quasis.forEach((quasi) => {
+            if (quasi?.value?.raw) {
+              combinedString += quasi.value.raw;
+            }
+          });
+          combinedString = combinedString.replace(/\s+/g, " ").trim();
+          classNameAttr.value = t.stringLiteral(combinedString);
+          modified = true;
+          return modified;
+        }
+
         // Merge quasis where expressions were removed
         const newQuasis: t.TemplateElement[] = [];
         for (let i = 0; i < expr.quasis.length; i++) {

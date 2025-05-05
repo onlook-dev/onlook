@@ -1490,8 +1490,9 @@ export class FontManager {
               `import { ${newImports} } from '${this.fontImportPath}'`,
             );
           } else {
+            // Remove the entire import statement including the semicolon and optional newline
             newContent = newContent.replace(
-              new RegExp(`${importRegex.source}\\n?`),
+              new RegExp(`${importRegex.source};?\\n?`),
               "",
             );
           }
