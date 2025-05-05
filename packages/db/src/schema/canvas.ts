@@ -1,13 +1,23 @@
 import type { RectPosition } from "@onlook/models";
+import { relations } from "drizzle-orm";
 import { jsonb, numeric, pgTable, uuid } from "drizzle-orm/pg-core";
+import { frames } from "./frame";
 import { projects } from "./project";
 
-export const canvasSettings = pgTable("canvas_settings", {
+export const canvas = pgTable("canvas", {
     id: uuid("id").primaryKey().defaultRandom(),
     projectId: uuid("project_id").references(() => projects.id).notNull(),
     scale: numeric("scale"),
     position: jsonb("position").$type<RectPosition | null>(),
 }).enableRLS();
 
-export type CanvasSettings = typeof canvasSettings.$inferSelect;
-export type NewCanvasSettings = typeof canvasSettings.$inferInsert;
+export type Canvas = typeof canvas.$inferSelect;
+export type NewCanvas = typeof canvas.$inferInsert;
+
+export const canvasRelations = relations(canvas, ({ one, many }) => ({
+    frames: many(frames),
+    project: one(projects, {
+        fields: [canvas.projectId],
+        references: [projects.id],
+    }),
+}));

@@ -1,8 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
-import { canvasSettings } from './canvas';
-import { frames } from './frame';
+import { canvas } from './canvas';
 import { userProjects } from './user-project';
 
 export const projects = pgTable("projects", {
@@ -16,16 +15,15 @@ export const projects = pgTable("projects", {
     sandboxUrl: varchar("sandbox_url", { length: 2048 }),
 }).enableRLS();
 
-export type Project = typeof projects.$inferSelect;
-export type NewProject = typeof projects.$inferInsert;
-
 export const projectInsertSchema = createInsertSchema(projects);
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
-    canvasSettings: one(canvasSettings, {
+    canvas: one(canvas, {
         fields: [projects.id],
-        references: [canvasSettings.projectId],
+        references: [canvas.projectId],
     }),
-    frames: many(frames),
     userProjects: many(userProjects),
 }));
+
+export type Project = typeof projects.$inferSelect;
+export type NewProject = typeof projects.$inferInsert;
