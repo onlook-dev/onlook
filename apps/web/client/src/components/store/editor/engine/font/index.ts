@@ -97,6 +97,7 @@ export class FontManager {
 
   fontConfigPath = normalizePath(DefaultSettings.FONT_CONFIG);
   tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
+  fontImportPath = './fonts';
 
   constructor(
     private editorEngine: EditorEngine,
@@ -173,6 +174,7 @@ export class FontManager {
   private async initializeFonts() {
     this.convertFont();
     await this.loadInitialFonts();
+    await this.scanFonts();
   }
 
   private convertFont() {
@@ -216,7 +218,6 @@ export class FontManager {
           families: fonts.map((font) => font.family),
         },
         active: () => {
-          console.log(`Batch of fonts loaded successfully`);
           resolve();
         },
         inactive: () => {
@@ -1250,13 +1251,10 @@ export class FontManager {
     }
 
     const { code } = generate(ast);
-    const fontPath = DefaultSettings.FONT_CONFIG.replace(
-      /^\.\/app\//,
-      "./",
-    ).replace(/\.ts$/, "");
     const importRegex = new RegExp(
-      `import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`,
+      `import\\s*{([^}]*)}\\s*from\\s*['"]${this.fontImportPath}['"]`,
     );
+
     const importMatch = content.match(importRegex);
 
     let newContent = code;
@@ -1297,7 +1295,6 @@ export class FontManager {
         console.error(`Failed to read file: ${filePath}`);
         return;
       }
-
       let updatedAst = false;
       let targetElementFound = false;
 
@@ -1465,15 +1462,8 @@ export class FontManager {
 
       if (updatedAst && ast) {
         // Remove the font import if it exists
-        const fontPath = DefaultSettings.FONT_CONFIG.replace(
-          /^\.\//,
-          "",
-        ).replace(/\.ts$/, "");
-        console.log("fontPath", fontPath);
-        console.log(this.fontConfigPath);
-
         const importRegex = new RegExp(
-          `import\\s*{([^}]*)}\\s*from\\s*['"]${fontPath}['"]`,
+          `import\\s*{([^}]*)}\\s*from\\s*['"]${this.fontImportPath}['"]`,
         );
         const importMatch = content.match(importRegex);
 
@@ -1649,12 +1639,10 @@ export class FontManager {
 
       if (routerConfig.type === "app") {
         const layoutPath = pathModule.join(routerConfig.basePath, "layout.tsx");
-        console.log("layoutPath", layoutPath);
 
         return await this.updateFontInLayout(layoutPath, font, ["html"]);
       } else {
         const appPath = pathModule.join(routerConfig.basePath, "_app.tsx");
-        console.log("appPath", appPath);
         return await this.updateFontInLayout(appPath, font, [
           "div",
           "main",
