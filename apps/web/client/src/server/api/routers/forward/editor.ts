@@ -2,7 +2,7 @@ import { editorServerConfig, type EditorRouter } from '@onlook/rpc';
 import { createTRPCClient, createWSClient, httpBatchLink, splitLink, wsLink } from '@trpc/client';
 import superJSON from 'superjson';
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '../trpc';
+import { createTRPCRouter, publicProcedure } from '../../trpc';
 
 const { port, prefix } = editorServerConfig;
 const urlEnd = `localhost:${port}${prefix}`;

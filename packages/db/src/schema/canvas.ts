@@ -7,7 +7,7 @@ export const canvasSettings = pgTable("canvas_settings", {
     projectId: uuid("project_id").references(() => projects.id).notNull(),
     scale: numeric("scale"),
     position: jsonb("position").$type<RectPosition | null>(),
-});
+}).enableRLS();
 
 export type CanvasSettings = typeof canvasSettings.$inferSelect;
 export type NewCanvasSettings = typeof canvasSettings.$inferInsert;

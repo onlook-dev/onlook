@@ -14,7 +14,7 @@ export const frames = pgTable("frames", {
     height: numeric("height").notNull(),
 
     url: varchar("url", { length: 2048 }),
-});
+}).enableRLS();
 
 export type Frame = typeof frames.$inferSelect;
 export type NewFrame = typeof frames.$inferInsert;

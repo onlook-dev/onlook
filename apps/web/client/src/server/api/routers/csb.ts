@@ -28,5 +28,4 @@ export const csbRouter = createTRPCRouter({
         .query(async () => {
             return await list();
         }),
-
 });  
