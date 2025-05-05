@@ -30,7 +30,7 @@ export class FramesManager {
     constructor(
         private editorEngine: EditorEngine,
     ) {
-        makeAutoObservable(this, {});
+        makeAutoObservable(this);
     }
 
     get webviews() {

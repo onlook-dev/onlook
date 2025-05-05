@@ -28,7 +28,6 @@ export class ChatManager {
         private projectManager: ProjectManager,
         private userManager: UserManager,
     ) {
-        makeAutoObservable(this);
         this.context = new ChatContext(
             this.editorEngine,
             this.projectManager,
@@ -39,6 +38,7 @@ export class ChatManager {
         );
         this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectManager);
+        makeAutoObservable(this);
     }
 
     focusChatInput() {

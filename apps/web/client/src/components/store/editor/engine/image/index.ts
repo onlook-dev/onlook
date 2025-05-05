@@ -12,8 +12,8 @@ export class ImageManager {
         private editorEngine: EditorEngine,
         private projectManager: ProjectManager,
     ) {
-        makeAutoObservable(this);
         // this.scanImages();
+        makeAutoObservable(this);
     }
 
     async upload(file: File): Promise<void> {

@@ -17,8 +17,8 @@ export class CanvasManager {
     private _frames: FrameImpl[] = [];
 
     constructor() {
-        makeAutoObservable(this);
         this._position = this.getDefaultPanPosition();
+        makeAutoObservable(this);
     }
 
     applyProject(project: Project) {

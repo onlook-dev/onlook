@@ -15,8 +15,8 @@ export class ChatCodeManager {
         private chat: ChatManager,
         private editorEngine: EditorEngine,
     ) {
-        makeAutoObservable(this);
         this.processor = new CodeBlockProcessor();
+        makeAutoObservable(this);
     }
 
     async applyCode(messageId: string) {

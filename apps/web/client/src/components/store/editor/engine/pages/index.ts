@@ -64,8 +64,8 @@ export class PagesManager {
         private editorEngine: EditorEngine,
         private projectManager: ProjectManager,
     ) {
-        makeAutoObservable(this);
         // this.scanPages();
+        makeAutoObservable(this);
     }
 
     get tree() {

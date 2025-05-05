@@ -5,9 +5,9 @@ export class SubscriptionManager {
     plan: UsagePlanType = UsagePlanType.BASIC;
 
     constructor() {
-        makeAutoObservable(this);
         this.restoreCachedPlan();
         this.getPlanFromServer();
+        makeAutoObservable(this);
     }
 
     private restoreCachedPlan() {

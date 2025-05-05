@@ -28,8 +28,8 @@ export class ThemeManager {
         private editorEngine: EditorEngine,
         private projectManager: ProjectManager,
     ) {
-        makeAutoObservable(this);
         // this.scanConfig();
+        makeAutoObservable(this);
     }
 
     async scanConfig() {

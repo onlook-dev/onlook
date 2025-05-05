@@ -1,10 +1,9 @@
-import { invokeMainChannel } from '@/lib/utils';
-import { HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
+import { HOSTING_DOMAIN } from '@onlook/constants';
+import { DomainType, type Project } from '@onlook/models';
 import type { GetOwnedDomainsResponse } from '@onlook/models/hosting';
-import { DomainType, type Project } from '@onlook/models/projects';
 import { getValidSubdomain } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { ProjectsManager } from '../index';
+import type { ProjectManager } from '..';
 import { HostingManager } from './hosting';
 
 export class DomainsManager {
@@ -12,11 +11,11 @@ export class DomainsManager {
     private _customHosting: HostingManager | null = null;
 
     constructor(
-        private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
         private project: Project,
     ) {
-        makeAutoObservable(this);
         this.setupHostingManagers();
+        makeAutoObservable(this);
     }
 
     updateProject(project: Project) {
@@ -29,7 +28,7 @@ export class DomainsManager {
             this._baseHosting = null;
         } else {
             this._baseHosting = new HostingManager(
-                this.projectsManager,
+                this.projectManager,
                 this.project,
                 this.project.domains.base,
             );
@@ -38,7 +37,7 @@ export class DomainsManager {
             this._customHosting = null;
         } else {
             this._customHosting = new HostingManager(
-                this.projectsManager,
+                this.projectManager,
                 this.project,
                 this.project.domains.custom,
             );
@@ -64,7 +63,7 @@ export class DomainsManager {
             type: DomainType.BASE,
             url,
         };
-        this.projectsManager.updateProject({ ...this.project, domains });
+        this.projectManager.updateProject({ ...this.project, domains });
 
         setTimeout(() => {
             this.base?.publish({ buildFlags, envVars: this.project.env });
@@ -81,7 +80,7 @@ export class DomainsManager {
             type: DomainType.CUSTOM,
             url,
         };
-        this.projectsManager.updateProject({ ...this.project, domains });
+        this.projectManager.updateProject({ ...this.project, domains });
     }
 
     async removeCustomDomainFromProject() {
@@ -90,7 +89,7 @@ export class DomainsManager {
             ...this.project.domains,
             custom: null,
         };
-        this.projectsManager.updateProject({ ...this.project, domains });
+        this.projectManager.updateProject({ ...this.project, domains });
     }
 
     async getOwnedDomains(): Promise<string[]> {

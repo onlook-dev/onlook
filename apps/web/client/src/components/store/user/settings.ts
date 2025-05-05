@@ -7,8 +7,8 @@ export class UserSettingsManager {
     defaultProjectPath: string | null = null;
 
     constructor() {
-        makeAutoObservable(this);
         this.restoreSettings();
+        makeAutoObservable(this);
     }
 
     async restoreSettings() {

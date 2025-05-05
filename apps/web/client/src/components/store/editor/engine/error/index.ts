@@ -13,7 +13,7 @@ export class ErrorManager {
         private editorEngine: EditorEngine,
         private projectManager: ProjectManager,
     ) {
-        makeAutoObservable(this, {});
+        makeAutoObservable(this);
     }
 
     get errors() {

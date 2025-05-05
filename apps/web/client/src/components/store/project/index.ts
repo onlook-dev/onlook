@@ -17,9 +17,9 @@ export class ProjectManager {
     readonly versions: VersionsManager | null = null;
 
     constructor() {
-        makeAutoObservable(this);
         this.domains = new DomainsManager();
         this.versions = new VersionsManager(this);
+        makeAutoObservable(this);
     }
 
     get project() {

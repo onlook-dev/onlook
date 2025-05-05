@@ -10,10 +10,6 @@ export class OverlayManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        this.listenToScaleChange();
-    }
-
-    listenToScaleChange() {
         reaction(
             () => ({
                 position: this.editorEngine.canvas?.position,

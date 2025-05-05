@@ -26,7 +26,6 @@ export class HostingManager {
         private project: Project,
         private domain: DomainSettings,
     ) {
-        makeAutoObservable(this);
         this.listenForStateChanges();
         if (this.domain.publishedAt) {
             this.updateState({
@@ -34,6 +33,7 @@ export class HostingManager {
                 message: null,
             });
         }
+        makeAutoObservable(this);
     }
 
     async listenForStateChanges() {
