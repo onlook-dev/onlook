@@ -1265,11 +1265,11 @@ export class FontManager {
         const newImports = currentImports.trim() + `, ${fontName}`;
         newContent = newContent.replace(
           importRegex,
-          `import { ${newImports} } from '${fontPath}'`,
+          `import { ${newImports} } from '${this.fontImportPath}'`,
         );
       }
     } else {
-      const fontImport = `import { ${fontName} } from '${fontPath}';`;
+      const fontImport = `import { ${fontName} } from '${this.fontImportPath}';`;
       newContent = fontImport + "\n" + newContent;
     }
 
@@ -1288,9 +1288,10 @@ export class FontManager {
     if (!sandbox) {
       return;
     }
+    const normalizedFilePath = normalizePath(filePath);
 
     try {
-      const content = await sandbox.readFile(filePath);
+      const content = await sandbox.readFile(normalizedFilePath);
       if (!content) {
         console.error(`Failed to read file: ${filePath}`);
         return;
@@ -1299,7 +1300,7 @@ export class FontManager {
       let targetElementFound = false;
 
       await this.traverseClassName(
-        filePath,
+        normalizedFilePath,
         targetElements,
         async (classNameAttr, ast) => {
           targetElementFound = true;
@@ -1364,18 +1365,18 @@ export class FontManager {
           }
 
           if (updatedAst) {
-            await this.updateFileWithImport(filePath, content, ast, fontName);
+            await this.updateFileWithImport(normalizedFilePath, content, ast, fontName);
           }
         },
       );
 
       if (!targetElementFound) {
         console.log(
-          `Could not find target elements (${targetElements.join(", ")}) in ${filePath}`,
+          `Could not find target elements (${targetElements.join(", ")}) in ${normalizedFilePath}`,
         );
       }
     } catch (error) {
-      console.error(`Error adding font variable to ${filePath}:`, error);
+      console.error(`Error adding font variable to ${normalizedFilePath}:`, error);
     }
   }
 
@@ -1436,7 +1437,10 @@ export class FontManager {
         targetElements = ["div", "main", "section", "body"];
       }
 
-      const content = (await sandbox.readFile(normalizePath(layoutPath))) ?? "";
+      const normalizedFilePath = normalizePath(layoutPath);
+
+
+      const content = (await sandbox.readFile(normalizedFilePath)) ?? "";
       if (!content) {
         return false;
       }
@@ -1446,7 +1450,7 @@ export class FontManager {
       const fontName = camelCase(fontId);
 
       await this.traverseClassName(
-        layoutPath,
+        normalizedFilePath,
         targetElements,
         async (classNameAttr, currentAst) => {
           ast = currentAst;
@@ -1483,7 +1487,7 @@ export class FontManager {
           if (newImports) {
             newContent = newContent.replace(
               importRegex,
-              `import { ${newImports} } from '${fontPath}'`,
+              `import { ${newImports} } from '${this.fontImportPath}'`,
             );
           } else {
             newContent = newContent.replace(
@@ -1493,7 +1497,7 @@ export class FontManager {
           }
         }
 
-        return await sandbox.writeFile(layoutPath, newContent);
+        return await sandbox.writeFile(normalizedFilePath, newContent);
       }
       return false;
     } catch (error) {
@@ -1576,7 +1580,9 @@ export class FontManager {
   ): Promise<string | null> {
     let currentFont: string | null = null;
 
-    await this.traverseClassName(filePath, targetElements, (classNameAttr) => {
+    const normalizedFilePath = normalizePath(filePath);
+
+    await this.traverseClassName(normalizedFilePath, targetElements, (classNameAttr) => {
       if (t.isStringLiteral(classNameAttr.value)) {
         currentFont = findFontClass(classNameAttr.value.value);
       } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
@@ -1692,8 +1698,8 @@ export class FontManager {
 
       if (addedFonts.length > 0) {
         for (const font of addedFonts) {
-          await this.updateTailwindFontConfig(font);
           await this.addFontVariableToLayout(font.id);
+          await this.updateTailwindFontConfig(font);
         }
       }
 
