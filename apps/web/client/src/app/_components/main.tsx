@@ -1,6 +1,6 @@
 "use client";
 
-import { UserProvider } from "../_hooks/use-user";
+import { UserProvider } from "@/components/hooks/use-user";
 import { Hero } from "./hero";
 import { TopBar } from "./top-bar";
 

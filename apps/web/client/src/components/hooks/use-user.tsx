@@ -1,12 +1,16 @@
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
-import type { User } from '@onlook/web-server/src/router/context';
 import { redirect } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
 
+interface User {
+    name: string | null;
+    image: string | null;
+}
+
 type UserContextType = {
     user: User | null;
-    handleSignOut: () => Promise<void>;
+    handleSignOut: (redirectRoute?: string) => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -19,9 +23,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const fetchUser = async () => {
             const { data: { user: supabaseUser } } = await supabase.auth.getUser();
             if (supabaseUser) {
-                // Map Supabase user to our app's User type
                 setUser({
-                    name: supabaseUser.user_metadata?.name || supabaseUser.email || 'Anonymous'
+                    name: supabaseUser.user_metadata?.full_name ||
+                        supabaseUser.user_metadata?.name ||
+                        supabaseUser.email ||
+                        'Anonymous',
+                    image: supabaseUser.user_metadata?.avatar_url || null,
                 });
             } else {
                 setUser(null);
@@ -30,9 +37,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         fetchUser();
     }, []);
 
-    const handleSignOut = async () => {
+    const handleSignOut = async (redirectRoute?: string) => {
         await supabase.auth.signOut();
-        redirect(Routes.LOGIN);
+        clearUser();
+        redirect(redirectRoute || Routes.LOGIN);
+    }
+
+    const clearUser = () => {
+        setUser(null);
     }
 
     return <UserContext.Provider value={{ user, handleSignOut }}>{children}</UserContext.Provider>;

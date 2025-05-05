@@ -31,7 +31,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex h-full">
+        <div className="flex h-screen w-screen">
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <Icons.OnlookTextLogo viewBox="0 0 139 17" />

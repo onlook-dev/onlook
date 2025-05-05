@@ -7,6 +7,7 @@
 // import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
 // import { SettingsTabValue } from '@/lib/models';
 // import { ProjectTabs } from '@/lib/projects';
+import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -16,6 +17,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import Link from 'next/link';
 
 export const TopBar = () => {
     // const editorEngine = useEditorEngine();
@@ -38,9 +40,9 @@ export const TopBar = () => {
 
     return (
         <div className="flex flex-row h-12 px-12 items-center">
-            <div className="flex-1 flex items-center justify-start mt-3">
+            <Link href={Routes.HOME} className="flex-1 flex items-center justify-start mt-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
-            </div>
+            </Link>
             <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -2,6 +2,8 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { editorForwardRouter } from "./routers/editor";
 
 import { csbRouter } from "./routers/csb";
+import { projectRouter } from "./routers/project";
+import { userRouter } from "./routers/user";
 /**
  * This is the primary router for your server.
  *
@@ -10,6 +12,8 @@ import { csbRouter } from "./routers/csb";
 export const appRouter = createTRPCRouter({
     external: editorForwardRouter,
     csb: csbRouter,
+    user: userRouter,
+    project: projectRouter,
 });
 
 // export type definition of API
