@@ -335,6 +335,8 @@ export class ThemeManager {
 
             // Refresh colors after deletion
             this.scanConfig();
+
+            await this.editorEngine.webviews.reloadWebviews();
         } catch (error) {
             console.error('Error deleting color:', error);
         }
@@ -376,10 +378,10 @@ export class ThemeManager {
                 });
 
                 // Refresh colors after update
-                this.scanConfig();
+                await this.scanConfig();
 
                 // Force a theme refresh for all frames
-                await this.editorEngine.webviews.reloadWebviews();
+                this.editorEngine.webviews.reloadWebviews();
             }
         } catch (error) {
             console.error('Error updating color:', error);

@@ -80,6 +80,22 @@ export class StyleManager {
     update(style: string, value: string) {
         const styleObj = { [style]: value };
         const action = this.getUpdateStyleAction(styleObj);
+
+        if (!value) {
+            const updatedTargets = action.targets.map((target) => ({
+                ...target,
+                change: {
+                    ...target.change,
+                    update: {
+                        [style]: {
+                            value: '',
+                            type: StyleChangeType.Value,
+                        },
+                    },
+                },
+            }));
+            action.targets = updatedTargets;
+        }
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(styleObj);
     }
