@@ -143,10 +143,11 @@ export class CreateManager {
     createProject(projectPath: string) {
         const projectName = 'New Project';
         const projectUrl = 'http://localhost:3000';
+        const port = 3000;
         const projectCommands = {
             install: 'npm install',
-            run: 'npm run dev',
-            build: 'npm run build',
+            run: 'npx next dev -p ' + port,
+            build: 'npx next build -p ' + port,
         };
 
         return this.projectsManager.createProject(
