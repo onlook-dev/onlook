@@ -7,6 +7,7 @@ import {
     type HighlightMessageContext,
     type ImageMessageContext,
     type ProjectMessageContext,
+    type TerminalMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
 import type { ParsedError } from '@onlook/utility';
@@ -44,7 +45,14 @@ export class ChatContext {
         const fileContext = await this.getFileContext(fileNames);
         const imageContext = await this.getImageContext();
         const projectContext = await this.getProjectContext();
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
+        const terminalContext = await this.getTerminalContext();
+        const context = [
+            ...fileContext,
+            ...highlightedContext,
+            ...imageContext,
+            ...projectContext,
+            ...terminalContext,
+        ];
         return context;
     }
 
@@ -70,6 +78,13 @@ export class ChatContext {
             });
         }
         return fileContext;
+    }
+
+    private async getTerminalContext(): Promise<TerminalMessageContext[]> {
+        const terminalContext = this.context.filter(
+            (context) => context.type === MessageContextType.TERMINAL,
+        );
+        return terminalContext;
     }
 
     private async getHighlightedContext(
@@ -109,6 +124,26 @@ export class ChatContext {
 
     clear() {
         this.context = [];
+    }
+
+    async addTerminalContext() {
+        const terminalContent = await this.getTerminalContent();
+        if (terminalContent) {
+            this.context = this.context.filter((ctx) => ctx.type !== MessageContextType.TERMINAL);
+            this.context.push(terminalContent);
+        }
+    }
+
+    async getTerminalContent(): Promise<TerminalMessageContext | null> {
+        const output = await this.editorEngine.getTerminalOutput();
+        if (!output) {
+            return null;
+        }
+        return {
+            type: MessageContextType.TERMINAL,
+            content: output,
+            displayName: 'Terminal',
+        };
     }
 
     async addScreenshotContext() {

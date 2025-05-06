@@ -350,6 +350,18 @@ export class EditorEngine {
         };
     }
 
+    async getTerminalOutput(): Promise<string | null> {
+        try {
+            if (!this.projectsManager.runner) {
+                return null;
+            }
+            const history = await this.projectsManager.runner.getHistory();
+            return history || null;
+        } catch (error) {
+            console.error('Failed to get terminal output:', error);
+            return null;
+        }
+    }
     canDeleteWindow() {
         return this.canvas.frames.length > 1;
     }

@@ -4,6 +4,7 @@ export enum MessageContextType {
     IMAGE = 'image',
     ERROR = 'error',
     PROJECT = 'project',
+    TERMINAL = 'terminal',
 }
 
 type BaseMessageContext = {
@@ -38,9 +39,16 @@ export type ProjectMessageContext = BaseMessageContext & {
     path: string;
 };
 
+export type TerminalMessageContext = BaseMessageContext & {
+    type: MessageContextType.TERMINAL;
+    content: string;
+    displayName: string;
+};
+
 export type ChatMessageContext =
     | FileMessageContext
     | HighlightMessageContext
     | ImageMessageContext
     | ErrorMessageContext
-    | ProjectMessageContext;
+    | ProjectMessageContext
+    | TerminalMessageContext;
