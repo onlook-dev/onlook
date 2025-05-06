@@ -22,6 +22,7 @@ export const IGNORED_DIRECTORIES = [
     'build',
     '.next',
     '.git',
+    '.onlook',
     CUSTOM_OUTPUT_DIR,
 ];
 

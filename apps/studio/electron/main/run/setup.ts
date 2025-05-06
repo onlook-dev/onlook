@@ -1,9 +1,12 @@
+import * as path from 'path';
+import { createHash } from 'crypto';
+import { promises as fs } from 'fs';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { DynamicType, TemplateNode } from '@onlook/models/element';
 import { generateCode } from '../code/diff/helpers';
-import { formatContent, readFile } from '../code/files';
+import { checkIfCacheDirectoryExists, formatContent, readFile, writeFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
 import {
     GENERATE_CODE_OPTIONS,
@@ -14,6 +17,7 @@ import {
     isNodeElementArray,
     isReactFragment,
 } from './helpers';
+import type { HashesJson } from '@onlook/models';
 
 export async function getFileWithIds(filePath: string): Promise<string | null> {
     const content = await readFile(filePath);
@@ -169,4 +173,70 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
         },
     });
     return mapping;
+}
+
+export async function cacheFile(filePath: string, projectDir: string): Promise<void> {
+    await checkIfCacheDirectoryExists(projectDir);
+
+    const content = await readFile(filePath);
+
+    if (!content || content.trim() === '') {
+        console.error(`Failed to get content for file: ${filePath}`);
+        return;
+    }
+
+    const cacheDir = path.join(projectDir, '.onlook', 'cache');
+
+    const baseName = path.basename(filePath, path.extname(filePath));
+
+    const ext = path.extname(filePath);
+    const fileNameHash = createHash('sha256').update(filePath).digest('hex').slice(0, 10);
+
+    const cacheFileName = `${baseName}-${fileNameHash}${ext}`;
+
+    const cacheFilePath = path.join(cacheDir, cacheFileName);
+
+    await writeFile(cacheFilePath, content);
+}
+
+export async function generateAndStoreHash(filePath: string, projectDir: string) {
+    await checkIfCacheDirectoryExists(projectDir);
+
+    const cacheDir = path.join(projectDir, '.onlook', 'cache');
+    const hashesFilePath = path.join(cacheDir, 'hashes.json');
+
+    const content = await readFile(filePath);
+
+    if (!content || content.trim() === '') {
+        console.error(`Failed to get content for file: ${filePath}`);
+        return;
+    }
+
+    const hash = createHash('sha256').update(content).digest('hex');
+
+    let hashesJson: HashesJson = {};
+
+    try {
+        const existing = await readFile(hashesFilePath);
+        if (existing) {
+            hashesJson = JSON.parse(existing);
+        }
+    } catch (e) {
+        console.log('No existing hashes.json found, creating new one.');
+    }
+
+    const baseName = path.basename(filePath, path.extname(filePath));
+    const ext = path.extname(filePath);
+    const fileNameHash = createHash('sha256').update(filePath).digest('hex').slice(0, 10);
+
+    const cacheFileName = `${baseName}-${fileNameHash}${ext}`;
+
+    const cacheFilePath = path.join(cacheDir, cacheFileName);
+
+    hashesJson[filePath] = {
+        hash,
+        cache_path: cacheFilePath,
+    };
+
+    await fs.writeFile(hashesFilePath, JSON.stringify(hashesJson, null, 2), 'utf8');
 }

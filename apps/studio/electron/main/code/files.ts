@@ -1,6 +1,7 @@
 import { existsSync, promises as fs } from 'fs';
 import * as path from 'path';
 import prettier from 'prettier';
+import crypto from 'crypto';
 
 export async function readFile(filePath: string): Promise<string | null> {
     try {
@@ -80,5 +81,29 @@ export async function formatContent(filePath: string, content: string): Promise<
     } catch (error: any) {
         console.error('Error formatting file:', error);
         return content;
+    }
+}
+
+export function createHash(content: string): string {
+    return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+}
+
+export async function checkIfCacheDirectoryExists(projectDir: string): Promise<void> {
+    const cacheDir = path.join(projectDir, '.onlook', 'cache');
+    try {
+        await fs.mkdir(cacheDir, { recursive: true });
+    } catch (error) {
+        console.error(`Failed to create cache directory: ${error}`);
+    }
+}
+
+export async function removeCacheDirectory(projectDir: string): Promise<void> {
+    const cacheDir = path.join(projectDir, '.onlook');
+
+    try {
+        await fs.rm(cacheDir, { recursive: true, force: true });
+        console.log(`Removed cache directory: ${cacheDir}`);
+    } catch (error) {
+        console.error(`Failed to remove cache directory: ${error}`);
     }
 }

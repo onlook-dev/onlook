@@ -4,10 +4,15 @@ import { RunState } from '@onlook/models/run';
 import { subscribe, type AsyncSubscription } from '@parcel/watcher';
 import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
-import { writeFile } from '../code/files';
+import { removeCacheDirectory, writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
 import { ALLOWED_EXTENSIONS, getValidFiles, IGNORED_DIRECTORIES } from './helpers';
-import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
+import {
+    cacheFile,
+    createMappingFromContent,
+    getFileWithIds as getFileContentWithIds,
+    generateAndStoreHash,
+} from './setup';
 import terminal from './terminal';
 
 class RunManager {
@@ -162,7 +167,9 @@ class RunManager {
     async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
         const filePaths = await getValidFiles(dirPath);
         for (const filePath of filePaths) {
+            await cacheFile(filePath, dirPath);
             await this.processFileForMapping(filePath);
+            await generateAndStoreHash(filePath, dirPath);
         }
         return filePaths;
     }
@@ -200,6 +207,7 @@ class RunManager {
 
     async cleanProjectDir(folderPath: string): Promise<void> {
         await removeIdsFromDirectory(folderPath);
+        await removeCacheDirectory(folderPath);
         this.runningDirs.delete(folderPath);
     }
 
