@@ -25,6 +25,7 @@ export function Main({ project }: { project: Project }) {
         projectManager.project = project;
         editorEngine.canvas.applyProject(project);
         registerSandbox(project);
+        
 
         return () => {
             editorEngine.sandbox.clear();

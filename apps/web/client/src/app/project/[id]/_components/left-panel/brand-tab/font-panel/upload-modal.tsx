@@ -38,6 +38,7 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                 }),
             );
             setFontFiles([...fontFiles, ...newFiles]);
+            event.target.value = '';
         }
     };
 
@@ -60,6 +61,9 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                 }),
             );
             setFontFiles([...fontFiles, ...newFiles]);
+            if (document.getElementById('font-upload')) {
+                (document.getElementById('font-upload') as HTMLInputElement).value = '';
+            }
         }
     };
 

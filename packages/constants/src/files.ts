@@ -16,3 +16,7 @@ export const JSX_FILE_EXTENSIONS = [
     'tsx',
 ]
 
+export const JS_FILE_EXTENSIONS = [
+    'js',
+    'ts',
+]

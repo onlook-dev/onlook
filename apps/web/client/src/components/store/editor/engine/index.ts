@@ -50,8 +50,8 @@ export class EditorEngine {
     readonly frames: FramesManager = new FramesManager(this);
     readonly code: CodeManager = new CodeManager(this);
 
-    // TODO: This could be part of frames manager
-    readonly window: WindowManager = new WindowManager(this);
+  // TODO: This could be part of frames manager
+  readonly window: WindowManager = new WindowManager(this);
 
     constructor(
         private projectManager: ProjectManager,

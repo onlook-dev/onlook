@@ -1,17 +1,12 @@
 import { useEditorEngine } from '@/components/store';
 import { FontFamily } from './font-family';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
 import { VARIANTS } from '@onlook/fonts';
 
 const SystemFont = observer(() => {
     const editorEngine = useEditorEngine();
     const fontManager = editorEngine.font;
 
-    // useEffect(() => {
-    //     fontManager.scanFonts();
-    //     fontManager.getDefaultFont();
-    // }, []);
 
     return (
         <div className="flex flex-col divide-y divide-border">

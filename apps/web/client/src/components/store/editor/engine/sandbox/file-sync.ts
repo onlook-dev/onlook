@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-
+import { makeAutoObservable } from 'mobx';
 export class FileSyncManager {
     private cache: Map<string, string>;
     private storageKey = 'file-sync-cache';
@@ -7,6 +7,7 @@ export class FileSyncManager {
     constructor() {
         this.cache = new Map();
         this.restoreFromLocalStorage();
+        makeAutoObservable(this);
     }
 
     has(filePath: string) {
@@ -15,7 +16,7 @@ export class FileSyncManager {
 
     async readOrFetch(filePath: string, readFile: (path: string) => Promise<string | null>): Promise<string | null> {
         if (this.has(filePath)) {
-            return this.cache.get(filePath) || null;
+            return this.cache.get(filePath) ?? null;
         }
 
         try {
@@ -57,6 +58,10 @@ export class FileSyncManager {
 
     listAllFiles() {
         return Array.from(this.cache.keys());
+    }
+
+    getFileContent(filePath: string) {
+        return this.cache.get(filePath) ?? null;
     }
 
     private async restoreFromLocalStorage() {
