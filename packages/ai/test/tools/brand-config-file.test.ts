@@ -1,9 +1,9 @@
-import { getbrandConfigFiles } from '@onlook/ai/src/tools/helpers';
+import { getBrandConfigFiles } from '@onlook/ai/src/tools/helpers';
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-describe('getbrandConfigFiles', () => {
+describe('getBrandConfigFiles', () => {
     const testDir = join(__dirname, 'test-files');
 
     beforeEach(() => {
@@ -26,7 +26,7 @@ describe('getbrandConfigFiles', () => {
     });
 
     test('should find all brand config files', async () => {
-        const { files } = await getbrandConfigFiles(testDir, {
+        const { files } = await getBrandConfigFiles(testDir, {
             patterns: ['**/globals.css', '**/tailwind.config.{js,ts,mjs}'],
             ignore: ['node_modules/**'],
         });
@@ -37,7 +37,7 @@ describe('getbrandConfigFiles', () => {
     });
 
     test('should exclude node_modules', async () => {
-        const { files } = await getbrandConfigFiles(testDir, {
+        const { files } = await getBrandConfigFiles(testDir, {
             patterns: ['**/globals.css', '**/tailwind.config.{js,ts,mjs}'],
             ignore: ['node_modules/**'],
         });
@@ -46,7 +46,7 @@ describe('getbrandConfigFiles', () => {
     });
 
     test('should find only tailwind config files', async () => {
-        const { files } = await getbrandConfigFiles(testDir, {
+        const { files } = await getBrandConfigFiles(testDir, {
             patterns: ['**/tailwind.config.{js,ts,mjs}'],
             ignore: [],
         });
@@ -55,11 +55,18 @@ describe('getbrandConfigFiles', () => {
     });
 
     test('should find only globals.css files', async () => {
-        const { files } = await getbrandConfigFiles(testDir, {
+        const { files } = await getBrandConfigFiles(testDir, {
             patterns: ['**/globals.css'],
             ignore: ['node_modules/**'],
         });
         expect(files?.length).toBe(1);
         expect(files?.every((f) => f.endsWith('globals.css'))).toBe(true);
+    });
+
+    test('should handle non-existent directory', async () => {
+        const nonExistentDir = join(testDir, 'does-not-exist');
+        const result = await getBrandConfigFiles(nonExistentDir);
+        expect(result.success).toBe(false);
+        expect(result.error).toBe(`Directory does not exist: ${nonExistentDir}`);
     });
 });

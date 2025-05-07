@@ -30,6 +30,15 @@ export async function getAllFiles(
     },
 ): Promise<{ success: boolean; files?: string[]; error?: string }> {
     try {
+        const exists = await access(dirPath)
+            .then(() => true)
+            .catch(() => false);
+        if (!exists) {
+            return {
+                success: false,
+                error: `Directory does not exist: ${dirPath}`,
+            };
+        }
         const files = await fg(options.patterns, {
             cwd: dirPath,
             ignore: options.ignore,
@@ -49,27 +58,5 @@ export async function getBrandConfigFiles(
         maxDepth: 5,
     },
 ): Promise<{ success: boolean; files?: string[]; error?: string }> {
-    try {
-        const exists = await access(dirPath)
-            .then(() => true)
-            .catch(() => false);
-        if (!exists) {
-            return {
-                success: false,
-                error: `Directory does not exist: ${dirPath}`,
-            };
-        }
-        const files = await fg(options.patterns, {
-            cwd: dirPath,
-            ignore: options.ignore,
-            deep: options.maxDepth,
-        });
-        return { success: true, files };
-    } catch (error) {
-        console.error(error);
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-        };
-    }
+    return getAllFiles(dirPath, options);
 }
