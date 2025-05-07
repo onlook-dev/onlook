@@ -21,6 +21,8 @@ export class ThemeManager {
     private defaultColors: Record<string, ColorItem[]> = {};
     private configPath: string | null = null;
     private cssPath: string | null = null;
+    private recentColors: string[] = [];
+    private readonly MAX_RECENT_COLORS = 12;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -361,6 +363,7 @@ export class ThemeManager {
 
             const originalKey = this.brandColors[originalGroupName]?.[index]?.originalKey || '';
 
+            this.addRecentColors(newColor.toHex());
             // If is selected element, update the color in real-time
             // Base on the class name, find the styles to update
 
@@ -379,7 +382,7 @@ export class ThemeManager {
                 this.scanConfig();
 
                 // Force a theme refresh for all frames
-                await this.editorEngine.webviews.reloadWebviews();
+                this.editorEngine.webviews.reloadWebviews();
             }
         } catch (error) {
             console.error('Error updating color:', error);
@@ -418,6 +421,8 @@ export class ThemeManager {
         }
 
         try {
+            this.addRecentColors(newColor.toHex());
+
             await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
                 projectRoot,
                 originalKey: `${colorFamily}-${index * 100}`,
@@ -506,6 +511,10 @@ export class ThemeManager {
         return this.cssPath;
     }
 
+    get recentColorList() {
+        return this.recentColors;
+    }
+
     getColorByName(colorName: string): string | undefined {
         const [groupName, shadeName] = colorName.split('-');
 
@@ -533,6 +542,15 @@ export class ThemeManager {
         }
 
         return undefined;
+    }
+
+    addRecentColors(color: string) {
+        this.recentColors = this.recentColors.filter((c) => c !== color);
+        this.recentColors.unshift(color);
+
+        if (this.recentColors.length > this.MAX_RECENT_COLORS) {
+            this.recentColors = this.recentColors.slice(0, this.MAX_RECENT_COLORS);
+        }
     }
 
     dispose() {

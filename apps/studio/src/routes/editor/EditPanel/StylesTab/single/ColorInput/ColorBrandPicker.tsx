@@ -125,6 +125,7 @@ export const BrandPopoverPicker = memo(
 
         const handleColorSelect = (color: ColorItem) => {
             onChangeEnd?.(color);
+            editorEngine.theme.addRecentColors(color.lightColor);
         };
 
         useEffect(() => {
