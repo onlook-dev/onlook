@@ -54,14 +54,14 @@ export function Main({ project }: { project: Project }) {
         }
     }, [tabState, session]);
 
-    if (isStarting) {
+    /*if (isStarting) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
                 <Icons.Shadow className="h-6 w-6 animate-spin" />
                 <div className="text-xl">Starting animation goes here...</div>
             </div>
         );
-    }
+    }*/
 
     return (
         <ChatProvider>
@@ -73,26 +73,18 @@ export function Main({ project }: { project: Project }) {
                         <TopBar />
                     </div>
 
-                    <div className="absolute top-10 w-full z-50">
-                        <EditorBar />
-                    </div>
-
-                    {/* TODO: Remove these */}
-                    {/* 
-                    <div className="absolute w-screen h-screen flex items-center justify-center z-30">
-                        <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
-                    </div> 
-                    <div className="absolute top-20 left-[80px] z-50 h-[calc(100%-80px)]">
-                        <Panels selectedElement={selectedElement} />
-                    </div> 
-                     */}
-
-                    <div className="absolute top-20 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
+                    {/* Left Panel */}
+                    <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
                         <LeftPanel />
                     </div>
 
+                    {/* Centered EditorBar */}
+                    <div className="absolute top-12 left-1/2 -translate-x-1/2 w-hug z-50">
+                        <EditorBar />
+                    </div>
 
-                    <div className="absolute top-20 right-0 animate-edit-panel-in h-[calc(100%-80px)] z-1">
+                    {/* Right Panel */}
+                    <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-1">
                         <RightPanel />
                     </div>
 

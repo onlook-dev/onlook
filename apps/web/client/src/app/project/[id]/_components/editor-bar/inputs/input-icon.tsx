@@ -63,11 +63,11 @@ export const InputIcon = ({
                     value={inputValue}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase"
+                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
                 />
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">
                         {unitValue}
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
@@ -78,7 +78,7 @@ export const InputIcon = ({
                                     onUnitChange?.(unitOption);
                                     setUnitValue(unitOption);
                                 }}
-                                className="text-[12px] text-center px-2"
+                                className="text-[12px] text-center px-2 hover:bg-background-tertiary/70 hover:text-white transition-colors"
                             >
                                 {unitOption}
                             </DropdownMenuItem>

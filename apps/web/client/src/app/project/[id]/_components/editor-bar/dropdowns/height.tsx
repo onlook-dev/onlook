@@ -10,6 +10,7 @@ import { Icons } from "@onlook/ui/icons";
 import { LayoutMode } from "@onlook/utility";
 import { useDimensionControl } from "../hooks/use-dimension-control";
 import { InputDropdown } from "../inputs/input-dropdown";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 
 export const Height = () => {
     const {
@@ -21,15 +22,22 @@ export const Height = () => {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                >
-                    <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
-                    <span className="text-sm">{dimensionState.height.value}</span>
-                </Button>
-            </DropdownMenuTrigger>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
+                            <span className="text-sm">{dimensionState.height.value}</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    Height
+                </TooltipContent>
+            </Tooltip>
             <DropdownMenuContent
                 align="start"
                 className="mt-1 w-[280px] space-y-3 rounded-lg p-3"

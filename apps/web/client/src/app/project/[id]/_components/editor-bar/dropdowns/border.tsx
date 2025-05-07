@@ -14,10 +14,11 @@ import { useBoxControl } from "../hooks/use-box-control";
 import { InputColor } from "../inputs/input-color";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 
 export const Border = () => {
     const editorEngine = useEditorEngine();
-    const [activeTab, setActiveTab] = useState('individual');
+    const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('border');
     const [borderColor, setBorderColor] = useState(Color.from(editorEngine.style.selectedStyle?.styles.computed.borderColor ?? '#080808').toHex());
 
@@ -37,20 +38,27 @@ export const Border = () => {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                >
-                    <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
-                    <span className="text-sm">{boxState.border.value}</span>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                        >
+                            <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
+                            <span className="text-sm">{boxState.border.value}</span>
 
-                    <div
-                        className="w-5 h-5 rounded-md"
-                        style={borderStyle}
-                    />
-                </Button>
-            </DropdownMenuTrigger>
+                            <div
+                                className="w-5 h-5 rounded-md"
+                                style={borderStyle}
+                            />
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    Border
+                </TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
                     <button

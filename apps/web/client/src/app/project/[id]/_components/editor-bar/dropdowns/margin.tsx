@@ -11,22 +11,30 @@ import { useState } from "react";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { useBoxControl } from "../hooks/use-box-control";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 
 export const Margin = () => {
-  const [activeTab, setActiveTab] = useState("individual");
+  const [activeTab, setActiveTab] = useState("all");
   const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('margin');
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-        >
-          <Icons.Margin className="h-4 min-h-4 w-4 min-w-4" />
-          <span className="text-sm">{boxState.margin.value}</span>
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+            >
+              <Icons.Margin className="h-4 min-h-4 w-4 min-w-4" />
+              <span className="text-sm">{boxState.margin.value}</span>
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          Margin
+        </TooltipContent>
+      </Tooltip>
       <DropdownMenuContent
         align="start"
         className="mt-1 w-[280px] rounded-lg p-3"
