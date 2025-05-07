@@ -10,7 +10,7 @@ import { createDomId, createOid } from '@onlook/utility';
 import type { EditorEngine } from '..';
 
 export class GroupManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     async groupSelectedElements() {
         const selectedEls = this.editorEngine.elements.selected;
@@ -158,7 +158,8 @@ export class GroupManager {
 
         // Container is the selected element
         const actionContainer: ActionElement = await frame.view.getActionElement(
-            selectedEl.domId, true
+            selectedEl.domId,
+            true,
         );
 
         if (!actionContainer) {
@@ -179,7 +180,6 @@ export class GroupManager {
             oid: selectedEl.parent.oid,
         };
 
-
         // Children to be spread where container was
         const targets: ActionTarget[] = actionContainer.children.map((child) => {
             return {
@@ -197,5 +197,5 @@ export class GroupManager {
         };
     }
 
-    clear() { }
+    clear() {}
 }

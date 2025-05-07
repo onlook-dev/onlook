@@ -1,16 +1,20 @@
-import { useEditorEngine } from "@/components/store";
-import { stringToParsedValue } from "@onlook/utility";
-import { useEffect, useState } from "react";
-import { InputIcon } from "../../inputs/input-icon";
+import { useEditorEngine } from '@/components/store';
+import { stringToParsedValue } from '@onlook/utility';
+import { useEffect, useState } from 'react';
+import { InputIcon } from '../../inputs/input-icon';
 
 export const GapInput = () => {
     const editorEngine = useEditorEngine();
-    const { num, unit } = stringToParsedValue(editorEngine.style.selectedStyle?.styles.computed.gap?.toString() ?? "12px");
+    const { num, unit } = stringToParsedValue(
+        editorEngine.style.selectedStyle?.styles.computed.gap?.toString() ?? '12px',
+    );
     const [numValue, setNumValue] = useState(num);
     const [unitValue, setUnitValue] = useState(unit);
 
     useEffect(() => {
-        const { num, unit } = stringToParsedValue(editorEngine.style.selectedStyle?.styles.computed.gap?.toString() ?? "12px");
+        const { num, unit } = stringToParsedValue(
+            editorEngine.style.selectedStyle?.styles.computed.gap?.toString() ?? '12px',
+        );
         setNumValue(num);
         setUnitValue(unit);
     }, [editorEngine.style.selectedStyle?.styles.computed.gap]);
@@ -23,11 +27,11 @@ export const GapInput = () => {
                 unit={unitValue}
                 onChange={(newValue) => {
                     setNumValue(newValue);
-                    editorEngine.style.update("gap", `${newValue}${unitValue}`);
+                    editorEngine.style.update('gap', `${newValue}${unitValue}`);
                 }}
                 onUnitChange={(newUnit) => {
                     setUnitValue(newUnit);
-                    editorEngine.style.update("gap", `${numValue}${newUnit}`);
+                    editorEngine.style.update('gap', `${numValue}${newUnit}`);
                 }}
             />
         </div>

@@ -17,7 +17,7 @@ import { toast } from '@onlook/ui/use-toast';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
-import { useTheme } from "next-themes";
+import { useTheme } from 'next-themes';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
@@ -324,20 +324,16 @@ export const DevTab = observer(() => {
         setIsLoading(true);
         try {
             const originalContent = await editorEngine.sandbox.readFile(activeFile.path);
-            editorEngine.action.run(
-                {
-                    type: 'write-code',
-                    diffs: [
-                        {
-                            path: activeFile.path,
-                            original: originalContent || '',
-                            generated: activeFile.content,
-                        },
-                    ],
-                },
-            );
-
-
+            editorEngine.action.run({
+                type: 'write-code',
+                diffs: [
+                    {
+                        path: activeFile.path,
+                        original: originalContent || '',
+                        generated: activeFile.content,
+                    },
+                ],
+            });
 
             // Mark the file as no longer dirty
             const updatedFiles = openedFiles.map((file: EditorFile) =>
@@ -503,10 +499,10 @@ export const DevTab = observer(() => {
         const updatedFiles = openedFiles.map((file) =>
             file.id === fileId
                 ? {
-                    ...file,
-                    content: content,
-                    isDirty: hasChanged,
-                }
+                      ...file,
+                      content: content,
+                      isDirty: hasChanged,
+                  }
                 : file,
         );
 

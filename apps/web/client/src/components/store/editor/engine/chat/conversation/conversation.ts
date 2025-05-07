@@ -1,5 +1,11 @@
 import { MAX_NAME_LENGTH } from '@onlook/constants';
-import { ChatMessageRole, type AssistantChatMessage, type ChatConversation, type TokenUsage, type UserChatMessage } from '@onlook/models/chat';
+import {
+    ChatMessageRole,
+    type AssistantChatMessage,
+    type ChatConversation,
+    type TokenUsage,
+    type UserChatMessage,
+} from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';

@@ -16,12 +16,7 @@ export async function POST(req: Request) {
         tools: chatToolSet,
         toolCallStreaming: true,
         maxTokens: 64000,
-        experimental_repairToolCall: async ({
-            toolCall,
-            tools,
-            parameterSchema,
-            error,
-        }) => {
+        experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
             if (NoSuchToolError.isInstance(error)) {
                 console.error('Invalid tool name', toolCall.toolName);
                 return null;
@@ -37,7 +32,7 @@ export async function POST(req: Request) {
                 schema: tool?.parameters,
                 prompt: [
                     `The model tried to call the tool "${toolCall.toolName}"` +
-                    ` with the following arguments:`,
+                        ` with the following arguments:`,
                     JSON.stringify(toolCall.args),
                     `The tool accepts the following schema:`,
                     JSON.stringify(parameterSchema(toolCall)),

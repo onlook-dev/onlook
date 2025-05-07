@@ -40,43 +40,39 @@ export const Overlay = observer(() => {
             className={cn(
                 'opacity-100 transition-opacity duration-150 absolute top-0 left-0 h-0 w-0 pointer-events-none',
                 editorEngine.state.shouldHideOverlay && 'opacity-0',
-                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden'
+                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
             )}
         >
-            {
-                overlayState.hoverRect && (
-                    <HoverRect
-                        rect={overlayState.hoverRect.rect}
-                        isComponent={overlayState.hoverRect.isComponent}
-                    />
-                )}
+            {overlayState.hoverRect && (
+                <HoverRect
+                    rect={overlayState.hoverRect.rect}
+                    isComponent={overlayState.hoverRect.isComponent}
+                />
+            )}
             {overlayState.insertRect && <InsertRect rect={overlayState.insertRect} />}
             {clickRectsElements}
-            {
-                overlayState.textEditor && (
-                    <TextEditor
-                        rect={overlayState.textEditor.rect}
-                        content={overlayState.textEditor.content}
-                        styles={overlayState.textEditor.styles}
-                        onChange={overlayState.textEditor.onChange}
-                        onStop={overlayState.textEditor.onStop}
-                        isComponent={overlayState.textEditor.isComponent}
-                    />
-                )
-            }
-            {
-                overlayState.measurement && (
-                    <MeasurementOverlay
-                        fromRect={overlayState.measurement.fromRect}
-                        toRect={overlayState.measurement.toRect}
-                    />
-                )
-            }
-            {overlayState.clickRects.length > 0 && <OverlayChat
-                elementId={editorEngine.elements.selected[0]?.domId ?? ''}
-                selectedEl={overlayState.clickRects[0] ?? null}
-            />}
-
+            {overlayState.textEditor && (
+                <TextEditor
+                    rect={overlayState.textEditor.rect}
+                    content={overlayState.textEditor.content}
+                    styles={overlayState.textEditor.styles}
+                    onChange={overlayState.textEditor.onChange}
+                    onStop={overlayState.textEditor.onStop}
+                    isComponent={overlayState.textEditor.isComponent}
+                />
+            )}
+            {overlayState.measurement && (
+                <MeasurementOverlay
+                    fromRect={overlayState.measurement.fromRect}
+                    toRect={overlayState.measurement.toRect}
+                />
+            )}
+            {overlayState.clickRects.length > 0 && (
+                <OverlayChat
+                    elementId={editorEngine.elements.selected[0]?.domId ?? ''}
+                    selectedEl={overlayState.clickRects[0] ?? null}
+                />
+            )}
         </div>
     );
 });

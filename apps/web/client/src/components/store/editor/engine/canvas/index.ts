@@ -1,10 +1,5 @@
 import { DefaultSettings } from '@onlook/constants';
-import type {
-    Frame,
-    Project,
-    RectPosition,
-    WebFrame
-} from '@onlook/models';
+import type { Frame, Project, RectPosition, WebFrame } from '@onlook/models';
 import { FrameType } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
@@ -42,12 +37,8 @@ export class CanvasManager {
         let y = 100;
         const center = false;
         if (center) {
-            x =
-                window.innerWidth / 2 -
-                (DefaultSettings.FRAME_DIMENSION.width * this._scale) / 2;
-            y =
-                window.innerHeight / 2 -
-                (DefaultSettings.FRAME_DIMENSION.height * this._scale) / 2;
+            x = window.innerWidth / 2 - (DefaultSettings.FRAME_DIMENSION.width * this._scale) / 2;
+            y = window.innerHeight / 2 - (DefaultSettings.FRAME_DIMENSION.height * this._scale) / 2;
         }
 
         return { x, y };
@@ -126,13 +117,11 @@ export class CanvasManager {
 
     private undebouncedSaveSettings() {
         // TODO: Save settings in persistence
-
         // const settings: ProjectSettings = {
         //     scale: this.zoomScale,
         //     position: this.panPosition,
         //     frames: Array.from(this.frames.values()),
         // };
-
         // if (this.projects.project) {
         //     this.projects.project.settings = settings;
         //     this.projects.updateProject(this.projects.project);

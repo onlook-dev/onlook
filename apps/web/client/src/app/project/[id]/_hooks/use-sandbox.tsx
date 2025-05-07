@@ -1,10 +1,10 @@
 'use client';
 
-import { api } from "@/trpc/react";
-import type { SandboxSession } from "@codesandbox/sdk";
+import { api } from '@/trpc/react';
+import type { SandboxSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { CSB_TEMPLATE_ID } from "@onlook/constants";
-import { useState } from "react";
+import { CSB_TEMPLATE_ID } from '@onlook/constants';
+import { useState } from 'react';
 
 export function useSandbox() {
     const [session, setSession] = useState<SandboxSession | null>(null);
@@ -29,7 +29,7 @@ export function useSandbox() {
         await hibernate(sandboxId);
     };
 
-    const startTask = async (taskName: string = "dev") => {
+    const startTask = async (taskName: string = 'dev') => {
         if (!session) return null;
 
         const task = await session.tasks.runTask(taskName);
@@ -61,4 +61,4 @@ export function useSandbox() {
         disconnect,
         reconnect,
     };
-} 
+}

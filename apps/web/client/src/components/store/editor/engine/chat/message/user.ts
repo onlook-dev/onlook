@@ -37,10 +37,7 @@ export class UserChatMessageImpl implements UserChatMessage {
         return new UserChatMessageImpl(message.content, context);
     }
 
-    static fromStringContent(
-        content: string,
-        context: ChatMessageContext[]
-    ): UserChatMessageImpl {
+    static fromStringContent(content: string, context: ChatMessageContext[]): UserChatMessageImpl {
         return new UserChatMessageImpl(content, context);
     }
 

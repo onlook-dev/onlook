@@ -35,7 +35,6 @@ export class ConversationManager {
         }
         this.projectId = project.id;
 
-
         this.conversations = await this.getConversations(project.id);
         if (this.conversations.length === 0 && !this.conversations[0]) {
             this.current = new ChatConversationImpl(project.id, []);
@@ -137,7 +136,10 @@ export class ConversationManager {
         // });
     }
 
-    addUserMessage(content: string, context: ChatMessageContext[]): UserChatMessageImpl | undefined {
+    addUserMessage(
+        content: string,
+        context: ChatMessageContext[],
+    ): UserChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;
@@ -148,9 +150,7 @@ export class ConversationManager {
         return newMessage;
     }
 
-    addAssistantMessage(
-        message: Message,
-    ): AssistantChatMessageImpl | undefined {
+    addAssistantMessage(message: Message): AssistantChatMessageImpl | undefined {
         if (!this.current) {
             console.error('No conversation found');
             return;

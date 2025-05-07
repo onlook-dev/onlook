@@ -1,5 +1,5 @@
-import { Create } from "./create";
-import { Preview } from "./preview";
+import { Create } from './create';
+import { Preview } from './preview';
 
 export function Hero() {
     return (
@@ -13,4 +13,3 @@ export function Hero() {
         </div>
     );
 }
-

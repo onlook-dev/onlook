@@ -78,22 +78,17 @@ export const BottomBar = observer(() => {
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, mode: EditorMode) => {
         // const properties = editorEngine.insert.getDefaultProperties(mode);
-
         // e.dataTransfer.setData('text/plain', mode);
         // e.dataTransfer.setData('application/json', JSON.stringify(properties));
         // e.dataTransfer.effectAllowed = 'copy';
-
         // editorEngine.state.editorMode = mode;
-
         // // Disable pointer-events on webviews during drag
         // for (const frameView of editorEngine.frames.webviews.values()) {
         //     frameView.frameView.style.pointerEvents = 'none';
         // }
-
         // const dragPreview = createDragPreview(properties);
         // document.body.appendChild(dragPreview);
         // e.dataTransfer.setDragImage(dragPreview, 50, 50);
-
         // setTimeout(() => document.body.removeChild(dragPreview), 0);
     };
 
@@ -177,9 +172,7 @@ export const BottomBar = observer(() => {
                                 Terminal
                             </motion.span>
                             <div className="flex items-center gap-1">
-                                <motion.div layout>
-                                    {/* <RunButton /> */}
-                                </motion.div>
+                                <motion.div layout>{/* <RunButton /> */}</motion.div>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <button

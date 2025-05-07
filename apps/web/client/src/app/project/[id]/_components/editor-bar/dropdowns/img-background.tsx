@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui/button";
+import { Button } from '@onlook/ui/button';
 
 export const ImageBackground = () => {
     return (
@@ -20,7 +20,7 @@ export const ImageBackground = () => {
                     `,
                         backgroundSize: '6px 6px',
                         backgroundPosition: '0 0, 0 3px, 3px -3px, -3px 0px',
-                        backgroundColor: '#888888'
+                        backgroundColor: '#888888',
                     }}
                 />
             </div>

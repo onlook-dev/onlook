@@ -1,7 +1,13 @@
-import { useEditorEngine } from "@/components/store";
-import { getAutolayoutStyles, LayoutMode, LayoutProperty, parseModeAndValue, stringToParsedValue } from "@onlook/utility";
+import { useEditorEngine } from '@/components/store';
+import {
+    getAutolayoutStyles,
+    LayoutMode,
+    LayoutProperty,
+    parseModeAndValue,
+    stringToParsedValue,
+} from '@onlook/utility';
 import type { CSSProperties } from 'react';
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 type DimensionType = 'width' | 'height';
 type DimensionProperty<T extends DimensionType> = T | `min${Capitalize<T>}` | `max${Capitalize<T>}`;
@@ -16,26 +22,26 @@ interface DimensionState {
 type DimensionStateMap<T extends DimensionType> = Record<DimensionProperty<T>, DimensionState>;
 
 const createDefaultState = <T extends DimensionType>(dimension: T): DimensionStateMap<T> => {
-    const capitalized = dimension.charAt(0).toUpperCase() + dimension.slice(1) as Capitalize<T>;
+    const capitalized = (dimension.charAt(0).toUpperCase() + dimension.slice(1)) as Capitalize<T>;
     return {
         [dimension]: {
             num: undefined,
             unit: 'px',
             value: 'auto',
-            dropdownValue: 'Hug'
+            dropdownValue: 'Hug',
         },
         [`min${capitalized}`]: {
             num: undefined,
             unit: 'px',
             value: '--',
-            dropdownValue: 'Fixed'
+            dropdownValue: 'Fixed',
         },
         [`max${capitalized}`]: {
             num: undefined,
             unit: 'px',
             value: '--',
-            dropdownValue: 'Fixed'
-        }
+            dropdownValue: 'Fixed',
+        },
     } as DimensionStateMap<T>;
 };
 
@@ -47,12 +53,21 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
         if (!computedStyles) {
             return createDefaultState(dimension);
         }
-        const { num, unit } = stringToParsedValue(computedStyles[dimension]?.toString() ?? "--");
-        const { num: maxNum, unit: maxUnit } = stringToParsedValue(computedStyles[`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
-        const { num: minNum, unit: minUnit } = stringToParsedValue(computedStyles[`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties]?.toString() ?? "--");
+        const { num, unit } = stringToParsedValue(computedStyles[dimension]?.toString() ?? '--');
+        const { num: maxNum, unit: maxUnit } = stringToParsedValue(
+            computedStyles[
+                `max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties
+            ]?.toString() ?? '--',
+        );
+        const { num: minNum, unit: minUnit } = stringToParsedValue(
+            computedStyles[
+                `min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties
+            ]?.toString() ?? '--',
+        );
 
         const defaultState = createDefaultState(dimension);
-        const capitalized = dimension.charAt(0).toUpperCase() + dimension.slice(1) as Capitalize<T>;
+        const capitalized = (dimension.charAt(0).toUpperCase() +
+            dimension.slice(1)) as Capitalize<T>;
 
         return {
             ...defaultState,
@@ -60,20 +75,20 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
                 num: num,
                 unit: unit,
                 value: num ? `${num}${unit}` : 'auto',
-                dropdownValue: num ? 'Fixed' : 'Hug'
+                dropdownValue: num ? 'Fixed' : 'Hug',
             },
             [`max${capitalized}`]: {
                 num: maxNum,
                 unit: maxUnit,
                 value: maxNum ? `${maxNum}${maxUnit}` : '--',
-                dropdownValue: 'Fixed'
+                dropdownValue: 'Fixed',
             },
             [`min${capitalized}`]: {
                 num: minNum,
                 unit: minUnit,
                 value: minNum ? `${minNum}${minUnit}` : '--',
-                dropdownValue: 'Fixed'
-            }
+                dropdownValue: 'Fixed',
+            },
         } as DimensionStateMap<T>;
     };
 
@@ -89,13 +104,13 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
 
         if (!currentState) return;
 
-        setDimensionState(prev => ({
+        setDimensionState((prev) => ({
             ...prev,
             [property]: {
                 ...currentState,
                 num: parsedValue,
-                value: parsedValue ? `${parsedValue}${currentState.unit}` : 'auto'
-            }
+                value: parsedValue ? `${parsedValue}${currentState.unit}` : 'auto',
+            },
         }));
         editorEngine.style.update(property, `${parsedValue}${currentState.unit}`);
     };
@@ -105,13 +120,13 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
 
         if (!currentState) return;
 
-        setDimensionState(prev => ({
+        setDimensionState((prev) => ({
             ...prev,
             [property]: {
                 ...currentState,
                 unit,
-                value: currentState.num ? `${currentState.num}${unit}` : currentState.value
-            }
+                value: currentState.num ? `${currentState.num}${unit}` : currentState.value,
+            },
         }));
 
         if (currentState.num !== undefined) {
@@ -137,29 +152,28 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
 
         const { num, unit } = stringToParsedValue(newLayoutValue);
 
-
         const currentState = dimensionState[property];
 
         if (!currentState) return;
-        setDimensionState(prev => ({
+        setDimensionState((prev) => ({
             ...prev,
             [property]: {
                 ...currentState,
                 num,
                 unit,
                 value: `${num}${unit}`,
-                dropdownValue: value
-            }
+                dropdownValue: value,
+            },
         }));
         if (num !== undefined) {
             editorEngine.style.update(property, `${num}${unit}`);
         }
-    }
+    };
 
     return {
         dimensionState,
         handleDimensionChange,
         handleUnitChange,
-        handleLayoutChange
+        handleLayoutChange,
     };
-}; 
+};

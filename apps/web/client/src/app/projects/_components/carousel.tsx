@@ -236,10 +236,7 @@ export const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => 
     }, []);
 
     return (
-        <div
-            className="embla relative h-full overflow-hidden"
-            style={{ zIndex: 0 }}
-        >
+        <div className="embla relative h-full overflow-hidden" style={{ zIndex: 0 }}>
             <div
                 className="embla__viewport h-full absolute inset-0 overflow-hidden pl-[7.5rem]"
                 ref={emblaRef}

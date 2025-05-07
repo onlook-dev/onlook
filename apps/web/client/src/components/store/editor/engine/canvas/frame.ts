@@ -1,5 +1,5 @@
-import type { Frame, FrameType, RectDimension, RectPosition, WebFrame } from "@onlook/models";
-import { makeObservable, observable } from "mobx";
+import type { Frame, FrameType, RectDimension, RectPosition, WebFrame } from '@onlook/models';
+import { makeObservable, observable } from 'mobx';
 
 export class FrameImpl implements Frame {
     id: string;
@@ -17,7 +17,7 @@ export class FrameImpl implements Frame {
             id: observable,
             position: observable,
             dimension: observable,
-            type: observable
+            type: observable,
         });
     }
 
@@ -34,7 +34,7 @@ export class WebFrameImpl extends FrameImpl implements WebFrame {
         this.url = url;
 
         makeObservable(this, {
-            url: observable
+            url: observable,
         });
     }
 

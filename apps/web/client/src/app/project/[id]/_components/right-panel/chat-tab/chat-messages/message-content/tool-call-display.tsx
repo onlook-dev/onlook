@@ -22,10 +22,14 @@ export const ToolCallDisplay = observer(
 
         const getInvocationCode = () => {
             if (toolInvocation.state === 'result') {
-                return JSON.stringify({ inputs: toolInvocation.args, result: toolInvocation.result }, null, 2);
+                return JSON.stringify(
+                    { inputs: toolInvocation.args, result: toolInvocation.result },
+                    null,
+                    2,
+                );
             }
             return JSON.stringify({ inputs: toolInvocation.args }, null, 2);
-        }
+        };
         return (
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <div

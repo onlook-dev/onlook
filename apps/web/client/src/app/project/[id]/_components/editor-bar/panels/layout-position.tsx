@@ -1,27 +1,36 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
-import { cn } from "@onlook/ui/utils";
-import { useState } from "react";
-import { InputDropdown } from "../inputs/input-dropdown";
-import { InputIcon } from "../inputs/input-icon";
-import { InputRadio } from "../inputs/input-radio";
+import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
+import { useState } from 'react';
+import { InputDropdown } from '../inputs/input-dropdown';
+import { InputIcon } from '../inputs/input-icon';
+import { InputRadio } from '../inputs/input-radio';
 
 interface LayoutPositionProps {
     className?: string;
 }
 
 export function LayoutPosition({ className }: LayoutPositionProps) {
-    const [layoutType, setLayoutType] = useState<"None" | "Flex" | "Grid">("Flex");
-    const [direction, setDirection] = useState<"vertical" | "horizontal">("horizontal");
-    const [verticalAlign, setVerticalAlign] = useState<"top" | "center" | "bottom" | "space-between">("center");
-    const [horizontalAlign, setHorizontalAlign] = useState<"left" | "center" | "right" | "space-between">("center");
-    const [gap, setGap] = useState("12");
-    const [width, setWidth] = useState("100");
-    const [height, setHeight] = useState("228");
-    const [positionType, setPositionType] = useState("Relative");
+    const [layoutType, setLayoutType] = useState<'None' | 'Flex' | 'Grid'>('Flex');
+    const [direction, setDirection] = useState<'vertical' | 'horizontal'>('horizontal');
+    const [verticalAlign, setVerticalAlign] = useState<
+        'top' | 'center' | 'bottom' | 'space-between'
+    >('center');
+    const [horizontalAlign, setHorizontalAlign] = useState<
+        'left' | 'center' | 'right' | 'space-between'
+    >('center');
+    const [gap, setGap] = useState('12');
+    const [width, setWidth] = useState('100');
+    const [height, setHeight] = useState('228');
+    const [positionType, setPositionType] = useState('Relative');
     const [showMarginInputs, setShowMarginInputs] = useState(false);
     const [showPaddingInputs, setShowPaddingInputs] = useState(false);
 
@@ -32,37 +41,45 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
     const [positionOpen, setPositionOpen] = useState(true);
 
     const typeOptions = [
-        { value: "None", label: "None" },
-        { value: "Flex", label: "Flex" },
-        { value: "Grid", label: "Grid" },
+        { value: 'None', label: 'None' },
+        { value: 'Flex', label: 'Flex' },
+        { value: 'Grid', label: 'Grid' },
     ];
 
     const directionOptions = [
-        { value: "vertical", icon: <Icons.ArrowDown className="h-4 w-4" /> },
-        { value: "horizontal", icon: <Icons.ArrowRight className="h-4 w-4" /> },
+        { value: 'vertical', icon: <Icons.ArrowDown className="h-4 w-4" /> },
+        { value: 'horizontal', icon: <Icons.ArrowRight className="h-4 w-4" /> },
     ];
 
     const verticalOptions = [
-        { value: "top", icon: <Icons.AlignTop className="h-4 w-4" /> },
-        { value: "center", icon: <Icons.AlignCenterVertically className="h-4 w-4" /> },
-        { value: "bottom", icon: <Icons.AlignBottom className="h-4 w-4" /> },
-        { value: "space-between", icon: <Icons.SpaceBetweenVertically className="h-4 w-4" /> },
+        { value: 'top', icon: <Icons.AlignTop className="h-4 w-4" /> },
+        { value: 'center', icon: <Icons.AlignCenterVertically className="h-4 w-4" /> },
+        { value: 'bottom', icon: <Icons.AlignBottom className="h-4 w-4" /> },
+        { value: 'space-between', icon: <Icons.SpaceBetweenVertically className="h-4 w-4" /> },
     ];
 
     const horizontalOptions = [
-        { value: "left", icon: <Icons.AlignLeft className="h-4 w-4" /> },
-        { value: "center", icon: <Icons.AlignCenterHorizontally className="h-4 w-4" /> },
-        { value: "right", icon: <Icons.AlignRight className="h-4 w-4" /> },
-        { value: "space-between", icon: <Icons.SpaceBetweenHorizontally className="h-4 w-4" /> },
+        { value: 'left', icon: <Icons.AlignLeft className="h-4 w-4" /> },
+        { value: 'center', icon: <Icons.AlignCenterHorizontally className="h-4 w-4" /> },
+        { value: 'right', icon: <Icons.AlignRight className="h-4 w-4" /> },
+        { value: 'space-between', icon: <Icons.SpaceBetweenHorizontally className="h-4 w-4" /> },
     ];
 
     return (
-        <div className={cn("space-y-1", className)}>
+        <div className={cn('space-y-1', className)}>
             {/* Layout Section */}
             <div className="rounded-lg bg-background backdrop-blur p-4">
-                <div className="flex items-center justify-between mb-0 cursor-pointer" onClick={() => setLayoutOpen(!layoutOpen)}>
+                <div
+                    className="flex items-center justify-between mb-0 cursor-pointer"
+                    onClick={() => setLayoutOpen(!layoutOpen)}
+                >
                     <span className="text-sm font-medium text-white w-24">Layout</span>
-                    <Icons.ChevronUp className={cn("h-4 w-4 text-muted-foreground transition-transform", !layoutOpen && "rotate-180")} />
+                    <Icons.ChevronUp
+                        className={cn(
+                            'h-4 w-4 text-muted-foreground transition-transform',
+                            !layoutOpen && 'rotate-180',
+                        )}
+                    />
                 </div>
 
                 {layoutOpen && (
@@ -73,7 +90,9 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                 <InputRadio
                                     options={typeOptions}
                                     value={layoutType}
-                                    onChange={(value) => setLayoutType(value as "None" | "Flex" | "Grid")}
+                                    onChange={(value) =>
+                                        setLayoutType(value as 'None' | 'Flex' | 'Grid')
+                                    }
                                     className="flex-1"
                                 />
                             </div>
@@ -85,7 +104,9 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                 <InputRadio
                                     options={directionOptions}
                                     value={direction}
-                                    onChange={(value) => setDirection(value as "vertical" | "horizontal")}
+                                    onChange={(value) =>
+                                        setDirection(value as 'vertical' | 'horizontal')
+                                    }
                                     className="flex-1"
                                 />
                             </div>
@@ -97,7 +118,11 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                 <InputRadio
                                     options={verticalOptions}
                                     value={verticalAlign}
-                                    onChange={(value) => setVerticalAlign(value as "top" | "center" | "bottom" | "space-between")}
+                                    onChange={(value) =>
+                                        setVerticalAlign(
+                                            value as 'top' | 'center' | 'bottom' | 'space-between',
+                                        )
+                                    }
                                     className="flex-1"
                                 />
                             </div>
@@ -109,7 +134,11 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                 <InputRadio
                                     options={horizontalOptions}
                                     value={horizontalAlign}
-                                    onChange={(value) => setHorizontalAlign(value as "left" | "center" | "right" | "space-between")}
+                                    onChange={(value) =>
+                                        setHorizontalAlign(
+                                            value as 'left' | 'center' | 'right' | 'space-between',
+                                        )
+                                    }
                                     className="flex-1"
                                 />
                             </div>
@@ -127,9 +156,17 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
 
             {/* Spacing Section */}
             <div className="rounded-lg bg-background backdrop-blur p-4">
-                <div className="flex items-center justify-between cursor-pointer" onClick={() => setSpacingOpen(!spacingOpen)}>
+                <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => setSpacingOpen(!spacingOpen)}
+                >
                     <span className="text-sm font-medium text-white w-24">Spacing</span>
-                    <Icons.ChevronUp className={cn("h-4 w-4 text-muted-foreground transition-transform", !spacingOpen && "rotate-180")} />
+                    <Icons.ChevronUp
+                        className={cn(
+                            'h-4 w-4 text-muted-foreground transition-transform',
+                            !spacingOpen && 'rotate-180',
+                        )}
+                    />
                 </div>
                 {spacingOpen && (
                     <div className="pt-3 space-y-2">
@@ -168,7 +205,6 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                     <Icons.Padding className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
                                 </div>
                             </div>
-
                         </div>
                         {showPaddingInputs && (
                             <div className="grid grid-cols-2 gap-2">
@@ -184,9 +220,17 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
 
             {/* Sizing Section */}
             <div className="rounded-lg bg-background backdrop-blur p-4">
-                <div className="flex items-center justify-between mb-0 cursor-pointer" onClick={() => setSizingOpen(!sizingOpen)}>
+                <div
+                    className="flex items-center justify-between mb-0 cursor-pointer"
+                    onClick={() => setSizingOpen(!sizingOpen)}
+                >
                     <span className="text-sm font-medium text-white w-24">Sizing</span>
-                    <Icons.ChevronUp className={cn("h-4 w-4 text-muted-foreground transition-transform", !sizingOpen && "rotate-180")} />
+                    <Icons.ChevronUp
+                        className={cn(
+                            'h-4 w-4 text-muted-foreground transition-transform',
+                            !sizingOpen && 'rotate-180',
+                        )}
+                    />
                 </div>
 
                 {sizingOpen && (
@@ -199,7 +243,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                     value={width}
                                     unit="%"
                                     dropdownValue="Rel"
-                                    dropdownOptions={["Rel", "PX", "VW"]}
+                                    dropdownOptions={['Rel', 'PX', 'VW']}
                                     onChange={setWidth}
                                 />
                             </div>
@@ -213,7 +257,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                     value="--"
                                     unit="-"
                                     dropdownValue="Rel"
-                                    dropdownOptions={["Rel", "PX", "VW"]}
+                                    dropdownOptions={['Rel', 'PX', 'VW']}
                                 />
                             </div>
                         </div>
@@ -226,7 +270,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                     value="--"
                                     unit="-"
                                     dropdownValue="Rel"
-                                    dropdownOptions={["Rel", "PX", "VW"]}
+                                    dropdownOptions={['Rel', 'PX', 'VW']}
                                 />
                             </div>
                         </div>
@@ -239,7 +283,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                     value={height}
                                     unit="PX"
                                     dropdownValue="Rel"
-                                    dropdownOptions={["Rel", "PX", "VH"]}
+                                    dropdownOptions={['Rel', 'PX', 'VH']}
                                     onChange={setHeight}
                                 />
                             </div>
@@ -253,7 +297,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                     value="--"
                                     unit="-"
                                     dropdownValue="Rel"
-                                    dropdownOptions={["Rel", "PX", "VH"]}
+                                    dropdownOptions={['Rel', 'PX', 'VH']}
                                 />
                             </div>
                         </div>
@@ -266,7 +310,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                     value="--"
                                     unit="-"
                                     dropdownValue="Rel"
-                                    dropdownOptions={["Rel", "PX", "VH"]}
+                                    dropdownOptions={['Rel', 'PX', 'VH']}
                                 />
                             </div>
                         </div>
@@ -276,9 +320,17 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
 
             {/* Position Section */}
             <div className="rounded-lg bg-background backdrop-blur p-4">
-                <div className="flex items-center justify-between mb-0 cursor-pointer" onClick={() => setPositionOpen(!positionOpen)}>
+                <div
+                    className="flex items-center justify-between mb-0 cursor-pointer"
+                    onClick={() => setPositionOpen(!positionOpen)}
+                >
                     <span className="text-sm font-medium text-white w-24">Position</span>
-                    <Icons.ChevronUp className={cn("h-4 w-4 text-muted-foreground transition-transform", !positionOpen && "rotate-180")} />
+                    <Icons.ChevronUp
+                        className={cn(
+                            'h-4 w-4 text-muted-foreground transition-transform',
+                            !positionOpen && 'rotate-180',
+                        )}
+                    />
                 </div>
 
                 {positionOpen && (
@@ -294,33 +346,38 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                                             className="h-[36px] w-full bg-background-tertiary/50 hover:bg-background-tertiary/80 rounded-md ml-[1px] px-2.5 flex items-center justify-between cursor-pointer"
                                         >
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm text-muted-foreground">{positionType}</span>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {positionType}
+                                                </span>
                                             </div>
                                             <Icons.ChevronDown className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-full min-w-[100px] -mt-[1px] p-1 rounded-lg">
+                                    <DropdownMenuContent
+                                        align="start"
+                                        className="w-full min-w-[100px] -mt-[1px] p-1 rounded-lg"
+                                    >
                                         <DropdownMenuItem
                                             className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
-                                            onSelect={() => setPositionType("Static")}
+                                            onSelect={() => setPositionType('Static')}
                                         >
                                             Static
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
-                                            onSelect={() => setPositionType("Relative")}
+                                            onSelect={() => setPositionType('Relative')}
                                         >
                                             Relative
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
-                                            onSelect={() => setPositionType("Sticky")}
+                                            onSelect={() => setPositionType('Sticky')}
                                         >
                                             Sticky
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
-                                            onSelect={() => setPositionType("Absolute")}
+                                            onSelect={() => setPositionType('Absolute')}
                                         >
                                             Absolute
                                         </DropdownMenuItem>

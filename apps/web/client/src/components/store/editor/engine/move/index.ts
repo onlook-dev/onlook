@@ -12,7 +12,7 @@ export class MoveManager {
     isDraggingAbsolute = false;
     isDragInProgress = false;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     get isDragging() {
         return !!this.dragOrigin;
@@ -37,7 +37,7 @@ export class MoveManager {
             return;
         } else {
             try {
-                const index = await frameView.view.startDrag(el.domId) as number;
+                const index = (await frameView.view.startDrag(el.domId)) as number;
                 if (index === null || index === -1) {
                     this.clear();
                     this.isDragInProgress = false;
@@ -105,7 +105,9 @@ export class MoveManager {
         }
 
         try {
-            const offsetParent = await frameView.getOffsetParent(dragTarget.domId) as DomElement | null;
+            const offsetParent = (await frameView.getOffsetParent(
+                dragTarget.domId,
+            )) as DomElement | null;
             if (!offsetParent) {
                 console.error('No offset parent found for drag');
                 return;
@@ -162,7 +164,7 @@ export class MoveManager {
             const targetDomId = this.dragTarget.domId;
             this.isDragInProgress = false;
 
-            const res = await frameView.view.endDrag(targetDomId) as {
+            const res = (await frameView.view.endDrag(targetDomId)) as {
                 newIndex: number;
                 child: DomElement;
                 parent: DomElement;
@@ -225,19 +227,19 @@ export class MoveManager {
 
         try {
             // Get current index and parent
-            const currentIndex = await frameView.view.getElementIndex(element.domId) as number;
+            const currentIndex = (await frameView.view.getElementIndex(element.domId)) as number;
 
             if (currentIndex === -1) {
                 return;
             }
 
-            const parent = await frameView.view.getParentElement(element.domId) as DomElement;
+            const parent = (await frameView.view.getParentElement(element.domId)) as DomElement;
             if (!parent) {
                 return;
             }
 
             // Get filtered children count for accurate index calculation
-            const childrenCount = await frameView.view.getChildrenCount(parent.domId) as number;
+            const childrenCount = (await frameView.view.getChildrenCount(parent.domId)) as number;
 
             // Calculate new index based on direction and bounds
             const newIndex =

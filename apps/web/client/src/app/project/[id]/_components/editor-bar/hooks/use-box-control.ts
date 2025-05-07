@@ -1,25 +1,46 @@
-import { useEditorEngine } from "@/components/store";
-import { capitalizeFirstLetter, stringToParsedValue } from "@onlook/utility";
+import { useEditorEngine } from '@/components/store';
+import { capitalizeFirstLetter, stringToParsedValue } from '@onlook/utility';
 import type { CSSProperties } from 'react';
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export type BoxType = 'margin' | 'padding' | 'border' | 'radius';
 export type BoxSide = 'Top' | 'Right' | 'Bottom' | 'Left';
-export type RadiusCorner = 'TopLeftRadius' | 'TopRightRadius' | 'BottomRightRadius' | 'BottomLeftRadius';
+export type RadiusCorner =
+    | 'TopLeftRadius'
+    | 'TopRightRadius'
+    | 'BottomRightRadius'
+    | 'BottomLeftRadius';
 export type BoxProperty = BoxType | `${BoxType}${BoxSide}` | `border${RadiusCorner}`;
 
-type CSSBoxProperty = keyof Pick<CSSProperties,
-    | 'margin' | 'marginTop' | 'marginRight' | 'marginBottom' | 'marginLeft'
-    | 'padding' | 'paddingTop' | 'paddingRight' | 'paddingBottom' | 'paddingLeft'
-    | 'border' | 'borderTop' | 'borderRight' | 'borderBottom' | 'borderLeft'
-    | 'borderRadius' | 'borderTopLeftRadius' | 'borderTopRightRadius' | 'borderBottomRightRadius' | 'borderBottomLeftRadius'
+type CSSBoxProperty = keyof Pick<
+    CSSProperties,
+    | 'margin'
+    | 'marginTop'
+    | 'marginRight'
+    | 'marginBottom'
+    | 'marginLeft'
+    | 'padding'
+    | 'paddingTop'
+    | 'paddingRight'
+    | 'paddingBottom'
+    | 'paddingLeft'
+    | 'border'
+    | 'borderTop'
+    | 'borderRight'
+    | 'borderBottom'
+    | 'borderLeft'
+    | 'borderRadius'
+    | 'borderTopLeftRadius'
+    | 'borderTopRightRadius'
+    | 'borderBottomRightRadius'
+    | 'borderBottomLeftRadius'
 >;
 
 const boxTypeToCSSProperty: Record<BoxType, CSSBoxProperty> = {
     margin: 'margin',
     padding: 'padding',
     border: 'border',
-    radius: 'borderRadius'
+    radius: 'borderRadius',
 };
 
 interface BoxState {
@@ -36,27 +57,32 @@ const createDefaultState = (type: BoxType): BoxStateMap => {
     state[type] = {
         num: undefined,
         unit: 'px',
-        value: '--'
+        value: '--',
     };
 
     if (type === 'radius') {
-        const corners: RadiusCorner[] = ['TopLeftRadius', 'TopRightRadius', 'BottomRightRadius', 'BottomLeftRadius'];
-        corners.forEach(corner => {
+        const corners: RadiusCorner[] = [
+            'TopLeftRadius',
+            'TopRightRadius',
+            'BottomRightRadius',
+            'BottomLeftRadius',
+        ];
+        corners.forEach((corner) => {
             const property = `border${corner}` as BoxProperty;
             state[property] = {
                 num: undefined,
                 unit: 'px',
-                value: '--'
+                value: '--',
             };
         });
     } else {
         const sides: BoxSide[] = ['Top', 'Right', 'Bottom', 'Left'];
-        sides.forEach(side => {
+        sides.forEach((side) => {
             const property = `${type}${side}` as BoxProperty;
             state[property] = {
                 num: undefined,
                 unit: 'px',
-                value: '--'
+                value: '--',
             };
         });
     }
@@ -76,35 +102,46 @@ export const useBoxControl = (type: BoxType) => {
 
         const computedStyles = editorEngine.style.selectedStyle?.styles.computed;
 
-        const { num, unit } = stringToParsedValue(computedStyles[boxTypeToCSSProperty[type]]?.toString() ?? "--");
+        const { num, unit } = stringToParsedValue(
+            computedStyles[boxTypeToCSSProperty[type]]?.toString() ?? '--',
+        );
         defaultState[type] = {
             num,
             unit,
-            value: num ? `${num}${unit}` : '--'
+            value: num ? `${num}${unit}` : '--',
         };
 
         if (type === 'radius') {
-            const corners: RadiusCorner[] = ['TopLeftRadius', 'TopRightRadius', 'BottomRightRadius', 'BottomLeftRadius'];
-            corners.forEach(corner => {
+            const corners: RadiusCorner[] = [
+                'TopLeftRadius',
+                'TopRightRadius',
+                'BottomRightRadius',
+                'BottomLeftRadius',
+            ];
+            corners.forEach((corner) => {
                 const property = `border${corner}` as BoxProperty;
                 const cssProperty = `border${corner}` as CSSBoxProperty;
-                const { num, unit } = stringToParsedValue(computedStyles[cssProperty]?.toString() ?? "--");
+                const { num, unit } = stringToParsedValue(
+                    computedStyles[cssProperty]?.toString() ?? '--',
+                );
                 defaultState[property] = {
                     num,
                     unit,
-                    value: num ? `${num}${unit}` : '--'
+                    value: num ? `${num}${unit}` : '--',
                 };
             });
         } else {
             const sides: BoxSide[] = ['Top', 'Right', 'Bottom', 'Left'];
-            sides.forEach(side => {
+            sides.forEach((side) => {
                 const property = `${type}${side}` as BoxProperty;
                 const cssProperty = `${type}${side}` as CSSBoxProperty;
-                const { num, unit } = stringToParsedValue(computedStyles[cssProperty]?.toString() ?? "--");
+                const { num, unit } = stringToParsedValue(
+                    computedStyles[cssProperty]?.toString() ?? '--',
+                );
                 defaultState[property] = {
                     num,
                     unit,
-                    value: num ? `${num}${unit}` : '--'
+                    value: num ? `${num}${unit}` : '--',
                 };
             });
         }
@@ -124,13 +161,13 @@ export const useBoxControl = (type: BoxType) => {
 
         if (!currentState) return;
 
-        setBoxState(prev => ({
+        setBoxState((prev) => ({
             ...prev,
             [property]: {
                 ...currentState,
                 num: parsedValue,
-                value: parsedValue ? `${parsedValue}${currentState.unit}` : '--'
-            }
+                value: parsedValue ? `${parsedValue}${currentState.unit}` : '--',
+            },
         }));
         editorEngine.style.update(property, `${parsedValue}${currentState.unit}`);
     };
@@ -140,13 +177,13 @@ export const useBoxControl = (type: BoxType) => {
 
         if (!currentState) return;
 
-        setBoxState(prev => ({
+        setBoxState((prev) => ({
             ...prev,
             [property]: {
                 ...currentState,
                 unit,
-                value: currentState.num ? `${currentState.num}${unit}` : '--'
-            }
+                value: currentState.num ? `${currentState.num}${unit}` : '--',
+            },
         }));
 
         if (currentState.num !== undefined) {
@@ -155,20 +192,21 @@ export const useBoxControl = (type: BoxType) => {
     };
 
     const handleIndividualChange = (value: number, side: string) => {
-        const property = type === 'radius'
-            ? `border${capitalizeFirstLetter(side)}` as BoxProperty
-            : `${type}${capitalizeFirstLetter(side)}` as BoxProperty;
+        const property =
+            type === 'radius'
+                ? (`border${capitalizeFirstLetter(side)}` as BoxProperty)
+                : (`${type}${capitalizeFirstLetter(side)}` as BoxProperty);
         const currentState = boxState[property];
 
         if (!currentState) return;
 
-        setBoxState(prev => ({
+        setBoxState((prev) => ({
             ...prev,
             [property]: {
                 ...currentState,
                 num: value,
-                value: `${value}${currentState.unit}`
-            }
+                value: `${value}${currentState.unit}`,
+            },
         }));
         editorEngine.style.update(property, `${value}${currentState.unit}`);
     };
@@ -177,6 +215,6 @@ export const useBoxControl = (type: BoxType) => {
         boxState,
         handleBoxChange,
         handleUnitChange,
-        handleIndividualChange
+        handleIndividualChange,
     };
-}; 
+};

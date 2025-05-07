@@ -1,5 +1,9 @@
 import { useEditorEngine } from '@/components/store';
-import { doesRouteExist, normalizeRoute, validateNextJsRoute } from '@/components/store/editor/engine/pages/helper';
+import {
+    doesRouteExist,
+    normalizeRoute,
+    validateNextJsRoute,
+} from '@/components/store/editor/engine/pages/helper';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,

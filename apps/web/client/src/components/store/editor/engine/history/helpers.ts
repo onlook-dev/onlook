@@ -57,24 +57,32 @@ export function undoAction(action: Action): Action {
                 location: {
                     ...action.location,
                 },
-                element: getCleanedElement(action.element, action.element.domId, action.element.oid),
+                element: getCleanedElement(
+                    action.element,
+                    action.element.domId,
+                    action.element.oid,
+                ),
                 editText: null,
                 pasteParams: null,
                 codeBlock: null,
-            }
+            };
             return removeAction;
-        case 'remove-element':            
+        case 'remove-element':
             const insertAction: InsertElementAction = {
                 type: 'insert-element',
                 targets: action.targets ? [...action.targets] : [],
                 location: {
                     ...action.location,
                 },
-                element: getCleanedElement(action.element, action.element.domId, action.element.oid),
+                element: getCleanedElement(
+                    action.element,
+                    action.element.domId,
+                    action.element.oid,
+                ),
                 editText: action.editText,
                 pasteParams: action.pasteParams ? { ...action.pasteParams } : null,
                 codeBlock: action.codeBlock ? { ...action.codeBlock } : null,
-            }
+            };
             return insertAction;
         case 'move-element':
             return {
@@ -97,7 +105,7 @@ export function undoAction(action: Action): Action {
                     ...action.container,
                     attributes: {
                         ...action.container.attributes,
-                    }
+                    },
                 },
                 children: action.children.map((child) => ({
                     frameId: child.frameId,
@@ -116,7 +124,7 @@ export function undoAction(action: Action): Action {
                     ...action.container,
                     attributes: {
                         ...action.container.attributes,
-                    }
+                    },
                 },
                 children: action.children.map((child) => ({
                     frameId: child.frameId,
@@ -175,18 +183,17 @@ export function updateTransactionActions(actions: Action[], newAction: Action): 
     }
 
     if (newAction.type === 'update-style') {
-        return handleUpdateStyleAction(
-            actions,
-            existingActionIndex,
-            newAction,
-        );
+        return handleUpdateStyleAction(actions, existingActionIndex, newAction);
     }
 
     return actions.map((a, i) => (i === existingActionIndex ? newAction : a));
 }
 
-
-export function getCleanedElement(copiedEl: ActionElement, domId: string, oid: string): ActionElement {
+export function getCleanedElement(
+    copiedEl: ActionElement,
+    domId: string,
+    oid: string,
+): ActionElement {
     const cleanedEl: ActionElement = {
         tagName: copiedEl.tagName,
         attributes: {
@@ -199,7 +206,7 @@ export function getCleanedElement(copiedEl: ActionElement, domId: string, oid: s
         textContent: copiedEl.textContent,
         children: [],
         domId,
-        oid
+        oid,
     };
 
     // Process children recursively
@@ -222,7 +229,11 @@ export function transformRedoAction(action: Action): Action {
                 type: action.type,
                 targets: action.targets ? [...action.targets] : [],
                 location: { ...action.location },
-                element: getCleanedElement(action.element, action.element.domId, action.element.oid),
+                element: getCleanedElement(
+                    action.element,
+                    action.element.domId,
+                    action.element.oid,
+                ),
                 editText: action.editText,
                 pasteParams: action.pasteParams,
                 codeBlock: action.codeBlock,
@@ -234,7 +245,7 @@ export function transformRedoAction(action: Action): Action {
                 parent: { ...action.parent },
                 container: {
                     ...action.container,
-                    attributes: { ...action.container.attributes }
+                    attributes: { ...action.container.attributes },
                 },
                 children: action.children.map((child) => ({
                     frameId: child.frameId,
@@ -245,41 +256,41 @@ export function transformRedoAction(action: Action): Action {
         case 'update-style':
             return {
                 type: 'update-style',
-                targets: action.targets.map(target => ({
+                targets: action.targets.map((target) => ({
                     ...target,
                     change: {
                         updated: { ...target.change.updated },
-                        original: { ...target.change.original }
-                    }
-                }))
+                        original: { ...target.change.original },
+                    },
+                })),
             };
         case 'move-element':
             return {
                 type: 'move-element',
                 targets: action.targets ? [...action.targets] : [],
-                location: { ...action.location }
+                location: { ...action.location },
             };
         case 'edit-text':
             return {
                 type: 'edit-text',
                 targets: action.targets ? [...action.targets] : [],
                 originalContent: action.originalContent,
-                newContent: action.newContent
+                newContent: action.newContent,
             };
         case 'write-code':
             return {
                 type: 'write-code',
-                diffs: action.diffs.map(diff => ({
+                diffs: action.diffs.map((diff) => ({
                     ...diff,
                     original: diff.original,
-                    generated: diff.generated
-                }))
+                    generated: diff.generated,
+                })),
             };
         case 'insert-image':
         case 'remove-image':
             return {
                 ...action,
-                type: action.type === 'insert-image' ? 'remove-image' : 'insert-image'
+                type: action.type === 'insert-image' ? 'remove-image' : 'insert-image',
             };
         default:
             return action;

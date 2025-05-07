@@ -1,8 +1,8 @@
-import { useEditorEngine } from "@/components/store";
-import { convertFontString } from "@onlook/utility";
-import { useEffect, useState } from "react";
+import { useEditorEngine } from '@/components/store';
+import { convertFontString } from '@onlook/utility';
+import { useEffect, useState } from 'react';
 
-export type TextAlign = "left" | "center" | "right" | "justify";
+export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 
 interface TextState {
     fontFamily: string;
@@ -13,26 +13,35 @@ interface TextState {
 }
 
 const DefaultState: TextState = {
-    fontFamily: "--",
+    fontFamily: '--',
     fontSize: 16,
-    fontWeight: "400",
-    textAlign: "left",
-    textColor: "#000000",
-}
+    fontWeight: '400',
+    textAlign: 'left',
+    textColor: '#000000',
+};
 
 export const useTextControl = () => {
     const editorEngine = useEditorEngine();
 
     const getInitialState = (): TextState => {
         return {
-            fontFamily: convertFontString(editorEngine.style.selectedStyle?.styles.computed.fontFamily ?? DefaultState.fontFamily),
-            fontSize: parseInt(editorEngine.style.selectedStyle?.styles.computed.fontSize?.toString() ?? DefaultState.fontSize.toString()),
-            fontWeight: editorEngine.style.selectedStyle?.styles.computed.fontWeight?.toString() ?? DefaultState.fontWeight,
-            textAlign: (editorEngine.style.selectedStyle?.styles.computed.textAlign ?? DefaultState.textAlign) as TextAlign,
-            textColor: editorEngine.style.selectedStyle?.styles.computed.color ?? DefaultState.textColor,
+            fontFamily: convertFontString(
+                editorEngine.style.selectedStyle?.styles.computed.fontFamily ??
+                    DefaultState.fontFamily,
+            ),
+            fontSize: parseInt(
+                editorEngine.style.selectedStyle?.styles.computed.fontSize?.toString() ??
+                    DefaultState.fontSize.toString(),
+            ),
+            fontWeight:
+                editorEngine.style.selectedStyle?.styles.computed.fontWeight?.toString() ??
+                DefaultState.fontWeight,
+            textAlign: (editorEngine.style.selectedStyle?.styles.computed.textAlign ??
+                DefaultState.textAlign) as TextAlign,
+            textColor:
+                editorEngine.style.selectedStyle?.styles.computed.color ?? DefaultState.textColor,
         };
     };
-
 
     const [textState, setTextState] = useState<TextState>(getInitialState());
 
@@ -41,43 +50,43 @@ export const useTextControl = () => {
     }, [editorEngine.style.selectedStyle]);
 
     const handleFontFamilyChange = (fontFamily: string) => {
-        setTextState(prev => ({
+        setTextState((prev) => ({
             ...prev,
-            fontFamily
+            fontFamily,
         }));
-        editorEngine.style.update("fontFamily", fontFamily);
+        editorEngine.style.update('fontFamily', fontFamily);
     };
 
     const handleFontSizeChange = (fontSize: number) => {
-        setTextState(prev => ({
+        setTextState((prev) => ({
             ...prev,
-            fontSize
+            fontSize,
         }));
-        editorEngine.style.update("fontSize", `${fontSize}px`);
+        editorEngine.style.update('fontSize', `${fontSize}px`);
     };
 
     const handleFontWeightChange = (fontWeight: string) => {
-        setTextState(prev => ({
+        setTextState((prev) => ({
             ...prev,
-            fontWeight
+            fontWeight,
         }));
-        editorEngine.style.update("fontWeight", fontWeight);
+        editorEngine.style.update('fontWeight', fontWeight);
     };
 
     const handleTextAlignChange = (textAlign: TextAlign) => {
-        setTextState(prev => ({
+        setTextState((prev) => ({
             ...prev,
-            textAlign
+            textAlign,
         }));
-        editorEngine.style.update("textAlign", textAlign);
+        editorEngine.style.update('textAlign', textAlign);
     };
 
     const handleTextColorChange = (textColor: string) => {
-        setTextState(prev => ({
+        setTextState((prev) => ({
             ...prev,
-            textColor
+            textColor,
         }));
-        editorEngine.style.update("color", textColor);
+        editorEngine.style.update('color', textColor);
     };
 
     return {
@@ -86,6 +95,6 @@ export const useTextControl = () => {
         handleFontSizeChange,
         handleFontWeightChange,
         handleTextAlignChange,
-        handleTextColorChange
+        handleTextColorChange,
     };
-}; 
+};

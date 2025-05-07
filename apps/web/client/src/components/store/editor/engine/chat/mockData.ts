@@ -4,20 +4,20 @@ import { nanoid } from 'nanoid';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
 
-const GREETING_MSG_CONTENT = 'Click on any element to chat with it. Try to be as detailed as possible for the best results!';
+const GREETING_MSG_CONTENT =
+    'Click on any element to chat with it. Try to be as detailed as possible for the best results!';
 
-export const GREETING_MSG = new AssistantChatMessageImpl(
-    {
-        id: nanoid(),
-        role: 'assistant',
-        content: GREETING_MSG_CONTENT,
-        parts: [
-            {
-                type: 'text',
-                text: GREETING_MSG_CONTENT,
-            },
-        ],
-    });
+export const GREETING_MSG = new AssistantChatMessageImpl({
+    id: nanoid(),
+    role: 'assistant',
+    content: GREETING_MSG_CONTENT,
+    parts: [
+        {
+            type: 'text',
+            text: GREETING_MSG_CONTENT,
+        },
+    ],
+});
 
 const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
     {
@@ -86,4 +86,9 @@ const MOCK_ASSISTANT_MSG_2 = new AssistantChatMessageImpl({
 
 export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(MOCK_ASSISTANT_MSG_2);
 
-export const MOCK_CHAT_MESSAGES = [GREETING_MSG, MOCK_USER_MSG, MOCK_ASSISTANT_MSG_1, MOCK_ASSISTANT_MSG_2];
+export const MOCK_CHAT_MESSAGES = [
+    GREETING_MSG,
+    MOCK_USER_MSG,
+    MOCK_ASSISTANT_MSG_1,
+    MOCK_ASSISTANT_MSG_2,
+];

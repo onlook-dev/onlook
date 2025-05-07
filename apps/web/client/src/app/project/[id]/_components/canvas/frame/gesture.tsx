@@ -17,13 +17,16 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         return editorEngine.frames.get(frame.id);
     }, [editorEngine.frames, frame.id]);
 
-    const getRelativeMousePosition = useCallback((e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
-        const frameData = getFrameData();
-        if (!frameData) {
-            return { x: 0, y: 0 };
-        }
-        return getRelativeMousePositionToWebview(e, frameData.view);
-    }, [getFrameData]);
+    const getRelativeMousePosition = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
+            const frameData = getFrameData();
+            if (!frameData) {
+                return { x: 0, y: 0 };
+            }
+            return getRelativeMousePositionToWebview(e, frameData.view);
+        },
+        [getFrameData],
+    );
 
     const handleMouseEvent = useCallback(
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
@@ -33,8 +36,14 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                 return;
             }
             const pos = getRelativeMousePosition(e);
-            const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(action);
-            const el: DomElement = await frameData.view.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
+            const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(
+                action,
+            );
+            const el: DomElement = await frameData.view.getElementAtLoc(
+                pos.x,
+                pos.y,
+                shouldGetStyle,
+            );
             if (!el) {
                 console.log('No element found');
                 return;
@@ -181,7 +190,9 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const gestureScreenClassName = useMemo(() => {
         return cn(
             'absolute inset-0 bg-transparent',
-            editorEngine.state.editorMode === EditorMode.PREVIEW && !isResizing ? 'hidden' : 'visible',
+            editorEngine.state.editorMode === EditorMode.PREVIEW && !isResizing
+                ? 'hidden'
+                : 'visible',
             editorEngine.state.editorMode === EditorMode.INSERT_DIV && 'cursor-crosshair',
             editorEngine.state.editorMode === EditorMode.INSERT_TEXT && 'cursor-text',
         );
@@ -190,7 +201,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const handleMouseOut = () => {
         editorEngine.elements.clearHoveredElement();
         editorEngine.overlay.state.removeHoverRect();
-    }
+    };
 
     return (
         <RightClickMenu>

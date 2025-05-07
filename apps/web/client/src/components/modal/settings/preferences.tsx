@@ -14,7 +14,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useLocale } from 'next-intl';
-import { useTheme } from "next-themes";
+import { useTheme } from 'next-themes';
 
 export const PreferencesTab = observer(() => {
     const userManager = useUserManager();
@@ -64,9 +64,7 @@ export const PreferencesTab = observer(() => {
                                 onClick={() => userManager.language.update(code as Language)}
                             >
                                 <span>{name}</span>
-                                {locale === code && (
-                                    <Icons.CheckCircled className="ml-auto" />
-                                )}
+                                {locale === code && <Icons.CheckCircled className="ml-auto" />}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
@@ -84,7 +82,9 @@ export const PreferencesTab = observer(() => {
                         <Button variant="outline" className="text-smallPlus min-w-[150px]">
                             {theme === SystemTheme.DARK && <Icons.Moon className="mr-2 h-4 w-4" />}
                             {theme === SystemTheme.LIGHT && <Icons.Sun className="mr-2 h-4 w-4" />}
-                            {theme === SystemTheme.SYSTEM && <Icons.Laptop className="mr-2 h-4 w-4" />}
+                            {theme === SystemTheme.SYSTEM && (
+                                <Icons.Laptop className="mr-2 h-4 w-4" />
+                            )}
                             <span className="capitalize">{theme}</span>
                             <Icons.ChevronDown className="ml-auto" />
                         </Button>
@@ -93,17 +93,23 @@ export const PreferencesTab = observer(() => {
                         <DropdownMenuItem onClick={() => setTheme(SystemTheme.LIGHT)}>
                             <Icons.Sun className="mr-2 h-4 w-4" />
                             <span>Light</span>
-                            {theme === SystemTheme.LIGHT && <Icons.CheckCircled className="ml-auto" />}
+                            {theme === SystemTheme.LIGHT && (
+                                <Icons.CheckCircled className="ml-auto" />
+                            )}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setTheme(SystemTheme.DARK)}>
                             <Icons.Moon className="mr-2 h-4 w-4" />
                             <span>Dark</span>
-                            {theme === SystemTheme.DARK && <Icons.CheckCircled className="ml-auto" />}
+                            {theme === SystemTheme.DARK && (
+                                <Icons.CheckCircled className="ml-auto" />
+                            )}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setTheme(SystemTheme.SYSTEM)}>
                             <Icons.Laptop className="mr-2 h-4 w-4" />
                             <span>System</span>
-                            {theme === SystemTheme.SYSTEM && <Icons.CheckCircled className="ml-auto" />}
+                            {theme === SystemTheme.SYSTEM && (
+                                <Icons.CheckCircled className="ml-auto" />
+                            )}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

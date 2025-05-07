@@ -1,4 +1,3 @@
-
 import { useEditorEngine, useUserManager } from '@/components/store';
 import { Language, LANGUAGE_DISPLAY_NAMES, Links } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models/assets';
@@ -15,7 +14,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useTheme } from "next-themes";
+import { useTheme } from 'next-themes';
 import { useState } from 'react';
 // import { invokeMainChannel } from '@/lib/utils';
 

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { UserProvider } from "@/components/hooks/use-user";
-import { Hero } from "./hero";
-import { TopBar } from "./top-bar";
+import { UserProvider } from '@/components/hooks/use-user';
+import { Hero } from './hero';
+import { TopBar } from './top-bar';
 
 export default function Main() {
     return (
@@ -15,6 +15,6 @@ export default function Main() {
                     <Hero />
                 </div>
             </div>
-        </UserProvider >
+        </UserProvider>
     );
 }

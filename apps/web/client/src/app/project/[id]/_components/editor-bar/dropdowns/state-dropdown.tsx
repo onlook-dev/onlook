@@ -1,11 +1,11 @@
-import { Button } from "@onlook/ui/button";
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
 
 export const StateDropdown = () => {
     return (
@@ -20,12 +20,10 @@ export const StateDropdown = () => {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="min-w-[120px] mt-1 p-1 rounded-lg">
-                <DropdownMenuItem
-                    className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white"
-                >
+                <DropdownMenuItem className="flex items-center px-2 py-1.5 rounded-md text-muted-foreground text-sm data-[highlighted]:bg-background-tertiary/10 border border-border/0 data-[highlighted]:border-border data-[highlighted]:text-white">
                     Default
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     );
-}; 
+};

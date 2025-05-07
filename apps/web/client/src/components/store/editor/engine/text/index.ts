@@ -1,19 +1,15 @@
-import type { WebFrameView } from "@/app/project/[id]/_components/canvas/frame/web-frame";
-import type {
-    DomElement,
-    EditTextResult,
-    ElementPosition,
-} from "@onlook/models";
-import { toast } from "@onlook/ui/use-toast";
-import type { EditorEngine } from "..";
-import { adaptRectToCanvas } from "../overlay/utils";
+import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
+import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
+import { toast } from '@onlook/ui/use-toast';
+import type { EditorEngine } from '..';
+import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {
     private targetDomEl: DomElement | null = null;
     private originalContent: string | null = null;
     private shouldNotStartEditing = false;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     get isEditing(): boolean {
         return this.targetDomEl !== null;
@@ -21,7 +17,7 @@ export class TextEditingManager {
 
     async start(el: DomElement, frameView: WebFrameView): Promise<void> {
         try {
-            const isEditable = (await frameView.isChildTextEditable(el.oid ?? "")) as
+            const isEditable = (await frameView.isChildTextEditable(el.oid ?? '')) as
                 | boolean
                 | null;
             if (isEditable !== true) {
@@ -30,24 +26,23 @@ export class TextEditingManager {
                         isEditable === null
                             ? "Can't determine if text is editable"
                             : "Can't edit text because it's not plain text. Edit in code or use AI.",
-                    variant: "destructive",
+                    variant: 'destructive',
                 });
                 return;
             }
 
-            const res = (await frameView.startEditingText(
-                el.domId,
-            )) as EditTextResult | null;
+            const res = (await frameView.startEditingText(el.domId)) as EditTextResult | null;
             if (!res) {
-                console.error("Failed to start editing text, no result returned");
+                console.error('Failed to start editing text, no result returned');
                 return;
             }
 
-            const computedStyles = (await frameView.getComputedStyleByDomId(
-                el.domId,
-            )) as Record<string, string> | null;
+            const computedStyles = (await frameView.getComputedStyleByDomId(el.domId)) as Record<
+                string,
+                string
+            > | null;
             if (!computedStyles) {
-                console.error("Failed to get computed styles for text editing");
+                console.error('Failed to get computed styles for text editing');
                 return;
             }
 
@@ -74,21 +69,21 @@ export class TextEditingManager {
                 isComponent,
             );
         } catch (error) {
-            console.error("Error starting text edit:", error);
+            console.error('Error starting text edit:', error);
             return;
         }
     }
 
     async edit(newContent: string): Promise<void> {
         if (!this.targetDomEl) {
-            console.error("No target dom element to edit");
+            console.error('No target dom element to edit');
             return;
         }
 
         try {
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
             if (!frameData) {
-                console.error("No frameView found for text editing");
+                console.error('No frameView found for text editing');
                 return;
             }
 
@@ -97,33 +92,33 @@ export class TextEditingManager {
                 newContent,
             )) as DomElement | null;
             if (!domEl) {
-                console.error("Failed to edit text. No dom element returned");
+                console.error('Failed to edit text. No dom element returned');
                 return;
             }
 
             await this.handleEditedText(domEl, newContent, frameData.view);
         } catch (error) {
-            console.error("Error editing text:", error);
+            console.error('Error editing text:', error);
             return;
         }
     }
 
     async end(): Promise<void> {
         if (!this.targetDomEl) {
-            console.error("No target dom element to stop editing");
+            console.error('No target dom element to stop editing');
             return;
         }
 
         try {
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
             if (!frameData) {
-                console.error("No frameView found for end text editing");
+                console.error('No frameView found for end text editing');
                 return;
             }
 
             const res = await frameData.view.stopEditingText(this.targetDomEl.domId);
             if (!res) {
-                console.error("Failed to stop editing text. No result returned");
+                console.error('Failed to stop editing text. No result returned');
                 return;
             }
 
@@ -134,7 +129,7 @@ export class TextEditingManager {
             await this.handleEditedText(domEl, newContent, frameData.view);
             await this.clean();
         } catch (error) {
-            console.error("Error ending text edit:", error);
+            console.error('Error ending text edit:', error);
             return;
         }
     }
@@ -153,7 +148,7 @@ export class TextEditingManager {
     ): Promise<void> {
         try {
             await this.editorEngine.history.push({
-                type: "edit-text",
+                type: 'edit-text',
                 targets: [
                     {
                         frameId: frameView.id,
@@ -161,16 +156,15 @@ export class TextEditingManager {
                         oid: domEl.oid,
                     },
                 ],
-                originalContent: this.originalContent ?? "",
+                originalContent: this.originalContent ?? '',
                 newContent,
             });
 
             const adjustedRect = adaptRectToCanvas(domEl.rect, frameView);
             this.editorEngine.overlay.state.updateTextEditor(adjustedRect);
             await this.editorEngine.overlay.refresh();
-
         } catch (error) {
-            console.error("Error handling edited text:", error);
+            console.error('Error handling edited text:', error);
             return;
         }
     }
@@ -206,28 +200,21 @@ export class TextEditingManager {
 
             await this.start(domEl, frameData.view);
         } catch (error) {
-            console.error("Error editing selected element:", error);
+            console.error('Error editing selected element:', error);
             return;
         }
     }
 
-    async editElementAtLoc(
-        pos: ElementPosition,
-        frameView: WebFrameView,
-    ): Promise<void> {
+    async editElementAtLoc(pos: ElementPosition, frameView: WebFrameView): Promise<void> {
         try {
-            const el = (await frameView.getElementAtLoc(
-                pos.x,
-                pos.y,
-                true,
-            )) as DomElement;
+            const el = (await frameView.getElementAtLoc(pos.x, pos.y, true)) as DomElement;
             if (!el) {
-                console.error("Failed to get element at location");
+                console.error('Failed to get element at location');
                 return;
             }
             await this.start(el, frameView);
         } catch (error) {
-            console.error("Error editing element at location:", error);
+            console.error('Error editing element at location:', error);
             return;
         }
     }

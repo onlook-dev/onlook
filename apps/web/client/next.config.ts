@@ -4,7 +4,7 @@
  */
 import { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
-import "./src/env";
+import './src/env';
 
 const nextConfig: NextConfig = {
     devIndicators: false,
@@ -20,4 +20,3 @@ const nextConfig: NextConfig = {
 
 const withNextIntl = createNextIntlPlugin();
 export default withNextIntl(nextConfig);
-

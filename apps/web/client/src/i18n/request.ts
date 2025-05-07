@@ -3,16 +3,16 @@ import { getRequestConfig } from 'next-intl/server';
 import { cookies, headers } from 'next/headers';
 
 export default getRequestConfig(async () => {
-    const locale = await getLanguage()
+    const locale = await getLanguage();
     return {
         locale,
-        messages: (await import(`../../messages/${locale}.json`)).default
+        messages: (await import(`../../messages/${locale}.json`)).default,
     };
 });
 
 export async function getLanguage(): Promise<Language> {
-    const cookieStore = await cookies()
-    const locale = cookieStore.get('locale')
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('locale');
 
     if (locale) {
         return locale.value as Language;
@@ -22,8 +22,8 @@ export async function getLanguage(): Promise<Language> {
 }
 
 async function detectLanguage(): Promise<Language> {
-    const headersList = await headers()
-    const acceptLanguage = headersList.get('accept-language') || ''
+    const headersList = await headers();
+    const acceptLanguage = headersList.get('accept-language') || '';
 
     // Try to find a matching language from header preferences
     for (const lang of acceptLanguage.split(',')) {

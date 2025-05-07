@@ -8,11 +8,11 @@ describe('TemplateNodeMapper', () => {
     let mockLocalforage: any;
 
     beforeEach(() => {
-        // Create mock localforage  
+        // Create mock localforage
         mockLocalforage = {
             getItem: mock(async () => null),
             setItem: mock(async () => undefined),
-            removeItem: mock(async () => undefined)
+            removeItem: mock(async () => undefined),
         };
         mapper = new TemplateNodeMapper(mockLocalforage);
     });
@@ -20,7 +20,7 @@ describe('TemplateNodeMapper', () => {
     const createMockTemplateNode = (id: string, name: string): TemplateNode => {
         const mockTemplateTag: TemplateTag = {
             start: { line: 1, column: 0 },
-            end: { line: 1, column: 10 }
+            end: { line: 1, column: 10 },
         };
 
         return {
@@ -29,7 +29,7 @@ describe('TemplateNodeMapper', () => {
             endTag: mockTemplateTag,
             component: name,
             dynamicType: null,
-            coreElementType: CoreElementType.COMPONENT_ROOT
+            coreElementType: CoreElementType.COMPONENT_ROOT,
         };
     };
 
@@ -62,7 +62,7 @@ describe('TemplateNodeMapper', () => {
         mapper.updateMapping(nodeMap);
 
         // Allow async operations to complete
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
 
         // Assert
         expect(mockLocalforage.setItem).toHaveBeenCalled();
@@ -79,7 +79,7 @@ describe('TemplateNodeMapper', () => {
         new TemplateNodeMapper(mockLocalforage);
 
         // Allow async operations to complete
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
 
         // Assert
         expect(mockLocalforage.getItem).toHaveBeenCalledWith('template-node-map');

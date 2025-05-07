@@ -1,4 +1,3 @@
-
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store';
 import { Button } from '@onlook/ui/button';

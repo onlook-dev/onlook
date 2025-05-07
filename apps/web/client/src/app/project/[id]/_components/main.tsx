@@ -1,19 +1,19 @@
 'use client';
 
-import { ChatProvider } from "@/app/project/[id]/_hooks/use-chat";
-import { useEditorEngine, useProjectManager } from "@/components/store";
-import type { Project } from "@onlook/models";
-import { Icons } from "@onlook/ui/icons/index";
-import { TooltipProvider } from "@onlook/ui/tooltip";
-import { useEffect } from "react";
-import { useSandbox } from "../_hooks/use-sandbox";
-import { useTabActive } from "../_hooks/use-tab-active";
-import { BottomBar } from "./bottom-bar";
-import { Canvas } from "./canvas";
-import { EditorBar } from "./editor-bar";
+import { ChatProvider } from '@/app/project/[id]/_hooks/use-chat';
+import { useEditorEngine, useProjectManager } from '@/components/store';
+import type { Project } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons/index';
+import { TooltipProvider } from '@onlook/ui/tooltip';
+import { useEffect } from 'react';
+import { useSandbox } from '../_hooks/use-sandbox';
+import { useTabActive } from '../_hooks/use-tab-active';
+import { BottomBar } from './bottom-bar';
+import { Canvas } from './canvas';
+import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
-import { TopBar } from "./top-bar";
+import { TopBar } from './top-bar';
 
 export function Main({ project }: { project: Project }) {
     const editorEngine = useEditorEngine();
@@ -25,7 +25,6 @@ export function Main({ project }: { project: Project }) {
         projectManager.project = project;
         editorEngine.canvas.applyProject(project);
         registerSandbox(project);
-        
 
         return () => {
             editorEngine.sandbox.clear();
@@ -39,7 +38,7 @@ export function Main({ project }: { project: Project }) {
             return;
         }
         startSession(sandboxId);
-    }
+    };
 
     useEffect(() => {
         if (session) {
@@ -90,7 +89,6 @@ export function Main({ project }: { project: Project }) {
                     <div className="absolute top-20 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
                         <LeftPanel />
                     </div>
-
 
                     <div className="absolute top-20 right-0 animate-edit-panel-in h-[calc(100%-80px)] z-1">
                         <RightPanel />

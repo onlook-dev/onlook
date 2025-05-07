@@ -1,8 +1,8 @@
-import { FrameType, type Project, type WebFrame } from "@onlook/models";
-import { Main } from "./_components/main";
+import { FrameType, type Project, type WebFrame } from '@onlook/models';
+import { Main } from './_components/main';
 
 async function getProject(id: string) {
-    "use server";
+    'use server';
     // const supabase = await createClient();
     // const { data, error } = await supabase.from('projects').select('*').eq('id', id);
     // if (error) {
@@ -20,7 +20,7 @@ async function getProject(id: string) {
 
     const project: Project = {
         id: id,
-        name: "My Project",
+        name: 'My Project',
         previewUrl: '',
         metadata: {
             createdAt: new Date().toISOString(),
@@ -38,7 +38,7 @@ async function getProject(id: string) {
         },
         sandbox: {
             id: '3cczd6',
-            url: newFrame.url
+            url: newFrame.url,
         },
     };
     return project;
@@ -47,9 +47,5 @@ async function getProject(id: string) {
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const projectId = (await params).id;
     const project = await getProject(projectId);
-    return (
-        <Main project={project} />
-    );
+    return <Main project={project} />;
 }
-
-

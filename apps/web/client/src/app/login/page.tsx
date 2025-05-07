@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Dunes } from '@/components/ui/dunes';
 import { SignInMethod } from '@onlook/models';
@@ -30,7 +30,7 @@ export default function LoginPage() {
         setTimeout(() => {
             setIsPending(false);
         }, 5000);
-    }
+    };
 
     return (
         <div className="flex h-screen w-screen">
@@ -58,7 +58,11 @@ export default function LoginPage() {
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                                 disabled={isPending}
                             >
-                                {isPending ? <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" /> : <Icons.GitHubLogo className="w-4 h-4 mr-2" />}
+                                {isPending ? (
+                                    <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Icons.GitHubLogo className="w-4 h-4 mr-2" />
+                                )}
                                 {t('welcome.login.github')}
                             </Button>
                             {lastSignInMethod === SignInMethod.GITHUB && (
@@ -74,7 +78,14 @@ export default function LoginPage() {
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                                 disabled={isPending}
                             >
-                                {isPending ? <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" /> : <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />}
+                                {isPending ? (
+                                    <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Icons.GoogleLogo
+                                        viewBox="0 0 24 24"
+                                        className="w-4 h-4 mr-2"
+                                    />
+                                )}
                                 {t('welcome.login.google')}
                             </Button>
                             {lastSignInMethod === SignInMethod.GOOGLE && (
@@ -87,14 +98,18 @@ export default function LoginPage() {
                     <p className="text-small text-foreground-onlook">
                         {t('welcome.terms.agreement')}{' '}
                         <button
-                            onClick={() => window.open('https://onlook.com/privacy-policy', '_blank')}
+                            onClick={() =>
+                                window.open('https://onlook.com/privacy-policy', '_blank')
+                            }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {t('welcome.terms.privacy')}
                         </button>{' '}
                         {t('welcome.terms.and')}{' '}
                         <button
-                            onClick={() => window.open('https://onlook.com/terms-of-service', '_blank')}
+                            onClick={() =>
+                                window.open('https://onlook.com/terms-of-service', '_blank')
+                            }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {t('welcome.terms.tos')}
@@ -107,5 +122,5 @@ export default function LoginPage() {
             </div>
             <Dunes />
         </div>
-    )
+    );
 }

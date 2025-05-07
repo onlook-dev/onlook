@@ -44,7 +44,7 @@ const ImagePicker = forwardRef<
         setIsDragging(false);
     }, []);
 
-    const handleDrop = useCallback(async(e: React.DragEvent) => {
+    const handleDrop = useCallback(async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
 
@@ -55,16 +55,13 @@ const ImagePicker = forwardRef<
         }
     }, []);
 
-    const handleFileSelect = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? []);
-      const imageFile = files.find((file) => file.type.startsWith("image/"));
-      if (imageFile) {
-        await saveImage(imageFile);
-      }
-    },
-    [],
-  );
+    const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+        const imageFile = files.find((file) => file.type.startsWith('image/'));
+        if (imageFile) {
+            await saveImage(imageFile);
+        }
+    }, []);
 
     const handleButtonClick = useCallback((e: React.MouseEvent) => {
         e.preventDefault();

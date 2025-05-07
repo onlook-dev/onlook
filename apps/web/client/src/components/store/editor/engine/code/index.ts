@@ -1,17 +1,23 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
-import type {
-    Action,
-    CodeDiffRequest,
-    FileToRequests
-} from '@onlook/models';
+import type { Action, CodeDiffRequest, FileToRequests } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import { getEditTextRequests, getGroupRequests, getInsertImageRequests, getInsertRequests, getMoveRequests, getRemoveImageRequests, getRemoveRequests, getStyleRequests, getUngroupRequests, getWriteCodeRequests, processGroupedRequests } from './requests';
+import {
+    getEditTextRequests,
+    getGroupRequests,
+    getInsertImageRequests,
+    getInsertRequests,
+    getMoveRequests,
+    getRemoveImageRequests,
+    getRemoveRequests,
+    getStyleRequests,
+    getUngroupRequests,
+    getWriteCodeRequests,
+    processGroupedRequests,
+} from './requests';
 
 export class CodeManager {
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -81,5 +87,5 @@ export class CodeManager {
         return requestByFile;
     }
 
-    clear() { }
+    clear() {}
 }

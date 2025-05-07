@@ -1,9 +1,9 @@
-import { useUserContext } from "@/components/hooks/use-user";
-import { CurrentUserAvatar } from "@/components/ui/avatar-dropdown";
-import { Routes } from "@/utils/constants";
-import { Button } from "@onlook/ui/button";
-import { Icons } from "@onlook/ui/icons/index";
-import Link from "next/link";
+import { useUserContext } from '@/components/hooks/use-user';
+import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
+import { Routes } from '@/utils/constants';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
+import Link from 'next/link';
 
 export function TopBar() {
     const { user } = useUserContext();

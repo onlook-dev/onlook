@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { SettingsModal } from './settings';

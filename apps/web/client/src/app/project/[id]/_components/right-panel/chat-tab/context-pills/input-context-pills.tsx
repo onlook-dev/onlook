@@ -1,11 +1,11 @@
-import { useEditorEngine } from "@/components/store";
-import type { ChatMessageContext } from "@onlook/models/chat";
-import { MessageContextType } from "@onlook/models/chat";
-import { cn } from "@onlook/ui/utils";
-import { observer } from "mobx-react-lite";
-import { AnimatePresence } from "motion/react";
+import { useEditorEngine } from '@/components/store';
+import type { ChatMessageContext } from '@onlook/models/chat';
+import { MessageContextType } from '@onlook/models/chat';
+import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
+import { AnimatePresence } from 'motion/react';
 import { DraftContextPill } from './draft-context-pill';
-import { DraftImagePill } from "./draft-image-pill";
+import { DraftImagePill } from './draft-image-pill';
 
 export const InputContextPills = observer(() => {
     const editorEngine = useEditorEngine();

@@ -1,4 +1,3 @@
-
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -209,9 +208,8 @@ const FontPanel = observer(() => {
                                                 variants={
                                                     font.weight?.map(
                                                         (weight) =>
-                                                            VARIANTS.find(
-                                                                (v) => v.value === weight,
-                                                            )?.name,
+                                                            VARIANTS.find((v) => v.value === weight)
+                                                                ?.name,
                                                     ) as string[]
                                                 }
                                                 showDropdown={false}

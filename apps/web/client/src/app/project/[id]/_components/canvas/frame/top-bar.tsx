@@ -3,13 +3,7 @@ import type { Frame } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
 
 export const TopBar = observer(
-    ({
-        frame,
-        children
-    }: {
-        frame: Frame;
-        children?: React.ReactNode;
-    }) => {
+    ({ frame, children }: { frame: Frame; children?: React.ReactNode }) => {
         const editorEngine = useEditorEngine();
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -53,7 +47,7 @@ export const TopBar = observer(
 
         return (
             <div
-                className='rounded bg-foreground-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm border-input text-foreground'
+                className="rounded bg-foreground-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm border-input text-foreground"
                 style={{
                     height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,

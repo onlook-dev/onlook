@@ -119,7 +119,10 @@ export class ElementsManager {
                 return;
             }
 
-            const removeAction: RemoveElementAction | null = await frameData.view.getRemoveAction(selectedEl.domId, frameId);
+            const removeAction: RemoveElementAction | null = await frameData.view.getRemoveAction(
+                selectedEl.domId,
+                frameId,
+            );
 
             if (!removeAction) {
                 this.emitError('Remove action not found. Try refreshing the page.');
@@ -156,10 +159,7 @@ export class ElementsManager {
 
         if (!instanceId) {
             const result = await frameData.view.getElementType(selectedEl.domId);
-            const {
-                dynamicType,
-                coreType,
-            } = result;
+            const { dynamicType, coreType } = result;
 
             if (coreType) {
                 const CORE_ELEMENTS_MAP: Record<CoreElementType, string> = {
@@ -200,5 +200,4 @@ export class ElementsManager {
     private clearSelectedElements() {
         this.selected = [];
     }
-
 }

@@ -9,10 +9,7 @@ import { UserManager } from './user';
 const projectsManager = new ProjectsManager();
 const projectManager = new ProjectManager();
 const userManager = new UserManager();
-const editorEngine = new EditorEngine(
-    projectManager,
-    userManager
-);
+const editorEngine = new EditorEngine(projectManager, userManager);
 
 const ProjectContext = createContext(projectManager);
 const UserContext = createContext(userManager);

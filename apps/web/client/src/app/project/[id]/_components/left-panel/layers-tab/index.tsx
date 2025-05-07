@@ -60,7 +60,9 @@ export const LayersTab = observer(() => {
             }
             const { view } = frameData;
 
-            const originalIndex: number | undefined = await view.getElementIndex(dragNode.data.domId);
+            const originalIndex: number | undefined = await view.getElementIndex(
+                dragNode.data.domId,
+            );
 
             if (originalIndex === undefined) {
                 console.error('No original index found');

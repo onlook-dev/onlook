@@ -80,7 +80,11 @@ export class OverlayState {
         }));
     };
 
-    updateClickRectStyles = (id: string, styles: DomElementStyles | null, rect?: RectDimensions) => {
+    updateClickRectStyles = (
+        id: string,
+        styles: DomElementStyles | null,
+        rect?: RectDimensions,
+    ) => {
         this.clickRects = this.clickRects.map((clickRect) => {
             if (clickRect.id === id) {
                 return {

@@ -1,19 +1,24 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
-import { useState } from "react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { useState } from 'react';
 
-const UNITS = ["px", "%", "rem", "vw", "vh"];
-type Unit = typeof UNITS[number];
+const UNITS = ['px', '%', 'rem', 'vw', 'vh'];
+type Unit = (typeof UNITS)[number];
 
 type IconType =
-    | "LeftSide"
-    | "TopSide"
-    | "RightSide"
-    | "BottomSide"
-    | "CornerRadius"
-    | "CornerTopRight"
-    | "CornerBottomLeft"
-    | "CornerBottomRight";
+    | 'LeftSide'
+    | 'TopSide'
+    | 'RightSide'
+    | 'BottomSide'
+    | 'CornerRadius'
+    | 'CornerTopRight'
+    | 'CornerBottomLeft'
+    | 'CornerBottomRight';
 
 interface InputIconProps {
     value: number;
@@ -23,13 +28,7 @@ interface InputIconProps {
     onUnitChange?: (unit: Unit) => void;
 }
 
-export const InputIcon = ({
-    value,
-    unit = "px",
-    icon,
-    onChange,
-    onUnitChange
-}: InputIconProps) => {
+export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: InputIconProps) => {
     const [inputValue, setInputValue] = useState(value.toString());
     const [unitValue, setUnitValue] = useState(unit);
 
@@ -54,7 +53,9 @@ export const InputIcon = ({
 
     return (
         <div className="flex items-center gap-2">
-            {IconComponent && <IconComponent className="h-5 w-5 min-h-5 min-w-5 text-muted-foreground" />}
+            {IconComponent && (
+                <IconComponent className="h-5 w-5 min-h-5 min-w-5 text-muted-foreground" />
+            )}
             <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
                 <input
                     type="text"

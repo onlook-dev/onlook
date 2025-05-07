@@ -1,20 +1,22 @@
-import { useEditorEngine } from "@/components/store";
-import { Icons } from "@onlook/ui/icons";
-import { useEffect, useState } from "react";
-import type { CssValue } from ".";
-import { InputRadio } from "../../inputs/input-radio";
+import { useEditorEngine } from '@/components/store';
+import { Icons } from '@onlook/ui/icons';
+import { useEffect, useState } from 'react';
+import type { CssValue } from '.';
+import { InputRadio } from '../../inputs/input-radio';
 
 const directionOptions: Record<string, CssValue> = {
-    column: { value: "column", label: "Vertical", icon: <Icons.ArrowDown className="h-4 w-4" /> },
-    row: { value: "row", label: "Horizontal", icon: <Icons.ArrowRight className="h-4 w-4" /> },
+    column: { value: 'column', label: 'Vertical', icon: <Icons.ArrowDown className="h-4 w-4" /> },
+    row: { value: 'row', label: 'Horizontal', icon: <Icons.ArrowRight className="h-4 w-4" /> },
 };
 
 export const DirectionInput = () => {
     const editorEngine = useEditorEngine();
-    const [value, setValue] = useState<string>(editorEngine.style.selectedStyle?.styles.computed.flexDirection ?? "column");
+    const [value, setValue] = useState<string>(
+        editorEngine.style.selectedStyle?.styles.computed.flexDirection ?? 'column',
+    );
 
     useEffect(() => {
-        setValue(editorEngine.style.selectedStyle?.styles.computed.flexDirection ?? "column");
+        setValue(editorEngine.style.selectedStyle?.styles.computed.flexDirection ?? 'column');
     }, [editorEngine.style.selectedStyle?.styles.computed.flexDirection]);
 
     return (
@@ -26,8 +28,8 @@ export const DirectionInput = () => {
                 onChange={(newValue) => {
                     setValue(newValue);
                     editorEngine.style.updateMultiple({
-                        "flex-direction": newValue,
-                        "display": "flex",
+                        'flex-direction': newValue,
+                        display: 'flex',
                     });
                 }}
                 className="flex-1"

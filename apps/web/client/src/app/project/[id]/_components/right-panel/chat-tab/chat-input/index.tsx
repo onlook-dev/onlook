@@ -1,4 +1,3 @@
-
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/engine/chat';
@@ -208,7 +207,11 @@ export const ChatInput = observer(() => {
         e.preventDefault();
         e.stopPropagation();
         e.currentTarget.parentElement?.dispatchEvent(
-            new DragEvent(eventType, { bubbles: true, cancelable: true, dataTransfer: e.dataTransfer }),
+            new DragEvent(eventType, {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer: e.dataTransfer,
+            }),
         );
     };
 
@@ -292,10 +295,7 @@ export const ChatInput = observer(() => {
                 />
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
-                <ActionButtons
-                    disabled={disabled}
-                    handleImageEvent={handleImageEvent}
-                />
+                <ActionButtons disabled={disabled} handleImageEvent={handleImageEvent} />
                 {isWaiting ? (
                     <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
                         <TooltipTrigger asChild>

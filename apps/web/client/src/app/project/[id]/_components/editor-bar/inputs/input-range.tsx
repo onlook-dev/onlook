@@ -1,8 +1,13 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
-import { useEffect, useRef, useState } from "react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { useEffect, useRef, useState } from 'react';
 
-const UNITS = ["PX", "%", "EM", "REM"];
+const UNITS = ['PX', '%', 'EM', 'REM'];
 
 interface InputRangeProps {
     value: number;
@@ -12,7 +17,13 @@ interface InputRangeProps {
     onUnitChange?: (unit: string) => void;
 }
 
-export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }: InputRangeProps) => {
+export const InputRange = ({
+    value,
+    icon,
+    unit = 'px',
+    onChange,
+    onUnitChange,
+}: InputRangeProps) => {
     const Icon = icon ? Icons[icon] : Icons.Padding;
     const [inputValue, setInputValue] = useState(String(value));
     const rangeRef = useRef<HTMLInputElement>(null);

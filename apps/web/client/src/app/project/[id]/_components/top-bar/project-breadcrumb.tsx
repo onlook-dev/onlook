@@ -97,9 +97,7 @@ export const ProjectBreadcrumb = observer(() => {
                             )}
                         />
                         <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
-                            {isClosingProject
-                                ? 'Stopping project...'
-                                : project?.name}
+                            {isClosingProject ? 'Stopping project...' : project?.name}
                         </span>
                         <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
                     </Button>

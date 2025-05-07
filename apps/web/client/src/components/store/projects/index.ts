@@ -1,4 +1,4 @@
-import type { Project } from "@onlook/models";
+import type { Project } from '@onlook/models';
 
 export class ProjectsManager {
     readonly projects: Project[];
@@ -7,4 +7,3 @@ export class ProjectsManager {
         this.projects = [];
     }
 }
-

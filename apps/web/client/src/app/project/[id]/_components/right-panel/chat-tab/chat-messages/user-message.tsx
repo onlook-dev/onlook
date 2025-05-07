@@ -74,7 +74,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
         }
         setMessages(newMessages);
         await reload();
-    }
+    };
 
     function renderEditingInput() {
         return (

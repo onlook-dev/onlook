@@ -1,7 +1,14 @@
 import { useEditorEngine } from '@/components/store';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { LIST_FILES_TOOL_NAME, LIST_FILES_TOOL_PARAMETERS, ONLOOK_INSTRUCTIONS, ONLOOK_INSTRUCTIONS_TOOL_NAME, READ_FILES_TOOL_NAME, READ_FILES_TOOL_PARAMETERS } from '@onlook/ai';
+import {
+    LIST_FILES_TOOL_NAME,
+    LIST_FILES_TOOL_PARAMETERS,
+    ONLOOK_INSTRUCTIONS,
+    ONLOOK_INSTRUCTIONS_TOOL_NAME,
+    READ_FILES_TOOL_NAME,
+    READ_FILES_TOOL_PARAMETERS,
+} from '@onlook/ai';
 import type { ToolCall } from 'ai';
 import { createContext, useContext } from 'react';
 import { z } from 'zod';
@@ -11,7 +18,8 @@ const ChatContext = createContext<UseChatHelpers | null>(null);
 export function ChatProvider({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
     const chat = useChat({
-        id: 'user-chat', api: '/api/chat',
+        id: 'user-chat',
+        api: '/api/chat',
         maxSteps: 10,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, config) => {
@@ -33,9 +41,15 @@ export function useChatContext() {
 function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     switch (toolCall.toolName) {
         case LIST_FILES_TOOL_NAME:
-            return handleListFilesTool(toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>, editorEngine);
+            return handleListFilesTool(
+                toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
+                editorEngine,
+            );
         case READ_FILES_TOOL_NAME:
-            return handleReadFilesTool(toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>, editorEngine);
+            return handleReadFilesTool(
+                toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
+                editorEngine,
+            );
         case ONLOOK_INSTRUCTIONS_TOOL_NAME:
             return ONLOOK_INSTRUCTIONS;
         default:
@@ -44,10 +58,16 @@ function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: Edito
     }
 }
 
-function handleListFilesTool(args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>, editorEngine: EditorEngine) {
+function handleListFilesTool(
+    args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+) {
     return editorEngine.sandbox.listFiles(args.path);
 }
 
-function handleReadFilesTool(args: z.infer<typeof READ_FILES_TOOL_PARAMETERS>, editorEngine: EditorEngine) {
+function handleReadFilesTool(
+    args: z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+) {
     return editorEngine.sandbox.readFiles(args.paths);
 }

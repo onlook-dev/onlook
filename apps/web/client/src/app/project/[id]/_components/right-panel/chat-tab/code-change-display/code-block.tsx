@@ -1,11 +1,9 @@
-import {
-    getExtensions
-} from "@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config";
-import { SystemTheme } from "@onlook/models";
-import { cn } from "@onlook/ui/utils";
+import { getExtensions } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
+import { SystemTheme } from '@onlook/models';
+import { cn } from '@onlook/ui/utils';
 import { basicSetup } from '@uiw/codemirror-extensions-basic-setup';
-import CodeMirror from "@uiw/react-codemirror";
-import { useTheme } from "next-themes";
+import CodeMirror from '@uiw/react-codemirror';
+import { useTheme } from 'next-themes';
 
 export const CodeBlock = ({
     className,
@@ -16,7 +14,7 @@ export const CodeBlock = ({
     disableColor?: boolean;
 }) => {
     const { theme } = useTheme();
-    const languageExtension = getExtensions("javascript");
+    const languageExtension = getExtensions('javascript');
     const extensions = [
         basicSetup({
             lineNumbers: false,
@@ -31,7 +29,10 @@ export const CodeBlock = ({
             <CodeMirror
                 value={code}
                 readOnly={true}
-                className={cn("flex-1 w-full h-full min-h-full max-h-full overflow-auto", className)}
+                className={cn(
+                    'flex-1 w-full h-full min-h-full max-h-full overflow-auto',
+                    className,
+                )}
                 theme={theme === SystemTheme.DARK ? SystemTheme.DARK : SystemTheme.LIGHT}
                 extensions={extensions}
             />

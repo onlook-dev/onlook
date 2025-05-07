@@ -10,7 +10,11 @@ interface ColorPickerProps {
     onChangeEnd: (color: Color) => void;
 }
 
-export const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange, onChangeEnd }) => {
+export const ColorPickerContent: React.FC<ColorPickerProps> = ({
+    color,
+    onChange,
+    onChangeEnd,
+}) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [palette, setPalette] = useState<Palette>(color.palette);
 
@@ -30,7 +34,11 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange
                                 className="w-6 h-6 content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
                                 style={{ backgroundColor: palette.colors[Number.parseInt(level)] }}
                                 onClick={() =>
-                                    onChangeEnd(Color.from(palette.colors[Number.parseInt(level)] ?? '#000000'))
+                                    onChangeEnd(
+                                        Color.from(
+                                            palette.colors[Number.parseInt(level)] ?? '#000000',
+                                        ),
+                                    )
                                 }
                             >
                                 {/* Commenting out so that we can use this for tooltips over these grid elements */}
@@ -50,7 +58,11 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange
                                 className="gap-2 hover:bg-background-secondary p-1 flex align-center cursor-pointer rounded-md group"
                                 key={level}
                                 onClick={() =>
-                                    onChangeEnd(Color.from(palette.colors[Number.parseInt(level)] ?? '#000000'))
+                                    onChangeEnd(
+                                        Color.from(
+                                            palette.colors[Number.parseInt(level)] ?? '#000000',
+                                        ),
+                                    )
                                 }
                             >
                                 <div
@@ -99,9 +111,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange
                 </button>
             </div>
             <Separator />
-            <div className="h-28 px-1 overflow-hidden overflow-y-auto">
-                {renderPalette()}
-            </div>
+            <div className="h-28 px-1 overflow-hidden overflow-y-auto">{renderPalette()}</div>
         </div>
     );
 };

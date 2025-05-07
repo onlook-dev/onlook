@@ -31,7 +31,11 @@ export const MessageContent = observer(
                 );
             } else if (part.type === 'tool-invocation') {
                 return (
-                    <ToolCallDisplay key={part.toolInvocation.toolCallId} toolInvocation={part.toolInvocation} isStream={isStream} />
+                    <ToolCallDisplay
+                        key={part.toolInvocation.toolCallId}
+                        toolInvocation={part.toolInvocation}
+                        isStream={isStream}
+                    />
                 );
             } else if (part.type === 'reasoning') {
                 return (

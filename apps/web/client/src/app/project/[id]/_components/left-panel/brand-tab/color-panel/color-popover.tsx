@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { toNormalCase, type Color } from '@onlook/utility';

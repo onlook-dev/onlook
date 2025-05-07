@@ -270,10 +270,11 @@ export const Verification = observer(() => {
                     <div className="w-1/3">
                         <p className="text-regularPlus text-muted-foreground">Custom URL</p>
                         <p className="text-small text-muted-foreground">
-                            {`Input your domain  ${status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
+                            {`Input your domain  ${
+                                status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
                                     ? 'or use previous'
                                     : ''
-                                }`}
+                            }`}
                         </p>
                     </div>
                     <div className="flex flex-col gap-4 flex-1">

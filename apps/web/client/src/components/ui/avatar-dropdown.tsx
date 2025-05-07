@@ -1,19 +1,24 @@
-'use client'
+'use client';
 
-import { useUserContext } from '@/components/hooks/use-user'
-import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu'
-import { Icons } from '@onlook/ui/icons/index'
-import { usePathname } from 'next/navigation'
+import { useUserContext } from '@/components/hooks/use-user';
+import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons/index';
+import { usePathname } from 'next/navigation';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
-    const currentPath = usePathname()
-    const { user, handleSignOut } = useUserContext()
+    const currentPath = usePathname();
+    const { user, handleSignOut } = useUserContext();
     const initials = user?.name
         ?.split(' ')
         ?.map((word) => word[0])
         ?.join('')
-        ?.toUpperCase()
+        ?.toUpperCase();
 
     return (
         <DropdownMenu>
@@ -29,5 +34,5 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
-    )
-}
+    );
+};

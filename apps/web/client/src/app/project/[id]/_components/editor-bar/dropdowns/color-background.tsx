@@ -1,19 +1,21 @@
-"use client";
+'use client';
 
-import { useEditorEngine } from "@/components/store";
-import { Icons } from "@onlook/ui/icons";
-import { Popover, PopoverContent, PopoverTrigger } from "@onlook/ui/popover";
-import { Color } from "@onlook/utility";
-import { useEffect, useState } from "react";
-import { ColorPickerContent } from "../inputs/color-picker";
+import { useEditorEngine } from '@/components/store';
+import { Icons } from '@onlook/ui/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Color } from '@onlook/utility';
+import { useEffect, useState } from 'react';
+import { ColorPickerContent } from '../inputs/color-picker';
 
 export const ColorBackground = () => {
-    const [tempColor, setTempColor] = useState("#000000");
+    const [tempColor, setTempColor] = useState('#000000');
 
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
-        setTempColor(editorEngine.style.selectedStyle?.styles.computed.backgroundColor ?? "#000000");
+        setTempColor(
+            editorEngine.style.selectedStyle?.styles.computed.backgroundColor ?? '#000000',
+        );
     }, [editorEngine.style.selectedStyle?.styles.computed.backgroundColor]);
 
     const handleColorChange = (newColor: Color) => {
@@ -23,7 +25,7 @@ export const ColorBackground = () => {
     const handleColorChangeEnd = (newColor: Color) => {
         const hexColor = newColor.toHex();
         setTempColor(hexColor);
-        editorEngine.style.update("backgroundColor", hexColor);
+        editorEngine.style.update('backgroundColor', hexColor);
     };
 
     return (

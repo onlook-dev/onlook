@@ -1,5 +1,10 @@
 import type { TemplateNode } from '@onlook/models';
-import { addOidsToAst, createTemplateNodeMap, getAstFromContent, getContentFromAst } from '@onlook/parser';
+import {
+    addOidsToAst,
+    createTemplateNodeMap,
+    getAstFromContent,
+    getContentFromAst,
+} from '@onlook/parser';
 
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
@@ -11,7 +16,9 @@ export class TemplateNodeMapper {
 
     private async restoreFromLocalStorage() {
         try {
-            const storedCache = await this.localforage.getItem<Record<string, TemplateNode>>(this.storageKey);
+            const storedCache = await this.localforage.getItem<Record<string, TemplateNode>>(
+                this.storageKey,
+            );
             if (storedCache) {
                 Object.entries(storedCache).forEach(([key, value]) => {
                     this.oidToTemplateNodeMap.set(key, value);
@@ -36,7 +43,11 @@ export class TemplateNodeMapper {
         this.saveToLocalStorage();
     }
 
-    async processFileForMapping(file: string, readFile: (path: string) => Promise<string | null>, writeFile: (path: string, content: string) => Promise<boolean>) {
+    async processFileForMapping(
+        file: string,
+        readFile: (path: string) => Promise<string | null>,
+        writeFile: (path: string, content: string) => Promise<boolean>,
+    ) {
         const content = await readFile(file);
         if (!content) {
             console.error(`Failed to read file ${file}`);

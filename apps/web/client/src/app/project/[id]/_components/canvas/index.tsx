@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useEditorEngine } from '@/components/store';
 import { EditorAttributes } from '@onlook/constants';
@@ -30,7 +30,7 @@ export const Canvas = observer(() => {
             return;
         }
         editorEngine.clearUI();
-    }
+    };
 
     const handleZoom = useCallback(
         (event: WheelEvent) => {
@@ -166,7 +166,9 @@ export const Canvas = observer(() => {
                 </div>
                 <Overlay />
                 <PanOverlay
-                    clampPosition={(position: { x: number; y: number }) => clampPosition(position, scale)}
+                    clampPosition={(position: { x: number; y: number }) =>
+                        clampPosition(position, scale)
+                    }
                 />
             </div>
         </HotkeysArea>

@@ -10,39 +10,39 @@ interface LayerMetadata {
 
 const FAKE_DATA = [
     {
-        "frameId": "ia9vdOL0zThOaSEawxIu3",
-        "domId": "odid-59964449-8fdf-4e22-bf9f-e430b6c8cbdc",
-        "oid": "mwz9mme",
-        "instanceId": null,
-        "textContent": "",
-        "tagName": "body",
-        "isVisible": true,
-        "component": null,
-        "webviewId": "ia9vdOL0zThOaSEawxIu3",
-        "children": [
-            "odid-43caf580-2adb-4327-a2dc-c21aaa18fb1f",
-            "odid-3f74a476-57f0-4ed4-bd93-595d471f6f72"
+        frameId: 'ia9vdOL0zThOaSEawxIu3',
+        domId: 'odid-59964449-8fdf-4e22-bf9f-e430b6c8cbdc',
+        oid: 'mwz9mme',
+        instanceId: null,
+        textContent: '',
+        tagName: 'body',
+        isVisible: true,
+        component: null,
+        webviewId: 'ia9vdOL0zThOaSEawxIu3',
+        children: [
+            'odid-43caf580-2adb-4327-a2dc-c21aaa18fb1f',
+            'odid-3f74a476-57f0-4ed4-bd93-595d471f6f72',
         ],
-        "parent": null
+        parent: null,
     },
     {
-        "frameId": "V5CDVYl_lU2diTloklDqf",
-        "domId": "odid-37dd73e2-4060-496b-a5c8-e41af4e889cc",
-        "oid": null,
-        "instanceId": null,
-        "textContent": "",
-        "tagName": "body",
-        "isVisible": true,
-        "component": null,
-        "webviewId": "V5CDVYl_lU2diTloklDqf",
-        "children": [
-            "odid-bfddbebd-7311-4914-af43-004e8d5e4a0f",
-            "odid-20a583e8-704c-4a48-bf99-ef358bb13bc2",
-            "odid-2964f143-415d-412e-81b7-26da0803f56a"
+        frameId: 'V5CDVYl_lU2diTloklDqf',
+        domId: 'odid-37dd73e2-4060-496b-a5c8-e41af4e889cc',
+        oid: null,
+        instanceId: null,
+        textContent: '',
+        tagName: 'body',
+        isVisible: true,
+        component: null,
+        webviewId: 'V5CDVYl_lU2diTloklDqf',
+        children: [
+            'odid-bfddbebd-7311-4914-af43-004e8d5e4a0f',
+            'odid-20a583e8-704c-4a48-bf99-ef358bb13bc2',
+            'odid-2964f143-415d-412e-81b7-26da0803f56a',
         ],
-        "parent": null
-    }
-]
+        parent: null,
+    },
+];
 
 export class LayersManager {
     frameIdToLayerMetadata = new Map<string, LayerMetadata>();
@@ -58,7 +58,7 @@ export class LayersManager {
     }
 
     get filteredLayers(): LayerNode[] {
-        return FAKE_DATA
+        return FAKE_DATA;
         const selectedWebviews = this.editorEngine.frames.selected;
         if (selectedWebviews.length === 0) {
             return this.layers;

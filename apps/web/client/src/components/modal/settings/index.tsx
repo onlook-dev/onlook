@@ -228,7 +228,8 @@ export const SettingsModal = observer(() => {
                                     <div className="flex-1 overflow-y-auto">
                                         {
                                             tabs.find(
-                                                (tab) => tab.label === editorEngine.state.settingsTab,
+                                                (tab) =>
+                                                    tab.label === editorEngine.state.settingsTab,
                                             )?.component
                                         }
                                     </div>

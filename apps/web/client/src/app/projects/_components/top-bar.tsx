@@ -62,7 +62,7 @@ export const TopBar = () => {
                                 'dark:focus:bg-blue-900 dark:focus:text-blue-100',
                                 'dark:hover:bg-blue-900 dark:hover:text-blue-100',
                             )}
-                        // onSelect={openPromptCreation}
+                            // onSelect={openPromptCreation}
                         >
                             <Icons.FilePlus className="w-4 h-4 mr-2" />
                             Start from scratch
@@ -74,7 +74,7 @@ export const TopBar = () => {
                                 'dark:focus:bg-teal-900 dark:focus:text-teal-100',
                                 'dark:hover:bg-teal-900 dark:hover:text-teal-100',
                             )}
-                        // onSelect={openImportProject}
+                            // onSelect={openImportProject}
                         >
                             <Icons.Download className="w-4 h-4 mr-2" />
                             Import existing project

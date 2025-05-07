@@ -37,7 +37,9 @@ export class CopyManager {
             return;
         }
 
-        const targetEl: ActionElement | null = await frameData.view.getActionElement(selectedEl.domId) as ActionElement | null;
+        const targetEl: ActionElement | null = (await frameData.view.getActionElement(
+            selectedEl.domId,
+        )) as ActionElement | null;
 
         if (!targetEl) {
             console.error('Failed to copy element');
@@ -166,7 +168,9 @@ export class CopyManager {
             selectedEl.oid === this.copied?.element.oid;
 
         if (insertAsSibling) {
-            const location: ActionLocation | null = await frameData.view.getActionLocation(selectedEl.domId);
+            const location: ActionLocation | null = await frameData.view.getActionLocation(
+                selectedEl.domId,
+            );
             if (!location) {
                 console.error('Failed to get location');
                 return;

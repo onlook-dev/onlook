@@ -1,6 +1,6 @@
-import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import { projectRouter, userRouter } from "./routers";
-import { csbRouter } from "./routers/csb";
+import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
+import { projectRouter, userRouter } from './routers';
+import { csbRouter } from './routers/csb';
 
 /**
  * This is the primary router for your server.

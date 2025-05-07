@@ -34,8 +34,7 @@ export class ChatCodeManager {
 
         for (const [filePath, codeBlocks] of fileToCodeBlocks) {
             // If file doesn't exist, we'll assume it's a new file and create it
-            const originalContent =
-                (await this.editorEngine.sandbox.readFile(filePath)) || '';
+            const originalContent = (await this.editorEngine.sandbox.readFile(filePath)) || '';
             if (originalContent == null) {
                 console.error('Failed to get file content', filePath);
                 continue;
@@ -156,5 +155,5 @@ export class ChatCodeManager {
         return fileToCode;
     }
 
-    clear() { }
+    clear() {}
 }

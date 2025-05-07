@@ -1,19 +1,16 @@
-
 import { useEditorEngine } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 
-export const ActionButtons = (
-    {
-        disabled,
-        handleImageEvent,
-    }: {
-        disabled: boolean;
-        handleImageEvent: (file: File, fileName: string) => Promise<void>;
-    }
-) => {
+export const ActionButtons = ({
+    disabled,
+    handleImageEvent,
+}: {
+    disabled: boolean;
+    handleImageEvent: (file: File, fileName: string) => Promise<void>;
+}) => {
     const editorEngine = useEditorEngine();
 
     const handleOpenFileDialog = (e: React.MouseEvent<HTMLButtonElement>) => {

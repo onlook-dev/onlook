@@ -1,27 +1,22 @@
-import { useEditorEngine } from "@/components/store";
-import type { PageNode } from "@onlook/models/pages";
-import { Button } from "@onlook/ui/button";
-import { Icons } from "@onlook/ui/icons/index";
-import { Input } from "@onlook/ui/input";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipPortal,
-    TooltipTrigger,
-} from "@onlook/ui/tooltip";
-import { observer } from "mobx-react-lite";
-import { useMemo, useRef, useState } from "react";
-import { type NodeApi, Tree, type TreeApi } from "react-arborist";
-import useResizeObserver from "use-resize-observer";
-import { PageTreeNode } from "../layers-tab/tree/page-tree-node";
-import { PageTreeRow } from "../layers-tab/tree/page-tree-row";
-import { PageModal } from "./page-modal";
+import { useEditorEngine } from '@/components/store';
+import type { PageNode } from '@onlook/models/pages';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
+import { Input } from '@onlook/ui/input';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { observer } from 'mobx-react-lite';
+import { useMemo, useRef, useState } from 'react';
+import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
+import useResizeObserver from 'use-resize-observer';
+import { PageTreeNode } from '../layers-tab/tree/page-tree-node';
+import { PageTreeRow } from '../layers-tab/tree/page-tree-row';
+import { PageModal } from './page-modal';
 
 export const PagesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { ref, width, height } = useResizeObserver();
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const treeRef = useRef<TreeApi<PageNode>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -63,8 +58,8 @@ export const PagesTab = observer(() => {
     }, [editorEngine.pages.tree, searchQuery]);
 
     const handleKeyDown = async (e: React.KeyboardEvent) => {
-        if (e.key === "Escape") {
-            setSearchQuery("");
+        if (e.key === 'Escape') {
+            setSearchQuery('');
             inputRef.current?.blur();
             setHighlightedIndex(null);
             return;
@@ -76,18 +71,16 @@ export const PagesTab = observer(() => {
             return;
         }
 
-        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             e.preventDefault();
 
             if (highlightedIndex === null) {
-                setHighlightedIndex(
-                    e.key === "ArrowDown" ? 0 : flattenedNodes.length - 1,
-                );
+                setHighlightedIndex(e.key === 'ArrowDown' ? 0 : flattenedNodes.length - 1);
                 return;
             }
 
             const newIndex =
-                e.key === "ArrowDown"
+                e.key === 'ArrowDown'
                     ? Math.min(highlightedIndex + 1, flattenedNodes.length - 1)
                     : Math.max(highlightedIndex - 1, 0);
 
@@ -100,14 +93,14 @@ export const PagesTab = observer(() => {
             }
         }
 
-        if (e.key === "Enter" && highlightedIndex !== null) {
+        if (e.key === 'Enter' && highlightedIndex !== null) {
             const selectedNode = flattenedNodes[highlightedIndex];
             if (selectedNode && !selectedNode.isInternal) {
                 try {
                     await editorEngine.pages.navigateTo(selectedNode.data.path);
                     setHighlightedIndex(null);
                 } catch (error) {
-                    console.error("Failed to navigate to page:", error);
+                    console.error('Failed to navigate to page:', error);
                 }
             }
         }
@@ -130,10 +123,10 @@ export const PagesTab = observer(() => {
             onSelect: async (nodes: NodeApi<PageNode>[]) => {
                 if (nodes.length > 0) {
                     try {
-                        await editorEngine.pages.navigateTo(nodes[0]?.data?.path ?? "");
+                        await editorEngine.pages.navigateTo(nodes[0]?.data?.path ?? '');
                         setHighlightedIndex(null);
                     } catch (error) {
-                        console.error("Failed to navigate to page:", error);
+                        console.error('Failed to navigate to page:', error);
                     }
                 }
             },
@@ -147,20 +140,13 @@ export const PagesTab = observer(() => {
                     {...props}
                     isHighlighted={
                         highlightedIndex !== null &&
-                        treeRef.current?.visibleNodes[highlightedIndex]?.id ===
-                        props.node.id
+                        treeRef.current?.visibleNodes[highlightedIndex]?.id === props.node.id
                     }
                 />
             ),
             animationDuration: 200,
         }),
-        [
-            filteredPages,
-            dimensions.height,
-            dimensions.width,
-            highlightedIndex,
-            editorEngine.pages,
-        ],
+        [filteredPages, dimensions.height, dimensions.width, highlightedIndex, editorEngine.pages],
     );
 
     return (
@@ -181,7 +167,7 @@ export const PagesTab = observer(() => {
                     {searchQuery && (
                         <button
                             className="hover:bg-background-onlook group absolute top-[1px] right-[1px] bottom-[1px] flex aspect-square items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] active:bg-transparent"
-                            onClick={() => setSearchQuery("")}
+                            onClick={() => setSearchQuery('')}
                         >
                             <Icons.CrossS className="text-foreground-primary/50 group-hover:text-foreground-primary h-3 w-3" />
                         </button>
@@ -190,8 +176,8 @@ export const PagesTab = observer(() => {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
-                            variant={"default"}
-                            size={"icon"}
+                            variant={'default'}
+                            size={'icon'}
                             className="text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook h-fit w-fit border p-2"
                             onClick={() => setShowCreateModal(true)}
                         >
@@ -218,11 +204,7 @@ export const PagesTab = observer(() => {
                     {(props) => <PageTreeNode {...props} />}
                 </Tree>
             )}
-            <PageModal
-                mode="create"
-                open={showCreateModal}
-                onOpenChange={setShowCreateModal}
-            />
+            <PageModal mode="create" open={showCreateModal} onOpenChange={setShowCreateModal} />
         </div>
     );
 });

@@ -4,7 +4,7 @@ import { FileSyncManager } from '../../src/components/store/editor/engine/sandbo
 mock.module('localforage', () => ({
     getItem: mock(async () => null),
     setItem: mock(async () => undefined),
-    removeItem: mock(async () => undefined)
+    removeItem: mock(async () => undefined),
 }));
 
 describe('FileSyncManager', async () => {
@@ -33,7 +33,7 @@ describe('FileSyncManager', async () => {
         fileSyncManager = new FileSyncManager();
 
         // Wait for initialization to complete
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
     afterEach(async () => {
@@ -140,4 +140,4 @@ describe('FileSyncManager', async () => {
         // Verify cache is empty
         expect(fileSyncManager.listFiles().length).toBe(0);
     });
-}); 
+});

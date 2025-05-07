@@ -1,18 +1,15 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
-import { LayoutMode } from "@onlook/utility";
-import { useDimensionControl } from "../hooks/use-dimension-control";
-import { InputDropdown } from "../inputs/input-dropdown";
+import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { LayoutMode } from '@onlook/utility';
+import { useDimensionControl } from '../hooks/use-dimension-control';
+import { InputDropdown } from '../inputs/input-dropdown';
 
 export const Width = () => {
-    const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } = useDimensionControl('width');
+    const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
+        useDimensionControl('width');
 
     return (
         <DropdownMenu>
@@ -36,7 +33,7 @@ export const Width = () => {
                             dropdownOptions={Object.values(LayoutMode)}
                             onChange={(value) => handleDimensionChange('width', value)}
                             onUnitChange={(value) => handleUnitChange('width', value)}
-                            onDropdownChange={(value) => handleLayoutChange("width", value)}
+                            onDropdownChange={(value) => handleLayoutChange('width', value)}
                         />
                     </div>
                     <div className="flex items-center justify-between">
@@ -48,8 +45,7 @@ export const Width = () => {
                             dropdownOptions={Object.values(LayoutMode)}
                             onChange={(value) => handleDimensionChange('minWidth', value)}
                             onUnitChange={(value) => handleUnitChange('minWidth', value)}
-                            onDropdownChange={(value) => handleLayoutChange("minWidth", value)}
-
+                            onDropdownChange={(value) => handleLayoutChange('minWidth', value)}
                         />
                     </div>
                     <div className="flex items-center justify-between">
@@ -61,7 +57,7 @@ export const Width = () => {
                             dropdownOptions={Object.values(LayoutMode)}
                             onChange={(value) => handleDimensionChange('maxWidth', value)}
                             onUnitChange={(value) => handleUnitChange('maxWidth', value)}
-                            onDropdownChange={(value) => handleLayoutChange("maxWidth", value)}
+                            onDropdownChange={(value) => handleLayoutChange('maxWidth', value)}
                         />
                     </div>
                 </div>

@@ -173,4 +173,4 @@ export const CollapsibleCodeBlock = ({
             </div>
         </Collapsible>
     );
-}
+};

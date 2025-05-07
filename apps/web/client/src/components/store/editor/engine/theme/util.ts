@@ -1,12 +1,14 @@
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
-import type { ObjectExpression, Node, ObjectMethod, ObjectProperty, SpreadElement } from '@babel/types';
 import type {
-    ClassReplacement,
-    ColorUpdate,
-    UpdateResult,
-} from '@onlook/models/assets';
+    ObjectExpression,
+    Node,
+    ObjectMethod,
+    ObjectProperty,
+    SpreadElement,
+} from '@babel/types';
+import type { ClassReplacement, ColorUpdate, UpdateResult } from '@onlook/models/assets';
 import { SystemTheme } from '@onlook/models/assets';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { parseHslValue } from '@onlook/utility';
@@ -16,7 +18,6 @@ import type { Root, Rule } from 'postcss';
 import postcss from 'postcss';
 import colors from 'tailwindcss/colors';
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
-
 
 export function addTailwindNestedColor(
     colorObj: ObjectExpression,
@@ -158,7 +159,10 @@ export async function updateTailwindCssVariable(
                     const isDarkTheme = rule.selector === '.dark';
                     const shouldUpdateValue =
                         newColor &&
-                        (!theme || (isDarkTheme ? theme === SystemTheme.DARK : theme === SystemTheme.LIGHT));
+                        (!theme ||
+                            (isDarkTheme
+                                ? theme === SystemTheme.DARK
+                                : theme === SystemTheme.LIGHT));
 
                     rule.walkDecls((decl) => {
                         if (decl.prop === `--${originalName}`) {
@@ -401,7 +405,6 @@ export function isValidTailwindConfigProperty(
     );
 }
 
-
 export function extractObject(node: Node): Record<string, any> {
     if (node.type !== 'ObjectExpression') {
         return {};
@@ -435,7 +438,6 @@ export function extractObject(node: Node): Record<string, any> {
 
     return result;
 }
-
 
 export function addTailwindRootColor(
     colorObj: ObjectExpression,

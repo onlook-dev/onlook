@@ -1,20 +1,17 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
-import { useState } from "react";
-import { InputRange } from "../inputs/input-range";
-import { SpacingInputs } from "../inputs/spacing-inputs";
-import { useBoxControl } from "../hooks/use-box-control";
+import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { useState } from 'react';
+import { InputRange } from '../inputs/input-range';
+import { SpacingInputs } from '../inputs/spacing-inputs';
+import { useBoxControl } from '../hooks/use-box-control';
 
 export const Padding = () => {
     const [activeTab, setActiveTab] = useState('individual');
-    const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
+    const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
+        useBoxControl('padding');
 
     return (
         <DropdownMenu>
@@ -31,19 +28,21 @@ export const Padding = () => {
                 <div className="flex items-center gap-2 mb-3">
                     <button
                         onClick={() => setActiveTab('all')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'all'
-                            ? 'text-white bg-background-tertiary/20'
-                            : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
+                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
+                            activeTab === 'all'
+                                ? 'text-white bg-background-tertiary/20'
+                                : 'text-muted-foreground hover:bg-background-tertiary/10'
+                        }`}
                     >
                         All sides
                     </button>
                     <button
                         onClick={() => setActiveTab('individual')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'individual'
-                            ? 'text-white bg-background-tertiary/20'
-                            : 'text-muted-foreground hover:bg-background-tertiary/10'
-                            }`}
+                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
+                            activeTab === 'individual'
+                                ? 'text-white bg-background-tertiary/20'
+                                : 'text-muted-foreground hover:bg-background-tertiary/10'
+                        }`}
                     >
                         Individual
                     </button>
@@ -62,7 +61,7 @@ export const Padding = () => {
                             top: boxState.paddingTop.num ?? 0,
                             right: boxState.paddingRight.num ?? 0,
                             bottom: boxState.paddingBottom.num ?? 0,
-                            left: boxState.paddingLeft.num ?? 0
+                            left: boxState.paddingLeft.num ?? 0,
                         }}
                         onChange={handleIndividualChange}
                     />

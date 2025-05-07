@@ -38,7 +38,7 @@ export const ImagesTab = observer(() => {
     // }, []);
 
     const imageAssets = useMemo(() => {
-        return imageData.images
+        return imageData.images;
         // return editorEngine.image.assets;
     }, [imageData.images]);
 
@@ -326,8 +326,12 @@ export const ImagesTab = observer(() => {
                                     // }
                                     // editorEngine.mode = EditorMode.DESIGN;
                                 }}
-                                onMouseDown={() => (editorEngine.state.editorMode = EditorMode.INSERT_IMAGE)}
-                                onMouseUp={() => (editorEngine.state.editorMode = EditorMode.DESIGN)}
+                                onMouseDown={() =>
+                                    (editorEngine.state.editorMode = EditorMode.INSERT_IMAGE)
+                                }
+                                onMouseUp={() =>
+                                    (editorEngine.state.editorMode = EditorMode.DESIGN)
+                                }
                             >
                                 <div className="w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border">
                                     <img
@@ -358,10 +362,11 @@ export const ImagesTab = observer(() => {
                                     )}
                                 </span>
                                 <div
-                                    className={`absolute right-2 top-2 ${activeDropdown === image.fileName
-                                        ? 'opacity-100'
-                                        : 'opacity-0'
-                                        } group-hover:opacity-100 transition-opacity duration-300`}
+                                    className={`absolute right-2 top-2 ${
+                                        activeDropdown === image.fileName
+                                            ? 'opacity-100'
+                                            : 'opacity-0'
+                                    } group-hover:opacity-100 transition-opacity duration-300`}
                                 >
                                     <DropdownMenu
                                         onOpenChange={(isOpen) =>

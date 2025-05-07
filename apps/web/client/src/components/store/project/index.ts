@@ -4,11 +4,11 @@ import { nanoid } from 'nanoid';
 
 // Stubs for now
 export class DomainsManager {
-    constructor() { }
+    constructor() {}
 }
 
 export class VersionsManager {
-    constructor(private projectManager: ProjectManager) { }
+    constructor(private projectManager: ProjectManager) {}
 }
 
 export class ProjectManager {
@@ -30,10 +30,7 @@ export class ProjectManager {
         this._project = project;
     }
 
-    createProject(
-        name: string,
-        previewUrl: string,
-    ): Project {
+    createProject(name: string, previewUrl: string): Project {
         const newProject: Project = {
             id: nanoid(),
             name,
@@ -62,5 +59,5 @@ export class ProjectManager {
         this.project = { ...this.project, ...newProject };
     }
 
-    dispose() { }
+    dispose() {}
 }

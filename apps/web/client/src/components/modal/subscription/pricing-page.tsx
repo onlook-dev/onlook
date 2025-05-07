@@ -1,5 +1,3 @@
-
-
 import { useEditorEngine, useUserManager } from '@/components/store';
 import { sendAnalytics } from '@/utils/analytics';
 import { SystemTheme } from '@onlook/models';
@@ -10,7 +8,7 @@ import { toast } from '@onlook/ui/use-toast';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useTheme } from "next-themes";
+import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import { PricingCard } from './pricing-card';
 
@@ -74,9 +72,9 @@ export const SubscriptionModal = observer(() => {
             setIsCheckingOut(UsagePlanType.PRO);
             const res:
                 | {
-                    success: boolean;
-                    error?: string;
-                }
+                      success: boolean;
+                      error?: string;
+                  }
                 | undefined = await invokeMainChannel(MainChannels.CREATE_STRIPE_CHECKOUT);
             if (res?.success) {
                 toast({
@@ -104,9 +102,9 @@ export const SubscriptionModal = observer(() => {
             setIsCheckingOut(UsagePlanType.BASIC);
             const res:
                 | {
-                    success: boolean;
-                    error?: string;
-                }
+                      success: boolean;
+                      error?: string;
+                  }
                 | undefined = await invokeMainChannel(MainChannels.MANAGE_SUBSCRIPTION);
             if (res?.success) {
                 toast({
@@ -178,17 +176,15 @@ export const SubscriptionModal = observer(() => {
                                             plan={t('pricing.plans.basic.name')}
                                             price={t('pricing.plans.basic.price')}
                                             description={t('pricing.plans.basic.description')}
-                                            features={
-                                                Array.from({ length: 5 }, (_, i) =>
-                                                    t(`pricing.plans.basic.features.${i}`, {
-                                                        dailyMessages: 5,
-                                                        monthlyMessages: 50,
-                                                    })
-                                                )
-                                            }
+                                            features={Array.from({ length: 5 }, (_, i) =>
+                                                t(`pricing.plans.basic.features.${i}`, {
+                                                    dailyMessages: 5,
+                                                    monthlyMessages: 50,
+                                                }),
+                                            )}
                                             buttonText={
                                                 userManager.subscription.plan ===
-                                                    UsagePlanType.BASIC
+                                                UsagePlanType.BASIC
                                                     ? t('pricing.buttons.currentPlan')
                                                     : t('pricing.buttons.manageSubscription')
                                             }
@@ -198,7 +194,7 @@ export const SubscriptionModal = observer(() => {
                                                 },
                                                 disabled:
                                                     userManager.subscription.plan ===
-                                                    UsagePlanType.BASIC ||
+                                                        UsagePlanType.BASIC ||
                                                     isCheckingOut === UsagePlanType.BASIC,
                                             }}
                                             delay={0.1}
@@ -208,14 +204,12 @@ export const SubscriptionModal = observer(() => {
                                             plan={t('pricing.plans.pro.name')}
                                             price={t('pricing.plans.pro.price')}
                                             description={t('pricing.plans.pro.description')}
-                                            features={
-                                                Array.from({ length: 7 }, (_, i) =>
-                                                    t(`pricing.plans.pro.features.${i}`, {
-                                                        dailyMessages: 5,
-                                                        monthlyMessages: 50,
-                                                    })
-                                                )
-                                            }
+                                            features={Array.from({ length: 7 }, (_, i) =>
+                                                t(`pricing.plans.pro.features.${i}`, {
+                                                    dailyMessages: 5,
+                                                    monthlyMessages: 50,
+                                                }),
+                                            )}
                                             buttonText={
                                                 userManager.subscription.plan === UsagePlanType.PRO
                                                     ? t('pricing.buttons.currentPlan')
@@ -225,7 +219,7 @@ export const SubscriptionModal = observer(() => {
                                                 onClick: startProCheckout,
                                                 disabled:
                                                     userManager.subscription.plan ===
-                                                    UsagePlanType.PRO ||
+                                                        UsagePlanType.PRO ||
                                                     isCheckingOut === UsagePlanType.PRO,
                                             }}
                                             delay={0.2}

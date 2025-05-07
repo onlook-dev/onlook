@@ -17,10 +17,10 @@ import type {
     RemoveImageAction,
     UngroupElementsAction,
     UpdateStyleAction,
-    WriteCodeAction
+    WriteCodeAction,
 } from '@onlook/models';
 import { CodeActionType } from '@onlook/models';
-import { getAstFromContent, getContentFromAst, transformAst } from "@onlook/parser";
+import { getAstFromContent, getContentFromAst, transformAst } from '@onlook/parser';
 import { getOrCreateCodeDiffRequest } from './helpers';
 import { getInsertedElement } from './insert';
 import { addTailwindToRequest } from './tailwind';
@@ -59,7 +59,12 @@ export async function getStyleRequests({ targets }: UpdateStyleAction): Promise<
     return Array.from(oidToCodeChange.values());
 }
 
-export async function getInsertRequests({ location, element, pasteParams, codeBlock }: InsertElementAction): Promise<CodeDiffRequest[]> {
+export async function getInsertRequests({
+    location,
+    element,
+    pasteParams,
+    codeBlock,
+}: InsertElementAction): Promise<CodeDiffRequest[]> {
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
     const insertedEl = getInsertedElement(element, location, pasteParams, codeBlock);
 
@@ -76,7 +81,10 @@ export async function getInsertRequests({ location, element, pasteParams, codeBl
     return Array.from(oidToCodeChange.values());
 }
 
-export async function getRemoveRequests({ element, codeBlock }: RemoveElementAction): Promise<CodeDiffRequest[]> {
+export async function getRemoveRequests({
+    element,
+    codeBlock,
+}: RemoveElementAction): Promise<CodeDiffRequest[]> {
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
     const removedEl: CodeRemove = {
         oid: element.oid,
@@ -89,7 +97,10 @@ export async function getRemoveRequests({ element, codeBlock }: RemoveElementAct
     return Array.from(oidToCodeChange.values());
 }
 
-export async function getEditTextRequests({ targets, newContent }: EditTextAction): Promise<CodeDiffRequest[]> {
+export async function getEditTextRequests({
+    targets,
+    newContent,
+}: EditTextAction): Promise<CodeDiffRequest[]> {
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
 
     for (const target of targets) {
@@ -104,7 +115,10 @@ export async function getEditTextRequests({ targets, newContent }: EditTextActio
     return Array.from(oidToCodeChange.values());
 }
 
-export async function getMoveRequests({ targets, location }: MoveElementAction): Promise<CodeDiffRequest[]> {
+export async function getMoveRequests({
+    targets,
+    location,
+}: MoveElementAction): Promise<CodeDiffRequest[]> {
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
 
     for (const target of targets) {
@@ -131,8 +145,6 @@ export async function getMoveRequests({ targets, location }: MoveElementAction):
     return Array.from(oidToCodeChange.values());
 }
 
-
-
 export async function getGroupRequests(action: GroupElementsAction): Promise<CodeDiffRequest[]> {
     if (!action.parent.oid) {
         console.error('No parent oid found for group');
@@ -152,7 +164,9 @@ export async function getGroupRequests(action: GroupElementsAction): Promise<Cod
     return Array.from(oidToCodeChange.values());
 }
 
-export async function getUngroupRequests(action: UngroupElementsAction): Promise<CodeDiffRequest[]> {
+export async function getUngroupRequests(
+    action: UngroupElementsAction,
+): Promise<CodeDiffRequest[]> {
     if (!action.parent.oid) {
         console.error('No parent oid found for ungroup');
         return [];
@@ -182,7 +196,9 @@ export async function getWriteCodeRequests(action: WriteCodeAction): Promise<Cod
     return [];
 }
 
-export async function getInsertImageRequests(action: InsertImageAction): Promise<CodeDiffRequest[]> {
+export async function getInsertImageRequests(
+    action: InsertImageAction,
+): Promise<CodeDiffRequest[]> {
     // TODO: Implement
     return [];
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
@@ -211,7 +227,9 @@ export async function getInsertImageRequests(action: InsertImageAction): Promise
     return Array.from(oidToCodeChange.values());
 }
 
-export async function getRemoveImageRequests(action: RemoveImageAction): Promise<CodeDiffRequest[]> {
+export async function getRemoveImageRequests(
+    action: RemoveImageAction,
+): Promise<CodeDiffRequest[]> {
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
     const removeImage: CodeRemoveImage = {
         ...action,

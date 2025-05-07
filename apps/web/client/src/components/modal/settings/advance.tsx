@@ -25,7 +25,7 @@ const AdvancedTab = observer(() => {
         : userManager.settings.settings?.editor?.buildFlags;
 
     async function updateBunReplace(enabled: boolean) {
-       await userManager.settings.updateEditor({ enableBunReplace: enabled });
+        await userManager.settings.updateEditor({ enableBunReplace: enabled });
     }
 
     async function updateNewProjectPath(path: string) {

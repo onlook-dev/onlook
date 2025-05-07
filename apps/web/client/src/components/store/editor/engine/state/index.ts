@@ -1,7 +1,13 @@
-import { sendAnalytics } from "@/utils/analytics";
-import { type BrandTabValue, EditorMode, EditorTabValue, type LeftPanelTabValue, SettingsTabValue } from "@onlook/models";
-import { debounce } from "lodash";
-import { makeAutoObservable } from "mobx";
+import { sendAnalytics } from '@/utils/analytics';
+import {
+    type BrandTabValue,
+    EditorMode,
+    EditorTabValue,
+    type LeftPanelTabValue,
+    SettingsTabValue,
+} from '@onlook/models';
+import { debounce } from 'lodash';
+import { makeAutoObservable } from 'mobx';
 
 export class StateManager {
     private _plansOpen = false;

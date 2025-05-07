@@ -14,7 +14,10 @@ export class FileSyncManager {
         return this.cache.has(filePath);
     }
 
-    async readOrFetch(filePath: string, readFile: (path: string) => Promise<string | null>): Promise<string | null> {
+    async readOrFetch(
+        filePath: string,
+        readFile: (path: string) => Promise<string | null>,
+    ): Promise<string | null> {
         if (this.has(filePath)) {
             return this.cache.get(filePath) ?? null;
         }
@@ -32,7 +35,11 @@ export class FileSyncManager {
         }
     }
 
-    async write(filePath: string, content: string, writeFile: (path: string, content: string) => Promise<boolean>): Promise<boolean> {
+    async write(
+        filePath: string,
+        content: string,
+        writeFile: (path: string, content: string) => Promise<boolean>,
+    ): Promise<boolean> {
         try {
             const success = await writeFile(filePath, content);
             if (success) {

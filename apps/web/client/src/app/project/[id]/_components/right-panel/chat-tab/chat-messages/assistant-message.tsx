@@ -1,5 +1,5 @@
-import type { AssistantChatMessage } from "@onlook/models";
-import { MessageContent } from "./message-content";
+import type { AssistantChatMessage } from '@onlook/models';
+import { MessageContent } from './message-content';
 
 export const AssistantMessage = ({ message }: { message: AssistantChatMessage }) => {
     return (

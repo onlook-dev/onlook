@@ -1,6 +1,11 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { DefaultSettings, EditorAttributes } from '@onlook/constants';
-import type { DropElementProperties, ElementPosition, ImageContentData, RectDimensions } from '@onlook/models';
+import type {
+    DropElementProperties,
+    ElementPosition,
+    ImageContentData,
+    RectDimensions,
+} from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import {
     type ActionElement,
@@ -21,7 +26,7 @@ export class InsertManager {
     isDrawing = false;
     private drawOrigin: ElementPosition | undefined;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     getDefaultProperties(mode: EditorMode): DropElementProperties {
         switch (mode) {
@@ -138,11 +143,7 @@ export class InsertManager {
         };
     }
 
-    async insertElement(
-        frameView: WebFrameView,
-        newRect: RectDimensions,
-        origin: ElementPosition,
-    ) {
+    async insertElement(frameView: WebFrameView, newRect: RectDimensions, origin: ElementPosition) {
         const insertAction = await this.createInsertAction(frameView, newRect, origin);
         if (!insertAction) {
             console.error('Failed to create insert action');
@@ -169,14 +170,14 @@ export class InsertManager {
         const styles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
-                    width: `${width}px`,
-                    height: `${height}px`,
-                }
+                      width: `${width}px`,
+                      height: `${height}px`,
+                  }
                 : {
-                    width: `${width}px`,
-                    height: `${height}px`,
-                    backgroundColor: colors.blue[100],
-                };
+                      width: `${width}px`,
+                      height: `${height}px`,
+                      backgroundColor: colors.blue[100],
+                  };
 
         const actionElement: ActionElement = {
             domId,
@@ -223,7 +224,11 @@ export class InsertManager {
             return;
         }
 
-        const targetElement = await frame.view.getElementAtLoc(dropPosition.x, dropPosition.y, false);
+        const targetElement = await frame.view.getElementAtLoc(
+            dropPosition.x,
+            dropPosition.y,
+            false,
+        );
 
         if (!targetElement) {
             console.error('Failed to get element at drop position');
@@ -235,11 +240,7 @@ export class InsertManager {
         this.insertImageElement(frame, location, imageData);
     }
 
-    insertImageElement(
-        frame: FrameData,
-        location: ActionLocation,
-        imageData: ImageContentData,
-    ) {
+    insertImageElement(frame: FrameData, location: ActionLocation, imageData: ImageContentData) {
         const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
         const domId = createDomId();
         const oid = createOid();

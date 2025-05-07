@@ -11,9 +11,7 @@ export class SuggestionManager {
     shouldHide = false;
     private _suggestions: ChatSuggestion[] = [];
 
-    constructor(
-        private projectManager: ProjectManager,
-    ) {
+    constructor(private projectManager: ProjectManager) {
         makeAutoObservable(this);
         reaction(
             () => this.projectManager.project,
@@ -51,8 +49,7 @@ export class SuggestionManager {
                 title: 'Suggestion 2',
                 prompt: 'Suggestion 2 prompt',
             },
-
-        ]
+        ];
         return res || [];
     }
 
@@ -73,7 +70,6 @@ export class SuggestionManager {
         // });
     }
 
-
     async getCreatedSuggestionsMessages(
         prompt: string,
         response: string,
@@ -91,7 +87,7 @@ export class SuggestionManager {
         };
 
         const messages = this.getMessages(prompt, response, images);
-        return [systemMessage, ...messages]
+        return [systemMessage, ...messages];
     }
 
     async getNextSuggestionsMessages(messages: CoreMessage[]): Promise<CoreMessage[]> {
@@ -104,7 +100,7 @@ export class SuggestionManager {
             },
         };
 
-        return [systemMessage, ...messages]
+        return [systemMessage, ...messages];
     }
 
     private getMessages(

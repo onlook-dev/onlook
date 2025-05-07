@@ -11,5 +11,4 @@ export class UserManager {
     constructor() {
         makeAutoObservable(this);
     }
-
 }

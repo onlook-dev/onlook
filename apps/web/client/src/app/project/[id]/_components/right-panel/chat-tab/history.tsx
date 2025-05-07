@@ -41,11 +41,11 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
     };
 
     const groups = [{ name: 'Today' }];
-    
+
     // Sort conversations by creation time, newest first
     const sortedConversations = [...editorEngine.chat.conversation.conversations].sort((a, b) => {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });    
+    });
 
     return (
         <Popover open={isOpen} onOpenChange={handlePopoverOpenChange}>

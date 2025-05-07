@@ -22,13 +22,17 @@ export class SandboxManager {
         this.session = session;
     }
 
-    async index() {        
+    async index() {
         if (!this.session) {
             console.error('No session found');
             return;
         }
 
-        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS, 'css']);
+        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [
+            ...JSX_FILE_EXTENSIONS,
+            ...JS_FILE_EXTENSIONS,
+            'css',
+        ]);
         for (const file of files) {
             const normalizedPath = normalizePath(file);
             const content = await this.readFile(normalizedPath);
@@ -40,7 +44,7 @@ export class SandboxManager {
             await this.processFileForMapping(normalizedPath);
         }
 
-        await this.watchFiles()
+        await this.watchFiles();
     }
 
     private async readRemoteFile(filePath: string): Promise<string | null> {
@@ -86,7 +90,10 @@ export class SandboxManager {
         }
     }
 
-    private async writeRemoteBinaryFile(filePath: string, fileContent: Buffer | Uint8Array): Promise<boolean> {
+    private async writeRemoteBinaryFile(
+        filePath: string,
+        fileContent: Buffer | Uint8Array,
+    ): Promise<boolean> {
         if (!this.session) {
             console.error('No session found for remote binary write');
             return false;
@@ -140,11 +147,11 @@ export class SandboxManager {
     async listFiles(dir: string) {
         return this.session?.fs.readdir(dir);
     }
-    
+
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
         const normalizedPath = normalizePath(path);
         try {
-            // TODO: Implement binary file sync 
+            // TODO: Implement binary file sync
             return await this.writeRemoteBinaryFile(normalizedPath, content);
         } catch (error) {
             console.error(`Error writing binary file ${normalizedPath}:`, error);
@@ -152,7 +159,11 @@ export class SandboxManager {
         }
     }
 
-    async listFilesRecursively(dir: string, ignore: string[] = [], extensions: string[] = []): Promise<string[]> {
+    async listFilesRecursively(
+        dir: string,
+        ignore: string[] = [],
+        extensions: string[] = [],
+    ): Promise<string[]> {
         if (!this.session) {
             console.error('No session found');
             return [];
@@ -168,10 +179,17 @@ export class SandboxManager {
                 if (ignore.includes(entry.name)) {
                     continue;
                 }
-                const subFiles = await this.listFilesRecursively(normalizedPath, ignore, extensions);
+                const subFiles = await this.listFilesRecursively(
+                    normalizedPath,
+                    ignore,
+                    extensions,
+                );
                 results.push(...subFiles);
             } else {
-                if (extensions.length > 0 && !extensions.includes(entry.name.split('.').pop() ?? '')) {
+                if (
+                    extensions.length > 0 &&
+                    !extensions.includes(entry.name.split('.').pop() ?? '')
+                ) {
                     continue;
                 }
                 results.push(normalizedPath);
@@ -187,13 +205,12 @@ export class SandboxManager {
         }
 
         // Convert ignored directories to glob patterns with ** wildcard
-        const excludePatterns = IGNORED_DIRECTORIES.map(dir => `${dir}/**`);
-        
-        const watcher = await this.session.fs.watch("./", { 
-            recursive: true, 
-            excludes: excludePatterns 
+        const excludePatterns = IGNORED_DIRECTORIES.map((dir) => `${dir}/**`);
+
+        const watcher = await this.session.fs.watch('./', {
+            recursive: true,
+            excludes: excludePatterns,
         });
-        
 
         watcher.onEvent((event) => this.handleFileEvent(event));
 
@@ -211,7 +228,7 @@ export class SandboxManager {
                 await this.fileSync.delete(normalizedPath);
             } else if (eventType === 'change' || eventType === 'add') {
                 // Sometimes we delete the content of the file, so we should allow empty content
-                const content = await this.readRemoteFile(normalizedPath) ?? "";
+                const content = (await this.readRemoteFile(normalizedPath)) ?? '';
 
                 await this.fileSync.updateCache(normalizedPath, content);
                 await this.processFileForMapping(normalizedPath);
@@ -221,7 +238,11 @@ export class SandboxManager {
 
     async processFileForMapping(file: string) {
         const normalizedPath = normalizePath(file);
-        await this.templateNodeMap.processFileForMapping(normalizedPath, this.readFile.bind(this), this.writeFile.bind(this));
+        await this.templateNodeMap.processFileForMapping(
+            normalizedPath,
+            this.readFile.bind(this),
+            this.writeFile.bind(this),
+        );
     }
 
     async getTemplateNode(oid: string): Promise<TemplateNode | null> {

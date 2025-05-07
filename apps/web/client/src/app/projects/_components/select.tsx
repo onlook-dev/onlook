@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import { useProjectManager } from '@/components/store';
 import type { Project } from '@onlook/models';
@@ -15,51 +15,57 @@ export const SelectProject = observer(() => {
 
     // const [projects, setProjects] = useState<Project[]>(sortProjects(projectsManager.projects));
     // TODO: remove this
-    const mockProjects: Project[] = [{
-        id: '1',
-        name: 'Project 1',
-        previewUrl: 'http://localhost:8084',
-        canvas: null,
-        domains: null,
-        sandbox: null,
-        metadata: {
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
-            updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
-            previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    const mockProjects: Project[] = [
+        {
+            id: '1',
+            name: 'Project 1',
+            previewUrl: 'http://localhost:8084',
+            canvas: null,
+            domains: null,
+            sandbox: null,
+            metadata: {
+                createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
+                updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 12).toISOString(),
+                previewImg:
+                    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+            },
         },
-    },
-    {
-        id: '2',
-        name: 'Project 2',
-        previewUrl: 'http://localhost:8084',
-        canvas: null,
-        domains: null,
-        sandbox: null,
-        metadata: {
-            createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-            updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-            previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+        {
+            id: '2',
+            name: 'Project 2',
+            previewUrl: 'http://localhost:8084',
+            canvas: null,
+            domains: null,
+            sandbox: null,
+            metadata: {
+                createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                previewImg:
+                    'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+            },
         },
-    },
-    {
-        id: '3',
-        name: 'Project 3',
-        previewUrl: 'http://localhost:8084',
-        canvas: null,
-        domains: null,
-        sandbox: null,
-        metadata: {
-            createdAt: new Date(Date.now() - 1000 * 60).toISOString(),
-            updatedAt: new Date(Date.now() - 1000 * 60).toISOString(),
-            previewImg: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+        {
+            id: '3',
+            name: 'Project 3',
+            previewUrl: 'http://localhost:8084',
+            canvas: null,
+            domains: null,
+            sandbox: null,
+            metadata: {
+                createdAt: new Date(Date.now() - 1000 * 60).toISOString(),
+                updatedAt: new Date(Date.now() - 1000 * 60).toISOString(),
+                previewImg:
+                    'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
+            },
         },
-    }];
+    ];
 
     const sortProjects = (unsortedProjects: Project[]) => {
         return unsortedProjects.sort(
-            (a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime(),
+            (a, b) =>
+                new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime(),
         );
-    }
+    };
 
     const projects = sortProjects(mockProjects);
 

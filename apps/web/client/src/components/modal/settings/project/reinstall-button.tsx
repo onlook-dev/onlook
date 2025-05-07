@@ -1,4 +1,3 @@
-
 import { useProjectManager } from '@/components/store';
 import { DefaultSettings } from '@onlook/constants';
 import { RunState } from '@onlook/models/run';

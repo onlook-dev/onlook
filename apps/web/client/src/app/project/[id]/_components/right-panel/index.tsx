@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import { useEditorEngine } from '@/components/store';
-import { EditorMode, EditorTabValue } from "@onlook/models";
+import { EditorMode, EditorTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { ResizablePanel } from '@onlook/ui/resizable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
@@ -29,12 +29,10 @@ export const RightPanel = observer(() => {
     return (
         <div
             id="style-panel"
-            className={
-                cn(
-                    'flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl',
-                    editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden'
-                )
-            }
+            className={cn(
+                'flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl',
+                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
+            )}
         >
             <ResizablePanel
                 side="right"
@@ -43,8 +41,14 @@ export const RightPanel = observer(() => {
                 minWidth={240}
                 maxWidth={700}
             >
-                <Tabs className='h-full' onValueChange={(value) => editorEngine.state.rightPanelTab = value as EditorTabValue} value={selectedTab} >
-                    <TabsList className='flex flex-row h-12 w-full border-b items-center bg-transparent select-none px-2 justify-between'>
+                <Tabs
+                    className="h-full"
+                    onValueChange={(value) =>
+                        (editorEngine.state.rightPanelTab = value as EditorTabValue)
+                    }
+                    value={selectedTab}
+                >
+                    <TabsList className="flex flex-row h-12 w-full border-b items-center bg-transparent select-none px-2 justify-between">
                         <div className="flex flex-row items-center gap-2 ">
                             <ChatPanelDropdown>
                                 <TabsTrigger
@@ -53,7 +57,7 @@ export const RightPanel = observer(() => {
                                 >
                                     <Icons.Sparkles className="mr-1.5 mb-0.5 h-4 w-4" />
                                     {t('editor.panels.edit.tabs.chat.name')}
-                                    < Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
+                                    <Icons.ChevronDown className="ml-1 h-3 w-3 text-muted-foreground" />
                                 </TabsTrigger>
                             </ChatPanelDropdown>
                             <TabsTrigger
@@ -67,15 +71,15 @@ export const RightPanel = observer(() => {
                         {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                     </TabsList>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
-                    <TabsContent className='h-full overflow-y-auto' value={EditorTabValue.CHAT}>
+                    <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.CHAT}>
                         <ChatTab />
                     </TabsContent>
-                    <TabsContent className='h-full overflow-y-auto' value={EditorTabValue.DEV}>
+                    <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.DEV}>
                         {/* <DevTab /> */}
                         Dev Tab
                     </TabsContent>
                 </Tabs>
-            </ResizablePanel >
-        </div >
+            </ResizablePanel>
+        </div>
     );
 });

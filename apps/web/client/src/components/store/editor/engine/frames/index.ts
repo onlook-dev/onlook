@@ -27,9 +27,7 @@ export class FramesManager {
     private frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -38,8 +36,7 @@ export class FramesManager {
     }
 
     get selected(): FrameData[] {
-        return Array.from(this.frameIdToData.values())
-            .filter((w) => w.selected)
+        return Array.from(this.frameIdToData.values()).filter((w) => w.selected);
     }
 
     getAll(): FrameData[] {

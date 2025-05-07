@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui/button";
-import type { IconProps } from "@onlook/ui/icons";
-import { cn } from "@onlook/ui/utils";
-import type { ForwardRefExoticComponent, RefAttributes } from "react";
+import { Button } from '@onlook/ui/button';
+import type { IconProps } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
+import type { ForwardRefExoticComponent, RefAttributes } from 'react';
 
 interface PanelButtonProps {
     icon: ForwardRefExoticComponent<IconProps & RefAttributes<SVGSVGElement>>;
@@ -18,8 +18,8 @@ export const PanelButton = ({ icon: Icon, isActive, onClick }: PanelButtonProps)
             size="icon"
             onClick={onClick}
             className={cn(
-                "flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border px-1 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0",
-                isActive && "bg-background-tertiary/20 text-white border border-border"
+                'flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border px-1 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0',
+                isActive && 'bg-background-tertiary/20 text-white border border-border',
             )}
         >
             <Icon className="h-4 w-4" />

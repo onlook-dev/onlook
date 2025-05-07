@@ -1,21 +1,17 @@
-import type { ProjectManager } from "@/components/store/project";
-import type { UserManager } from "@/components/store/user";
-import { sendAnalytics } from "@/utils/analytics";
-import {
-    ChatMessageRole,
-    StreamRequestType,
-    type AssistantChatMessage
-} from "@onlook/models/chat";
-import type { ParsedError } from "@onlook/utility";
-import type { Message } from "ai";
-import { makeAutoObservable } from "mobx";
-import type { EditorEngine } from "..";
-import { ChatCodeManager } from "./code";
-import { ChatContext } from "./context";
-import { ConversationManager } from "./conversation";
-import { SuggestionManager } from "./suggestions";
+import type { ProjectManager } from '@/components/store/project';
+import type { UserManager } from '@/components/store/user';
+import { sendAnalytics } from '@/utils/analytics';
+import { ChatMessageRole, StreamRequestType, type AssistantChatMessage } from '@onlook/models/chat';
+import type { ParsedError } from '@onlook/utility';
+import type { Message } from 'ai';
+import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
+import { ChatCodeManager } from './code';
+import { ChatContext } from './context';
+import { ConversationManager } from './conversation';
+import { SuggestionManager } from './suggestions';
 
-export const FOCUS_CHAT_INPUT_EVENT = "focus-chat-input";
+export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 
 export class ChatManager {
     conversation: ConversationManager;
@@ -28,14 +24,8 @@ export class ChatManager {
         private projectManager: ProjectManager,
         private userManager: UserManager,
     ) {
-        this.context = new ChatContext(
-            this.editorEngine,
-            this.projectManager,
-        );
-        this.conversation = new ConversationManager(
-            this.editorEngine,
-            this.projectManager,
-        );
+        this.context = new ChatContext(this.editorEngine, this.projectManager);
+        this.conversation = new ConversationManager(this.editorEngine, this.projectManager);
         this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectManager);
         makeAutoObservable(this);
@@ -47,7 +37,7 @@ export class ChatManager {
 
     async getStreamMessages(content: string): Promise<Message[] | null> {
         if (!this.conversation.current) {
-            console.error("No conversation found");
+            console.error('No conversation found');
             return null;
         }
 
@@ -55,10 +45,10 @@ export class ChatManager {
         const userMessage = this.conversation.addUserMessage(content, context);
         this.conversation.current.updateName(content);
         if (!userMessage) {
-            console.error("Failed to add user message");
+            console.error('Failed to add user message');
             return null;
         }
-        sendAnalytics("send chat message", {
+        sendAnalytics('send chat message', {
             content,
         });
         return this.generateStreamMessages(content);
@@ -66,12 +56,12 @@ export class ChatManager {
 
     async getFixErrorMessages(errors: ParsedError[]): Promise<Message[] | null> {
         if (!this.conversation.current) {
-            console.error("No conversation found");
+            console.error('No conversation found');
             return null;
         }
 
         if (errors.length === 0) {
-            console.error("No errors found");
+            console.error('No errors found');
             return null;
         }
 
@@ -82,12 +72,12 @@ export class ChatManager {
             ...errorContexts,
             ...projectContexts,
         ]);
-        this.conversation.current.updateName(errors[0]?.content ?? "Fix errors");
+        this.conversation.current.updateName(errors[0]?.content ?? 'Fix errors');
         if (!userMessage) {
-            console.error("Failed to add user message");
+            console.error('Failed to add user message');
             return null;
         }
-        sendAnalytics("send fix error chat message", {
+        sendAnalytics('send fix error chat message', {
             errors: errors.map((e) => e.content),
         });
         return this.generateStreamMessages(prompt);
@@ -95,16 +85,16 @@ export class ChatManager {
 
     getResubmitMessages(id: string, newMessageContent: string) {
         if (!this.conversation.current) {
-            console.error("No conversation found");
+            console.error('No conversation found');
             return;
         }
         const message = this.conversation.current.messages.find((m) => m.id === id);
         if (!message) {
-            console.error("No message found with id", id);
+            console.error('No message found with id', id);
             return;
         }
         if (message.role !== ChatMessageRole.USER) {
-            console.error("Can only edit user messages");
+            console.error('Can only edit user messages');
             return;
         }
 
@@ -113,11 +103,9 @@ export class ChatManager {
         return this.generateStreamMessages(StreamRequestType.CHAT);
     }
 
-    private async generateStreamMessages(
-        userPrompt?: string,
-    ): Promise<Message[] | null> {
+    private async generateStreamMessages(userPrompt?: string): Promise<Message[] | null> {
         if (!this.conversation.current) {
-            console.error("No conversation found");
+            console.error('No conversation found');
             return null;
         }
         // Save current changes before sending to AI

@@ -1,6 +1,6 @@
-import { sendAnalytics } from "@/utils/analytics";
-import { makeAutoObservable } from "mobx";
-import type { EditorEngine } from "..";
+import { sendAnalytics } from '@/utils/analytics';
+import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
 
 export class WindowManager {
     constructor(private editorEngine: EditorEngine) {
@@ -8,7 +8,10 @@ export class WindowManager {
     }
 
     get areAnyWindowsSelected() {
-        return this.editorEngine.elements.selected.length > 0 && this.editorEngine.elements.selected.length === 0;
+        return (
+            this.editorEngine.elements.selected.length > 0 &&
+            this.editorEngine.elements.selected.length === 0
+        );
     }
 
     async takeActiveWebviewScreenshot(

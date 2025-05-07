@@ -15,7 +15,7 @@ export class IDE {
         public readonly type: IdeType,
         public readonly command: string,
         public readonly icon: keyof typeof Icons,
-    ) { }
+    ) {}
 
     toString() {
         return this.displayName;

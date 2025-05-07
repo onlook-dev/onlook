@@ -36,7 +36,7 @@ describe('SandboxManager', () => {
                 readOrFetch = mockReadOrFetch;
                 write = mockWrite;
                 clear = mockClear;
-            }
+            },
         }));
 
         mock.module('@onlook/parser', () => ({
@@ -44,21 +44,21 @@ describe('SandboxManager', () => {
             getContentFromAst: (ast: any) => ast,
             addOidsToAst: (ast: any) => ({
                 ast: ast, // Return the ast unchanged but in correct structure
-                modified: false
+                modified: false,
             }),
-            createTemplateNodeMap: () => new Map()
+            createTemplateNodeMap: () => new Map(),
         }));
 
         const mockEntries = [
             { name: 'file1.tsx', type: 'file' },
             { name: 'file2.tsx', type: 'file' },
             { name: 'node_modules', type: 'directory' },
-            { name: 'src', type: 'directory' }
+            { name: 'src', type: 'directory' },
         ];
 
         const mockSrcEntries = [
             { name: 'component.tsx', type: 'file' },
-            { name: 'utils.ts', type: 'file' }
+            { name: 'utils.ts', type: 'file' },
         ];
 
         // Create a sandbox with a mock FileSyncManager
@@ -66,16 +66,15 @@ describe('SandboxManager', () => {
             readOrFetch: mock(async () => '<div>Mocked Content</div>'),
             write: mock(async () => true),
             clear: mock(async () => undefined),
-            updateCache: mock(async () => undefined)
+            updateCache: mock(async () => undefined),
         };
-
 
         mockWatcher = {
             onEvent: mock((callback: any) => {
                 mockWatcher.callback = callback;
             }),
-            dispose: mock(() => { }),
-            callback: null
+            dispose: mock(() => {}),
+            callback: null,
         };
 
         mockSession = {
@@ -97,8 +96,8 @@ describe('SandboxManager', () => {
                     }
                     return [];
                 }),
-                watch: mock(async () => mockWatcher)
-            }
+                watch: mock(async () => mockWatcher),
+            },
         };
 
         sandboxManager = new SandboxManager();
@@ -118,29 +117,31 @@ describe('SandboxManager', () => {
                             { name: 'file1.tsx', type: 'file' },
                             { name: 'file2.tsx', type: 'file' },
                             { name: 'node_modules', type: 'directory' },
-                            { name: 'src', type: 'directory' }
+                            { name: 'src', type: 'directory' },
                         ];
                     } else if (dir === 'src') {
-                        return [
-                            { name: 'component.tsx', type: 'file' }
-                        ];
+                        return [{ name: 'component.tsx', type: 'file' }];
                     }
                     return [];
                 }),
                 readTextFile: mock(async () => ''),
                 writeTextFile: mock(async () => true),
-                watch: mock(async () => mockWatcher)
-            }
+                watch: mock(async () => mockWatcher),
+            },
         };
 
         const testManager = new SandboxManager();
         testManager.init(testMockSession);
 
-        const files = await testManager.listFilesRecursively('./', IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS);
+        const files = await testManager.listFilesRecursively(
+            './',
+            IGNORED_DIRECTORIES,
+            JSX_FILE_EXTENSIONS,
+        );
 
         expect(testMockSession.fs.readdir.mock.calls.length).toBeGreaterThan(0);
-        expect(testMockSession.fs.readdir.mock.calls.some(call => call[0] === './')).toBe(true);
-        expect(testMockSession.fs.readdir.mock.calls.some(call => call[0] === 'src')).toBe(true);
+        expect(testMockSession.fs.readdir.mock.calls.some((call) => call[0] === './')).toBe(true);
+        expect(testMockSession.fs.readdir.mock.calls.some((call) => call[0] === 'src')).toBe(true);
 
         expect(files).toEqual(['file1.tsx', 'file2.tsx', 'src/component.tsx']);
     });
@@ -160,12 +161,15 @@ describe('SandboxManager', () => {
         // @ts-ignore - accessing private property for testing
         sandboxManager.fileSync = mockFileSync;
 
-        const result = await sandboxManager.writeFile('file1.tsx', '<div id="123">Modified Component</div>');
+        const result = await sandboxManager.writeFile(
+            'file1.tsx',
+            '<div id="123">Modified Component</div>',
+        );
         expect(result).toBe(true);
         expect(mockFileSync.write).toHaveBeenCalledWith(
             'file1.tsx',
             '<div id="123">Modified Component</div>',
-            expect.any(Function)
+            expect.any(Function),
         );
     });
 
@@ -195,8 +199,8 @@ describe('SandboxManager', () => {
                     throw new Error('Failed to write file');
                 }),
                 readdir: mock(async () => []),
-                watch: mock(async () => mockWatcher)
-            }
+                watch: mock(async () => mockWatcher),
+            },
         };
 
         const errorManager = new SandboxManager();
@@ -207,7 +211,7 @@ describe('SandboxManager', () => {
             readOrFetch: mock(async () => null),
             write: mock(async () => false),
             clear: mock(async () => undefined),
-            updateCache: mock(async () => undefined)
+            updateCache: mock(async () => undefined),
         };
 
         // @ts-ignore - accessing private property for testing
@@ -221,7 +225,11 @@ describe('SandboxManager', () => {
         // Test writeFile with broken session
         const writeResult = await errorManager.writeFile('error.tsx', '<div>Content</div>');
         expect(writeResult).toBe(false);
-        expect(errorFileSync.write).toHaveBeenCalledWith('error.tsx', '<div>Content</div>', expect.any(Function));
+        expect(errorFileSync.write).toHaveBeenCalledWith(
+            'error.tsx',
+            '<div>Content</div>',
+            expect.any(Function),
+        );
     });
 
     test('FileSyncManager should use remote file operations through callbacks', async () => {
@@ -247,10 +255,12 @@ describe('SandboxManager', () => {
                 async clear() {
                     return undefined;
                 }
-            }
+            },
         }));
 
-        const { FileSyncManager } = require('../src/components/store/editor/engine/sandbox/file-sync');
+        const {
+            FileSyncManager,
+        } = require('../src/components/store/editor/engine/sandbox/file-sync');
 
         const testGetItem = mock<(key: string) => Promise<any>>(async () => null);
         const testSetItem = mock<(key: string, value: any) => Promise<any>>(async () => undefined);
@@ -274,10 +284,10 @@ describe('SandboxManager', () => {
         const fileSync = new FileSyncManager({
             getItem: testGetItem,
             setItem: testSetItem,
-            removeItem: testRemoveItem
+            removeItem: testRemoveItem,
         });
 
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
 
         const cachedContent = await fileSync.readOrFetch('cached.tsx', mockReadFile);
         expect(cachedContent).toBe('<div>Cached</div>');
@@ -296,7 +306,6 @@ describe('SandboxManager', () => {
     });
 
     test('should normalize file paths for read', async () => {
-
         // Override the fileSync property in the sandboxManager
         // @ts-ignore - accessing private property for testing
         sandboxManager.fileSync = mockFileSync;
@@ -313,12 +322,14 @@ describe('SandboxManager', () => {
 
         for (const variant of variants) {
             await sandboxManager.readFile(variant);
-            expect(mockFileSync.readOrFetch).toHaveBeenCalledWith(normalizedPath, expect.any(Function));
+            expect(mockFileSync.readOrFetch).toHaveBeenCalledWith(
+                normalizedPath,
+                expect.any(Function),
+            );
         }
     });
 
     test('should normalize file paths for write', async () => {
-
         // Override the fileSync property in the sandboxManager
         // @ts-ignore - accessing private property for testing
         sandboxManager.fileSync = mockFileSync;
@@ -335,7 +346,11 @@ describe('SandboxManager', () => {
 
         for (const variant of variants) {
             await sandboxManager.writeFile(variant, 'test');
-            expect(mockFileSync.write).toHaveBeenCalledWith(normalizedPath, 'test', expect.any(Function));
+            expect(mockFileSync.write).toHaveBeenCalledWith(
+                normalizedPath,
+                'test',
+                expect.any(Function),
+            );
         }
     });
 });

@@ -1,24 +1,16 @@
-"use client";
+'use client';
 
-import {
-    Popover,
-    PopoverAnchor,
-    PopoverContent,
-    PopoverTrigger,
-} from "@onlook/ui/popover";
-import { Color } from "@onlook/utility";
-import { useCallback, useState } from "react";
-import { ColorPickerContent } from "./color-picker";
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Color } from '@onlook/utility';
+import { useCallback, useState } from 'react';
+import { ColorPickerContent } from './color-picker';
 
 interface InputColorProps {
     color: string;
     onColorChange?: (color: string) => void;
 }
 
-export const InputColor = ({
-    color,
-    onColorChange,
-}: InputColorProps) => {
+export const InputColor = ({ color, onColorChange }: InputColorProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [tempColor, setTempColor] = useState(color);
 

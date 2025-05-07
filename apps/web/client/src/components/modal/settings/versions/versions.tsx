@@ -1,16 +1,11 @@
-import { useProjectManager } from "@/components/store";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@onlook/ui/accordion";
-import { Button } from "@onlook/ui/button";
-import { Icons } from "@onlook/ui/icons/index";
-import { Separator } from "@onlook/ui/separator";
-import { observer } from "mobx-react-lite";
-import React, { useState } from "react";
-import { NoVersions } from "./empty-state/version";
+import { useProjectManager } from '@/components/store';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
+import { Separator } from '@onlook/ui/separator';
+import { observer } from 'mobx-react-lite';
+import React, { useState } from 'react';
+import { NoVersions } from './empty-state/version';
 // import { NoVersions } from './EmptyState/Version';
 // import { VersionRow, VersionRowType } from './VersionRow';
 
@@ -29,15 +24,15 @@ export const Versions = observer(() => {
 
             let dateKey: string;
             if (date.toDateString() === today.toDateString()) {
-                dateKey = "Today";
+                dateKey = 'Today';
             } else if (date.toDateString() === yesterday.toDateString()) {
-                dateKey = "Yesterday";
+                dateKey = 'Yesterday';
             } else {
                 // Format the date in a more human-readable way
-                dateKey = date.toLocaleDateString("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
+                dateKey = date.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
                 });
             }
 
@@ -53,12 +48,12 @@ export const Versions = observer(() => {
     const handleNewBackup = async () => {
         const res = await projectsManager.versions?.createCommit();
         if (!res?.success) {
-            console.error("Failed to create commit. Reason code:", res?.errorReason);
+            console.error('Failed to create commit. Reason code:', res?.errorReason);
             return;
         }
         const latestCommit = projectsManager.versions?.latestCommit;
         if (!latestCommit) {
-            console.error("No latest commit found");
+            console.error('No latest commit found');
             return;
         }
         setCommitToRename(latestCommit.oid);
@@ -81,7 +76,7 @@ export const Versions = observer(() => {
                         ) : (
                             <Icons.Plus className="mr-2 h-4 w-4" />
                         )}
-                        {projectsManager.versions?.isSaving ? "Saving..." : "New backup"}
+                        {projectsManager.versions?.isSaving ? 'Saving...' : 'New backup'}
                     </Button>
                 ) : null}
             </div>
@@ -89,10 +84,7 @@ export const Versions = observer(() => {
 
             {commits && commits.length > 0 ? (
                 <div className="flex flex-col gap-2">
-                    <Accordion
-                        type="multiple"
-                        defaultValue={Object.keys(groupedCommits || {})}
-                    >
+                    <Accordion type="multiple" defaultValue={Object.keys(groupedCommits || {})}>
                         {groupedCommits &&
                             Object.entries(groupedCommits).map(([date, dateCommits]) => (
                                 <AccordionItem key={date} value={date}>
@@ -106,7 +98,7 @@ export const Versions = observer(() => {
                                                     <VersionRow
                                                         commit={commit}
                                                         type={
-                                                            date === "Today"
+                                                            date === 'Today'
                                                                 ? VersionRowType.TODAY
                                                                 : VersionRowType.PREVIOUS_DAYS
                                                         }
