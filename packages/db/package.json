@@ -1,5 +1,5 @@
 {
-    "name": "@onlook/orm",
+    "name": "@onlook/db",
     "version": "0.0.0",
     "private": true,
     "main": "./src/index.ts",
