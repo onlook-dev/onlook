@@ -3,7 +3,7 @@ import { tool, type ToolSet } from 'ai';
 import { readFile } from 'fs/promises';
 import { z } from 'zod';
 import { ONLOOK_PROMPT } from '../prompt/onlook';
-import { getAllFiles } from './helpers';
+import { getAllFiles, getBrandConfigFiles } from './helpers';
 
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
@@ -130,8 +130,27 @@ export const getStrReplaceEditorTool = (handlers: FileOperationHandlers) => {
     return strReplaceEditorTool;
 };
 
+export const getBrandConfigTool = tool({
+    description: 'Get the brand config of the current project',
+    parameters: z.object({
+        path: z
+            .string()
+            .describe(
+                'The absolute path to the directory to get files from. This should be the root directory of the project.',
+            ),
+    }),
+    execute: async ({ path }) => {
+        const res = await getBrandConfigFiles(path);
+        if (!res.success) {
+            return { error: res.error };
+        }
+        return res.files;
+    },
+});
+
 export const chatToolSet: ToolSet = {
     list_files: listFilesTool,
     read_files: readFilesTool,
     onlook_instructions: onlookInstructionsTool,
+    get_brand_config: getBrandConfigTool,
 };
