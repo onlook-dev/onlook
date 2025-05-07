@@ -11,8 +11,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { Color, toNormalCase } from '@onlook/utility';
-import { customAlphabet } from 'nanoid/non-secure';
+import { Color, generateUniqueName, toNormalCase } from '@onlook/utility';
 import { useState } from 'react';
 import { ColorNameInput } from './color-name-input';
 import { ColorPopover } from './color-popover';
@@ -111,10 +110,7 @@ export const BrandPalletGroup = ({
     };
 
     const generateUniqueColorName = () => {
-        const randomIdText = customAlphabet('abcdefghijklmnopqrstuvwxyz', 5)();
-        const randomIdNumber = customAlphabet('0123456789', 5)();
-        const randomId = isNaN(Number(title)) ? randomIdText : randomIdNumber;
-        return `${title} ${randomId}`;
+        return generateUniqueName(title, existedName);
     };
 
     return (
@@ -286,7 +282,7 @@ export const BrandPalletGroup = ({
                                                             </span>
                                                         </Button>
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
+                                                    {/* <DropdownMenuItem asChild>
                                                         <Button
                                                             variant="ghost"
                                                             className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group px-2 py-1"
@@ -297,7 +293,7 @@ export const BrandPalletGroup = ({
                                                                 <span>View in code</span>
                                                             </span>
                                                         </Button>
-                                                    </DropdownMenuItem>
+                                                    </DropdownMenuItem> */}
                                                     {!isDefaultPalette ? (
                                                         <DropdownMenuItem asChild>
                                                             <Button

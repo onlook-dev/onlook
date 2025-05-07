@@ -6,7 +6,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { FontFile } from './font-files';
 import FontFiles from './font-files';
 import { extractFontParts } from '@onlook/utility';
@@ -19,6 +19,7 @@ interface UploadModalProps {
 
 const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalProps) => {
     const [fontFiles, setFontFiles] = useState<FontFile[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
@@ -38,7 +39,9 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                 }),
             );
             setFontFiles([...fontFiles, ...newFiles]);
-            event.target.value = '';
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -61,8 +64,8 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                 }),
             );
             setFontFiles([...fontFiles, ...newFiles]);
-            if (document.getElementById('font-upload')) {
-                (document.getElementById('font-upload') as HTMLInputElement).value = '';
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
             }
         }
     };
@@ -134,7 +137,7 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                 <div className="flex flex-col px-6 pb-0 mb-0 flex-1 min-h-0">
                     <div
                         className="flex flex-col items-center justify-center p-8 border border-dashed border-white/20 rounded-lg bg-black/20 cursor-pointer mb-6"
-                        onClick={() => document.getElementById('font-upload')?.click()}
+                        onClick={() => fileInputRef.current?.click()}
                         onDrop={handleDrop}
                         onDragOver={handleDragOver}
                     >
@@ -175,7 +178,7 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                             TTF, OTF, EOT and WOFF formats.
                         </p>
                         <input
-                            id="font-upload"
+                            ref={fileInputRef}
                             type="file"
                             accept=".ttf,.otf,.eot,.woff,.woff2"
                             multiple

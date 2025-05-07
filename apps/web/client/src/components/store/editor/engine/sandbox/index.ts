@@ -28,7 +28,7 @@ export class SandboxManager {
             return;
         }
 
-        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS]);
+        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS, 'css']);
         for (const file of files) {
             const normalizedPath = normalizePath(file);
             const content = await this.readFile(normalizedPath);
@@ -133,7 +133,7 @@ export class SandboxManager {
         return this.fileSync.write(normalizedPath, content, this.writeRemoteFile.bind(this));
     }
 
-    async listAllFiles() {
+    listAllFiles() {
         return this.fileSync.listAllFiles();
     }
 

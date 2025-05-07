@@ -1,6 +1,8 @@
 import generate, { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/constants';
+import type { TemplateNode } from '@onlook/models';
+import type { ClassParsingResult } from '@onlook/models';
 import { nanoid } from 'nanoid/non-secure';
 
 export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {

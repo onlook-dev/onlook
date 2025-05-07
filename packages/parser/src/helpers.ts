@@ -18,3 +18,16 @@ export function isReactFragment(openingElement: t.JSXOpeningElement): boolean {
 
     return false;
 }
+
+export function isColorsObjectProperty(path: any): boolean {
+    return (
+        path.parent.type === 'ObjectExpression' &&
+        path.node.key.type === 'Identifier' &&
+        path.node.key.name === 'colors' &&
+        path.node.value.type === 'ObjectExpression'
+    );
+}
+
+export function isObjectExpression(node: any): node is t.ObjectExpression {
+    return node.type === 'ObjectExpression';
+}
