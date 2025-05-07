@@ -41,7 +41,7 @@ export async function getAllFiles(
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
-export async function getbrandConfigFiles(
+export async function getBrandConfigFiles(
     dirPath: string,
     options: FileFilterOptions = {
         patterns: ['**/globals.css', '**/tailwind.config.{js,ts,mjs}'],

@@ -3,7 +3,7 @@ import { tool, type ToolSet } from 'ai';
 import { readFile } from 'fs/promises';
 import { z } from 'zod';
 import { ONLOOK_PROMPT } from '../prompt/onlook';
-import { getAllFiles, getbrandConfigFiles } from './helpers';
+import { getAllFiles, getBrandConfigFiles } from './helpers';
 
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
@@ -140,7 +140,7 @@ export const getBrandConfigTool = tool({
             ),
     }),
     execute: async ({ path }) => {
-        const res = await getbrandConfigFiles(path);
+        const res = await getBrandConfigFiles(path);
         if (!res.success) {
             return { error: res.error };
         }
