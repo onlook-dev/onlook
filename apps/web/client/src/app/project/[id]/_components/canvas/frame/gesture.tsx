@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store';
-import type { FrameData } from '@/components/store/editor/engine/frames';
-import { getRelativeMousePositionToWebview } from '@/components/store/editor/engine/overlay/utils';
+import type { FrameData } from '@/components/store/editor/frames';
+import { getRelativeMousePositionToWebview } from '@/components/store/editor/overlay/utils';
 import type { DomElement, ElementPosition, WebFrame } from '@onlook/models';
 import { EditorMode, MouseAction } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';

@@ -1,6 +1,6 @@
 import { type ProjectManager } from '@/components/store/project';
 import { makeAutoObservable } from 'mobx';
-import type { UserManager } from '../../user';
+import type { UserManager } from '../user';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';

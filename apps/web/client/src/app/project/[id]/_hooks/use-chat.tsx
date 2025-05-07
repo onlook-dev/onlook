@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store';
-import type { EditorEngine } from '@/components/store/editor/engine';
+import type { EditorEngine } from '@/components/store/editor';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import {
     LIST_FILES_TOOL_NAME,

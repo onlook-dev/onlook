@@ -57,7 +57,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "embla-carousel-react": "^8.6.0",
-        "flexsearch": "^0.8.158",
+        "flexsearch": "^0.8.160",
         "localforage": "^1.10.0",
         "lucide-react": "^0.486.0",
         "mime-lite": "^1.0.3",

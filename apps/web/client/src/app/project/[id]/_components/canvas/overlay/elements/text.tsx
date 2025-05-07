@@ -2,7 +2,7 @@ import {
     applyStylesToEditor,
     createEditorPlugins,
     schema,
-} from '@/components/store/editor/engine/overlay/prosemirror/';
+} from '@/components/store/editor/overlay/prosemirror';
 import { EditorAttributes } from '@onlook/constants';
 import type { RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';

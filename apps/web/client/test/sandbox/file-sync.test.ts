@@ -1,5 +1,5 @@
+import { FileSyncManager } from '@/components/store/editor/sandbox/file-sync';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
-import { FileSyncManager } from '../../src/components/store/editor/engine/sandbox/file-sync';
 
 mock.module('localforage', () => ({
     getItem: mock(async () => null),

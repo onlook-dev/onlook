@@ -1,4 +1,4 @@
-import { adaptValueToCanvas } from '@/components/store/editor/engine/overlay/utils';
+import { adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
 import type { DomElementStyles, RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';

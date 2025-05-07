@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/store';
 import {
     adaptRectToCanvas,
     adaptValueToCanvas,
-} from '@/components/store/editor/engine/overlay/utils';
+} from '@/components/store/editor/overlay/utils';
 import type { RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
 import React, { memo, useMemo } from 'react';

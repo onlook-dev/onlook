@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store';
-import type { ClickRectState } from '@/components/store/editor/engine/overlay/state';
+import type { ClickRectState } from '@/components/store/editor/overlay/state';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';

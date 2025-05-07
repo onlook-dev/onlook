@@ -1,7 +1,7 @@
 import type { TemplateNode, TemplateTag } from '@onlook/models';
 import { CoreElementType } from '@onlook/models';
 import { beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
-import { TemplateNodeMapper } from '../../src/components/store/editor/engine/sandbox/mapping';
+import { TemplateNodeMapper } from '../../src/components/store/editor/sandbox/mapping';
 
 describe('TemplateNodeMapper', () => {
     let mapper: TemplateNodeMapper;

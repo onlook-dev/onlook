@@ -1,7 +1,7 @@
 // import { AuthManager } from '@/lib/auth';
 // import { AppStateManager } from '@/lib/state';
 import { createContext, useContext } from 'react';
-import { EditorEngine } from './editor/engine';
+import { EditorEngine } from './editor';
 import { ProjectManager } from './project';
 import { ProjectsManager } from './projects';
 import { UserManager } from './user';

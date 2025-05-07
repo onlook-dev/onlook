@@ -1,7 +1,7 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store';
-import type { AssistantChatMessageImpl } from '@/components/store/editor/engine/chat/message/assistant';
-import type { UserChatMessageImpl } from '@/components/store/editor/engine/chat/message/user';
+import type { AssistantChatMessageImpl } from '@/components/store/editor/chat/message/assistant';
+import type { UserChatMessageImpl } from '@/components/store/editor/chat/message/user';
 import { ChatMessageRole } from '@onlook/models/chat';
 import { ChatMessageList } from '@onlook/ui/chat/chat-message-list';
 import { Icons } from '@onlook/ui/icons/index';

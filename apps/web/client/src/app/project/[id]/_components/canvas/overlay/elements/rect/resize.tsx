@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store';
-import { adaptValueToCanvas } from '@/components/store/editor/engine/overlay/utils';
+import { adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
 

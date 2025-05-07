@@ -3,7 +3,7 @@ import path from 'path';
 import {
     isSubdirectory,
     normalizePath,
-} from '../../src/components/store/editor/engine/sandbox/helpers';
+} from '../../src/components/store/editor/sandbox/helpers';
 
 // Store original path functions
 const originalIsAbsolute = path.isAbsolute;

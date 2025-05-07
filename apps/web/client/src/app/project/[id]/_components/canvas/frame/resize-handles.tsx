@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store';
-import type { FrameImpl } from '@/components/store/editor/engine/canvas/frame';
+import type { FrameImpl } from '@/components/store/editor/canvas/frame';
 import { DefaultSettings } from '@onlook/constants';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';

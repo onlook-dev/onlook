@@ -1,6 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store';
-import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/engine/chat';
+import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';

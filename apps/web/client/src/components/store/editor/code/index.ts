@@ -1,4 +1,4 @@
-import type { EditorEngine } from '@/components/store/editor/engine';
+import type { EditorEngine } from '@/components/store/editor';
 import type { Action, CodeDiffRequest, FileToRequests } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
@@ -87,5 +87,5 @@ export class CodeManager {
         return requestByFile;
     }
 
-    clear() {}
+    clear() { }
 }

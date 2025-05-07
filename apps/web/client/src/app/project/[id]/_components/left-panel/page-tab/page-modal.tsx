@@ -3,7 +3,7 @@ import {
     doesRouteExist,
     normalizeRoute,
     validateNextJsRoute,
-} from '@/components/store/editor/engine/pages/helper';
+} from '@/components/store/editor/pages/helper';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,

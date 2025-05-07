@@ -1,6 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine, useUserManager } from '@/components/store';
-import type { ClickRectState } from '@/components/store/editor/engine/overlay/state';
+import type { ClickRectState } from '@/components/store/editor/overlay/state';
 import { EditorMode, EditorTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
