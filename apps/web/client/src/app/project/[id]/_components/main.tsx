@@ -5,7 +5,7 @@ import { useEditorEngine, useProjectManager } from "@/components/store";
 import type { Project } from "@onlook/models";
 import { Icons } from "@onlook/ui/icons/index";
 import { TooltipProvider } from "@onlook/ui/tooltip";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSandbox } from "../_hooks/use-sandbox";
 import { useTabActive } from "../_hooks/use-tab-active";
 import { BottomBar } from "./bottom-bar";
@@ -20,6 +20,9 @@ export function Main({ project }: { project: Project }) {
     const projectManager = useProjectManager();
     const { startSession, isStarting, session, isReconnecting, reconnect } = useSandbox();
     const { tabState } = useTabActive();
+    const leftPanelRef = useRef<HTMLDivElement>(null);
+    const rightPanelRef = useRef<HTMLDivElement>(null);
+    const [center, setCenter] = useState<number | null>(null);
 
     useEffect(() => {
         projectManager.project = project;
@@ -54,6 +57,19 @@ export function Main({ project }: { project: Project }) {
         }
     }, [tabState, session]);
 
+    useEffect(() => {
+        function updateCenter() {
+            const left = leftPanelRef.current?.getBoundingClientRect();
+            const right = rightPanelRef.current?.getBoundingClientRect();
+            if (left && right) {
+                setCenter(left.right + (right.left - left.right) / 2);
+            }
+        }
+        updateCenter();
+        window.addEventListener('resize', updateCenter);
+        return () => window.removeEventListener('resize', updateCenter);
+    }, []);
+
     /*if (isStarting) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
@@ -74,17 +90,20 @@ export function Main({ project }: { project: Project }) {
                     </div>
 
                     {/* Left Panel */}
-                    <div className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
+                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
                         <LeftPanel />
                     </div>
 
                     {/* Centered EditorBar */}
-                    <div className="absolute top-12 left-1/2 -translate-x-1/2 w-hug z-50">
+                    <div
+                        className="absolute top-12 z-50"
+                        style={center ? { left: center, transform: 'translateX(-50%)' } : {}}
+                    >
                         <EditorBar />
                     </div>
 
                     {/* Right Panel */}
-                    <div className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-1">
+                    <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-1">
                         <RightPanel />
                     </div>
 

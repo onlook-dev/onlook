@@ -18,14 +18,11 @@ export const DivSelected = () => {
         <div className="flex items-center gap-1">
             <StateDropdown />
             <InputSeparator />
-            <Display />
-            <InputSeparator />
             <Width />
-            <InputSeparator />
             <Height />
             <InputSeparator />
+            <Display />
             <Padding />
-            <InputSeparator />
             <Margin />
             <InputSeparator />
             <Radius />
