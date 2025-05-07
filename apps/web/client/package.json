@@ -43,6 +43,7 @@
         "@onlook/penpal": "*",
         "@onlook/rpc": "*",
         "@onlook/ui": "*",
+        "@onlook/db": "*",
         "@radix-ui/react-slot": "^1.1.2",
         "@supabase/ssr": "^0.6.1",
         "@t3-oss/env-nextjs": "^0.12.0",
