@@ -11,13 +11,14 @@ export class UserManager {
     readonly supabase = createClient();
 
     private _user: {
+        id: string | null;
         name: string | null;
         image: string | null;
     } | null = null;
 
     constructor() {
-        makeAutoObservable(this);
         this.fetchUser();
+        makeAutoObservable(this);
     }
 
     get user() {
@@ -30,6 +31,7 @@ export class UserManager {
             throw new Error(error.message);
         }
         this._user = {
+            id: data.user.id,
             name:
                 data.user.user_metadata?.full_name ||
                 data.user.user_metadata?.name ||

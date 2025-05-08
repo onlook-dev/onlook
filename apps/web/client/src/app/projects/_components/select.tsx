@@ -1,6 +1,6 @@
 'use client';
 
-import { useProjectsContext } from '@/components/hooks/use-projects';
+import { useProjectsManager } from '@/components/store/projects';
 import type { Project } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -8,15 +8,19 @@ import { Carousel } from './carousel';
 import { ProjectInfo } from './info';
 
 export const SelectProject = observer(() => {
-    const { projects, isLoadingProjects } = useProjectsContext();
+    const projectsManager = useProjectsManager();
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
+    const projects = projectsManager.projects;
 
     const sortProjects = (unsortedProjects: Project[]) => {
-        return unsortedProjects.sort(
-            (a, b) =>
-                new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime(),
-        );
+        return unsortedProjects
+            .slice()
+            .sort(
+                (a, b) =>
+                    new Date(b.metadata.updatedAt).getTime() -
+                    new Date(a.metadata.updatedAt).getTime(),
+            );
     };
 
     const sortedProjects = sortProjects(projects);
@@ -29,7 +33,7 @@ export const SelectProject = observer(() => {
         setCurrentProjectIndex(index);
     };
 
-    if (isLoadingProjects) {
+    if (projectsManager.isFetchingProjects) {
         return <div>Loading projects...</div>;
     }
 
