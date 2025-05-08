@@ -73,7 +73,7 @@ describe('SandboxManager', () => {
             onEvent: mock((callback: any) => {
                 mockWatcher.callback = callback;
             }),
-            dispose: mock(() => { }),
+            dispose: mock(() => {}),
             callback: null,
         };
 
@@ -258,9 +258,7 @@ describe('SandboxManager', () => {
             },
         }));
 
-        const {
-            FileSyncManager,
-        } = require('../src/components/store/editor/sandbox/file-sync');
+        const { FileSyncManager } = require('../src/components/store/editor/sandbox/file-sync');
 
         const testGetItem = mock<(key: string) => Promise<any>>(async () => null);
         const testSetItem = mock<(key: string, value: any) => Promise<any>>(async () => undefined);

@@ -1,9 +1,9 @@
-import type { ProjectManager } from '@/components/store/project';
+import type { ProjectManager } from '@/components/store/project/manager';
 import { sendAnalytics } from '@/utils/analytics';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
 import type { FrameData } from 'motion/react';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import { doesRouteExist, normalizeRoute, validateNextJsRoute } from './helper';
 
 const FAKE_DATA = [

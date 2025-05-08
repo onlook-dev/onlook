@@ -1,7 +1,7 @@
 'use client';
 
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
-import { useProjectsManager } from '@/components/store';
+import { useProjectsManager } from '@/components/store/projects';
 import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';

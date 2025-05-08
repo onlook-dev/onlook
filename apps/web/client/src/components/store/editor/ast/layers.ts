@@ -1,6 +1,6 @@
 import type { LayerNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 
 interface LayerMetadata {
     document: Document;

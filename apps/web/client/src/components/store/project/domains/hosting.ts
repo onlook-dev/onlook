@@ -9,7 +9,7 @@ import {
 } from '@onlook/models/hosting';
 import { getPublishUrls } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { ProjectManager } from '../index.ts';
+import type { ProjectManager } from '../manager.ts';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,

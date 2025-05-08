@@ -1,5 +1,5 @@
 // import type { FileNode } from '@/lib/editor/engine/files';
-// import { MainChannels, Theme } from '@onlook/models/constants';
+// import { MainChannels } from '@onlook/constants';
 import { useEditorEngine } from '@/components/store';
 import { type EditorView } from '@codemirror/view';
 import { EditorTabValue, SystemTheme } from '@onlook/models';

@@ -2,7 +2,7 @@ import { HOSTING_DOMAIN } from '@onlook/constants';
 import { DomainType, type Project } from '@onlook/models';
 import { getValidSubdomain } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { ProjectManager } from '..';
+import type { ProjectManager } from '../manager';
 import { HostingManager } from './hosting';
 
 export class DomainsManager {

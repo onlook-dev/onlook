@@ -1,7 +1,7 @@
+import { useEditorEngine } from '@/components/store';
 import { CodeBlockProcessor } from '@onlook/ai';
 import { useMemo } from 'react';
 import { CollapsibleCodeBlock } from './collapsible-code-block';
-import { useEditorEngine } from '@/components/store';
 
 export const CodeChangeDisplay = ({
     path,

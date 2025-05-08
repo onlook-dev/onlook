@@ -1,7 +1,7 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {

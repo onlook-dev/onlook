@@ -1,4 +1,4 @@
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 
 export class TokenManager {
     constructor(private editorEngine: EditorEngine) {}

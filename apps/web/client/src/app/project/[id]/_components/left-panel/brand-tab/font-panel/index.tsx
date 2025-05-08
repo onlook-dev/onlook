@@ -1,3 +1,5 @@
+import { useEditorEngine } from '@/components/store';
+import { VARIANTS } from '@onlook/fonts';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -7,8 +9,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FontFamily } from './font-family';
 import type { FontFile } from './font-files';
 import UploadModal from './upload-modal';
-import { useEditorEngine } from '@/components/store';
-import { VARIANTS } from '@onlook/fonts';
 
 const FontPanel = observer(() => {
     const [searchQuery, setSearchQuery] = useState('');

@@ -1,8 +1,8 @@
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { camelCase } from 'lodash';
-import { useState, useEffect } from 'react';
-import { toNormalCase } from '@onlook/utility';
 import { useEditorEngine } from '@/components/store';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toNormalCase } from '@onlook/utility';
+import { camelCase } from 'lodash';
+import { useEffect, useState } from 'react';
 
 interface ColorNameInputProps {
     initialName: string;

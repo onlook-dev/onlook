@@ -3,7 +3,7 @@ import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/w
 import { EditorAttributes } from '@onlook/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import { LayersManager } from './layers';
 
 export class AstManager {

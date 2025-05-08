@@ -16,7 +16,7 @@ export class SessionManager {
         const startData = await api.csb.start.mutate(sandboxId);
         this.session = await connectToSandbox(startData);
         this.isConnecting = false;
-    };
+    }
 
     async hibernate(sandboxId: string) {
         await api.csb.hibernate.mutate(sandboxId);
@@ -43,4 +43,3 @@ export class SessionManager {
         this.isConnecting = false;
     }
 }
-

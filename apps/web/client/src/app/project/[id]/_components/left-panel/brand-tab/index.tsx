@@ -2,10 +2,10 @@ import { useEditorEngine } from '@/components/store';
 import { BrandTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 import ColorPanel from './color-panel';
 import FontPanel from './font-panel';
 import SystemFont from './font-panel/system-font';
-import { useEffect } from 'react';
 
 interface ColorSquareProps {
     color: string;

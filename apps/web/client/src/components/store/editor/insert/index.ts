@@ -18,7 +18,7 @@ import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
 import { createDomId, createOid } from '@onlook/utility';
 import type React from 'react';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import { getRelativeMousePositionToWebview } from '../overlay/utils';
 

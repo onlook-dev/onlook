@@ -1,10 +1,10 @@
-import type { ProjectManager } from '@/components/store/project';
+import type { ProjectManager } from '@/components/store/project/manager';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import { compressImage } from '@onlook/utility';
 import mime from 'mime-lite';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 export class ImageManager {
     private images: ImageContentData[] = [];
 

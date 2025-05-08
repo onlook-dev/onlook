@@ -11,7 +11,7 @@ async function getProject(id: string) {
 
     const newFrame: WebFrame = {
         id: '1',
-        url: 'https://pzprmg-8084.csb.app',
+        url: 'https://3f5rf6-8084.csb.app',
         // url: 'http://localhost:8084',
         position: { x: 200, y: 200 },
         dimension: { width: 500, height: 500 },
@@ -37,7 +37,7 @@ async function getProject(id: string) {
             custom: null,
         },
         sandbox: {
-            id: 'pzprmg',
+            id: '3f5rf6',
             url: newFrame.url,
         },
     };

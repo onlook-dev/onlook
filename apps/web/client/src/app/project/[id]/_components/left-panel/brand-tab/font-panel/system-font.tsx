@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store';
-import { FontFamily } from './font-family';
-import { observer } from 'mobx-react-lite';
 import { VARIANTS } from '@onlook/fonts';
+import { observer } from 'mobx-react-lite';
+import { FontFamily } from './font-family';
 
 const SystemFont = observer(() => {
     const editorEngine = useEditorEngine();

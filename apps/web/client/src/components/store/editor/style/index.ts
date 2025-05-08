@@ -7,7 +7,7 @@ import {
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { CSSProperties } from 'react';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 
 export interface SelectedStyle {
     styles: DomElementStyles;

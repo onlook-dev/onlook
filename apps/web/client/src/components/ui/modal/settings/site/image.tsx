@@ -1,13 +1,13 @@
+import { useEditorEngine } from '@/components/store';
+import { Button } from '@onlook/ui/button';
 import React, {
+    forwardRef,
     useCallback,
     useEffect,
-    useState,
-    forwardRef,
     useImperativeHandle,
     useRef,
+    useState,
 } from 'react';
-import { Button } from '@onlook/ui/button';
-import { useEditorEngine } from '@/components/store';
 
 export interface ImagePickerRef {
     reset: () => void;

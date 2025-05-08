@@ -12,7 +12,7 @@ import superjson from 'superjson';
 import { ZodError } from 'zod';
 
 import { createClient } from '@/utils/supabase/server';
-import { db } from '~/server/db';
+import { db } from '@onlook/db';
 
 /**
  * 1. CONTEXT
@@ -32,6 +32,10 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
         data: { user },
         error,
     } = await supabase.auth.getUser();
+
+    if (error) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message });
+    }
 
     return {
         db,
@@ -130,6 +134,7 @@ export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, 
         ctx: {
             // infers the `session` as non-nullable
             user: ctx.user,
+            db: ctx.db,
         },
     });
 });

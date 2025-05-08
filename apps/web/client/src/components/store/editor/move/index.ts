@@ -1,7 +1,7 @@
 import type { DomElement, ElementPosition } from '@onlook/models';
 import type { MoveElementAction } from '@onlook/models/actions';
 import type React from 'react';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 
 export class MoveManager {

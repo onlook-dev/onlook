@@ -1,6 +1,6 @@
 import { sendAnalytics } from '@/utils/analytics';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 
 export class WindowManager {
     constructor(private editorEngine: EditorEngine) {

@@ -1,35 +1,35 @@
-import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '..';
+import type { ProjectManager } from '@/components/store/project/manager';
 import {
     createFontConfigAst,
+    createFontFamilyProperty,
     createStringLiteralWithFont,
     createTemplateLiteralWithFont,
     extractExistingFontImport,
     extractFontImport,
     FAMILIES,
     findFontClass,
-    isThemeProperty,
     isPropertyWithName,
+    isThemeProperty,
+    isValidLocalFontDeclaration,
     removeFontFromConfigAST,
+    removeFontFromThemeAST,
     removeFontsFromClassName,
     validateFontImportAndExport,
-    removeFontFromThemeAST,
-    createFontFamilyProperty,
-    isValidLocalFontDeclaration,
 } from '@onlook/fonts';
 import type { Font } from '@onlook/models/assets';
+import { generate, parse, traverse } from '@onlook/parser';
 import * as FlexSearch from 'flexsearch';
-import * as WebFont from 'webfontloader';
-import type { ProjectManager } from '@/components/store/project';
-import { parse, traverse, generate } from '@onlook/parser';
 import { camelCase } from 'lodash';
+import { makeAutoObservable, reaction } from 'mobx';
+import * as WebFont from 'webfontloader';
+import type { EditorEngine } from '../engine';
 
-import { DefaultSettings } from '@onlook/constants';
-import * as pathModule from 'path';
 import type { ParseResult } from '@babel/parser';
-import { normalizePath } from '../sandbox/helpers';
-import { getFontFileName } from '@onlook/utility';
 import * as t from '@babel/types';
+import { DefaultSettings } from '@onlook/constants';
+import { getFontFileName } from '@onlook/utility';
+import * as pathModule from 'path';
+import { normalizePath } from '../sandbox/helpers';
 
 type TraverseCallback = (
     classNameAttr: t.JSXAttribute,

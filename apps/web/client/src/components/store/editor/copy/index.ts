@@ -7,7 +7,7 @@ import type {
 } from '@onlook/models/actions';
 import { createDomId, createOid } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import { getCleanedElement } from '../history/helpers';
 
 export class CopyManager {

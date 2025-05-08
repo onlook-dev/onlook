@@ -1,4 +1,4 @@
-import type { ProjectManager } from '@/components/store/project';
+import type { ProjectManager } from '@/components/store/project/manager';
 import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
@@ -11,7 +11,7 @@ import {
 } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 
 export class ChatContext {
     context: ChatMessageContext[] = this.getProjectContext();

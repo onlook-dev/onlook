@@ -6,7 +6,7 @@ import type { CodeDiff } from '@onlook/models/code';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 
 export class ChatCodeManager {
     processor: CodeBlockProcessor;

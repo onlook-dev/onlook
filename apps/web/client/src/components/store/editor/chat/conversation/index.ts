@@ -1,10 +1,10 @@
-import { type ProjectManager } from '@/components/store/project';
+import { type ProjectManager } from '@/components/store/project/manager';
 import { sendAnalytics } from '@/utils/analytics';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import type { Project } from '@onlook/models/project';
 import type { Message } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../..';
+import type { EditorEngine } from '../../engine';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';

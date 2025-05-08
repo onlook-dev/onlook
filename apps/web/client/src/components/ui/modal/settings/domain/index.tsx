@@ -1,7 +1,6 @@
 import { useEditorEngine, useUserManager } from '@/components/store';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
 import { BaseDomain } from './base';
 import { CustomDomain } from './custom';
 import { DangerZone } from './danger-zone';

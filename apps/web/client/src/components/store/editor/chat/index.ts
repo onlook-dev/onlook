@@ -1,11 +1,11 @@
-import type { ProjectManager } from '@/components/store/project';
-import type { UserManager } from '@/components/store/user';
+import type { ProjectManager } from '@/components/store/project/manager';
+import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
 import { ChatMessageRole, StreamRequestType, type AssistantChatMessage } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';

@@ -1,4 +1,4 @@
-import type { ProjectManager } from '@/components/store/project';
+import type { ProjectManager } from '@/components/store/project/manager';
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import type {
     ClassReplacement,
@@ -9,12 +9,23 @@ import type {
     UpdateResult,
 } from '@onlook/models/assets';
 import { SystemTheme } from '@onlook/models/assets';
+import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TailwindColor } from '@onlook/models/style';
+import {
+    generate,
+    getNodeClasses,
+    isColorsObjectProperty,
+    isObjectExpression,
+    parse,
+    transformAst,
+    traverse,
+} from '@onlook/parser';
+import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 import { Color } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import colors from 'tailwindcss/colors';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import {
     addTailwindCssVariable,
     addTailwindNestedColor,
@@ -25,15 +36,6 @@ import {
     modifyTailwindConfig,
     updateTailwindCssVariable,
 } from './util';
-import { parse, traverse, generate } from '@onlook/parser';
-import type { CodeDiffRequest } from '@onlook/models/code';
-import {
-    getNodeClasses,
-    isObjectExpression,
-    isColorsObjectProperty,
-    transformAst,
-} from '@onlook/parser';
-import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 
 interface ColorValue {
     value: string;

@@ -1,7 +1,7 @@
 import type { DomElement, DomElementStyles, RectDimensions } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '..';
+import type { EditorEngine } from '../engine';
 import { OverlayState } from './state';
 import { adaptRectToCanvas } from './utils';
 

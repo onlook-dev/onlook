@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/store';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -7,8 +8,6 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
-import { EditorMode } from '@onlook/models';
-import { useEditorEngine } from '@/components/store';
 
 export default function DeleteImageModal({
     onDelete,
