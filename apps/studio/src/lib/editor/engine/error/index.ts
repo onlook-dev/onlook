@@ -1,6 +1,6 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { type ParsedError, compareErrors } from '@onlook/utility';
-import { makeAutoObservable } from 'mobx';
+import { autorun, makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class ErrorManager {
@@ -13,11 +13,21 @@ export class ErrorManager {
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
     ) {
-        makeAutoObservable(this, {});
+        makeAutoObservable(this);
+
+        autorun(() => {
+            if (this.shouldAutoFixErrors) {
+                this.sendFixError();
+            }
+        });
     }
 
     get errors() {
         return [...this.terminalErrors];
+    }
+
+    get shouldAutoFixErrors() {
+        return this.errors.length > 0 && !this.editorEngine.chat.isWaiting;
     }
 
     async sendFixError() {
