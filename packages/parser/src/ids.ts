@@ -1,11 +1,9 @@
-import type { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
+import { type NodePath, type t as T, types as t, traverse } from './packages';
 import { EditorAttributes } from '@onlook/constants';
 import { createOid } from '@onlook/utility';
 import { isReactFragment } from './helpers';
-import { traverse } from './packages';
 
-export function addOidsToAst(ast: t.File): { ast: t.File, modified: boolean } {
+export function addOidsToAst(ast: T.File): { ast: T.File, modified: boolean } {
     const oids: Set<string> = new Set();
     let modified = false;
 
@@ -23,7 +21,7 @@ export function addOidsToAst(ast: t.File): { ast: t.File, modified: boolean } {
                 if (oids.has(value)) {
                     // If the oid is not unique, we need to create a new one
                     const newOid = createOid();
-                    const attr = attributes[index] as t.JSXAttribute;
+                    const attr = attributes[index] as T.JSXAttribute;
                     attr.value = t.stringLiteral(newOid);
                     oids.add(newOid);
                     modified = true;
@@ -47,7 +45,7 @@ export function addOidsToAst(ast: t.File): { ast: t.File, modified: boolean } {
     return { ast, modified };
 }
 
-export function getExistingOid(attributes: (t.JSXAttribute | t.JSXSpreadAttribute)[]): { value: string, index: number } | null {
+export function getExistingOid(attributes: (T.JSXAttribute | T.JSXSpreadAttribute)[]): { value: string, index: number } | null {
     const existingAttrIndex = attributes.findIndex(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
     );
@@ -73,9 +71,9 @@ export function getExistingOid(attributes: (t.JSXAttribute | t.JSXSpreadAttribut
     }
 }
 
-export function removeOidsFromAst(ast: t.File) {
+export function removeOidsFromAst(ast: T.File) {
     traverse(ast, {
-        JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
+        JSXOpeningElement(path: NodePath<T.JSXOpeningElement>) {
             if (isReactFragment(path.node)) {
                 return;
             }
@@ -88,7 +86,7 @@ export function removeOidsFromAst(ast: t.File) {
                 attributes.splice(existingAttrIndex, 1);
             }
         },
-        JSXAttribute(path: NodePath<t.JSXAttribute>) {
+        JSXAttribute(path: NodePath<T.JSXAttribute>) {
             if (path.node.name.name === 'key') {
                 const value = path.node.value;
                 if (

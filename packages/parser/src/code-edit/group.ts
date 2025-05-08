@@ -1,11 +1,10 @@
-import type { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
 import { CodeActionType, type CodeGroup, type CodeUngroup } from '@onlook/models/actions';
 import { addKeyToElement, getOidFromJsxElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
+import { type t as T, type NodePath, types as t } from '../packages';
 
-export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeGroup): void {
+export function groupElementsInNode(path: NodePath<T.JSXElement>, element: CodeGroup): void {
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
 
@@ -58,7 +57,7 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
     path.stop();
 }
 
-export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: CodeUngroup): void {
+export function ungroupElementsInNode(path: NodePath<T.JSXElement>, element: CodeUngroup): void {
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
 

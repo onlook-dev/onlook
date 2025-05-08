@@ -1,5 +1,4 @@
-import type { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
+import { type NodePath, type t as T, types as t, traverse } from '../packages';
 import {
     CoreElementType,
     DynamicType,
@@ -7,10 +6,9 @@ import {
 } from '@onlook/models';
 import { isReactFragment } from '../helpers';
 import { getExistingOid } from '../ids';
-import { traverse } from '../packages';
 import { createTemplateNode } from './helpers';
 
-export function createTemplateNodeMap(ast: t.File, filename: string): Map<string, TemplateNode> {
+export function createTemplateNodeMap(ast: T.File, filename: string): Map<string, TemplateNode> {
     const mapping: Map<string, TemplateNode> = new Map();
     const componentStack: string[] = [];
     const dynamicTypeStack: DynamicType[] = [];
@@ -109,7 +107,7 @@ export function createTemplateNodeMap(ast: t.File, filename: string): Map<string
     return mapping;
 }
 
-export function getDynamicTypeInfo(path: NodePath<t.JSXElement>): DynamicType | null {
+export function getDynamicTypeInfo(path: NodePath<T.JSXElement>): DynamicType | null {
     const parent = path.parent;
     const grandParent = path.parentPath?.parent;
 
@@ -128,8 +126,7 @@ export function getDynamicTypeInfo(path: NodePath<t.JSXElement>): DynamicType | 
     return dynamicType ?? null;
 }
 
-
-export function getCoreElementInfo(path: NodePath<t.JSXElement>): CoreElementType | null {
+export function getCoreElementInfo(path: NodePath<T.JSXElement>): CoreElementType | null {
     const parent = path.parent;
 
     const isComponentRoot = t.isReturnStatement(parent) || t.isArrowFunctionExpression(parent);
@@ -189,7 +186,7 @@ export async function getContentFromTemplateNode(
     }
 }
 
-export function isNodeElementArray(node: t.CallExpression): boolean {
+export function isNodeElementArray(node: T.CallExpression): boolean {
     return (
         t.isMemberExpression(node.callee) &&
         t.isIdentifier(node.callee.property) &&

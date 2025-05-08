@@ -1,5 +1,4 @@
-import type { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
+import { type NodePath, type t as T, types as t } from '../packages';
 import {
     CoreElementType,
     DynamicType,
@@ -7,10 +6,9 @@ import {
     type TemplateNode,
     type TemplateTag
 } from '@onlook/models';
-import { parse } from '@babel/parser';
 
 export function createTemplateNode(
-    path: NodePath<t.JSXElement>,
+    path: NodePath<T.JSXElement>,
     filename: string,
     componentStack: string[],
     dynamicType: DynamicType | null,
@@ -32,7 +30,7 @@ export function createTemplateNode(
     return domNode;
 }
 
-function getTemplateTag(element: t.JSXOpeningElement | t.JSXClosingElement): TemplateTag {
+function getTemplateTag(element: T.JSXOpeningElement | T.JSXClosingElement): TemplateTag {
     return {
         start: {
             line: element.loc?.start?.line ?? 0,
@@ -45,27 +43,10 @@ function getTemplateTag(element: t.JSXOpeningElement | t.JSXClosingElement): Tem
     };
 }
 
-export async function getTemplateNodeClass(
-    templateNode: TemplateNode,
-): Promise<ClassParsingResult> {
-    const codeBlock = await readCodeBlock(templateNode);
-    if (codeBlock == null) {
-        console.error(`Failed to read code block: ${templateNode.path}`);
-        return { type: 'error', reason: 'Code block could not be read.' };
-    }
-    const ast = parseJsxCodeBlock(codeBlock);
-
-    if (!ast) {
-        return { type: 'error', reason: 'AST could not be parsed.' };
-    }
-
-    return getNodeClasses(ast);
-}
-
-export function getNodeClasses(node: t.JSXElement): ClassParsingResult {
+export function getNodeClasses(node: T.JSXElement): ClassParsingResult {
     const openingElement = node.openingElement;
     const classNameAttr = openingElement.attributes.find(
-        (attr): attr is t.JSXAttribute => t.isJSXAttribute(attr) && attr.name.name === 'className',
+        (attr): attr is T.JSXAttribute => t.isJSXAttribute(attr) && attr.name.name === 'className',
     );
 
     if (!classNameAttr) {
@@ -107,7 +88,7 @@ export function getNodeClasses(node: t.JSXElement): ClassParsingResult {
         }
 
         // Extract and return static classes from the template literal if no dynamic classes are used
-        const quasis = templateLiteral.quasis.map((quasi) => quasi.value.raw.split(/\s+/));
+        const quasis = templateLiteral.quasis.map((quasi: T.TemplateElement) => quasi.value.raw.split(/\s+/));
         return {
             type: 'classes',
             value: quasis.flat().filter(Boolean),
@@ -118,92 +99,4 @@ export function getNodeClasses(node: t.JSXElement): ClassParsingResult {
         type: 'error',
         reason: 'Unsupported className format.',
     };
-}
-
-export function parseJsxFile(code: string): t.File | undefined {
-    try {
-        return parse(code, {
-            plugins: ['typescript', 'jsx'],
-            sourceType: 'module', 
-            allowImportExportEverywhere: true,
-        });
-    } catch (e) {
-        console.error('Error parsing code', e);
-        return;
-    }
-}
-
-export function parseJsxCodeBlock(code: string, stripIds = false): t.JSXElement | undefined {
-    const ast = parseJsxFile(code);
-    if (!ast) {
-        return;
-    }
-    if (stripIds) {
-        removeIdsFromAst(ast);
-    }
-    const jsxElement = ast.program.body.find(
-        (node) => t.isExpressionStatement(node) && t.isJSXElement(node.expression),
-    );
-
-    if (
-        jsxElement &&
-        t.isExpressionStatement(jsxElement) &&
-        t.isJSXElement(jsxElement.expression)
-    ) {
-        return jsxElement.expression;
-    }
-}
-
-export async function readCodeBlock(
-    templateNode: TemplateNode,
-    stripIds: boolean = false,
-): Promise<string | null> {
-    try {
-        const filePath = templateNode.path;
-
-        const startTag = templateNode.startTag;
-        const startRow = startTag.start.line;
-        const startColumn = startTag.start.column;
-
-        const endTag = templateNode.endTag || startTag;
-        const endRow = endTag.end.line;
-        const endColumn = endTag.end.column;
-
-        const fileContent = await readFile(filePath);
-        if (fileContent == null) {
-            console.error(`Failed to read file: ${filePath}`);
-            return null;
-        }
-        const lines = fileContent.split('\n');
-
-        const selectedText = lines
-            .slice(startRow - 1, endRow)
-            .map((line: string, index: number, array: string[]) => {
-                if (index === 0 && array.length === 1) {
-                    // Only one line
-                    return line.substring(startColumn - 1, endColumn);
-                } else if (index === 0) {
-                    // First line of multiple
-                    return line.substring(startColumn - 1);
-                } else if (index === array.length - 1) {
-                    // Last line
-                    return line.substring(0, endColumn);
-                }
-                // Full lines in between
-                return line;
-            })
-            .join('\n');
-
-        if (stripIds) {
-            const ast = parseJsxCodeBlock(selectedText, true);
-            if (ast) {
-                return generateCode(ast, GENERATE_CODE_OPTIONS, selectedText);
-            }
-        }
-
-        return selectedText;
-    } catch (error: any) {
-        console.error('Error reading range from file:', error);
-        throw error;
-    }
 }

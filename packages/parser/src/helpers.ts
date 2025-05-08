@@ -1,6 +1,6 @@
-import * as t from '@babel/types';
+import { type t as T, types as t } from './packages';
 
-export function isReactFragment(openingElement: t.JSXOpeningElement): boolean {
+export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
     const name = openingElement.name;
 
     if (t.isJSXIdentifier(name)) {
@@ -28,6 +28,6 @@ export function isColorsObjectProperty(path: any): boolean {
     );
 }
 
-export function isObjectExpression(node: any): node is t.ObjectExpression {
+export function isObjectExpression(node: any): node is T.ObjectExpression {
     return node.type === 'ObjectExpression';
 }

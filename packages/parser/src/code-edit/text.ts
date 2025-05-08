@@ -1,8 +1,8 @@
-import * as t from '@babel/types';
+import { type t as T, types as t } from '../packages';
 import { getAstFromCodeblock } from '../parse';
 
-export function updateNodeTextContent(node: t.JSXElement, textContent: string): void {
-    const textNode = node.children.find((child) => t.isJSXText(child)) as t.JSXText | undefined;
+export function updateNodeTextContent(node: T.JSXElement, textContent: string): void {
+    const textNode = node.children.find((child) => t.isJSXText(child)) as T.JSXText | undefined;
     if (textNode) {
         textNode.value = textContent;
     } else {

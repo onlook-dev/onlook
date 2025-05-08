@@ -1,4 +1,4 @@
-import * as t from '@babel/types';
+import { types as t } from '@onlook/parser';
 import { generate, parse, traverse } from '@onlook/parser';
 import * as fs from 'fs';
 import * as path from 'path';

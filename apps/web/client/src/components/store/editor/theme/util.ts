@@ -1,6 +1,4 @@
-import generate from '@babel/generator';
-import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
+import { parse, traverse, generate } from '@onlook/parser';
 import type {
     ObjectExpression,
     Node,
@@ -8,15 +6,10 @@ import type {
     ObjectProperty,
     SpreadElement,
 } from '@babel/types';
-import type { ClassReplacement, ColorUpdate, UpdateResult } from '@onlook/models/assets';
 import { SystemTheme } from '@onlook/models/assets';
-import type { CodeDiffRequest } from '@onlook/models/code';
 import { parseHslValue } from '@onlook/utility';
-import { camelCase } from 'lodash';
-import path from 'path';
 import type { Root, Rule } from 'postcss';
 import postcss from 'postcss';
-import colors from 'tailwindcss/colors';
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 
 export function addTailwindNestedColor(

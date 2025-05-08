@@ -1,5 +1,4 @@
-import traverse, { type NodePath } from '@babel/traverse';
-import type * as t from '@babel/types';
+import { type NodePath, type t as T, types as t, traverse } from '../packages';
 import { type CodeAction, CodeActionType } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { assertNever } from '@onlook/utility';
@@ -12,7 +11,7 @@ import { removeElementFromNode } from './remove';
 import { addClassToNode, replaceNodeClasses, updateNodeProp } from './style';
 import { updateNodeTextContent } from './text';
 
-export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffRequest>): void {
+export function transformAst(ast: T.File, oidToCodeDiff: Map<string, CodeDiffRequest>): void {
     traverse(ast, {
         JSXElement(path) {
             const currentOid = getOidFromJsxElement(path.node.openingElement);
@@ -48,7 +47,7 @@ export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffReq
     });
 }
 
-function applyStructureChanges(path: NodePath<t.JSXElement>, actions: CodeAction[]): void {
+function applyStructureChanges(path: NodePath<T.JSXElement>, actions: CodeAction[]): void {
     if (actions.length === 0) {
         return;
     }

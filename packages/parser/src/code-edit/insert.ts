@@ -1,12 +1,11 @@
-import type { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/constants';
 import type { CodeInsert, PasteParams } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { getAstFromCodeblock } from '../parse';
 import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
+import { type NodePath, type t as T, types as t } from '../packages';
 
-export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
+export function insertElementToNode(path: NodePath<T.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);
 
     switch (element.location.type) {
@@ -28,11 +27,11 @@ export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeI
     path.stop();
 }
 
-export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
-    let element: t.JSXElement;
+export function createInsertedElement(insertedChild: CodeInsert): T.JSXElement {
+    let element: T.JSXElement;
     if (insertedChild.codeBlock) {
         element =
-            getAstFromCodeblock(insertedChild.codeBlock, true) || createJSXElement(insertedChild);
+            getAstFromCodeblock(insertedChild.codeBlock) || createJSXElement(insertedChild);
         addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, insertedChild.oid);
     } else {
         element = createJSXElement(insertedChild);
@@ -44,11 +43,11 @@ export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     return element;
 }
 
-function addPasteParamsToElement(element: t.JSXElement, pasteParams: PasteParams): void {
+function addPasteParamsToElement(element: T.JSXElement, pasteParams: PasteParams): void {
     addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, pasteParams.oid);
 }
 
-function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
+function createJSXElement(insertedChild: CodeInsert): T.JSXElement {
     const attributes = Object.entries(insertedChild.attributes || {}).map(([key, value]) =>
         t.jsxAttribute(
             t.jsxIdentifier(key),
@@ -73,7 +72,7 @@ function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
         closingElement = t.jsxClosingElement(t.jsxIdentifier(insertedChild.tagName));
     }
 
-    const children: Array<t.JSXElement | t.JSXExpressionContainer | t.JSXText> = [];
+    const children: Array<T.JSXElement | T.JSXExpressionContainer | T.JSXText> = [];
 
     // Add textContent as the first child if it exists
     if (insertedChild.textContent) {
@@ -87,8 +86,8 @@ function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
 }
 
 export function insertAtIndex(
-    path: NodePath<t.JSXElement>,
-    newElement: t.JSXElement | t.JSXFragment,
+    path: NodePath<T.JSXElement>,
+    newElement: T.JSXElement | T.JSXFragment,
     index: number,
 ): void {
     if (index !== -1) {

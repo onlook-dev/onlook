@@ -25,9 +25,7 @@ import {
     modifyTailwindConfig,
     updateTailwindCssVariable,
 } from './util';
-import traverse from '@babel/traverse';
-import { parse } from '@babel/parser';
-import generate from '@babel/generator';
+import { parse, traverse, generate } from '@onlook/parser';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import {
     getNodeClasses,

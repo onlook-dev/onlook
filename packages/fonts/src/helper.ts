@@ -1,6 +1,6 @@
-import * as t from '@babel/types';
+import { types as t, type NodePath, type t as T } from '@onlook/parser';
 import type { Font } from '@onlook/models';
-import traverse, { NodePath } from '@babel/traverse';
+
 
 const FONT_WEIGHT_REGEX =
     /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;
@@ -27,7 +27,7 @@ export function filterFontClasses(className: string): string[] {
 export function createStringLiteralWithFont(
     fontClassName: string,
     originalClassName: string,
-): t.StringLiteral {
+): T.StringLiteral {
     // Check if there's already a font class
     const classes = originalClassName.split(' ');
     const fontClassIndex = classes.findIndex((cls) => cls.startsWith('font-'));
@@ -45,9 +45,9 @@ export function createStringLiteralWithFont(
  * Helper function to create a template literal that includes a font variable
  */
 export function createTemplateLiteralWithFont(
-    fontVarExpr: t.Expression,
-    originalExpr: t.Expression,
-): t.TemplateLiteral {
+    fontVarExpr: T.Expression,
+    originalExpr: T.Expression,
+): T.TemplateLiteral {
     const quasis = [
         t.templateElement({ raw: '', cooked: '' }, false),
         t.templateElement({ raw: ' ', cooked: ' ' }, false),
@@ -77,7 +77,7 @@ export function createTemplateLiteralWithFont(
  * @returns true if the attribute was modified
  */
 export function removeFontsFromClassName(
-    classNameAttr: t.JSXAttribute,
+    classNameAttr: T.JSXAttribute,
     options: {
         fontIds?: string[];
         removeAll?: boolean;
@@ -276,7 +276,7 @@ export function createFontConfigAst(font: Font) {
     ]);
 }
 
-export function isThemeProperty(path: NodePath<t.ObjectProperty>) {
+export function isThemeProperty(path: NodePath<T.ObjectProperty>) {
     return (
         t.isIdentifier(path.node.key) &&
         path.node.key.name === 'theme' &&
@@ -285,7 +285,7 @@ export function isThemeProperty(path: NodePath<t.ObjectProperty>) {
 }
 
 export function isPropertyWithName(
-    prop: t.ObjectMethod | t.ObjectProperty | t.SpreadElement,
+    prop: T.ObjectMethod | T.ObjectProperty | T.SpreadElement,
     key: string,
 ) {
     return t.isObjectProperty(prop) && t.isIdentifier(prop.key) && prop.key.name === key;
@@ -315,7 +315,7 @@ export function createFontFamilyProperty(font: Font) {
  * @returns true if the declaration is a valid local font declaration, false otherwise
  */
 
-export function isValidLocalFontDeclaration(declarator: t.VariableDeclarator, fontName: string) {
+export function isValidLocalFontDeclaration(declarator: T.VariableDeclarator, fontName: string) {
     return (
         t.isIdentifier(declarator.id) &&
         declarator.id.name === fontName &&

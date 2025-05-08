@@ -1,9 +1,8 @@
-import type { NodePath } from '@babel/traverse';
-import type * as t from '@babel/types';
+import { type NodePath, type t as T, types as t } from '../packages';
 import type { CodeMove } from '@onlook/models/actions';
 import { addKeyToElement, getOidFromJsxElement, jsxFilter } from './helpers';
 
-export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMove): void {
+export function moveElementInNode(path: NodePath<T.JSXElement>, element: CodeMove): void {
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter).map((child) => {
         return child;

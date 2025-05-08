@@ -5,7 +5,6 @@ import {
     createStringLiteralWithFont,
     createTemplateLiteralWithFont,
     extractExistingFontImport,
-    extractFontConfig,
     extractFontImport,
     FAMILIES,
     findFontClass,
@@ -22,28 +21,20 @@ import type { Font } from '@onlook/models/assets';
 import * as FlexSearch from 'flexsearch';
 import * as WebFont from 'webfontloader';
 import type { ProjectManager } from '@/components/store/project';
-import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
-import { generate } from '@babel/generator';
+import { parse, traverse, generate } from '@onlook/parser';
 import { camelCase } from 'lodash';
 
-import type { NodePath } from '@babel/traverse';
 import { DefaultSettings } from '@onlook/constants';
 import * as pathModule from 'path';
 import type { ParseResult } from '@babel/parser';
 import { normalizePath } from '../sandbox/helpers';
 import { getFontFileName } from '@onlook/utility';
 import * as t from '@babel/types';
+
 type TraverseCallback = (
     classNameAttr: t.JSXAttribute,
     ast: ParseResult<t.File>,
 ) => void | Promise<void>;
-
-interface FontFile {
-    name: string;
-    path: string;
-    content: string;
-}
 
 interface RawFont {
     id: string;
@@ -56,15 +47,6 @@ interface RawFont {
     lastModified: string;
     category: string;
     type: string;
-}
-
-interface SearchDocument {
-    id: string;
-    family: string;
-    subsets: string[];
-    variable: boolean;
-    weights: string[];
-    styles: string[];
 }
 
 type DocumentData = {

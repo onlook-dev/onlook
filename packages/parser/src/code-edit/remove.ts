@@ -1,9 +1,8 @@
-import type { NodePath } from '@babel/traverse';
-import type * as t from '@babel/types';
+import { type NodePath, type t as T, types as t } from '../packages';
 import type { CodeRemove } from '@onlook/models/actions';
 import { addKeyToElement, jsxFilter } from './helpers';
 
-export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeRemove): void {
+export function removeElementFromNode(path: NodePath<T.JSXElement>, element: CodeRemove): void {
     const parentPath = path.parentPath;
 
     if (!parentPath) {
@@ -11,7 +10,7 @@ export function removeElementFromNode(path: NodePath<t.JSXElement>, element: Cod
         return;
     }
 
-    const siblings = (parentPath.node as t.JSXElement).children?.filter(jsxFilter) || [];
+    const siblings = (parentPath.node as T.JSXElement).children?.filter(jsxFilter) || [];
     path.remove();
 
     siblings.forEach((sibling) => {
@@ -23,8 +22,8 @@ export function removeElementFromNode(path: NodePath<t.JSXElement>, element: Cod
 
 export function removeElementAtIndex(
     index: number,
-    jsxElements: Array<t.JSXElement | t.JSXFragment>,
-    children: t.Node[],
+    jsxElements: Array<T.JSXElement | T.JSXFragment>,
+    children: T.Node[],
 ) {
     if (index >= 0 && index < jsxElements.length) {
         const elementToRemove = jsxElements[index];

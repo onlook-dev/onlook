@@ -1,13 +1,10 @@
-import generate, { type GeneratorOptions } from '@babel/generator';
-import * as t from '@babel/types';
+import { type t as T, types as t, generate, type GeneratorOptions } from '../packages';
 import { EditorAttributes } from '@onlook/constants';
-import type { TemplateNode } from '@onlook/models';
-import type { ClassParsingResult } from '@onlook/models';
 import { nanoid } from 'nanoid/non-secure';
 
-export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {
+export function getOidFromJsxElement(element: T.JSXOpeningElement): string | null {
     const attribute = element.attributes.find(
-        (attr): attr is t.JSXAttribute =>
+        (attr): attr is T.JSXAttribute =>
             t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
     );
 
@@ -23,7 +20,7 @@ export function getOidFromJsxElement(element: t.JSXOpeningElement): string | nul
 }
 
 export function addParamToElement(
-    element: t.JSXElement | t.JSXFragment,
+    element: T.JSXElement | T.JSXFragment,
     key: string,
     value: string,
     replace = false,
@@ -49,7 +46,7 @@ export function addParamToElement(
     }
 }
 
-export function addKeyToElement(element: t.JSXElement | t.JSXFragment, replace = false): void {
+export function addKeyToElement(element: T.JSXElement | T.JSXFragment, replace = false): void {
     if (!t.isJSXElement(element)) {
         console.error('addKeyToElement: element is not a JSXElement', element);
         return;
@@ -75,11 +72,11 @@ export function addKeyToElement(element: t.JSXElement | t.JSXFragment, replace =
 }
 
 export const jsxFilter = (
-    child: t.JSXElement | t.JSXExpressionContainer | t.JSXFragment | t.JSXSpreadChild | t.JSXText,
+    child: T.JSXElement | T.JSXExpressionContainer | T.JSXFragment | T.JSXSpreadChild | T.JSXText,
 ) => t.isJSXElement(child) || t.isJSXFragment(child);
 
 export function generateCode(
-    ast: t.File | t.JSXElement,
+    ast: T.File | T.JSXElement,
     options: GeneratorOptions,
     codeBlock: string,
 ): string {

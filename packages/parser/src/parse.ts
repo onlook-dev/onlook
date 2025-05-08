@@ -1,5 +1,4 @@
-import * as t from '@babel/types';
-import { generate, parse } from './packages';
+import { type t as T, types as t, generate, parse } from './packages';
 
 export function getAstFromContent(content: string) {
     return parse(content, {
@@ -8,7 +7,7 @@ export function getAstFromContent(content: string) {
     });
 }
 
-export function getAstFromCodeblock(code: string): t.JSXElement | undefined {
+export function getAstFromCodeblock(code: string): T.JSXElement | undefined {
     const ast = getAstFromContent(code);
     if (!ast) {
         return;
@@ -26,6 +25,6 @@ export function getAstFromCodeblock(code: string): t.JSXElement | undefined {
     }
 }
 
-export async function getContentFromAst(ast: t.File): Promise<string> {
+export async function getContentFromAst(ast: T.File): Promise<string> {
     return generate(ast, { retainLines: true, compact: false }).code;
 }

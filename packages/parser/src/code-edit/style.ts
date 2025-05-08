@@ -1,11 +1,11 @@
-import * as t from '@babel/types';
+import { type t as T, types as t } from '../packages';
 import { twMerge } from 'tailwind-merge';
 
-export function addClassToNode(node: t.JSXElement, className: string): void {
+export function addClassToNode(node: T.JSXElement, className: string): void {
     const openingElement = node.openingElement;
     const classNameAttr = openingElement.attributes.find(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === 'className',
-    ) as t.JSXAttribute | undefined;
+    ) as T.JSXAttribute | undefined;
 
     if (classNameAttr) {
         if (t.isStringLiteral(classNameAttr.value)) {
@@ -21,11 +21,11 @@ export function addClassToNode(node: t.JSXElement, className: string): void {
     }
 }
 
-export function replaceNodeClasses(node: t.JSXElement, className: string): void {
+export function replaceNodeClasses(node: T.JSXElement, className: string): void {
     const openingElement = node.openingElement;
     const classNameAttr = openingElement.attributes.find(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === 'className',
-    ) as t.JSXAttribute | undefined;
+    ) as T.JSXAttribute | undefined;
 
     if (classNameAttr) {
         classNameAttr.value = t.stringLiteral(className);
@@ -34,16 +34,16 @@ export function replaceNodeClasses(node: t.JSXElement, className: string): void 
     }
 }
 
-function insertAttribute(element: t.JSXOpeningElement, attribute: string, className: string): void {
+function insertAttribute(element: T.JSXOpeningElement, attribute: string, className: string): void {
     const newClassNameAttr = t.jsxAttribute(t.jsxIdentifier(attribute), t.stringLiteral(className));
     element.attributes.push(newClassNameAttr);
 }
 
-export function updateNodeProp(node: t.JSXElement, key: string, value: any): void {
+export function updateNodeProp(node: T.JSXElement, key: string, value: any): void {
     const openingElement = node.openingElement;
     const existingAttr = openingElement.attributes.find(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === key,
-    ) as t.JSXAttribute | undefined;
+    ) as T.JSXAttribute | undefined;
 
     if (existingAttr) {
         if (typeof value === 'boolean') {
@@ -58,7 +58,7 @@ export function updateNodeProp(node: t.JSXElement, key: string, value: any): voi
             existingAttr.value = t.jsxExpressionContainer(t.identifier(value.toString()));
         }
     } else {
-        let newAttr: t.JSXAttribute;
+        let newAttr: T.JSXAttribute;
         if (typeof value === 'boolean') {
             newAttr = t.jsxAttribute(
                 t.jsxIdentifier(key),

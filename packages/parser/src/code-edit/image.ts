@@ -1,11 +1,10 @@
-import type { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
+import { type NodePath, type t as T, types as t } from '../packages';
 import { type CodeInsertImage, type CodeRemoveImage } from '@onlook/models/actions';
 import { DefaultSettings } from '@onlook/constants';
 import { join } from 'path';
 import { addClassToNode } from './style';
 
-export function insertImageToNode(path: NodePath<t.JSXElement>, action: CodeInsertImage): void {
+export function insertImageToNode(path: NodePath<T.JSXElement>, action: CodeInsertImage): void {
     const imageName = writeImageToFile(action);
     if (!imageName) {
         console.error('Failed to write image to file');
@@ -28,4 +27,4 @@ function writeImageToFile(action: CodeInsertImage): string | null {
     }
 }
 
-export function removeImageFromNode(path: NodePath<t.JSXElement>, action: CodeRemoveImage): void { }
+export function removeImageFromNode(path: NodePath<T.JSXElement>, action: CodeRemoveImage): void { }
