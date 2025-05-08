@@ -1,4 +1,5 @@
-import { DefaultSettings, MainChannels } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/constants';
+import { DomainType, type DomainSettings, type Project } from '@onlook/models';
 import {
     PublishStatus,
     type PublishOptions,
@@ -6,11 +7,9 @@ import {
     type PublishResponse,
     type PublishState,
 } from '@onlook/models/hosting';
-import { DomainType, type DomainSettings, type Project } from '@onlook/models/projects';
 import { getPublishUrls } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import { invokeMainChannel, sendAnalytics, sendAnalyticsError } from '../../utils/index.ts';
-import type { ProjectsManager } from '../index.ts';
+import type { ProjectManager } from '../index.ts';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -22,7 +21,7 @@ export class HostingManager {
     state: PublishState = DEFAULT_STATE;
 
     constructor(
-        private projectsManager: ProjectsManager,
+        private projectManager: ProjectManager,
         private project: Project,
         private domain: DomainSettings,
     ) {
@@ -69,7 +68,7 @@ export class HostingManager {
 
     private updateProject(project: Partial<Project>) {
         const newProject = { ...this.project, ...project };
-        this.projectsManager.updateProject(newProject);
+        this.projectManager.updateProject(newProject);
         this.project = newProject;
     }
 
@@ -81,7 +80,7 @@ export class HostingManager {
         sendAnalytics('hosting publish');
         this.updateState({ status: PublishStatus.LOADING, message: 'Creating deployment...' });
 
-        this.projectsManager.versions?.createCommit(
+        this.projectManager.versions?.createCommit(
             `Save before publishing to ${this.domain.url}`,
             false,
         );

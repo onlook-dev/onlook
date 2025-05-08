@@ -3,6 +3,11 @@ export enum DomainType {
     CUSTOM = 'custom',
 }
 
+export interface ProjectDomain {
+    base: DomainSettings | null;
+    custom: DomainSettings | null;
+}
+
 export interface DomainSettings {
     url: string;
     type: DomainType;

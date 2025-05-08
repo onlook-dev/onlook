@@ -1,3 +1,5 @@
+'use client';
+
 import { useUserContext } from '@/components/hooks/use-user';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { Routes } from '@/utils/constants';

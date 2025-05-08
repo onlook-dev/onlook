@@ -47,7 +47,7 @@ export const ProjectInfo = observer(
                                 time: timeAgo(new Date(project.metadata.updatedAt).toISOString()),
                             })}
                         </p>
-                        <p>{project.previewUrl}</p>
+                        <p>{project.sandbox.url}</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
                         <EditAppButton project={project} />

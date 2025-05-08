@@ -1,6 +1,5 @@
 import { HOSTING_DOMAIN } from '@onlook/constants';
 import { DomainType, type Project } from '@onlook/models';
-import type { GetOwnedDomainsResponse } from '@onlook/models/hosting';
 import { getValidSubdomain } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectManager } from '..';
@@ -54,9 +53,8 @@ export class DomainsManager {
 
     addBaseDomainToProject(buildFlags?: string) {
         const domains = {
-            base: null,
-            custom: null,
-            ...this.project.domains,
+            base: this.project.domains?.base ?? null,
+            custom: this.project.domains?.custom ?? null,
         };
         const url = `${getValidSubdomain(this.project.id)}.${HOSTING_DOMAIN}`;
         domains.base = {
@@ -72,9 +70,8 @@ export class DomainsManager {
 
     async addCustomDomainToProject(url: string) {
         const domains = {
-            base: null,
-            custom: null,
-            ...this.project.domains,
+            base: this.project.domains?.base ?? null,
+            custom: this.project.domains?.custom ?? null,
         };
         domains.custom = {
             type: DomainType.CUSTOM,
@@ -85,22 +82,22 @@ export class DomainsManager {
 
     async removeCustomDomainFromProject() {
         const domains = {
-            base: null,
-            ...this.project.domains,
+            base: this.project.domains?.base ?? null,
             custom: null,
         };
         this.projectManager.updateProject({ ...this.project, domains });
     }
 
     async getOwnedDomains(): Promise<string[]> {
-        const response: GetOwnedDomainsResponse = await invokeMainChannel(
-            MainChannels.GET_OWNED_DOMAINS,
-        );
-        if (!response.success) {
-            console.error(response.message ?? 'Failed to get owned domains');
-            return [];
-        }
-        return response.domains ?? [];
+        return [];
+        // const response: GetOwnedDomainsResponse = await invokeMainChannel(
+        //     MainChannels.GET_OWNED_DOMAINS,
+        // );
+        // if (!response.success) {
+        //     console.error(response.message ?? 'Failed to get owned domains');
+        //     return [];
+        // }
+        // return response.domains ?? [];
     }
 
     dispose() {

@@ -1,29 +1,45 @@
 import { projectInsertSchema, projects, userProjects } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const projectRouter = createTRPCRouter({
-    getById: publicProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-        const project = await ctx.db.query.projects.findFirst({
-            where: eq(projects.id, input.id),
-        });
-        return project;
-    }),
-    getByUserId: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-        const projects = await ctx.db.query.userProjects.findMany({
-            where: eq(userProjects.userId, input),
-            with: {
-                project: true,
-            },
-        });
-        return projects;
-    }),
-    create: publicProcedure.input(projectInsertSchema).mutation(async ({ ctx, input }) => {
+    getById: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.id),
+            });
+            return project;
+        }),
+    getByUserId: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const projects = await ctx.db.query.userProjects.findMany({
+                where: eq(userProjects.userId, input.id),
+                with: {
+                    project: {
+                        with: {
+                            canvas: {
+                                with: {
+                                    frames: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            return projects;
+        }),
+    create: protectedProcedure.input(projectInsertSchema).mutation(async ({ ctx, input }) => {
         const project = await ctx.db.insert(projects).values(input).returning();
         return project[0];
     }),
-    createUserProject: publicProcedure
+    test: protectedProcedure.input(z.object({ name: z.string() })).mutation(async ({ ctx, input }) => {
+        console.log('test', input);
+        return input;
+    }),
+    createUserProject: protectedProcedure
         .input(z.object({ project: projectInsertSchema, userId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db.transaction(async (tx) => {

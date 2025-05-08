@@ -21,13 +21,13 @@ async function getProject(id: string) {
     const project: Project = {
         id: id,
         name: 'My Project',
-        previewUrl: '',
         metadata: {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             previewImg: null,
         },
         canvas: {
+            id: '1',
             scale: 1,
             frames: [newFrame],
             position: { x: 0, y: 0 },

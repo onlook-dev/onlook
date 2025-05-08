@@ -1,10 +1,9 @@
-import type { CanvasSettings } from './canvas';
-import type { DomainSettings } from './domain';
+import type { Canvas } from './canvas';
+import type { ProjectDomain } from './domain';
 
 export interface Project {
     id: string;
     name: string;
-    previewUrl: string;
     metadata: {
         createdAt: string;
         updatedAt: string;
@@ -13,11 +12,7 @@ export interface Project {
     sandbox: {
         id: string;
         url: string;
-    } | null;
-    domains: {
-        base: DomainSettings | null;
-        custom: DomainSettings | null;
-    } | null;
-    canvas: CanvasSettings | null;
-
+    };
+    canvas: Canvas;
+    domains: ProjectDomain;
 }

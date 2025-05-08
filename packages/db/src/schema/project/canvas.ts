@@ -7,7 +7,7 @@ import { projects } from "./project";
 export const canvas = pgTable("canvas", {
     id: uuid("id").primaryKey().defaultRandom(),
     projectId: uuid("project_id").references(() => projects.id).notNull(),
-    scale: numeric("scale"),
+    scale: numeric("scale").notNull(),
     position: jsonb("position").$type<RectPosition | null>(),
 }).enableRLS();
 

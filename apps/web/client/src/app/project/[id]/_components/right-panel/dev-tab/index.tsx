@@ -499,10 +499,10 @@ export const DevTab = observer(() => {
         const updatedFiles = openedFiles.map((file) =>
             file.id === fileId
                 ? {
-                    ...file,
-                    content: content,
-                    isDirty: hasChanged,
-                }
+                      ...file,
+                      content: content,
+                      isDirty: hasChanged,
+                  }
                 : file,
         );
 

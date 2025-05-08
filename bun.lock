@@ -41,6 +41,7 @@
         "@codemirror/lang-markdown": "^6.1.7",
         "@codesandbox/sdk": "^0.11.1",
         "@onlook/constants": "*",
+        "@onlook/db": "*",
         "@onlook/fonts": "*",
         "@onlook/models": "*",
         "@onlook/parser": "*",
@@ -194,7 +195,7 @@
       },
     },
     "packages/db": {
-      "name": "@onlook/orm",
+      "name": "@onlook/db",
       "version": "0.0.0",
       "dependencies": {
         "dotenv": "^16.5.0",
@@ -842,6 +843,8 @@
 
     "@onlook/constants": ["@onlook/constants@workspace:packages/constants"],
 
+    "@onlook/db": ["@onlook/db@workspace:packages/db"],
+
     "@onlook/fonts": ["@onlook/fonts@workspace:packages/fonts"],
 
     "@onlook/git": ["@onlook/git@workspace:packages/git"],
@@ -851,8 +854,6 @@
     "@onlook/mastra": ["@onlook/mastra@workspace:packages/mastra"],
 
     "@onlook/models": ["@onlook/models@workspace:packages/models"],
-
-    "@onlook/orm": ["@onlook/orm@workspace:packages/db"],
 
     "@onlook/parser": ["@onlook/parser@workspace:packages/parser"],
 

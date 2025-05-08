@@ -1,4 +1,7 @@
+'use client';
+
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
+import { useProjectsManager } from '@/components/store';
 import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
@@ -6,18 +9,16 @@ import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
+import { compressImage } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
 
-import { useProjectsManager } from '@/components/store';
-import { compressImage } from '@onlook/utility';
-
 export function Create() {
-    const projectsManager = useProjectsManager();
     const t = useTranslations();
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const projectsManager = useProjectsManager();
 
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
     const [isDragging, setIsDragging] = useState(false);
     const [selectedImages, setSelectedImages] = useState<ImageMessageContext[]>([]);
@@ -32,11 +33,12 @@ export function Create() {
             console.warn('Input is too short');
             return;
         }
-        projectsManager.create.sendPrompt(inputValue, selectedImages, false);
+        projectsManager.createProject(inputValue, selectedImages);
     };
 
     const handleBlankSubmit = async () => {
-        projectsManager.create.sendPrompt('', [], true);
+        // projectsManager.create.sendPrompt(inputValue, selectedImages, false);
+        projectsManager.createProject(inputValue);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -361,17 +363,3 @@ export function Create() {
         </div>
     );
 }
-
-// export function Create() {
-//     return (
-//         <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-8 text-lg text-center">
-//             <h1 className="text-4xl font-bold">Code makes your designs real</h1>
-//             <p className="">
-//                 Onlook is an AI-powered visual editor for code that helps you prototype, design, and ideate
-//             </p>
-//             <Button>
-//                 Get Started
-//             </Button>
-//         </div>
-//     )
-// }

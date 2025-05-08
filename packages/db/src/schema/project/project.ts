@@ -1,18 +1,18 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
+import { userProjects } from '../user';
 import { canvas } from './canvas';
-import { userProjects } from './user-project';
 
 export const projects = pgTable("projects", {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: varchar("name", { length: 255 }),
-    previewUrl: varchar("preview_url", { length: 2048 }),
+    name: varchar("name").notNull(),
+    previewUrl: varchar("preview_url").notNull(),
+    sandboxId: varchar("sandbox_id").notNull(),
+    sandboxUrl: varchar("sandbox_url").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-    previewImg: varchar("preview_img", { length: 2048 }),
-    sandboxId: varchar("sandbox_id", { length: 64 }),
-    sandboxUrl: varchar("sandbox_url", { length: 2048 }),
+    previewImg: varchar("preview_img"),
 }).enableRLS();
 
 export const projectInsertSchema = createInsertSchema(projects);

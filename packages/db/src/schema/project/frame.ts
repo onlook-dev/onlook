@@ -14,7 +14,7 @@ export const frames = pgTable("frames", {
     width: numeric("width").notNull(),
     height: numeric("height").notNull(),
 
-    url: varchar("url"),
+    url: varchar("url").notNull(),
 }).enableRLS();
 
 export type Frame = typeof frames.$inferSelect;
