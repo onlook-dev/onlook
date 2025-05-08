@@ -1,14 +1,17 @@
 'use client';
 
-import { useUserContext } from '@/components/hooks/use-user';
+import { useUserManager } from '@/components/store';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
+import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 
-export function TopBar() {
-    const { user } = useUserContext();
+export const TopBar = observer(() => {
+    const userManager = useUserManager();
+    const user = userManager.user;
+
     return (
         <div className="w-full flex items-center justify-between p-4">
             <div className="flex items-center gap-4">
@@ -34,4 +37,4 @@ export function TopBar() {
             </div>
         </div>
     );
-}
+});

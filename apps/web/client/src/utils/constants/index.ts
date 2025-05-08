@@ -3,4 +3,4 @@ export const Routes = {
     LOGIN: '/login',
     PROJECTS: '/projects',
     PROJECT: '/project',
-} as const;
+};

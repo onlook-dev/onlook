@@ -1,6 +1,6 @@
 'use client';
 
-import { useUserContext } from '@/components/hooks/use-user';
+import { useUserManager } from '@/components/store';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import {
     DropdownMenu,
@@ -9,16 +9,22 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons/index';
-import { usePathname } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const currentPath = usePathname();
-    const { user, handleSignOut } = useUserContext();
+    const userManager = useUserManager();
+    const user = userManager.user;
     const initials = user?.name
         ?.split(' ')
         ?.map((word) => word[0])
         ?.join('')
         ?.toUpperCase();
+
+    const handleSignOut = async () => {
+        await userManager.signOut();
+        redirect(currentPath);
+    };
 
     return (
         <DropdownMenu>
@@ -29,7 +35,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                 </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleSignOut(currentPath)}>
+                <DropdownMenuItem onClick={handleSignOut}>
                     <Icons.Exit className="w-4 h-4 mr-2" /> Sign Out
                 </DropdownMenuItem>
             </DropdownMenuContent>

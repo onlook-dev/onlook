@@ -5,8 +5,8 @@ import { useEditorEngine, useProjectManager } from '@/components/store';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { TooltipProvider } from '@onlook/ui/tooltip';
+import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { useSandbox } from '../_hooks/use-sandbox';
 import { useTabActive } from '../_hooks/use-tab-active';
 import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
@@ -15,49 +15,35 @@ import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
-export function Main({ project }: { project: Project }) {
+export const Main = observer(({ project }: { project: Project }) => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
-    const { startSession, isStarting, session, isReconnecting, reconnect } = useSandbox();
     const { tabState } = useTabActive();
 
     useEffect(() => {
         projectManager.project = project;
         editorEngine.canvas.applyProject(project);
-        registerSandbox(project);
-
+        if (project.sandbox?.id) {
+            editorEngine.sandbox.session.start(project.sandbox.id).then(() => {
+                editorEngine.sandbox.index();
+            });
+        }
         return () => {
             editorEngine.sandbox.clear();
         };
     }, [project]);
 
-    const registerSandbox = async (project: Project) => {
-        const sandboxId = project.sandbox?.id;
-        if (!sandboxId) {
-            console.error('No sandbox found');
-            return;
-        }
-        startSession(sandboxId);
-    };
-
     useEffect(() => {
-        if (session) {
-            editorEngine.sandbox.init(session);
-            editorEngine.sandbox.index();
+        if (tabState === 'reactivated' && editorEngine.sandbox.session.session) {
+            editorEngine.sandbox.session.reconnect();
         }
-    }, [session]);
+    }, [tabState]);
 
-    useEffect(() => {
-        if (tabState === 'reactivated' && session) {
-            reconnect(session.id);
-        }
-    }, [tabState, session]);
-
-    if (isStarting) {
+    if (editorEngine.sandbox.session.isConnecting) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
                 <Icons.Shadow className="h-6 w-6 animate-spin" />
-                <div className="text-xl">Starting animation goes here...</div>
+                <div className="text-xl">Connecting to sandbox...</div>
             </div>
         );
     }
@@ -101,4 +87,4 @@ export function Main({ project }: { project: Project }) {
             </TooltipProvider>
         </ChatProvider>
     );
-}
+});

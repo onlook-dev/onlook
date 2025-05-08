@@ -1,4 +1,4 @@
-import type { SandboxSession, Watcher, WatchEvent } from '@codesandbox/sdk';
+import type { Watcher, WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
@@ -7,9 +7,11 @@ import { makeAutoObservable } from 'mobx';
 import { FileSyncManager } from './file-sync';
 import { isSubdirectory, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
+import { SessionManager } from './session';
 
 export class SandboxManager {
-    private session: SandboxSession | null = null;
+    readonly session: SessionManager = new SessionManager();
+
     private watcher: Watcher | null = null;
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
@@ -18,12 +20,8 @@ export class SandboxManager {
         makeAutoObservable(this);
     }
 
-    init(session: SandboxSession) {
-        this.session = session;
-    }
-
     async index() {
-        if (!this.session) {
+        if (!this.session.session) {
             console.error('No session found');
             return;
         }
@@ -48,13 +46,13 @@ export class SandboxManager {
     }
 
     private async readRemoteFile(filePath: string): Promise<string | null> {
-        if (!this.session) {
+        if (!this.session.session) {
             console.error('No session found for remote read');
             return null;
         }
 
         try {
-            return await this.session.fs.readTextFile(filePath);
+            return await this.session.session.fs.readTextFile(filePath);
         } catch (error) {
             console.error(`Error reading remote file ${filePath}:`, error);
             return null;
@@ -62,13 +60,13 @@ export class SandboxManager {
     }
 
     private async readRemoteBinaryFile(filePath: string): Promise<Uint8Array | null> {
-        if (!this.session) {
+        if (!this.session.session) {
             console.error('No session found for remote binary read');
             return null;
         }
 
         try {
-            return await this.session.fs.readFile(filePath);
+            return await this.session.session.fs.readFile(filePath);
         } catch (error) {
             console.error(`Error reading remote binary file ${filePath}:`, error);
             return null;
@@ -76,13 +74,13 @@ export class SandboxManager {
     }
 
     private async writeRemoteFile(filePath: string, fileContent: string): Promise<boolean> {
-        if (!this.session) {
+        if (!this.session.session) {
             console.error('No session found for remote write');
             return false;
         }
 
         try {
-            await this.session.fs.writeTextFile(filePath, fileContent);
+            await this.session.session.fs.writeTextFile(filePath, fileContent);
             return true;
         } catch (error) {
             console.error(`Error writing remote file ${filePath}:`, error);
@@ -94,13 +92,13 @@ export class SandboxManager {
         filePath: string,
         fileContent: Buffer | Uint8Array,
     ): Promise<boolean> {
-        if (!this.session) {
+        if (!this.session.session) {
             console.error('No session found for remote binary write');
             return false;
         }
 
         try {
-            await this.session.fs.writeFile(filePath, fileContent);
+            await this.session.session.fs.writeFile(filePath, fileContent);
             return true;
         } catch (error) {
             console.error(`Error writing remote binary file ${filePath}:`, error);
@@ -145,7 +143,7 @@ export class SandboxManager {
     }
 
     async listFiles(dir: string) {
-        return this.session?.fs.readdir(dir);
+        return this.session.session?.fs.readdir(dir);
     }
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
@@ -164,13 +162,13 @@ export class SandboxManager {
         ignore: string[] = [],
         extensions: string[] = [],
     ): Promise<string[]> {
-        if (!this.session) {
+        if (!this.session.session) {
             console.error('No session found');
             return [];
         }
 
         const results: string[] = [];
-        const entries = await this.session.fs.readdir(dir);
+        const entries = await this.session.session.fs.readdir(dir);
 
         for (const entry of entries) {
             const fullPath = `${dir}/${entry.name}`;
@@ -199,7 +197,7 @@ export class SandboxManager {
     }
 
     async watchFiles() {
-        if (!this.session) {
+        if (!this.session.session) {
             console.error('No session found');
             return;
         }
@@ -207,7 +205,7 @@ export class SandboxManager {
         // Convert ignored directories to glob patterns with ** wildcard
         const excludePatterns = IGNORED_DIRECTORIES.map((dir) => `${dir}/**`);
 
-        const watcher = await this.session.fs.watch('./', {
+        const watcher = await this.session.session.fs.watch('./', {
             recursive: true,
             excludes: excludePatterns,
         });
@@ -270,6 +268,5 @@ export class SandboxManager {
         this.watcher?.dispose();
         this.fileSync.clear();
         this.templateNodeMap.clear();
-        this.session = null;
     }
 }
