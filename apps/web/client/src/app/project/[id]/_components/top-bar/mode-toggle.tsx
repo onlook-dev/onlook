@@ -1,5 +1,5 @@
 import { Hotkey } from '@/components/hotkey';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { EditorMode } from '@onlook/models';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';

@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toNormalCase } from '@onlook/utility';
 import { camelCase } from 'lodash';

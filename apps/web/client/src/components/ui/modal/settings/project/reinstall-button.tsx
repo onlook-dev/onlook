@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/store';
+import { useProjectManager } from '@/components/store/project';
 import { DefaultSettings } from '@onlook/constants';
 import { RunState } from '@onlook/models/run';
 import {

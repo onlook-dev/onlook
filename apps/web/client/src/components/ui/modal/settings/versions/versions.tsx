@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/store';
+import { useProjectManager } from '@/components/store/project';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';

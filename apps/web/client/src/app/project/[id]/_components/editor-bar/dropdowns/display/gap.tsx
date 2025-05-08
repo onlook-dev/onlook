@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { stringToParsedValue } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 import { InputIcon } from '../../inputs/input-icon';

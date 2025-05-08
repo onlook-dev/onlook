@@ -1,4 +1,5 @@
-import { useEditorEngine, useUserManager } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
 import { sendAnalytics } from '@/utils/analytics';
 import { SystemTheme } from '@onlook/models';
 import { UsagePlanType } from '@onlook/models/usage';

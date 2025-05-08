@@ -1,5 +1,5 @@
 import { IDE } from '@/components/ide';
-import { useUserManager } from '@/components/store';
+import { useUserManager } from '@/components/store/user';
 import type { Language } from '@onlook/constants';
 import { LANGUAGE_DISPLAY_NAMES } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models';

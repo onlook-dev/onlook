@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/store';
+import { useProjectManager } from '@/components/store/project';
 import { HOSTING_DOMAIN } from '@onlook/constants';
 // import { invokeMainChannel } from '@/lib/utils';
 

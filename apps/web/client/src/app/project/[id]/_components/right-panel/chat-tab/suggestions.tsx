@@ -1,4 +1,5 @@
-import { useEditorEngine, useUserManager } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';

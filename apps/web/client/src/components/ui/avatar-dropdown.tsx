@@ -1,6 +1,6 @@
 'use client';
 
-import { useUserManager } from '@/components/store';
+import { useUserManager } from '@/components/store/user';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import {
     DropdownMenu,

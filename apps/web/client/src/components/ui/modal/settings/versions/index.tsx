@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/store';
+import { useProjectManager } from '@/components/store/project';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { Versions } from './versions';

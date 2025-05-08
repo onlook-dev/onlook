@@ -1,7 +1,6 @@
 'use client';
 
 import { ChatProvider } from '@/app/project/[id]/_hooks/use-chat';
-import { useEditorEngine, useProjectManager } from '@/components/store';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { TooltipProvider } from '@onlook/ui/tooltip';
@@ -14,6 +13,8 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
+import { useEditorEngine } from '@/components/store/editor';
+import { useProjectManager } from '@/components/store/project';
 
 export const Main = observer(({ project }: { project: Project }) => {
     const editorEngine = useEditorEngine();

@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { BrandTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';

@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
 import type { CssValue } from '.';

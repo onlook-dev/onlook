@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { useEffect, useState } from 'react';
 import { InputRadio } from '../../inputs/input-radio';
 import { layoutTypeOptions } from './index';

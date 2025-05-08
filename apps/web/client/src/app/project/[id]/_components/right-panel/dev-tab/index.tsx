@@ -1,6 +1,6 @@
 // import type { FileNode } from '@/lib/editor/engine/files';
 // import { MainChannels } from '@onlook/constants';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { type EditorView } from '@codemirror/view';
 import { EditorTabValue, SystemTheme } from '@onlook/models';
 import { Button } from '@onlook/ui/button';

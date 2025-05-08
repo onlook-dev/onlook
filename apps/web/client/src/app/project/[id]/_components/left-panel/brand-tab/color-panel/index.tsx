@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -19,7 +19,7 @@ const ColorPanel = observer(() => {
     const { colorGroups, colorDefaults } = themeManager;
 
     useEffect(() => {
-        void themeManager.scanConfig();
+        themeManager.scanConfig();
     }, []);
 
     const handleRename = async (groupName: string, newName: string) => {

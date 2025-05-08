@@ -1,6 +1,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
-import { useEditorEngine, useUserManager } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
 import { DEFAULT_IDE, EditorTabValue, type DomElement } from '@onlook/models';
 import {
     ContextMenu,

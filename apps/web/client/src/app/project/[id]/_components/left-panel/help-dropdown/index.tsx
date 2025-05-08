@@ -1,4 +1,5 @@
-import { useEditorEngine, useUserManager } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
 import { Language, LANGUAGE_DISPLAY_NAMES, Links } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models/assets';
 import {

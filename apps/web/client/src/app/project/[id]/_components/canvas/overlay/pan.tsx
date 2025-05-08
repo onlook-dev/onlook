@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { EditorMode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';

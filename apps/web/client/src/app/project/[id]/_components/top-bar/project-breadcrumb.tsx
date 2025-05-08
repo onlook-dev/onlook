@@ -1,4 +1,5 @@
-import { useEditorEngine, useProjectManager } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import { useProjectManager } from '@/components/store/project';
 import { SettingsTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {

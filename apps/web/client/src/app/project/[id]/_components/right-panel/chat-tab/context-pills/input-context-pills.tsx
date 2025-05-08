@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { cn } from '@onlook/ui/utils';

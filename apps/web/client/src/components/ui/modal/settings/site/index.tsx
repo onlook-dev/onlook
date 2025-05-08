@@ -1,4 +1,5 @@
-import { useEditorEngine, useProjectManager } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import { useProjectManager } from '@/components/store/project';
 import { type PageMetadata } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useUserManager } from '@/components/store';
+import { useUserManager } from '@/components/store/user';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';

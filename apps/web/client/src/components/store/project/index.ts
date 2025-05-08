@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { ProjectManager } from '../project/manager';
+import { ProjectManager } from './manager';
 
 export const projectManager = new ProjectManager();
 const ProjectContext = createContext(projectManager);

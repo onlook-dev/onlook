@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import type { PageNode } from '@onlook/models/pages';
 import {
     ContextMenu,

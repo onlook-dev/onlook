@@ -1,15 +1,7 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import type { Frame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine.ts';
-// import { isOnlookInDoc } from '/common/helpers';
-
-// export enum FrameState {
-//     NOT_RUNNING,
-//     RUNNING_NO_DOM,
-//     DOM_NO_ONLOOK,
-//     DOM_ONLOOK_ENABLED,
-// }
+import type { EditorEngine } from '../engine';
 
 export interface FrameData {
     frame: Frame;

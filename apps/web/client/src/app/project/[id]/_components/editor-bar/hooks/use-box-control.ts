@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { capitalizeFirstLetter, stringToParsedValue } from '@onlook/utility';
 import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';

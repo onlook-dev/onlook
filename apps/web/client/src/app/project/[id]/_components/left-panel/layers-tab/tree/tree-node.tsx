@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { MouseAction } from '@onlook/models/editor';
 import type { DomElement, LayerNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';

@@ -1,5 +1,6 @@
 import { Hotkey } from '@/components/hotkey';
-import { useEditorEngine, useUserManager } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
 import {
     AlertDialog,
     AlertDialogContent,

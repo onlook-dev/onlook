@@ -1,6 +1,6 @@
 // import { useEditorEngine } from '@/components/Context';
 import { Hotkey } from '@/components/hotkey';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
 import { EditorMode, EditorTabValue } from '@onlook/models';
 import type { ReactNode } from 'react';

@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { CodeBlockProcessor } from '@onlook/ai';
 import { useMemo } from 'react';
 import { CollapsibleCodeBlock } from './collapsible-code-block';

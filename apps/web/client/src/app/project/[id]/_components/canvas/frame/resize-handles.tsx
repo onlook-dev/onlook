@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import type { FrameImpl } from '@/components/store/editor/canvas/frame';
 import { DefaultSettings } from '@onlook/constants';
 import { cn } from '@onlook/ui/utils';

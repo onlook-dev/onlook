@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import type { ClickRectState } from '@/components/store/editor/overlay/state';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';

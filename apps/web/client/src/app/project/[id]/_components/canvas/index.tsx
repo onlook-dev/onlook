@@ -1,6 +1,6 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';

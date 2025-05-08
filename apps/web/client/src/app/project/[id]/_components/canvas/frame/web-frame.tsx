@@ -1,6 +1,6 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import type { WebFrame } from '@onlook/models';
 import {
     PENPAL_PARENT_CHANNEL,

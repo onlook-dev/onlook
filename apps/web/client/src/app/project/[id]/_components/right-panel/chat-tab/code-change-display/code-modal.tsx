@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
