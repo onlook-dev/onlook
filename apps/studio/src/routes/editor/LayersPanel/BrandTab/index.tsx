@@ -28,6 +28,7 @@ const FontVariant = ({ name, isActive = false }: FontVariantProps) => (
 
 const BrandTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const recentColors = editorEngine.theme.recentColorList;
 
     // Sample colors for the brand palette
     const brandColors = [
@@ -69,6 +70,16 @@ const BrandTab = observer(() => {
                     <div className="grid grid-cols-6 gap-1">
                         {brandColors.map((color, index) => (
                             <ColorSquare key={`brand-color-${index}`} color={color} />
+                        ))}
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                        <span className="text-base font-normal">Recent Colors</span>
+                    </div>
+
+                    <div className="grid grid-cols-6 gap-1">
+                        {recentColors.map((color, index) => (
+                            <ColorSquare key={`recent-color-${index}`} color={color} />
                         ))}
                     </div>
                 </div>

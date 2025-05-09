@@ -1,7 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import type { ColorItem } from '@/routes/editor/LayersPanel/BrandTab/ColorPanel/ColorPalletGroup';
-import { DEFAULT_COLOR_NAME, MainChannels } from '@onlook/models';
+import { DEFAULT_COLOR_NAME, RECENT_COLOR_STORAGE_KEY, MainChannels } from '@onlook/models';
 import type { ConfigResult, ParsedColors, ThemeColors } from '@onlook/models/assets';
 import { Theme } from '@onlook/models/assets';
 import { Color, generateUniqueName } from '@onlook/utility';
@@ -21,13 +21,35 @@ export class ThemeManager {
     private defaultColors: Record<string, ColorItem[]> = {};
     private configPath: string | null = null;
     private cssPath: string | null = null;
+    private recentColors: string[] = [];
+    private readonly MAX_RECENT_COLORS = 12;
 
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
+        this.loadRecentColors();
         this.scanConfig();
+    }
+
+    private loadRecentColors() {
+        try {
+            const storedColors = localStorage.getItem(RECENT_COLOR_STORAGE_KEY);
+            if (storedColors) {
+                this.recentColors = JSON.parse(storedColors);
+            }
+        } catch (error) {
+            console.error('Error loading recent colors:', error);
+        }
+    }
+
+    private saveRecentColors() {
+        try {
+            localStorage.setItem(RECENT_COLOR_STORAGE_KEY, JSON.stringify(this.recentColors));
+        } catch (error) {
+            console.error('Error saving recent colors:', error);
+        }
     }
 
     private reset() {
@@ -361,6 +383,7 @@ export class ThemeManager {
 
             const originalKey = this.brandColors[originalGroupName]?.[index]?.originalKey || '';
 
+            this.addRecentColors(newColor.toHex());
             // If is selected element, update the color in real-time
             // Base on the class name, find the styles to update
 
@@ -379,7 +402,7 @@ export class ThemeManager {
                 this.scanConfig();
 
                 // Force a theme refresh for all frames
-                await this.editorEngine.webviews.reloadWebviews();
+                this.editorEngine.webviews.reloadWebviews();
             }
         } catch (error) {
             console.error('Error updating color:', error);
@@ -418,6 +441,8 @@ export class ThemeManager {
         }
 
         try {
+            this.addRecentColors(newColor.toHex());
+
             await invokeMainChannel(MainChannels.UPDATE_TAILWIND_CONFIG, {
                 projectRoot,
                 originalKey: `${colorFamily}-${index * 100}`,
@@ -506,6 +531,10 @@ export class ThemeManager {
         return this.cssPath;
     }
 
+    get recentColorList() {
+        return this.recentColors;
+    }
+
     getColorByName(colorName: string): string | undefined {
         const [groupName, shadeName] = colorName.split('-');
 
@@ -535,8 +564,21 @@ export class ThemeManager {
         return undefined;
     }
 
+    addRecentColors(color: string) {
+        this.recentColors = this.recentColors.filter((c) => c !== color);
+        this.recentColors.unshift(color);
+
+        if (this.recentColors.length > this.MAX_RECENT_COLORS) {
+            this.recentColors = this.recentColors.slice(0, this.MAX_RECENT_COLORS);
+        }
+
+        this.saveRecentColors();
+    }
+
     dispose() {
         this.brandColors = {};
         this.defaultColors = {};
+
+        this.saveRecentColors();
     }
 }
