@@ -77,7 +77,7 @@ export class ChatCodeManager {
         this.chat.suggestions.shouldHide = false;
 
         setTimeout(() => {
-            this.editorEngine.frames.reload();
+            this.editorEngine.frames.reloadAll();
             this.editorEngine.error.clear();
         }, 500);
         sendAnalytics('apply code change');
@@ -114,7 +114,7 @@ export class ChatCodeManager {
         this.chat.conversation.current?.updateMessage(message);
         this.chat.conversation.saveConversationToStorage();
         setTimeout(() => {
-            this.editorEngine.frames.reload();
+            this.editorEngine.frames.reloadAll();
         }, 500);
         sendAnalytics('revert code change');
     }
@@ -155,5 +155,5 @@ export class ChatCodeManager {
         return fileToCode;
     }
 
-    clear() {}
+    clear() { }
 }

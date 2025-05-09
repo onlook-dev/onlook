@@ -1,9 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { Frame } from '@onlook/models';
+import type { WebFrame } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
+import Link from 'next/link';
 
 export const TopBar = observer(
-    ({ frame, children }: { frame: Frame; children?: React.ReactNode }) => {
+    ({ frame, children }: { frame: WebFrame; children?: React.ReactNode }) => {
         const editorEngine = useEditorEngine();
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -45,6 +48,10 @@ export const TopBar = observer(
             editorEngine.overlay.clear();
         };
 
+        const handleReload = () => {
+            editorEngine.frames.reload(frame.id);
+        };
+
         return (
             <div
                 className="rounded bg-foreground-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm border-input text-foreground"
@@ -55,7 +62,17 @@ export const TopBar = observer(
                 }}
                 onMouseDown={handleMouseDown}
             >
-                {children}
+                <div className="flex flex-row items-center justify-between gap-2 w-full">
+                    <Button variant="ghost" size="icon" onClick={handleReload}>
+                        <Icons.Reload />
+                    </Button>
+                    <div className="text-sm">{frame.url}</div>
+                    <Link className="ml-auto" href={frame.url} target="_blank">
+                        <Button variant="ghost" size="icon">
+                            <Icons.ExternalLink />
+                        </Button>
+                    </Link>
+                </div>
             </div>
         );
     },

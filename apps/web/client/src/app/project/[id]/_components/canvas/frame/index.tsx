@@ -12,7 +12,7 @@ export const FrameView = ({ frame }: { frame: Frame }) => {
             className="flex flex-col fixed"
             style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
         >
-            <TopBar frame={frame} />
+            <TopBar frame={frame as WebFrame} />
             <div className="relative">
                 <ResizeHandles frame={frame} />
                 {frame.type === FrameType.WEB && (

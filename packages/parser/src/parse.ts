@@ -1,10 +1,20 @@
-import { type t as T, types as t, generate, parse } from './packages';
+import { generate, parse, type t as T, types as t } from './packages';
 
-export function getAstFromContent(content: string) {
-    return parse(content, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
+export function getAstFromContent(content: string): T.File | null {
+    try {
+        return parse(content, {
+            sourceType: 'module',
+            plugins: [
+                'decorators-legacy',
+                'classProperties',
+                'typescript',
+                'jsx',
+            ],
+        });
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
 }
 
 export function getAstFromCodeblock(code: string): T.JSXElement | undefined {

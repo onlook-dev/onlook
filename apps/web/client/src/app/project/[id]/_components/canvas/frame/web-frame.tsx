@@ -125,7 +125,7 @@ export const WebFrameComponent = observer(
                 canGoBack: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
                 goForward: () => iframe.contentWindow?.history.forward(),
                 goBack: () => iframe.contentWindow?.history.back(),
-                reload: () => iframe.contentWindow?.location.reload(),
+                reload: () => reloadIframe(),
                 isLoading: () => iframe.contentDocument?.readyState !== 'complete',
             };
 

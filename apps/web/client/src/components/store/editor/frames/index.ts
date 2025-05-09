@@ -100,9 +100,18 @@ export class FramesManager {
         // this.editorEngine?.errors.clear();
     }
 
-    reload() {
+    reloadAll() {
         for (const frame of this.selected) {
             frame.view.reload();
         }
+    }
+
+    reload(id: string) {
+        const frame = this.frameIdToData.get(id);
+        if (!frame) {
+            console.error('Frame not found', id);
+            return;
+        }
+        frame.view.reload();
     }
 }

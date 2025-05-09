@@ -3,7 +3,7 @@ import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@o
 import type { TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import localforage from 'localforage';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { FileSyncManager } from './file-sync';
 import { isSubdirectory, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
@@ -18,6 +18,16 @@ export class SandboxManager {
 
     constructor() {
         makeAutoObservable(this);
+
+        reaction(
+            () => this.session.session,
+            (session) => {
+                console.log('Session changed', session);
+                if (session) {
+                    this.index();
+                }
+            },
+        );
     }
 
     async index() {
@@ -235,6 +245,12 @@ export class SandboxManager {
     }
 
     async processFileForMapping(file: string) {
+        // Only process JSX files
+        const extension = file.split('.').pop();
+        if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
+            return;
+        }
+
         const normalizedPath = normalizePath(file);
         await this.templateNodeMap.processFileForMapping(
             normalizedPath,
