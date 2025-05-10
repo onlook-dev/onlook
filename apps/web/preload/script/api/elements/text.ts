@@ -27,7 +27,7 @@ export function startEditingText(domId: string): EditTextResult | null {
     let targetEl: HTMLElement | null = null;
     if (childNodes.length === 0) {
         targetEl = el as HTMLElement;
-    } else if (childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+    } else if (childNodes.length === 1 && el.childNodes[0]?.nodeType === Node.TEXT_NODE) {
         targetEl = el as HTMLElement;
     }
     if (!targetEl) {

@@ -1,5 +1,5 @@
-import { type NodePath, type t as T, types as t } from '../packages';
 import type { CodeMove } from '@onlook/models/actions';
+import { type NodePath, type t as T } from '../packages';
 import { addKeyToElement, getOidFromJsxElement, jsxFilter } from './helpers';
 
 export function moveElementInNode(path: NodePath<T.JSXElement>, element: CodeMove): void {
@@ -25,6 +25,10 @@ export function moveElementInNode(path: NodePath<T.JSXElement>, element: CodeMov
 
     const targetIndex = Math.min(element.location.index, jsxElements.length);
     const targetChild = jsxElements[targetIndex];
+    if (!targetChild) {
+        console.error('Target child not found');
+        return;
+    }
     const targetChildIndex = children.indexOf(targetChild);
     const originalIndex = children.indexOf(elementToMove);
 

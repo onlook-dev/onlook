@@ -12,7 +12,6 @@ export default function Page() {
         projectsManager.fetchProjects();
     }, []);
 
-
     if (projectsManager.isFetching) {
         return <div>Loading projects...</div>;
     }

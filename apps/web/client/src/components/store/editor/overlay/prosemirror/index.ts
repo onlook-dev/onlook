@@ -38,15 +38,15 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
     tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
 
     // Apply container styles
-    const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize));
-    const lineHeight = adaptValueToCanvas(parseFloat(styles.lineHeight));
+    const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize ?? ''));
+    const lineHeight = adaptValueToCanvas(parseFloat(styles.lineHeight ?? ''));
 
     Object.assign(editorView.dom.style, {
         fontSize: `${fontSize}px`,
         lineHeight: `${lineHeight}px`,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,
-        color: isColorEmpty(styles.color) ? 'inherit' : styles.color,
+        color: isColorEmpty(styles.color ?? '') ? 'inherit' : styles.color,
         textAlign: styles.textAlign,
         textDecoration: styles.textDecoration,
         letterSpacing: styles.letterSpacing,

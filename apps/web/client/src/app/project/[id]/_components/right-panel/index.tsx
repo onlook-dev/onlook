@@ -50,7 +50,10 @@ export const RightPanel = observer(() => {
                 >
                     <TabsList className="flex flex-row h-12 w-full border-b items-center bg-transparent select-none px-2 justify-between">
                         <div className="flex flex-row items-center gap-2 ">
-                            <ChatPanelDropdown>
+                            <ChatPanelDropdown
+                                isChatHistoryOpen={isChatHistoryOpen}
+                                setIsChatHistoryOpen={setIsChatHistoryOpen}
+                            >
                                 <TabsTrigger
                                     className="bg-transparent py-2 px-1 text-small hover:text-foreground-hover"
                                     value={EditorTabValue.CHAT}

@@ -1,5 +1,5 @@
-import { type NodePath, type t as T, types as t } from '../packages';
 import type { CodeRemove } from '@onlook/models/actions';
+import { type NodePath, type t as T } from '../packages';
 import { addKeyToElement, jsxFilter } from './helpers';
 
 export function removeElementFromNode(path: NodePath<T.JSXElement>, element: CodeRemove): void {
@@ -27,6 +27,10 @@ export function removeElementAtIndex(
 ) {
     if (index >= 0 && index < jsxElements.length) {
         const elementToRemove = jsxElements[index];
+        if (!elementToRemove) {
+            console.error('Element to be removed not found');
+            return;
+        }
         const indexInChildren = children.indexOf(elementToRemove);
 
         if (indexInChildren !== -1) {

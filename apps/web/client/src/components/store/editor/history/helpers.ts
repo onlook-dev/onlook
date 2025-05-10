@@ -11,7 +11,7 @@ import type {
     UpdateStyleAction,
     WriteCodeAction,
 } from '@onlook/models/actions';
-import { assertNever, createOid, createDomId } from '@onlook/utility';
+import { assertNever, createDomId, createOid } from '@onlook/utility';
 
 export function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
@@ -81,7 +81,7 @@ export function undoAction(action: Action): Action {
                 ),
                 editText: action.editText,
                 pasteParams: action.pasteParams ? { ...action.pasteParams } : null,
-                codeBlock: action.codeBlock ? { ...action.codeBlock } : null,
+                codeBlock: action.codeBlock,
             };
             return insertAction;
         case 'move-element':

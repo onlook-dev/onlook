@@ -5,7 +5,9 @@ import { frames } from "./frame";
 
 export const canvas = pgTable("canvas", {
     id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
+    projectId: uuid("project_id")
+        .notNull()
+        .references(() => projects.id, { onDelete: "cascade", onUpdate: "cascade" }),
     scale: numeric("scale").notNull(),
     x: numeric("x").notNull(),
     y: numeric("y").notNull(),

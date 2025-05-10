@@ -1,5 +1,5 @@
 import { DefaultSettings } from '@onlook/constants';
-import { ChatMessageRole, FrameType } from '@onlook/models';
+import { ChatMessageRole, FrameType, MessageContextType, type ChatMessageContext } from '@onlook/models';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from './client';
 import { canvas, conversations, frames, messages, projects, userProjects, users, type Canvas, type Conversation, type Frame, type Message, type Project, type User } from './schema';
@@ -82,6 +82,35 @@ const conversation1 = {
     updatedAt: new Date(),
 } satisfies Conversation;
 
+const context0 = {
+    type: MessageContextType.FILE,
+    path: 'src/index.ts',
+    displayName: 'index.ts',
+    content: 'console.log("Hello, world!");',
+} satisfies ChatMessageContext;
+
+const context1 = {
+    type: MessageContextType.HIGHLIGHT,
+    path: 'src/index.ts',
+    displayName: 'index.ts',
+    content: 'console.log("Hello, world!");',
+    start: 0,
+    end: 10,
+} satisfies ChatMessageContext;
+
+const context2 = {
+    type: MessageContextType.IMAGE,
+    displayName: 'index.ts',
+    content: 'console.log("Hello, world!");',
+    mimeType: 'image/png',
+} satisfies ChatMessageContext;
+
+const contexts = [
+    context0,
+    context1,
+    context2,
+];
+
 const message0 = {
     id: uuidv4(),
     conversationId: conversation0.id,
@@ -89,8 +118,8 @@ const message0 = {
     content: 'Test message 0',
     createdAt: new Date(),
     applied: false,
-    context: [],
-    snapshots: null,
+    context: contexts,
+    snapshots: {},
     parts: [{ type: 'text', text: 'Test message 0' }],
 } satisfies Message;
 
@@ -101,9 +130,9 @@ const message1 = {
     content: 'Test message 1',
     createdAt: new Date(),
     applied: false,
-    context: [],
+    context: contexts,
     parts: [{ type: 'text', text: 'Test message 1' }],
-    snapshots: null,
+    snapshots: {},
 } satisfies Message;
 
 const message2 = {
@@ -113,9 +142,9 @@ const message2 = {
     content: 'Test message 2',
     createdAt: new Date(),
     applied: false,
-    context: [],
+    context: contexts,
     parts: [{ type: 'text', text: 'Test message 2' }],
-    snapshots: null,
+    snapshots: {},
 } satisfies Message;
 
 const message3 = {
@@ -125,9 +154,9 @@ const message3 = {
     content: 'Test message 3',
     createdAt: new Date(),
     applied: false,
-    context: [],
+    context: contexts,
     parts: [{ type: 'text', text: 'Test message 3' }],
-    snapshots: null,
+    snapshots: {},
 } satisfies Message;
 
 const message4 = {
@@ -137,9 +166,9 @@ const message4 = {
     content: 'Test message 4',
     createdAt: new Date(),
     applied: false,
-    context: [],
+    context: contexts,
     parts: [{ type: 'text', text: 'Test message 4' }],
-    snapshots: null,
+    snapshots: {},
 } satisfies Message;
 
 export const seedDb = async () => {

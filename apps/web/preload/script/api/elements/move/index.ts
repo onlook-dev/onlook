@@ -45,6 +45,6 @@ export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | 
     }
 
     const referenceNode = parent.children[newIndex];
-    parent.insertBefore(el, referenceNode);
+    parent.insertBefore(el, referenceNode ?? null);
     return el;
 }

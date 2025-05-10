@@ -62,15 +62,19 @@ export const TopBar = observer(
                 }}
                 onMouseDown={handleMouseDown}
             >
-                <div className="flex flex-row items-center justify-between gap-2 w-full"
+                <div
+                    className="flex flex-row items-center justify-between gap-2 w-full"
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
-                        transformOrigin: 'left center'
-                    }}>
+                        transformOrigin: 'left center',
+                    }}
+                >
                     <Button variant="ghost" size="icon" onClick={handleReload}>
                         <Icons.Reload />
                     </Button>
-                    <div className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">{frame.url}</div>
+                    <div className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">
+                        {frame.url}
+                    </div>
                     <Link className="ml-auto" href={frame.url} target="_blank">
                         <Button variant="ghost" size="icon">
                             <Icons.ExternalLink />

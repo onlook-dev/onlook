@@ -1,7 +1,7 @@
-import { type NodePath, type t as T, types as t, traverse } from './packages';
 import { EditorAttributes } from '@onlook/constants';
 import { createOid } from '@onlook/utility';
 import { isReactFragment } from './helpers';
+import { type NodePath, type t as T, types as t, traverse } from './packages';
 
 export function addOidsToAst(ast: T.File): { ast: T.File, modified: boolean } {
     const oids: Set<string> = new Set();
@@ -57,6 +57,10 @@ export function getExistingOid(attributes: (T.JSXAttribute | T.JSXSpreadAttribut
     const existingAttr = attributes[existingAttrIndex]
 
     if (t.isJSXSpreadAttribute(existingAttr)) {
+        return null
+    }
+
+    if (!existingAttr) {
         return null
     }
 

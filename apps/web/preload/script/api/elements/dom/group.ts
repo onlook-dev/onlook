@@ -35,7 +35,7 @@ export function groupElements(
 
     // Insert container at the position of the first child
     const insertIndex = Math.min(...childrenWithIndices.map((c) => c.index));
-    parentEl.insertBefore(containerEl, parentEl.children[insertIndex]);
+    parentEl.insertBefore(containerEl, parentEl.children[insertIndex] ?? null);
 
     // Move children into container
     childrenWithIndices.forEach(({ element }) => {

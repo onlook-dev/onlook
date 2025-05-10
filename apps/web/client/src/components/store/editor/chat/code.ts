@@ -155,5 +155,5 @@ export class ChatCodeManager {
         return fileToCode;
     }
 
-    clear() { }
+    clear() {}
 }

@@ -31,7 +31,11 @@ function findClosestIndex(container: HTMLElement, y: number): number {
         }
     });
 
-    const closestRect = children[closestIndex].getBoundingClientRect();
+    const closestRect = children[closestIndex]?.getBoundingClientRect();
+
+    if (!closestRect) {
+        return 0;
+    }
 
     const closestMiddle = closestRect.top + closestRect.height / 2;
 

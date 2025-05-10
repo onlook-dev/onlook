@@ -96,7 +96,10 @@ export class PromptProvider {
         }
 
         if (project.length > 0) {
-            prompt += this.getProjectContext(project[0]);
+            const projectContext = project[0];
+            if (projectContext) {
+                prompt += this.getProjectContext(projectContext);
+            }
         }
 
         if (this.shouldWrapXml) {

@@ -1,4 +1,3 @@
-import { type NodePath, type t as T, types as t } from '../packages';
 import {
     CoreElementType,
     DynamicType,
@@ -6,6 +5,7 @@ import {
     type TemplateNode,
     type TemplateTag
 } from '@onlook/models';
+import { types as t, type NodePath, type t as T } from '../packages';
 
 export function createTemplateNode(
     path: NodePath<T.JSXElement>,
@@ -23,7 +23,7 @@ export function createTemplateNode(
         path: filename,
         startTag,
         endTag,
-        component,
+        component: component ?? null,
         dynamicType,
         coreElementType,
     };

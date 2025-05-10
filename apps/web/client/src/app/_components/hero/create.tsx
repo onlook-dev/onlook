@@ -38,7 +38,7 @@ export function Create() {
 
     const handleBlankSubmit = async () => {
         // projectsManager.create.sendPrompt(inputValue, selectedImages, false);
-        projectsManager.createProject(inputValue);
+        projectsManager.createProject(inputValue, []);
     };
 
     const handleDragOver = (e: React.DragEvent) => {

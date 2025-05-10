@@ -58,7 +58,6 @@ export class LayersManager {
     }
 
     get filteredLayers(): LayerNode[] {
-        return FAKE_DATA;
         const selectedWebviews = this.editorEngine.frames.selected;
         if (selectedWebviews.length === 0) {
             return this.layers;

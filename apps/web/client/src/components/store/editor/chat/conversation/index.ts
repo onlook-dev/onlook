@@ -1,14 +1,15 @@
 import { type ProjectManager } from '@/components/store/project/manager';
 import { api } from '@/trpc/client';
 import { sendAnalytics } from '@/utils/analytics';
-import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
+import { fromConversation, fromMessage } from '@onlook/db';
+import { type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Project } from '@onlook/models/project';
 import type { Message } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../../engine';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
-import { ChatConversationImpl } from './conversation';
+import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
 
 export class ConversationManager {
     projectId: string | null = null;
@@ -115,27 +116,6 @@ export class ConversationManager {
         sendAnalytics('delete conversation');
     }
 
-    async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
-        const res = await api.project.getConversationsByProjectId.query({ id });
-        return res;
-    }
-
-    deleteConversationInStorage(id: string) {
-        console.log('deleteConversationInStorage', id);
-        // invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
-    }
-
-    saveConversationToStorage() {
-        if (!this.current) {
-            console.error('No conversation found');
-            return Promise.resolve();
-        }
-        console.log('saveConversationToStorage', this.current);
-        // invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
-        //     conversation: this.current,
-        // });
-    }
-
     addUserMessage(
         content: string,
         context: ChatMessageContext[],
@@ -145,8 +125,7 @@ export class ConversationManager {
             return;
         }
         const newMessage = UserChatMessageImpl.fromStringContent(content, context);
-        this.current.appendMessage(newMessage);
-        this.saveConversationToStorage();
+        this.addMessage(newMessage);
         return newMessage;
     }
 
@@ -156,8 +135,53 @@ export class ConversationManager {
             return;
         }
         const newMessage = AssistantChatMessageImpl.fromMessage(message);
-        this.current.appendMessage(newMessage);
-        this.saveConversationToStorage();
+        this.addMessage(newMessage);
         return newMessage;
+    }
+
+    addMessage(message: ChatMessageImpl) {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        this.current.appendMessage(message);
+    }
+
+    async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
+        const res = await api.chat.getConversation.query({ projectId: id });
+        return res;
+    }
+
+    async deleteConversationInStorage(id: string) {
+        const success = await api.chat.deleteConversation.mutate({ conversationId: id });
+        if (!success) {
+            console.error('Failed to delete conversation in storage', id);
+        }
+    }
+
+    async saveConversationToStorage() {
+        if (!this.current) {
+            console.error('No conversation found');
+            return Promise.resolve();
+        }
+        const res = await api.chat.saveConversation.mutate({
+            conversation: fromConversation(this.current),
+        });
+        if (!res) {
+            console.error('Failed to save conversation to storage', this.current);
+        }
+    }
+
+    async saveMessageToStorage(message: ChatMessageImpl) {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const res = await api.chat.saveMessage.mutate({
+            message: fromMessage(this.current.id, message),
+        });
+        if (!res) {
+            console.error('Failed to save message to storage', message);
+        }
     }
 }

@@ -13,7 +13,15 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 
-export const ChatPanelDropdown = ({ children }: { children: React.ReactNode }) => {
+export const ChatPanelDropdown = ({
+    children,
+    isChatHistoryOpen,
+    setIsChatHistoryOpen,
+}: {
+    children: React.ReactNode;
+    isChatHistoryOpen: boolean;
+    setIsChatHistoryOpen: (isOpen: boolean) => void;
+}) => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
 

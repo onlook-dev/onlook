@@ -189,9 +189,9 @@ function convertFontString(fontString: string): string {
         return '';
     }
 
-    const firstFont = fontString.split(',')[0].trim();
-    const cleanFont = firstFont.replace(/^__/, '').replace(/_[a-f0-9]+$/, '');
-    const withoutFallback = cleanFont.replace(/_Fallback$/, '');
+    const firstFont = fontString.split(',')[0]?.trim();
+    const cleanFont = firstFont?.replace(/^__/, '').replace(/_[a-f0-9]+$/, '');
+    const withoutFallback = cleanFont?.replace(/_Fallback$/, '');
 
     return camelCase(withoutFallback);
 }

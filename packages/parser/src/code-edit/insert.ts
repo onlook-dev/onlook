@@ -1,9 +1,9 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { CodeInsert, PasteParams } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
+import { type NodePath, type t as T, types as t } from '../packages';
 import { getAstFromCodeblock } from '../parse';
 import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
-import { type NodePath, type t as T, types as t } from '../packages';
 
 export function insertElementToNode(path: NodePath<T.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);
@@ -99,6 +99,10 @@ export function insertAtIndex(
             path.node.children.push(newElement);
         } else {
             const targetChild = jsxElements[targetIndex];
+            if (!targetChild) {
+                console.error('Target child not found');
+                return;
+            }
             const targetChildIndex = path.node.children.indexOf(targetChild);
             path.node.children.splice(targetChildIndex, 0, newElement);
         }

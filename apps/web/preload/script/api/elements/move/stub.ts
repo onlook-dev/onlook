@@ -41,8 +41,8 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
 
     const parentStyle = window.getComputedStyle(parent);
     const isGridLayout = parentStyle.display === 'grid';
-    const isFlexRow = !isGridLayout && parentStyle.display === 'flex' && 
-                      (parentStyle.flexDirection === 'row' || parentStyle.flexDirection === '');
+    const isFlexRow = !isGridLayout && parentStyle.display === 'flex' &&
+        (parentStyle.flexDirection === 'row' || parentStyle.flexDirection === '');
 
     if (isFlexRow) {
         displayDirection = DisplayDirection.HORIZONTAL;
@@ -67,7 +67,7 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
     if (insertionIndex >= siblings.length) {
         parent.appendChild(stub);
     } else {
-        parent.insertBefore(stub, siblings[insertionIndex]);
+        parent.insertBefore(stub, siblings[insertionIndex] ?? null);
     }
 
     stub.style.display = 'block';

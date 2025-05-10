@@ -4,6 +4,7 @@ import { EditorMode } from '@onlook/models';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
@@ -49,14 +50,14 @@ export const ModeToggle = observer(() => {
                     <Tooltip key={item.mode}>
                         <TooltipTrigger asChild>
                             <ToggleGroupItem
-                                variant={'custom-overline'}
                                 value={item.mode}
                                 aria-label={item.hotkey.description}
-                                className={`transition-all duration-150 ease-in-out px-4 py-2 whitespace-nowrap ${
+                                className={cn(
+                                    'transition-all duration-150 ease-in-out px-4 py-2 whitespace-nowrap',
                                     mode === item.mode
                                         ? 'text-active font-medium hover:text-active'
-                                        : 'font-normal hover:text-foreground-hover'
-                                }`}
+                                        : 'font-normal hover:text-foreground-hover',
+                                )}
                             >
                                 {t(`editor.modes.${item.mode.toLowerCase()}.name`)}
                             </ToggleGroupItem>

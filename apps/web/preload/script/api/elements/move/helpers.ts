@@ -12,10 +12,10 @@ export function getDisplayDirection(element: HTMLElement): DisplayDirection {
     const firstChild = children[0];
     const secondChild = children[1];
 
-    const firstRect = firstChild.getBoundingClientRect();
-    const secondRect = secondChild.getBoundingClientRect();
+    const firstRect = firstChild?.getBoundingClientRect();
+    const secondRect = secondChild?.getBoundingClientRect();
 
-    if (Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
+    if (firstRect && secondRect && Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
         return DisplayDirection.VERTICAL;
     } else {
         return DisplayDirection.HORIZONTAL;
@@ -31,7 +31,7 @@ export function findInsertionIndex(
     if (elements.length === 0) {
         return 0;
     }
-    
+
     const midPoints = elements.map((el) => {
         const rect = el.getBoundingClientRect();
         return {
@@ -43,20 +43,22 @@ export function findInsertionIndex(
     // For horizontal layouts
     if (displayDirection === DisplayDirection.HORIZONTAL) {
         for (let i = 0; i < midPoints.length; i++) {
-            if (x < midPoints[i].x) {
-                return i;
-            }
-        }
-    } 
-    // For vertical layouts
-    else {
-        for (let i = 0; i < midPoints.length; i++) {
-            if (y < midPoints[i].y) {
+            const midPoint = midPoints[i];
+            if (midPoint && x < midPoint.x) {
                 return i;
             }
         }
     }
-    
+    // For vertical layouts
+    else {
+        for (let i = 0; i < midPoints.length; i++) {
+            const midPoint = midPoints[i];
+            if (midPoint && y < midPoint.y) {
+                return i;
+            }
+        }
+    }
+
     return elements.length;
 }
 

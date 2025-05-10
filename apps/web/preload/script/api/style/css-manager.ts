@@ -189,7 +189,7 @@ class CSSManager {
         if (!key) {
             return '';
         }
-        return key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        return key.replace(/-([a-z])/g, (g) => g[1]?.toUpperCase() ?? '');
     }
 
     public removeStyles(domId: string, jsStyles: string[]) {

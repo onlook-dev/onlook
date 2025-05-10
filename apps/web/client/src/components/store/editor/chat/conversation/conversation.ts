@@ -1,4 +1,6 @@
+import { api } from '@/trpc/client';
 import { MAX_NAME_LENGTH } from '@onlook/constants';
+import { fromMessage } from '@onlook/db';
 import {
     ChatMessageRole,
     type AssistantChatMessage,
@@ -12,7 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 
-type ChatMessageImpl = UserChatMessageImpl | AssistantChatMessageImpl;
+export type ChatMessageImpl = UserChatMessageImpl | AssistantChatMessageImpl;
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
@@ -97,9 +99,12 @@ export class ChatConversationImpl implements ChatConversation {
         this.messages[index] = message;
         this.updatedAt = new Date().toISOString();
         this.messages = [...this.messages];
+        this.saveMessageToStorage(message);
     }
 
-    updateCodeReverted(id: string) {
-        this.messages = [...this.messages];
+    saveMessageToStorage(message: ChatMessageImpl) {
+        api.chat.saveMessage.mutate({
+            message: fromMessage(this.id, message),
+        });
     }
 }

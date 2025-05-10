@@ -8,5 +8,5 @@ export const truncate = (str: string | null | undefined, length: number): string
 
 export function getTruncatedFileName(fileName: string): string {
     const parts = fileName.split(platformSlash);
-    return parts[parts.length - 1];
+    return parts[parts.length - 1] ?? '';
 }

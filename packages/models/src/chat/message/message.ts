@@ -19,10 +19,12 @@ export interface UserChatMessage extends Message {
 export interface AssistantChatMessage extends Message {
     role: ChatMessageRole.ASSISTANT;
     applied: boolean;
-    snapshots: Record<string, CodeDiff> | null;
+    snapshots: ChatSnapshot;
     parts: Message['parts'];
     content: string;
 }
+
+export type ChatSnapshot = Record<string, CodeDiff>;
 
 export interface SystemChatMessage extends Message {
     role: ChatMessageRole.SYSTEM;

@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import type { Project } from '@onlook/models';
+import type { ImageMessageContext, Project } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from '../user/manager';
 
@@ -16,19 +16,21 @@ export class ProjectsManager {
         );
     }
 
+    createProject(name: string, images: ImageMessageContext[]) {
+        console.log('createProject', name, images);
+    }
+
     async fetchProjects() {
         if (!this.userManager.user?.id) {
             console.error('No user ID found');
             return;
         }
         this.isFetching = true;
-        this._projects = await api.project.getPreviewProjectsByUserId.query({ id: this.userManager.user.id });
+        this._projects = await api.project.getPreviewProjects.query({
+            userId: this.userManager.user.id,
+        });
         this.isFetching = false;
     }
-
-    saveProjects() { }
-
-    deleteProject(project: Project) { }
 
     get projects() {
         return this._projects;
@@ -36,6 +38,9 @@ export class ProjectsManager {
 
     set projects(newProjects: Project[]) {
         this._projects = newProjects;
-        this.saveProjects();
+    }
+
+    deleteProject(project: Project) {
+        api.project.delete.mutate({ id: project.id });
     }
 }

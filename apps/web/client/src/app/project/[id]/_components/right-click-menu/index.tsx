@@ -193,7 +193,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     };
 
     function viewSource(oid: string | null) {
-        editorEngine.code.viewSource(oid);
+        if (!oid) {
+            console.error('No oid found');
+            return;
+        }
+        editorEngine.code.viewCodeBlock(oid);
     }
 
     return (

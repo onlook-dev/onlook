@@ -1,5 +1,5 @@
-import { types as t, type NodePath, type t as T } from '@onlook/parser';
 import type { Font } from '@onlook/models';
+import { types as t, type NodePath, type t as T } from '@onlook/parser';
 
 
 const FONT_WEIGHT_REGEX =
@@ -206,6 +206,10 @@ export function removeFontsFromClassName(
 
                     for (let i = 0; i <= expressionsToKeep.length; i++) {
                         const raw = i < cleanedParts.length ? cleanedParts[i] : '';
+                        if (!raw) {
+                            console.error('Raw part is undefined');
+                            continue;
+                        }
                         newQuasis.push(
                             t.templateElement({ raw, cooked: raw }, i === expressionsToKeep.length),
                         );

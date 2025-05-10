@@ -1,4 +1,3 @@
-import { type NodePath, type t as T, types as t, traverse } from '../packages';
 import {
     CoreElementType,
     DynamicType,
@@ -6,6 +5,7 @@ import {
 } from '@onlook/models';
 import { isReactFragment } from '../helpers';
 import { getExistingOid } from '../ids';
+import { type NodePath, type t as T, types as t, traverse } from '../packages';
 import { createTemplateNode } from './helpers';
 
 export function createTemplateNodeMap(ast: T.File, filename: string): Map<string, TemplateNode> {
@@ -38,7 +38,7 @@ export function createTemplateNodeMap(ast: T.File, filename: string): Map<string
         },
         VariableDeclaration: {
             enter(path) {
-                if (!path.node.declarations[0].id || !t.isIdentifier(path.node.declarations[0].id)) {
+                if (!path.node.declarations[0]?.id || !t.isIdentifier(path.node.declarations[0].id)) {
                     return;
                 }
                 componentStack.push(path.node.declarations[0].id.name);

@@ -1,5 +1,5 @@
-import { ChatMessageRole, type ChatConversation, type ChatMessage, type ChatMessageContext, type CodeDiff } from "@onlook/models";
-import type { Message as AiMessage, TextPart } from "ai";
+import { ChatMessageRole, type ChatConversation, type ChatMessage, type ChatMessageContext, type ChatSnapshot } from "@onlook/models";
+import type { TextPart } from "ai";
 import type { Conversation as DbConversation, Message as DbMessage } from "../schema";
 
 export const toConversation = (dbConversation: DbConversation, messages: DbMessage[]): ChatConversation => {
@@ -28,19 +28,19 @@ export const toMessage = (dbMessage: DbMessage): ChatMessage => {
         return {
             id: dbMessage.id,
             content: dbMessage.content,
-            role: dbMessage.role as ChatMessageRole.ASSISTANT,
+            role: dbMessage.role,
             createdAt: dbMessage.createdAt,
-            applied: dbMessage.applied ?? false,
-            snapshots: null,
-            parts: dbMessage.parts as AiMessage['parts'],
+            applied: dbMessage.applied,
+            snapshots: dbMessage.snapshots,
+            parts: dbMessage.parts,
         }
     } else if (dbMessage.role === ChatMessageRole.USER) {
         return {
             id: dbMessage.id,
             content: dbMessage.content,
-            role: dbMessage.role as ChatMessageRole.USER,
+            role: dbMessage.role,
             createdAt: dbMessage.createdAt,
-            context: [],
+            context: dbMessage.context,
             parts: dbMessage.parts as TextPart[],
         }
     } else {
@@ -54,21 +54,21 @@ export const toMessage = (dbMessage: DbMessage): ChatMessage => {
 }
 
 export const fromMessage = (conversationId: string, message: ChatMessage): DbMessage => {
-    let snapshots: Record<string, CodeDiff> | null = null;
+    let snapshots: ChatSnapshot = {};
     let context: ChatMessageContext[] = [];
 
     if (message.role === ChatMessageRole.ASSISTANT) {
-        snapshots = message.snapshots ?? null;
+        snapshots = message.snapshots;
     }
 
     if (message.role === ChatMessageRole.USER) {
-        context = message.context ?? [];
+        context = message.context;
     }
 
     return {
         id: message.id,
         content: message.content,
-        role: message.role as ChatMessageRole,
+        role: message.role,
         createdAt: message.createdAt ?? new Date(),
         conversationId,
         applied: message.role === ChatMessageRole.ASSISTANT ? message.applied ?? false : false,
