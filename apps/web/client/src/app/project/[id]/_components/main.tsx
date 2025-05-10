@@ -3,9 +3,11 @@
 import { ChatProvider } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
-import type { Project } from '@onlook/models';
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
+import Link from 'next/link';
 import { useEffect } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 import { BottomBar } from './bottom-bar';
@@ -15,23 +17,41 @@ import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
-export const Main = observer(({ project }: { project: Project }) => {
+export const Main = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
     const { tabState } = useTabActive();
+    const { data: result, isLoading } = api.project.getFullProjectById.useQuery({ id: projectId });
 
     useEffect(() => {
+        if (!result) {
+            return;
+        }
+        const { project, canvas, frames, } = result;
         projectManager.project = project;
-        editorEngine.canvas.applyProject(project);
+
         if (project.sandbox?.id) {
-            editorEngine.sandbox.session.start(project.sandbox.id)
+            editorEngine.sandbox.session.start(project.sandbox.id);
         } else {
             console.error('No sandbox id');
         }
+
+        if (canvas) {
+            editorEngine.canvas.applyCanvas(canvas);
+        } else {
+            console.error('No canvas');
+        }
+
+        if (frames) {
+            editorEngine.canvas.applyFrames(frames);
+        } else {
+            console.error('No frames');
+        }
+
         return () => {
             editorEngine.sandbox.clear();
         };
-    }, [project]);
+    }, [result]);
 
     useEffect(() => {
         if (tabState === 'reactivated' && editorEngine.sandbox.session.session) {
@@ -39,8 +59,25 @@ export const Main = observer(({ project }: { project: Project }) => {
         }
     }, [tabState]);
 
+    if (isLoading) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center">
+                <div className="text-xl">Loading...</div>
+            </div>
+        );
+    }
+
+    if (!result) {
+        return (
+            <div className="h-screen w-screen flex flex-col items-center justify-center gap-4">
+                <div className="text-xl">Project not found</div>
+                <Link href={Routes.PROJECTS} className="text-sm text-foreground-secondary">Go to projects</Link>
+            </div>
+        );
+    }
+
     // TODO: Add better loading state
-    // if (editorEngine.sandbox.session.isConnecting) {
+    // if (editorEngine.sandbox.session.isConnecting || isLoading) {
     //     return (
     //         <div className="h-screen w-screen flex items-center justify-center gap-2">
     //             <Icons.Shadow className="h-6 w-6 animate-spin" />

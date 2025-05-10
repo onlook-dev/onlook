@@ -3,15 +3,15 @@ import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { userProjects } from '../user';
 import { canvas } from './canvas';
+import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from './chat/conversation';
 
 export const projects = pgTable("projects", {
     id: uuid("id").primaryKey().defaultRandom(),
     name: varchar("name").notNull(),
-    previewUrl: varchar("preview_url").notNull(),
     sandboxId: varchar("sandbox_id").notNull(),
     sandboxUrl: varchar("sandbox_url").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     previewImg: varchar("preview_img"),
 }).enableRLS();
 
@@ -23,6 +23,9 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
         references: [canvas.projectId],
     }),
     userProjects: many(userProjects),
+    conversations: many(conversations, {
+        relationName: PROJECT_CONVERSATION_RELATION_NAME,
+    }),
 }));
 
 export type Project = typeof projects.$inferSelect;

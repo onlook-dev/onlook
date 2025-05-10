@@ -1,35 +1,54 @@
-import { projectInsertSchema, projects, userProjects } from '@onlook/db';
+import { conversations, createDefaultCanvas, projectInsertSchema, projects, toCanvas, toConversation, toFrame, toProject, userProjects, type Canvas } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const projectRouter = createTRPCRouter({
-    getById: protectedProcedure
+    getFullProjectById: protectedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input }) => {
             const project = await ctx.db.query.projects.findFirst({
                 where: eq(projects.id, input.id),
+                with: {
+                    canvas: {
+                        with: {
+                            frames: true,
+                        },
+                    },
+                },
             });
-            return project;
+            if (!project) {
+                console.error('project not found');
+                return null;
+            }
+            const canvas: Canvas = project.canvas ? project.canvas : createDefaultCanvas(project.id);
+            return {
+                project: toProject(project),
+                canvas: toCanvas(canvas),
+                frames: project.canvas?.frames.map(toFrame) ?? [],
+            }
         }),
-    getByUserId: protectedProcedure
+    getConversationsByProjectId: protectedProcedure
+        .input(z.object({ id: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const dbConversations = await ctx.db.query.conversations.findMany({
+                where: eq(conversations.projectId, input.id),
+                with: {
+                    messages: true,
+                },
+            });
+            return dbConversations.map((conversation) => toConversation(conversation, conversation.messages));
+        }),
+    getPreviewProjectsByUserId: protectedProcedure
         .input(z.object({ id: z.string() }))
         .query(async ({ ctx, input }) => {
             const projects = await ctx.db.query.userProjects.findMany({
                 where: eq(userProjects.userId, input.id),
                 with: {
-                    project: {
-                        with: {
-                            canvas: {
-                                with: {
-                                    frames: true,
-                                },
-                            },
-                        },
-                    },
+                    project: true,
                 },
             });
-            return projects;
+            return projects.map((project) => toProject(project.project));
         }),
     create: protectedProcedure.input(projectInsertSchema).mutation(async ({ ctx, input }) => {
         const project = await ctx.db.insert(projects).values(input).returning();

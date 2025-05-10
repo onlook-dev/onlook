@@ -1,8 +1,7 @@
-import type { Frame, RectPosition } from "./frame";
+import type { RectPosition } from "./rect";
 
 export interface Canvas {
     id: string;
-    scale: number | null;
-    frames: Frame[] | null;
-    position: RectPosition | null;
+    scale: number;
+    position: RectPosition;
 }

@@ -1,4 +1,3 @@
-import type { Canvas } from './canvas';
 import type { ProjectDomain } from './domain';
 
 export interface Project {
@@ -13,6 +12,5 @@ export interface Project {
         id: string;
         url: string;
     };
-    canvas: Canvas;
     domains: ProjectDomain;
 }

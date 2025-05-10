@@ -1,11 +1,10 @@
 import { DefaultSettings } from '@onlook/constants';
-import type { Frame, Project, RectPosition, WebFrame } from '@onlook/models';
+import type { Canvas, Frame, RectPosition, WebFrame } from '@onlook/models';
 import { FrameType } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid/non-secure';
+import { v4 as uuidv4 } from 'uuid';
 import { FrameImpl, WebFrameImpl } from './frame';
-
 export class CanvasManager {
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
@@ -16,10 +15,9 @@ export class CanvasManager {
         makeAutoObservable(this);
     }
 
-    applyProject(project: Project) {
-        this.scale = project.canvas?.scale ?? DefaultSettings.SCALE;
-        this.position = project.canvas?.position ?? this.getDefaultPanPosition();
-        this.applyFrames(project.canvas?.frames ?? []);
+    applyCanvas(canvas: Canvas) {
+        this.scale = canvas.scale ?? DefaultSettings.SCALE;
+        this.position = canvas.position ?? this.getDefaultPanPosition();
     }
 
     applyFrames(frames: Frame[]) {
@@ -106,7 +104,7 @@ export class CanvasManager {
 
     getDefaultFrame(defaults: Partial<Frame>): Frame {
         return {
-            id: defaults.id ?? nanoid(),
+            id: defaults.id ?? uuidv4(),
             position: defaults.position ?? DefaultSettings.FRAME_POSITION,
             dimension: defaults.dimension ?? DefaultSettings.FRAME_DIMENSION,
             type: FrameType.WEB,

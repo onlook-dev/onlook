@@ -1,14 +1,14 @@
-import type { RectPosition } from "@onlook/models";
 import { relations } from "drizzle-orm";
-import { jsonb, numeric, pgTable, uuid } from "drizzle-orm/pg-core";
+import { numeric, pgTable, uuid } from "drizzle-orm/pg-core";
+import { projects } from "../project";
 import { frames } from "./frame";
-import { projects } from "./project";
 
 export const canvas = pgTable("canvas", {
     id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id").references(() => projects.id).notNull(),
+    projectId: uuid("project_id").references(() => projects.id, { onDelete: "cascade" }).notNull(),
     scale: numeric("scale").notNull(),
-    position: jsonb("position").$type<RectPosition | null>(),
+    x: numeric("x").notNull(),
+    y: numeric("y").notNull(),
 }).enableRLS();
 
 export type Canvas = typeof canvas.$inferSelect;

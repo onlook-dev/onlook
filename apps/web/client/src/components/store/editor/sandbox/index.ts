@@ -22,7 +22,6 @@ export class SandboxManager {
         reaction(
             () => this.session.session,
             (session) => {
-                console.log('Session changed', session);
                 if (session) {
                     this.index();
                 }

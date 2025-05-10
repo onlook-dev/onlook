@@ -8,7 +8,7 @@ import {
 } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid/non-secure';
+import { v4 as uuidv4 } from 'uuid';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 
@@ -30,7 +30,7 @@ export class ChatConversationImpl implements ChatConversation {
 
     constructor(projectId: string, messages: ChatMessageImpl[]) {
         makeAutoObservable(this);
-        this.id = nanoid();
+        this.id = uuidv4();
         this.projectId = projectId;
         this.messages = messages;
         this.createdAt = new Date().toISOString();
@@ -42,10 +42,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     static fromJSON(data: ChatConversation) {
-        const conversation = new ChatConversationImpl(data.projectId, []);
-        conversation.id = data.id;
-        conversation.displayName = data.displayName;
-        conversation.messages = data.messages
+        const messages = data.messages
             .map((m) => {
                 if (m.role === ChatMessageRole.USER) {
                     return UserChatMessageImpl.fromJSON(m as UserChatMessage);
@@ -57,9 +54,12 @@ export class ChatConversationImpl implements ChatConversation {
                 }
             })
             .filter((m) => m !== null) as ChatMessageImpl[];
+
+        const conversation = new ChatConversationImpl(data.projectId, messages);
+        conversation.id = data.id;
+        conversation.displayName = data.displayName;
         conversation.createdAt = data.createdAt;
         conversation.updatedAt = data.updatedAt;
-
         return conversation;
     }
 

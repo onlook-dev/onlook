@@ -1,3 +1,5 @@
+import type { RectDimension, RectPosition } from "./rect";
+
 export enum FrameType {
     WEB = 'web',
 }
@@ -12,14 +14,4 @@ export interface Frame {
 export interface WebFrame extends Frame {
     url: string;
     type: FrameType.WEB;
-}
-
-export interface RectPosition {
-    x: number;
-    y: number;
-}
-
-export interface RectDimension {
-    width: number;
-    height: number;
 }

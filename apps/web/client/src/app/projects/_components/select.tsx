@@ -33,10 +33,6 @@ export const SelectProject = observer(() => {
         setCurrentProjectIndex(index);
     };
 
-    if (projectsManager.isFetchingProjects) {
-        return <div>Loading projects...</div>;
-    }
-
     return (
         <div className="flex flex-row w-full">
             <div className="w-3/5 h-full">

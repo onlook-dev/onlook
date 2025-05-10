@@ -1,4 +1,5 @@
 import { type ProjectManager } from '@/components/store/project/manager';
+import { api } from '@/trpc/client';
 import { sendAnalytics } from '@/utils/analytics';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import type { Project } from '@onlook/models/project';
@@ -7,7 +8,6 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../../engine';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
-import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
 
 export class ConversationManager {
@@ -116,8 +116,8 @@ export class ConversationManager {
     }
 
     async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
-        return null;
-        return [new ChatConversationImpl(id, MOCK_CHAT_MESSAGES)];
+        const res = await api.project.getConversationsByProjectId.query({ id });
+        return res;
     }
 
     deleteConversationInStorage(id: string) {

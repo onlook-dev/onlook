@@ -1,7 +1,7 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
-import type { Message } from 'ai';
+import type { Message, TextPart } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
 
 export class UserChatMessageImpl implements UserChatMessage {
@@ -9,11 +9,13 @@ export class UserChatMessageImpl implements UserChatMessage {
     role: ChatMessageRole.USER = ChatMessageRole.USER;
     content: string;
     context: ChatMessageContext[] = [];
+    parts: TextPart[] = [];
     promptProvider: PromptProvider;
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
         this.content = content;
+        this.parts = [{ type: 'text', text: content }];
         this.context = context;
         this.promptProvider = new PromptProvider();
     }
@@ -28,8 +30,9 @@ export class UserChatMessageImpl implements UserChatMessage {
         return {
             id: message.id,
             role: message.role,
-            content: message.content,
             context: message.context,
+            parts: message.parts,
+            content: message.content,
         };
     }
 
@@ -50,6 +53,6 @@ export class UserChatMessageImpl implements UserChatMessage {
     }
 
     getStringContent(): string {
-        return this.content;
+        return this.parts.map((part) => part.text).join('');
     }
 }

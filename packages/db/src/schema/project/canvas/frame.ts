@@ -1,20 +1,21 @@
+import { FrameType } from "@onlook/models";
 import { relations } from "drizzle-orm";
 import { numeric, pgEnum, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { canvas } from "./canvas";
 
-export const frameType = pgEnum("frame_type", ["web"]);
+export const frameType = pgEnum("frame_type", FrameType);
 
 export const frames = pgTable("frames", {
     id: uuid("id").primaryKey().defaultRandom(),
-    canvasId: uuid("canvas_id").references(() => canvas.id).notNull(),
+    canvasId: uuid("canvas_id").references(() => canvas.id, { onDelete: "cascade" }).notNull(),
     type: frameType("type").notNull(),
+    url: varchar("url").notNull(),
 
     x: numeric("x").notNull(),
     y: numeric("y").notNull(),
+
     width: numeric("width").notNull(),
     height: numeric("height").notNull(),
-
-    url: varchar("url").notNull(),
 }).enableRLS();
 
 export type Frame = typeof frames.$inferSelect;

@@ -1,3 +1,3 @@
 export * from './canvas';
-export * from './frame';
+export * from './chat';
 export * from './project';
