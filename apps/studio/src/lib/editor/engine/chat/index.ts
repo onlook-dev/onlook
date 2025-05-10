@@ -78,10 +78,13 @@ export class ChatManager {
         }
 
         if (this.isWaiting) {
-            this.messageQueue.push({ content, context });
-            if (this.messageQueue.length > this.maxQueueSize) {
-                this.messageQueue.shift();
+            if (this.messageQueue.length >= this.maxQueueSize) {
+                console.warn('Message queue is full');
+                return;
             }
+            runInAction(() => {
+                this.messageQueue.push({ content, context });
+            });
             return;
         }
 
@@ -112,8 +115,6 @@ export class ChatManager {
             runInAction(() => {
                 this.messageQueue.push({ content });
             });
-
-            console.log(`Message queued. Queue size: ${this.messageQueue.length}`);
             return;
         }
 
