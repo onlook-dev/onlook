@@ -12,7 +12,7 @@ import superjson from 'superjson';
 import { ZodError } from 'zod';
 
 import { createClient } from '@/utils/supabase/server';
-import { db } from '@onlook/db';
+import { db } from '@onlook/db/src/client';
 
 /**
  * 1. CONTEXT
