@@ -29,6 +29,9 @@ export const ChatInput = observer(() => {
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
 
+    const queueSize = editorEngine.chat.queueSize;
+    const MAX_QUEUE_SIZE = 5;
+
     const focusInput = () => {
         requestAnimationFrame(() => {
             textareaRef.current?.focus();
@@ -428,6 +431,11 @@ export const ChatInput = observer(() => {
                         <span className="text-smallPlus">File Reference</span>
                     </Button>
                 </div>
+                {queueSize > 0 && (
+                    <span className="text-micro text-foreground-secondary">
+                        {queueSize} message{queueSize > 1 ? 's' : ''} queued
+                    </span>
+                )}
                 {editorEngine.chat.isWaiting ? (
                     <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
                         <TooltipTrigger asChild>
@@ -450,7 +458,10 @@ export const ChatInput = observer(() => {
                         size={'icon'}
                         variant={'secondary'}
                         className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                        disabled={inputEmpty || editorEngine.chat.isWaiting}
+                        disabled={
+                            inputEmpty ||
+                            (editorEngine.chat.isWaiting && queueSize >= MAX_QUEUE_SIZE)
+                        }
                         onClick={sendMessage}
                     >
                         <Icons.ArrowRight />

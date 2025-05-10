@@ -1,4 +1,9 @@
-import type { AssistantChatMessage, ChatMessage, TokenUsage } from '../message/index.ts';
+import type {
+    AssistantChatMessage,
+    ChatMessage,
+    ChatMessageContext,
+    TokenUsage,
+} from '../message/index.ts';
 
 export type ChatConversation = {
     id: string;
@@ -9,4 +14,9 @@ export type ChatConversation = {
     updatedAt: string;
     summaryMessage?: AssistantChatMessage | null;
     tokenUsage?: TokenUsage;
+};
+
+export type QueuedMessage = {
+    content: string;
+    context?: ChatMessageContext[];
 };
