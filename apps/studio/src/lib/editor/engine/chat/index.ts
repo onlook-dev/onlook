@@ -5,14 +5,16 @@ import {
     ChatMessageRole,
     StreamRequestType,
     type AssistantChatMessage,
+    type ChatMessageContext,
     type CompletedStreamResponse,
     type ErrorStreamResponse,
+    type QueuedMessage,
     type RateLimitedStreamResponse,
 } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 import { ChatCodeManager } from './code';
@@ -31,13 +33,17 @@ export class ChatManager {
     context: ChatContext;
     stream: StreamResolver;
     suggestions: SuggestionManager;
+    messageQueue: QueuedMessage[] = [];
+    private maxQueueSize = 5;
 
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
         private userManager: UserManager,
     ) {
-        makeAutoObservable(this);
+        makeAutoObservable(this, {
+            messageQueue: true,
+        });
         this.context = new ChatContext(this.editorEngine, this.projectsManager);
         this.conversation = new ConversationManager(this.editorEngine, this.projectsManager);
         this.stream = new StreamResolver();
@@ -49,14 +55,41 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    async sendNewMessage(content: string): Promise<void> {
+    get queueSize(): number {
+        return this.messageQueue.length;
+    }
+
+    async processMessageQueue() {
+        if (this.messageQueue.length === 0 || this.isWaiting) {
+            return;
+        }
+        const nextMessage = this.messageQueue.shift()!;
+        await this.processMessage(nextMessage.content, nextMessage.context);
+
+        if (this.messageQueue.length > 0) {
+            await this.processMessageQueue();
+        }
+    }
+
+    private async processMessage(content: string, context?: ChatMessageContext[]) {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
 
-        const context = await this.context.getChatContext();
-        const userMessage = this.conversation.addUserMessage(content, context);
+        if (this.isWaiting) {
+            if (this.messageQueue.length >= this.maxQueueSize) {
+                console.warn('Message queue is full');
+                return;
+            }
+            runInAction(() => {
+                this.messageQueue.push({ content, context });
+            });
+            return;
+        }
+
+        const messageContext = context ?? (await this.context.getChatContext());
+        const userMessage = this.conversation.addUserMessage(content, messageContext);
         this.conversation.current.updateName(content);
         if (!userMessage) {
             console.error('Failed to add user message');
@@ -68,6 +101,27 @@ export class ChatManager {
         await this.sendChatToAi(StreamRequestType.CHAT, content);
     }
 
+    async sendNewMessage(content: string): Promise<void> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return;
+        }
+
+        if (this.isWaiting) {
+            if (this.messageQueue.length >= this.maxQueueSize) {
+                console.warn('Message queue is full');
+                return;
+            }
+            runInAction(() => {
+                this.messageQueue.push({ content });
+            });
+            return;
+        }
+
+        await this.processMessage(content);
+        this.processMessageQueue();
+    }
+
     async sendFixErrorToAi(errors: ParsedError[]): Promise<boolean> {
         if (!this.conversation.current) {
             console.error('No conversation found');
@@ -77,6 +131,22 @@ export class ChatManager {
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const errorContexts = this.context.getMessageContext(errors);
         const projectContexts = this.context.getProjectContext();
+
+        if (this.isWaiting) {
+            if (this.messageQueue.length >= this.maxQueueSize) {
+                console.warn('Message queue is full');
+                return false;
+            }
+            runInAction(() => {
+                this.messageQueue.push({
+                    content: prompt,
+                    context: [...errorContexts, ...projectContexts],
+                });
+            });
+            console.log(`Error-fix message queued. Queue size: ${this.messageQueue.length}`);
+            return true;
+        }
+
         const userMessage = this.conversation.addUserMessage(prompt, [
             ...errorContexts,
             ...projectContexts,
@@ -138,6 +208,10 @@ export class ChatManager {
         const requestId = nanoid();
         invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
             requestId,
+        });
+
+        runInAction(() => {
+            this.messageQueue = [];
         });
         sendAnalytics('stop chat stream');
     }
@@ -204,6 +278,8 @@ export class ChatManager {
         }
 
         this.context.clearAttachments();
+
+        await this.processMessageQueue();
     }
 
     handleNewCoreMessages(messages: CoreMessage[]) {
