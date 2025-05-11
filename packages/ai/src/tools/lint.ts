@@ -5,7 +5,7 @@ import fs from 'fs/promises';
 
 type ESLintMessage = {
     ruleId: string | null;
-    severity: number;
+    severity: 2 | 1 | 0;
     message: string;
     line: number;
     column: number;
@@ -17,6 +17,13 @@ type ESLintMessage = {
         range: [number, number];
         text: string;
     };
+    suggestions?: {
+        desc: string;
+        fix: {
+            range: [number, number];
+            text: string;
+        };
+    }[];
 };
 
 type ESLintResult = {
@@ -39,15 +46,21 @@ export interface LintSummary {
     totalWarnings: number;
     fixedFiles: number;
     results: LintResult[];
+    errorsByRule: {
+        [ruleId: string]: number;
+    };
+    warningsByRule: {
+        [ruleId: string]: number;
+    };
 }
 
 export class LintingService {
     private static instance: LintingService;
     private eslint: ESLint;
 
-    private constructor() {
+    private constructor(fix: boolean = true) {
         this.eslint = new ESLint({
-            fix: true,
+            fix,
             baseConfig: {
                 extends: [
                     'eslint:recommended',
@@ -80,9 +93,9 @@ export class LintingService {
         });
     }
 
-    public static getInstance(): LintingService {
+    public static getInstance(fix: boolean = true): LintingService {
         if (!LintingService.instance) {
-            LintingService.instance = new LintingService();
+            LintingService.instance = new LintingService(fix);
         }
         return LintingService.instance;
     }
@@ -115,7 +128,7 @@ export class LintingService {
                 output: fixedContent,
             };
         } catch (error) {
-            console.error('Linting error:', error);
+            console.error(`Failed to lint file: ${filePath}\n`, error);
             return {
                 filePath,
                 messages: [],
@@ -132,36 +145,58 @@ export class LintingService {
         let totalErrors = 0;
         let totalWarnings = 0;
         let fixedFiles = 0;
+        const errorsByRule: { [key: string]: number } = {};
+        const warningsByRule: { [key: string]: number } = {};
 
-        const files = await this.eslint.lintFiles([
-            `${projectPath}/**/*.{ts,tsx,js,jsx}`,
-            `!${projectPath}/node_modules/**`,
-        ]);
-        const typedFiles = files as unknown as ESLintResult[];
+        try {
+            const files = await this.eslint.lintFiles([
+                `${projectPath}/**/*.{ts,tsx,js,jsx}`,
+                `!${projectPath}/node_modules/**`,
+                `!${projectPath}/**/dist/**`,
+                `!${projectPath}/**/build/**`,
+                `!${projectPath}/**/.next/**`,
+            ]);
 
-        for (const result of typedFiles) {
-            const messages = result.messages;
-            const hasErrors = messages.some((m) => m.severity === 2);
-            const hasWarnings = messages.some((m) => m.severity === 1);
+            for (const result of files as unknown as ESLintResult[]) {
+                const messages = result.messages;
 
-            if (hasErrors) totalErrors += messages.filter((m) => m.severity === 2).length;
-            if (hasWarnings) totalWarnings += messages.filter((m) => m.severity === 1).length;
-            if (result.fixed) fixedFiles++;
+                // Process each message
+                messages.forEach((msg) => {
+                    if (!msg.ruleId) return;
 
-            results.push({
-                filePath: result.filePath,
-                messages,
-                fixed: result.fixed,
-                output: result.output,
-            });
+                    if (msg.severity === 2) {
+                        totalErrors++;
+                        errorsByRule[msg.ruleId] = (errorsByRule[msg.ruleId] || 0) + 1;
+                    } else if (msg.severity === 1) {
+                        totalWarnings++;
+                        warningsByRule[msg.ruleId] = (warningsByRule[msg.ruleId] || 0) + 1;
+                    }
+                });
+
+                if (result.fixed) fixedFiles++;
+
+                results.push({
+                    filePath: result.filePath,
+                    messages,
+                    fixed: result.fixed,
+                    output: result.output,
+                });
+            }
+
+            return {
+                totalFiles: files.length,
+                totalErrors,
+                totalWarnings,
+                fixedFiles,
+                results,
+                errorsByRule,
+                warningsByRule,
+            };
+        } catch (error) {
+            console.error('Error during project linting:', error);
+            throw new Error(
+                `Failed to lint project: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            );
         }
-
-        return {
-            totalFiles: files.length,
-            totalErrors,
-            totalWarnings,
-            fixedFiles,
-            results,
-        };
     }
 }

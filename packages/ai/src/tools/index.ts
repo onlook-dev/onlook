@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises';
 import { z } from 'zod';
 import { ONLOOK_PROMPT } from '../prompt/onlook';
 import { getAllFiles } from './helpers';
+import { LintingService } from './lint';
 
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
@@ -48,6 +49,52 @@ export const onlookInstructionsTool = tool({
     parameters: z.object({}),
     execute: async () => {
         return ONLOOK_PROMPT;
+    },
+});
+
+export const lintTool = tool({
+    description: 'Analyze code quality and optionally fix issues in TypeScript/JavaScript files',
+    parameters: z.object({
+        path: z.string().describe('The absolute path to the file or directory to lint'),
+        fix: z.boolean().optional().default(false).describe('Whether to auto-fix the issues'),
+        detailed: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe('Whether to return detailed rule-based statistics'),
+    }),
+    execute: async ({ path, fix = false, detailed = false }) => {
+        try {
+            const lintingService = LintingService.getInstance(fix);
+            const result = await lintingService.lintProject(path);
+
+            if (!detailed) {
+                return {
+                    summary: {
+                        totalFiles: result.totalFiles,
+                        totalErrors: result.totalErrors,
+                        totalWarnings: result.totalWarnings,
+                        fixedFiles: fix ? result.fixedFiles : undefined,
+                    },
+                    fileResults: result.results.map((r) => ({
+                        file: r.filePath,
+                        errors: r.messages.filter((m) => m.severity === 2).length,
+                        warnings: r.messages.filter((m) => m.severity === 1).length,
+                        ...(fix && { fixed: r.fixed }),
+                    })),
+                };
+            }
+
+            return result;
+        } catch (error) {
+            return {
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Unknown error occurred during linting',
+                success: false,
+            };
+        }
     },
 });
 
@@ -134,4 +181,5 @@ export const chatToolSet: ToolSet = {
     list_files: listFilesTool,
     read_files: readFilesTool,
     onlook_instructions: onlookInstructionsTool,
+    lint: lintTool,
 };
