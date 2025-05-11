@@ -35,6 +35,9 @@ export function getContextIcon(context: ChatMessageContext) {
         case MessageContextType.PROJECT:
             icon = Icons.Cube;
             break;
+        case MessageContextType.TERMINAL:
+            icon = Icons.Terminal;
+            break;
         default:
             assertNever(context);
     }
