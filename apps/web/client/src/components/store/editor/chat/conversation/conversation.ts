@@ -31,12 +31,12 @@ export class ChatConversationImpl implements ChatConversation {
     };
 
     constructor(projectId: string, messages: ChatMessageImpl[]) {
-        makeAutoObservable(this);
         this.id = uuidv4();
         this.projectId = projectId;
         this.messages = messages;
         this.createdAt = new Date().toISOString();
         this.updatedAt = new Date().toISOString();
+        makeAutoObservable(this);
     }
 
     getMessageById(id: string) {
@@ -73,13 +73,21 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.map((m) => m.toStreamMessage());
     }
 
-    appendMessage(message: ChatMessageImpl) {
+    async appendMessage(message: ChatMessageImpl) {
         this.messages = [...this.messages, message];
         this.updatedAt = new Date().toISOString();
+        await this.saveMessageToStorage(message);
     }
 
-    removeAllMessagesAfter(message: ChatMessageImpl) {
+    async removeAllMessagesAfter(message: ChatMessageImpl) {
         const index = this.messages.findIndex((m) => m.id === message.id);
+        if (index === -1) {
+            console.error('Message not found');
+            return;
+        }
+        const removedMessages = this.messages.slice(index + 1);
+        await this.removeMessagesFromStorage(removedMessages);
+
         this.messages = this.messages.slice(0, index + 1);
         this.updatedAt = new Date().toISOString();
     }
@@ -96,15 +104,31 @@ export class ChatConversationImpl implements ChatConversation {
 
     updateMessage(message: ChatMessageImpl) {
         const index = this.messages.findIndex((m) => m.id === message.id);
+        if (index === -1) {
+            console.error('Message not found');
+            return;
+        }
         this.messages[index] = message;
         this.updatedAt = new Date().toISOString();
         this.messages = [...this.messages];
         this.saveMessageToStorage(message);
     }
 
-    saveMessageToStorage(message: ChatMessageImpl) {
-        api.chat.saveMessage.mutate({
+    async saveMessageToStorage(message: ChatMessageImpl) {
+        const success = await api.chat.saveMessage.mutate({
             message: fromMessage(this.id, message),
         });
+        if (!success) {
+            console.error('Failed to save message to storage', message);
+        }
+    }
+
+    async removeMessagesFromStorage(messages: ChatMessageImpl[]) {
+        const success = await api.chat.deleteMessages.mutate({
+            messageIds: messages.map((m) => m.id),
+        });
+        if (!success) {
+            console.error('Failed to delete messages from storage', messages);
+        }
     }
 }

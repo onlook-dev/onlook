@@ -83,7 +83,7 @@ export class ChatManager {
         return this.generateStreamMessages(prompt);
     }
 
-    getResubmitMessages(id: string, newMessageContent: string) {
+    async getResubmitMessages(id: string, newMessageContent: string) {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
@@ -99,7 +99,8 @@ export class ChatManager {
         }
 
         message.updateContent(newMessageContent);
-        this.conversation.current.removeAllMessagesAfter(message);
+        await this.conversation.current.removeAllMessagesAfter(message);
+        await this.conversation.current.updateMessage(message);
         return this.generateStreamMessages(StreamRequestType.CHAT);
     }
 

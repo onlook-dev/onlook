@@ -6,7 +6,7 @@ const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET);
 const promptProvider = new PromptProvider();
 
 export async function POST(req: Request) {
-    const { messages, maxSteps, maxTokens } = await req.json();
+    const { messages, maxSteps } = await req.json();
 
     const result = streamText({
         model,
@@ -18,8 +18,9 @@ export async function POST(req: Request) {
         maxTokens: 64000,
         experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
             if (NoSuchToolError.isInstance(error)) {
-                console.error('Invalid tool name', toolCall.toolName);
-                return null;
+                throw new Error(
+                    `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
+                );
             }
             const tool = tools[toolCall.toolName as keyof typeof tools];
 
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
                 schema: tool?.parameters,
                 prompt: [
                     `The model tried to call the tool "${toolCall.toolName}"` +
-                        ` with the following arguments:`,
+                    ` with the following arguments:`,
                     JSON.stringify(toolCall.args),
                     `The tool accepts the following schema:`,
                     JSON.stringify(parameterSchema(toolCall)),
@@ -41,6 +42,9 @@ export async function POST(req: Request) {
             });
 
             return { ...toolCall, args: JSON.stringify(repairedArgs) };
+        },
+        onError: (error) => {
+            console.error('Error in chat', error);
         },
     });
 

@@ -73,16 +73,19 @@ export class ChatContext {
         for (const node of selected) {
             const oid = node.oid;
             if (!oid) {
+                console.error('No oid found for node', node);
                 continue;
             }
 
             const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
             if (codeBlock === null) {
+                console.error('No code block found for node', node);
                 continue;
             }
 
             const templateNode = await this.editorEngine.sandbox.getTemplateNode(oid);
             if (!templateNode) {
+                console.error('No template node found for node', node);
                 continue;
             }
 

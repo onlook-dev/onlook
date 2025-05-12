@@ -1,7 +1,6 @@
 import { type ProjectManager } from '@/components/store/project/manager';
 import { api } from '@/trpc/client';
-import { sendAnalytics } from '@/utils/analytics';
-import { fromConversation, fromMessage } from '@onlook/db';
+import { fromConversation } from '@onlook/db';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Project } from '@onlook/models/project';
 import type { Message } from 'ai';
@@ -75,7 +74,7 @@ export class ConversationManager {
         }
         this.current = new ChatConversationImpl(this.projectId, []);
         this.conversations.push(this.current);
-        sendAnalytics('start new conversation');
+        this.saveConversationToStorage();
     }
 
     selectConversation(id: string) {
@@ -85,7 +84,6 @@ export class ConversationManager {
             return;
         }
         this.current = match;
-        sendAnalytics('select conversation');
     }
 
     deleteConversation(id: string) {
@@ -113,38 +111,37 @@ export class ConversationManager {
                 this.conversations.push(this.current);
             }
         }
-        sendAnalytics('delete conversation');
     }
 
-    addUserMessage(
+    async addUserMessage(
         content: string,
         context: ChatMessageContext[],
-    ): UserChatMessageImpl | undefined {
+    ): Promise<UserChatMessageImpl | undefined> {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
         const newMessage = UserChatMessageImpl.fromStringContent(content, context);
-        this.addMessage(newMessage);
+        await this.addMessage(newMessage);
         return newMessage;
     }
 
-    addAssistantMessage(message: Message): AssistantChatMessageImpl | undefined {
+    async addAssistantMessage(message: Message): Promise<AssistantChatMessageImpl | undefined> {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
         const newMessage = AssistantChatMessageImpl.fromMessage(message);
-        this.addMessage(newMessage);
+        await this.addMessage(newMessage);
         return newMessage;
     }
 
-    addMessage(message: ChatMessageImpl) {
+    private async addMessage(message: ChatMessageImpl) {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        this.current.appendMessage(message);
+        await this.current.appendMessage(message);
     }
 
     async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
@@ -169,19 +166,6 @@ export class ConversationManager {
         });
         if (!res) {
             console.error('Failed to save conversation to storage', this.current);
-        }
-    }
-
-    async saveMessageToStorage(message: ChatMessageImpl) {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const res = await api.chat.saveMessage.mutate({
-            message: fromMessage(this.current.id, message),
-        });
-        if (!res) {
-            console.error('Failed to save message to storage', message);
         }
     }
 }

@@ -98,17 +98,9 @@ const context1 = {
     end: 10,
 } satisfies ChatMessageContext;
 
-const context2 = {
-    type: MessageContextType.IMAGE,
-    displayName: 'index.ts',
-    content: 'console.log("Hello, world!");',
-    mimeType: 'image/png',
-} satisfies ChatMessageContext;
-
 const contexts = [
     context0,
     context1,
-    context2,
 ];
 
 const message0 = {

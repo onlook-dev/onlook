@@ -1,19 +1,23 @@
 'use client';
 
 import { useProjectsManager } from '@/components/store/projects';
+import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { SelectProject } from './_components/select';
 import { TopBar } from './_components/top-bar';
 
-export default function Page() {
+const Page = observer(() => {
     const projectsManager = useProjectsManager();
-
     useEffect(() => {
         projectsManager.fetchProjects();
     }, []);
 
     if (projectsManager.isFetching) {
-        return <div>Loading projects...</div>;
+        return (
+            <div className="w-screen h-screen flex flex-col items-center justify-center">
+                <div className='text-lg'>Loading projects...</div>
+            </div>
+        )
     }
 
     return (
@@ -24,4 +28,7 @@ export default function Page() {
             </div>
         </div>
     );
-}
+});
+
+
+export default Page

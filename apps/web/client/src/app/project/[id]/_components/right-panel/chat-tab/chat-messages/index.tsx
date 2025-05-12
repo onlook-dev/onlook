@@ -16,7 +16,7 @@ import { UserMessage } from './user-message';
 export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    const { messages: chatMessages } = useChatContext();
+    const { messages: uiMessages } = useChatContext();
     const messages = editorEngine.chat.conversation.current?.messages;
 
     const renderMessage = (message: AssistantChatMessageImpl | UserChatMessageImpl) => {
@@ -48,9 +48,7 @@ export const ChatMessages = observer(() => {
     }
 
     return (
-        <ChatMessageList
-            contentKey={chatMessages?.map((message) => message.content).join('|') ?? ''}
-        >
+        <ChatMessageList contentKey={uiMessages?.map((message) => message.content).join('|') ?? ''}>
             {messages?.map((message) => renderMessage(message))}
             <StreamMessage />
             <ErrorMessage />

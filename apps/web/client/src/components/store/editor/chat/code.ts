@@ -65,8 +65,7 @@ export class ChatCodeManager {
                 original: originalContent,
                 generated: content,
             };
-            this.chat.conversation.current?.updateMessage(message);
-            this.chat.conversation.saveConversationToStorage();
+            await this.chat.conversation.current?.updateMessage(message);
         }
 
         const selectedWebviews = this.editorEngine.frames.selected;
@@ -112,7 +111,6 @@ export class ChatCodeManager {
 
         message.applied = false;
         this.chat.conversation.current?.updateMessage(message);
-        this.chat.conversation.saveConversationToStorage();
         setTimeout(() => {
             this.editorEngine.frames.reloadAll();
         }, 500);

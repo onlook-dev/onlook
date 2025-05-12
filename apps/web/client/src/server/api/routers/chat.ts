@@ -7,7 +7,7 @@ import {
     type Message,
 } from '@onlook/db';
 import type { ChatMessageRole } from '@onlook/models';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -78,6 +78,17 @@ export const chatRouter = createTRPCRouter({
                 return true;
             } catch (error) {
                 console.error('Error saving message', error);
+                return false;
+            }
+        }),
+    deleteMessages: protectedProcedure
+        .input(z.object({ messageIds: z.array(z.string()) }))
+        .mutation(async ({ ctx, input }) => {
+            try {
+                await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
+                return true;
+            } catch (error) {
+                console.error('Error deleting messages', error);
                 return false;
             }
         }),

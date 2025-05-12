@@ -25,9 +25,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         maxSteps: 10,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, config) => {
-            if (config.finishReason === 'stop') {
+            if (chat.status === 'ready') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
+            } else if (chat.status === 'error') {
+                console.error('Chat finished with error:', message);
             }
+        },
+        onError: (error) => {
+            console.error('Error in chat', error);
         },
     });
     return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;
@@ -40,36 +45,51 @@ export function useChatContext() {
     return { ...context, isWaiting };
 }
 
-function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
-    switch (toolCall.toolName) {
-        case LIST_FILES_TOOL_NAME:
-            return handleListFilesTool(
+async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
+    try {
+        const toolName = toolCall.toolName;
+        if (toolName === LIST_FILES_TOOL_NAME) {
+            const result = await handleListFilesTool(
                 toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
                 editorEngine,
             );
-        case READ_FILES_TOOL_NAME:
-            return handleReadFilesTool(
+            return result;
+        } else if (toolName === READ_FILES_TOOL_NAME) {
+            const result = await handleReadFilesTool(
                 toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
                 editorEngine,
             );
-        case ONLOOK_INSTRUCTIONS_TOOL_NAME:
-            return ONLOOK_INSTRUCTIONS;
-        default:
-            console.error(`Unknown tool call: ${toolCall.toolName}`);
-            return 'unknown tool call';
+            return result;
+        } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
+            const result = ONLOOK_INSTRUCTIONS;
+            return result;
+        } else {
+            throw new Error(`Unknown tool call: ${toolCall.toolName}`);
+        }
+    } catch (error) {
+        console.error('Error handling tool call', error);
+        return 'error handling tool call ' + error;
     }
 }
 
-function handleListFilesTool(
+async function handleListFilesTool(
     args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ) {
-    return editorEngine.sandbox.listFiles(args.path);
+    const result = await editorEngine.sandbox.listFiles(args.path);
+    if (!result) {
+        throw new Error('Error listing files');
+    }
+    return result;
 }
 
-function handleReadFilesTool(
+async function handleReadFilesTool(
     args: z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ) {
-    return editorEngine.sandbox.readFiles(args.paths);
+    const result = await editorEngine.sandbox.readFiles(args.paths);
+    if (!result) {
+        throw new Error('Error reading files');
+    }
+    return result;
 }

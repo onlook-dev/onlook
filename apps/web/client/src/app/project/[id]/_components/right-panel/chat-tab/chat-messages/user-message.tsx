@@ -26,9 +26,11 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     useEffect(() => {
         if (isEditing && textareaRef.current) {
             textareaRef.current.focus();
-            textareaRef.current.setSelectionRange(editValue.length, editValue.length);
+            if (editValue === message.getStringContent()) {
+                textareaRef.current.setSelectionRange(editValue.length, editValue.length);
+            }
         }
-    }, [isEditing, editValue]);
+    }, [isEditing]);
 
     const handleEditClick = () => {
         setEditValue(message.getStringContent());
@@ -58,8 +60,8 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     const handleSubmit = async () => {
-        await sendMessage(editValue);
         setIsEditing(false);
+        await sendMessage(editValue);
     };
 
     const handleRetry = async () => {

@@ -72,7 +72,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                     <span className="text-[0.7rem] px-2">{group.name}</span>
                                     <div className="flex flex-col">
                                         {sortedConversations.map((conversation) => (
-                                            <button
+                                            <div
                                                 className={cn(
                                                     'flex flex-row w-full py-2 items-center rounded-md hover:bg-background-onlook cursor-pointer select-none group relative',
                                                     conversation.id ===
@@ -115,7 +115,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                         <TooltipArrow className="fill-foreground" />
                                                     </TooltipContent>
                                                 </Tooltip>
-                                            </button>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>

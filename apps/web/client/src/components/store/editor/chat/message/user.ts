@@ -2,7 +2,7 @@ import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
 import type { Message, TextPart } from 'ai';
-import { nanoid } from 'nanoid/non-secure';
+import { v4 as uuidv4 } from 'uuid';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;
@@ -13,7 +13,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     promptProvider: PromptProvider;
 
     constructor(content: string, context: ChatMessageContext[] = []) {
-        this.id = nanoid();
+        this.id = uuidv4();
         this.content = content;
         this.parts = [{ type: 'text', text: content }];
         this.context = context;
@@ -50,6 +50,7 @@ export class UserChatMessageImpl implements UserChatMessage {
 
     updateContent(content: string) {
         this.content = content;
+        this.parts = [{ type: 'text', text: content }];
     }
 
     getStringContent(): string {
