@@ -1,4 +1,3 @@
-
 import { useEditorEngine } from '@/components/store';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -42,7 +41,7 @@ export const ActionButtons = (
                     <Button
                         variant={'ghost'}
                         size={'icon'}
-                        className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
+                        className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
                         onClick={handleOpenFileDialog}
                         disabled={disabled}
                     >
@@ -73,7 +72,7 @@ export const ActionButtons = (
             </Tooltip>
             <Button
                 variant={'outline'}
-                className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary hidden"
+                className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary hidden cursor-pointer"
             >
                 <Icons.FilePlus className="mr-2" />
                 <span className="text-smallPlus">File Reference</span>

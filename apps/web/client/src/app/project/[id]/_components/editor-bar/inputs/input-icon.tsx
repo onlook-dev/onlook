@@ -68,7 +68,7 @@ export const InputIcon = ({
 
                 <DropdownMenu>
                     <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">
-                        {unitValue}
+                        {unitValue === 'px' ? '' : unitValue}
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
                         {UNITS.map((unitOption) => (

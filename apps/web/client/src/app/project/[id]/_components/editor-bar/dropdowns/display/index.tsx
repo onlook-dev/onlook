@@ -22,7 +22,7 @@ export interface CssValue {
 }
 
 export const layoutTypeOptions: Record<string, CssValue> = {
-    block: { value: "block", label: "--" },
+    block: { value: "block", label: "Block", icon: <Icons.CrossL className="h-3.5 w-3.5" /> },
     flex: { value: "flex", label: "Flex" },
     grid: { value: "grid", label: "Grid" },
 };

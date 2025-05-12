@@ -25,7 +25,16 @@ export const Width = () => {
                             className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-1.5 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
                         >
                             <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
-                            <span className="text-sm">{dimensionState.width.value}</span>
+                            {(dimensionState.width.unit === 'px'
+                                ? dimensionState.width.num !== undefined
+                                : (dimensionState.width.value && dimensionState.width.value !== "auto")
+                            ) && (
+                                <span className="text-smallPlus">
+                                    {dimensionState.width.unit === 'px'
+                                        ? dimensionState.width.num
+                                        : dimensionState.width.value}
+                                </span>
+                            )}
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
