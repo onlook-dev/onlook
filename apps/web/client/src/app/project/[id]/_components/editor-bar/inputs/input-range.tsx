@@ -5,7 +5,8 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { debounce } from 'lodash';
 
 const UNITS = ['PX', '%', 'EM', 'REM'];
 
@@ -25,28 +26,43 @@ export const InputRange = ({
     onUnitChange,
 }: InputRangeProps) => {
     const Icon = icon ? Icons[icon] : Icons.Padding;
-    const [inputValue, setInputValue] = useState(String(value));
+    const [localValue, setLocalValue] = useState(String(value));
     const rangeRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    // Only update inputValue when value prop changes and we're not currently editing
+    // Create debounced onChange handler
+    const debouncedOnChange = useMemo(
+        () => debounce((newValue: number) => {
+            onChange?.(newValue);
+        }, 500),
+        [onChange]
+    );
+
+    // Cleanup debounce on unmount
+    useEffect(() => {
+        return () => {
+            debouncedOnChange.cancel();
+        };
+    }, [debouncedOnChange]);
+
+    // Only update localValue when value prop changes and we're not currently editing
     useEffect(() => {
         if (!document.activeElement?.classList.contains('input-range-text')) {
-            setInputValue(String(value));
+            setLocalValue(String(value));
         }
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-        setInputValue(newValue);
+        setLocalValue(newValue);
     };
 
     const handleBlur = () => {
-        const numValue = Number(inputValue);
+        const numValue = Number(localValue);
         if (!isNaN(numValue)) {
-            onChange?.(numValue);
+            debouncedOnChange(numValue);
         } else {
-            setInputValue(String(value));
+            setLocalValue(String(value));
         }
     };
 
@@ -63,7 +79,8 @@ export const InputRange = ({
             const rect = rangeRef.current.getBoundingClientRect();
             const percentage = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
             const newValue = Math.round(percentage * 500);
-            onChange?.(newValue);
+            setLocalValue(String(newValue));
+            debouncedOnChange(newValue);
         }
     };
 
@@ -81,8 +98,12 @@ export const InputRange = ({
                     type="range"
                     min="0"
                     max="500"
-                    value={value}
-                    onChange={(e) => onChange?.(Number(e.target.value))}
+                    value={Number(localValue)}
+                    onChange={(e) => {
+                        const newValue = Number(e.target.value);
+                        setLocalValue(String(newValue));
+                        debouncedOnChange(newValue);
+                    }}
                     onMouseDown={handleMouseDown}
                     className="flex-1 h-3 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer relative
                         [&::-webkit-slider-runnable-track]:bg-background-tertiary/50 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:h-3
@@ -96,7 +117,7 @@ export const InputRange = ({
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        value={inputValue}
+                        value={localValue}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"

@@ -8,6 +8,8 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { useEffect, useState, useMemo } from 'react';
+import { debounce } from 'lodash';
 
 const UNITS = ['PX', '%', 'EM', 'REM'];
 
@@ -35,13 +37,36 @@ export const InputDropdown = ({
     onDropdownChange,
     onUnitChange,
 }: InputDropdownProps) => {
+    const [localValue, setLocalValue] = useState(value);
+
+    useEffect(() => {
+        setLocalValue(value);
+    }, [value]);
+
+    const debouncedOnChange = useMemo(
+        () => debounce((newValue: string) => {
+            onChange?.(newValue);
+        }, 500),
+        [onChange]
+    );
+
+    useEffect(() => {
+        return () => {
+            debouncedOnChange.cancel();
+        };
+    }, [debouncedOnChange]);
+
     return (
         <div className="flex items-center">
             <div className="flex flex-1 items-center bg-background-tertiary/50 justify-between rounded-l-md px-2.5 h-[36px] min-w-[72px]">
                 <input
                     type="text"
-                    value={value}
-                    onChange={(e) => onChange?.(e.target.value)}
+                    value={localValue}
+                    onChange={(e) => {
+                        const newValue = e.target.value;
+                        setLocalValue(newValue);
+                        debouncedOnChange(newValue);
+                    }}
                     className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
                 />
                 <DropdownMenu>

@@ -7,7 +7,7 @@ import {
     stringToParsedValue,
 } from '@onlook/utility';
 import type { CSSProperties } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 type DimensionType = 'width' | 'height';
 type DimensionProperty<T extends DimensionType> = T | `min${Capitalize<T>}` | `max${Capitalize<T>}`;
@@ -48,7 +48,7 @@ const createDefaultState = <T extends DimensionType>(dimension: T): DimensionSta
 export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
     const editorEngine = useEditorEngine();
 
-    const getInitialState = (): DimensionStateMap<T> => {
+    const getInitialState = useCallback((): DimensionStateMap<T> => {
         const computedStyles = editorEngine.style.selectedStyle?.styles.computed;
         if (!computedStyles) {
             return createDefaultState(dimension);
@@ -90,51 +90,34 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
                 dropdownValue: 'Fixed',
             },
         } as DimensionStateMap<T>;
-    };
+    }, [dimension, editorEngine.style.selectedStyle]);
 
     const [dimensionState, setDimensionState] = useState<DimensionStateMap<T>>(getInitialState());
 
     useEffect(() => {
         setDimensionState(getInitialState());
-    }, [editorEngine.style]);
+    }, [getInitialState]);
 
-    const handleDimensionChange = (property: DimensionProperty<T>, value: string) => {
+    const handleDimensionChange = useCallback((property: DimensionProperty<T>, value: string) => {
         const parsedValue = value === '--' ? undefined : value;
         const currentState = dimensionState[property];
 
         if (!currentState) return;
 
-        setDimensionState((prev) => ({
-            ...prev,
-            [property]: {
-                ...currentState,
-                num: parsedValue,
-                value: parsedValue ? `${parsedValue}${currentState.unit}` : 'auto',
-            },
-        }));
         editorEngine.style.update(property, `${parsedValue}${currentState.unit}`);
-    };
+    }, [dimensionState, editorEngine.style]);
 
-    const handleUnitChange = (property: DimensionProperty<T>, unit: string) => {
+    const handleUnitChange = useCallback((property: DimensionProperty<T>, unit: string) => {
         const currentState = dimensionState[property];
 
         if (!currentState) return;
 
-        setDimensionState((prev) => ({
-            ...prev,
-            [property]: {
-                ...currentState,
-                unit,
-                value: currentState.num ? `${currentState.num}${unit}` : currentState.value,
-            },
-        }));
-
         if (currentState.num !== undefined) {
             editorEngine.style.update(property, `${currentState.num}${unit}`);
         }
-    };
+    }, [dimensionState, editorEngine.style]);
 
-    const handleLayoutChange = (property: DimensionProperty<T>, value: string) => {
+    const handleLayoutChange = useCallback((property: DimensionProperty<T>, value: string) => {
         const { layoutValue } = parseModeAndValue(value);
         const selectedStyle = editorEngine.style.selectedStyle;
         if (!selectedStyle) {
@@ -152,23 +135,10 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
 
         const { num, unit } = stringToParsedValue(newLayoutValue);
 
-        const currentState = dimensionState[property];
-
-        if (!currentState) return;
-        setDimensionState((prev) => ({
-            ...prev,
-            [property]: {
-                ...currentState,
-                num,
-                unit,
-                value: `${num}${unit}`,
-                dropdownValue: value,
-            },
-        }));
         if (num !== undefined) {
             editorEngine.style.update(property, `${num}${unit}`);
         }
-    };
+    }, [editorEngine.style]);
 
     return {
         dimensionState,

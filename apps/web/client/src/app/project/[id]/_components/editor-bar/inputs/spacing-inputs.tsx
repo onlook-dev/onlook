@@ -6,7 +6,7 @@ type IconType =
     | 'TopSide'
     | 'RightSide'
     | 'BottomSide'
-    | 'CornerRadius'
+    | 'CornerTopLeft'
     | 'CornerTopRight'
     | 'CornerBottomLeft'
     | 'CornerBottomRight';
@@ -31,7 +31,7 @@ type IconMap = Record<string, IconType>;
 const getIconNames = (type: BoxType): IconMap => {
     if (type === 'radius') {
         return {
-            topLeft: 'CornerRadius',
+            topLeft: 'CornerTopLeft',
             topRight: 'CornerTopRight',
             bottomRight: 'CornerBottomRight',
             bottomLeft: 'CornerBottomLeft',
@@ -47,6 +47,8 @@ const getIconNames = (type: BoxType): IconMap => {
 
 export const SpacingInputs = ({ type, values, onChange }: SpacingInputsProps) => {
     const icons = getIconNames(type);
+    console.log(values);
+    
     const positions =
         type === 'radius'
             ? ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']

@@ -56,6 +56,7 @@ export class HistoryManager {
             this.inTransaction.type === TransactionType.NOT_IN_TRANSACTION ||
             this.inTransaction.actions.length === 0
         ) {
+            this.inTransaction = { type: TransactionType.NOT_IN_TRANSACTION };
             return;
         }
 
@@ -79,7 +80,7 @@ export class HistoryManager {
             this.redoStack = [];
         }
 
-        this.undoStack.push(action);
+        this.undoStack.push(action); 
         await this.editorEngine.code.write(action);
 
         switch (action.type) {

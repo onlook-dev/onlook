@@ -21,7 +21,7 @@ export const Radius = () => {
                     className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                 >
                     <Icons.CornerRadius className="h-4 min-h-4 w-4 min-w-4" />
-                    <span className="text-sm">{boxState.radius.value}</span>
+                    <span className="text-sm">{boxState.borderRadius.value}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
@@ -49,10 +49,10 @@ export const Radius = () => {
                 </div>
                 {activeTab === 'all' ? (
                     <InputRange
-                        value={boxState.radius.num ?? 0}
-                        onChange={(value) => handleBoxChange('radius', value.toString())}
-                        unit={boxState.radius.unit}
-                        onUnitChange={(unit) => handleUnitChange('radius', unit)}
+                        value={boxState.borderRadius.num ?? 0}
+                        onChange={(value) => handleBoxChange('borderRadius', value.toString())}
+                        unit={boxState.borderRadius.unit}
+                        onUnitChange={(unit) => handleUnitChange('borderRadius', unit)}
                     />
                 ) : (
                     <SpacingInputs

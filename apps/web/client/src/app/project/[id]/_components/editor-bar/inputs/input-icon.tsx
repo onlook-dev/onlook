@@ -15,7 +15,7 @@ type IconType =
     | 'TopSide'
     | 'RightSide'
     | 'BottomSide'
-    | 'CornerRadius'
+    | 'CornerTopLeft'
     | 'CornerTopRight'
     | 'CornerBottomLeft'
     | 'CornerBottomRight';

@@ -10,6 +10,11 @@ export default function Page() {
                 <h1 className="text-4xl md:text-5xl font-semibold mb-4 tracking-tight" data-oid="6">Happy</h1>
                 <img src="./favicon.ico" alt="Don't worry be happy" className="object-contain absolute" data-oid="7" />
             </div>
+            <div className="text-center text-gray-900 dark:text-gray-100 p-4 m-6" data-oid="8">
+                <p>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+                </p>
+            </div>
         </div>
     );
 }
