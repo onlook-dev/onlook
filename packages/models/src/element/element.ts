@@ -6,7 +6,7 @@ interface BaseDomElement {
     rect: DOMRect;
 }
 
-export interface ParentDomElement extends BaseDomElement { }
+export interface ParentDomElement extends BaseDomElement {}
 
 export interface DomElement extends BaseDomElement {
     tagName: string;

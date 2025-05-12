@@ -5,7 +5,7 @@ export type PromisifiedPendpalChildMethods = {
     [K in keyof PenpalChildMethods]: (
         ...args: Parameters<PenpalChildMethods[K]>
     ) => Promise<ReturnType<PenpalChildMethods[K]>>;
-}
+};
 
 export type PenpalChildMethods = PenpalChildMethodsType;
 

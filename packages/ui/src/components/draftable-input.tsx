@@ -6,10 +6,10 @@ export function useDraftValue<T>(
     value: T,
     onChange: (value: T) => void,
 ): [
-        T, // draft
-        (value: T) => void, // on change draft value
-        () => void, // on change done
-    ] {
+    T, // draft
+    (value: T) => void, // on change draft value
+    () => void, // on change done
+] {
     const [draft, setDraft] = React.useState(value);
 
     React.useEffect(() => {
@@ -19,7 +19,10 @@ export function useDraftValue<T>(
     return [draft, setDraft, () => onChange(draft)];
 }
 
-export type DraftableInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'ref' | 'value'> & {
+export type DraftableInputProps = Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'ref' | 'value'
+> & {
     ref?: React.Ref<HTMLInputElement>;
     value?: string;
     onChangeValue?: (value: string) => void;
@@ -31,7 +34,7 @@ const DraftableInput = React.forwardRef<HTMLInputElement, DraftableInputProps>(
 
         const [draft, onDraftChange, onDraftChangeDone] = useDraftValue<string>(
             value ?? '',
-            onChangeValue ?? (() => { }),
+            onChangeValue ?? (() => {}),
         );
 
         React.useEffect(() => {

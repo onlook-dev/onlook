@@ -7,7 +7,7 @@ export interface Project {
         createdAt: string;
         updatedAt: string;
         previewImg: string | null;
-    }
+    };
     sandbox: {
         id: string;
         url: string;

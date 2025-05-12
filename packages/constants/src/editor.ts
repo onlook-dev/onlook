@@ -35,7 +35,6 @@ export enum EditorAttributes {
     DATA_ONLOOK_CORE_ELEMENT_TYPE = 'data-onlook-core-element-type',
 }
 
-
 export const DefaultSettings = {
     SCALE: 0.7,
     PAN_POSITION: { x: 175, y: 100 },

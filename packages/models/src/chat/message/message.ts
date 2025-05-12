@@ -30,7 +30,4 @@ export interface SystemChatMessage extends Message {
     role: ChatMessageRole.SYSTEM;
 }
 
-export type ChatMessage =
-    | UserChatMessage
-    | AssistantChatMessage
-    | SystemChatMessage;
+export type ChatMessage = UserChatMessage | AssistantChatMessage | SystemChatMessage;

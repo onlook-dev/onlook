@@ -14,7 +14,10 @@ export interface CodeDiff {
     path: string;
 }
 
-export type FileToRequests = Map<string, {
-    oidToRequest: Map<string, CodeDiffRequest>;
-    content: string;
-}>;
+export type FileToRequests = Map<
+    string,
+    {
+        oidToRequest: Map<string, CodeDiffRequest>;
+        content: string;
+    }
+>;

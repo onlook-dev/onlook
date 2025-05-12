@@ -1,10 +1,6 @@
 import { parse, traverse, generate, type t as T, types as t, type NodePath } from '@onlook/parser';
 import type { Font } from '@onlook/models';
-import {
-    createFontFamilyProperty,
-    isPropertyWithName,
-    isThemeProperty,
-} from './helper';
+import { createFontFamilyProperty, isPropertyWithName, isThemeProperty } from './helper';
 
 export const extractFontImport = (content: string): Font[] => {
     const ast = parse(content, {

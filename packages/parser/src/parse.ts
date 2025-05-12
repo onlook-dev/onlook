@@ -4,12 +4,7 @@ export function getAstFromContent(content: string): T.File | null {
     try {
         return parse(content, {
             sourceType: 'module',
-            plugins: [
-                'decorators-legacy',
-                'classProperties',
-                'typescript',
-                'jsx',
-            ],
+            plugins: ['decorators-legacy', 'classProperties', 'typescript', 'jsx'],
         });
     } catch (e) {
         console.error(e);

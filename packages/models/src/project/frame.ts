@@ -1,4 +1,4 @@
-import type { RectDimension, RectPosition } from "./rect";
+import type { RectDimension, RectPosition } from './rect';
 
 export enum FrameType {
     WEB = 'web',

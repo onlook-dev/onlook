@@ -1,8 +1,8 @@
-import * as React from "react";
-import { cn } from "../../utils";
-import { Button } from "../button";
-import { Icons } from "../icons";
-import { useAutoScroll } from "./hooks/use-auto-scroll";
+import * as React from 'react';
+import { cn } from '../../utils';
+import { Button } from '../button';
+import { Icons } from '../icons';
+import { useAutoScroll } from './hooks/use-auto-scroll';
 
 interface ChatMessageListProps extends React.HTMLAttributes<HTMLDivElement> {
     smooth?: boolean;
@@ -11,17 +11,12 @@ interface ChatMessageListProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ChatMessageList = React.forwardRef<HTMLDivElement, ChatMessageListProps>(
     ({ className, children, smooth = true, contentKey, ...props }, _ref) => {
-        const {
-            scrollRef,
-            isAtBottom,
-            autoScrollEnabled,
-            scrollToBottom,
-            disableAutoScroll,
-        } = useAutoScroll({
-            smooth,
-            content: children,
-            contentKey,
-        });
+        const { scrollRef, isAtBottom, autoScrollEnabled, scrollToBottom, disableAutoScroll } =
+            useAutoScroll({
+                smooth,
+                content: children,
+                contentKey,
+            });
 
         return (
             <div className="relative w-full h-full">
@@ -50,10 +45,9 @@ const ChatMessageList = React.forwardRef<HTMLDivElement, ChatMessageListProps>(
                 )}
             </div>
         );
-    }
+    },
 );
 
-ChatMessageList.displayName = "ChatMessageList";
+ChatMessageList.displayName = 'ChatMessageList';
 
 export { ChatMessageList };
-

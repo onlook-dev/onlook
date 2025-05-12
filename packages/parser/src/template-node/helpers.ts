@@ -3,7 +3,7 @@ import {
     DynamicType,
     type ClassParsingResult,
     type TemplateNode,
-    type TemplateTag
+    type TemplateTag,
 } from '@onlook/models';
 import { types as t, type NodePath, type t as T } from '../packages';
 
@@ -88,7 +88,9 @@ export function getNodeClasses(node: T.JSXElement): ClassParsingResult {
         }
 
         // Extract and return static classes from the template literal if no dynamic classes are used
-        const quasis = templateLiteral.quasis.map((quasi: T.TemplateElement) => quasi.value.raw.split(/\s+/));
+        const quasis = templateLiteral.quasis.map((quasi: T.TemplateElement) =>
+            quasi.value.raw.split(/\s+/),
+        );
         return {
             type: 'classes',
             value: quasis.flat().filter(Boolean),

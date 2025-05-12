@@ -3,7 +3,7 @@ import { createOid } from '@onlook/utility';
 import { isReactFragment } from './helpers';
 import { type NodePath, type t as T, types as t, traverse } from './packages';
 
-export function addOidsToAst(ast: T.File): { ast: T.File, modified: boolean } {
+export function addOidsToAst(ast: T.File): { ast: T.File; modified: boolean } {
     const oids: Set<string> = new Set();
     let modified = false;
 
@@ -12,12 +12,12 @@ export function addOidsToAst(ast: T.File): { ast: T.File, modified: boolean } {
             if (isReactFragment(path.node)) {
                 return;
             }
-            const attributes = path.node.attributes
-            const existingOid = getExistingOid(attributes)
+            const attributes = path.node.attributes;
+            const existingOid = getExistingOid(attributes);
 
             if (existingOid) {
                 // If the element already has an oid, we need to check if it's unique
-                const { value, index } = existingOid
+                const { value, index } = existingOid;
                 if (oids.has(value)) {
                     // If the oid is not unique, we need to create a new one
                     const newOid = createOid();
@@ -45,7 +45,9 @@ export function addOidsToAst(ast: T.File): { ast: T.File, modified: boolean } {
     return { ast, modified };
 }
 
-export function getExistingOid(attributes: (T.JSXAttribute | T.JSXSpreadAttribute)[]): { value: string, index: number } | null {
+export function getExistingOid(
+    attributes: (T.JSXAttribute | T.JSXSpreadAttribute)[],
+): { value: string; index: number } | null {
     const existingAttrIndex = attributes.findIndex(
         (attr) => t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
     );
@@ -54,25 +56,25 @@ export function getExistingOid(attributes: (T.JSXAttribute | T.JSXSpreadAttribut
         return null;
     }
 
-    const existingAttr = attributes[existingAttrIndex]
+    const existingAttr = attributes[existingAttrIndex];
 
     if (t.isJSXSpreadAttribute(existingAttr)) {
-        return null
+        return null;
     }
 
     if (!existingAttr) {
-        return null
+        return null;
     }
 
-    const existingAttrValue = existingAttr.value
+    const existingAttrValue = existingAttr.value;
     if (!existingAttrValue || !t.isStringLiteral(existingAttrValue)) {
-        return null
+        return null;
     }
 
     return {
         index: existingAttrIndex,
-        value: existingAttrValue.value
-    }
+        value: existingAttrValue.value,
+    };
 }
 
 export function removeOidsFromAst(ast: T.File) {

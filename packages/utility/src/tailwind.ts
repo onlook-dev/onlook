@@ -527,9 +527,9 @@ export const propertyMap: Map<
                     pipeV.length > 0
                         ? pipeV
                         : v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k: string, v) => {
-                            canUsePipeV = true;
-                            return backdropFilterValConfig[k]?.(v) ?? (canUse = false);
-                        });
+                              canUsePipeV = true;
+                              return backdropFilterValConfig[k]?.(v) ?? (canUse = false);
+                          });
                 return canUsePipeV ? pipeV : '';
             });
             return canUse
@@ -672,12 +672,12 @@ export const propertyMap: Map<
                 .map((v) =>
                     isUnit(v) || isColor(v)
                         ? ({
-                            transparent: 'border-transparent',
-                            currentColor: 'border-current',
-                            currentcolor: 'border-current',
-                        }[val] ??
-                            (propertyMap.get('border-style') as Record<string, string>)[v] ??
-                            `border-[${v}]`)
+                              transparent: 'border-transparent',
+                              currentColor: 'border-current',
+                              currentcolor: 'border-current',
+                          }[val] ??
+                          (propertyMap.get('border-style') as Record<string, string>)[v] ??
+                          `border-[${v}]`)
                         : ((propertyMap.get('border-style') as Record<string, string>)[v] ?? ''),
                 )
                 .filter((v) => v !== '')
@@ -697,8 +697,8 @@ export const propertyMap: Map<
             isCustom
                 ? `[border-bottom-color:${val}]`
                 : isColor(val, true)
-                    ? `[border-bottom-color:${getCustomVal(val)}]`
-                    : '',
+                  ? `[border-bottom-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-bottom-left-radius',
@@ -742,8 +742,8 @@ export const propertyMap: Map<
             (isCustom
                 ? `border-${val}`
                 : isColor(val, true)
-                    ? `border-[${getCustomVal(val)}]`
-                    : ''),
+                  ? `border-[${getCustomVal(val)}]`
+                  : ''),
     ],
     ['border-image', (val) => `[border-image:${getCustomVal(val)}]`],
     ['border-image-outset', (val) => `[border-image-outset:${getCustomVal(val)}]`],
@@ -766,8 +766,8 @@ export const propertyMap: Map<
             isCustom
                 ? `[border-left-color:${val}]`
                 : isColor(val, true)
-                    ? `[border-left-color:${getCustomVal(val)}]`
-                    : '',
+                  ? `[border-left-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-left-style',
@@ -821,8 +821,8 @@ export const propertyMap: Map<
             isCustom
                 ? `[border-right-color:${val}]`
                 : isColor(val, true)
-                    ? `[border-right-color:${getCustomVal(val)}]`
-                    : '',
+                  ? `[border-right-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-right-style',
@@ -855,8 +855,8 @@ export const propertyMap: Map<
             isCustom
                 ? `[border-top-color:${val}]`
                 : isColor(val, true)
-                    ? `[border-top-color:${getCustomVal(val)}]`
-                    : '',
+                  ? `[border-top-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'border-top-left-radius',
@@ -1007,8 +1007,8 @@ export const propertyMap: Map<
             isCustom
                 ? `[column-rule-color:${val}]`
                 : isColor(val, true)
-                    ? `[column-rule-color:${getCustomVal(val)}]`
-                    : '',
+                  ? `[column-rule-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'column-rule-style',
@@ -1140,9 +1140,9 @@ export const propertyMap: Map<
                     pipeV.length > 0
                         ? pipeV
                         : v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k: string, v) => {
-                            canUsePipeV = true;
-                            return filterValConfig[k]?.(v) ?? (canUse = false);
-                        });
+                              canUsePipeV = true;
+                              return filterValConfig[k]?.(v) ?? (canUse = false);
+                          });
                 return canUsePipeV ? pipeV : '';
             });
             return canUse
@@ -1603,13 +1603,13 @@ export const propertyMap: Map<
             return v === ''
                 ? ''
                 : v
-                    .split(' ')
-                    .map((t) =>
-                        t.includes('-')
-                            ? `-${t.replace('-', '').replace('_', '-')}`
-                            : t.replace('_', '-'),
-                    )
-                    .join(' ');
+                      .split(' ')
+                      .map((t) =>
+                          t.includes('-')
+                              ? `-${t.replace('-', '').replace('_', '-')}`
+                              : t.replace('_', '-'),
+                      )
+                      .join(' ');
         },
     ],
     [
@@ -1673,7 +1673,7 @@ export const propertyMap: Map<
         (val) =>
             isUnit(val)
                 ? ({ '0px': 'max-h-0', '100%': 'max-h-full', '100vh': 'max-h-screen' }[val] ??
-                    `max-h-[${val}]`)
+                  `max-h-[${val}]`)
                 : '',
     ],
     [
@@ -1681,11 +1681,11 @@ export const propertyMap: Map<
         (val) =>
             isUnit(val)
                 ? ({
-                    none: 'max-w-none',
-                    '100%': 'max-w-full',
-                    'min-content': 'max-w-min',
-                    'max-content': 'max-w-max',
-                }[val] ?? `max-w-[${val}]`)
+                      none: 'max-w-none',
+                      '100%': 'max-w-full',
+                      'min-content': 'max-w-min',
+                      'max-content': 'max-w-max',
+                  }[val] ?? `max-w-[${val}]`)
                 : '',
     ],
     [
@@ -1693,7 +1693,7 @@ export const propertyMap: Map<
         (val) =>
             isUnit(val)
                 ? ({ '0px': 'min-h-0', '100%': 'min-h-full', '100vh': 'min-h-screen' }[val] ??
-                    `min-h-[${val}]`)
+                  `min-h-[${val}]`)
                 : '',
     ],
     [
@@ -1701,11 +1701,11 @@ export const propertyMap: Map<
         (val) =>
             isUnit(val)
                 ? ({
-                    '0px': 'min-w-0',
-                    '100%': 'min-w-full',
-                    'min-content': 'min-w-min',
-                    'max-content': 'min-w-max',
-                }[val] ?? `min-w-[${val}]`)
+                      '0px': 'min-w-0',
+                      '100%': 'min-w-full',
+                      'min-content': 'min-w-min',
+                      'max-content': 'min-w-max',
+                  }[val] ?? `min-w-[${val}]`)
                 : '',
     ],
     [
@@ -1808,8 +1808,8 @@ export const propertyMap: Map<
             isCustom
                 ? `outline-${val}`
                 : isColor(val, true)
-                    ? `outline-[${getCustomVal(val)}]`
-                    : '',
+                  ? `outline-[${getCustomVal(val)}]`
+                  : '',
     ],
     ['outline-offset', (val) => (isUnit(val) ? `outline-offset-[${val}]` : '')],
     [
@@ -2089,8 +2089,8 @@ export const propertyMap: Map<
             })[val] ?? isCustom)
                 ? `stroke-${val}`
                 : isColor(val, true)
-                    ? `stroke-[${getCustomVal(val)}]`
-                    : '',
+                  ? `stroke-[${getCustomVal(val)}]`
+                  : '',
     ],
     ['stroke-width', (val) => (isUnit(val) ? `stroke-[${val}]` : '')],
     ['tab-size', (val) => (isUnit(val) ? `[tab-size:${val}]` : '')],
@@ -2161,8 +2161,8 @@ export const propertyMap: Map<
             isCustom
                 ? `[text-decoration-color:${val}]`
                 : isColor(val, true)
-                    ? `[text-decoration-color:${getCustomVal(val)}]`
-                    : '',
+                  ? `[text-decoration-color:${getCustomVal(val)}]`
+                  : '',
     ],
     [
         'text-decoration-line',
@@ -2194,8 +2194,8 @@ export const propertyMap: Map<
             isCustom
                 ? `[text-emphasis-color:${val}]`
                 : isColor(val, true)
-                    ? `[text-emphasis-color:${getCustomVal(val)}]`
-                    : '',
+                  ? `[text-emphasis-color:${getCustomVal(val)}]`
+                  : '',
     ],
     ['text-emphasis-position', (val) => `[text-emphasis-position:${getCustomVal(val)}]`],
     ['text-emphasis-style', (val) => `[text-emphasis-style:${getCustomVal(val)}]`],
@@ -3314,13 +3314,13 @@ const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) 
                     pipeVal =
                         typeof pipe === 'function'
                             ? config.customTheme[key.trim()]?.[val] ||
-                            (config.useAllDefaultValues &&
-                                moreDefaultValuesMap[key.trim()]?.[val]) ||
-                            pipe(val)
+                              (config.useAllDefaultValues &&
+                                  moreDefaultValuesMap[key.trim()]?.[val]) ||
+                              pipe(val)
                             : config.customTheme[key.trim()]?.[val] ||
-                            (config.useAllDefaultValues &&
-                                moreDefaultValuesMap[key.trim()]?.[val]) ||
-                            (pipe?.[val] ?? '');
+                              (config.useAllDefaultValues &&
+                                  moreDefaultValuesMap[key.trim()]?.[val]) ||
+                              (pipe?.[val] ?? '');
                 }
             }
             if ((config.prefix?.length ?? 0) > 0) {
@@ -3504,15 +3504,15 @@ export const CssToTailwindTranslator = (
                     const res = getResultCode(
                         v,
                         customTheme.media?.[it.selectorName] ||
-                        (config.useAllDefaultValues && moreDefaultMediaVals[mediaName]) ||
-                        `[${mediaName}]`,
+                            (config.useAllDefaultValues && moreDefaultMediaVals[mediaName]) ||
+                            `[${mediaName}]`,
                         config,
                     );
                     return res
                         ? {
-                            selectorName: `${it.selectorName}-->${res.selectorName}`,
-                            resultVal: res.resultVal,
-                        }
+                              selectorName: `${it.selectorName}-->${res.selectorName}`,
+                              resultVal: res.resultVal,
+                          }
                         : null;
                 });
             } else {

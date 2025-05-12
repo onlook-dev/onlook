@@ -8,7 +8,7 @@ import {
     createTemplateNodeMap,
     getCoreElementInfo,
     getDynamicTypeInfo,
-    isNodeElementArray
+    isNodeElementArray,
 } from 'src/template-node/map';
 
 describe('Template Tests', () => {
@@ -81,11 +81,8 @@ describe('Template Tests', () => {
     describe('isNodeElementArray', () => {
         test('should identify array map calls', () => {
             const mapCall = t.callExpression(
-                t.memberExpression(
-                    t.identifier('items'),
-                    t.identifier('map')
-                ),
-                []
+                t.memberExpression(t.identifier('items'), t.identifier('map')),
+                [],
             );
 
             expect(isNodeElementArray(mapCall)).toBe(true);
@@ -93,11 +90,8 @@ describe('Template Tests', () => {
 
         test('should return false for non-map calls', () => {
             const nonMapCall = t.callExpression(
-                t.memberExpression(
-                    t.identifier('items'),
-                    t.identifier('filter')
-                ),
-                []
+                t.memberExpression(t.identifier('items'), t.identifier('filter')),
+                [],
             );
 
             expect(isNodeElementArray(nonMapCall)).toBe(false);
@@ -118,10 +112,12 @@ describe('Template Tests', () => {
             traverse(ast, {
                 JSXElement(path) {
                     rootElement = path;
-                }
+                },
             });
 
-            expect(rootElement && getCoreElementInfo(rootElement)).toBe(CoreElementType.COMPONENT_ROOT);
+            expect(rootElement && getCoreElementInfo(rootElement)).toBe(
+                CoreElementType.COMPONENT_ROOT,
+            );
         });
 
         test('should identify body tags', () => {
@@ -135,11 +131,13 @@ describe('Template Tests', () => {
 
             traverse(ast, {
                 JSXElement(path) {
-                    if (t.isJSXIdentifier(path.node.openingElement.name) &&
-                        path.node.openingElement.name.name === 'body') {
+                    if (
+                        t.isJSXIdentifier(path.node.openingElement.name) &&
+                        path.node.openingElement.name.name === 'body'
+                    ) {
                         bodyElement = path;
                     }
-                }
+                },
             });
 
             expect(bodyElement && getCoreElementInfo(bodyElement)).toBe(CoreElementType.BODY_TAG);
@@ -158,14 +156,19 @@ describe('Template Tests', () => {
 
             traverse(ast, {
                 JSXElement(path) {
-                    if (path.node.openingElement.attributes.some(attr =>
-                        t.isJSXAttribute(attr) && attr.name.name === 'data-oid')) {
+                    if (
+                        path.node.openingElement.attributes.some(
+                            (attr) => t.isJSXAttribute(attr) && attr.name.name === 'data-oid',
+                        )
+                    ) {
                         conditionalElement = path;
                     }
-                }
+                },
             });
 
-            expect(conditionalElement && getDynamicTypeInfo(conditionalElement)).toBe(DynamicType.CONDITIONAL);
+            expect(conditionalElement && getDynamicTypeInfo(conditionalElement)).toBe(
+                DynamicType.CONDITIONAL,
+            );
         });
 
         test('should identify array elements', () => {
@@ -179,11 +182,14 @@ describe('Template Tests', () => {
 
             traverse(ast, {
                 JSXElement(path) {
-                    if (path.node.openingElement.attributes.some(attr =>
-                        t.isJSXAttribute(attr) && attr.name.name === 'data-oid')) {
+                    if (
+                        path.node.openingElement.attributes.some(
+                            (attr) => t.isJSXAttribute(attr) && attr.name.name === 'data-oid',
+                        )
+                    ) {
                         arrayElement = path;
                     }
-                }
+                },
             });
 
             expect(arrayElement && getDynamicTypeInfo(arrayElement)).toBe(DynamicType.ARRAY);

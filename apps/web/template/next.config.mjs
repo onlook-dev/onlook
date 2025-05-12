@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
-    devIndicators: false
+    devIndicators: false,
 };
 export default nextConfig;

@@ -1,7 +1,6 @@
 import type { Font } from '@onlook/models';
 import { types as t, type NodePath, type t as T } from '@onlook/parser';
 
-
 const FONT_WEIGHT_REGEX =
     /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;
 

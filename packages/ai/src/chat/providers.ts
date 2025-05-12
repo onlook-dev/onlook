@@ -15,12 +15,9 @@ export async function initModel(
     }
 }
 
-async function getAnthropicProvider(
-    model: CLAUDE_MODELS,
-): Promise<LanguageModelV1> {
+async function getAnthropicProvider(model: CLAUDE_MODELS): Promise<LanguageModelV1> {
     const anthropic = createAnthropic();
     return anthropic(model, {
         cacheControl: true,
     });
 }
-

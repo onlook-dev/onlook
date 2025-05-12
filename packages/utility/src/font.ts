@@ -103,9 +103,7 @@ function extractFontParts(fileName: string): FontParts {
 
     // Convert weight to numeric value
     if (weight) {
-        let match = VARIANTS.find(
-            (variant) => variant.name.toLowerCase() === weight.toLowerCase(),
-        );
+        let match = VARIANTS.find((variant) => variant.name.toLowerCase() === weight.toLowerCase());
 
         if (!match && /^\d+$/.test(weight)) {
             match = VARIANTS.find((variant) => variant.value === weight);
@@ -206,4 +204,3 @@ function convertFontWeight(weight: string): string {
     return VARIANTS.find((variant) => variant.value === weight)?.name ?? weight;
 }
 export { convertFontString, convertFontWeight, extractFontParts, getFontFileName };
-

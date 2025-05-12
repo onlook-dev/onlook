@@ -1,5 +1,5 @@
 // @hidden
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ScrollState {
     isAtBottom: boolean;
@@ -27,27 +27,24 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
     const checkIsAtBottom = useCallback(
         (element: HTMLElement) => {
             const { scrollTop, scrollHeight, clientHeight } = element;
-            const distanceToBottom = Math.abs(
-                scrollHeight - scrollTop - clientHeight
-            );
+            const distanceToBottom = Math.abs(scrollHeight - scrollTop - clientHeight);
             return distanceToBottom <= offset;
         },
-        [offset]
+        [offset],
     );
 
     const scrollToBottom = useCallback(
         (instant?: boolean) => {
             if (!scrollRef.current) return;
 
-            const targetScrollTop =
-                scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
+            const targetScrollTop = scrollRef.current.scrollHeight - scrollRef.current.clientHeight;
 
             if (instant) {
                 scrollRef.current.scrollTop = targetScrollTop;
             } else {
                 scrollRef.current.scrollTo({
                     top: targetScrollTop,
-                    behavior: smooth ? "smooth" : "auto",
+                    behavior: smooth ? 'smooth' : 'auto',
                 });
             }
 
@@ -57,7 +54,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
             });
             userHasScrolled.current = false;
         },
-        [smooth]
+        [smooth],
     );
 
     const handleScroll = useCallback(() => {
@@ -76,8 +73,8 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
         const element = scrollRef.current;
         if (!element) return;
 
-        element.addEventListener("scroll", handleScroll, { passive: true });
-        return () => element.removeEventListener("scroll", handleScroll);
+        element.addEventListener('scroll', handleScroll, { passive: true });
+        return () => element.removeEventListener('scroll', handleScroll);
     }, [handleScroll]);
 
     useEffect(() => {
@@ -112,9 +109,7 @@ export function useAutoScroll(options: UseAutoScrollOptions = {}) {
     }, [scrollState.autoScrollEnabled, scrollToBottom]);
 
     const disableAutoScroll = useCallback(() => {
-        const atBottom = scrollRef.current
-            ? checkIsAtBottom(scrollRef.current)
-            : false;
+        const atBottom = scrollRef.current ? checkIsAtBottom(scrollRef.current) : false;
 
         // Only disable if not at bottom
         if (!atBottom) {

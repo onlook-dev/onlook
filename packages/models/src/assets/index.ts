@@ -65,7 +65,7 @@ interface Font {
 export enum SystemTheme {
     LIGHT = 'light',
     DARK = 'dark',
-    SYSTEM = 'system'
+    SYSTEM = 'system',
 }
 
 export type {
@@ -73,8 +73,9 @@ export type {
     ColorUpdate,
     ColorValue,
     ConfigResult,
-    ConfigUpdateResult, Font, ParsedColors,
+    ConfigUpdateResult,
+    Font,
+    ParsedColors,
     ThemeColors,
-    UpdateResult
+    UpdateResult,
 };
-

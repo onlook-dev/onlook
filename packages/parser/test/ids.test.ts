@@ -10,7 +10,9 @@ describe('addIdsToAst Tests', () => {
         const { ast: astWithIds, modified } = addOidsToAst(ast);
         const serialized = await getContentFromAst(astWithIds);
         expect(serialized).toEqual(
-            expect.stringMatching(/export default function App\(\) {\n\s+return \(\n\s+<div data-oid=".+">Hello, world!<\/div>\);\n\n}/)
+            expect.stringMatching(
+                /export default function App\(\) {\n\s+return \(\n\s+<div data-oid=".+">Hello, world!<\/div>\);\n\n}/,
+            ),
         );
         expect(modified).toBe(true);
     });
@@ -32,9 +34,7 @@ describe('getExistingOid Tests', () => {
     });
 
     test('should return null when data-oid attribute does not exist', () => {
-        const attributes = [
-            t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('test'))
-        ];
+        const attributes = [t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('test'))];
         expect(getExistingOid(attributes)).toBeNull();
     });
 
@@ -44,14 +44,14 @@ describe('getExistingOid Tests', () => {
             t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('test')),
             t.jsxAttribute(
                 t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.stringLiteral(oidValue)
-            )
+                t.stringLiteral(oidValue),
+            ),
         ];
 
         const result = getExistingOid(attributes);
         expect(result).toEqual({
             value: oidValue,
-            index: 1
+            index: 1,
         });
     });
 
@@ -60,12 +60,12 @@ describe('getExistingOid Tests', () => {
             t.jsxSpreadAttribute(t.identifier('props')),
             t.jsxAttribute(
                 t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.stringLiteral('test-id')
-            )
+                t.stringLiteral('test-id'),
+            ),
         ];
         expect(getExistingOid(attributes)).toEqual({
             value: 'test-id',
-            index: 1
+            index: 1,
         });
     });
 
@@ -73,17 +73,14 @@ describe('getExistingOid Tests', () => {
         const attributes = [
             t.jsxAttribute(
                 t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.jsxExpressionContainer(t.identifier('id'))
-            )
+                t.jsxExpressionContainer(t.identifier('id')),
+            ),
         ];
         expect(getExistingOid(attributes)).toBeNull();
     });
 
     test('should return null when data-oid value is null', () => {
-        const attribute = t.jsxAttribute(
-            t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-            null
-        );
+        const attribute = t.jsxAttribute(t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID), null);
         expect(getExistingOid([attribute])).toBeNull();
     });
 
@@ -93,15 +90,15 @@ describe('getExistingOid Tests', () => {
             t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('first')),
             t.jsxAttribute(
                 t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.stringLiteral(oidValue)
+                t.stringLiteral(oidValue),
             ),
-            t.jsxAttribute(t.jsxIdentifier('style'), t.stringLiteral('last'))
+            t.jsxAttribute(t.jsxIdentifier('style'), t.stringLiteral('last')),
         ];
 
         const result = getExistingOid(attributes);
         expect(result).toEqual({
             value: oidValue,
-            index: 1
+            index: 1,
         });
     });
 });

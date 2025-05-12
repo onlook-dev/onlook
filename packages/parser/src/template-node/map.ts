@@ -1,8 +1,4 @@
-import {
-    CoreElementType,
-    DynamicType,
-    type TemplateNode
-} from '@onlook/models';
+import { CoreElementType, DynamicType, type TemplateNode } from '@onlook/models';
 import { isReactFragment } from '../helpers';
 import { getExistingOid } from '../ids';
 import { type NodePath, type t as T, types as t, traverse } from '../packages';
@@ -38,7 +34,10 @@ export function createTemplateNodeMap(ast: T.File, filename: string): Map<string
         },
         VariableDeclaration: {
             enter(path) {
-                if (!path.node.declarations[0]?.id || !t.isIdentifier(path.node.declarations[0].id)) {
+                if (
+                    !path.node.declarations[0]?.id ||
+                    !t.isIdentifier(path.node.declarations[0].id)
+                ) {
                     return;
                 }
                 componentStack.push(path.node.declarations[0].id.name);
@@ -121,7 +120,11 @@ export function getDynamicTypeInfo(path: NodePath<T.JSXElement>): DynamicType | 
         t.isArrowFunctionExpression(parent) ||
         (t.isJSXFragment(parent) && path.parentPath?.parentPath?.isArrowFunctionExpression());
 
-    const dynamicType = isConditionalRoot ? DynamicType.CONDITIONAL : isArrayMapRoot ? DynamicType.ARRAY : undefined;
+    const dynamicType = isConditionalRoot
+        ? DynamicType.CONDITIONAL
+        : isArrayMapRoot
+          ? DynamicType.ARRAY
+          : undefined;
 
     return dynamicType ?? null;
 }
@@ -135,14 +138,18 @@ export function getCoreElementInfo(path: NodePath<T.JSXElement>): CoreElementTyp
         t.isJSXIdentifier(path.node.openingElement.name) &&
         path.node.openingElement.name.name.toLocaleLowerCase() === 'body';
 
-    const coreElementType = isComponentRoot ? CoreElementType.COMPONENT_ROOT : isBodyTag ? CoreElementType.BODY_TAG : undefined;
+    const coreElementType = isComponentRoot
+        ? CoreElementType.COMPONENT_ROOT
+        : isBodyTag
+          ? CoreElementType.BODY_TAG
+          : undefined;
 
     return coreElementType ?? null;
 }
 
 export async function getContentFromTemplateNode(
     templateNode: TemplateNode,
-    content: string
+    content: string,
 ): Promise<string | null> {
     try {
         const filePath = templateNode.path;

@@ -1,7 +1,5 @@
 {
-    "setupTasks": [
-        "bun install"
-    ],
+    "setupTasks": ["bun install"],
     "tasks": {
         "dev": {
             "name": "Dev Server",

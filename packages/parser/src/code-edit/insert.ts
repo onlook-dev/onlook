@@ -30,8 +30,7 @@ export function insertElementToNode(path: NodePath<T.JSXElement>, element: CodeI
 export function createInsertedElement(insertedChild: CodeInsert): T.JSXElement {
     let element: T.JSXElement;
     if (insertedChild.codeBlock) {
-        element =
-            getAstFromCodeblock(insertedChild.codeBlock) || createJSXElement(insertedChild);
+        element = getAstFromCodeblock(insertedChild.codeBlock) || createJSXElement(insertedChild);
         addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, insertedChild.oid);
     } else {
         element = createJSXElement(insertedChild);

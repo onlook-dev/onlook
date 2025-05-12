@@ -3,11 +3,6 @@
     "compilerOptions": {
         "baseUrl": "."
     },
-    "include": [
-        "src",
-        "test"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+    "include": ["src", "test"],
+    "exclude": ["node_modules"]
 }

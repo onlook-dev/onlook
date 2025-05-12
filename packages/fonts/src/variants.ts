@@ -1,13 +1,13 @@
 export enum WEIGHT {
-    THIN = "Thin",
-    EXTRA_LIGHT = "Extra Light",
-    LIGHT = "Light",
-    REGULAR = "Regular",
-    MEDIUM = "Medium",
-    SEMI_BOLD = "Semi Bold",
-    BOLD = "Bold",
-    EXTRA_BOLD = "Extra Bold",
-    BLACK = "Black",
+    THIN = 'Thin',
+    EXTRA_LIGHT = 'Extra Light',
+    LIGHT = 'Light',
+    REGULAR = 'Regular',
+    MEDIUM = 'Medium',
+    SEMI_BOLD = 'Semi Bold',
+    BOLD = 'Bold',
+    EXTRA_BOLD = 'Extra Bold',
+    BLACK = 'Black',
 }
 
 export const VARIANTS: { name: WEIGHT; value: string }[] = [

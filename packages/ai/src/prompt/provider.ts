@@ -70,7 +70,11 @@ export class PromptProvider {
         return prompt;
     }
 
-    getHydratedUserMessage(id: string, content: UserContent, context: ChatMessageContext[]): Message {
+    getHydratedUserMessage(
+        id: string,
+        content: UserContent,
+        context: ChatMessageContext[],
+    ): Message {
         if (content.length === 0) {
             throw new Error('Message is required');
         }
@@ -107,9 +111,9 @@ export class PromptProvider {
                 typeof content === 'string'
                     ? content
                     : content
-                        .filter((c) => c.type === 'text')
-                        .map((c) => c.text)
-                        .join('\n');
+                          .filter((c) => c.type === 'text')
+                          .map((c) => c.text)
+                          .join('\n');
             prompt += wrapXml('instruction', textContent);
         } else {
             prompt += content;
@@ -118,7 +122,7 @@ export class PromptProvider {
         const attachments: Attachment[] = images.map((i) => ({
             type: 'image',
             contentType: i.mimeType,
-            url: i.content
+            url: i.content,
         }));
 
         return {

@@ -54,7 +54,9 @@ export function parseHslValue(value: string): Color | null {
             l = parseFloat(parts[2]?.replace('%', '') ?? '0');
 
             if (parts.length >= 4) {
-                a = parts[3]?.endsWith('%') ? parseFloat(parts[3]) / 100 : parseFloat(parts[3] ?? '0');
+                a = parts[3]?.endsWith('%')
+                    ? parseFloat(parts[3]) / 100
+                    : parseFloat(parts[3] ?? '0');
             }
         } else {
             return null;
@@ -284,7 +286,7 @@ export class Color {
     get name(): string {
         return this._name
             ? this._name
-            : colorNamer(this.toHex6()).ntc[0]?.name?.toLowerCase().replace(' ', '-') ?? '';
+            : (colorNamer(this.toHex6()).ntc[0]?.name?.toLowerCase().replace(' ', '-') ?? '');
     }
 
     set name(newName: string) {

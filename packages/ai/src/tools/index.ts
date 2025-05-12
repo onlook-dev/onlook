@@ -8,7 +8,7 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
         .describe(
             'The absolute path to the directory to get files from. This should be the root directory of the project.',
         ),
-})
+});
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
     parameters: LIST_FILES_TOOL_PARAMETERS,
@@ -17,7 +17,7 @@ export const listFilesTool = tool({
 export const READ_FILES_TOOL_NAME = 'read_files';
 export const READ_FILES_TOOL_PARAMETERS = z.object({
     paths: z.array(z.string()).describe('The absolute paths to the files to read'),
-})
+});
 
 export const readFilesTool = tool({
     description: 'Read the contents of files',
