@@ -130,16 +130,16 @@ export class Color {
         if (color) {
             if (color.type === 'rgb') {
                 return Color.rgb({
-                    r: color.values[0] ?? 0 / 255,
-                    g: color.values[1] ?? 0 / 255,
-                    b: color.values[2] ?? 0 / 255,
+                    r: (color.values[0] ?? 0) / 255,
+                    g: (color.values[1] ?? 0) / 255,
+                    b: (color.values[2] ?? 0) / 255,
                     a: color.alpha,
                 });
             } else if (color.type === 'hsl') {
                 return Color.hsl({
-                    h: color.values[0] ?? 0 / 360,
-                    s: color.values[1] ?? 0 / 100,
-                    l: color.values[2] ?? 0 / 100,
+                    h: (color.values[0] ?? 0) / 360,
+                    s: (color.values[1] ?? 0) / 100,
+                    l: (color.values[2] ?? 0) / 100,
                     a: color.alpha,
                 });
             }

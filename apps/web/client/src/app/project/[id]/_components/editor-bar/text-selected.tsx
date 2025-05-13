@@ -199,8 +199,6 @@ const TextAlignSelector = memo(
     ),
 );
 
-TextAlignSelector.displayName = 'TextAlignSelector';
-
 export const TextSelected = () => {
     const {
         textState,
@@ -241,7 +239,7 @@ export const TextSelected = () => {
     );
 };
 
-const TextColor = memo(
+const TextColor = 
     ({
         handleTextColorChange,
         textColor,
@@ -249,20 +247,25 @@ const TextColor = memo(
         handleTextColorChange: (color: string) => void;
         textColor: string;
     }) => {
-        const [tempColor, setTempColor] = useState('#000000');
+        const [tempColor, setTempColor] = useState<Color>(Color.from(textColor));
+        
 
         const handleColorChange = (newColor: Color) => {
-            setTempColor(newColor.toHex());
+            try {
+                setTempColor(newColor);
+            } catch (error) {
+                console.error('Error converting color:', error);
+            }
         };
 
-        useEffect(() => {
-            setTempColor(textColor);
-        }, [textColor]);
-
         const handleColorChangeEnd = (newColor: Color) => {
-            const hexColor = newColor.toHex();
-            setTempColor(hexColor);
-            handleTextColorChange(hexColor);
+            try {
+                setTempColor(newColor);
+                handleTextColorChange(newColor.toHex());
+                
+            } catch (error) {
+                console.error('Error converting color:', error);
+            }
         };
 
         return (
@@ -272,7 +275,7 @@ const TextColor = memo(
                         <Icons.TextColorSymbol className="h-3.5 w-3.5" />
                         <div
                             className="h-[2.5px] w-5.5 rounded-full bg-current"
-                            style={{ backgroundColor: tempColor }}
+                            style={{ backgroundColor: tempColor.toHex() || '#000000' }}
                         />
                     </div>
                 </PopoverTrigger>
@@ -282,14 +285,11 @@ const TextColor = memo(
                     align="start"
                 >
                     <ColorPickerContent
-                        color={Color.from(tempColor)}
+                        color={tempColor}
                         onChange={handleColorChange}
                         onChangeEnd={handleColorChangeEnd}
                     />
                 </PopoverContent>
             </Popover>
         );
-    },
-);
-
-TextColor.displayName = 'TextColor';
+    }

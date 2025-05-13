@@ -23,7 +23,7 @@ export const DeleteKey = () => {
     );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
-        if (editorEngine.frames.selected.length > 0 && editorEngine.frames.selected[0]) {
+        if (editorEngine.frames.selected.length > 0 && editorEngine.frames.selected[0] && editorEngine.elements.selected.length === 0) {
             editorEngine.frames.disposeFrame(editorEngine.frames.selected[0].frame.id);
         } else {
             if (shouldWarnDelete) {
