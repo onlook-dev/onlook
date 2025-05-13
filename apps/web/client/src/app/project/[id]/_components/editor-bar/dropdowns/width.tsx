@@ -3,6 +3,7 @@
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 import { LayoutMode } from '@onlook/utility';
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { InputDropdown } from '../inputs/input-dropdown';
@@ -13,16 +14,32 @@ export const Width = () => {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                >
-                    <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
-                    <span className="text-sm">{dimensionState.width.value}</span>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg space-y-3">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-1.5 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                        >
+                            <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
+                            {(dimensionState.width.unit === 'px'
+                                ? dimensionState.width.num !== undefined
+                                : (dimensionState.width.value && dimensionState.width.value !== "auto")
+                            ) && (
+                                <span className="text-smallPlus">
+                                    {dimensionState.width.unit === 'px'
+                                        ? dimensionState.width.num
+                                        : dimensionState.width.value}
+                                </span>
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    Width
+                </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start" className="w-[260px] mt-1 p-3 rounded-lg space-y-3">
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-white">Width</span>

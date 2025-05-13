@@ -5,7 +5,7 @@ import { db } from './client';
 import { canvas, conversations, frames, messages, projects, userProjects, users, type Canvas, type Conversation, type Frame, type Message, type Project, type User } from './schema';
 
 const user0 = {
-    id: '5c62ba72-1f4a-4293-aa89-07b99b164353'
+    id: '2585ea6b-6303-4f21-977c-62af2f5a21f5'
 } satisfies User;
 
 const project0 = {

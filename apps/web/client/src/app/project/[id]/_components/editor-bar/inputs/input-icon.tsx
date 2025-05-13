@@ -64,12 +64,12 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
                     value={inputValue}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase"
+                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
                 />
 
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
-                        {unitValue}
+                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">
+                        {unitValue === 'px' ? '' : unitValue}
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
                         {UNITS.map((unitOption) => (
@@ -79,7 +79,7 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
                                     onUnitChange?.(unitOption);
                                     setUnitValue(unitOption);
                                 }}
-                                className="text-[12px] text-center px-2"
+                                className="text-[12px] text-center px-2 hover:bg-background-tertiary/70 hover:text-white transition-colors"
                             >
                                 {unitOption}
                             </DropdownMenuItem>

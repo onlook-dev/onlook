@@ -16,17 +16,17 @@ export const ChatControls = observer(() => {
     };
 
     return (
-        <div className="flex flex-row opacity-0 transition-opacity duration-200 group-hover/panel:opacity-100">
+        <div className="flex flex-row opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant={'ghost'}
                         size={'icon'}
-                        className="p-2 w-fit h-fit hover:bg-background-onlook"
+                        className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
                         onClick={handleNewChat}
                         disabled={isWaiting}
                     >
-                        <Icons.Plus />
+                        <Icons.Edit className='h-4 w-4' />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">

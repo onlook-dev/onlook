@@ -55,7 +55,7 @@ export const DraftImagePill = React.forwardRef<
                     e.stopPropagation();
                     onRemove();
                 }}
-                className="absolute -top-1.5 -right-1.5 w-6 h-6 p-1 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                className="absolute -top-1.5 -right-1.5 w-6 h-6 p-1 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
             >
                 <Icons.CrossL className="w-2.5 h-2.5 text-primary-foreground" />
             </button>

@@ -8,7 +8,7 @@ import { Routes } from '@/utils/constants';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
@@ -22,6 +22,22 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const projectManager = useProjectManager();
     const { tabState } = useTabActive();
     const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
+    const leftPanelRef = useRef<HTMLDivElement>(null);
+    const rightPanelRef = useRef<HTMLDivElement>(null);
+    const [center, setCenter] = useState<number | null>(null);
+
+    useEffect(() => {
+        function updateCenter() {
+            const left = leftPanelRef.current?.getBoundingClientRect();
+            const right = rightPanelRef.current?.getBoundingClientRect();
+            if (left && right) {
+                setCenter(left.right + (right.left - left.right) / 2);
+            }
+        }
+        updateCenter();
+        window.addEventListener('resize', updateCenter);
+        return () => window.removeEventListener('resize', updateCenter);
+    }, []);
 
     useEffect(() => {
         if (!result) {
@@ -98,25 +114,21 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                         <TopBar />
                     </div>
 
-                    <div className="absolute top-10 w-full z-50">
-                        <EditorBar />
-                    </div>
-
-                    {/* TODO: Remove these */}
-                    {/* 
-                    <div className="absolute w-screen h-screen flex items-center justify-center z-30">
-                        <StagingToggle selectedElement={selectedElement} onElementSelect={setSelectedElement} />
-                    </div> 
-                    <div className="absolute top-20 left-[80px] z-50 h-[calc(100%-80px)]">
-                        <Panels selectedElement={selectedElement} />
-                    </div> 
-                     */}
-
-                    <div className="absolute top-20 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
+                    {/* Left Panel */}
+                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-1">
                         <LeftPanel />
                     </div>
 
-                    <div className="absolute top-20 right-0 animate-edit-panel-in h-[calc(100%-80px)] z-1">
+                    {/* Centered EditorBar */}
+                    <div
+                        className="absolute top-12 z-50"
+                        style={center ? { left: center, transform: 'translateX(-50%)' } : {}}
+                    >
+                        <EditorBar />
+                    </div>
+
+                    {/* Right Panel */}
+                    <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-1">
                         <RightPanel />
                     </div>
 
@@ -124,7 +136,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                         <BottomBar />
                     </div>
                 </div>
-            </TooltipProvider>
-        </ChatProvider>
+            </TooltipProvider >
+        </ChatProvider >
     );
 });

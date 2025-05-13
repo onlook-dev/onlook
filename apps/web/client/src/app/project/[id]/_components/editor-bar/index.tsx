@@ -42,8 +42,8 @@ export const EditorBar = observer(() => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className={cn(
-                'flex flex-col border-b-[0.5px] border-border p-1 px-1.5 bg-background backdrop-blur drop-shadow-xl z-50',
-                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
+                "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50",
+                editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
             )}
             transition={{
                 type: 'spring',
