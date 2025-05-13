@@ -41,3 +41,7 @@ backend = "postgres"
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[storage.buckets.preview_images]
+public = true
+file_size_limit = "10MiB"

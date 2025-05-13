@@ -5,7 +5,6 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { motion, type Variants } from 'motion/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-// import { getPreviewImage } from '../../helpers';
 import { EditAppButton } from './edit-app';
 
 const getPreviewImage = async (previewImg: string) => {
