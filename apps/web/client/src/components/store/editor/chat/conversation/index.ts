@@ -141,7 +141,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        await this.current.appendMessage(message);
+        await this.current.addOrUpdateMessage(message);
     }
 
     async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {

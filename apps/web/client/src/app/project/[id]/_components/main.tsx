@@ -121,7 +121,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
                     {/* Centered EditorBar */}
                     <div
-                        className="absolute top-12 z-50"
+                        className="absolute top-10 z-50"
                         style={center ? { left: center, transform: 'translateX(-50%)' } : {}}
                     >
                         <EditorBar />

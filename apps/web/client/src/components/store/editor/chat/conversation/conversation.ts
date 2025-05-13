@@ -73,8 +73,13 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.map((m) => m.toStreamMessage());
     }
 
-    async appendMessage(message: ChatMessageImpl) {
-        this.messages = [...this.messages, message];
+    async addOrUpdateMessage(message: ChatMessageImpl) {
+        const index = this.messages.findIndex((m) => m.id === message.id);
+        if (index !== -1) {
+            this.messages[index] = message;
+        } else {
+            this.messages = [...this.messages, message];
+        }
         this.updatedAt = new Date().toISOString();
         await this.saveMessageToStorage(message);
     }
