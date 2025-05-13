@@ -1,5 +1,3 @@
-import type { ProjectDomain } from './domain';
-
 export interface Project {
     id: string;
     name: string;
@@ -12,5 +10,4 @@ export interface Project {
         id: string;
         url: string;
     };
-    domains: ProjectDomain;
 }

@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { DefaultSettings } from '@onlook/constants';
-import type { Frame } from '@onlook/models';
+import type { FrameImpl } from '@/components/store/editor/canvas/frame';
+import { DefaultSettings, DEVICE_OPTIONS, Orientation } from '@onlook/constants';
+import type { Frame, FrameType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
@@ -16,62 +17,11 @@ import {
 import { Separator } from '@onlook/ui/separator';
 import { Fragment, useEffect, useState } from 'react';
 
-type DeviceOptions = Record<string, Record<string, string>>;
-
-const deviceOptions: DeviceOptions = {
-    Custom: {
-        Custom: 'Custom',
-    },
-    Phone: {
-        'Android Compact': '412x917',
-        'Android Medium': '700x840',
-        'Android Small': '360x640',
-        'Android Large': '360x800',
-        'iPhone 16': '393x852',
-        'iPhone 16 Pro': '402x874',
-        'iPhone 16 Pro Max': '440x956',
-        'iPhone 16 Plus': '430x932',
-        'iPhone 14 & 15 Pro': '430x932',
-        'iPhone 14 & 15': '393x852',
-        'iPhone 13 & 14': '390x844',
-        'iPhone 13 Pro Max': '428x926',
-        'iPhone 13 / 13 Pro': '390x844',
-        'iPhone 11 Pro Max': '414x896',
-        'iPhone 11 Pro / X': '375x812',
-        'iPhone 8 Plus': '414x736',
-        'iPhone 8': '375x667',
-        'iPhone SE': '320x568',
-    },
-    Tablet: {
-        'Android Expanded': '1280x800',
-        'Surface Pro 8': '1440x960',
-        'Surface Pro 4': '1368x912',
-        'iPad Mini 8.3': '744x1133',
-        'iPad Mini 5': '768x1024',
-        'iPad Pro 11': '834x1194',
-        'iPad Pro 12.9': '1024x1366',
-    },
-    Laptop: {
-        'MacBook Air': '1280x832',
-        MacBook: '1152x700',
-        'MacBook Pro 14': '1512x982',
-        'MacBook Pro 16': '1728x1117',
-        'MacBook Pro': '1440x900',
-        'Surface Book': '1500x1000',
-    },
-    Desktop: {
-        Desktop: '1440x1024',
-        Wireframe: '1440x1024',
-        TV: '1280x720',
-        iMac: '1280x720',
-    },
-};
-
-export const FrameDimensions = ({ frame }: { frame: Frame }) => {
+export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
     const editorEngine = useEditorEngine();
-    const [device, setDevice] = useState(frame.device ?? DefaultSettings.DEVICE);
+    const [device, setDevice] = useState(frame.windowMetadata.device ?? DefaultSettings.DEVICE);
     const [orientation, setOrientation] = useState(
-        frame.orientation ?? DefaultSettings.ORIENTATION,
+        frame.windowMetadata.orientation ?? DefaultSettings.ORIENTATION,
     );
     const [width, setWidth] = useState(
         frame.dimension.width ?? DefaultSettings.FRAME_DIMENSION.width,
@@ -81,7 +31,7 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
     );
     // const [responsive, setResponsive] = useState('Closest Size');
     const [aspectRatioLocked, setAspectRatioLocked] = useState(
-        frame.aspectRatioLocked ?? DefaultSettings.ASPECT_RATIO_LOCKED,
+        frame.windowMetadata.aspectRatioLocked ?? DefaultSettings.ASPECT_RATIO_LOCKED,
     );
     const [aspectRatio, setAspectRatio] = useState(width / height);
     const [step, setStep] = useState(1);
@@ -91,7 +41,7 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
     });
 
     useEffect(() => {
-        const observer = (newSettings: FrameSettings) => {
+        const observer = (newSettings: Frame) => {
             if (newSettings.dimension.width !== width) {
                 setWidth(newSettings.dimension.width);
             }
@@ -106,39 +56,49 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
     }, []);
 
     useEffect(() => {
-        setDevice(frame.device || DefaultSettings.DEVICE);
-        setOrientation(frame.orientation || DefaultSettings.ORIENTATION);
+        setDevice(frame.windowMetadata.device || DefaultSettings.DEVICE);
+        setOrientation(frame.windowMetadata.orientation || DefaultSettings.ORIENTATION);
         setWidth(frame.dimension.width || DefaultSettings.FRAME_DIMENSION.width);
         setHeight(frame.dimension.height || DefaultSettings.FRAME_DIMENSION.height);
-        setAspectRatioLocked(frame.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED);
+        setAspectRatioLocked(frame.windowMetadata.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED);
     }, [frame.id]);
 
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
-        if (deviceName === 'Custom') {
-            editorEngine.canvas.saveFrame(frame.id, {
-                device: device,
-            });
-            return;
-        }
+        if (deviceCategory && deviceName) {
 
-        if (!deviceOptions[deviceCategory]?.[deviceName]) {
-            setDevice('Custom:Custom');
-            return;
-        }
 
-        const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
-        if (width === parseInt(deviceHeight) && height === parseInt(deviceWidth)) {
-            return;
-        } else {
-            setWidth(parseInt(deviceWidth));
-            setHeight(parseInt(deviceHeight));
-            editorEngine.canvas.saveFrame(settings.id, {
-                dimension: { width: parseInt(deviceWidth), height: parseInt(deviceHeight) },
-                device: device,
-            });
-            if (aspectRatioLocked) {
-                setAspectRatio(parseInt(deviceWidth) / parseInt(deviceHeight));
+            if (deviceName === 'Custom') {
+                editorEngine.canvas.saveFrame(frame.id, {
+                    windowMetadata: {
+                        device: device as FrameType,
+                    }
+                });
+                return;
+            }
+
+            if (!DEVICE_OPTIONS[deviceCategory]?.[deviceName]) {
+                setDevice('Custom:Custom');
+                return;
+            }
+
+            const [deviceWidth, deviceHeight] = DEVICE_OPTIONS[deviceCategory][deviceName].split('x');
+            if (deviceWidth && deviceHeight) {
+                if (width === parseInt(deviceHeight) && height === parseInt(deviceWidth)) {
+                    return;
+                } else {
+                    setWidth(parseInt(deviceWidth));
+                    setHeight(parseInt(deviceHeight));
+                    editorEngine.canvas.saveFrame(frame.id, {
+                        dimension: { width: parseInt(deviceWidth), height: parseInt(deviceHeight) },
+                        windowMetadata: {
+                            device: device as FrameType,
+                        }
+                    });
+                    if (aspectRatioLocked) {
+                        setAspectRatio(parseInt(deviceWidth) / parseInt(deviceHeight));
+                    }
+                }
             }
         }
     }, [device]);
@@ -146,29 +106,36 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
 
-        if (!deviceOptions[deviceCategory]?.[deviceName]) {
-            setDevice('Custom:Custom');
-            return;
-        }
+        if (deviceCategory && deviceName) {
+            if (!DEVICE_OPTIONS[deviceCategory]?.[deviceName]) {
+                setDevice('Custom:Custom');
+                return;
+            }
 
-        const [deviceWidth, deviceHeight] = deviceOptions[deviceCategory][deviceName].split('x');
-        if (
-            deviceName !== 'Custom' &&
-            ((width !== parseInt(deviceWidth) && width !== parseInt(deviceHeight)) ||
-                (height !== parseInt(deviceHeight) && height !== parseInt(deviceWidth)))
-        ) {
-            setDevice('Custom:Custom');
-        }
-        if (height > width && orientation !== Orientation.Portrait && !aspectRatioLocked) {
-            setOrientation(Orientation.Portrait);
-        }
-        if (width > height && orientation !== Orientation.Landscape && !aspectRatioLocked) {
-            setOrientation(Orientation.Landscape);
-        }
+            const [deviceWidth, deviceHeight] =
+                DEVICE_OPTIONS[deviceCategory][deviceName].split('x');
 
-        editorEngine.canvas.saveFrame(settings.id, {
-            dimension: { width: width, height: height },
-        });
+            if (deviceWidth && deviceHeight) {
+                if (
+                    deviceName !== 'Custom' &&
+                    ((width !== parseInt(deviceWidth) && width !== parseInt(deviceHeight)) ||
+                        (height !== parseInt(deviceHeight) && height !== parseInt(deviceWidth)))
+                ) {
+                    setDevice('Custom:Custom');
+                }
+            }
+
+            if (height > width && orientation !== Orientation.Portrait && !aspectRatioLocked) {
+                setOrientation(Orientation.Portrait);
+            }
+            if (width > height && orientation !== Orientation.Landscape && !aspectRatioLocked) {
+                setOrientation(Orientation.Landscape);
+            }
+
+            editorEngine.canvas.saveFrame(frame.id, {
+                dimension: { width: width, height: height },
+            });
+        }
     }, [height, width]);
 
     useEffect(() => {
@@ -190,14 +157,18 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
                 width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
             });
         }
-        editorEngine.canvas.saveFrame(settings.id, {
-            aspectRatioLocked: aspectRatioLocked,
+        editorEngine.canvas.saveFrame(frame.id, {
+            windowMetadata: {
+                aspectRatioLocked: aspectRatioLocked,
+            }
         });
     }, [aspectRatioLocked]);
 
     useEffect(() => {
-        editorEngine.canvas.saveFrame(settings.id, {
-            orientation: orientation,
+        editorEngine.canvas.saveFrame(frame.id, {
+            windowMetadata: {
+                orientation: orientation,
+            }
         });
     }, [orientation]);
 
@@ -255,23 +226,23 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
             if (aspectRatioLocked) {
                 if (
                     parseInt(value) / aspectRatio <
-                        parseInt(DefaultSettings.MIN_DIMENSIONS.height) ||
+                    parseInt(DefaultSettings.MIN_DIMENSIONS.height) ||
                     parseInt(value) < parseInt(DefaultSettings.MIN_DIMENSIONS.width)
                 ) {
                     const dimensionsAspectRatio =
                         aspectRatio >= 1
                             ? {
-                                  height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
-                                  width: Math.floor(
-                                      parseInt(DefaultSettings.MIN_DIMENSIONS.height) * aspectRatio,
-                                  ),
-                              }
+                                height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                                width: Math.floor(
+                                    parseInt(DefaultSettings.MIN_DIMENSIONS.height) * aspectRatio,
+                                ),
+                            }
                             : {
-                                  height: Math.floor(
-                                      parseInt(DefaultSettings.MIN_DIMENSIONS.width) / aspectRatio,
-                                  ),
-                                  width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
-                              };
+                                height: Math.floor(
+                                    parseInt(DefaultSettings.MIN_DIMENSIONS.width) / aspectRatio,
+                                ),
+                                width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
+                            };
                     setHeight(dimensionsAspectRatio.height);
                     setWidth(dimensionsAspectRatio.width);
                 }
@@ -283,23 +254,23 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
             if (aspectRatioLocked) {
                 if (
                     parseInt(value) * aspectRatio <
-                        parseInt(DefaultSettings.MIN_DIMENSIONS.width) ||
+                    parseInt(DefaultSettings.MIN_DIMENSIONS.width) ||
                     parseInt(value) < parseInt(DefaultSettings.MIN_DIMENSIONS.height)
                 ) {
                     const dimensionsAspectRatio =
                         aspectRatio >= 1
                             ? {
-                                  height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
-                                  width: Math.floor(
-                                      parseInt(DefaultSettings.MIN_DIMENSIONS.height) * aspectRatio,
-                                  ),
-                              }
+                                height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                                width: Math.floor(
+                                    parseInt(DefaultSettings.MIN_DIMENSIONS.height) * aspectRatio,
+                                ),
+                            }
                             : {
-                                  height: Math.floor(
-                                      parseInt(DefaultSettings.MIN_DIMENSIONS.width) / aspectRatio,
-                                  ),
-                                  width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
-                              };
+                                height: Math.floor(
+                                    parseInt(DefaultSettings.MIN_DIMENSIONS.width) / aspectRatio,
+                                ),
+                                width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
+                            };
                     setHeight(dimensionsAspectRatio.height);
                     setWidth(dimensionsAspectRatio.width);
                 }
@@ -312,14 +283,16 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
 
     const handleAspectRatioLock = () => {
         setAspectRatioLocked((prev) => !prev);
-        editorEngine.canvas.saveFrame(settings.id, {
-            aspectRatioLocked: !aspectRatioLocked,
+        editorEngine.canvas.saveFrame(frame.id, {
+            windowMetadata: {
+                aspectRatioLocked: !aspectRatioLocked,
+            }
         });
     };
 
     return (
         <div className="flex flex-col gap-2">
-            <p className="text-smallPlus text-foreground-primary">Frame Dimensions</p>
+            <p className="text-sm text-foreground-primary">Frame Dimensions</p>
             <div className="flex flex-row justify-between items-center">
                 <span className="text-xs text-foreground-secondary">Device</span>
                 <Select value={device} onValueChange={setDevice}>
@@ -327,7 +300,7 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
                         <SelectValue placeholder="Select device" />
                     </SelectTrigger>
                     <SelectContent className="rounded-md bg-background-secondary">
-                        {Object.entries(deviceOptions).map(([category, devices], index) =>
+                        {Object.entries(DEVICE_OPTIONS).map(([category, devices], index) =>
                             category !== 'Custom' ? (
                                 <Fragment key={index}>
                                     <SelectGroup key={index}>
@@ -342,7 +315,7 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
-                                    {index < Object.entries(deviceOptions).length - 1 && (
+                                    {index < Object.entries(DEVICE_OPTIONS).length - 1 && (
                                         <Separator className="text-white" />
                                     )}
                                 </Fragment>
@@ -364,7 +337,7 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
                 <div className="flex flex-row p-0.5 w-3/5 bg-background-secondary rounded">
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === Orientation.Portrait ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
+                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === Orientation.Portrait ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
                         variant={'ghost'}
                         onClick={handleOrientationChange}
                     >
@@ -374,7 +347,7 @@ export const FrameDimensions = ({ frame }: { frame: Frame }) => {
                     </Button>
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === 'Landscape' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
+                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === 'Landscape' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
                         variant={'ghost'}
                         onClick={handleOrientationChange}
                     >

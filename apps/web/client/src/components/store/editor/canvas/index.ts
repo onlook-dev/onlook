@@ -4,13 +4,17 @@ import { FrameType } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
+import type { ProjectManager } from '../../project/manager';
 import { FrameImpl, WebFrameImpl } from './frame';
+
+type SettingsObserver = (settings: Frame) => void;
 export class CanvasManager {
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
     private _frames: FrameImpl[] = [];
+    private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
-    constructor() {
+    constructor(private projects: ProjectManager) {
         this._position = this.getDefaultPanPosition();
         makeAutoObservable(this);
     }
@@ -72,7 +76,7 @@ export class CanvasManager {
         return this.frames.find((f) => f.id === id);
     }
 
-    saveFrame(id: string, newFrame: Frame) {
+    saveFrame(id: string, newFrame: Partial<Frame>) {
         let frame = this.frames.find((f) => f.id === id);
         if (!frame) {
             return;
@@ -108,21 +112,30 @@ export class CanvasManager {
             position: defaults.position ?? DefaultSettings.FRAME_POSITION,
             dimension: defaults.dimension ?? DefaultSettings.FRAME_DIMENSION,
             type: FrameType.WEB,
+            windowMetadata: defaults.windowMetadata ?? {},
         };
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);
 
+    observeSettings(id: string, observer: SettingsObserver): void {
+        if (!this.settingsObservers.has(id)) {
+            this.settingsObservers.set(id, new Set());
+        }
+        this.settingsObservers.get(id)!.add(observer);
+    }
+
+    unobserveSettings(id: string, observer: SettingsObserver): void {
+        this.settingsObservers.get(id)?.delete(observer);
+        if (this.settingsObservers.get(id)?.size === 0) {
+            this.settingsObservers.delete(id);
+        }
+    }
+
     private undebouncedSaveSettings() {
         // TODO: Save settings in persistence
-        // const settings: ProjectSettings = {
-        //     scale: this.zoomScale,
-        //     position: this.panPosition,
-        //     frames: Array.from(this.frames.values()),
-        // };
-        // if (this.projects.project) {
-        //     this.projects.project.settings = settings;
-        //     this.projects.updateProject(this.projects.project);
-        // }
+        if (this.projects.project) {
+            this.projects.updateProject(this.projects.project);
+        }
     }
 }

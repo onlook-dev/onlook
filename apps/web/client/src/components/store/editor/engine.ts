@@ -32,8 +32,8 @@ export class EditorEngine {
     readonly theme: ThemeManager;
     readonly font: FontManager;
     readonly pages: PagesManager;
-
-    readonly canvas: CanvasManager = new CanvasManager();
+    readonly canvas: CanvasManager;
+    
     readonly state: StateManager = new StateManager();
     readonly sandbox: SandboxManager = new SandboxManager();
     readonly history: HistoryManager = new HistoryManager(this);
@@ -63,6 +63,7 @@ export class EditorEngine {
         this.image = new ImageManager(this, this.projectManager);
         this.theme = new ThemeManager(this, this.projectManager);
         this.font = new FontManager(this, this.projectManager);
+        this.canvas = new CanvasManager(this.projectManager)
         makeAutoObservable(this);
     }
 

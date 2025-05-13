@@ -1,5 +1,6 @@
-import type { FrameType, WebFrame } from "@onlook/models";
-import type { Frame as DbFrame } from "../schema";
+import type { FrameType, WebFrame } from '@onlook/models';
+import { computeWindowMetadata } from '@onlook/utility';
+import type { Frame as DbFrame } from '../schema';
 
 export const toFrame = (dbFrame: DbFrame): WebFrame => {
     return {
@@ -14,6 +15,7 @@ export const toFrame = (dbFrame: DbFrame): WebFrame => {
             width: Number(dbFrame.width),
             height: Number(dbFrame.height),
         },
+        windowMetadata: computeWindowMetadata(dbFrame.width, dbFrame.height),
     };
 };
 

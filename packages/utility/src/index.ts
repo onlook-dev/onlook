@@ -13,3 +13,4 @@ export * from './tailwind';
 export * from './time';
 export * from './unit';
 export * from './urls';
+export * from './window-metadata';
