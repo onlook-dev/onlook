@@ -23,15 +23,12 @@ export const DeleteKey = () => {
     );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
-        if (editorEngine.frames.selected.length > 0 && editorEngine.frames.selected[0] && editorEngine.elements.selected.length === 0) {
-            editorEngine.frames.disposeFrame(editorEngine.frames.selected[0].frame.id);
+        if (shouldWarnDelete) {
+            setShowDeleteDialog(true);
         } else {
-            if (shouldWarnDelete) {
-                setShowDeleteDialog(true);
-            } else {
-                editorEngine.elements.delete();
-            }
+            editorEngine.elements.delete();
         }
+        // TODO: Handle deleting frames
     });
 
     function disableWarning(disable: boolean) {
