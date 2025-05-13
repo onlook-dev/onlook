@@ -115,7 +115,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     </div>
 
                     {/* Left Panel */}
-                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-80px)] z-51">
+                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-51">
                         <LeftPanel />
                     </div>
 
