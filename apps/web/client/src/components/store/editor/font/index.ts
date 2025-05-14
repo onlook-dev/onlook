@@ -27,10 +27,10 @@ import type { EditorEngine } from '../engine';
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
 import { DefaultSettings } from '@onlook/constants';
+import { BrandTabValue } from '@onlook/models';
 import { getFontFileName } from '@onlook/utility';
 import * as pathModule from 'path';
 import { normalizePath } from '../sandbox/helpers';
-import { BrandTabValue } from '@onlook/models';
 
 type TraverseCallback = (
     classNameAttr: t.JSXAttribute,
