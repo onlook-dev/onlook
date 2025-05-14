@@ -13,12 +13,14 @@
         "packages/*",
         "apps/*",
         "tooling/*",
-        "apps/web/*"
+        "apps/web/*",
+        "docs"
     ],
     "scripts": {
         "build": "bun --filter '*' build",
         "dev": "bun --filter @onlook/web dev",
         "test": "bun --filter '*' test",
+        "docs": "bun --filter @onlook/docs dev",
         "db:gen": "bun --filter @onlook/db db:gen",
         "db:push": "bun --filter @onlook/db db:push",
         "format": "bun --filter '*' format",
