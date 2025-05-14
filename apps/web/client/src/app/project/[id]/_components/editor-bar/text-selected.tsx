@@ -27,6 +27,7 @@ const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
             <TooltipTrigger asChild>
                 <Button
                     variant="ghost"
+                    size="toolbar"
                     className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                 >
                     <span className="truncate text-sm">{fontFamily}</span>
@@ -55,6 +56,7 @@ const FontWeightSelector = memo(
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
+                            size="toolbar"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex w-24 cursor-pointer items-center justify-start gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             <span className="text-smallPlus">{convertFontWeight(fontWeight)}</span>
@@ -109,7 +111,7 @@ const FontSizeSelector = memo(
                     <div className="flex items-center gap-0.5">
                         <Button
                             variant="ghost"
-                            size="icon"
+                            size="toolbar"
                             onClick={() => adjustFontSize(-1)}
                             className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
                         >
@@ -150,7 +152,7 @@ const FontSizeSelector = memo(
                         </DropdownMenu>
                         <Button
                             variant="ghost"
-                            size="icon"
+                            size="toolbar"
                             onClick={() => adjustFontSize(1)}
                             className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
                         >
@@ -182,7 +184,7 @@ const TextAlignSelector = memo(
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            size="icon"
+                            size="toolbar"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             {textAlign === "left" && <Icons.TextAlignLeft className="h-4 w-4" />}
@@ -239,9 +241,8 @@ export const TextSelected = () => {
 
     return (
         <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
-            <div className="flex items-center gap-1">
-                <StateDropdown />
-                <InputSeparator />
+            <div className="flex items-center gap-0.5">
+                {/* <StateDropdown /> */}
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <FontFamilySelector fontFamily={textState.fontFamily} />
@@ -321,7 +322,7 @@ const TextColor =
                     <div className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white">
                         <Icons.TextColorSymbol className="h-3.5 w-3.5" />
                         <div
-                            className="h-[2.5px] w-5.5 rounded-full bg-current"
+                            className="h-[4px] w-6 rounded-full bg-current"
                             style={{ backgroundColor: tempColor.toHex() || '#000000' }}
                         />
                     </div>

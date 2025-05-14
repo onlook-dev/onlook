@@ -19,14 +19,15 @@ export const Width = () => {
                     <DropdownMenuTrigger asChild>
                         <Button
                             variant="ghost"
-                            className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-1.5 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
+                            size="toolbar"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 rounded-lg border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
                             {(dimensionState.width.unit === 'px'
                                 ? dimensionState.width.num !== undefined
                                 : (dimensionState.width.value && dimensionState.width.value !== "auto")
                             ) && (
-                                <span className="text-smallPlus">
+                                <span className="text-small">
                                     {dimensionState.width.unit === 'px'
                                         ? dimensionState.width.num
                                         : dimensionState.width.value}
