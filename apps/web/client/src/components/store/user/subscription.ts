@@ -5,23 +5,30 @@ export class SubscriptionManager {
     plan: UsagePlanType = UsagePlanType.BASIC;
 
     constructor() {
-        makeAutoObservable(this);
         this.restoreCachedPlan();
         this.getPlanFromServer();
+        makeAutoObservable(this);
     }
 
     private restoreCachedPlan() {
-        const cachedPlan = localStorage?.getItem('currentPlan');
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return;
+        }
+        const cachedPlan = window.localStorage?.getItem('currentPlan');
         this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
     }
 
     async updatePlan(plan: UsagePlanType) {
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return;
+        }
         this.plan = plan;
-        localStorage.setItem('currentPlan', plan);
+        window.localStorage.setItem('currentPlan', plan);
         // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 
     async getPlanFromServer(): Promise<UsagePlanType> {
+        return UsagePlanType.BASIC;
         // try {
         //     const res:
         //         | {

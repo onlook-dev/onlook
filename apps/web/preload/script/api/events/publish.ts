@@ -1,12 +1,11 @@
-import type { ActionLocation } from '@onlook/models/actions';
-import type { DomElement } from '@onlook/models/element';
-import { elementFromDomId } from '../../helpers';
+import type { ActionLocation, DomElement } from '@onlook/models';
+import { getHtmlElement } from '../../helpers';
 import { buildLayerTree } from '../dom';
-import { getDomElementByDomId } from '../elements';
+import { getElementByDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
 
 export function publishStyleUpdate(domId: string) {
-    const domEl = getDomElementByDomId(domId, true);
+    const domEl = getElementByDomId(domId, true);
     if (!domEl) {
         console.warn('No domEl found for style update event');
         return;
@@ -19,7 +18,7 @@ export function publishInsertElement(
     domEl: DomElement,
     editText: boolean,
 ) {
-    const parent = elementFromDomId(location.targetDomId);
+    const parent = getHtmlElement(location.targetDomId);
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
     if (!domEl || !layerMap) {
         console.warn('No domEl or layerMap found for insert element event');
@@ -29,7 +28,7 @@ export function publishInsertElement(
 }
 
 export function publishRemoveElement(location: ActionLocation) {
-    const parent = elementFromDomId(location.targetDomId);
+    const parent = getHtmlElement(location.targetDomId);
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
     const parentDomEl = parent ? getDomElement(parent as HTMLElement, true) : null;
 
@@ -41,7 +40,7 @@ export function publishRemoveElement(location: ActionLocation) {
 }
 
 export function publishMoveElement(domEl: DomElement) {
-    const parent = elementFromDomId(domEl.domId)?.parentElement;
+    const parent = getHtmlElement(domEl.domId)?.parentElement;
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
     if (!domEl || !layerMap) {
@@ -52,7 +51,7 @@ export function publishMoveElement(domEl: DomElement) {
 }
 
 export function publishGroupElement(domEl: DomElement) {
-    const parent = elementFromDomId(domEl.domId)?.parentElement;
+    const parent = getHtmlElement(domEl.domId)?.parentElement;
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
     if (!domEl || !layerMap) {
@@ -63,7 +62,7 @@ export function publishGroupElement(domEl: DomElement) {
 }
 
 export function publishUngroupElement(parentEl: DomElement) {
-    const parent = elementFromDomId(parentEl.domId)?.parentElement;
+    const parent = getHtmlElement(parentEl.domId)?.parentElement;
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
     if (!parentEl || !layerMap) {
@@ -74,7 +73,7 @@ export function publishUngroupElement(parentEl: DomElement) {
 }
 
 export function publishEditText(domEl: DomElement) {
-    const parent = elementFromDomId(domEl.domId)?.parentElement;
+    const parent = getHtmlElement(domEl.domId)?.parentElement;
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
     if (!domEl || !layerMap) {

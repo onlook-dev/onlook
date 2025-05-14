@@ -45,7 +45,7 @@ export class Hotkey {
     private constructor(
         public readonly command: string,
         public readonly description: string,
-    ) { }
+    ) {}
 
     toString() {
         return this.command;

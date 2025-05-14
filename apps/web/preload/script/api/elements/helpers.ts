@@ -1,7 +1,6 @@
+import { EditorAttributes } from '@onlook/constants';
+import type { DomElement, ParentDomElement } from '@onlook/models';
 import type { ActionLocation } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { DomElement, ParentDomElement } from '@onlook/models/element';
-import { jsonClone } from '@onlook/utility';
 import { getInstanceId, getOid } from '../../helpers/ids';
 import { getFrameId } from '../state';
 import { getStyles } from './style';
@@ -54,7 +53,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         parent: parentDomElement,
         styles,
     };
-    return jsonClone(domElement);
+    return domElement;
 };
 
 export function restoreElementStyle(el: HTMLElement) {

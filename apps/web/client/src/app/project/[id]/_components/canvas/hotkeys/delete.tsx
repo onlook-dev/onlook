@@ -1,5 +1,6 @@
-// import { useEditorEngine, useUserManager } from '@/components/Context';
 import { Hotkey } from '@/components/hotkey';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -7,39 +8,36 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@onlook/ui-v4/alert-dialog';
-import { Button } from '@onlook/ui-v4/button';
-import { Checkbox } from '@onlook/ui-v4/checkbox';
+} from '@onlook/ui/alert-dialog';
+import { Button } from '@onlook/ui/button';
+import { Checkbox } from '@onlook/ui/checkbox';
 import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 export const DeleteKey = () => {
-    // const editorEngine = useEditorEngine();
-    // const userManager = useUserManager();
+    const editorEngine = useEditorEngine();
+    const userManager = useUserManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    // const [shouldWarnDelete, setShouldWarnDelete] = useState(
-    //     userManager.settings.settings?.editor?.shouldWarnDelete ?? true,
-    // );
+    const [shouldWarnDelete, setShouldWarnDelete] = useState(
+        userManager.settings.settings?.editor?.shouldWarnDelete ?? true,
+    );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
-        // if (editorEngine.isWindowSelected) {
-        //     editorEngine.deleteWindow();
-        // } else {
-        //     if (shouldWarnDelete) {
-        //         setShowDeleteDialog(true);
-        //     } else {
-        //         editorEngine.elements.delete();
-        //     }
-        // }
+        if (shouldWarnDelete) {
+            setShowDeleteDialog(true);
+        } else {
+            editorEngine.elements.delete();
+        }
+        // TODO: Handle deleting frames
     });
 
     function disableWarning(disable: boolean) {
-        // userManager.settings.updateEditor({ shouldWarnDelete: disable });
-        // setShouldWarnDelete(disable);
+        userManager.settings.updateEditor({ shouldWarnDelete: disable });
+        setShouldWarnDelete(disable);
     }
 
-    const handleDelete = () => {
-        // editorEngine.elements.delete();
+    const handleDelete = async () => {
+        await editorEngine.elements.delete();
         setShowDeleteDialog(false);
     };
 

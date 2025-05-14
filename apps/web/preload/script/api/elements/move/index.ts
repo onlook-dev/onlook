@@ -1,18 +1,18 @@
-import type { DomElement } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models';
+import { getHtmlElement, isValidHtmlElement } from '../../../helpers';
 import { getDomElement } from '../helpers';
-import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 
-export function moveElement(domId: string, newIndex: number): DomElement | undefined {
-    const el = elementFromDomId(domId) as HTMLElement | null;
+export function moveElement(domId: string, newIndex: number): DomElement | null {
+    const el = getHtmlElement(domId) as HTMLElement | null;
     if (!el) {
         console.warn(`Move element not found: ${domId}`);
-        return;
+        return null;
     }
 
     const movedEl = moveElToIndex(el, newIndex);
     if (!movedEl) {
         console.warn(`Failed to move element: ${domId}`);
-        return;
+        return null;
     }
 
     const domEl = getDomElement(movedEl, true);
@@ -20,7 +20,7 @@ export function moveElement(domId: string, newIndex: number): DomElement | undef
 }
 
 export function getElementIndex(domId: string): number {
-    const el = elementFromDomId(domId) as HTMLElement | null;
+    const el = getHtmlElement(domId) as HTMLElement | null;
     if (!el) {
         console.warn(`Element not found: ${domId}`);
         return -1;
@@ -45,6 +45,6 @@ export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | 
     }
 
     const referenceNode = parent.children[newIndex];
-    parent.insertBefore(el, referenceNode);
+    parent.insertBefore(el, referenceNode ?? null);
     return el;
 }

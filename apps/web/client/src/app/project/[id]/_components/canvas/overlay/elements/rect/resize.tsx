@@ -1,5 +1,5 @@
-import { useEditorEngine } from '@/components/store';
-import { adaptValueToCanvas } from '@/components/store/editor/engine/overlay/utils';
+import { useEditorEngine } from '@/components/store/editor';
+import { adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
 
@@ -349,8 +349,8 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
         const startX = startEvent.clientX;
         const startY = startEvent.clientY;
         const startDimensions = {
-            width: parseFloat(styles.width),
-            height: parseFloat(styles.height),
+            width: parseFloat(styles.width ?? '0'),
+            height: parseFloat(styles.height ?? '0'),
         };
 
         const captureOverlay = createCaptureOverlay(startEvent);

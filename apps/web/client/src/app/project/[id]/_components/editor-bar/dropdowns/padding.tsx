@@ -1,62 +1,83 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
+import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
-import { InputRange } from "../inputs/input-range";
-import { InputIcon } from "../inputs/input-icon";
+} from "@onlook/ui/dropdown-menu";
+import { Icons } from "@onlook/ui/icons";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 import { useState } from "react";
+import { useBoxControl } from "../hooks/use-box-control";
+import { InputRange } from "../inputs/input-range";
+import { SpacingInputs } from "../inputs/spacing-inputs";
 
 export const Padding = () => {
     const [activeTab, setActiveTab] = useState('individual');
+    const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                >
-                    <Icons.Padding className="h-4 w-4 min-h-4 min-w-4" />
-                    <span className="text-sm">Mixed</span>
-                </Button>
-            </DropdownMenuTrigger>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            <Icons.Padding className="h-4 min-h-4 w-4 min-w-4" />
+                            <span className="text-sm">
+                                {boxState.padding.unit === 'px' 
+                                    ? boxState.padding.num ?? '--'
+                                    : boxState.padding.value}
+                            </span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    Padding
+                </TooltipContent>
+            </Tooltip>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
-                    <button 
+                    <button
                         onClick={() => setActiveTab('all')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
-                            activeTab === 'all' 
-                                ? 'text-white bg-background-tertiary/20' 
+                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'all'
+                                ? 'text-white bg-background-tertiary/20'
                                 : 'text-muted-foreground hover:bg-background-tertiary/10'
-                        }`}
+                            }`}
                     >
                         All sides
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveTab('individual')}
-                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${
-                            activeTab === 'individual' 
-                                ? 'text-white bg-background-tertiary/20' 
+                        className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'individual'
+                                ? 'text-white bg-background-tertiary/20'
                                 : 'text-muted-foreground hover:bg-background-tertiary/10'
-                        }`}
+                            }`}
                     >
                         Individual
                     </button>
                 </div>
                 {activeTab === 'all' ? (
-                    <InputRange value={12} onChange={(value) => console.log(value)} />
+                    <InputRange
+                        value={boxState.padding.num ?? 0}
+                        onChange={(value) => handleBoxChange('padding', value.toString())}
+                        unit={boxState.padding.unit}
+                        onUnitChange={(unit) => handleUnitChange('padding', unit)}
+                    />
                 ) : (
-                    <div className="grid grid-cols-2 gap-2">
-                        <InputIcon icon="LeftSide" value={12} />
-                        <InputIcon icon="TopSide" value={18} />
-                        <InputIcon icon="RightSide" value={12} />
-                        <InputIcon icon="BottomSide" value={18} />
-                    </div>
+                    <SpacingInputs
+                        type="padding"
+                        values={{
+                            top: boxState.paddingTop.num ?? 0,
+                            right: boxState.paddingRight.num ?? 0,
+                            bottom: boxState.paddingBottom.num ?? 0,
+                            left: boxState.paddingLeft.num ?? 0,
+                        }}
+                        onChange={handleIndividualChange}
+                    />
                 )}
             </DropdownMenuContent>
         </DropdownMenu>

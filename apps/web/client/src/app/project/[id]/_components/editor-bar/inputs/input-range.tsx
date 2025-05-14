@@ -1,8 +1,14 @@
-import { DropdownMenu, DropdownMenuItem, DropdownMenuContent, DropdownMenuTrigger } from "@onlook/ui-v4/dropdown-menu";
-import { Icons } from "@onlook/ui-v4/icons";
-import { useState, useEffect, useRef } from "react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { debounce } from 'lodash';
 
-const UNITS = ["PX", "%", "EM", "REM"];
+const UNITS = ['PX', '%', 'EM', 'REM'];
 
 interface InputRangeProps {
     value: number;
@@ -12,27 +18,51 @@ interface InputRangeProps {
     onUnitChange?: (unit: string) => void;
 }
 
-export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }: InputRangeProps) => {
+export const InputRange = ({
+    value,
+    icon,
+    unit = 'px',
+    onChange,
+    onUnitChange,
+}: InputRangeProps) => {
     const Icon = icon ? Icons[icon] : Icons.Padding;
-    const [inputValue, setInputValue] = useState(String(value));
+    const [localValue, setLocalValue] = useState(String(value));
     const rangeRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
+    // Create debounced onChange handler
+    const debouncedOnChange = useMemo(
+        () => debounce((newValue: number) => {
+            onChange?.(newValue);
+        }, 500),
+        [onChange]
+    );
+
+    // Cleanup debounce on unmount
     useEffect(() => {
-        setInputValue(String(value));
+        return () => {
+            debouncedOnChange.cancel();
+        };
+    }, [debouncedOnChange]);
+
+    // Only update localValue when value prop changes and we're not currently editing
+    useEffect(() => {
+        if (!document.activeElement?.classList.contains('input-range-text')) {
+            setLocalValue(String(value));
+        }
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-        setInputValue(newValue);
+        setLocalValue(newValue);
     };
 
     const handleBlur = () => {
-        const numValue = Number(inputValue);
+        const numValue = Number(localValue);
         if (!isNaN(numValue)) {
-            onChange?.(numValue);
+            debouncedOnChange(numValue);
         } else {
-            setInputValue(String(value));
+            setLocalValue(String(value));
         }
     };
 
@@ -49,7 +79,8 @@ export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }:
             const rect = rangeRef.current.getBoundingClientRect();
             const percentage = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
             const newValue = Math.round(percentage * 500);
-            onChange?.(newValue);
+            setLocalValue(String(newValue));
+            debouncedOnChange(newValue);
         }
     };
 
@@ -67,8 +98,12 @@ export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }:
                     type="range"
                     min="0"
                     max="500"
-                    value={value}
-                    onChange={(e) => onChange?.(Number(e.target.value))}
+                    value={Number(localValue)}
+                    onChange={(e) => {
+                        const newValue = Number(e.target.value);
+                        setLocalValue(String(newValue));
+                        debouncedOnChange(newValue);
+                    }}
                     onMouseDown={handleMouseDown}
                     className="flex-1 h-3 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer relative
                         [&::-webkit-slider-runnable-track]:bg-background-tertiary/50 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:h-3
@@ -78,32 +113,32 @@ export const InputRange = ({ value, icon, unit = "px", onChange, onUnitChange }:
                         [&::-ms-thumb]:appearance-none [&::-ms-thumb]:w-4 [&::-ms-thumb]:h-4 [&::-ms-thumb]:rounded-full [&::-ms-thumb]:bg-white [&::-ms-thumb]:cursor-grab hover:[&::-ms-thumb]:bg-white/90 active:[&::-ms-thumb]:cursor-grabbing"
                 />
                 <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px]">
-                    <input 
+                    <input
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        value={inputValue}
+                        value={localValue}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase"
+                        className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
                     />
-                        
-                        <DropdownMenu>
-                    <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
-                        {unit}
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
-                        {UNITS.map((unitOption: string) => (
-                            <DropdownMenuItem
-                                key={unitOption}
-                                onClick={() => onUnitChange?.(unitOption)}
-                                className="text-[12px] text-center px-2"
-                            >
-                                {unitOption}
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu> 
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
+                            {unit === 'px' ? '' : unit}
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="min-w-0 w-[64px]">
+                            {UNITS.map((unitOption: string) => (
+                                <DropdownMenuItem
+                                    key={unitOption}
+                                    onClick={() => onUnitChange?.(unitOption)}
+                                    className="text-[12px] text-center px-2"
+                                >
+                                    {unitOption}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
         </div>

@@ -1,11 +1,10 @@
-import type { Project } from '@onlook/models/projects';
-import { Icons } from '@onlook/ui-v4/icons';
+import type { Project } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons';
 import type { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, type Variants } from 'motion/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-// import { getPreviewImage } from '../../helpers';
 import { EditAppButton } from './edit-app';
 
 const getPreviewImage = async (previewImg: string) => {
@@ -22,7 +21,7 @@ interface CarouselProps {
 const numberWithinRange = (number: number, min: number, max: number): number =>
     Math.min(Math.max(number, min), max);
 
-const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
+export const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
     const WHEEL_SENSITIVITY = 13;
     const SCROLL_COOLDOWN = 50;
     const TWEEN_FACTOR_BASE = 0.3;
@@ -112,8 +111,8 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
         const loadPreviewImages = async () => {
             const images: { [key: string]: string } = {};
             for (const slide of slides) {
-                if (slide.previewImg) {
-                    const img = await getPreviewImage(slide.previewImg);
+                if (slide.metadata.previewImg) {
+                    const img = await getPreviewImage(slide.metadata.previewImg);
                     if (img) {
                         images[slide.id] = img;
                     } else {
@@ -236,10 +235,7 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
     }, []);
 
     return (
-        <div
-            className="embla relative h-[calc(100vh-5.5rem)] overflow-hidden"
-            style={{ zIndex: 0 }}
-        >
+        <div className="embla relative h-full overflow-hidden" style={{ zIndex: 0 }}>
             <div
                 className="embla__viewport h-full absolute inset-0 overflow-hidden pl-[7.5rem]"
                 ref={emblaRef}
@@ -264,9 +260,10 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
                                 marginTop: index === 0 ? '6rem' : '-3rem',
                                 marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
                                 opacity: index === currentIndex ? 1 : 0.6,
+                                zIndex: index === currentIndex ? 2 : 1,
                             }}
                         >
-                            <div className="relative">
+                            <div className="relative bg-background">
                                 {previewImages[slide.id] ? (
                                     <img
                                         src={previewImages[slide.id]}
@@ -318,5 +315,3 @@ const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => {
         </div>
     );
 };
-
-export default Carousel;

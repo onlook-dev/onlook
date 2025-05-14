@@ -1,6 +1,6 @@
-import type { DomElementStyles } from '@onlook/models/element';
+import type { DomElementStyles } from '@onlook/models';
 import { jsonClone } from '@onlook/utility';
-import { elementFromDomId } from '../../helpers';
+import { getHtmlElement } from '../../helpers';
 
 export function getStyles(element: HTMLElement): DomElementStyles {
     const computed = getElComputedStyle(element);
@@ -21,7 +21,7 @@ export function getStyles(element: HTMLElement): DomElementStyles {
 }
 
 export function getComputedStyleByDomId(domId: string): Record<string, string> {
-    const element = elementFromDomId(domId);
+    const element = getHtmlElement(domId);
     if (!element) {
         return {};
     }
@@ -50,16 +50,22 @@ function getStylesheetStyles(element: HTMLElement) {
     const sheets = document.styleSheets;
     for (let i = 0; i < sheets.length; i++) {
         let rules: CSSStyleRule[];
+        const sheet = sheets[i];
         try {
-            rules = (Array.from(sheets[i].cssRules) as CSSStyleRule[]) || sheets[i].rules;
+            if (!sheet) {
+                console.warn('Sheet is undefined');
+                continue;
+            }
+            rules = (Array.from(sheet.cssRules) as CSSStyleRule[]) || sheet.rules;
         } catch (e) {
-            console.warn("Can't read the css rules of: " + sheets[i].href, e);
+            console.warn("Can't read the css rules of: " + sheet?.href, e);
             continue;
         }
         for (let j = 0; j < rules.length; j++) {
             try {
-                if (element.matches(rules[j].selectorText)) {
-                    const ruleStyles = parseCssText(rules[j].style.cssText);
+                const rule = rules[j];
+                if (rule && element.matches(rule.selectorText)) {
+                    const ruleStyles = parseCssText(rule.style.cssText);
                     Object.entries(ruleStyles).forEach(([prop, value]) => (styles[prop] = value));
                 }
             } catch (e) {
@@ -78,7 +84,7 @@ function parseCssText(cssText: string) {
             return;
         }
         const [property, ...values] = style.split(':');
-        styles[property.trim()] = values.join(':').trim();
+        styles[property?.trim() ?? ''] = values.join(':').trim();
     });
     return styles;
 }

@@ -8,7 +8,7 @@ export type Change<T> = {
 export interface ActionTarget {
     domId: string;
     oid: string | null;
-    webviewId: string;
+    frameId: string;
 }
 
 export interface StyleActionTarget extends ActionTarget {

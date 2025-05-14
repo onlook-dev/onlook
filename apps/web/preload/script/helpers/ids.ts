@@ -1,4 +1,4 @@
-import { EditorAttributes } from '@onlook/models/constants';
+import { EditorAttributes } from '@onlook/constants';
 import { nanoid } from 'nanoid/non-secure';
 
 export function getOrAssignDomId(node: HTMLElement): string {

@@ -1,37 +1,39 @@
-'use client'
+'use client';
 
 import { Dunes } from '@/components/ui/dunes';
-import { Button } from '@onlook/ui-v4/button';
-import { Icons } from '@onlook/ui-v4/icons';
+import { SignInMethod } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import localforage from 'localforage';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { login } from './actions';
-
-enum SignInMethod {
-    GITHUB = 'github',
-    GOOGLE = 'google',
-}
 
 const LAST_SIGN_IN_METHOD_KEY = 'lastSignInMethod';
 
 export default function LoginPage() {
     const t = useTranslations();
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
+    const [isPending, setIsPending] = useState(false);
 
     useEffect(() => {
-        const lastSignInMethod = localStorage?.getItem(LAST_SIGN_IN_METHOD_KEY) as SignInMethod | null;
-        if (lastSignInMethod) {
-            setLastSignInMethod(lastSignInMethod);
-        }
+        localforage.getItem(LAST_SIGN_IN_METHOD_KEY).then((lastSignInMethod: unknown) => {
+            setLastSignInMethod(lastSignInMethod as SignInMethod | null);
+        });
     }, []);
 
-    const handleLogin = (method: SignInMethod) => {
-        login(method);
-        localStorage?.setItem(LAST_SIGN_IN_METHOD_KEY, method);
-    }
+    const handleLogin = async (method: SignInMethod) => {
+        setIsPending(true);
+        await login(method);
+
+        localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
+        setTimeout(() => {
+            setIsPending(false);
+        }, 5000);
+    };
 
     return (
-        <div className="flex h-[calc(100vh-2.5rem)]">
+        <div className="flex h-screen w-screen">
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <Icons.OnlookTextLogo viewBox="0 0 139 17" />
@@ -54,8 +56,13 @@ export default function LoginPage() {
                                 variant="outline"
                                 className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
+                                disabled={isPending}
                             >
-                                <Icons.GitHubLogo className="w-4 h-4 mr-2" />{' '}
+                                {isPending ? (
+                                    <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Icons.GitHubLogo className="w-4 h-4 mr-2" />
+                                )}
                                 {t('welcome.login.github')}
                             </Button>
                             {lastSignInMethod === SignInMethod.GITHUB && (
@@ -69,8 +76,16 @@ export default function LoginPage() {
                                 variant="outline"
                                 className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
+                                disabled={isPending}
                             >
-                                <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />
+                                {isPending ? (
+                                    <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Icons.GoogleLogo
+                                        viewBox="0 0 24 24"
+                                        className="w-4 h-4 mr-2"
+                                    />
+                                )}
                                 {t('welcome.login.google')}
                             </Button>
                             {lastSignInMethod === SignInMethod.GOOGLE && (
@@ -83,14 +98,18 @@ export default function LoginPage() {
                     <p className="text-small text-foreground-onlook">
                         {t('welcome.terms.agreement')}{' '}
                         <button
-                            onClick={() => window.open('https://onlook.com/privacy-policy', '_blank')}
+                            onClick={() =>
+                                window.open('https://onlook.com/privacy-policy', '_blank')
+                            }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {t('welcome.terms.privacy')}
                         </button>{' '}
                         {t('welcome.terms.and')}{' '}
                         <button
-                            onClick={() => window.open('https://onlook.com/terms-of-service', '_blank')}
+                            onClick={() =>
+                                window.open('https://onlook.com/terms-of-service', '_blank')
+                            }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {t('welcome.terms.tos')}
@@ -103,5 +122,5 @@ export default function LoginPage() {
             </div>
             <Dunes />
         </div>
-    )
+    );
 }

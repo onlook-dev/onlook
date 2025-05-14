@@ -1,10 +1,10 @@
-import { DOM_IGNORE_TAGS, EditorAttributes } from '@onlook/models/constants';
+import { DOM_IGNORE_TAGS, EditorAttributes } from '@onlook/constants';
 
-export function elementFromDomId(domId: string): HTMLElement | null {
+export function getHtmlElement(domId: string): HTMLElement | null {
     return document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
 }
 
-export function selectorFromDomId(domId: string, escape: boolean = false) {
+export function getDomIdSelector(domId: string, escape: boolean = false) {
     const selector = `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`;
     if (!escape) {
         return selector;
@@ -18,10 +18,6 @@ export function getArrayString(items: string[]) {
 
 export function escapeSelector(selector: string) {
     return CSS.escape(selector);
-}
-
-export function capitalizeFirstLetter(string: string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 export function isValidHtmlElement(element: Element): boolean {
@@ -44,8 +40,4 @@ export function isOnlookInDoc(doc: Document): boolean {
         null,
     ).booleanValue;
     return attributeExists;
-}
-
-export function assertNever(n: never): never {
-    throw new Error(`Expected \`never\`, found: ${JSON.stringify(n)}`);
 }

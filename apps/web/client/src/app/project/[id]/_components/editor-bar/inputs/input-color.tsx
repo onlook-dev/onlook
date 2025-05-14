@@ -1,45 +1,73 @@
-"use client";
+'use client';
+
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Color } from '@onlook/utility';
+import { useCallback, useState } from 'react';
+import { ColorPickerContent } from './color-picker';
 
 interface InputColorProps {
     color: string;
-    opacity: number;
     onColorChange?: (color: string) => void;
-    onOpacityChange?: (opacity: number) => void;
 }
 
-export const InputColor = ({
-    color,
-    opacity,
-    onColorChange,
-    onOpacityChange
-}: InputColorProps) => {
+export const InputColor = ({ color, onColorChange }: InputColorProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [tempColor, setTempColor] = useState(color);
+
+    const handleColorChange = useCallback((newColor: Color) => {
+        setTempColor(newColor.toHex());
+    }, []);
+
+    const handleColorChangeEnd = useCallback(
+        (newColor: Color) => {
+            const hexColor = newColor.toHex();
+            setTempColor(hexColor);
+            onColorChange?.(hexColor);
+        },
+        [onColorChange],
+    );
+
+    const handleInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            setTempColor(value);
+            onColorChange?.(value);
+        },
+        [onColorChange],
+    );
+
     return (
-        <div className="flex items-center w-full h-9">
-            <div className="flex-1 flex mr-[1px] items-center bg-background-tertiary/50 rounded-md px-3 pl-1.5 py-1.5 h-full">
-                <div 
-                    className="w-5 h-5 aspect-square rounded-sm mr-2"
-                    style={{ backgroundColor: color }}
+        <div className="flex h-9 w-full items-center">
+            <div className="bg-background-tertiary/50 mr-[1px] flex h-full flex-1 items-center rounded-md px-3 py-1.5 pl-1.5">
+                <Popover onOpenChange={setIsOpen}>
+                    <PopoverAnchor className="absolute bottom-0 left-0" />
+
+                    <PopoverTrigger>
+                        <div
+                            className="mr-2 aspect-square h-5 w-5 rounded-sm"
+                            style={{ backgroundColor: tempColor }}
+                            onClick={() => setIsOpen(!isOpen)}
+                        />
+                    </PopoverTrigger>
+                    <PopoverContent
+                        className="z-10 w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                        side="bottom"
+                        align="start"
+                    >
+                        <ColorPickerContent
+                            color={Color.from(tempColor)}
+                            onChange={handleColorChange}
+                            onChangeEnd={handleColorChangeEnd}
+                        />
+                    </PopoverContent>
+                </Popover>
+
+                <input
+                    type="text"
+                    value={tempColor}
+                    onChange={handleInputChange}
+                    className="h-full w-full bg-transparent text-sm text-white focus:outline-none"
                 />
-                <input 
-                    type="text" 
-                    value={color}
-                    onChange={(e) => onColorChange?.(e.target.value)}
-                    className="w-full h-full bg-transparent text-sm text-white focus:outline-none"
-                />
-            </div>
-            <div className="min-w-[60px] max-w-[60px] flex items-center justify-start bg-background-tertiary/50 rounded-md px-2.5 py-1.5 h-full">
-                <input 
-                    type="text" 
-                    value={opacity}
-                    onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (!isNaN(value)) {
-                            onOpacityChange?.(value);
-                        }
-                    }}
-                    className="w-full h-full bg-transparent text-sm text-white focus:outline-none text-left"
-                />
-                <span className="text-sm text-muted-foreground ml-[2px]">%</span>
             </div>
         </div>
     );

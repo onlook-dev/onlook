@@ -6,9 +6,13 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
+
+import { initTRPC, TRPCError } from '@trpc/server';
+import superjson from 'superjson';
+import { ZodError } from 'zod';
+
+import { createClient } from '@/utils/supabase/server';
+import { db } from '@onlook/db/src/client';
 
 /**
  * 1. CONTEXT
@@ -23,7 +27,20 @@ import { ZodError } from "zod";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+    const supabase = await createClient();
+    const {
+        data: { user },
+        error,
+    } = await supabase.auth.getUser();
+
+    if (error) {
+        throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message });
+    }
+
     return {
+        db,
+        supabase,
+        user,
         ...opts,
     };
 };
@@ -35,15 +52,14 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-export const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<typeof createTRPCContext>().create({
     transformer: superjson,
     errorFormatter({ shape, error }) {
         return {
             ...shape,
             data: {
                 ...shape.data,
-                zodError:
-                    error.cause instanceof ZodError ? error.cause.flatten() : null,
+                zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
             },
         };
     },
@@ -101,3 +117,24 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+/**
+ * Protected (authenticated) procedure
+ *
+ * If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies
+ * the session is valid and guarantees `ctx.session.user` is not null.
+ *
+ * @see https://trpc.io/docs/procedures
+ */
+export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, next }) => {
+    if (!ctx.user) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+    return next({
+        ctx: {
+            // infers the `session` as non-nullable
+            user: ctx.user,
+            db: ctx.db,
+        },
+    });
+});

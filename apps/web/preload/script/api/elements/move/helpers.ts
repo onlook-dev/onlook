@@ -12,10 +12,10 @@ export function getDisplayDirection(element: HTMLElement): DisplayDirection {
     const firstChild = children[0];
     const secondChild = children[1];
 
-    const firstRect = firstChild.getBoundingClientRect();
-    const secondRect = secondChild.getBoundingClientRect();
+    const firstRect = firstChild?.getBoundingClientRect();
+    const secondRect = secondChild?.getBoundingClientRect();
 
-    if (Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
+    if (firstRect && secondRect && Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
         return DisplayDirection.VERTICAL;
     } else {
         return DisplayDirection.HORIZONTAL;
@@ -28,6 +28,10 @@ export function findInsertionIndex(
     y: number,
     displayDirection: DisplayDirection,
 ): number {
+    if (elements.length === 0) {
+        return 0;
+    }
+
     const midPoints = elements.map((el) => {
         const rect = el.getBoundingClientRect();
         return {
@@ -36,17 +40,25 @@ export function findInsertionIndex(
         };
     });
 
-    for (let i = 0; i < midPoints.length; i++) {
-        if (displayDirection === DisplayDirection.VERTICAL) {
-            if (y < midPoints[i].y) {
-                return i;
-            }
-        } else {
-            if (x < midPoints[i].x) {
+    // For horizontal layouts
+    if (displayDirection === DisplayDirection.HORIZONTAL) {
+        for (let i = 0; i < midPoints.length; i++) {
+            const midPoint = midPoints[i];
+            if (midPoint && x < midPoint.x) {
                 return i;
             }
         }
     }
+    // For vertical layouts
+    else {
+        for (let i = 0; i < midPoints.length; i++) {
+            const midPoint = midPoints[i];
+            if (midPoint && y < midPoint.y) {
+                return i;
+            }
+        }
+    }
+
     return elements.length;
 }
 

@@ -1,16 +1,16 @@
+import { EditorAttributes } from '@onlook/constants';
+import type { DomElement } from '@onlook/models';
 import type { ActionTarget, GroupContainer } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
-import { getOrAssignDomId } from '../../ids';
+import { getHtmlElement } from '../../../helpers';
+import { getOrAssignDomId } from '../../../helpers/ids';
 import { getDomElement } from '../helpers';
-import { elementFromDomId } from '/common/helpers';
 
 export function groupElements(
     parent: ActionTarget,
     container: GroupContainer,
     children: Array<ActionTarget>,
 ): DomElement | null {
-    const parentEl = elementFromDomId(parent.domId);
+    const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn('Failed to find parent element', parent.domId);
         return null;
@@ -35,7 +35,7 @@ export function groupElements(
 
     // Insert container at the position of the first child
     const insertIndex = Math.min(...childrenWithIndices.map((c) => c.index));
-    parentEl.insertBefore(containerEl, parentEl.children[insertIndex]);
+    parentEl.insertBefore(containerEl, parentEl.children[insertIndex] ?? null);
 
     // Move children into container
     childrenWithIndices.forEach(({ element }) => {
@@ -53,9 +53,8 @@ export function groupElements(
 export function ungroupElements(
     parent: ActionTarget,
     container: GroupContainer,
-    children: Array<ActionTarget>,
 ): DomElement | null {
-    const parentEl = elementFromDomId(parent.domId);
+    const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn('Failed to find parent element', parent.domId);
         return null;

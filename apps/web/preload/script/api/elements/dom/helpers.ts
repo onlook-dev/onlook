@@ -1,22 +1,21 @@
+import { EditorAttributes } from '@onlook/constants';
+import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
-import { getOrAssignDomId } from '../../ids';
+import { getHtmlElement } from '../../../helpers';
+import { getInstanceId, getOid, getOrAssignDomId } from '../../../helpers/ids';
 import { getDomElement, getImmediateTextContent } from '../helpers';
-import { elementFromDomId } from '/common/helpers';
-import { getInstanceId, getOid } from '/common/helpers/ids';
 
-export function getActionElementByDomId(domId: string): ActionElement | null {
-    const el = elementFromDomId(domId);
+export function getActionElement(domId: string): ActionElement | null {
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Element not found for domId:', domId);
         return null;
     }
 
-    return getActionElement(el);
+    return getActionElementFromHtmlElement(el);
 }
 
-export function getActionElement(el: HTMLElement): ActionElement | null {
+export function getActionElementFromHtmlElement(el: HTMLElement): ActionElement | null {
     const attributes: Record<string, string> = Array.from(el.attributes).reduce(
         (acc, attr) => {
             acc[attr.name] = attr.value;
@@ -36,7 +35,7 @@ export function getActionElement(el: HTMLElement): ActionElement | null {
         domId: getOrAssignDomId(el),
         tagName: el.tagName.toLowerCase(),
         children: Array.from(el.children)
-            .map((child) => getActionElement(child as HTMLElement))
+            .map((child) => getActionElementFromHtmlElement(child as HTMLElement))
             .filter(Boolean) as ActionElement[],
         attributes,
         textContent: getImmediateTextContent(el) || null,
@@ -45,7 +44,7 @@ export function getActionElement(el: HTMLElement): ActionElement | null {
 }
 
 export function getActionLocation(domId: string): ActionLocation | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         throw new Error('Element not found for domId: ' + domId);
     }
@@ -102,7 +101,11 @@ export function getElementType(domId: string): {
     return { dynamicType, coreType };
 }
 
-export function setElementType(domId: string, dynamicType: string, coreElementType: string) {
+export function setElementType(
+    domId: string,
+    dynamicType: DynamicType | null,
+    coreElementType: CoreElementType | null,
+) {
     const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
 
     if (el) {

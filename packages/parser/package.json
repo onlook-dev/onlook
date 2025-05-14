@@ -1,0 +1,40 @@
+{
+    "name": "@onlook/parser",
+    "description": "A jsx/tsx parser library for Onlook",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "version": "0.0.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "scripts": {
+        "clean": "rm -rf node_modules",
+        "lint": "eslint --fix .",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "onlook",
+        "parser"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.com",
+    "devDependencies": {
+        "@onlook/typescript": "*",
+        "@types/babel__standalone": "^7.1.9",
+        "@types/babel__traverse": "^7.0.14"
+    },
+    "dependencies": {
+        "@babel/standalone": "^7.27.0",
+        "@babel/types": "^7.27.0",
+        "@onlook/models": "*"
+    }
+}

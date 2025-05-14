@@ -1,8 +1,8 @@
-import { apiRouter } from './routes/api';
+import { sandboxRouter } from './routes/sandbox';
 import { router } from './trpc';
 
 export const appRouter = router({
-    api: apiRouter,
+    sandbox: sandboxRouter,
 });
 
 export type AppRouter = typeof appRouter;

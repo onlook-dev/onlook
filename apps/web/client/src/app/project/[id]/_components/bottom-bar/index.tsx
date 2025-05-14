@@ -1,11 +1,11 @@
 import { Hotkey } from '@/components/hotkey';
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
+import type { DropElementProperties } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
-import type { DropElementProperties } from '@onlook/models/element';
-import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
-import { Icons } from '@onlook/ui-v4/icons';
-import { ToggleGroup, ToggleGroupItem } from '@onlook/ui-v4/toggle-group';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui-v4/tooltip';
+import { HotkeyLabel } from '@onlook/ui/hotkey-label';
+import { Icons } from '@onlook/ui/icons';
+import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
@@ -78,22 +78,17 @@ export const BottomBar = observer(() => {
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, mode: EditorMode) => {
         // const properties = editorEngine.insert.getDefaultProperties(mode);
-
         // e.dataTransfer.setData('text/plain', mode);
         // e.dataTransfer.setData('application/json', JSON.stringify(properties));
         // e.dataTransfer.effectAllowed = 'copy';
-
         // editorEngine.state.editorMode = mode;
-
         // // Disable pointer-events on webviews during drag
-        // for (const webview of editorEngine.webviews.webviews.values()) {
-        //     webview.webview.style.pointerEvents = 'none';
+        // for (const frameView of editorEngine.frames.webviews.values()) {
+        //     frameView.frameView.style.pointerEvents = 'none';
         // }
-
         // const dragPreview = createDragPreview(properties);
         // document.body.appendChild(dragPreview);
         // e.dataTransfer.setDragImage(dragPreview, 50, 50);
-
         // setTimeout(() => document.body.removeChild(dragPreview), 0);
     };
 
@@ -177,9 +172,7 @@ export const BottomBar = observer(() => {
                                 Terminal
                             </motion.span>
                             <div className="flex items-center gap-1">
-                                <motion.div layout>
-                                    {/* <RunButton /> */}
-                                </motion.div>
+                                <motion.div layout>{/* <RunButton /> */}</motion.div>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <button

@@ -1,4 +1,4 @@
-import { type CodeBlock } from '@onlook/models/chat/message';
+import { type CodeBlock } from '@onlook/models';
 import { FENCE } from '../prompt/format';
 import { flexibleSearchAndReplace } from './search-replace';
 
@@ -115,7 +115,7 @@ export class CodeBlockProcessor {
         return Array.from(matches).map((match) => ({
             ...(match[1] && { fileName: match[1].trim() }),
             ...(match[2] && { language: match[2] }),
-            content: match[3].trim(),
+            content: match[3]?.trim() ?? '',
         }));
     }
 }

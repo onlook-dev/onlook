@@ -14,12 +14,12 @@ export enum EditorMode {
 }
 
 export enum EditorTabValue {
-    STYLES = 'styles',
     CHAT = 'chat',
-    PROPS = 'properties',
+    DEV = 'dev',
 }
 
 export enum SettingsTabValue {
+    SITE = 'site',
     DOMAIN = 'domain',
     PROJECT = 'project',
     PREFERENCES = 'preferences',

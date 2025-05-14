@@ -1,0 +1,40 @@
+{
+    "name": "@onlook/penpal",
+    "description": "A utility library to facilitates rpc-style calls with penpal between preload and iframe",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "version": "0.0.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "scripts": {
+        "clean": "rm -rf node_modules",
+        "lint": "eslint --fix .",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "onlook",
+        "penpal",
+        "preload",
+        "iframe"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.com",
+    "devDependencies": {
+        "@onlook/typescript": "*"
+    },
+    "dependencies": {
+        "normalize-url": "^8.0.1",
+        "tldts": "^6.1.82",
+        "@onlook/fonts": "*"
+    }
+}

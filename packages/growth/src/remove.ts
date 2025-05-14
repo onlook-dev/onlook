@@ -1,7 +1,4 @@
-import generate from '@babel/generator';
-import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
-import * as t from '@babel/types';
+import { generate, parse, traverse, type t as T, types as t } from '@onlook/parser';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -67,7 +64,7 @@ export async function removeBuiltWithScriptFromLayout(projectPath: string): Prom
                                 if (
                                     i > 0 &&
                                     t.isJSXText(children[i - 1]) &&
-                                    (children[i - 1] as t.JSXText).value.trim() === ''
+                                    (children[i - 1] as T.JSXText).value.trim() === ''
                                 ) {
                                     children.splice(i - 1, 1);
                                     i--;
@@ -75,7 +72,7 @@ export async function removeBuiltWithScriptFromLayout(projectPath: string): Prom
                                 if (
                                     i < children.length &&
                                     t.isJSXText(children[i]) &&
-                                    (children[i] as t.JSXText).value.trim() === ''
+                                    (children[i] as T.JSXText).value.trim() === ''
                                 ) {
                                     children.splice(i, 1);
                                 }

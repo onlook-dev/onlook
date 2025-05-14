@@ -19,7 +19,10 @@ export function useDraftValue<T>(
     return [draft, setDraft, () => onChange(draft)];
 }
 
-export type DraftableInputProps = Omit<JSX.IntrinsicElements['input'], 'ref' | 'value'> & {
+export type DraftableInputProps = Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'ref' | 'value'
+> & {
     ref?: React.Ref<HTMLInputElement>;
     value?: string;
     onChangeValue?: (value: string) => void;

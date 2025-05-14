@@ -4,18 +4,18 @@
  */
 import { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
-import "./src/env";
+import './src/env';
 
 const nextConfig: NextConfig = {
+    devIndicators: false,
+    // TODO: Remove this once we have a proper ESLint and TypeScript config
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
     typescript: {
-        // !! WARN !!
-        // Dangerously allow production builds to successfully complete even if
-        // your project has type errors.
-        // !! WARN !!
         ignoreBuildErrors: true,
     },
 };
 
 const withNextIntl = createNextIntlPlugin();
 export default withNextIntl(nextConfig);
-

@@ -1,11 +1,11 @@
-"use client"
+'use client';
 
 import { Hotkey } from '@/components/hotkey';
-import { useEditorEngine } from '@/components/store';
-import { Button } from '@onlook/ui-v4/button';
-import { HotkeyLabel } from '@onlook/ui-v4/hotkey-label';
-import { Icons } from '@onlook/ui-v4/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui-v4/tooltip';
+import { useEditorEngine } from '@/components/store/editor';
+import { Button } from '@onlook/ui/button';
+import { HotkeyLabel } from '@onlook/ui/hotkey-label';
+import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
@@ -32,7 +32,7 @@ export const TopBar = observer(() => {
     ];
 
     return (
-        <div className="bg-background backdrop-blur-sm border-b-[0.5px] border-border flex flex-row h-10 p-2 justify-center items-center">
+        <div className="bg-background/10 backdrop-blur-sm border-b-[0.5px] border-border flex flex-row h-10 p-0 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <ProjectBreadcrumb />
             </div>
@@ -76,10 +76,10 @@ export const TopBar = observer(() => {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8"
-                            // onClick={() => {
-                            //     editorEngine.settingsTab = SettingsTabValue.VERSIONS;
-                            //     editorEngine.isSettingsOpen = true;
-                            // }}
+                                // onClick={() => {
+                                //     editorEngine.settingsTab = SettingsTabValue.VERSIONS;
+                                //     editorEngine.isSettingsOpen = true;
+                                // }}
                             >
                                 <Icons.CounterClockwiseClock className="h-4 w-4" />
                             </Button>

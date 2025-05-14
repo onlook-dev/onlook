@@ -2,9 +2,8 @@ import type { Config } from 'tailwindcss';
 import { colors, fontSize } from './tokens';
 
 const config = {
-    darkMode: ['class'],
+    darkMode: ['class', '[data-mode="dark"]'],
     content: ['./src/**/*.{ts,tsx}'],
-    safelist: ['dark', 'light'],
     prefix: '',
     theme: {
         container: {
@@ -16,6 +15,7 @@ const config = {
         },
         extend: {
             colors: {
+                ...colors,
                 background: {
                     DEFAULT: 'hsl(var(--background))',
                     onlook: 'hsl(var(--background-onlook))',
@@ -123,7 +123,6 @@ const config = {
                 },
                 input: 'hsl(var(--input))',
                 ring: 'hsl(var(--ring))',
-                ...colors,
             },
             fontSize: {
                 title1: [

@@ -1,22 +1,57 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
+import { useEditorEngine } from '@/components/store/editor';
+import { Icons } from '@onlook/ui/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Color } from '@onlook/utility';
+import { useEffect, useState } from 'react';
+import { ColorPickerContent } from '../inputs/color-picker';
 
 export const ColorBackground = () => {
+    const [tempColor, setTempColor] = useState('#000000');
+
+    const editorEngine = useEditorEngine();
+
+    useEffect(() => {
+        setTempColor(
+            editorEngine.style.selectedStyle?.styles.computed.backgroundColor ?? '#000000',
+        );
+    }, [editorEngine.style.selectedStyle?.styles.computed.backgroundColor]);
+
+    const handleColorChange = (newColor: Color) => {
+        setTempColor(newColor.toHex());
+    };
+
+    const handleColorChangeEnd = (newColor: Color) => {
+        const hexColor = newColor.toHex();
+        setTempColor(hexColor);
+        editorEngine.style.update('backgroundColor', hexColor);
+    };
+
     return (
-        <Button
-        variant="ghost"
-        size="icon"
-        className="flex items-center justify-center px-5 flex-col gap-0.5 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:bg-background-tertiary/20 active:text-white active:border active:border-border"
-    >
-        <Icons.PaintBucket className="h-4 w-4" />
-        <div className="h-[2.5px] w-5.5 bg-current rounded-full" />
-    </Button>
+        <div className="flex flex-col gap-2">
+            <Popover>
+                <PopoverTrigger>
+                    <div className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border px-5 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white">
+                        <Icons.PaintBucket className="h-4 w-4" />
+                        <div
+                            className="h-[2.5px] w-5.5 rounded-full bg-current"
+                            style={{ backgroundColor: tempColor }}
+                        />
+                    </div>
+                </PopoverTrigger>
+                <PopoverContent
+                    className="z-10 w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    side="bottom"
+                    align="start"
+                >
+                    <ColorPickerContent
+                        color={Color.from(tempColor)}
+                        onChange={handleColorChange}
+                        onChangeEnd={handleColorChangeEnd}
+                    />
+                </PopoverContent>
+            </Popover>
+        </div>
     );
 };

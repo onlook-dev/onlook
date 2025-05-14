@@ -1,9 +1,8 @@
-import { useEditorEngine } from '@/components/store';
-import type { FrameData } from '@/components/store/editor/engine/frames';
-import { getRelativeMousePositionToWebview } from '@/components/store/editor/engine/overlay/utils';
-import { EditorMode, MouseAction } from '@onlook/models/editor';
-import type { DomElement, ElementPosition } from '@onlook/models/element';
-import type { WebFrame } from '@onlook/models/frame';
+import { useEditorEngine } from '@/components/store/editor';
+import type { FrameData } from '@/components/store/editor/frames';
+import { getRelativeMousePositionToWebview } from '@/components/store/editor/overlay/utils';
+import type { DomElement, ElementPosition, WebFrame } from '@onlook/models';
+import { EditorMode, MouseAction } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
@@ -14,18 +13,20 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const editorEngine = useEditorEngine();
     const isResizing = false;
 
-    const getFrameData: () => FrameData | undefined = () => {
+    const getFrameData: () => FrameData | undefined = useCallback(() => {
         return editorEngine.frames.get(frame.id);
-    }
+    }, [editorEngine.frames, frame.id]);
 
-    const getRelativeMousePosition = (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
-        const frameData = getFrameData();
-        if (!frameData) {
-            return { x: 0, y: 0 };
-        }
-        const { view } = frameData;
-        return getRelativeMousePositionToWebview(e, view);
-    }
+    const getRelativeMousePosition = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
+            const frameData = getFrameData();
+            if (!frameData) {
+                return { x: 0, y: 0 };
+            }
+            return getRelativeMousePositionToWebview(e, frameData.view);
+        },
+        [getFrameData],
+    );
 
     const handleMouseEvent = useCallback(
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
@@ -35,8 +36,14 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                 return;
             }
             const pos = getRelativeMousePosition(e);
-            const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(action);
-            const el: DomElement = await frameData.view.getElementAtLoc(pos.x, pos.y, shouldGetStyle);
+            const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(
+                action,
+            );
+            const el: DomElement = await frameData.view.getElementAtLoc(
+                pos.x,
+                pos.y,
+                shouldGetStyle,
+            );
             if (!el) {
                 console.log('No element found');
                 return;
@@ -44,12 +51,12 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
             switch (action) {
                 case MouseAction.MOVE:
-                    editorEngine.elements.mouseover(el, frameData);
-                    // if (e.altKey) {
-                    //     editorEngine.elements.showMeasurement();
-                    // } else {
-                    //     editorEngine.overlay.removeMeasurement();
-                    // }
+                    editorEngine.elements.mouseover(el);
+                    if (e.altKey) {
+                        editorEngine.overlay.showMeasurement();
+                    } else {
+                        editorEngine.overlay.removeMeasurement();
+                    }
                     break;
                 case MouseAction.MOUSE_DOWN:
                     if (el.tagName.toLocaleLowerCase() === 'body') {
@@ -60,18 +67,18 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                     if (e.button == 2) {
                         break;
                     }
-                    // if (editorEngine.text.isEditing) {
-                    //     editorEngine.text.end();
-                    // }
+                    if (editorEngine.text.isEditing) {
+                        await editorEngine.text.end();
+                    }
                     if (e.shiftKey) {
-                        editorEngine.elements.shiftClick(el, frameData);
+                        editorEngine.elements.shiftClick(el);
                     } else {
-                        // editorEngine.move.start(el, pos, webview);
-                        editorEngine.elements.click([el], frameData);
+                        editorEngine.elements.click([el]);
+                        await editorEngine.move.start(el, pos, frameData);
                     }
                     break;
                 case MouseAction.DOUBLE_CLICK:
-                    // editorEngine.text.start(el, webview);
+                    // editorEngine.text.start(el, frameView);
                     break;
             }
         },
@@ -80,22 +87,22 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
     const throttledMouseMove = useMemo(
         () =>
-            throttle((e: React.MouseEvent<HTMLDivElement>) => {
-                handleMouseEvent(e, MouseAction.MOVE);
+            throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
+                // await handleMouseEvent(e, MouseAction.MOVE);
 
-                // if (editorEngine.move.isDragging) {
-                //     editorEngine.move.drag(e, getRelativeMousePosition);
-                // } else if (
-                //     editorEngine.state.editorMode === EditorMode.DESIGN ||
-                //     ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-                //         editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-                //         editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
-                //         !editorEngine.insert.isDrawing)
-                // ) {
-                //     handleMouseEvent(e, MouseAction.MOVE);
-                // } else if (editorEngine.insert.isDrawing) {
-                //     editorEngine.insert.draw(e);
-                // }
+                if (editorEngine.move.isDragging) {
+                    await editorEngine.move.drag(e, getRelativeMousePosition);
+                } else if (
+                    editorEngine.state.editorMode === EditorMode.DESIGN ||
+                    ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
+                        editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
+                        editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
+                        !editorEngine.insert.isDrawing)
+                ) {
+                    await handleMouseEvent(e, MouseAction.MOVE);
+                } else if (editorEngine.insert.isDrawing) {
+                    editorEngine.insert.draw(e);
+                }
             }, 16),
         [editorEngine, getRelativeMousePosition, handleMouseEvent],
     );
@@ -108,41 +115,47 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
     const handleClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
-            // const webview = getWebview();
-            // editorEngine.webview.deselectAll();
+            editorEngine.frames.deselectAll();
             editorEngine.frames.select(frame);
         },
         [editorEngine.frames],
     );
 
-    function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
-        // if (editorEngine.state.editorMode !== EditorMode.DESIGN) {
-        //     return;
-        // }
-        // handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
+    async function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
+        if (editorEngine.state.editorMode !== EditorMode.DESIGN) {
+            return;
+        }
+        await handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
     }
 
-    function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+    async function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.state.editorMode === EditorMode.DESIGN) {
-            handleMouseEvent(e, MouseAction.MOUSE_DOWN);
+            await handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
             editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
             editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
             editorEngine.state.editorMode === EditorMode.INSERT_IMAGE
         ) {
-            // editorEngine.insert.start(e);
+            editorEngine.insert.start(e);
         }
     }
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        // editorEngine.insert.end(e, webviewRef.current);
-        // editorEngine.move.end(e);
+        const frameData = getFrameData();
+        if (!frameData) {
+            return;
+        }
+
+        await editorEngine.insert.end(e, frameData.view);
+        if (editorEngine.move.isDragging) {
+            await editorEngine.move.end(e);
+        }
     }
 
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        // e.preventDefault();
-        // e.stopPropagation();
-        // handleMouseEvent(e, MouseAction.MOVE);
+    const handleDragOver = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        await handleMouseEvent(e, MouseAction.MOVE);
     };
 
     const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
@@ -159,13 +172,13 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         //     const properties = JSON.parse(propertiesData);
 
         //     if (properties.type === 'image') {
-        //         const webview = getWebview();
+        //         const frameView = getWebview();
         //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedImage(webview, dropPosition, properties);
+        //         await editorEngine.insert.insertDroppedImage(frameView, dropPosition, properties);
         //     } else {
-        //         const webview = getWebview();
+        //         const frameView = getWebview();
         //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
+        //         await editorEngine.insert.insertDroppedElement(frameView, dropPosition, properties);
         //     }
 
         //     editorEngine.state.editorMode = EditorMode.DESIGN;
@@ -177,7 +190,9 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const gestureScreenClassName = useMemo(() => {
         return cn(
             'absolute inset-0 bg-transparent',
-            editorEngine.state.editorMode === EditorMode.PREVIEW && !isResizing ? 'hidden' : 'visible',
+            editorEngine.state.editorMode === EditorMode.PREVIEW && !isResizing
+                ? 'hidden'
+                : 'visible',
             editorEngine.state.editorMode === EditorMode.INSERT_DIV && 'cursor-crosshair',
             editorEngine.state.editorMode === EditorMode.INSERT_TEXT && 'cursor-text',
         );
@@ -186,7 +201,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const handleMouseOut = () => {
         editorEngine.elements.clearHoveredElement();
         editorEngine.overlay.state.removeHoverRect();
-    }
+    };
 
     return (
         <RightClickMenu>

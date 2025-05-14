@@ -1,13 +1,10 @@
-"use client";
+'use client';
 
-import { motion } from "motion/react";
-import { LayoutPosition } from "./layout-position";
-import { Typography } from "./typography";
-type EditorBarProps = {
-    selectedElement: "div" | "text" | "image";
-};
+import { motion } from 'motion/react';
+import { LayoutPosition } from './layout-position';
+import { Typography } from './typography';
 
-export const Panels = ({ selectedElement }: EditorBarProps) => {
+export const Panels = ({ selectedElement }: { selectedElement: string }) => {
     return (
         <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -15,7 +12,7 @@ export const Panels = ({ selectedElement }: EditorBarProps) => {
             exit={{ opacity: 0, x: -20 }}
             className="h-full w-[320px] flex flex-col overflow-y-auto"
             transition={{
-                type: "spring",
+                type: 'spring',
                 bounce: 0.1,
                 duration: 0.4,
                 stiffness: 200,

@@ -4,8 +4,8 @@ import type {
     FileMessageContext,
     HighlightMessageContext,
     ProjectMessageContext,
-} from '@onlook/models/chat';
-import type { CoreUserMessage, ImagePart, UserContent } from 'ai';
+} from '@onlook/models';
+import type { Attachment, Message, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
 import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
@@ -20,7 +20,7 @@ export class PromptProvider {
         this.shouldWrapXml = shouldWrapXml;
     }
 
-    getSystemPrompt(platform: NodeJS.Platform) {
+    getSystemPrompt() {
         let prompt = '';
 
         if (this.shouldWrapXml) {
@@ -35,7 +35,7 @@ export class PromptProvider {
             prompt += EDIT_PROMPTS.searchReplaceRules;
             prompt += this.getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
         }
-        prompt = prompt.replace(PLATFORM_SIGNATURE, platform);
+        prompt = prompt.replace(PLATFORM_SIGNATURE, 'linux');
         return prompt;
     }
 
@@ -70,7 +70,11 @@ export class PromptProvider {
         return prompt;
     }
 
-    getHydratedUserMessage(content: UserContent, context: ChatMessageContext[]): CoreUserMessage {
+    getHydratedUserMessage(
+        id: string,
+        content: UserContent,
+        context: ChatMessageContext[],
+    ): Message {
         if (content.length === 0) {
             throw new Error('Message is required');
         }
@@ -96,7 +100,10 @@ export class PromptProvider {
         }
 
         if (project.length > 0) {
-            prompt += this.getProjectContext(project[0]);
+            const projectContext = project[0];
+            if (projectContext) {
+                prompt += this.getProjectContext(projectContext);
+            }
         }
 
         if (this.shouldWrapXml) {
@@ -112,21 +119,17 @@ export class PromptProvider {
             prompt += content;
         }
 
-        const imageParts: ImagePart[] = images.map((i) => ({
+        const attachments: Attachment[] = images.map((i) => ({
             type: 'image',
-            image: i.content,
-            mimeType: i.mimeType,
+            contentType: i.mimeType,
+            url: i.content,
         }));
 
         return {
+            id,
             role: 'user',
-            content: [
-                ...imageParts,
-                {
-                    type: 'text',
-                    text: prompt,
-                },
-            ],
+            content: prompt,
+            experimental_attachments: attachments,
         };
     }
 

@@ -1,28 +1,34 @@
-'use server'
+'use server';
 
-import { createClient } from '@/utils/supabase/server'
-import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server';
+import { SignInMethod } from '@onlook/models';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-export async function login(provider: 'github' | 'google') {
-    const supabase = await createClient()
-    const origin = (await headers()).get('origin')
+export async function login(provider: SignInMethod) {
+    const supabase = await createClient();
+    const origin = (await headers()).get('origin');
+
     // If already session, redirect
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
     if (session) {
-        redirect('/')
+        redirect('/');
     }
 
+    // Start OAuth flow
+    // Note: User object will be created in the auth callback route if it doesn't exist
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${origin}/auth/callback`
+            redirectTo: `${origin}/auth/callback`,
         },
     });
 
     if (error) {
-        redirect('/error')
+        redirect('/error');
     }
 
-    redirect(data.url)
+    redirect(data.url);
 }

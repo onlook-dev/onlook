@@ -1,15 +1,6 @@
-import { makeAutoObservable } from 'mobx';
-import { LanguageManager } from './language';
-import { UserSettingsManager } from './settings';
-import { SubscriptionManager } from './subscription';
+import { createContext, useContext } from 'react';
+import { UserManager } from './manager';
 
-export class UserManager {
-    readonly subscription = new SubscriptionManager();
-    readonly settings = new UserSettingsManager();
-    readonly language = new LanguageManager();
-
-    constructor() {
-        makeAutoObservable(this);
-    }
-
-}
+export const userManager = new UserManager();
+const UserContext = createContext(userManager);
+export const useUserManager = () => useContext(UserContext);

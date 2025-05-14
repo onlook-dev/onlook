@@ -1,11 +1,11 @@
-import { EditorAttributes } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/constants';
+import type { DomElement, EditTextResult } from '@onlook/models';
+import { getHtmlElement } from '../../helpers';
 import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle } from './helpers';
-import { elementFromDomId } from '/common/helpers';
 
 export function editTextByDomId(domId: string, content: string): DomElement | null {
-    const el: HTMLElement | null = elementFromDomId(domId);
+    const el: HTMLElement | null = getHtmlElement(domId);
     if (!el) {
         return null;
     }
@@ -13,10 +13,8 @@ export function editTextByDomId(domId: string, content: string): DomElement | nu
     return getDomElement(el, true);
 }
 
-export function startEditingText(domId: string): {
-    originalContent: string;
-} | null {
-    const el = elementFromDomId(domId);
+export function startEditingText(domId: string): EditTextResult | null {
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Start editing text failed. No element for selector:', domId);
         return null;
@@ -29,7 +27,7 @@ export function startEditingText(domId: string): {
     let targetEl: HTMLElement | null = null;
     if (childNodes.length === 0) {
         targetEl = el as HTMLElement;
-    } else if (childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+    } else if (childNodes.length === 1 && el.childNodes[0]?.nodeType === Node.TEXT_NODE) {
         targetEl = el as HTMLElement;
     }
     if (!targetEl) {
@@ -43,7 +41,7 @@ export function startEditingText(domId: string): {
 }
 
 export function editText(domId: string, content: string): DomElement | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Edit text failed. No element for selector:', domId);
         return null;
@@ -54,7 +52,7 @@ export function editText(domId: string, content: string): DomElement | null {
 }
 
 export function stopEditingText(domId: string): { newContent: string; domEl: DomElement } | null {
-    const el = elementFromDomId(domId);
+    const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Stop editing text failed. No element for selector:', domId);
         return null;
@@ -79,4 +77,8 @@ function removeEditingAttributes(el: HTMLElement) {
 
 function updateTextContent(el: HTMLElement, content: string): void {
     el.textContent = content;
+}
+
+export function isChildTextEditable(oid: string): boolean | null {
+    return true;
 }

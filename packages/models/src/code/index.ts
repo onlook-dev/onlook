@@ -13,3 +13,20 @@ export interface CodeDiff {
     generated: string;
     path: string;
 }
+
+export type FileToRequests = Map<
+    string,
+    {
+        oidToRequest: Map<string, CodeDiffRequest>;
+        content: string;
+    }
+>;
+
+export interface FileNode {
+    id: string;
+    name: string;
+    path: string;
+    isDirectory: boolean;
+    children?: FileNode[];
+    extension?: string;
+}

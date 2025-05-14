@@ -57,6 +57,10 @@ export interface EditTextAction {
     newContent: string;
 }
 
+export interface EditTextResult {
+    originalContent: string;
+}
+
 export interface GroupContainer {
     domId: string;
     oid: string;
@@ -89,7 +93,6 @@ export interface ImageContentData {
     content: string;
     fileName: string;
     mimeType: string;
-    folder?: string;
 }
 
 interface BaseImageAction {

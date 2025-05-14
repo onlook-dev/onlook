@@ -1,4 +1,4 @@
-import { MessageContextType } from '@onlook/models/chat';
+import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
 import { SEARCH_REPLACE_EXAMPLE_CONVERSATION } from 'src/prompt/edit';
