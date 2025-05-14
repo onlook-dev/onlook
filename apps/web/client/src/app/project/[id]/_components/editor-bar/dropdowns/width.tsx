@@ -7,6 +7,7 @@ import { LayoutMode } from '@onlook/utility';
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { HoverOnlyTooltip } from '../HoverOnlyTooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
+import { HoverOnlyTooltip } from '../HoverOnlyTooltip';
 
 export const Width = () => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
@@ -17,6 +18,7 @@ export const Width = () => {
             <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow>
                 <DropdownMenuTrigger asChild>
                     <Button
+<<<<<<< HEAD
                         variant="ghost"
                         size="toolbar"
                         className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 rounded-lg border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
@@ -26,6 +28,17 @@ export const Width = () => {
                             ? dimensionState.width.num !== undefined
                             : (dimensionState.width.value && dimensionState.width.value !== "auto")
                         ) && (
+=======
+                            variant="ghost"
+                            size="toolbar"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
+                            {(dimensionState.width.unit === 'px'
+                                ? dimensionState.width.num !== undefined
+                                : (dimensionState.width.value && dimensionState.width.value !== "auto")
+                            ) && (
+>>>>>>> de0110e3 (removed focus ring from buttons, new r)
                                 <span className="text-small">
                                     {dimensionState.width.unit === 'px'
                                         ? dimensionState.width.num

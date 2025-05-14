@@ -7,7 +7,7 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
+import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { InputRange } from "../inputs/input-range";
@@ -20,28 +20,23 @@ export const Margin = () => {
 
     return (
         <DropdownMenu>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                        >
-                            <Icons.Margin className="h-4 min-h-4 w-4 min-w-4" />
-                            {boxState.margin.unit === 'px' && typeof boxState.margin.num === 'number' && boxState.margin.num !== 0 ? (
-                                <span className="text-small">{boxState.margin.num}</span>
-                            ) : null}
-                            {boxState.margin.unit !== 'px' && boxState.margin.value ? (
-                                <span className="text-small">{boxState.margin.value}</span>
-                            ) : null}
-                        </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-1" hideArrow>
-                    Margin
-                </TooltipContent>
-            </Tooltip>
+            <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="toolbar"
+                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center border hover:border hover:text-white focus-visible:ring-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    >
+                        <Icons.Margin className="h-4 min-h-4 w-4 min-w-4" />
+                        {boxState.margin.unit === 'px' && typeof boxState.margin.num === 'number' && boxState.margin.num !== 0 ? (
+                            <span className="text-small">{boxState.margin.num}</span>
+                        ) : null}
+                        {boxState.margin.unit !== 'px' && boxState.margin.value ? (
+                            <span className="text-small">{boxState.margin.value}</span>
+                        ) : null}
+                    </Button>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent
                 align="start"
                 className="mt-1 w-[280px] rounded-lg p-3"
