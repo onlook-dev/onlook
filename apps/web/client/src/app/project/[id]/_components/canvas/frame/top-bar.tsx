@@ -54,11 +54,11 @@ export const TopBar = observer(
 
         return (
             <div
-                className="rounded bg-foreground-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-sm overflow-hidden relative shadow-sm border-input text-foreground"
+                className="rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing"
                 style={{
                     height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,
-                    marginBottom: `${20 / editorEngine.canvas.scale}px`,
+                    marginBottom: `${10 / editorEngine.canvas.scale}px`,
                 }}
                 onMouseDown={handleMouseDown}
             >
@@ -69,10 +69,10 @@ export const TopBar = observer(
                         transformOrigin: 'left center',
                     }}
                 >
-                    <Button variant="ghost" size="icon" onClick={handleReload}>
+                    <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
                         <Icons.Reload />
                     </Button>
-                    <div className="text-sm overflow-hidden text-ellipsis whitespace-nowrap">
+                    <div className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
                         {frame.url}
                     </div>
                     <Link className="ml-auto" href={frame.url} target="_blank">

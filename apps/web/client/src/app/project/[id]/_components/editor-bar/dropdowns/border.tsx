@@ -18,7 +18,7 @@ import { SpacingInputs } from "../inputs/spacing-inputs";
 
 export const Border = () => {
     const editorEngine = useEditorEngine();
-    const [activeTab, setActiveTab] = useState('individual');
+    const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
         useBoxControl('border');
     const [borderColor, setBorderColor] = useState(
@@ -63,7 +63,7 @@ export const Border = () => {
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
+                <TooltipContent side="bottom" className="mt-1" hideArrow>
                     Border
                 </TooltipContent>
             </Tooltip>
