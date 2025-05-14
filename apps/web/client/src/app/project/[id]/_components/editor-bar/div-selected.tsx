@@ -26,7 +26,6 @@ export const DivSelected = () => {
             <Margin />
             <InputSeparator />
             <Radius />
-            <InputSeparator />
             <Border />
             <InputSeparator />
             <ColorBackground />
