@@ -1,4 +1,4 @@
-import type { TemplateNode } from '@onlook/models/element';
+import type { TemplateNode } from '@onlook/models';
 import { IdeType } from '@onlook/models/ide';
 import type { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
@@ -8,13 +8,14 @@ export class IDE {
     static readonly CURSOR = new IDE('Cursor', IdeType.CURSOR, 'cursor', 'CursorLogo');
     static readonly ZED = new IDE('Zed', IdeType.ZED, 'zed', 'ZedLogo');
     static readonly WINDSURF = new IDE('Windsurf', IdeType.WINDSURF, 'windsurf', 'WindsurfLogo');
+    static readonly ONLOOK = new IDE('Onlook', IdeType.ONLOOK, 'onlook', 'OnlookLogo');
 
     private constructor(
         public readonly displayName: string,
         public readonly type: IdeType,
         public readonly command: string,
         public readonly icon: keyof typeof Icons,
-    ) { }
+    ) {}
 
     toString() {
         return this.displayName;
@@ -30,6 +31,8 @@ export class IDE {
                 return IDE.ZED;
             case IdeType.WINDSURF:
                 return IDE.WINDSURF;
+            case IdeType.ONLOOK:
+                return IDE.ONLOOK;
             default:
                 assertNever(type);
         }

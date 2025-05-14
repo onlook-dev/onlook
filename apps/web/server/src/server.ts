@@ -1,5 +1,5 @@
 import ws from '@fastify/websocket';
-import type { EditorServerOptions } from '@onlook/web-shared';
+import type { EditorServerOptions } from '@onlook/rpc';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import fastify from 'fastify';
 import { appRouter } from './router';
@@ -11,8 +11,8 @@ export function createServer(opts: EditorServerOptions) {
     const trpcPrefix = opts.prefix ?? '/api/trpc';
     const server = fastify({ logger: dev });
 
-    void server.register(ws);
-    void server.register(fastifyTRPCPlugin, {
+    server.register(ws);
+    server.register(fastifyTRPCPlugin, {
         prefix: trpcPrefix,
         useWSS: true,
         trpcOptions: { router: appRouter, createContext },

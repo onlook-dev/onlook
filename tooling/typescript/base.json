@@ -21,6 +21,7 @@
         "noFallthroughCasesInSwitch": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "noPropertyAccessFromIndexSignature": false
+        "noPropertyAccessFromIndexSignature": false,
+        "noUncheckedIndexedAccess": true,
     }
 }

@@ -1,10 +1,8 @@
 import { processDom } from './dom.ts';
 import { listenForEvents } from './events/index.ts';
-import { setApi } from './index.ts';
-import cssManager from './style/index.ts';
+import { cssManager } from './style/css-manager.ts';
 
-function handleBodyReady() {
-    setApi();
+export function handleBodyReady() {
     listenForEvents();
     keepDomUpdated();
     cssManager.injectDefaultStyles();

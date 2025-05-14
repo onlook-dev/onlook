@@ -1,6 +1,6 @@
-import { useEditorEngine } from '@/components/store';
-import type { RectDimensions } from '@/components/store/editor/engine/overlay/rect';
-import { adaptRectToCanvas, adaptValueToCanvas } from '@/components/store/editor/engine/overlay/utils';
+import { useEditorEngine } from '@/components/store/editor';
+import { adaptRectToCanvas, adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
+import type { RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
 import React, { memo, useMemo } from 'react';
 import { BaseRect } from './rect/base';
@@ -75,15 +75,16 @@ const getInsideRect = (rectA: RectPoint, rectB: RectPoint): RectPoint | null => 
 
 export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, toRect }) => {
     const editorEngine = useEditorEngine();
-    const webview = editorEngine.webviews.getWebview(editorEngine.elements.selected[0]?.frameId);
+    const frameData = editorEngine.frames.get(editorEngine.elements.selected[0]?.frameId ?? '');
+    const frameView = frameData?.view;
 
     const fromRectAdjusted = useMemo(
-        () => (webview ? adaptRectToCanvas(fromRect, webview) : fromRect),
-        [fromRect, webview],
+        () => (frameView ? adaptRectToCanvas(fromRect, frameView) : fromRect),
+        [fromRect, frameView],
     );
     const toRectAdjusted = useMemo(
-        () => (webview ? adaptRectToCanvas(toRect, webview) : toRect),
-        [toRect, webview],
+        () => (frameView ? adaptRectToCanvas(toRect, frameView) : toRect),
+        [toRect, frameView],
     );
 
     const fromRectPoint = useMemo(() => toRectPoint(fromRect), [fromRect]);
@@ -115,7 +116,7 @@ export const MeasurementOverlay: React.FC<MeasurementProps> = memo(({ fromRect, 
     };
 
     const distances = useMemo(() => {
-        if (!webview) {
+        if (!frameView) {
             return [];
         }
         const result: Distance[] = [];

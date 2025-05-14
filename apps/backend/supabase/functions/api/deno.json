@@ -1,0 +1,6 @@
+{
+    "imports": {
+        "@onlook/models/": "../../../../../packages/models/src/",
+        "zod": "npm:zod"
+    }
+}

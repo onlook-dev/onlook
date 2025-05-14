@@ -1,6 +1,8 @@
-import { useEditorEngine, useUserManager } from '@/components/store';
-import type { ClickRectState } from '@/components/store/editor/engine/overlay/state';
-import { EditorMode, EditorTabValue } from '@onlook/models/editor';
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+import { useEditorEngine } from '@/components/store/editor';
+import type { ClickRectState } from '@/components/store/editor/overlay/state';
+import { useUserManager } from '@/components/store/user';
+import { EditorMode, EditorTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
@@ -9,22 +11,12 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
-const SPACING = {
-    base: 8,
-    padding: 16,
-};
-
 const DIMENSIONS = {
     singleLineHeight: 32,
     minInputWidth: 280,
-    buttonHeight: 36, // Standard button height
+    buttonHeight: 36,
     multiLineRows: 4,
     minCharsToSubmit: 4,
-};
-
-const ANIMATION = {
-    DISTANCE_THRESHOLD: 300, // pixels - adjust this value as needed
-    TRANSITION_DURATION: 100, // ms
 };
 
 const DEFAULT_INPUT_STATE = {
@@ -38,18 +30,17 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const userManager = useUserManager();
+        const { setMessages, reload, isWaiting } = useChatContext();
         const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
         const textareaRef = useRef<HTMLTextAreaElement>(null);
         const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
         const t = useTranslations();
-
         const shouldHideButton =
             !selectedEl ||
             isPreviewMode ||
-            editorEngine.chat.isWaiting ||
-            editorEngine.chat.stream.content.length > 0 ||
+            isWaiting ||
             !userManager.settings.settings?.chat?.showMiniChat;
 
         useEffect(() => {
@@ -69,7 +60,8 @@ export const OverlayChat = observer(
             prevChatPositionRef.current = chatPosition;
         }, [chatPosition.x, chatPosition.y]);
 
-        const animationClass = 'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200'
+        const animationClass =
+            'origin-center scale-[0.2] opacity-0 -translate-y-2 transition-all duration-200';
 
         useEffect(() => {
             if (elementId) {
@@ -90,7 +82,15 @@ export const OverlayChat = observer(
         const handleSubmit = async () => {
             const messageToSend = inputState.value;
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            await editorEngine.chat.sendNewMessage(messageToSend);
+            const streamMessages = await editorEngine.chat.getStreamMessages(messageToSend);
+            // TODO: Send messages to the chat
+            if (!streamMessages) {
+                console.error('No stream messages');
+                return;
+            }
+            setMessages(streamMessages);
+            reload();
+
             setInputState(DEFAULT_INPUT_STATE);
         };
 
@@ -180,7 +180,7 @@ export const OverlayChat = observer(
                                             textareaRef.current.scrollHeight;
                                     }
                                 }}
-                                placeholder="Type your message..."
+                                placeholder={t('editor.panels.edit.tabs.chat.input.placeholder')}
                                 style={{
                                     resize: 'none',
                                     minHeight: DIMENSIONS.singleLineHeight,

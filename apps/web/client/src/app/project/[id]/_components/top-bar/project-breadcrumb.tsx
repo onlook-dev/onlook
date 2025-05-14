@@ -1,7 +1,7 @@
-// import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
-// import { ProjectTabs } from '@/lib/projects';
-// import { Route } from '@/lib/routes';
-import { Button } from '@onlook/ui-v4/button';
+import { useEditorEngine } from '@/components/store/editor';
+import { useProjectManager } from '@/components/store/project';
+import { SettingsTabValue } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,26 +11,22 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
-} from '@onlook/ui-v4/dropdown-menu';
-import { Icons } from '@onlook/ui-v4/icons';
-import { cn } from '@onlook/ui-v4/utils';
+} from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect } from 'next/navigation';
 import { useRef, useState } from 'react';
 
-export const ProjectBreadcrumb = () => {
-    // const editorEngine = useEditorEngine();
-    // const projectsManager = useProjectsManager();
-    // const routeManager = useRouteManager();
+export const ProjectBreadcrumb = observer(() => {
+    const editorEngine = useEditorEngine();
+    const projectManager = useProjectManager();
+    const project = projectManager.project;
     const t = useTranslations();
-    const project = {
-        name: 'My Project',
-        folderPath: '/Users/johndoe/Projects/my-project',
-        previewImg: 'https://via.placeholder.com/150',
-        updatedAt: '2021-01-01',
-    };
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const closeTimeoutRef = useRef<Timer | null>(null);
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
 
     async function handleNavigateToProjects(route?: 'create' | 'import') {
@@ -97,14 +93,12 @@ export const ProjectBreadcrumb = () => {
                     >
                         <Icons.OnlookLogo
                             className={cn(
-                                'w-6 h-6 hidden md:block',
+                                'w-8 h-8 hidden md:block',
                                 isClosingProject && 'animate-pulse',
                             )}
                         />
                         <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
-                            {isClosingProject
-                                ? 'Stopping project...'
-                                : project.name}
+                            {isClosingProject ? 'Stopping project...' : project?.name}
                         </span>
                         <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
                     </Button>
@@ -167,15 +161,15 @@ export const ProjectBreadcrumb = () => {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
-                            // editorEngine.isPlansOpen = true;
+                            editorEngine.state.plansOpen = true;
                         }}
                     >
                         {t('projects.actions.subscriptions')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => {
-                            // editorEngine.isSettingsOpen = true;
-                            // editorEngine.settingsTab = SettingsTabValue.PROJECT;
+                            editorEngine.state.settingsOpen = true;
+                            editorEngine.state.settingsTab = SettingsTabValue.PROJECT;
                         }}
                     >
                         {t('projects.actions.settings')}
@@ -184,4 +178,4 @@ export const ProjectBreadcrumb = () => {
             </DropdownMenu>
         </div>
     );
-};
+});

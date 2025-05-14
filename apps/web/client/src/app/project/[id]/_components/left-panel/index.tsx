@@ -1,59 +1,56 @@
-import { useEditorEngine } from '@/components/store';
+import { useEditorEngine } from '@/components/store/editor';
 import { EditorMode, LeftPanelTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { BrandTab } from './brand-tab';
+import { HelpDropdown } from './help-dropdown';
+import { ImagesTab } from './image-tab';
+import { LayersTab } from './layers-tab';
+import { PagesTab } from './page-tab';
+import { WindowsTab } from './windows-tab';
+import { ZoomControls } from './zoom-controls';
 
-// import AppsTab from './AppsTab';
-// import BrandTab from './BrandTab';
-// import ComponentsTab from './ComponentsTab';
-// import { HelpDropdown } from './HelpDropdown';
-// import ImagesTab from './ImageTab';
-// import LayersTab from './LayersTab';
-// import OpenCodeMini from './OpenCodeMini';
-// import PagesTab from './PageTab';
-// import WindowsTab from './WindowsTab';
-// import ZoomControls from './ZoomControls';
-
-const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hidden: boolean }[] = [
-    {
-        value: LeftPanelTabValue.LAYERS,
-        icon: <Icons.Layers className="w-5 h-5" />,
-        label: 'editor.panels.layers.tabs.layers',
-        hidden: false,
-    },
-    {
-        value: LeftPanelTabValue.PAGES,
-        icon: <Icons.File className="w-5 h-5" />,
-        label: 'editor.panels.layers.tabs.pages',
-        hidden: false,
-    },
-    {
-        value: LeftPanelTabValue.IMAGES,
-        icon: <Icons.Image className="w-5 h-5" />,
-        label: 'editor.panels.layers.tabs.images',
-        hidden: false,
-    },
-    {
-        value: LeftPanelTabValue.WINDOWS,
-        icon: <Icons.Desktop className="w-5 h-5" />,
-        label: 'editor.panels.layers.tabs.windows.name',
-        hidden: false,
-    },
-    {
-        value: LeftPanelTabValue.BRAND,
-        icon: <Icons.Brand className="w-5 h-5" />,
-        label: 'editor.panels.layers.tabs.brand',
-        hidden: false,
-    },
-    {
-        value: LeftPanelTabValue.APPS,
-        icon: <Icons.ViewGrid className="w-5 h-5" />,
-        label: 'editor.panels.layers.tabs.apps',
-        hidden: true,
-    }
-];
+const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hidden: boolean }[] =
+    [
+        {
+            value: LeftPanelTabValue.LAYERS,
+            icon: <Icons.Layers className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.layers',
+            hidden: false,
+        },
+        {
+            value: LeftPanelTabValue.PAGES,
+            icon: <Icons.File className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.pages',
+            hidden: false,
+        },
+        {
+            value: LeftPanelTabValue.IMAGES,
+            icon: <Icons.Image className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.images',
+            hidden: false,
+        },
+        {
+            value: LeftPanelTabValue.WINDOWS,
+            icon: <Icons.Desktop className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.windows.name',
+            hidden: false,
+        },
+        {
+            value: LeftPanelTabValue.BRAND,
+            icon: <Icons.Brand className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.brand',
+            hidden: false,
+        },
+        {
+            value: LeftPanelTabValue.APPS,
+            icon: <Icons.ViewGrid className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.apps',
+            hidden: true,
+        },
+    ];
 
 export const LeftPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -105,12 +102,11 @@ export const LeftPanel = observer(() => {
         }
     };
 
-
     return (
         <div
             className={cn(
-                'flex gap-0 h-full z-40',
-                editorEngine.state.editorMode === EditorMode.PREVIEW ? 'hidden' : 'visible',
+                'flex h-full',
+                editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
             )}
             onMouseLeave={handleMouseLeave}
         >
@@ -130,16 +126,13 @@ export const LeftPanel = observer(() => {
                         onMouseEnter={() => handleMouseEnter(tab.value)}
                     >
                         {tab.icon}
-                        <span className="text-xs leading-tight">
-                            {t(tab.label)}
-                        </span>
+                        <span className="text-xs leading-tight">{t(tab.label)}</span>
                     </button>
                 ))}
 
                 <div className="mt-auto flex flex-col gap-0 items-center mb-4">
-                    {/* <OpenCodeMini />
                     <ZoomControls />
-                    <HelpDropdown /> */}
+                    <HelpDropdown />
                 </div>
             </div>
 
@@ -148,13 +141,13 @@ export const LeftPanel = observer(() => {
                 <>
                     <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
-                            {/* {selectedTab === LayersPanelTabValue.LAYERS && <LayersTab />}
-                            {selectedTab === LayersPanelTabValue.COMPONENTS && <ComponentsTab components={editorEngine.state.components} />}
-                            {selectedTab === LayersPanelTabValue.PAGES && <PagesTab />}
-                            {selectedTab === LayersPanelTabValue.IMAGES && <ImagesTab />}
-                            {selectedTab === LayersPanelTabValue.WINDOWS && <WindowsTab />}
-                            {selectedTab === LayersPanelTabValue.BRAND && <BrandTab />}
-                            {selectedTab === LayersPanelTabValue.APPS && <AppsTab />} */}
+                            {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
+                            {/* {selectedTab === LayersPanelTabValue.COMPONENTS && <ComponentsTab components={editorEngine.state.components} />} */}
+                            {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
+                            {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
+                            {selectedTab === LeftPanelTabValue.WINDOWS && <WindowsTab />}
+                            {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
+                            {/* {selectedTab === LayersPanelTabValue.APPS && <AppsTab />} */}
                         </div>
                     </div>
 

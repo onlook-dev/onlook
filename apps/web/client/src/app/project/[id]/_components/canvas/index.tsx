@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { useEditorEngine } from '@/components/store';
-import { EditorAttributes } from '@onlook/models/constants';
-import { EditorMode } from '@onlook/models/editor';
+import { useEditorEngine } from '@/components/store/editor';
+import { EditorAttributes } from '@onlook/constants';
+import { EditorMode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
@@ -22,7 +22,6 @@ const MIN_Y = -5000;
 export const Canvas = observer(() => {
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [isPanning, setIsPanning] = useState(false);
     const scale = editorEngine.canvas.scale;
     const position = editorEngine.canvas.position;
 
@@ -31,7 +30,7 @@ export const Canvas = observer(() => {
             return;
         }
         editorEngine.clearUI();
-    }
+    };
 
     const handleZoom = useCallback(
         (event: WheelEvent) => {
@@ -104,21 +103,21 @@ export const Canvas = observer(() => {
         (event: WheelEvent) => {
             // This is a workaround to prevent the canvas from scrolling when textarea in Chat with AI is focused.
             if (event.target instanceof HTMLTextAreaElement) {
-                return; // Let the default scroll behavior happen
+                return;
             }
+            editorEngine.state.canvasScrolling = true;
             if (event.ctrlKey || event.metaKey) {
                 handleZoom(event);
             } else {
                 handlePan(event);
             }
         },
-        [handleZoom, handlePan],
+        [handleZoom, handlePan, editorEngine.state],
     );
 
     const middleMouseButtonDown = useCallback((e: MouseEvent) => {
         if (e.button === 1) {
             editorEngine.state.editorMode = EditorMode.PAN;
-            setIsPanning(true);
             e.preventDefault();
             e.stopPropagation();
         }
@@ -127,7 +126,6 @@ export const Canvas = observer(() => {
     const middleMouseButtonUp = useCallback((e: MouseEvent) => {
         if (e.button === 1) {
             editorEngine.state.editorMode = EditorMode.DESIGN;
-            setIsPanning(false);
             e.preventDefault();
             e.stopPropagation();
         }
@@ -163,15 +161,14 @@ export const Canvas = observer(() => {
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onMouseDown={handleCanvasMouseDown}
             >
-                <Overlay>
-                    <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
-                        <Frames />
-                    </div>
-                </Overlay>
+                <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
+                    <Frames />
+                </div>
+                <Overlay />
                 <PanOverlay
-                    clampPosition={(position: { x: number; y: number }) => clampPosition(position, scale)}
-                    isPanning={isPanning}
-                    setIsPanning={setIsPanning}
+                    clampPosition={(position: { x: number; y: number }) =>
+                        clampPosition(position, scale)
+                    }
                 />
             </div>
         </HotkeysArea>

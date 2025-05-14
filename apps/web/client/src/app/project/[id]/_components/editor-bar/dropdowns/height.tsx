@@ -1,50 +1,83 @@
-"use client";
+'use client';
 
-import { Button } from "@onlook/ui-v4/button";
-import { Icons } from "@onlook/ui-v4/icons";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@onlook/ui-v4/dropdown-menu";
-import { InputDropdown } from "../inputs/input-dropdown";
+import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
+import { LayoutMode } from '@onlook/utility';
+import { useDimensionControl } from '../hooks/use-dimension-control';
+import { InputDropdown } from '../inputs/input-dropdown';
 
 export const Height = () => {
+    const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
+        useDimensionControl('height');
+
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                >
-                    <Icons.Height className="h-4 w-4 min-h-4 min-w-4" />
-                    <span className="text-sm">Hug</span>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg space-y-3">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
+                            {(dimensionState.height.unit === 'px'
+                                ? dimensionState.height.num !== undefined
+                                : (dimensionState.height.value && dimensionState.height.value !== "auto")
+                            ) && (
+                                <span className="text-smallPlus">
+                                    {dimensionState.height.unit === 'px'
+                                        ? dimensionState.height.num
+                                        : dimensionState.height.value}
+                                </span>
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    Height
+                </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent
+                align="start"
+                className="mt-1 w-[280px] space-y-3 rounded-lg p-3"
+            >
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-white">Height</span>
-                        <InputDropdown 
-                            value="250"
-                            dropdownValue="Hug"
-                            dropdownOptions={["Hug", "Fixed"]}
+                        <span className="text-muted-white text-sm">Height</span>
+                        <InputDropdown
+                            value={dimensionState.height.num?.toString() ?? '--'}
+                            unit={dimensionState.height.unit}
+                            dropdownValue={dimensionState.height.dropdownValue}
+                            dropdownOptions={Object.values(LayoutMode)}
+                            onChange={(value) => handleDimensionChange('height', value)}
+                            onUnitChange={(value) => handleUnitChange('height', value)}
+                            onDropdownChange={(value) => handleLayoutChange('height', value)}
                         />
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Min</span>
-                        <InputDropdown 
-                            value="--"
-                            dropdownValue="Fixed"
-                            dropdownOptions={["Fixed"]}
+                        <span className="text-muted-foreground text-sm">Min</span>
+                        <InputDropdown
+                            value={dimensionState.minHeight.num?.toString() ?? '--'}
+                            unit={dimensionState.minHeight.unit}
+                            dropdownValue={dimensionState.minHeight.dropdownValue}
+                            dropdownOptions={Object.values(LayoutMode)}
+                            onChange={(value) => handleDimensionChange('minHeight', value)}
+                            onUnitChange={(value) => handleUnitChange('minHeight', value)}
+                            onDropdownChange={(value) => handleLayoutChange('minHeight', value)}
                         />
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Max</span>
-                        <InputDropdown 
-                            value="--"
-                            dropdownValue="Fixed"
-                            dropdownOptions={["Fixed"]}
+                        <span className="text-muted-foreground text-sm">Max</span>
+                        <InputDropdown
+                            value={dimensionState.maxHeight.num?.toString() ?? '--'}
+                            unit={dimensionState.maxHeight.unit}
+                            dropdownValue={dimensionState.maxHeight.dropdownValue}
+                            dropdownOptions={Object.values(LayoutMode)}
+                            onChange={(value) => handleDimensionChange('maxHeight', value)}
+                            onUnitChange={(value) => handleUnitChange('maxHeight', value)}
+                            onDropdownChange={(value) => handleLayoutChange('maxHeight', value)}
                         />
                     </div>
                 </div>

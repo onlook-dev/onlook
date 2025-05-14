@@ -1,5 +1,5 @@
-import { EditorAttributes } from '@onlook/models/constants';
-import type { LayerNode } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/constants';
+import type { LayerNode } from '@onlook/models';
 import { buildLayerTree } from '../dom';
 
 export function listenForDomMutation() {

@@ -1,8 +1,8 @@
 import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
-import type { Project } from '@onlook/models/projects';
-import { Button } from '@onlook/ui-v4/button';
-import { Icons } from '@onlook/ui-v4/icons';
+import type { Project } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
@@ -19,7 +19,7 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
     const t = useTranslations();
 
     const selectProject = (project: Project) => {
-        sendAnalytics('open project', { id: project.id, url: project.url });
+        sendAnalytics('open project', { id: project.id });
         redirect(`${Routes.PROJECT}/${project.id}`);
     };
 
@@ -27,7 +27,7 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
         <ButtonMotion
             size="default"
             variant={'outline'}
-            className="gap-2 bg-background-active border-[0.5px] border-border-active w-full lg:w-auto"
+            className="gap-2 bg-background-active border-[0.5px] border-border-active w-auto"
             onClick={() => selectProject(project)}
             {...props}
         >

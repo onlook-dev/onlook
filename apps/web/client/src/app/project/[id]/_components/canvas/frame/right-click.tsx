@@ -1,7 +1,8 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
-import { useEditorEngine, useUserManager } from '@/components/store';
-import { DEFAULT_IDE, EditorTabValue } from '@onlook/models';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
+import { DEFAULT_IDE, EditorTabValue, type DomElement } from '@onlook/models';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -38,9 +39,9 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     useEffect(() => {
         updateMenuItems();
     }, [
-        // editorEngine.elements.selected,
-        // editorEngine.ast.mappings.layers,
-        // editorEngine.webviews.selected,
+        editorEngine.elements.selected,
+        editorEngine.ast.mappings.layers,
+        editorEngine.frames.selected,
     ]);
 
     const OPEN_DEV_TOOL_ITEM: MenuItem = {
@@ -78,16 +79,14 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         {
             label: 'Group',
             icon: <Icons.Box className="mr-2 h-4 w-4" />,
-            // action: () => editorEngine.group.groupSelectedElements(),
-            // disabled: !editorEngine.group.canGroupElements(),
-            action: () => { },
+            action: () => editorEngine.group.groupSelectedElements(),
+            disabled: !editorEngine.group.canGroupElements(),
             hotkey: Hotkey.GROUP,
         },
         {
             label: 'Ungroup',
-            // action: () => editorEngine.group.ungroupSelectedElement(),
-            // disabled: !editorEngine.group.canUngroupElement(),
-            action: () => { },
+            action: () => editorEngine.group.ungroupSelectedElement(),
+            disabled: !editorEngine.group.canUngroupElement(),
             icon: <Icons.Group className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.UNGROUP,
         },
@@ -96,43 +95,37 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const EDITING_ITEMS: MenuItem[] = [
         {
             label: 'Edit text',
-            // action: () => editorEngine.text.editSelectedElement(),
-            action: () => { },
+            action: () => editorEngine.text.editSelectedElement(),
             icon: <Icons.Pencil className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ENTER,
         },
         {
             label: 'Copy',
-            // action: () => editorEngine.copy.copy(),
-            action: () => { },
+            action: () => editorEngine.copy.copy(),
             icon: <Icons.Clipboard className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.COPY,
         },
         {
             label: 'Paste',
-            // action: () => editorEngine.copy.paste(),
-            action: () => { },
+            action: () => editorEngine.copy.paste(),
             icon: <Icons.ClipboardCopy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.PASTE,
         },
         {
             label: 'Cut',
-            // action: () => editorEngine.copy.cut(),
-            action: () => { },
+            action: () => editorEngine.copy.cut(),
             icon: <Icons.Scissors className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.CUT,
         },
         {
             label: 'Duplicate',
-            // action: () => editorEngine.copy.duplicate(),
-            action: () => { },
+            action: () => editorEngine.copy.duplicate(),
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
         },
         {
             label: 'Delete',
-            // action: () => editorEngine.elements.delete(),
-            action: () => { },
+            action: () => editorEngine.elements.delete(),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
@@ -142,15 +135,14 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const WINDOW_ITEMS: MenuItem[] = [
         {
             label: 'Duplicate',
-            // action: () => editorEngine.duplicateWindow(),
-            action: () => { },
+            action: () => editorEngine.window.duplicate(),
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
         },
         {
             label: 'Delete',
-            // action: () => editorEngine.deleteWindow(editorEngine.webviews.selected[0].id),
-            action: () => { },
+            // action: () => editorEngine.deleteWindow(editorEngine.frames.selected[0].id),
+            action: () => {},
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
@@ -159,46 +151,46 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     ];
 
     const updateMenuItems = () => {
-        // let instance: string | null = null;
-        // let root: string | null = null;
+        let instance: string | null = null;
+        let root: string | null = null;
 
-        // if (editorEngine.elements.selected.length > 0) {
-        //     const element: DomElement = editorEngine.elements.selected[0];
-        //     instance = element.instanceId;
-        //     root = element.oid;
-        // }
-        // let menuItems: MenuItem[][] = [];
+        if (editorEngine.elements.selected.length > 0 && editorEngine.elements.selected[0]) {
+            const element: DomElement = editorEngine.elements.selected[0];
+            instance = element.instanceId;
+            root = element.oid;
+        }
+        let menuItems: MenuItem[][] = [];
 
-        // if (editorEngine.isWindowSelected) {
-        //     menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
-        // } else {
-        //     const updatedToolItems = [
-        //         instance !== null && {
-        //             label: 'View instance code',
-        //             action: () => viewSource(instance),
-        //             icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
-        //         },
-        //         {
-        //             label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
-        //             disabled: !root,
-        //             action: () => viewSource(root),
-        //             icon: instance ? (
-        //                 <Icons.Component className="mr-2 h-4 w-4" />
-        //             ) : (
-        //                 <Icons.ExternalLink className="mr-2 h-4 w-4" />
-        //             ),
-        //         },
-        //         ...TOOL_ITEMS,
-        //     ].filter(Boolean) as MenuItem[];
+        if (!editorEngine.elements.selected.length) {
+            menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
+        } else {
+            const updatedToolItems = [
+                instance !== null && {
+                    label: 'View instance code',
+                    action: () => viewSource(instance),
+                    icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
+                },
+                {
+                    label: `View ${instance ? 'component' : 'element'} in ${ide.displayName}`,
+                    disabled: !root,
+                    action: () => viewSource(root),
+                    icon: instance ? (
+                        <Icons.Component className="mr-2 h-4 w-4" />
+                    ) : (
+                        <Icons.ExternalLink className="mr-2 h-4 w-4" />
+                    ),
+                },
+                ...TOOL_ITEMS,
+            ].filter(Boolean) as MenuItem[];
 
-        //     menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
-        // }
+            menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
+        }
 
-        // setMenuItems(menuItems);
+        setMenuItems(menuItems);
     };
 
     function viewSource(oid: string | null) {
-        editorEngine.code.viewSource(oid);
+        // editorEngine.sandbox.viewSource(oid);
     }
 
     return (

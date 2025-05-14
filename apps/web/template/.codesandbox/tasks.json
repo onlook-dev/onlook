@@ -1,0 +1,13 @@
+{
+    "setupTasks": ["bun install"],
+    "tasks": {
+        "dev": {
+            "name": "Dev Server",
+            "command": "bun run dev",
+            "preview": {
+                "port": 3000
+            },
+            "runAtStart": true
+        }
+    }
+}

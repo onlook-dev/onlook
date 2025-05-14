@@ -1,66 +1,82 @@
-// import {
-//     getChildrenCount,
-//     getDomElementByDomId,
-//     getOffsetParent,
-//     getParentElement,
-//     updateElementInstance,
-// } from './elements';
 import { processDom } from './dom';
-import { getDomElementByDomId, getElementAtLoc } from './elements';
-// import {
-//     getActionElementByDomId,
-//     getActionLocation,
-//     getElementType,
-//     getFirstOnlookElement,
-//     setElementType,
-// } from './elements/dom/helpers';
-// import { getInsertLocation } from './elements/dom/insert';
-// import { getRemoveActionFromDomId } from './elements/dom/remove';
-// import { getElementIndex } from './elements/move';
-// import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
-// import { getComputedStyleByDomId } from './elements/style';
-// import { editText, startEditingText, stopEditingText } from './elements/text';
+import {
+    getChildrenCount,
+    getElementAtLoc,
+    getElementByDomId,
+    getOffsetParent,
+    getParentElement,
+    updateElementInstance
+} from './elements';
+import { groupElements, ungroupElements } from './elements/dom/group';
+import {
+    getActionElement,
+    getActionLocation,
+    getElementType,
+    getFirstOnlookElement,
+    setElementType,
+} from './elements/dom/helpers';
+import { insertImage, removeImage } from './elements/dom/image';
+import { getInsertLocation, insertElement, removeElement } from './elements/dom/insert';
+import { getRemoveAction } from './elements/dom/remove';
+import { getElementIndex, moveElement } from './elements/move';
+import { drag, endAllDrag, endDrag, startDrag } from './elements/move/drag';
+import { getComputedStyleByDomId } from './elements/style';
+import { editText, isChildTextEditable, startEditingText, stopEditingText } from './elements/text';
+import { handleBodyReady } from './ready';
 import { setFrameId } from './state';
-// import { getTheme, setTheme } from './theme';
+import { updateStyle } from './style';
+import { getTheme, setTheme } from './theme';
 
-export function getMethods() {
-    return {
-        // Misc
-        processDom,
-        // getComputedStyleByDomId,
-        // updateElementInstance,
-        setFrameId,
-        // getFirstOnlookElement,
+export const preloadMethods = {
+    // Misc
+    processDom,
+    setFrameId,
+    getComputedStyleByDomId,
+    updateElementInstance,
+    getFirstOnlookElement,
 
-        // Elements
-        getElementAtLoc,
-        getDomElementByDomId,
-        // setElementType,
-        // getElementType,
-        // getParentElement,
-        // getChildrenCount,
-        // getOffsetParent,
+    // Elements
+    getElementAtLoc,
+    getElementByDomId,
+    getElementIndex,
+    setElementType,
+    getElementType,
+    getParentElement,
+    getChildrenCount,
+    getOffsetParent,
 
-        // // Actions
-        // getActionLocation,
-        // getActionElementByDomId,
-        // getInsertLocation,
-        // getRemoveActionFromDomId,
+    // Actions
+    getActionLocation,
+    getActionElement,
+    getInsertLocation,
+    getRemoveAction,
 
-        // // Theme
-        // getTheme,
-        // setTheme,
+    // Theme
+    getTheme,
+    setTheme,
 
-        // // Drag
-        // startDrag,
-        // drag,
-        // endDrag,
-        // getElementIndex,
-        // endAllDrag,
+    // Drag
+    startDrag,
+    drag,
+    endDrag,
+    endAllDrag,
 
-        // // Edit text
-        // startEditingText,
-        // editText,
-        // stopEditingText,
-    };
+    // Edit text
+    startEditingText,
+    editText,
+    stopEditingText,
+    isChildTextEditable,
+
+    // Edit elements
+    updateStyle,
+    insertElement,
+    removeElement,
+    moveElement,
+    groupElements,
+    ungroupElements,
+    insertImage,
+    removeImage,
+    handleBodyReady
 }
+
+export type PenpalChildMethods = typeof preloadMethods;

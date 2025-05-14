@@ -1,0 +1,21 @@
+{
+    "name": "@onlook/backend",
+    "private": true,
+    "scripts": {
+        "start": "supabase start",
+        "stop": "supabase stop",
+        "push": "supabase db push",
+        "reset": "supabase db reset",
+        "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts",
+        "test": "cd supabase/functions/api && deno test"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@onlook/typescript": "*",
+        "@types/bun": "latest",
+        "supabase": "^2.6.8"
+    },
+    "peerDependencies": {
+        "typescript": "^5.0.0"
+    }
+}

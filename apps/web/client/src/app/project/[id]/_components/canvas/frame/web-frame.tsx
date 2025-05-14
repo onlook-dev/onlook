@@ -1,166 +1,218 @@
-import { useEditorEngine } from "@/components/store";
-import type { DomElement, WebFrame } from "@onlook/models";
-import { cn } from "@onlook/ui-v4/utils";
-import { observer } from "mobx-react-lite";
+'use client';
+
+import { useEditorEngine } from '@/components/store/editor';
+import type { WebFrame } from '@onlook/models';
+import {
+    PENPAL_PARENT_CHANNEL,
+    promisifyMethod,
+    type PenpalChildMethods,
+    type PenpalParentMethods,
+    type PromisifiedPendpalChildMethods,
+} from '@onlook/penpal';
+import { cn } from '@onlook/ui/utils';
+import { debounce } from 'lodash';
+import { observer } from 'mobx-react-lite';
 import { WindowMessenger, connect } from 'penpal';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type IframeHTMLAttributes } from 'react';
+import {
+    forwardRef,
+    useEffect,
+    useImperativeHandle,
+    useRef,
+    useState,
+    type IframeHTMLAttributes,
+} from 'react';
 
-type PenpalRemote = {
-    setFrameId: (frameId: string) => void;
-    processDom: () => void;
-    getElementAtLoc: (x: number, y: number, getStyle: boolean) => Promise<DomElement>;
-    getDomElementByDomId: (domId: string, getStyle: boolean) => Promise<DomElement>;
-};
-
-// TODO: Move this to a shared package
-export type WebFrameView = HTMLIFrameElement &
-    Pick<
-        Electron.WebviewTag,
-        | 'setZoomLevel'
-        | 'loadURL'
-        | 'openDevTools'
-        | 'canGoForward'
-        | 'canGoBack'
-        | 'goForward'
-        | 'goBack'
-        | 'reload'
-        | 'isLoading'
-        | 'capturePage'
-    > & {
-        supportsOpenDevTools: () => boolean;
-        capturePageAsCanvas: () => Promise<HTMLCanvasElement>;
-    } & PenpalRemote;
+export type WebFrameView = HTMLIFrameElement & {
+    setZoomLevel: (level: number) => void;
+    loadURL: (url: string) => void;
+    supportsOpenDevTools: () => boolean;
+    canGoForward: () => boolean;
+    canGoBack: () => boolean;
+    goForward: () => void;
+    goBack: () => void;
+    reload: () => void;
+    isLoading: () => boolean;
+} & PromisifiedPendpalChildMethods;
 
 interface WebFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: WebFrame;
 }
 
-export const WebFrameComponent = observer(forwardRef<WebFrameView, WebFrameViewProps>(({ frame, ...props }, ref) => {
-    const editorEngine = useEditorEngine();
-    const [iframeRemote, setIframeRemote] = useState<any>(null);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-    const zoomLevel = useRef(1);
+export const WebFrameComponent = observer(
+    forwardRef<WebFrameView, WebFrameViewProps>(({ frame, ...props }, ref) => {
+        const editorEngine = useEditorEngine();
+        const iframeRef = useRef<HTMLIFrameElement>(null);
+        const zoomLevel = useRef(1);
+        const [penpalChild, setPenpalChild] = useState<any>(null);
+        const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
 
-    const setupPenpalConnection = useCallback(async (iframe: HTMLIFrameElement) => {
-        console.log('Initializing penpal connection for frame', frame.id);
-        if (!iframe?.contentWindow) {
-            throw new Error('No content window found');
-        }
-        const messenger = new WindowMessenger({
-            remoteWindow: iframe.contentWindow,
-            // TODO: Use a proper origin
-            allowedOrigins: ['*'],
-        });
-        const connection = connect({
-            messenger,
-            // Methods we are exposing to the iframe window.
-            methods: {}
-        });
-        const remote = (await connection.promise) as unknown as PenpalRemote;
-        await remote.setFrameId(frame.id);
-        await remote.processDom();
-        setIframeRemote(remote);
-        console.log('Penpal connection initialized for frame', frame.id);
-    }, [frame.id, setIframeRemote]);
+        const reloadIframe = () => {
+            const iframe = iframeRef.current;
+            if (!iframe) return;
+            iframe.src = iframe.src;
+        };
 
-    const setupIframe = useCallback(async (iframe: HTMLIFrameElement) => {
-        try {
-            await setupPenpalConnection(iframe);
-            editorEngine.frames.register(frame, iframe as WebFrameView);
-        } catch (error) {
-            console.error('Initialize penpal connection failed:', error);
-        }
-    }, [setupPenpalConnection]);
+        const setupPenpalConnection = () => {
+            if (!iframeRef.current?.contentWindow) {
+                console.error('No iframe found');
+                return;
+            }
 
-    const handleIframeLoad = useCallback(() => {
-        const iframe = iframeRef.current;
-        if (!iframe) {
-            console.error('No iframe found');
-            return;
-        }
+            // Destroy any existing connection before creating a new one
+            if (connectionRef.current) {
+                connectionRef.current.destroy();
+                connectionRef.current = null;
+            }
 
-        if (iframe.contentDocument?.readyState === 'complete') {
-            setupIframe(iframe);
-        } else {
-            iframe.addEventListener('load', () => setupIframe(iframe), { once: true });
-        }
-    }, [setupIframe]);
+            const messenger = new WindowMessenger({
+                remoteWindow: iframeRef.current.contentWindow,
+                allowedOrigins: ['*'],
+            });
 
-    useEffect(() => {
-        handleIframeLoad();
-    }, [handleIframeLoad]);
+            const connection = connect({
+                messenger,
+                methods: {
+                    getFrameId: () => frame.id,
+                } satisfies PenpalParentMethods,
+            });
 
-    useImperativeHandle(ref, () => {
-        const iframe = iframeRef.current!;
+            // Store the connection reference
+            connectionRef.current = connection;
 
-        Object.assign(iframe, {
-            supportsOpenDevTools: () => {
-                const contentWindow = iframe.contentWindow;
-                return !!contentWindow && 'openDevTools' in contentWindow;
-            },
-            openDevTools: () => {
-                const contentWindow = iframe.contentWindow;
-                if (!contentWindow || !('openDevTools' in contentWindow)) {
-                    throw new Error('openDevTools() is not supported in this browser');
-                }
-                (contentWindow as any as Electron.WebContents).openDevTools();
-            },
-            setZoomLevel: (level: number) => {
-                zoomLevel.current = level;
-                iframe.style.transform = `scale(${level})`;
-                iframe.style.transformOrigin = 'top left';
-            },
-            loadURL: async (url: string) => {
-                iframe.src = url;
-            },
-            canGoForward: () => {
-                return (iframe.contentWindow?.history?.length ?? 0) > 0;
-            },
-            canGoBack: () => {
-                return (iframe.contentWindow?.history?.length ?? 0) > 0;
-            },
-            goForward: () => {
-                iframe.contentWindow?.history.forward();
-            },
-            goBack: () => {
-                iframe.contentWindow?.history.back();
-            },
-            reload: () => {
-                iframe.contentWindow?.location.reload();
-            },
-            isLoading: (): boolean => {
-                const contentDocument = iframe.contentDocument;
-                if (!contentDocument) {
-                    throw new Error(
-                        'Could not call isLoading(): iframe.contentDocument is null/undefined',
+            connection.promise.then((child) => {
+                if (!child) {
+                    console.error(
+                        `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
                     );
+                    debouncedReloadIframe();
+                    return;
                 }
-                return contentDocument.readyState !== 'complete';
-            },
-            getElementAtLoc: iframeRemote?.getElementAtLoc,
-            getDomElementByDomId: iframeRemote?.getDomElementByDomId,
-            setFrameId: iframeRemote?.setFrameId,
-        });
+                const remote = child as unknown as PenpalChildMethods;
+                setPenpalChild(remote);
+                remote.setFrameId(frame.id);
+                remote.processDom();
+                console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
+            });
 
-        return iframe as WebFrameView;
-    }, [iframeRemote]);
-    return (
-        <iframe
-            ref={iframeRef}
-            id={frame.id}
-            className={cn(
-                'backdrop-blur-sm transition outline outline-4',
-                // shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
-                // selected ? getSelectedOutlineColor() : 'outline-transparent',
-            )}
-            src={frame.url}
-            sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
-            allow="geolocation; microphone; camera; midi; encrypted-media"
-            style={{
-                width: frame.dimension.width,
-                height: frame.dimension.height,
-            }}
-            {...props}
-        />
-    );
-}));
+            connection.promise.catch((error) => {
+                console.error(
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
+                    error,
+                );
+                debouncedReloadIframe();
+            });
+        };
+
+        useImperativeHandle(ref, () => {
+            const iframe = iframeRef.current;
+            if (!iframe) {
+                console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Iframe - Not found`);
+                return {} as WebFrameView;
+            }
+
+            const syncMethods = {
+                supportsOpenDevTools: () =>
+                    !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
+                setZoomLevel: (level: number) => {
+                    zoomLevel.current = level;
+                    iframe.style.transform = `scale(${level})`;
+                    iframe.style.transformOrigin = 'top left';
+                },
+                loadURL: (url: string) => {
+                    iframe.src = url;
+                },
+                canGoForward: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
+                canGoBack: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
+                goForward: () => iframe.contentWindow?.history.forward(),
+                goBack: () => iframe.contentWindow?.history.back(),
+                reload: () => reloadIframe(),
+                isLoading: () => iframe.contentDocument?.readyState !== 'complete',
+            };
+
+            if (!penpalChild) {
+                console.warn(
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: iframeRemote is null`,
+                );
+                return Object.assign(iframe, syncMethods) as WebFrameView;
+            }
+
+            const remoteMethods = {
+                processDom: promisifyMethod(penpalChild?.processDom),
+                getElementAtLoc: promisifyMethod(penpalChild?.getElementAtLoc),
+                getElementByDomId: promisifyMethod(penpalChild?.getElementByDomId),
+                setFrameId: promisifyMethod(penpalChild?.setFrameId),
+                getElementIndex: promisifyMethod(penpalChild?.getElementIndex),
+                getComputedStyleByDomId: promisifyMethod(penpalChild?.getComputedStyleByDomId),
+                updateElementInstance: promisifyMethod(penpalChild?.updateElementInstance),
+                getFirstOnlookElement: promisifyMethod(penpalChild?.getFirstOnlookElement),
+                setElementType: promisifyMethod(penpalChild?.setElementType),
+                getElementType: promisifyMethod(penpalChild?.getElementType),
+                getParentElement: promisifyMethod(penpalChild?.getParentElement),
+                getChildrenCount: promisifyMethod(penpalChild?.getChildrenCount),
+                getOffsetParent: promisifyMethod(penpalChild?.getOffsetParent),
+                getActionLocation: promisifyMethod(penpalChild?.getActionLocation),
+                getActionElement: promisifyMethod(penpalChild?.getActionElement),
+                getInsertLocation: promisifyMethod(penpalChild?.getInsertLocation),
+                getRemoveAction: promisifyMethod(penpalChild?.getRemoveAction),
+                getTheme: promisifyMethod(penpalChild?.getTheme),
+                setTheme: promisifyMethod(penpalChild?.setTheme),
+                startDrag: promisifyMethod(penpalChild?.startDrag),
+                drag: promisifyMethod(penpalChild?.drag),
+                endDrag: promisifyMethod(penpalChild?.endDrag),
+                endAllDrag: promisifyMethod(penpalChild?.endAllDrag),
+                startEditingText: promisifyMethod(penpalChild?.startEditingText),
+                editText: promisifyMethod(penpalChild?.editText),
+                stopEditingText: promisifyMethod(penpalChild?.stopEditingText),
+                updateStyle: promisifyMethod(penpalChild?.updateStyle),
+                insertElement: promisifyMethod(penpalChild?.insertElement),
+                removeElement: promisifyMethod(penpalChild?.removeElement),
+                moveElement: promisifyMethod(penpalChild?.moveElement),
+                groupElements: promisifyMethod(penpalChild?.groupElements),
+                ungroupElements: promisifyMethod(penpalChild?.ungroupElements),
+                insertImage: promisifyMethod(penpalChild?.insertImage),
+                removeImage: promisifyMethod(penpalChild?.removeImage),
+                isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
+                handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
+            };
+
+            // Register the iframe with the editor engine
+            editorEngine.frames.register(frame, iframe as WebFrameView);
+
+            return Object.assign(iframe, {
+                ...syncMethods,
+                ...remoteMethods,
+            }) satisfies WebFrameView;
+        }, [penpalChild, frame, iframeRef]);
+
+        useEffect(() => {
+            setupPenpalConnection();
+
+            return () => {
+                if (connectionRef.current) {
+                    connectionRef.current.destroy();
+                    connectionRef.current = null;
+                }
+                setPenpalChild(null);
+            };
+        }, []);
+
+        const debouncedReloadIframe = debounce(() => {
+            reloadIframe();
+        }, 1000);
+
+        return (
+            <iframe
+                ref={iframeRef}
+                id={frame.id}
+                className={cn('backdrop-blur-sm transition outline outline-4')}
+                src={frame.url}
+                sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
+                allow="geolocation; microphone; camera; midi; encrypted-media"
+                style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                onLoad={setupPenpalConnection}
+                onError={debouncedReloadIframe}
+                {...props}
+            />
+        );
+    }),
+);

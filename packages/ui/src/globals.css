@@ -1,165 +1,559 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
+@custom-variant dark (&:is(.dark *));
+@plugin '@tailwindcss/typography';
+@config '../tailwind.config.ts';
+
+@theme {
+    /* Container configuration */
+    --container-padding: 2rem;
+    --container-2xl: 1400px;
+
+    /* Animation configurations */
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+    --animate-edit-panel-in: edit-panel-in 1s ease;
+    --animate-layer-panel-in: layer-panel-in 1s ease;
+    --animate-toolbar-up: toolbar-up 1.25s ease;
+    --animate-wiggle: wiggle 0.5s cubic-bezier(0.25, 1, 0.5, 1) 7s infinite;
+    --animate-shine: shine var(--duration) infinite linear;
+
+    /* Keyframe definitions */
+    @keyframes accordion-down {
+        from {
+            height: 0;
+        }
+        to {
+            height: var(--radix-accordion-content-height);
+        }
+    }
+
+    @keyframes accordion-up {
+        from {
+            height: var(--radix-accordion-content-height);
+        }
+        to {
+            height: 0;
+        }
+    }
+
+    @keyframes layer-panel-in {
+        from {
+            transform: translateX(-100%);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes edit-panel-in {
+        from {
+            transform: translateX(15rem);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes toolbar-up {
+        0% {
+            transform: translateY(150%) translateX(-50%);
+        }
+        50% {
+            transform: translateY(150%) translateX(-50%);
+        }
+        100% {
+            transform: translateY(0) translateX(-50%);
+        }
+    }
+
+    @keyframes wiggle {
+        0% {
+            transform: rotate(0.5deg);
+        }
+        33% {
+            transform: rotate(-0.5deg);
+        }
+        66% {
+            transform: rotate(0.5deg);
+        }
+        100% {
+            transform: rotate(-0.5deg);
+        }
+    }
+
+    @keyframes shine {
+        0% {
+            background-position: 0% 0%;
+        }
+        50% {
+            background-position: 100% 100%;
+        }
+        100% {
+            background-position: 0% 0%;
+        }
+    }
+
+    /* Color tokens */
+    --color-amber-default: oklch(0.72 0.11 178);
+    --color-amber-100: oklch(0.95 0.05 178);
+    --color-amber-200: oklch(0.85 0.08 178);
+    --color-amber-300: oklch(0.8 0.09 178);
+    --color-amber-400: oklch(0.72 0.11 178);
+    --color-amber-500: oklch(0.65 0.12 178);
+    --color-amber-600: oklch(0.55 0.13 178);
+    --color-amber-700: oklch(0.45 0.14 178);
+    --color-amber-800: oklch(0.35 0.15 178);
+    --color-amber-900: oklch(0.25 0.16 178);
+    --color-amber-950: oklch(0.15 0.17 178);
+
+    --color-black-default: oklch(0 0 0);
+    --color-black-30: oklch(0 0 0 / 0.3);
+    --color-black-60: oklch(0 0 0 / 0.6);
+    --color-black-85: oklch(0 0 0 / 0.85);
+
+    --color-purple-default: oklch(0.75 0.2 300);
+    --color-purple-100: oklch(0.95 0.05 300);
+    --color-purple-200: oklch(0.85 0.1 300);
+    --color-purple-300: oklch(0.8 0.15 300);
+    --color-purple-400: oklch(0.75 0.2 300);
+    --color-purple-500: oklch(0.65 0.25 300);
+    --color-purple-600: oklch(0.55 0.3 300);
+    --color-purple-700: oklch(0.45 0.35 300);
+    --color-purple-800: oklch(0.35 0.4 300);
+    --color-purple-900: oklch(0.25 0.45 300);
+    --color-purple-950: oklch(0.15 0.5 300);
+
+    /* Font size tokens */
+    --font-size-title1: 2.25rem;
+    --font-leading-title1: auto;
+    --font-weight-title1: var(--font-weight-normal);
+
+    --font-size-title2: 1.5rem;
+    --font-leading-title2: normal;
+    --font-weight-title2: var(--font-weight-normal);
+
+    --font-size-title3: 1.25rem;
+    --font-leading-title3: normal;
+    --font-weight-title3: var(--font-weight-normal);
+
+    --font-size-large-plus: 1rem;
+    --font-leading-large-plus: 1.4rem;
+    --font-weight-large-plus: var(--font-weight-medium);
+    --font-tracking-large-plus: 0.02rem;
+
+    --font-size-large: 1rem;
+    --font-leading-large: 1.4rem;
+    --font-weight-large: var(--font-weight-normal);
+    --font-tracking-large: 0.02rem;
+
+    --font-size-regular-plus: 0.9375rem;
+    --font-leading-regular-plus: 1.4rem;
+    --font-weight-regular-plus: var(--font-weight-medium);
+    --font-tracking-regular-plus: 0.02rem;
+
+    --font-size-regular: 0.9375rem;
+    --font-leading-regular: 1.4rem;
+    --font-weight-regular: var(--font-weight-light);
+    --font-tracking-regular: 0.02rem;
+
+    --font-size-small-plus: 0.8125rem;
+    --font-leading-small-plus: 1.3rem;
+    --font-weight-small-plus: var(--font-weight-medium);
+    --font-tracking-small-plus: 0rem;
+
+    --font-size-small: 0.8125rem;
+    --font-leading-small: 1.3rem;
+    --font-weight-small: var(--font-weight-light);
+    --font-tracking-small: 0rem;
+
+    --font-size-mini-plus: 0.75rem;
+    --font-leading-mini-plus: normal;
+    --font-weight-mini-plus: var(--font-weight-medium);
+    --font-tracking-mini-plus: 0.01rem;
+
+    --font-size-mini: 0.75rem;
+    --font-leading-mini: normal;
+    --font-weight-mini: var(--font-weight-normal);
+    --font-tracking-mini: 0.01rem;
+
+    --font-size-micro-plus: 0.6875rem;
+    --font-leading-micro-plus: normal;
+    --font-weight-micro-plus: var(--font-weight-medium);
+    --font-tracking-micro-plus: 0.005rem;
+
+    --font-size-micro: 0.6875rem;
+    --font-leading-micro: normal;
+    --font-weight-micro: var(--font-weight-normal);
+    --font-tracking-micro: 0.005rem;
+
+    /* Font weights */
+    --font-weight-thin: 100;
+    --font-weight-extralight: 200;
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    --font-weight-black: 900;
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
 @layer base {
-    :root {
-        --np-primary-card-background: #dbeafe; /* blue-100*/
-        --np-primary-card-background-hover: #bfdbfe; /* blue-200*/
-        --np-primary-card-border: #93c5fd; /* blue-300*/
-        --np-primary-card-border-hover: #60a5fa; /* blue-400 */
-        --np-primary-card-text: #1e3a8a; /* blue-900*/
-        --np-primary-card-subtext: #1d4ed8; /* blue-700*/
-        --np-primary-icon-background: #3b82f6; /* blue-500*/
-        --np-primary-icon-shape: #dbeafe; /* blue-100*/
-
-        --np-secondary-card-background: #ccfbf1; /* teal-100*/
-        --np-secondary-card-background-hover: #99f6e4; /* teal-200*/
-        --np-secondary-card-border: #5eead4; /* teal-300*/
-        --np-secondary-card-border-hover: #2dd4bf; /* teal-400 */
-        --np-secondary-card-text: #134e4a; /* teal-900*/
-        --np-secondary-card-subtext: #0f766e; /* teal-700*/
-        --np-secondary-icon-background: #14b8a6; /* teal-500*/
-        --np-secondary-icon-shape: #ccfbf1; /* teal 100*/
-
-        --background: 0 0% 100%; /* white */
-        --background-onlook: 0 0% 90%; /* light gray */
-        --background-brand: 171 100% 67%; /* lighter teal */
-        --background-brand-secondary: 171 100% 77%; /* even lighter teal */
-        --background-primary: 0 0% 100%; /* white */
-        --background-secondary: 0 0% 95%; /* very light gray */
-        --background-positive: 147 100% 44%; /* green */
-        --background-tertiary: 0 0% 90%; /* light gray */
-        --background-toolbar-base: 0 0% 100%; /* white */
-        --background-hover: 0 0% 95%; /* very light gray */
-        --background-active: 0 0% 90%; /* light gray */
-        --background-disabled: 0 0% 95%; /* very light gray */
-
-        --foreground: 0 0% 10%; /* black */
-        --foreground-onlook: 0 0% 20%; /* dark gray */
-        --foreground-brand: 344 100% 66%; /* red */
-        --foreground-primary: 0 0% 10%; /* black */
-        --foreground-secondary: 0 0% 20%; /* dark gray */
-        --foreground-tertiary: 0 0% 33%; /* medium gray */
-        --foreground-quadranary: 0 0% 47%; /* gray */
-        --foreground-positive: 147 100% 18%; /* dark green */
-        --foreground-hover: 0 0% 12%; /* very dark gray */
-        --foreground-active: 0 0% 10%; /* black */
-        --foreground-disabled: 0 0% 90%; /* light gray */
-
-        --primary: 0 0% 10%; /* black */
-        --primary-foreground: 0 0% 100%; /* white */
-
-        --secondary: 0 0% 95%; /* very light gray */
-        --secondary-foreground: 0 0% 10%; /* black */
-
-        --destructive: 344 100% 66%; /* red */
-        --destructive-foreground: 0 0% 100%; /* white */
-
-        --card: 0 0% 100%; /* white */
-        --card-foreground: 0 0% 10%; /* black */
-
-        --popover: 0 0% 100%; /* white */
-        --popover-foreground: 0 0% 10%; /* black */
-
-        --icon: 0 0% 33%; /* medium gray */
-        --icon-hover: 0 0% 10%; /* black */
-        --icon-active: 0 0% 10%; /* black */
-        --icon-disabled: 0 0% 20%; /* dark gray */
-
-        --border: 0 0% 90%; /* light gray */
-        --border-active: 0 0% 67%; /* medium gray */
-        --border-hover: 0 0% 57%; /* gray */
-
-        --muted: 0 0% 95%; /* very light gray */
-        --muted-foreground: 0 0% 20%; /* dark gray */
-
-        --accent: 0 0% 95%; /* very light gray */
-        --accent-foreground: 0 0% 10%; /* black */
-
-        --input: 0 0% 95%; /* very light gray */
-        --ring: 0 0% 90%; /* light gray */
-
-        --radius: 0.5rem; /* shadcn */
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
     }
+}
 
-    .dark {
-        --np-primary-card-background: #172554; /* blue-950 */
-        --np-primary-card-background-hover: #1e3a8a; /* blue-900*/
-        --np-primary-card-border: #1e40af; /* blue-800*/
-        --np-primary-card-border-hover: #2563eb; /* blue-600; */
-        --np-primary-card-text: #dbeafe; /* blue-100*/
-        --np-primary-card-subtext: #93c5fd; /* blue-300*/
-        --np-primary-icon-background: #3b82f6; /* blue-500*/
-        --np-primary-icon-shape: #dbeafe; /* blue 100*/
+:root {
+    --np-primary-card-background: #dbeafe; /* blue-100*/
+    --np-primary-card-background-hover: #bfdbfe; /* blue-200*/
+    --np-primary-card-border: #93c5fd; /* blue-300*/
+    --np-primary-card-border-hover: #60a5fa; /* blue-400 */
+    --np-primary-card-text: #1e3a8a; /* blue-900*/
+    --np-primary-card-subtext: #1d4ed8; /* blue-700*/
+    --np-primary-icon-background: #3b82f6; /* blue-500*/
+    --np-primary-icon-shape: #dbeafe; /* blue-100*/
 
-        --np-secondary-card-background: #042f2e; /* teal-950 */
-        --np-secondary-card-background-hover: #155e75; /* teal-800*/
-        --np-secondary-card-border: #155e75; /* teal-800*/
-        --np-secondary-card-border-hover: #0891b2; /* teal-600; */
-        --np-secondary-card-text: #ccfbf1; /* teal-100*/
-        --np-secondary-card-subtext: #5eead4; /* teal-300*/
-        --np-secondary-icon-background: #14b8a6; /* teal-500*/
-        --np-secondary-icon-shape: #ccfbf1; /* teal 100*/
+    --np-secondary-card-background: #ccfbf1; /* teal-100*/
+    --np-secondary-card-background-hover: #99f6e4; /* teal-200*/
+    --np-secondary-card-border: #5eead4; /* teal-300*/
+    --np-secondary-card-border-hover: #2dd4bf; /* teal-400 */
+    --np-secondary-card-text: #134e4a; /* teal-900*/
+    --np-secondary-card-subtext: #0f766e; /* teal-700*/
+    --np-secondary-icon-background: #14b8a6; /* teal-500*/
+    --np-secondary-icon-shape: #ccfbf1; /* teal 100*/
 
-        --background: 20 14.3% 4.1%; /* shadcn */
-        --background-onlook: 0 0% 10%; /* gray[900] */
-        --background-brand: 171 100% 17%; /* teal[700] */
-        --background-brand-secondary: 171 100% 27%; /* teal[500] */
-        --background-primary: 0 0% 10%; /* gray[900] */
-        --background-secondary: 0 0% 12%; /* gray[800] */
-        --background-positive: 0 0% 12%; /* green[800] */
-        --background-tertiary: 0 0% 20%; /* gray[700] */
-        --background-toolbar-base: 0 0% 0% 0.85; /* black[85] */
-        --background-hover: 0 0% 12%; /* gray[800] */
-        --background-active: 0 0% 20%; /* gray[700] */
-        --background-disabled: 0 0% 10%; /* gray[900] */
+    --background: 0 0% 100%; /* white */
+    --background-onlook: 0 0% 90%; /* light gray */
+    --background-brand: 171 100% 67%; /* lighter teal */
+    --background-brand-secondary: 171 100% 77%; /* even lighter teal */
+    --background-primary: 0 0% 100%; /* white */
+    --background-secondary: 0 0% 95%; /* very light gray */
+    --background-positive: 147 100% 44%; /* green */
+    --background-tertiary: 0 0% 90%; /* light gray */
+    --background-toolbar-base: 0 0% 100%; /* white */
+    --background-hover: 0 0% 95%; /* very light gray */
+    --background-active: 0 0% 90%; /* light gray */
+    --background-disabled: 0 0% 95%; /* very light gray */
 
-        --foreground: 60 9.1% 97.8%; /* shadcn */
-        --foreground-onlook: 0 0% 67%; /* gray[200] */
-        --foreground-brand: 344 100% 66%; /* red[DEFAULT] */
-        --foreground-primary: 0 0% 100%; /* gray[50] */
-        --foreground-secondary: 0 0% 67%; /* gray[200] */
-        --foreground-tertiary: 0 0% 57%; /* gray[300] */
-        --foreground-quadranary: 0 0% 38%; /* gray[500] */
-        --foreground-positive: 147 100% 44%; /* green[200] */
-        --foreground-hover: 0 0% 78%; /* gray[100] */
-        --foreground-active: 0 0% 100%; /* gray[50] */
-        --foreground-disabled: 0 0% 10%; /* gray[900] */
+    --foreground: 0 0% 10%; /* black */
+    --foreground-onlook: 0 0% 20%; /* dark gray */
+    --foreground-brand: 344 100% 66%; /* red */
+    --foreground-primary: 0 0% 10%; /* black */
+    --foreground-secondary: 0 0% 20%; /* dark gray */
+    --foreground-tertiary: 0 0% 33%; /* medium gray */
+    --foreground-quadranary: 0 0% 47%; /* gray */
+    --foreground-positive: 147 100% 18%; /* dark green */
+    --foreground-hover: 0 0% 12%; /* very dark gray */
+    --foreground-active: 0 0% 10%; /* black */
+    --foreground-disabled: 0 0% 90%; /* light gray */
 
-        --primary: 60 9.1% 97.8%; /* shadcn */
-        --primary-foreground: 24 9.8% 10%; /* shadcn */
+    --primary: 0 0% 10%; /* black */
+    --primary-foreground: 0 0% 100%; /* white */
 
-        --secondary: 12 6.5% 15.1%; /* shadcn */
-        --secondary-foreground: 60 9.1% 97.8%; /* shadcn */
+    --secondary: 0 0% 95%; /* very light gray */
+    --secondary-foreground: 0 0% 10%; /* black */
 
-        --destructive: 345.35 100% 16.86%; /* red[900] */
-        --destructive-foreground: 344.21 100% 96.27%; /* red[100] */
+    --destructive: 344 100% 66%; /* red */
+    --destructive-foreground: 0 0% 100%; /* white */
 
-        --card: 20 14.3% 4.1%; /* shadcn */
-        --card-foreground: 60 9.1% 97.8%; /* shadcn */
+    --card: 0 0% 100%; /* white */
+    --card-foreground: 0 0% 10%; /* black */
 
-        --popover: 20 14.3% 4.1%; /* shadcn */
-        --popover-foreground: 60 9.1% 97.8%; /* shadcn */
+    --popover: 0 0% 100%; /* white */
+    --popover-foreground: 0 0% 10%; /* black */
 
-        --icon: 0 0% 57%; /* gray[300] */
-        --icon-hover: 0 0% 100%; /* gray[50] */
-        --icon-active: 0 0% 100%; /* gray[50] */
-        --icon-disabled: 0 0% 67%; /* gray[200] */
+    --icon: 0 0% 33%; /* medium gray */
+    --icon-hover: 0 0% 10%; /* black */
+    --icon-active: 0 0% 10%; /* black */
+    --icon-disabled: 0 0% 20%; /* dark gray */
 
-        --border: 0 0% 12%; /* gray[800] */
-        --border-active: 0 0% 47%; /* gray[400] */
-        --border-hover: 0 0% 38%; /* gray[500] */
+    --border: 0 0% 90%; /* light gray */
+    --border-active: 0 0% 67%; /* medium gray */
+    --border-hover: 0 0% 57%; /* gray */
 
-        --muted: 12 6.5% 15.1%; /* shadcn */
-        --muted-foreground: 24 5.4% 63.9%; /* shadcn */
+    --muted: 0 0% 95%; /* very light gray */
+    --muted-foreground: 0 0% 20%; /* dark gray */
 
-        --accent: 12 6.5% 15.1%; /* shadcn */
-        --accent-foreground: 60 9.1% 97.8%; /* shadcn */
+    --accent: 0 0% 95%; /* very light gray */
+    --accent-foreground: 0 0% 10%; /* black */
 
-        --input: 12 6.5% 15.1%; /* shadcn */
-        --ring: 24 5.7% 82.9%; /* shadcn */
-    }
+    --input: 0 0% 95%; /* very light gray */
+    --ring: 0 0% 90%; /* light gray */
+
+    --radius: 0.5rem; /* shadcn */
+
+    /* Color Tokens */
+    --color-amber-default: oklch(0.72 0.11 178);
+    --color-amber-100: oklch(0.95 0.05 178);
+    --color-amber-200: oklch(0.85 0.08 178);
+    --color-amber-300: oklch(0.8 0.09 178);
+    --color-amber-400: oklch(0.72 0.11 178);
+    --color-amber-500: oklch(0.65 0.12 178);
+    --color-amber-600: oklch(0.55 0.13 178);
+    --color-amber-700: oklch(0.45 0.14 178);
+    --color-amber-800: oklch(0.35 0.15 178);
+    --color-amber-900: oklch(0.25 0.16 178);
+    --color-amber-950: oklch(0.15 0.17 178);
+
+    --color-black-default: oklch(0 0 0);
+    --color-black-30: oklch(0 0 0 / 0.3);
+    --color-black-60: oklch(0 0 0 / 0.6);
+    --color-black-85: oklch(0 0 0 / 0.85);
+
+    --color-purple-default: oklch(0.75 0.2 300);
+    --color-purple-100: oklch(0.95 0.05 300);
+    --color-purple-200: oklch(0.85 0.1 300);
+    --color-purple-300: oklch(0.8 0.15 300);
+    --color-purple-400: oklch(0.75 0.2 300);
+    --color-purple-500: oklch(0.65 0.25 300);
+    --color-purple-600: oklch(0.55 0.3 300);
+    --color-purple-700: oklch(0.45 0.35 300);
+    --color-purple-800: oklch(0.35 0.4 300);
+    --color-purple-900: oklch(0.25 0.45 300);
+    --color-purple-950: oklch(0.15 0.5 300);
+
+    --color-red-default: 344 100% 68%; /* #FF5B82 */
+    --color-red-100: 344 100% 96%; /* #FFECF1 */
+    --color-red-200: 344 100% 85%; /* #FFB3C6 */
+    --color-red-300: 344 100% 77%; /* #FF8BA7 */
+    --color-red-400: 344 100% 68%; /* #FF5B82 */
+    --color-red-500: 344 100% 49%; /* #FA003C */
+    --color-red-600: 344 100% 40%; /* #CE0032 */
+    --color-red-700: 344 100% 32%; /* #A40028 */
+    --color-red-800: 344 100% 24%; /* #7C001E */
+    --color-red-900: 344 100% 17%; /* #560015 */
+    --color-red-950: 344 100% 12%; /* #3E000F */
+
+    --color-blue-default: 206 100% 78%; /* #90D1FF */
+    --color-blue-100: 206 100% 94%; /* #E3F3FF */
+    --color-blue-200: 206 100% 78%; /* #90D1FF */
+    --color-blue-300: 206 100% 66%; /* #53B8FF */
+    --color-blue-400: 206 100% 53%; /* #109BFF */
+    --color-blue-500: 206 100% 44%; /* #0081DE */
+    --color-blue-600: 206 100% 35%; /* #006AB5 */
+    --color-blue-700: 206 100% 28%; /* #00538F */
+    --color-blue-800: 206 100% 20%; /* #003E69 */
+    --color-blue-900: 206 100% 14%; /* #002A48 */
+    --color-blue-950: 206 100% 9%; /* #001B2E */
+
+    --color-gray-default: 0 0% 29%; /* #494949 */
+    --color-gray-50: 0 0% 100%; /* #ffffff */
+    --color-gray-100: 0 0% 78%; /* #c7c7c7 */
+    --color-gray-200: 0 0% 67%; /* #acacac */
+    --color-gray-300: 0 0% 57%; /* #929292 */
+    --color-gray-400: 0 0% 47%; /* #787878 */
+    --color-gray-500: 0 0% 38%; /* #606060 */
+    --color-gray-600: 0 0% 29%; /* #494949 */
+    --color-gray-700: 0 0% 20%; /* #333333 */
+    --color-gray-800: 0 0% 12%; /* #1f1f1f */
+    --color-gray-900: 0 0% 10%; /* #1a1a1a */
+
+    --color-green-default: 147 100% 17%; /* #00591e */
+    --color-green-100: 147 100% 93%; /* #d8ffe5 */
+    --color-green-200: 147 100% 44%; /* #00e14b */
+    --color-green-300: 147 100% 38%; /* #00c441 */
+    --color-green-400: 147 100% 33%; /* #00a838 */
+    --color-green-500: 147 100% 27%; /* #008c2f */
+    --color-green-600: 147 100% 22%; /* #007226 */
+    --color-green-700: 147 100% 17%; /* #00591e */
+    --color-green-800: 147 100% 13%; /* #004116 */
+    --color-green-900: 147 100% 8%; /* #002a0e */
+    --color-green-950: 147 100% 7%; /* #00240c */
+
+    --color-teal-default: 171 100% 44%; /* #00deba */
+    --color-teal-100: 171 100% 90%; /* #cbfff6 */
+    --color-teal-200: 171 100% 44%; /* #00deba */
+    --color-teal-300: 171 100% 38%; /* #00c1a2 */
+    --color-teal-400: 171 100% 32%; /* #00a68b */
+    --color-teal-500: 171 100% 27%; /* #008b74 */
+    --color-teal-600: 171 100% 22%; /* #00715e */
+    --color-teal-700: 171 100% 17%; /* #005849 */
+    --color-teal-800: 171 100% 13%; /* #004036 */
+    --color-teal-900: 171 100% 8%; /* #002a23 */
+    --color-teal-950: 171 100% 6%; /* #00211c */
+
+    --color-yellow-default: 47 100% 20%; /* #644e00 */
+    --color-yellow-100: 48 100% 87%; /* #fff0bc */
+    --color-yellow-200: 46 100% 48%; /* #f6c100 */
+    --color-yellow-300: 46 100% 42%; /* #d7a800 */
+    --color-yellow-400: 47 100% 36%; /* #b99000 */
+    --color-yellow-500: 47 100% 30%; /* #9b7900 */
+    --color-yellow-600: 47 100% 25%; /* #7f6300 */
+    --color-yellow-700: 47 100% 20%; /* #644e00 */
+    --color-yellow-800: 47 100% 14%; /* #493900 */
+    --color-yellow-900: 47 100% 9%; /* #312600 */
+    --color-yellow-950: 47 100% 6%; /* #211a00 */
+
+    /* Font Size Tokens */
+    --font-size-title1: 2.25rem;
+    --font-leading-title1: auto;
+    --font-weight-title1: var(--font-weight-normal);
+
+    --font-size-title2: 1.5rem;
+    --font-leading-title2: normal;
+    --font-weight-title2: var(--font-weight-normal);
+
+    --font-size-title3: 1.25rem;
+    --font-leading-title3: normal;
+    --font-weight-title3: var(--font-weight-normal);
+
+    --font-size-large-plus: 1rem;
+    --font-leading-large-plus: 1.4rem;
+    --font-weight-large-plus: var(--font-weight-medium);
+    --font-tracking-large-plus: 0.02rem;
+
+    --font-size-large: 1rem;
+    --font-leading-large: 1.4rem;
+    --font-weight-large: var(--font-weight-normal);
+    --font-tracking-large: 0.02rem;
+
+    --font-size-regular-plus: 0.9375rem;
+    --font-leading-regular-plus: 1.4rem;
+    --font-weight-regular-plus: var(--font-weight-medium);
+    --font-tracking-regular-plus: 0.02rem;
+
+    --font-size-regular: 0.9375rem;
+    --font-leading-regular: 1.4rem;
+    --font-weight-regular: var(--font-weight-light);
+    --font-tracking-regular: 0.02rem;
+
+    --font-size-small-plus: 0.8125rem;
+    --font-leading-small-plus: 1.3rem;
+    --font-weight-small-plus: var(--font-weight-medium);
+    --font-tracking-small-plus: 0rem;
+
+    --font-size-small: 0.8125rem;
+    --font-leading-small: 1.3rem;
+    --font-weight-small: var(--font-weight-light);
+    --font-tracking-small: 0rem;
+
+    --font-size-mini-plus: 0.75rem;
+    --font-leading-mini-plus: normal;
+    --font-weight-mini-plus: var(--font-weight-medium);
+    --font-tracking-mini-plus: 0.01rem;
+
+    --font-size-mini: 0.75rem;
+    --font-leading-mini: normal;
+    --font-weight-mini: var(--font-weight-normal);
+    --font-tracking-mini: 0.01rem;
+
+    --font-size-micro-plus: 0.6875rem;
+    --font-leading-micro-plus: normal;
+    --font-weight-micro-plus: var(--font-weight-medium);
+    --font-tracking-micro-plus: 0.005rem;
+
+    --font-size-micro: 0.6875rem;
+    --font-leading-micro: normal;
+    --font-weight-micro: var(--font-weight-normal);
+    --font-tracking-micro: 0.005rem;
+    --sidebar: hsl(0 0% 98%);
+    --sidebar-foreground: hsl(240 5.3% 26.1%);
+    --sidebar-primary: hsl(240 5.9% 10%);
+    --sidebar-primary-foreground: hsl(0 0% 98%);
+    --sidebar-accent: hsl(240 4.8% 95.9%);
+    --sidebar-accent-foreground: hsl(240 5.9% 10%);
+    --sidebar-border: hsl(220 13% 91%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+.dark {
+    --np-primary-card-background: #172554; /* blue-950 */
+    --np-primary-card-background-hover: #1e3a8a; /* blue-900*/
+    --np-primary-card-border: #1e40af; /* blue-800*/
+    --np-primary-card-border-hover: #2563eb; /* blue-600; */
+    --np-primary-card-text: #dbeafe; /* blue-100*/
+    --np-primary-card-subtext: #93c5fd; /* blue-300*/
+    --np-primary-icon-background: #3b82f6; /* blue-500*/
+    --np-primary-icon-shape: #dbeafe; /* blue 100*/
+
+    --np-secondary-card-background: #042f2e; /* teal-950 */
+    --np-secondary-card-background-hover: #155e75; /* teal-800*/
+    --np-secondary-card-border: #155e75; /* teal-800*/
+    --np-secondary-card-border-hover: #0891b2; /* teal-600; */
+    --np-secondary-card-text: #ccfbf1; /* teal-100*/
+    --np-secondary-card-subtext: #5eead4; /* teal-300*/
+    --np-secondary-icon-background: #14b8a6; /* teal-500*/
+    --np-secondary-icon-shape: #ccfbf1; /* teal 100*/
+
+    --background: 20 14.3% 4.1%; /* shadcn */
+    --background-onlook: 0 0% 10%; /* gray[900] */
+    --background-brand: 171 100% 17%; /* teal[700] */
+    --background-brand-secondary: 171 100% 27%; /* teal[500] */
+    --background-primary: 0 0% 10%; /* gray[900] */
+    --background-secondary: 0 0% 12%; /* gray[800] */
+    --background-positive: 0 0% 12%; /* green[800] */
+    --background-tertiary: 0 0% 20%; /* gray[700] */
+    --background-toolbar-base: 0 0% 0% 0.85; /* black[85] */
+    --background-hover: 0 0% 12%; /* gray[800] */
+    --background-active: 0 0% 20%; /* gray[700] */
+    --background-disabled: 0 0% 10%; /* gray[900] */
+
+    --foreground: 60 9.1% 97.8%; /* shadcn */
+    --foreground-onlook: 0 0% 67%; /* gray[200] */
+    --foreground-brand: 344 100% 66%; /* red[DEFAULT] */
+    --foreground-primary: 0 0% 100%; /* gray[50] */
+    --foreground-secondary: 0 0% 67%; /* gray[200] */
+    --foreground-tertiary: 0 0% 57%; /* gray[300] */
+    --foreground-quadranary: 0 0% 38%; /* gray[500] */
+    --foreground-positive: 147 100% 44%; /* green[200] */
+    --foreground-hover: 0 0% 78%; /* gray[100] */
+    --foreground-active: 0 0% 100%; /* gray[50] */
+    --foreground-disabled: 0 0% 10%; /* gray[900] */
+
+    --primary: 60 9.1% 97.8%; /* shadcn */
+    --primary-foreground: 24 9.8% 10%; /* shadcn */
+
+    --secondary: 12 6.5% 15.1%; /* shadcn */
+    --secondary-foreground: 60 9.1% 97.8%; /* shadcn */
+
+    --destructive: 345.35 100% 16.86%; /* red[900] */
+    --destructive-foreground: 344.21 100% 96.27%; /* red[100] */
+
+    --card: 20 14.3% 4.1%; /* shadcn */
+    --card-foreground: 60 9.1% 97.8%; /* shadcn */
+
+    --popover: 20 14.3% 4.1%; /* shadcn */
+    --popover-foreground: 60 9.1% 97.8%; /* shadcn */
+
+    --icon: 0 0% 57%; /* gray[300] */
+    --icon-hover: 0 0% 100%; /* gray[50] */
+    --icon-active: 0 0% 100%; /* gray[50] */
+    --icon-disabled: 0 0% 67%; /* gray[200] */
+
+    --border: 0 0% 12%; /* gray[800] */
+    --border-active: 0 0% 47%; /* gray[400] */
+    --border-hover: 0 0% 38%; /* gray[500] */
+
+    --muted: 12 6.5% 15.1%; /* shadcn */
+    --muted-foreground: 24 5.4% 63.9%; /* shadcn */
+
+    --accent: 12 6.5% 15.1%; /* shadcn */
+    --accent-foreground: 60 9.1% 97.8%; /* shadcn */
+
+    --input: 12 6.5% 15.1%; /* shadcn */
+    --ring: 24 5.7% 82.9%; /* shadcn */
+    --sidebar: hsl(240 5.9% 10%);
+    --sidebar-foreground: hsl(240 4.8% 95.9%);
+    --sidebar-primary: hsl(224.3 76.3% 48%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(240 3.7% 15.9%);
+    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+    --sidebar-border: hsl(240 3.7% 15.9%);
+    --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 @layer base {
@@ -171,5 +565,25 @@
     }
     ::-webkit-scrollbar {
         @apply hidden;
+    }
+}
+
+@theme inline {
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
     }
 }

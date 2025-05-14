@@ -1,8 +1,7 @@
-"use client";
+'use client';
 
-import { cn } from "@onlook/ui/utils";
-import { Icons } from "@onlook/ui-v4/icons";
-import type { ReactNode } from "react";
+import { cn } from '@onlook/ui/utils';
+import type { ReactNode } from 'react';
 
 type IconOption = {
     value: string;
@@ -27,25 +26,25 @@ export const InputRadio = ({ options, value, onChange, className }: InputRadioPr
     };
 
     return (
-        <div className={cn("flex flex-1", className)}>
+        <div className={cn('flex flex-1', className)}>
             {options.map((option, index) => (
                 <button
                     key={option.value}
                     className={cn(
-                        "px-1 h-9 text-sm flex-1 cursor-pointer",
-                        value === option.value 
-                            ? "bg-background-tertiary text-white" 
-                            : "bg-background-tertiary/50 text-muted-foreground",
+                        "px-1 h-9 text-sm flex-1 cursor-pointer transition-colors",
+                        value === option.value
+                            ? "bg-background-tertiary text-white"
+                            : "bg-background-tertiary/50 text-muted-foreground hover:bg-background-tertiary/70 hover:text-white",
                         index === 0 && "rounded-l-md",
                         index === options.length - 1 && "rounded-r-md"
                     )}
                     onClick={() => onChange(option.value)}
                 >
                     {isIconOption(option) ? (
-                        <div className="mx-auto w-fit">
-                            {option.icon}
-                        </div>
-                    ) : option.label}
+                        <div className="mx-auto w-fit">{option.icon}</div>
+                    ) : (
+                        option.label
+                    )}
                 </button>
             ))}
         </div>

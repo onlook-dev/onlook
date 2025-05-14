@@ -1,4 +1,4 @@
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings } from '@onlook/constants';
 import type { ChatSettings, EditorSettings, UserSettings } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
 
@@ -7,8 +7,8 @@ export class UserSettingsManager {
     defaultProjectPath: string | null = null;
 
     constructor() {
-        makeAutoObservable(this);
         this.restoreSettings();
+        makeAutoObservable(this);
     }
 
     async restoreSettings() {

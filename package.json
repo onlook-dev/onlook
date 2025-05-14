@@ -16,27 +16,19 @@
         "apps/web/*"
     ],
     "scripts": {
-        "build:foundation": "bun --filter @onlook/foundation build",
-        "build:cli": "bun build:foundation && bun --filter onlook typecheck && bun --filter onlook build",
-        "build:studio": "bun build:foundation && bun --filter @onlook/studio build",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
         "db:gen": "bun --filter @onlook/supabase db:gen",
         "db:gen:local": "bun --filter @onlook/backend db:gen",
-        "dev:foundation": "bun --filter @onlook/foundation dev",
-        "dev:studio": "bun --filter @onlook/studio dev",
-        "build": "bun --filter '!@onlook/web*' build",
-        "ci:build": "bun run build:foundation && bun --filter '!@onlook/web*' build",
-        "dev": "bun --elide-lines=0  --filter '!@onlook/web*' dev",
-        "dev:web": "bun --filter @onlook/web dev",
+        "build": "bun --filter '*' build",
+        "dev": "bun --filter @onlook/web dev",
         "test": "bun --filter '*' test",
         "format": "bun --filter '*' format",
-        "lint": "bun --filter @onlook/studio lint",
+        "lint": "bun --filter @onlook/web-client lint",
         "typecheck": "bun --filter '*' typecheck",
         "increment_tag": "./scripts/increment_tag.sh",
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh",
-        "download_bun": "bun run ./scripts/download_bun.ts",
         "prepare": "husky"
     },
     "repository": {
@@ -49,5 +41,7 @@
     "devDependencies": {
         "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
-    }
+    },
+    "dependencies": {},
+    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

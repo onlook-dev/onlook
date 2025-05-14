@@ -33,9 +33,9 @@ export function parseHslValue(value: string): Color | null {
         if (hslMatch) {
             // Parse hue with unit support
             const hueValue = hslMatch[1];
-            h = parseHueValue(hueValue);
-            s = parseFloat(hslMatch[2]);
-            l = parseFloat(hslMatch[3]);
+            h = parseHueValue(hueValue ?? '0');
+            s = parseFloat(hslMatch[2] ?? '0');
+            l = parseFloat(hslMatch[3] ?? '0');
 
             if (hslMatch[4]) {
                 a = hslMatch[4].endsWith('%')
@@ -49,12 +49,14 @@ export function parseHslValue(value: string): Color | null {
         // Parse space-separated format
         const parts = value.split(/\s+/);
         if (parts.length >= 3) {
-            h = parseFloat(parts[0]);
-            s = parseFloat(parts[1].replace('%', ''));
-            l = parseFloat(parts[2].replace('%', ''));
+            h = parseFloat(parts[0] ?? '0');
+            s = parseFloat(parts[1]?.replace('%', '') ?? '0');
+            l = parseFloat(parts[2]?.replace('%', '') ?? '0');
 
             if (parts.length >= 4) {
-                a = parts[3].endsWith('%') ? parseFloat(parts[3]) / 100 : parseFloat(parts[3]);
+                a = parts[3]?.endsWith('%')
+                    ? parseFloat(parts[3]) / 100
+                    : parseFloat(parts[3] ?? '0');
             }
         } else {
             return null;
@@ -128,16 +130,16 @@ export class Color {
         if (color) {
             if (color.type === 'rgb') {
                 return Color.rgb({
-                    r: color.values[0] / 255,
-                    g: color.values[1] / 255,
-                    b: color.values[2] / 255,
+                    r: (color.values[0] ?? 0) / 255,
+                    g: (color.values[1] ?? 0) / 255,
+                    b: (color.values[2] ?? 0) / 255,
                     a: color.alpha,
                 });
             } else if (color.type === 'hsl') {
                 return Color.hsl({
-                    h: color.values[0] / 360,
-                    s: color.values[1] / 100,
-                    l: color.values[2] / 100,
+                    h: (color.values[0] ?? 0) / 360,
+                    s: (color.values[1] ?? 0) / 100,
+                    l: (color.values[2] ?? 0) / 100,
                     a: color.alpha,
                 });
             }
@@ -213,11 +215,11 @@ export class Color {
         };
 
         [50, 100, 200, 300, 400].forEach((level) => {
-            palette.colors[level] = this.lighten(intensityMap[level]).toString();
+            palette.colors[level] = this.lighten(intensityMap[level] ?? 0).toString();
         });
 
         [600, 700, 800, 900, 950].forEach((level) => {
-            palette.colors[level] = this.darken(intensityMap[level]).toString();
+            palette.colors[level] = this.darken(intensityMap[level] ?? 0).toString();
         });
 
         return palette;
@@ -284,7 +286,7 @@ export class Color {
     get name(): string {
         return this._name
             ? this._name
-            : colorNamer(this.toHex6()).ntc[0].name.toLowerCase().replace(' ', '-');
+            : (colorNamer(this.toHex6()).ntc[0]?.name?.toLowerCase().replace(' ', '-') ?? '');
     }
 
     set name(newName: string) {

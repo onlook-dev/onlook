@@ -1,7 +1,5 @@
-import generate from '@babel/generator';
-import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
-import * as t from '@babel/types';
+import { types as t } from '@onlook/parser';
+import { generate, parse, traverse } from '@onlook/parser';
 import * as fs from 'fs';
 import * as path from 'path';
 import { builtWithScript } from './script';

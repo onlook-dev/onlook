@@ -1,14 +1,14 @@
-import { EditorAttributes } from '@onlook/models/constants';
-import type { LayerNode } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/constants';
+import type { LayerNode } from '@onlook/models';
 import debounce from 'lodash/debounce';
 import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
 import { getFrameId } from './state';
 
-const processDebounced = debounce((root: HTMLElement) => {
-    const frameId = getFrameId();
+const processDebounced = debounce(async (root: HTMLElement) => {
+    const frameId = await getFrameId();
     if (!frameId) {
-        console.warn('Webview id not found, skipping dom processing');
+        console.warn('frameView id not found, skipping dom processing');
         return false;
     }
     const layerMap = buildLayerTree(root);
@@ -33,7 +33,7 @@ const processDebounced = debounce((root: HTMLElement) => {
 
 export function processDom(root: HTMLElement = document.body): boolean {
     if (!getFrameId()) {
-        console.warn('Webview id not found, skipping dom processing');
+        console.warn('frameView id not found, skipping dom processing');
         return false;
     }
     processDebounced(root);
@@ -111,6 +111,8 @@ function processNode(node: HTMLElement): LayerNode {
         frameId: getFrameId(),
         children: null,
         parent: null,
+        dynamicType: null,
+        coreElementType: null,
     };
     return layerNode;
 }

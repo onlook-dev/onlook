@@ -5,11 +5,12 @@
     "scripts": {
         "dev": "concurrently \"bun run build:watch\" \"bun run serve\"",
         "serve": "bun --watch server/index.ts",
-        "build": "bun build script/index.ts --outdir dist --target bun",
-        "build:watch": "bun build script/index.ts --outdir dist --target bun --watch"
+        "build": "bun build script/index.ts --outdir=dist --target=browser --minify",
+        "build:watch": "bun run build --watch"
     },
     "devDependencies": {
         "@types/bun": "latest",
+        "@types/css-tree": "^2.3.10",
         "@types/lodash.debounce": "^4.0.9",
         "concurrently": "^9.1.2"
     },
@@ -17,9 +18,13 @@
         "typescript": "^5"
     },
     "dependencies": {
+        "@onlook/constants": "*",
+        "@onlook/models": "*",
+        "@onlook/penpal": "*",
+        "css-tree": "^3.1.0",
         "lodash-es": "^4.17.21",
         "lodash.debounce": "^4.0.8",
         "nanoid": "^5.1.5",
-        "penpal": "^7.0.0"
+        "penpal": "^7.0.4"
     }
 }

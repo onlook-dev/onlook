@@ -1,5 +1,4 @@
 import { IdeType } from '../ide';
-import { type Project } from '../projects';
 
 export interface UserSettings {
     id?: string;
@@ -22,10 +21,6 @@ export interface ChatSettings {
     autoApplyCode: boolean;
     expandCodeBlocks: boolean;
     showMiniChat: boolean;
-}
-
-export interface ProjectsCache {
-    projects: Project[];
 }
 
 export interface UserMetadata {
