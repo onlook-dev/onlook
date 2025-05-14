@@ -49,43 +49,43 @@ const FontWeightSelector = memo(
         fontWeight: string;
         handleFontWeightChange: (weight: string) => void;
     }) => (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Tooltip>
+                    <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex w-24 cursor-pointer items-center justify-start gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             <span className="text-smallPlus">{convertFontWeight(fontWeight)}</span>
                         </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="center"
-                        className="mt-1 min-w-[120px] rounded-lg p-1"
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="mt-1" hideArrow>
+                        Font Weight
+                    </TooltipContent>
+                </Tooltip>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+                align="center"
+                className="mt-1 min-w-[120px] rounded-lg p-1"
+            >
+                {VARIANTS.map((weight) => (
+                    <DropdownMenuItem
+                        key={weight.value}
+                        onClick={() => handleFontWeightChange(weight.value)}
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontWeight === weight.value
+                                ? "bg-background-tertiary/20 border-border border text-white"
+                                : ""
+                        }`}
                     >
-                        {VARIANTS.map((weight) => (
-                            <DropdownMenuItem
-                                key={weight.value}
-                                onClick={() => handleFontWeightChange(weight.value)}
-                                className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontWeight === weight.value
-                                        ? "bg-background-tertiary/20 border-border border text-white"
-                                        : ""
-                                }`}
-                            >
-                                {weight.name}
-                                {fontWeight === weight.value && (
-                                    <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />
-                                )}
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="mt-1" hideArrow>
-                Font Weight
-            </TooltipContent>
-        </Tooltip>
+                        {weight.name}
+                        {fontWeight === weight.value && (
+                            <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />
+                        )}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
     ),
 );
 
@@ -138,7 +138,7 @@ const FontSizeSelector = memo(
                                     <DropdownMenuItem
                                         key={size}
                                         onClick={() => handleFontSizeChange(size)}
-                                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
+                                        className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
                                                 ? 'bg-background-tertiary/20 border-border border text-white'
                                                 : ''
                                         }`}
@@ -176,10 +176,10 @@ const TextAlignSelector = memo(
         textAlign: TextAlign;
         handleTextAlignChange: (align: TextAlign) => void;
     }) => (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Tooltip>
+                    <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
                             size="icon"
@@ -196,35 +196,35 @@ const TextAlignSelector = memo(
                                 <Icons.TextAlignJustified className="h-4 w-4" />
                             )}
                         </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="center"
-                        className="mt-1 flex min-w-fit gap-1 rounded-lg p-1"
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="mt-1" hideArrow>
+                        Text Align
+                    </TooltipContent>
+                </Tooltip>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+                align="center"
+                className="mt-1 flex min-w-fit gap-1 rounded-lg p-1"
+            >
+                {[
+                    { value: "left" as TextAlign, icon: Icons.TextAlignLeft },
+                    { value: "center" as TextAlign, icon: Icons.TextAlignCenter },
+                    { value: "right" as TextAlign, icon: Icons.TextAlignRight },
+                    { value: "justify" as TextAlign, icon: Icons.TextAlignJustified },
+                ].map(({ value, icon: Icon }) => (
+                    <DropdownMenuItem
+                        key={value}
+                        onClick={() => handleTextAlignChange(value)}
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
+                                ? "bg-background-tertiary/20 border-border border text-white"
+                                : ""
+                        }`}
                     >
-                        {[
-                            { value: "left" as TextAlign, icon: Icons.TextAlignLeft },
-                            { value: "center" as TextAlign, icon: Icons.TextAlignCenter },
-                            { value: "right" as TextAlign, icon: Icons.TextAlignRight },
-                            { value: "justify" as TextAlign, icon: Icons.TextAlignJustified },
-                        ].map(({ value, icon: Icon }) => (
-                            <DropdownMenuItem
-                                key={value}
-                                onClick={() => handleTextAlignChange(value)}
-                                className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
-                                        ? "bg-background-tertiary/20 border-border border text-white"
-                                        : ""
-                                }`}
-                            >
-                                <Icon className="h-4 w-4" />
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="mt-1" hideArrow>
-                Text Align
-            </TooltipContent>
-        </Tooltip>
+                        <Icon className="h-4 w-4" />
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
     ),
 );
 
@@ -258,9 +258,6 @@ export const TextSelected = () => {
                             handleFontWeightChange={handleFontWeightChange}
                         />
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" className="mt-1" hideArrow>
-                        Font Weight
-                    </TooltipContent>
                 </Tooltip>
                 <InputSeparator />
                 <Tooltip>
@@ -279,17 +276,10 @@ export const TextSelected = () => {
                     handleTextColorChange={handleTextColorChange}
                     textColor={textState.textColor}
                 />
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <TextAlignSelector
-                            textAlign={textState.textAlign}
-                            handleTextAlignChange={handleTextAlignChange}
-                        />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="mt-1" hideArrow>
-                        Text Align
-                    </TooltipContent>
-                </Tooltip>
+                <TextAlignSelector
+                    textAlign={textState.textAlign}
+                    handleTextAlignChange={handleTextAlignChange}
+                />
                 <ViewButtons />
             </div>
         </div>

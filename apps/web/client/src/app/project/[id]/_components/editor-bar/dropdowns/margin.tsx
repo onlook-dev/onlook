@@ -24,14 +24,16 @@ export const Margin = () => {
                     <DropdownMenuTrigger asChild>
                         <Button
                             variant="ghost"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-1.5 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            size="toolbar"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center rounded-lg border px-0.5 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             <Icons.Margin className="h-4 min-h-4 w-4 min-w-4" />
-                            <span className="text-sm">
-                                {boxState.margin.unit === 'px'
-                                    ? boxState.margin.num ?? '--'
-                                    : boxState.margin.value}
-                            </span>
+                            {boxState.margin.unit === 'px' && typeof boxState.margin.num === 'number' && boxState.margin.num !== 0 ? (
+                                <span className="text-sm">{boxState.margin.num}</span>
+                            ) : null}
+                            {boxState.margin.unit !== 'px' && boxState.margin.value ? (
+                                <span className="text-sm">{boxState.margin.value}</span>
+                            ) : null}
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
