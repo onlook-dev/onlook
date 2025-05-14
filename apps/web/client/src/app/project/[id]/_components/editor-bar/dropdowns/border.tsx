@@ -53,19 +53,25 @@ export const Border = () => {
                         <Button
                             variant="ghost"
                             size="toolbar"
-                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            className="flex items-center gap-1 text-muted-foreground hover:text-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
-                            {boxState.borderWidth.unit === 'px' && typeof boxState.borderWidth.num === 'number' && boxState.borderWidth.num !== 0 ? (
-                                <span className="text-sm">{boxState.borderWidth.num}</span>
+                            {boxState.borderWidth.unit !== 'px' && typeof boxState.borderWidth.num === 'number' && boxState.borderWidth.num !== 0 ? (
+                                <span className="text-small">{boxState.borderWidth.num}</span>
                             ) : null}
                             {boxState.borderWidth.unit !== 'px' && boxState.borderWidth.value ? (
-                                <span className="text-sm">{boxState.borderWidth.value}</span>
+                                <span className="text-small">{boxState.borderWidth.value}</span>
                             ) : null}
-                            <div
-                                className="w-5 h-5 rounded-md"
-                                style={borderStyle}
-                            />
+                            {(boxState.borderWidth.num ?? 0) > 0 ||
+                             (boxState.borderTopWidth?.num ?? 0) > 0 ||
+                             (boxState.borderRightWidth?.num ?? 0) > 0 ||
+                             (boxState.borderBottomWidth?.num ?? 0) > 0 ||
+                             (boxState.borderLeftWidth?.num ?? 0) > 0 ? (
+                                <div
+                                    className="w-5 h-5 rounded-md"
+                                    style={borderStyle}
+                                />
+                            ) : null}
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
@@ -113,9 +119,17 @@ export const Border = () => {
                         onChange={handleIndividualChange}
                     />
                 )}
-                <div className="mt-3">
-                    <InputColor color={borderColor} onColorChange={handleColorChange} />
-                </div>
+                {(activeTab === 'all'
+                    ? (boxState.borderWidth.num ?? 0) > 0
+                    : ((boxState.borderTopWidth.num ?? 0) > 0 ||
+                        (boxState.borderRightWidth.num ?? 0) > 0 ||
+                        (boxState.borderBottomWidth.num ?? 0) > 0 ||
+                        (boxState.borderLeftWidth.num ?? 0) > 0)
+                ) && (
+                    <div className="mt-3">
+                        <InputColor color={borderColor} onColorChange={handleColorChange} />
+                    </div>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );

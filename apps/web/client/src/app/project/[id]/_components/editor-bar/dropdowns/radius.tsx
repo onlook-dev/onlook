@@ -25,14 +25,14 @@ export const Radius = () => {
                         <Button
                             variant="ghost"
                             size="toolbar"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center rounded-lg border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center rounded-lg border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             <Icons.CornerRadius className="h-4 min-h-4 w-4 min-w-4" />
                             {boxState.borderRadius.unit === 'px' && typeof boxState.borderRadius.num === 'number' && boxState.borderRadius.num !== 0 ? (
-                                <span className="text-sm">{boxState.borderRadius.num}</span>
+                                <span className="text-small">{boxState.borderRadius.num}</span>
                             ) : null}
                             {boxState.borderRadius.unit !== 'px' && boxState.borderRadius.value ? (
-                                <span className="text-sm">{boxState.borderRadius.value}</span>
+                                <span className="text-small">{boxState.borderRadius.value}</span>
                             ) : null}
                         </Button>
                     </DropdownMenuTrigger>

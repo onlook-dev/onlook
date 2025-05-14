@@ -1850,8 +1850,8 @@ export const Icons = {
     ),
     PaintBucket: ({ className, ...props }: IconProps) => (
         <svg
-            width="21"
-            height="17"
+            width="18"
+            height="18"
             viewBox="0 0 21 17"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
