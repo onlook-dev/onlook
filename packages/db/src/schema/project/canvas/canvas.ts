@@ -3,7 +3,7 @@ import { numeric, pgTable, uuid } from "drizzle-orm/pg-core";
 import { projects } from "../project";
 import { frames } from "./frame";
 
-export const canvas = pgTable("canvas", {
+export const canvases = pgTable("canvas", {
     id: uuid("id").primaryKey().defaultRandom(),
     projectId: uuid("project_id")
         .notNull()
@@ -13,13 +13,13 @@ export const canvas = pgTable("canvas", {
     y: numeric("y").notNull(),
 }).enableRLS();
 
-export type Canvas = typeof canvas.$inferSelect;
-export type NewCanvas = typeof canvas.$inferInsert;
+export type Canvas = typeof canvases.$inferSelect;
+export type NewCanvas = typeof canvases.$inferInsert;
 
-export const canvasRelations = relations(canvas, ({ one, many }) => ({
+export const canvasRelations = relations(canvases, ({ one, many }) => ({
     frames: many(frames),
     project: one(projects, {
-        fields: [canvas.projectId],
+        fields: [canvases.projectId],
         references: [projects.id],
     }),
 }));

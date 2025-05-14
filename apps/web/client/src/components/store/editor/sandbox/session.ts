@@ -13,13 +13,13 @@ export class SessionManager {
 
     async start(sandboxId: string) {
         this.isConnecting = true;
-        const startData = await api.csb.start.mutate(sandboxId);
+        const startData = await api.sandbox.start.mutate(sandboxId);
         this.session = await connectToSandbox(startData);
         this.isConnecting = false;
     }
 
     async hibernate(sandboxId: string) {
-        await api.csb.hibernate.mutate(sandboxId);
+        await api.sandbox.hibernate.mutate(sandboxId);
     }
 
     async reconnect() {
@@ -28,7 +28,7 @@ export class SessionManager {
             return;
         }
         this.isConnecting = true;
-        const startData = await api.csb.reconnect.mutate(this.session.id);
+        const startData = await api.sandbox.reconnect.mutate(this.session.id);
         this.session = await connectToSandbox(startData);
         this.isConnecting = false;
     }

@@ -1,7 +1,7 @@
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 import { projectRouter, userRouter } from './routers';
 import { chatRouter } from './routers/chat';
-import { csbRouter } from './routers/csb';
+import { sandboxRouter } from './routers/sandbox';
 
 /**
  * This is the primary router for your server.
@@ -9,7 +9,7 @@ import { csbRouter } from './routers/csb';
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-    csb: csbRouter,
+    sandbox: sandboxRouter,
     user: userRouter,
     project: projectRouter,
     chat: chatRouter,

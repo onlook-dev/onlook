@@ -1,13 +1,15 @@
 import {
-    createDefaultCanvas,
+    canvases,
+    frames,
     projectInsertSchema,
     projects,
     toCanvas,
     toFrame,
     toProject,
     userProjects,
-    type Canvas,
+    type Canvas
 } from '@onlook/db';
+import { createDefaultCanvas, createDefaultFrame } from '@onlook/utility';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
@@ -45,7 +47,6 @@ export const projectRouter = createTRPCRouter({
             return await ctx.db.transaction(async (tx) => {
                 // 1. Insert the new project
                 const [newProject] = await tx.insert(projects).values(input.project).returning();
-
                 if (!newProject) {
                     throw new Error('Failed to create project');
                 }
@@ -55,6 +56,14 @@ export const projectRouter = createTRPCRouter({
                     userId: input.userId,
                     projectId: newProject.id,
                 });
+
+                // 3. Create the default canvas
+                const newCanvas = createDefaultCanvas(newProject.id);
+                await tx.insert(canvases).values(newCanvas);
+
+                // 4. Create the default frame
+                const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
+                await tx.insert(frames).values(newFrame);
 
                 return newProject;
             });

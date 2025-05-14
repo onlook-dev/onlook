@@ -3,8 +3,11 @@ const sdk = new CodeSandbox(process.env.CSB_API_KEY!);
 
 // Create a new sandbox from a template
 export const create = async (sandboxId: string) => {
-    const startData = await sdk.sandbox.create({ template: sandboxId });
-    return startData;
+    const sandbox = await sdk.sandbox.create({ template: sandboxId });
+    return {
+        sandboxId: sandbox.id,
+        previewUrl: `https://${sandbox.id}-8084.csb.app`,
+    };
 };
 
 // Start a sandbox

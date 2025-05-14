@@ -1,8 +1,8 @@
-import { DefaultSettings } from '@onlook/constants';
-import { ChatMessageRole, FrameType, MessageContextType, type ChatMessageContext } from '@onlook/models';
+import { ChatMessageRole, MessageContextType, type ChatMessageContext } from '@onlook/models';
+import { createDefaultCanvas, createDefaultFrame } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from './client';
-import { canvas, conversations, frames, messages, projects, userProjects, users, type Canvas, type Conversation, type Frame, type Message, type Project, type User } from './schema';
+import { canvases, conversations, frames, messages, projects, userProjects, users, type Conversation, type Message, type Project, type User } from './schema';
 
 const user0 = {
     id: '2585ea6b-6303-4f21-977c-62af2f5a21f5'
@@ -28,43 +28,10 @@ const project1 = {
     updatedAt: new Date(),
 } satisfies Project;
 
-const canvas0 = {
-    id: uuidv4(),
-    scale: DefaultSettings.SCALE.toString(),
-    x: DefaultSettings.PAN_POSITION.x.toString(),
-    y: DefaultSettings.PAN_POSITION.y.toString(),
-    projectId: project0.id,
-} satisfies Canvas;
-
-const canvas1 = {
-    id: uuidv4(),
-    scale: DefaultSettings.SCALE.toString(),
-    x: DefaultSettings.PAN_POSITION.x.toString(),
-    y: DefaultSettings.PAN_POSITION.y.toString(),
-    projectId: project1.id,
-} satisfies Canvas;
-
-const frame0 = {
-    id: uuidv4(),
-    canvasId: canvas0.id,
-    type: FrameType.WEB,
-    url: project0.sandboxUrl,
-    x: DefaultSettings.FRAME_POSITION.x.toString(),
-    y: DefaultSettings.FRAME_POSITION.y.toString(),
-    width: DefaultSettings.FRAME_DIMENSION.width.toString(),
-    height: DefaultSettings.FRAME_DIMENSION.height.toString(),
-} satisfies Frame;
-
-const frame1 = {
-    id: uuidv4(),
-    canvasId: canvas1.id,
-    type: FrameType.WEB,
-    url: project1.sandboxUrl,
-    x: DefaultSettings.FRAME_POSITION.x.toString(),
-    y: DefaultSettings.FRAME_POSITION.y.toString(),
-    width: DefaultSettings.FRAME_DIMENSION.width.toString(),
-    height: DefaultSettings.FRAME_DIMENSION.height.toString(),
-} satisfies Frame;
+const canvas0 = createDefaultCanvas(project0.id);
+const canvas1 = createDefaultCanvas(project1.id);
+const frame0 = createDefaultFrame(canvas0.id, project0.sandboxUrl);
+const frame1 = createDefaultFrame(canvas1.id, project1.sandboxUrl);
 
 const conversation0 = {
     id: uuidv4(),
@@ -179,7 +146,7 @@ export const seedDb = async () => {
             userId: user0.id,
             projectId: project1.id,
         }]);
-        await tx.insert(canvas).values([
+        await tx.insert(canvases).values([
             canvas0,
             canvas1,
         ]);
@@ -209,7 +176,7 @@ const resetDb = async () => {
         await tx.delete(messages);
         await tx.delete(conversations);
         await tx.delete(frames);
-        await tx.delete(canvas);
+        await tx.delete(canvases);
         await tx.delete(userProjects);
         await tx.delete(projects);
         await tx.delete(users);

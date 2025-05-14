@@ -1,4 +1,4 @@
-import type { FrameType, WebFrame } from '@onlook/models';
+import { FrameType, type WebFrame } from '@onlook/models';
 import { computeWindowMetadata } from '@onlook/utility';
 import type { Frame as DbFrame } from '../schema';
 

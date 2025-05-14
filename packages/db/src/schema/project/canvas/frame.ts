@@ -1,7 +1,7 @@
 import { FrameType } from "@onlook/models";
 import { relations } from "drizzle-orm";
 import { numeric, pgEnum, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
-import { canvas } from "./canvas";
+import { canvases } from "./canvas";
 
 export const frameType = pgEnum("frame_type", FrameType);
 
@@ -9,7 +9,7 @@ export const frames = pgTable("frames", {
     id: uuid("id").primaryKey().defaultRandom(),
     canvasId: uuid("canvas_id")
         .notNull()
-        .references(() => canvas.id, { onDelete: "cascade", onUpdate: "cascade" }),
+        .references(() => canvases.id, { onDelete: "cascade", onUpdate: "cascade" }),
     type: frameType("type").notNull(),
     url: varchar("url").notNull(),
 
@@ -24,8 +24,8 @@ export type Frame = typeof frames.$inferSelect;
 export type NewFrame = typeof frames.$inferInsert;
 
 export const frameRelations = relations(frames, ({ one }) => ({
-    canvas: one(canvas, {
+    canvas: one(canvases, {
         fields: [frames.canvasId],
-        references: [canvas.id],
+        references: [canvases.id],
     }),
 }));

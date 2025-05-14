@@ -2,7 +2,7 @@ import { relations } from 'drizzle-orm';
 import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { userProjects } from '../user';
-import { canvas } from './canvas';
+import { canvases } from './canvas';
 import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from './chat/conversation';
 
 export const projects = pgTable("projects", {
@@ -18,9 +18,9 @@ export const projects = pgTable("projects", {
 export const projectInsertSchema = createInsertSchema(projects);
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
-    canvas: one(canvas, {
+    canvas: one(canvases, {
         fields: [projects.id],
-        references: [canvas.projectId],
+        references: [canvases.projectId],
     }),
     userProjects: many(userProjects),
     conversations: many(conversations, {

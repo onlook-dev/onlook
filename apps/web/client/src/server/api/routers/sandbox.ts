@@ -2,10 +2,7 @@ import { create, hibernate, list, start } from '@/utils/codesandbox/server';
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../trpc';
 
-export const csbRouter = createTRPCRouter({
-    create: publicProcedure.input(z.string()).mutation(async ({ input }) => {
-        return await create(input);
-    }),
+export const sandboxRouter = createTRPCRouter({
     start: publicProcedure.input(z.string()).mutation(async ({ input }) => {
         return await start(input);
     }),
@@ -18,5 +15,11 @@ export const csbRouter = createTRPCRouter({
     }),
     list: publicProcedure.query(async () => {
         return await list();
+    }),
+    fork: publicProcedure.input(z.object({
+        sandboxId: z.string(),
+    })).mutation(async ({ input }) => {
+        const sandbox = await create(input.sandboxId);
+        return sandbox;
     }),
 });

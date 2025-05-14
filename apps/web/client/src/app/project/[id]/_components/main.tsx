@@ -27,17 +27,22 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const [center, setCenter] = useState<number | null>(null);
 
     useEffect(() => {
-        function updateCenter() {
-            const left = leftPanelRef.current?.getBoundingClientRect();
-            const right = rightPanelRef.current?.getBoundingClientRect();
-            if (left && right) {
-                setCenter(left.right + (right.left - left.right) / 2);
-            }
-        }
-        updateCenter();
+        setTimeout(() => {
+            updateCenter();
+        }, 100);
         window.addEventListener('resize', updateCenter);
-        return () => window.removeEventListener('resize', updateCenter);
+        return () => {
+            window.removeEventListener('resize', updateCenter);
+        };
     }, []);
+
+    function updateCenter() {
+        const left = leftPanelRef.current?.getBoundingClientRect();
+        const right = rightPanelRef.current?.getBoundingClientRect();
+        if (left && right) {
+            setCenter(left.right + (right.left - left.right) / 2);
+        }
+    }
 
     useEffect(() => {
         if (!result) {
@@ -115,20 +120,20 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     </div>
 
                     {/* Left Panel */}
-                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-51">
+                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-2">
                         <LeftPanel />
                     </div>
 
                     {/* Centered EditorBar */}
                     <div
-                        className="absolute top-10 z-50"
-                        style={center ? { left: center, transform: 'translateX(-50%)' } : {}}
+                        className="absolute top-10 z-1"
+                        style={{ left: center ? center : '40%', transform: 'translateX(-50%)' }}
                     >
                         <EditorBar />
                     </div>
 
                     {/* Right Panel */}
-                    <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-51">
+                    <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-2">
                         <RightPanel />
                     </div>
 

@@ -8,15 +8,18 @@ import { Card, CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { compressImage } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 export function Create() {
     const t = useTranslations();
     const projectsManager = useProjectsManager();
+    const router = useRouter();
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
@@ -33,12 +36,26 @@ export function Create() {
             console.warn('Input is too short');
             return;
         }
-        projectsManager.createProject(inputValue, selectedImages);
+        createProject(inputValue, selectedImages);
     };
 
     const handleBlankSubmit = async () => {
         // projectsManager.create.sendPrompt(inputValue, selectedImages, false);
-        projectsManager.createProject(inputValue, []);
+        createProject(inputValue, []);
+    };
+
+    const createProject = async (prompt: string, images: ImageMessageContext[]) => {
+        const project = await projectsManager.createProject();
+        if (!project) {
+            console.error('Failed to create project');
+            toast({
+                title: 'Failed to create project',
+                description: 'Please try again',
+                variant: 'destructive',
+            });
+            return;
+        }
+        router.push(`/project/${project.id}`);
     };
 
     const handleDragOver = (e: React.DragEvent) => {

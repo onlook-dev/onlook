@@ -16,10 +16,6 @@ export const toProject = (
             updatedAt: dbProject.updatedAt.toISOString(),
             previewImg: dbProject.previewImg,
         },
-        domains: {
-            base: null,
-            custom: null,
-        },
     };
 };
 
