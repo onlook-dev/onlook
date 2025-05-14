@@ -14,7 +14,7 @@ import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 
 export const Radius = () => {
-    const [activeTab, setActiveTab] = useState('individual');
+    const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('radius');
 
     return (
@@ -31,8 +31,8 @@ export const Radius = () => {
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
-                    Border Radius
+                <TooltipContent side="bottom" className="mt-1" hideArrow>
+                    Radius
                 </TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">

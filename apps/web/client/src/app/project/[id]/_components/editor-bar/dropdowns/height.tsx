@@ -35,7 +35,7 @@ export const Height = () => {
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
+                <TooltipContent side="bottom" className="mt-1" hideArrow>
                     Height
                 </TooltipContent>
             </Tooltip>
