@@ -1,9 +1,6 @@
-// import type { FileNode } from '@/lib/editor/engine/files';
-// import { MainChannels } from '@onlook/constants';
 import { useEditorEngine } from '@/components/store/editor';
-import { type EditorView } from '@codemirror/view';
-import { EditorTabValue, SystemTheme } from '@onlook/models';
-import { Button } from '@onlook/ui/button';
+import { EditorView } from '@codemirror/view';
+import { SystemTheme } from '@onlook/models';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,20 +8,15 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Input } from '@onlook/ui/input';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toast } from '@onlook/ui/use-toast';
-import CodeMirror from '@uiw/react-codemirror';
+import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import { useTheme } from 'next-themes';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Tree, type TreeApi } from 'react-arborist';
-import useResizeObserver from 'use-resize-observer';
+import { useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions, getLanguageFromFileName } from './code-mirror-config';
 import { FileTab } from './file-tab';
-import { FileTreeNode } from './file-tree-node';
-import { FileTreeRow } from './file-tree-row';
+import { FileTree } from './file-tree';
 
 enum TabValue {
     CONSOLE = 'console',
@@ -51,21 +43,16 @@ interface CodeRange {
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { theme } = useTheme();
-    const { ref: filesContainerRef, width: filesWidth } = useResizeObserver();
 
     const [openedFiles, setOpenedFiles] = useState<EditorFile[]>([]);
     const [activeFile, setActiveFile] = useState<EditorFile | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [highlightRange, setHighlightRange] = useState<CodeRange | null>(null);
     const [isDirty, setIsDirty] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const [isFilesVisible, setIsFilesVisible] = useState(true);
 
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
-    const treeRef = useRef<TreeApi<FileNode>>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
 
     const getActiveEditorView = (): EditorView | undefined => {
         if (!activeFile) {
@@ -73,59 +60,6 @@ export const DevTab = observer(() => {
         }
         return editorViewsRef.current.get(activeFile.id);
     };
-
-    // Scan project files when the component is mounted
-    useEffect(() => {
-        loadProjectFiles();
-    }, []);
-
-    // Load files from the project
-    async function loadProjectFiles() {
-        try {
-            await editorEngine.files.scanFiles();
-        } catch (error) {
-            console.error('Error loading project files:', error);
-        }
-    }
-
-    useEffect(() => {
-        const handleOpenCodeInOnlook = async (data: any) => {
-            if (data?.filePath) {
-                editorEngine.editPanelTab = EditorTabValue.DEV;
-
-                const file = await loadFile(data.filePath);
-
-                // Only set highlight range if file was successfully loaded
-                if (file) {
-                    setTimeout(() => {
-                        if (data.startLine) {
-                            setHighlightRange({
-                                startLineNumber: data.startLine,
-                                startColumn: data.startColumn || 1,
-                                endLineNumber: data.endLine || data.startLine,
-                                endColumn: data.endColumn || 80,
-                            });
-                        } else if (data.line) {
-                            setHighlightRange({
-                                startLineNumber: data.line,
-                                startColumn: 1,
-                                endLineNumber: data.line,
-                                endColumn: 80,
-                            });
-                        }
-                    }, 300);
-                }
-            }
-        };
-
-        // Subscribe to the event using the standard IPC API
-        window.api.on(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
-
-        // Cleanup
-        return () => {
-            window.api.removeListener(MainChannels.VIEW_CODE_IN_ONLOOK, handleOpenCodeInOnlook);
-        };
-    }, [editorEngine]);
 
     useEffect(() => {
         const checkSelectedElement = async () => {
@@ -184,73 +118,72 @@ export const DevTab = observer(() => {
         return null;
     }
 
-    // Update highlighting when highlightRange changes
-    // useEffect(() => {
-    //     if (!activeFile || !highlightRange) {
-    //         return;
-    //     }
+    useEffect(() => {
+        if (!activeFile || !highlightRange) {
+            return;
+        }
 
-    //     const editorView = getActiveEditorView();
-    //     if (!editorView) {
-    //         return;
-    //     }
+        const editorView = getActiveEditorView();
+        if (!editorView) {
+            return;
+        }
 
-    //     try {
-    //         // Calculate positions for scrolling
-    //         const lines = activeFile.content.split('\n');
+        try {
+            // Calculate positions for scrolling
+            const lines = activeFile.content.split('\n');
 
-    //         // Safety check - validate line numbers are within bounds
-    //         if (
-    //             highlightRange.startLineNumber > lines.length ||
-    //             highlightRange.endLineNumber > lines.length ||
-    //             highlightRange.startLineNumber < 1 ||
-    //             highlightRange.endLineNumber < 1
-    //         ) {
-    //             console.warn('Highlight range out of bounds, clearing selection');
-    //             setHighlightRange(null);
-    //             return;
-    //         }
+            // Safety check - validate line numbers are within bounds
+            if (
+                highlightRange.startLineNumber > lines.length ||
+                highlightRange.endLineNumber > lines.length ||
+                highlightRange.startLineNumber < 1 ||
+                highlightRange.endLineNumber < 1
+            ) {
+                console.warn('Highlight range out of bounds, clearing selection');
+                setHighlightRange(null);
+                return;
+            }
 
-    //         // Calculate start position
-    //         let startPos = 0;
-    //         for (let i = 0; i < highlightRange.startLineNumber - 1; i++) {
-    //             startPos += (lines[i]?.length || 0) + 1; // +1 for newline
-    //         }
-    //         startPos += highlightRange.startColumn - 1;
+            // Calculate start position
+            let startPos = 0;
+            for (let i = 0; i < highlightRange.startLineNumber - 1; i++) {
+                startPos += (lines[i]?.length || 0) + 1; // +1 for newline
+            }
+            startPos += highlightRange.startColumn - 1;
 
-    //         // Calculate end position
-    //         let endPos = 0;
-    //         for (let i = 0; i < highlightRange.endLineNumber - 1; i++) {
-    //             endPos += (lines[i]?.length || 0) + 1; // +1 for newline
-    //         }
-    //         endPos += highlightRange.endColumn - 1;
-    //         if (
-    //             startPos >= activeFile.content.length ||
-    //             endPos > activeFile.content.length ||
-    //             startPos < 0 ||
-    //             endPos < 0
-    //         ) {
-    //             console.warn('Highlight position out of bounds, clearing selection');
-    //             setHighlightRange(null);
-    //             return;
-    //         }
+            // Calculate end position
+            let endPos = 0;
+            for (let i = 0; i < highlightRange.endLineNumber - 1; i++) {
+                endPos += (lines[i]?.length || 0) + 1; // +1 for newline
+            }
+            endPos += highlightRange.endColumn - 1;
+            if (
+                startPos >= activeFile.content.length ||
+                endPos > activeFile.content.length ||
+                startPos < 0 ||
+                endPos < 0
+            ) {
+                console.warn('Highlight position out of bounds, clearing selection');
+                setHighlightRange(null);
+                return;
+            }
 
-    //         // Creates a selection at the highlight position
-    //         editorView.dispatch({
-    //             selection: EditorSelection.create([EditorSelection.range(startPos, endPos)]),
-    //         });
+            // Creates a selection at the highlight position
+            editorView.dispatch({
+                selection: EditorSelection.create([EditorSelection.range(startPos, endPos)]),
+            });
 
-    //         // Scrolls to the selection
-    //         editorView.dispatch({
-    //             effects: EditorView.scrollIntoView(editorView.state.selection.main, {
-    //                 y: 'center',
-    //             }),
-    //         });
-    //     } catch (error) {
-    //         console.error('Error applying highlight:', error);
-    //         setHighlightRange(null);
-    //     }
-    // }, [highlightRange, activeFile]);
+            // Scrolls to the selection
+            editorView.dispatch({
+                effects: EditorView.scrollIntoView(editorView.state.selection.main, {
+                    y: 'center',
+                }),
+            });
+        } catch (error) {
+            console.error('Error applying highlight:', error);
+            setHighlightRange(null);
+        }
+    }, [highlightRange, activeFile]);
 
     async function loadFile(filePath: string): Promise<EditorFile | null> {
         try {
@@ -360,81 +293,6 @@ export const DevTab = observer(() => {
         }
     }
 
-    // Filter files based on search
-    const filteredFiles = useMemo(() => {
-        if (!searchQuery.trim()) {
-            return editorEngine.files.tree;
-        }
-
-        const searchLower = searchQuery.toLowerCase();
-
-        const filterNodes = (nodes: FileNode[]): FileNode[] => {
-            return nodes.reduce<FileNode[]>((filtered, node) => {
-                const nameMatches = node.name.toLowerCase().includes(searchLower);
-                const childMatches = node.children ? filterNodes(node.children) : [];
-
-                if (nameMatches || childMatches.length > 0) {
-                    const newNode = { ...node };
-                    if (childMatches.length > 0) {
-                        newNode.children = childMatches;
-                    }
-                    filtered.push(newNode);
-                }
-
-                return filtered;
-            }, []);
-        };
-
-        return filterNodes(editorEngine.files.tree);
-    }, [editorEngine.files.tree, searchQuery]);
-
-    // Handle keyboard navigation in the file list
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Escape') {
-            setSearchQuery('');
-            inputRef.current?.blur();
-            setHighlightedIndex(null);
-            return;
-        }
-
-        const flattenedNodes = treeRef.current?.visibleNodes ?? [];
-
-        if (flattenedNodes.length === 0) {
-            return;
-        }
-
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            e.preventDefault();
-
-            if (highlightedIndex === null) {
-                setHighlightedIndex(e.key === 'ArrowDown' ? 0 : flattenedNodes.length - 1);
-                return;
-            }
-
-            const newIndex =
-                e.key === 'ArrowDown'
-                    ? Math.min(highlightedIndex + 1, flattenedNodes.length - 1)
-                    : Math.max(highlightedIndex - 1, 0);
-
-            setHighlightedIndex(newIndex);
-
-            // Ensures highlighted item is visible
-            const node = flattenedNodes[newIndex];
-            if (node) {
-                treeRef.current?.scrollTo(node.id);
-            }
-        }
-
-        if (e.key === 'Enter' && highlightedIndex !== null) {
-            const selectedNode = flattenedNodes[highlightedIndex];
-            if (selectedNode && !selectedNode.isInternal && !selectedNode.data.isDirectory) {
-                loadFile(selectedNode.data.path);
-                setHighlightedIndex(null);
-                setHighlightRange(null);
-            }
-        }
-    };
-
     const handleFileTreeSelect = async (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
             await loadFile(nodes[0].data.path);
@@ -499,10 +357,10 @@ export const DevTab = observer(() => {
         const updatedFiles = openedFiles.map((file) =>
             file.id === fileId
                 ? {
-                      ...file,
-                      content: content,
-                      isDirty: hasChanged,
-                  }
+                    ...file,
+                    content: content,
+                    isDirty: hasChanged,
+                }
                 : file,
         );
 
@@ -526,14 +384,6 @@ export const DevTab = observer(() => {
             editorViewsRef.current.clear();
         };
     }, []);
-
-    const filesTreeDimensions = useMemo(
-        () => ({
-            width: filesWidth ?? 250,
-            height: 600,
-        }),
-        [filesWidth],
-    );
 
     return (
         <div className="h-full flex flex-col w-full border-l-[0.5px] border-t-[0.5px] border-b-[0.5px] backdrop-blur shadow rounded-tl-xl">
@@ -580,101 +430,7 @@ export const DevTab = observer(() => {
             </div>
 
             <div className="flex flex-1 min-h-0 overflow-hidden">
-                {isFilesVisible && (
-                    <div
-                        ref={filesContainerRef}
-                        className="w-64 h-full border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
-                    >
-                        <div className="flex flex-col h-full overflow-hidden">
-                            <div className="p-3 flex-shrink-0">
-                                <div className="flex flex-row justify-between items-center gap-2 mb-2">
-                                    <div className="relative flex-grow">
-                                        <Input
-                                            ref={inputRef}
-                                            className="h-8 text-xs pr-8"
-                                            placeholder="Search files"
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            onKeyDown={handleKeyDown}
-                                        />
-                                        {searchQuery && (
-                                            <button
-                                                className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
-                                                onClick={() => setSearchQuery('')}
-                                            >
-                                                <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
-                                            </button>
-                                        )}
-                                    </div>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant={'default'}
-                                                size={'icon'}
-                                                className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                                                onClick={loadProjectFiles}
-                                            >
-                                                <Icons.Reload />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipPortal>
-                                            <TooltipContent>
-                                                <p>Refresh files</p>
-                                            </TooltipContent>
-                                        </TooltipPortal>
-                                    </Tooltip>
-                                </div>
-                            </div>
-
-                            <div
-                                className="flex-1 overflow-auto px-3 text-xs"
-                                style={{ height: 'calc(100% - 56px)' }}
-                            >
-                                {editorEngine.files.loading ? (
-                                    <div className="flex justify-center items-center h-full">
-                                        <div className="animate-spin h-5 w-5 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
-                                    </div>
-                                ) : filteredFiles.length === 0 ? (
-                                    <div className="flex justify-center items-center h-full text-sm text-foreground/50">
-                                        No files found
-                                    </div>
-                                ) : (
-                                    <div className="h-full">
-                                        <Tree
-                                            ref={treeRef}
-                                            data={filteredFiles}
-                                            idAccessor={(node: FileNode) => node.id}
-                                            childrenAccessor={(node: FileNode) =>
-                                                node.children && node.children.length > 0
-                                                    ? node.children
-                                                    : null
-                                            }
-                                            onSelect={handleFileTreeSelect}
-                                            height={filesTreeDimensions.height}
-                                            width={filesTreeDimensions.width}
-                                            indent={8}
-                                            rowHeight={24}
-                                            openByDefault={false}
-                                            renderRow={(props: any) => (
-                                                <FileTreeRow
-                                                    {...props}
-                                                    isHighlighted={
-                                                        highlightedIndex !== null &&
-                                                        treeRef.current?.visibleNodes[
-                                                            highlightedIndex
-                                                        ]?.id === props.node.id
-                                                    }
-                                                />
-                                            )}
-                                        >
-                                            {(props) => <FileTreeNode {...props} />}
-                                        </Tree>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
+                {isFilesVisible && <FileTree onFileSelect={loadFile} />}
 
                 {/* Editor section */}
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">

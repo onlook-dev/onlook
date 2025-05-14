@@ -24,10 +24,10 @@ export class FileSyncManager {
 
         try {
             const content = await readFile(filePath);
-            if (content) {
-                this.cache.set(filePath, content);
-                await this.saveToLocalStorage();
+            if (content === null) {
+                throw new Error(`File content for ${filePath} not found`);
             }
+            this.updateCache(filePath, content);
             return content;
         } catch (error) {
             console.error(`Error reading file ${filePath}:`, error);
@@ -41,13 +41,18 @@ export class FileSyncManager {
         writeFile: (path: string, content: string) => Promise<boolean>,
     ): Promise<boolean> {
         try {
+            // Write to cache first
+            this.updateCache(filePath, content);
+
+            // Then write to remote
             const success = await writeFile(filePath, content);
-            if (success) {
-                this.cache.set(filePath, content);
-                await this.saveToLocalStorage();
+            if (!success) {
+                throw new Error(`Failed to write file ${filePath}`);
             }
             return success;
         } catch (error) {
+            // If any error occurs, remove from cache
+            this.delete(filePath);
             console.error(`Error writing file ${filePath}:`, error);
             return false;
         }
@@ -95,6 +100,19 @@ export class FileSyncManager {
         } catch (error) {
             console.error('Error clearing localForage:', error);
         }
+    }
+
+    async syncFromRemote(
+        filePath: string,
+        remoteContent: string,
+    ): Promise<boolean> {
+        const cachedContent = this.cache.get(filePath);
+        const contentChanged = cachedContent !== remoteContent;
+        if (contentChanged) {
+            // Only update cache if content is different
+            await this.updateCache(filePath, remoteContent);
+        }
+        return contentChanged;
     }
 
     async clear() {

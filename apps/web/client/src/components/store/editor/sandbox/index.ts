@@ -1,20 +1,22 @@
-import type { Watcher, WatchEvent } from '@codesandbox/sdk';
+import type { WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
+import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
+import { FileWatcher } from './file-watcher';
 import { isSubdirectory, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 export class SandboxManager {
     readonly session: SessionManager = new SessionManager();
-
-    private watcher: Watcher | null = null;
+    private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
+    readonly fileEventBus: FileEventBus = new FileEventBus();
 
     constructor() {
         makeAutoObservable(this);
@@ -23,6 +25,7 @@ export class SandboxManager {
             () => this.session.session,
             (session) => {
                 if (session) {
+                    this.fileSync.clear(); // Clear cache when switching projects
                     this.index();
                 }
             },
@@ -43,7 +46,7 @@ export class SandboxManager {
         for (const file of files) {
             const normalizedPath = normalizePath(file);
             const content = await this.readFile(normalizedPath);
-            if (!content) {
+            if (content === null) {
                 console.error(`Failed to read file ${normalizedPath}`);
                 continue;
             }
@@ -211,20 +214,30 @@ export class SandboxManager {
             return;
         }
 
+        // Dispose of existing watcher if it exists
+        if (this.fileWatcher) {
+            this.fileWatcher.dispose();
+            this.fileWatcher = null;
+        }
+
         // Convert ignored directories to glob patterns with ** wildcard
         const excludePatterns = IGNORED_DIRECTORIES.map((dir) => `${dir}/**`);
 
-        const watcher = await this.session.session.fs.watch('./', {
-            recursive: true,
-            excludes: excludePatterns,
+        this.fileWatcher = new FileWatcher({
+            session: this.session.session,
+            onFileChange: async (event) => {
+                // Handle file changes
+                await this.handleFileChange(event);
+            },
+            excludePatterns,
+            fileEventBus: this.fileEventBus
         });
 
-        watcher.onEvent((event) => this.handleFileEvent(event));
-
-        this.watcher = watcher;
+        await this.fileWatcher.start();
     }
 
-    async handleFileEvent(event: WatchEvent) {
+    async handleFileChange(event: WatchEvent) {
+        // Handle internal file sync
         for (const path of event.paths) {
             if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
                 continue;
@@ -234,12 +247,21 @@ export class SandboxManager {
             if (event.type === 'remove') {
                 await this.fileSync.delete(normalizedPath);
             } else if (eventType === 'change' || eventType === 'add') {
-                // Sometimes we delete the content of the file, so we should allow empty content
-                const content = (await this.readRemoteFile(normalizedPath)) ?? '';
-
-                await this.fileSync.updateCache(normalizedPath, content);
-                await this.processFileForMapping(normalizedPath);
+                const content = await this.readRemoteFile(normalizedPath);
+                if (content === null) {
+                    console.error(`File content for ${normalizedPath} not found`);
+                    continue;
+                }
+                const contentChanged = await this.fileSync.syncFromRemote(normalizedPath, content);
+                if (contentChanged) {
+                    await this.processFileForMapping(normalizedPath);
+                }
             }
+            this.fileEventBus.publish({
+                type: eventType,
+                paths: [normalizedPath],
+                timestamp: Date.now()
+            });
         }
     }
 
@@ -280,7 +302,8 @@ export class SandboxManager {
     }
 
     clear() {
-        this.watcher?.dispose();
+        this.fileWatcher?.dispose();
+        this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
     }

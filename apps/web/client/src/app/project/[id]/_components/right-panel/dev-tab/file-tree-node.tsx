@@ -29,12 +29,12 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
 
         // Load the file into the editor
         try {
-            await editorEngine.code.getFileContent(node.data.path, false).then((content) => {
-                if (content !== null) {
-                    // This will be handled in the parent component
-                    node.select();
-                }
-            });
+            const content = await editorEngine.sandbox.readFile(node.data.path);
+            if (content === null) {
+                throw new Error(`File content for ${node.data.path} not found`);
+            }
+            // This will be handled in the parent component
+            node.select();
         } catch (error) {
             console.error('Failed to load file:', error);
         }

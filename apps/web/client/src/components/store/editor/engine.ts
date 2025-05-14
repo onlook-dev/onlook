@@ -33,7 +33,7 @@ export class EditorEngine {
     readonly font: FontManager;
     readonly pages: PagesManager;
     readonly canvas: CanvasManager;
-    
+
     readonly state: StateManager = new StateManager();
     readonly sandbox: SandboxManager = new SandboxManager();
     readonly history: HistoryManager = new HistoryManager(this);
@@ -68,7 +68,6 @@ export class EditorEngine {
     }
 
     clear() {
-        // TODO: Choose dispose or clear
         this.elements.clear();
         this.frames.clear();
         this.history.clear();

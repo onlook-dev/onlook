@@ -30,8 +30,13 @@ export class CodeManager {
     }
 
     async write(action: Action) {
-        const requests = await this.collectRequests(action);
-        await this.writeRequest(requests);
+        // TODO: This is a hack to write code, we should refactor this
+        if (action.type === 'write-code' && action.diffs[0]) {
+            await this.editorEngine.sandbox.writeFile(action.diffs[0].path, action.diffs[0].generated);
+        } else {
+            const requests = await this.collectRequests(action);
+            await this.writeRequest(requests);
+        }
     }
 
     async writeRequest(requests: CodeDiffRequest[]) {

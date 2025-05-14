@@ -13,6 +13,7 @@ import { ChatTab } from './chat-tab';
 import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
+import { DevTab } from './dev-tab';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
@@ -71,9 +72,8 @@ export const RightPanel = observer(() => {
                     <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.CHAT}>
                         <ChatTab />
                     </TabsContent>
-                    <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.DEV}>
-                        {/* <DevTab /> */}
-                        Dev Tab
+                    <TabsContent className='h-full overflow-y-auto' value={EditorTabValue.DEV}>
+                        <DevTab />
                     </TabsContent>
                 </Tabs>
             </ResizablePanel>
