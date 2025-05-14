@@ -13,23 +13,25 @@
         "packages/*",
         "apps/*",
         "tooling/*",
-        "apps/web/*"
+        "apps/web/*",
+        "docs"
     ],
     "scripts": {
-        "clean": "git clean -xdf node_modules",
-        "clean:workspaces": "bun --filter '*' clean",
-        "db:gen": "bun --filter @onlook/supabase db:gen",
-        "db:gen:local": "bun --filter @onlook/backend db:gen",
         "build": "bun --filter '*' build",
         "dev": "bun --filter @onlook/web dev",
         "test": "bun --filter '*' test",
+        "docs": "bun --filter @onlook/docs dev",
+        "db:gen": "bun --filter @onlook/db db:gen",
+        "db:push": "bun --filter @onlook/db db:push",
         "format": "bun --filter '*' format",
         "lint": "bun --filter @onlook/web-client lint",
         "typecheck": "bun --filter '*' typecheck",
+        "prepare": "husky",
+        "clean": "git clean -xdf node_modules",
+        "clean:workspaces": "bun --filter '*' clean",
         "increment_tag": "./scripts/increment_tag.sh",
         "publish_tag": "./scripts/publish_tag.sh",
-        "remove_tag": "./scripts/remove_tag.sh",
-        "prepare": "husky"
+        "remove_tag": "./scripts/remove_tag.sh"
     },
     "repository": {
         "type": "git",
@@ -43,5 +45,5 @@
         "husky": "^9.1.6"
     },
     "dependencies": {},
-    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+    "packageManager": "bun@1.2.13"
 }
