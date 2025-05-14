@@ -14,7 +14,7 @@ import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 
 export const Margin = () => {
-    const [activeTab, setActiveTab] = useState("individual");
+    const [activeTab, setActiveTab] = useState("all");
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('margin');
 
     return (
@@ -35,7 +35,7 @@ export const Margin = () => {
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
+                <TooltipContent side="bottom" className="mt-1" hideArrow>
                     Margin
                 </TooltipContent>
             </Tooltip>

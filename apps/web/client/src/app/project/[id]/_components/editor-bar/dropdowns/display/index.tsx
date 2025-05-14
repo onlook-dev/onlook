@@ -47,7 +47,7 @@ export const Display = () => {
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">
+                <TooltipContent side="bottom" hideArrow>
                     Display
                 </TooltipContent>
             </Tooltip>
