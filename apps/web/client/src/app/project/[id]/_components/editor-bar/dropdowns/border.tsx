@@ -8,13 +8,13 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 import { Color } from "@onlook/utility";
 import { useEffect, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { InputColor } from "../inputs/input-color";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
+import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 
 export const Border = () => {
     const editorEngine = useEditorEngine();
@@ -47,10 +47,9 @@ export const Border = () => {
 
     return (
         <DropdownMenu>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <Button
+            <HoverOnlyTooltip content="Border" side="bottom" className="mt-1" hideArrow>
+                <DropdownMenuTrigger asChild>
+                    <Button
                             variant="ghost"
                             size="toolbar"
                             className="flex items-center gap-1 text-muted-foreground hover:text-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
@@ -73,12 +72,8 @@ export const Border = () => {
                                 />
                             ) : null}
                         </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-1" hideArrow>
-                    Border
-                </TooltipContent>
-            </Tooltip>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
                     <button

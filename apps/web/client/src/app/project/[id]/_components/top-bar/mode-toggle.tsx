@@ -53,10 +53,10 @@ export const ModeToggle = observer(() => {
                                 value={item.mode}
                                 aria-label={item.hotkey.description}
                                 className={cn(
-                                    'transition-all duration-150 ease-in-out px-4 py-2 whitespace-nowrap',
+                                    'transition-all duration-150 ease-in-out px-4 py-2 whitespace-nowrap bg-transparent cursor-pointer text-sm',
                                     mode === item.mode
-                                        ? 'text-active font-medium hover:text-active'
-                                        : 'font-normal hover:text-foreground-hover',
+                                        ? 'text-active text-sm hover:text-active hover:bg-transparent'
+                                        : 'text-foreground-secondary text-sm hover:text-foreground-hover hover:bg-transparent',
                                 )}
                             >
                                 {t(`editor.modes.${item.mode.toLowerCase()}.name`)}

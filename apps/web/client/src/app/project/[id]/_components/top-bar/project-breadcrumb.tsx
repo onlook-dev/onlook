@@ -89,18 +89,18 @@ export const ProjectBreadcrumb = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant={'ghost'}
-                        className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
+                        className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent cursor-pointer group transition-colors duration-200"
                     >
                         <Icons.OnlookLogo
                             className={cn(
-                                'w-8 h-8 hidden md:block',
+                                'w-9 h-9 hidden md:block transition-colors duration-200',
                                 isClosingProject && 'animate-pulse',
                             )}
                         />
-                        <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer">
+                        <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer group-hover:text-foreground-active transition-colors duration-200">
                             {isClosingProject ? 'Stopping project...' : project?.name}
                         </span>
-                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook " />
+                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook group-hover:text-foreground-active" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
