@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
+import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 
 export const Padding = () => {
     const [activeTab, setActiveTab] = useState('all');
@@ -19,10 +20,9 @@ export const Padding = () => {
 
     return (
         <DropdownMenu>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <Button
+            <HoverOnlyTooltip content="Padding" side="bottom" className="mt-1" hideArrow>
+                <DropdownMenuTrigger asChild>
+                    <Button
                             variant="ghost"
                             size="toolbar"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
@@ -35,12 +35,8 @@ export const Padding = () => {
                                 <span className="text-small">{boxState.padding.value}</span>
                             ) : null}
                         </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-1" hideArrow>
-                    Padding
-                </TooltipContent>
-            </Tooltip>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
                     <button

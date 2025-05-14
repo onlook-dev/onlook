@@ -3,10 +3,10 @@
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 import { LayoutMode } from '@onlook/utility';
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { InputDropdown } from '../inputs/input-dropdown';
+import { HoverOnlyTooltip } from '../HoverOnlyTooltip';
 
 export const Height = () => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
@@ -14,10 +14,9 @@ export const Height = () => {
 
     return (
         <DropdownMenu>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <Button
+            <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow>
+                <DropdownMenuTrigger asChild>
+                    <Button
                             variant="ghost"
                             size="toolbar"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
@@ -34,12 +33,8 @@ export const Height = () => {
                                 </span>
                             )}
                         </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-1" hideArrow>
-                    Height
-                </TooltipContent>
-            </Tooltip>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent
                 align="start"
                 className="mt-1 w-[280px] space-y-3 rounded-lg p-3"
