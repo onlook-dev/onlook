@@ -120,20 +120,20 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     </div>
 
                     {/* Left Panel */}
-                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-2">
+                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-50">
                         <LeftPanel />
                     </div>
 
                     {/* Centered EditorBar */}
                     <div
-                        className="absolute top-10 z-1"
+                        className="absolute top-10 z-49"
                         style={{ left: center ? center : '40%', transform: 'translateX(-50%)' }}
                     >
                         <EditorBar />
                     </div>
 
                     {/* Right Panel */}
-                    <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-2">
+                    <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-50">
                         <RightPanel />
                     </div>
 

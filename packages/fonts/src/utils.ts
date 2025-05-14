@@ -288,33 +288,116 @@ export function removeFontFromConfigAST(font: Font, content: string) {
         plugins: ['typescript', 'jsx'],
     });
 
+    const fontIdToRemove = font.id;
+    const importToRemove = font.family.replace(/\s+/g, '_');
+    let removedFont = false;
+    const fontFilesToDelete: string[] = [];
+    // Track if any localFont declarations remain after removal
+    let hasRemainingLocalFonts = false;
+
     traverse(ast, {
         ImportDeclaration(path) {
             if (path.node.source.value === 'next/font/google') {
-                path.node.specifiers = path.node.specifiers.filter((specifier) => {
+                const importSpecifiers = path.node.specifiers.filter((specifier) => {
                     if (t.isImportSpecifier(specifier) && t.isIdentifier(specifier.imported)) {
-                        return specifier.imported.name !== font.id;
+                        return specifier.imported.name !== importToRemove;
                     }
                     return true;
                 });
+                if (importSpecifiers.length === 0) {
+                    path.remove();
+                } else if (importSpecifiers.length !== path.node.specifiers.length) {
+                    path.node.specifiers = importSpecifiers;
+                }
             }
         },
 
         ExportNamedDeclaration(path) {
             if (t.isVariableDeclaration(path.node.declaration)) {
-                path.node.declaration.declarations = path.node.declaration.declarations.filter(
-                    (declaration) => {
-                        if (t.isIdentifier(declaration.id)) {
-                            return declaration.id.name !== font.id;
+                const declarations = path.node.declaration.declarations;
+
+                for (let i = 0; i < declarations.length; i++) {
+                    const declaration = declarations[i];
+
+                    // Check if this is a localFont declaration (not the one being removed)
+                    if (
+                        declaration &&
+                        t.isIdentifier(declaration.id) &&
+                        declaration.id.name !== fontIdToRemove &&
+                        t.isCallExpression(declaration.init) &&
+                        t.isIdentifier(declaration.init.callee) &&
+                        declaration.init.callee.name === 'localFont'
+                    ) {
+                        hasRemainingLocalFonts = true;
+                    }
+
+                    if (
+                        declaration &&
+                        t.isIdentifier(declaration.id) &&
+                        declaration.id.name === fontIdToRemove
+                    ) {
+                        // Extract font file paths from the local font configuration
+                        if (
+                            t.isCallExpression(declaration.init) &&
+                            t.isIdentifier(declaration.init.callee) &&
+                            declaration.init.callee.name === 'localFont' &&
+                            declaration.init.arguments.length > 0 &&
+                            t.isObjectExpression(declaration.init.arguments[0])
+                        ) {
+                            const fontConfig = declaration.init.arguments[0];
+                            const srcProp = fontConfig.properties.find(
+                                (prop) =>
+                                    t.isObjectProperty(prop) &&
+                                    t.isIdentifier(prop.key) &&
+                                    prop.key.name === 'src',
+                            );
+
+                            if (
+                                srcProp &&
+                                t.isObjectProperty(srcProp) &&
+                                t.isArrayExpression(srcProp.value)
+                            ) {
+                                // Loop through the src array to find font file paths
+                                srcProp.value.elements.forEach((element) => {
+                                    if (t.isObjectExpression(element)) {
+                                        const pathProp = element.properties.find(
+                                            (prop) =>
+                                                t.isObjectProperty(prop) &&
+                                                t.isIdentifier(prop.key) &&
+                                                prop.key.name === 'path',
+                                        );
+
+                                        if (
+                                            pathProp &&
+                                            t.isObjectProperty(pathProp) &&
+                                            t.isStringLiteral(pathProp.value)
+                                        ) {
+                                            // Get the path value
+                                            let fontFilePath = pathProp.value.value;
+                                            if (fontFilePath.startsWith('../')) {
+                                                fontFilePath = fontFilePath.substring(3); // Remove '../' prefix
+                                            }
+                                            fontFilesToDelete.push(fontFilePath);
+                                        }
+                                    }
+                                });
+                            }
                         }
-                        return true;
-                    },
-                );
+
+                        if (declarations.length === 1) {
+                            path.remove();
+                        } else {
+                            declarations.splice(i, 1);
+                        }
+                        removedFont = true;
+                        break;
+                    }
+                }
             }
         },
     });
 
-    return generate(ast, {}, content).code;
+    return { removedFont, hasRemainingLocalFonts, fontFilesToDelete, ast };
 }
 
 export function removeFontFromThemeAST(fontId: string, content: string) {

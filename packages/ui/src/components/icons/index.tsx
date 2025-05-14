@@ -1197,9 +1197,9 @@ export const Icons = {
             <path
                 d="M5.46875 9.52908V7.91302C5.46875 7.7472 5.5346 7.58827 5.65181 7.47102L10.9911 2.13174C11.4793 1.64359 12.2707 1.64359 12.7589 2.13174L12.8661 2.23897C13.3543 2.72713 13.3543 3.51859 12.8661 4.00674L7.52681 9.34608C7.40963 9.46327 7.25063 9.52908 7.08488 9.52908H5.46875Z"
                 stroke="currentColor"
-                stroke-width="0.9375"
-                stroke-linecap="square"
-                stroke-linejoin="round"
+                strokeWidth="0.9375"
+                strokeLinecap="square"
+                strokeLinejoin="round"
             />
         </svg>
     ),

@@ -17,7 +17,7 @@ import {
     validateFontImportAndExport,
 } from '@onlook/fonts';
 import type { Font } from '@onlook/models/assets';
-import { generate, parse, traverse } from '@onlook/parser';
+import { generate, parse, traverse, type NodePath } from '@onlook/parser';
 import * as FlexSearch from 'flexsearch';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -115,12 +115,26 @@ export class FontManager {
             });
         });
 
-        this.loadInitialFonts();
+        // React to sandbox connection status
+        const sandboxDisposer = reaction(
+            () => this.editorEngine.sandbox?.session.session,
+            (session) => {
+                if (session) {
+                    this.loadInitialFonts();
+                }
+            },
+            { fireImmediately: true }
+        );
 
         const fontConfigDisposer = reaction(
-            () => this.editorEngine.sandbox.readFile(this.fontConfigPath),
-            (content) => {
-                this.syncFontsWithConfigs();
+            () => this.editorEngine.sandbox?.readFile(this.fontConfigPath),
+            async (contentPromise) => {
+                if (contentPromise) {
+                    const content = await contentPromise;
+                    if (content) {
+                        this.syncFontsWithConfigs();
+                    }
+                }
             },
             { fireImmediately: true },
         );
@@ -151,7 +165,7 @@ export class FontManager {
             { fireImmediately: true },
         );
 
-        this.disposers.push(fontConfigDisposer, defaultFontDisposer);
+        this.disposers.push(sandboxDisposer, fontConfigDisposer, defaultFontDisposer);
     }
 
     private convertFont(font: RawFont): Font {
@@ -598,8 +612,7 @@ export class FontManager {
                                     declarator &&
                                     isValidLocalFontDeclaration(declarator, fontName)
                                 ) {
-                                    const configObject = declarator.init
-                                        ?.arguments[0] as t.ObjectExpression;
+                                    const configObject = declarator.init?.arguments[0] as t.ObjectExpression;
                                     const srcProp = configObject.properties.find((prop) =>
                                         isPropertyWithName(prop, 'src'),
                                     );
