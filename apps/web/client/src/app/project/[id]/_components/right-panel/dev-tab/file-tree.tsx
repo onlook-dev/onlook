@@ -7,7 +7,6 @@ import { Input } from '@onlook/ui/input';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import useResizeObserver from 'use-resize-observer';
 import { nanoid } from 'nanoid';
 import path from 'path';
 import { useEditorEngine } from '@/components/store/editor';
@@ -15,19 +14,32 @@ import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus
 
 interface FileTreeProps {
     onFileSelect: (filePath: string) => void;
+    files: string[];
 }
 
-export const FileTree = ({ onFileSelect }: FileTreeProps) => {
+export const FileTree = ({ onFileSelect, files }: FileTreeProps) => {
     const editorEngine = useEditorEngine();
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const [treeData, setTreeData] = useState<FileNode[]>([]);
     const treeRef = useRef<TreeApi<FileNode>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const { ref: filesContainerRef, width: filesWidth } = useResizeObserver();
+    const [filesWidth, setFilesWidth] = useState(250);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+        const resizeObserver = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                setFilesWidth(entry.contentRect.width);
+            }
+        });
+        resizeObserver.observe(containerRef.current);
+        return () => resizeObserver.disconnect();
+    }, []);
 
     // Convert flat file paths to tree structure
-    const buildFileTree = (files: string[]): FileNode[] => {
+    const buildFileTree = useMemo(() => (files: string[]): FileNode[] => {
         const root: FileNode = {
             id: 'root',
             name: 'root',
@@ -63,32 +75,12 @@ export const FileTree = ({ onFileSelect }: FileTreeProps) => {
         });
 
         return root.children || [];
-    };
+    }, []);
 
-    // Initial tree data load
+    // Update tree data only when files change
     useEffect(() => {
-        const loadInitialData = async () => {
-            const files = await editorEngine.sandbox.listAllFiles();
-            
-            setTreeData(buildFileTree(files));
-        };
-        loadInitialData();
-    }, [editorEngine.sandbox]);
-
-    // Subscribe to file events
-    useEffect(() => {
-        const handleFileEvent = async (event: FileEvent) => {
-            const files = await editorEngine.sandbox.listAllFiles();
-            setTreeData(buildFileTree(files));
-        };
-
-        // Subscribe to all file events
-        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
-
-        return () => {
-            unsubscribe();
-        };
-    }, [editorEngine.sandbox]);
+        setTreeData(buildFileTree(files));
+    }, [files, buildFileTree]);
 
     // Filter files based on search
     const filteredFiles = useMemo(() => {
@@ -180,7 +172,7 @@ export const FileTree = ({ onFileSelect }: FileTreeProps) => {
 
     return (
         <div
-            ref={filesContainerRef}
+            ref={containerRef}
             className="w-64 h-full border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
         >
             <div className="flex flex-col h-full overflow-hidden">
