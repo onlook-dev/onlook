@@ -41,9 +41,6 @@ spin.
 ### Installation
 
 1. Hosted version coming soon
-2. Run locally
-
-### Run locally
 
 ### Usage
 
