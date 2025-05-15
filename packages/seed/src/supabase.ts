@@ -10,7 +10,7 @@ export const seedUser = async () => {
 
     const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-    const { data: existingUser } = await supabase.auth.admin.getUserById(USER_ID);
+    const { data: { user: existingUser } } = await supabase.auth.admin.getUserById(USER_ID);
 
     if (existingUser) {
         console.log('User already exists, skipping user creation');

@@ -1,7 +1,9 @@
 'use server';
 
+import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { SignInMethod } from '@onlook/models';
+import { USER_EMAIL, USER_PASSWORD } from '@onlook/seed';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -31,4 +33,31 @@ export async function login(provider: SignInMethod) {
     }
 
     redirect(data.url);
+}
+
+export async function devLogin() {
+    if (process.env.NODE_ENV !== 'development') {
+        throw new Error('Dev login is only available in development mode');
+    }
+
+    const supabase = await createClient();
+
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
+    if (session) {
+        redirect('/');
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: USER_EMAIL,
+        password: USER_PASSWORD,
+    });
+
+    if (error) {
+        console.error('Error signing in with password:', error);
+        throw new Error('Error signing in with password');
+    }
+
+    redirect(Routes.HOME);
 }

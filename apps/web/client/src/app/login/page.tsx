@@ -7,11 +7,12 @@ import { Icons } from '@onlook/ui/icons';
 import localforage from 'localforage';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { login } from './actions';
+import { devLogin, login } from './actions';
 
 const LAST_SIGN_IN_METHOD_KEY = 'lastSignInMethod';
 
 export default function LoginPage() {
+    const isDev = process.env.NODE_ENV === 'development';
     const t = useTranslations();
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
     const [isPending, setIsPending] = useState(false);
@@ -31,6 +32,14 @@ export default function LoginPage() {
             setIsPending(false);
         }, 5000);
     };
+
+    const handleDevLogin = async () => {
+        setIsPending(true);
+        await devLogin();
+        setTimeout(() => {
+            setIsPending(false);
+        }, 5000);
+    }
 
     return (
         <div className="flex h-screen w-screen">
@@ -94,7 +103,13 @@ export default function LoginPage() {
                                 </p>
                             )}
                         </div>
+
                     </div>
+                    {isDev && (
+                        <Button variant="outline" className="w-full text-active text-small" onClick={handleDevLogin}>
+                            DEV MODE: Sign in as demo user
+                        </Button>
+                    )}
                     <p className="text-small text-foreground-onlook">
                         {t('welcome.terms.agreement')}{' '}
                         <button
