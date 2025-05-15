@@ -1,0 +1,53 @@
+---
+title: Core Systems
+description: Core systems that power Onlook
+---
+
+# Core Systems
+
+Onlook is composed of several core systems that work together to provide its functionality.
+
+## Editor System
+
+The Editor System is the central part of Onlook that orchestrates all editing functionality.
+
+- **EditorEngine**: Central orchestrator containing managers for all editor functionality
+- **ElementManager**: Handles element selection, manipulation and deletion in webviews
+- **OverlayManager**: Displays visual helpers on canvas (selection rectangles, resize handles)
+
+## Webview System
+
+The Webview System renders web content and provides an interaction layer for editing.
+
+- **Frame Component**: Renders and manages the webview
+- **WebviewManager**: Tracks state of webviews, manages selection and deselection
+
+## Project Management System
+
+The Project Management System handles project lifecycle management.
+
+- **ProjectsManager**: Manages project lifecycle; creates, updates, selects projects
+- **RunManager**: Controls starting, stopping and restarting projects
+- **DomainsManager**: Manages base and custom domains for projects
+- **HostingManager**: Deploys projects to hosting environments
+
+## AI Chat System
+
+The AI Chat System provides AI assistance for editing and code generation.
+
+- **ChatManager**: Orchestrates AI chat functionality, sends requests to LLM
+- **LlmManager**: Interfaces with AI models (Anthropic Claude)
+
+## Layer and DOM Management
+
+The Layer and DOM Management system provides a hierarchical view of the DOM structure.
+
+- **LayersManager**: Stores and manages hierarchical representation of DOM structure
+- **LayerNode**: Object representing a DOM element in the layer tree
+
+## Style System
+
+The Style System manages styling for elements.
+
+- **StyleManager**: Updates and manages element styling
+- **ThemeManager**: Manages Tailwind CSS color themes and configuration

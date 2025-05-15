@@ -1,0 +1,50 @@
+---
+title: Architecture
+description: Overview of Onlook's architecture
+---
+
+# Onlook Architecture
+
+Onlook is structured as a monorepo with several interconnected apps and packages, primarily built using Next.js, React, TypeScript, and Vite.
+
+## Directory Structure
+
+```
+onlook/
+├── apps/
+│   ├── web/                       # Web application components
+│   │   ├── client/                # Client-side application
+│   │   ├── server/                # Server-side code
+│   │   ├── preload/               # Preload scripts
+│   │   └── template/              # Templates
+├── packages/
+│   ├── foundation/                # Core utilities and helpers
+│   ├── models/                    # Shared data models and types
+│   ├── ui/                        # Reusable UI components
+│   ├── utility/                   # Generic utility functions
+│   └── ai/                        # AI integration utilities
+```
+
+## Communication Architecture
+
+The application uses a three-tier communication architecture:
+
+- **Client**: Contains the UI and user interaction logic
+- **Server**: Handles file system operations, project execution, AI communication, and deployment
+- **Webviews**: Display the actual web content being edited
+
+Communication between these layers happens through:
+
+- **API Endpoints**: REST APIs for client-server communication
+- **WebviewChannels**: Communication between the client and webviews
+
+## Build and CI/CD
+
+The application is built using a combination of:
+- **Next.js**: For frontend development and bundling
+- **GitHub Actions**: For CI/CD, defined in `.github/workflows/build.yml`
+
+The build pipeline handles:
+- Building the application for multiple platforms (macOS, Windows)
+- Code signing and notarization 
+- Releasing to GitHub Releases
