@@ -3,10 +3,10 @@
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@onlook/ui/tooltip";
 import { LayoutMode } from '@onlook/utility';
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { InputDropdown } from '../inputs/input-dropdown';
+import { HoverOnlyTooltip } from '../HoverOnlyTooltip';
 
 export const Height = () => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
@@ -14,31 +14,27 @@ export const Height = () => {
 
     return (
         <DropdownMenu>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <Button
+            <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow>
+                <DropdownMenuTrigger asChild>
+                    <Button
                             variant="ghost"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            size="toolbar"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
                             <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
                             {(dimensionState.height.unit === 'px'
                                 ? dimensionState.height.num !== undefined
                                 : (dimensionState.height.value && dimensionState.height.value !== "auto")
                             ) && (
-                                <span className="text-smallPlus">
+                                <span className="text-small">
                                     {dimensionState.height.unit === 'px'
                                         ? dimensionState.height.num
                                         : dimensionState.height.value}
                                 </span>
                             )}
                         </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                    Height
-                </TooltipContent>
-            </Tooltip>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent
                 align="start"
                 className="mt-1 w-[280px] space-y-3 rounded-lg p-3"

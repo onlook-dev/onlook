@@ -32,16 +32,16 @@ export const ColorBackground = () => {
         <div className="flex flex-col gap-2">
             <Popover>
                 <PopoverTrigger>
-                    <div className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border px-5 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white">
-                        <Icons.PaintBucket className="h-4 w-4" />
+                    <div className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center rounded-md border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white">
+                        <Icons.PaintBucket className="h-2 w-2" />
                         <div
-                            className="h-[2.5px] w-5.5 rounded-full bg-current"
+                            className="h-[4px] w-6 rounded-full bg-current"
                             style={{ backgroundColor: tempColor }}
                         />
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    className="w-[220px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"
                     align="start"
                 >
