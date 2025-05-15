@@ -1,5 +1,6 @@
 {
     "name": "@onlook/db",
+    "description": "Drizzle database schema",
     "version": "0.0.0",
     "private": true,
     "main": "./src/index.ts",
@@ -9,8 +10,7 @@
         "typecheck": "tsc --noEmit",
         "db:gen": "drizzle-kit generate",
         "db:push": "drizzle-kit push",
-        "db:studio": "drizzle-kit studio",
-        "db:seed": "bun src/seed.ts"
+        "db:studio": "drizzle-kit studio"
     },
     "dependencies": {
         "dotenv": "^16.5.0",

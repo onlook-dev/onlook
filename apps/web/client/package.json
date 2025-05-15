@@ -102,7 +102,8 @@
         "prettier-plugin-tailwindcss": "^0.6.11",
         "tailwindcss": "^4.0.15",
         "typescript": "^5.8.2",
-        "typescript-eslint": "^8.27.0"
+        "typescript-eslint": "^8.27.0",
+        "@onlook/seed": "*"
     },
     "ct3aMetadata": {
         "initVersion": "7.39.2"

@@ -70,19 +70,35 @@ These are the prerequisites for running Onlook locally.
     CSB_API_KEY=<Your api key from https://codesandbox.io/api >
 
     # Drizzle
-    DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
     # Anthropic
     ANTHROPIC_API_KEY=<Your api key from https://console.anthropic.com/settings/keys >
     ```
 
-### 6. Initialize database
+### 6. Initialize the database
 
+Set up the database schema
    ```bash
    bun db:push
    ```
 
-### 7. Run development server
+### 7. Seed the database with test data
+
+Set environment variables for the seed script under the `packages/seed` directory.
+
+    ```properties
+    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+    SUPABASE_URL=http://localhost:54321
+    SUPABASE_SERVICE_ROLE_KEY=<Your service role key from Supabase>
+    ```
+
+Seed the database with test data. This will create the user along with a test project.
+   ```bash
+   bun seed
+   ```
+
+### 8. Run development server
 
    ```bash
    bun dev
