@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "next build",
-        "dev": "next dev --turbo",
+        "dev": "next dev",
         "start": "next start",
         "postinstall": "fumadocs-mdx"
     },
@@ -14,7 +14,8 @@
         "react-dom": "^19.1.0",
         "fumadocs-ui": "15.3.1",
         "fumadocs-core": "15.3.1",
-        "fumadocs-mdx": "11.6.3"
+        "fumadocs-mdx": "11.6.3",
+        "@onlook/ui": "*"
     },
     "devDependencies": {
         "@types/node": "22.15.12",

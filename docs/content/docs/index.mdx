@@ -1,13 +1,53 @@
 ---
-title: Hello World
-description: Your first document
+title: Running Onlook
+description: Setup instructions for contributors
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+# Running Onlook Locally
 
-## What is Next?
+## Prerequisites
 
-<Cards>
+- [Bun](https://bun.sh)
+- [Docker](https://docs.docker.com/get-started/get-docker/)
+
+## Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/onlook-dev/onlook
+   cd onlook
+   ```
+
+2. **Install dependencies**
+   ```bash
+   bun install
+   ```
+
+3. **Get Codesandbox API key**
+   Request an API key from Codesandbox. This is used to run the dev containers. It should be free to use: https://codesandbox.io/api
+
+4. **Set environment variables**
+   Create a `.env` file based on the example template.
+
+5. **Run Supabase**
+   First, download [Docker](https://docs.docker.com/get-started/get-docker/) if not already installed.
+   ```bash
+   bun supabase:start
+   ```
+
+6. **Initialize database**
+   ```bash
+   bun db:push
+   ```
+
+7. **Run development server**
+   ```bash
+   bun dev
+   ```
+
+## What's Next?
+
+<Cards >
   <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
   <Card title="Learn more about Fumadocs" href="https://fumadocs.vercel.app" />
 </Cards>
