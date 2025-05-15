@@ -131,7 +131,7 @@ const message4 = {
 } satisfies Message;
 
 export const seedDb = async () => {
-    console.log('Seeding the database..');
+    console.log('Seeding the database...');
 
     await db.transaction(async (tx) => {
         await tx.insert(users).values(user0);
@@ -171,7 +171,7 @@ export const seedDb = async () => {
 };
 
 export const resetDb = async () => {
-    console.log('Resetting the database..');
+    console.log('Resetting the database...');
     await db.transaction(async (tx) => {
         await tx.delete(messages);
         await tx.delete(conversations);

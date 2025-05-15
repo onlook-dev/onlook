@@ -7,9 +7,6 @@ config();
 
 (async () => {
     try {
-        if (process.env.NODE_ENV === 'production') {
-            throw new Error('Resetting the database in production is not allowed');
-        }
         if (!process.env.SUPABASE_DATABASE_URL || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
             const missingVars = [];
             if (!process.env.SUPABASE_DATABASE_URL) missingVars.push('SUPABASE_DATABASE_URL');

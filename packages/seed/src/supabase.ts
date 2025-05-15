@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { USER_EMAIL, USER_ID, USER_PASSWORD } from "./constants";
 
 export const seedUser = async () => {
-    console.log('Seeding Supabase user..');
+    console.log('Seeding Supabase user...');
 
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
         throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
