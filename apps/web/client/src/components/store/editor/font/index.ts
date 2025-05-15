@@ -30,6 +30,7 @@ import { DefaultSettings } from '@onlook/constants';
 import { getFontFileName } from '@onlook/utility';
 import * as pathModule from 'path';
 import { normalizePath } from '../sandbox/helpers';
+import { BrandTabValue } from '@onlook/models';
 
 type TraverseCallback = (
     classNameAttr: t.JSXAttribute,
@@ -117,17 +118,17 @@ export class FontManager {
 
         // React to sandbox connection status
         const sandboxDisposer = reaction(
-            () => this.editorEngine.sandbox?.session.session,
+            () => this.editorEngine.state.brandTab === BrandTabValue.FONTS && this.editorEngine.sandbox?.session.session,
             (session) => {
                 if (session) {
                     this.loadInitialFonts();
                 }
             },
-            { fireImmediately: true }
+            { fireImmediately: true },
         );
 
         const fontConfigDisposer = reaction(
-            () => this.editorEngine.sandbox?.readFile(this.fontConfigPath),
+            () => this.editorEngine.state.brandTab === BrandTabValue.FONTS && this.editorEngine.sandbox?.readFile(this.fontConfigPath),
             async (contentPromise) => {
                 if (contentPromise) {
                     const content = await contentPromise;
@@ -1334,13 +1335,11 @@ export class FontManager {
                 return false;
             }
 
-            const ast = removeFontFromThemeAST(font.id, content);
+            const code = removeFontFromThemeAST(font.id, content);
 
-            if (!ast) {
+            if (!code) {
                 return false;
             }
-
-            const { code } = generate(ast);
             return await sandbox.writeFile(this.tailwindConfigPath, code);
         } catch (error) {
             console.error('Error removing font from Tailwind config:', error);
