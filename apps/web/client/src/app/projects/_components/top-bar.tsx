@@ -47,7 +47,7 @@ export const TopBar = () => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
-                            className="text-sm text-foreground-onlook focus:outline-none"
+                            className="text-sm text-foreground-onlook focus:outline-none hover:bg-background-onlook cursor-pointer"
                             variant="ghost"
                         >
                             <Icons.Plus className="w-5 h-5 mr-2" />
