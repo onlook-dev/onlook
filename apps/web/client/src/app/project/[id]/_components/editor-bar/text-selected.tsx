@@ -11,7 +11,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Color, convertFontWeight } from '@onlook/utility';
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { StateDropdown } from './dropdowns/state-dropdown';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ColorPickerContent } from './inputs/color-picker';
@@ -59,8 +59,8 @@ const FontWeightSelector = memo(
                         key={weight.value}
                         onClick={() => handleFontWeightChange(weight.value)}
                         className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontWeight === weight.value
-                                ? "bg-background-tertiary/20 border-border border text-white"
-                                : ""
+                            ? "bg-background-tertiary/20 border-border border text-white"
+                            : ""
                             }`}
                     >
                         {weight.name}
@@ -122,8 +122,8 @@ const FontSizeSelector = memo(
                                 key={size}
                                 onClick={() => handleFontSizeChange(size)}
                                 className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
-                                        ? 'bg-background-tertiary/20 border-border border text-white'
-                                        : ''
+                                    ? 'bg-background-tertiary/20 border-border border text-white'
+                                    : ''
                                     }`}
                             >
                                 {size}
@@ -187,8 +187,8 @@ const TextAlignSelector = memo(
                         key={value}
                         onClick={() => handleTextAlignChange(value)}
                         className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
-                                ? "bg-background-tertiary/20 border-border border text-white"
-                                : ""
+                            ? "bg-background-tertiary/20 border-border border text-white"
+                            : ""
                             }`}
                     >
                         <Icon className="h-4 w-4" />
@@ -239,7 +239,7 @@ export const TextSelected = () => {
     );
 };
 
-const TextColor = 
+const TextColor =
     ({
         handleTextColorChange,
         textColor,
@@ -248,7 +248,7 @@ const TextColor =
         textColor: string;
     }) => {
         const [tempColor, setTempColor] = useState<Color>(Color.from(textColor));
-        
+
 
         const handleColorChange = (newColor: Color) => {
             try {
@@ -262,7 +262,7 @@ const TextColor =
             try {
                 setTempColor(newColor);
                 handleTextColorChange(newColor.toHex());
-                
+
             } catch (error) {
                 console.error('Error converting color:', error);
             }
@@ -280,7 +280,7 @@ const TextColor =
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="z-10 w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    className="w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"
                     align="start"
                 >

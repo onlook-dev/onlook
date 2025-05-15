@@ -41,7 +41,7 @@ export const ColorBackground = () => {
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="z-10 w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    className="w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"
                     align="start"
                 >
