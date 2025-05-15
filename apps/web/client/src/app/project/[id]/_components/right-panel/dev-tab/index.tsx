@@ -13,10 +13,11 @@ import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions, getLanguageFromFileName } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
+import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 
 enum TabValue {
     CONSOLE = 'console',
@@ -50,7 +51,7 @@ export const DevTab = observer(() => {
     const [highlightRange, setHighlightRange] = useState<CodeRange | null>(null);
     const [isDirty, setIsDirty] = useState(false);
     const [isFilesVisible, setIsFilesVisible] = useState(true);
-
+    const [files, setFiles] = useState<string[]>([]);
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
 
@@ -149,14 +150,14 @@ export const DevTab = observer(() => {
             for (let i = 0; i < highlightRange.startLineNumber - 1; i++) {
                 startPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
-            startPos += highlightRange.startColumn - 1;
+            startPos += highlightRange.startColumn;
 
             // Calculate end position
             let endPos = 0;
             for (let i = 0; i < highlightRange.endLineNumber - 1; i++) {
                 endPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
-            endPos += highlightRange.endColumn - 1;
+            endPos += highlightRange.endColumn;
             if (
                 startPos >= activeFile.content.length ||
                 endPos > activeFile.content.length ||
@@ -184,6 +185,64 @@ export const DevTab = observer(() => {
             setHighlightRange(null);
         }
     }, [highlightRange, activeFile]);
+
+    // Subscribe to file events
+    useEffect(() => {
+        const handleFileEvent = async (event: FileEvent) => {
+            // Only fetch all files on initial load or when files are added/removed
+            if (event.type === 'add' || event.type === 'remove' || files.length === 0) {
+                const files = await editorEngine.sandbox.listAllFiles();
+                setFiles(files);
+            }
+
+            if (event.type === 'change') {
+                if (activeFile) {
+                    if (event.paths.includes(activeFile.path)) {
+                        await loadNewContent(activeFile.path);
+                    }
+                }
+            }
+        };
+        // Subscribe to all file events
+        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
+
+        return () => {
+            unsubscribe();
+        };
+    }, [editorEngine.sandbox, activeFile]);
+
+    async function loadNewContent(filePath: string) {
+        try {
+            const existedFileIndex = openedFiles.findIndex((f) => f.path === filePath);
+            if (existedFileIndex === -1) {
+                console.error('File not found:', filePath);
+                return;
+            }
+
+            const content = await editorEngine.sandbox.readFile(filePath);
+            if (content) {
+                const existingFile = openedFiles[existedFileIndex];
+                if (!existingFile) {
+                    console.error('File not found:', filePath);
+                    return;
+                }
+                
+                const newFile: EditorFile = {
+                    id: existingFile.id,
+                    filename: existingFile.filename,
+                    path: existingFile.path,
+                    language: existingFile.language,
+                    isDirty: existingFile.isDirty,
+                    content: content,
+                };
+                const updatedFiles = [...openedFiles];
+                updatedFiles.splice(existedFileIndex, 1, newFile);
+                setOpenedFiles(updatedFiles);
+            }
+        } catch (error) {
+            console.error('Error loading new content:', error);
+        }
+    }
 
     async function loadFile(filePath: string): Promise<EditorFile | null> {
         try {
@@ -357,10 +416,10 @@ export const DevTab = observer(() => {
         const updatedFiles = openedFiles.map((file) =>
             file.id === fileId
                 ? {
-                    ...file,
-                    content: content,
-                    isDirty: hasChanged,
-                }
+                      ...file,
+                      content: content,
+                      isDirty: hasChanged,
+                  }
                 : file,
         );
 
@@ -430,7 +489,7 @@ export const DevTab = observer(() => {
             </div>
 
             <div className="flex flex-1 min-h-0 overflow-hidden">
-                {isFilesVisible && <FileTree onFileSelect={loadFile} />}
+                {isFilesVisible && <FileTree onFileSelect={loadFile} files={files} />}
 
                 {/* Editor section */}
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
