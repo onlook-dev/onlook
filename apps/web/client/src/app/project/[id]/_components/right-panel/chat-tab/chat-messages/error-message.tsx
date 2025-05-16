@@ -7,8 +7,7 @@ import { observer } from 'mobx-react-lite';
 export const ErrorMessage = observer(() => {
     const editorEngine = useEditorEngine();
 
-    // TODO: Add rate limiting
-    const rateLimited: UsageCheckResult = {
+    const rateLimited: UsageCheckResult | null = true ? null : {
         reason: 'daily',
         daily_requests_limit: 100,
         monthly_requests_limit: 1000,
@@ -38,7 +37,6 @@ export const ErrorMessage = observer(() => {
         );
     }
 
-    // TODO: Add error message
     const errorMessage = null;
     if (errorMessage) {
         return (

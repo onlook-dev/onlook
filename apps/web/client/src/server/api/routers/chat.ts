@@ -32,16 +32,9 @@ export const chatRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             const dbConversations = await ctx.db.query.conversations.findMany({
                 where: eq(conversations.projectId, input.projectId),
+                orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
             });
             return dbConversations.map((conversation) => toConversation(conversation));
-        }),
-    getMessages: protectedProcedure
-        .input(z.object({ conversationId: z.string() }))
-        .query(async ({ ctx, input }) => {
-            const dbMessages = await ctx.db.query.messages.findMany({
-                where: eq(messages.conversationId, input.conversationId),
-            });
-            return dbMessages.map((message) => toMessage(message));
         }),
     saveConversation: protectedProcedure
         .input(z.object({ conversation: conversationInsertSchema }))
@@ -74,6 +67,15 @@ export const chatRouter = createTRPCRouter({
                 console.error('Error deleting conversation', error);
                 return false;
             }
+        }),
+    getMessages: protectedProcedure
+        .input(z.object({ conversationId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const dbMessages = await ctx.db.query.messages.findMany({
+                where: eq(messages.conversationId, input.conversationId),
+                orderBy: (messages, { desc }) => [desc(messages.createdAt)],
+            });
+            return dbMessages.map((message) => toMessage(message));
         }),
     saveMessage: protectedProcedure
         .input(z.object({ message: messageInsertSchema }))

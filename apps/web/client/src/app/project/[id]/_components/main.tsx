@@ -51,7 +51,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         if (!result) {
             return;
         }
-        const { project, canvas, frames } = result;
+        const { project, canvas, frames, conversation } = result;
         projectManager.project = project;
 
         if (project.sandbox?.id) {
@@ -72,9 +72,14 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             console.error('No frames');
         }
 
+        if (conversation) {
+            editorEngine.chat.conversation.setCurrentConversation(conversation);
+        }
+
         if (creationData) {
             createManager.resumeCreate();
         }
+
         return () => {
             editorEngine.sandbox.clear();
         };
