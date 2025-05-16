@@ -5,6 +5,7 @@ export interface Project {
         createdAt: string;
         updatedAt: string;
         previewImg: string | null;
+        description: string | null;
     };
     sandbox: {
         id: string;

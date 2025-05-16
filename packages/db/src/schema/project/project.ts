@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { userProjects } from '../user';
 import { canvases } from './canvas';
@@ -13,6 +13,7 @@ export const projects = pgTable("projects", {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     previewImg: varchar("preview_img"),
+    description: text("description"),
 }).enableRLS();
 
 export const projectInsertSchema = createInsertSchema(projects);
