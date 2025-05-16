@@ -25,6 +25,20 @@ export const chatRouter = createTRPCRouter({
                 toConversation(conversation, conversation.messages),
             );
         }),
+    getConversationById: protectedProcedure
+        .input(z.object({ conversationId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const dbConversation = await ctx.db.query.conversations.findFirst({
+                where: eq(conversations.id, input.conversationId),
+                with: {
+                    messages: true,
+                },
+            });
+            if (!dbConversation) {
+                return null;
+            }
+            return toConversation(dbConversation, dbConversation.messages);
+        }),
     saveConversation: protectedProcedure
         .input(z.object({ conversation: conversationInsertSchema }))
         .mutation(async ({ ctx, input }) => {

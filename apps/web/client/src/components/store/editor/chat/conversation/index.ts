@@ -13,6 +13,7 @@ import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
 export class ConversationManager {
     projectId: string | null = null;
     current: ChatConversationImpl | null = null;
+    activeConversationId: string | null = null;
     conversations: ChatConversationImpl[] = [];
 
     constructor(
@@ -38,8 +39,10 @@ export class ConversationManager {
         this.conversations = await this.getConversations(project.id);
         if (this.conversations.length === 0 && !this.conversations[0]) {
             this.current = new ChatConversationImpl(project.id, []);
+            this.activeConversationId = this.current.id;
         } else {
             this.current = this.conversations[0] ?? null;
+            this.activeConversationId = this.current?.id ?? null;
         }
     }
 
@@ -73,6 +76,7 @@ export class ConversationManager {
             return;
         }
         this.current = new ChatConversationImpl(this.projectId, []);
+        this.activeConversationId = this.current.id;
         this.conversations.push(this.current);
         this.saveConversationToStorage();
     }
@@ -84,6 +88,7 @@ export class ConversationManager {
             return;
         }
         this.current = match;
+        this.activeConversationId = id;
     }
 
     deleteConversation(id: string) {
@@ -106,8 +111,10 @@ export class ConversationManager {
         if (this.current.id === id) {
             if (this.conversations.length > 0) {
                 this.current = this.conversations[0] ?? null;
+                this.activeConversationId = this.current?.id ?? null;
             } else {
                 this.current = new ChatConversationImpl(this.projectId, []);
+                this.activeConversationId = this.current.id;
                 this.conversations.push(this.current);
             }
         }
@@ -145,6 +152,12 @@ export class ConversationManager {
     }
 
     async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
+        if (this.activeConversationId) {
+            const conversation = await api.chat.getConversationById.query({ 
+                conversationId: this.activeConversationId 
+            });
+            return conversation ? [conversation] : null;
+        }
         const res = await api.chat.getConversation.query({ projectId: id });
         return res;
     }

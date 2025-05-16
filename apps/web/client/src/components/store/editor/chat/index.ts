@@ -134,6 +134,7 @@ export class ChatManager {
         this.context.clear();
         if (this.conversation) {
             this.conversation.current = null;
+            this.conversation.activeConversationId = null;
         }
     }
 }
