@@ -70,3 +70,5 @@ export const DefaultSettings = {
 };
 
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
+
+export const RECENT_COLOR_STORAGE_KEY = 'recent-colors';

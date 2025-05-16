@@ -20,6 +20,7 @@ const ColorSquare = ({ color }: ColorSquareProps) => (
 
 export const BrandTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const recentColors = editorEngine.theme.recentColorList;
 
     useEffect(() => {
         editorEngine.font.scanFonts();
@@ -65,6 +66,18 @@ export const BrandTab = observer(() => {
                     <div className="grid grid-cols-6 gap-1">
                         {brandColors.map((color, index) => (
                             <ColorSquare key={`brand-color-${index}`} color={color} />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mt-4">
+                    <div className="flex justify-between items-center">
+                        <span className="text-sm">Recent Colors</span>
+                    </div>
+
+                    <div className="grid grid-cols-6 gap-1">
+                        {recentColors.map((color, index) => (
+                            <ColorSquare key={`recent-color-${index}`} color={color} />
                         ))}
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import type { ProjectManager } from '@/components/store/project/manager';
-import { DEFAULT_COLOR_NAME } from '@onlook/constants';
+import { DEFAULT_COLOR_NAME, RECENT_COLOR_STORAGE_KEY } from '@onlook/constants';
 import type {
     ClassReplacement,
     ColorUpdate,
@@ -47,12 +47,34 @@ export class ThemeManager {
     private defaultColors: Record<string, TailwindColor[]> = {};
     private configPath: string | null = null;
     private cssPath: string | null = null;
+    private recentColors: string[] = [];
+    private readonly MAX_RECENT_COLORS = 12;
 
     constructor(
         private editorEngine: EditorEngine,
         private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
+        this.loadRecentColors();
+    }
+
+    private loadRecentColors() {
+        try {
+            const storedColors = localStorage.getItem(RECENT_COLOR_STORAGE_KEY);
+            if (storedColors) {
+                this.recentColors = JSON.parse(storedColors);
+            }
+        } catch (error) {
+            console.error('Error loading recent colors:', error);
+        }
+    }
+
+    private saveRecentColors() {
+        try {
+            localStorage.setItem(RECENT_COLOR_STORAGE_KEY, JSON.stringify(this.recentColors));
+        } catch (error) {
+            console.error('Error saving recent colors:', error);
+        }
     }
 
     async scanConfig() {
@@ -527,6 +549,8 @@ export class ThemeManager {
 
             const originalKey = this.brandColors[originalGroupName]?.[index]?.originalKey ?? '';
 
+            this.addRecentColors(newColor.toHex());
+
             // If is selected element, update the color in real-time
             // Base on the class name, find the styles to update
 
@@ -577,6 +601,7 @@ export class ThemeManager {
             return;
         }
         try {
+            this.addRecentColors(newColor.toHex());
             await this.updateTailwindColorConfig(
                 `${colorFamily}-${index * 100}`,
                 newColor.toHex(),
@@ -1248,8 +1273,24 @@ export class ThemeManager {
         );
     }
 
+    addRecentColors(color: string) {
+        this.recentColors = this.recentColors.filter((c) => c !== color);
+        this.recentColors.unshift(color);
+
+        if (this.recentColors.length > this.MAX_RECENT_COLORS) {
+            this.recentColors = this.recentColors.slice(0, this.MAX_RECENT_COLORS);
+        }
+
+        this.saveRecentColors();
+    }
+
+    get recentColorList() {
+        return this.recentColors;
+    }
+
     clear() {
         this.brandColors = {};
         this.defaultColors = {};
+        this.saveRecentColors();
     }
 }

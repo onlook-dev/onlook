@@ -5,6 +5,7 @@ import { toNormalCase, type Color } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 import { ColorNameInput } from './color-name-input';
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
+import { useEditorEngine } from '@/components/store/editor';
 import { ColorPickerContent } from '../../../editor-bar/inputs/color-picker';
 
 export const ColorPopover = ({
@@ -26,9 +27,11 @@ export const ColorPopover = ({
 }) => {
     const [editedColor, setEditedColor] = useState<Color>(color);
     const [editedName, setEditedName] = useState<string>(brandColor);
+    const editorEngine = useEditorEngine();
 
     const handleColorChange = (newColor: Color) => {
         setEditedColor(newColor);
+        editorEngine.theme.addRecentColors(newColor.toHex());
     };
 
     const handleNameChange = (newName: string) => {
