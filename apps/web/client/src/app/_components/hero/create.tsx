@@ -28,6 +28,7 @@ export function Create() {
     const [selectedImages, setSelectedImages] = useState<ImageMessageContext[]>([]);
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [isHandlingFile, setIsHandlingFile] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
     const imageRef = useRef<HTMLInputElement>(null);
@@ -49,17 +50,30 @@ export function Create() {
             console.error('No user ID found');
             return;
         }
-        const project = await createManager.startCreate(userManager.user?.id, prompt, images);
-        if (!project) {
-            console.error('Failed to create project');
+
+        setIsLoading(true);
+        try {
+            const project = await createManager.startCreate(userManager.user?.id, prompt, images);
+            if (!project) {
+                console.error('Failed to create project');
+                toast({
+                    title: 'Failed to create project',
+                    description: 'Please try again',
+                    variant: 'destructive',
+                });
+                return;
+            }
+            router.push(`/project/${project.id}`);
+        } catch (error) {
+            console.error('Error creating project:', error);
             toast({
                 title: 'Failed to create project',
                 description: 'Please try again',
                 variant: 'destructive',
             });
-            return;
+        } finally {
+            setIsLoading(false);
         }
-        router.push(`/project/${project.id}`);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -350,17 +364,21 @@ export function Create() {
                                                     ? 'text-primary'
                                                     : 'bg-foreground-primary text-white hover:bg-foreground-hover',
                                             )}
-                                            disabled={isInputInvalid}
+                                            disabled={isInputInvalid || isLoading}
                                             onClick={handleSubmit}
                                         >
-                                            <Icons.ArrowRight
-                                                className={cn(
-                                                    'w-5 h-5',
-                                                    !isInputInvalid
-                                                        ? 'text-background'
-                                                        : 'text-foreground-primary',
-                                                )}
-                                            />
+                                            {isLoading ? (
+                                                <Icons.Shadow className="w-5 h-5 animate-spin text-background" />
+                                            ) : (
+                                                <Icons.ArrowRight
+                                                    className={cn(
+                                                        'w-5 h-5',
+                                                        !isInputInvalid
+                                                            ? 'text-background'
+                                                            : 'text-foreground-primary',
+                                                    )}
+                                                />
+                                            )}
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipPortal>
@@ -377,8 +395,14 @@ export function Create() {
                     variant="outline"
                     className="w-fit mx-auto bg-background-secondary/90 text-sm border text-foreground-secondary"
                     onClick={handleBlankSubmit}
+                    disabled={isLoading}
                 >
-                    <Icons.File className="w-4 h-4 mr-2" /> {t('projects.prompt.blankStart')}
+                    {isLoading ? (
+                        <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                        <Icons.File className="w-4 h-4 mr-2" />
+                    )}
+                    {t('projects.prompt.blankStart')}
                 </Button>
             </div>
         </div>
