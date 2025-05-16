@@ -15,6 +15,7 @@ export const toProject = (
             createdAt: dbProject.createdAt.toISOString(),
             updatedAt: dbProject.updatedAt.toISOString(),
             previewImg: dbProject.previewImg,
+            description: dbProject.description,
         },
     };
 };
@@ -28,5 +29,6 @@ export const fromProject = (project: Project): DbProject => {
         createdAt: new Date(project.metadata.createdAt),
         updatedAt: new Date(project.metadata.updatedAt),
         previewImg: project.metadata.previewImg,
+        description: project.metadata.description,
     };
 };

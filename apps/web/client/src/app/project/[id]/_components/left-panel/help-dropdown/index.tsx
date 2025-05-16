@@ -1,16 +1,14 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
-import { Language, LANGUAGE_DISPLAY_NAMES, Links } from '@onlook/constants';
-import { SystemTheme } from '@onlook/models/assets';
+import { Links } from '@onlook/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -41,7 +39,7 @@ export const HelpDropdown = observer(() => {
                 sideOffset={-55}
                 className="w-48"
             >
-                <DropdownMenuSub>
+                {/* <<DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">
                         {theme === SystemTheme.DARK && <Icons.Moon className="w-4 h-4 mr-2" />}
                         {theme === SystemTheme.LIGHT && <Icons.Sun className="w-4 h-4 mr-2" />}
@@ -102,16 +100,17 @@ export const HelpDropdown = observer(() => {
                     <Icons.Keyboard className="w-4 h-4 mr-2" />
                     {t('help.menu.shortcuts')}
                 </DropdownMenuItem>
-                <DropdownMenuItem
+                DropdownMenuItem
                     className="text-sm"
                     onClick={() => (editorEngine.state.settingsOpen = true)}
                 >
                     <Icons.Gear className="w-4 h-4 mr-2" />
                     {t('help.menu.openSettings')}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                </DropdownMenuItem> 
+                <DropdownMenuSeparator />*/}
+
                 <DropdownMenuSub>
-                    <DropdownMenuSubTrigger className="text-sm">
+                    <DropdownMenuSubTrigger className="text-sm gap-2">
                         <Icons.EnvelopeClosed className="w-4 h-4 mr-2" />
                         {t('help.menu.contactUs.title')}
                     </DropdownMenuSubTrigger>

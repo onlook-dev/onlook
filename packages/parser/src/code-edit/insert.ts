@@ -91,9 +91,7 @@ export function insertAtIndex(
 ): void {
     if (index !== -1) {
         const jsxElements = path.node.children.filter(jsxFilter);
-
-        const targetIndex = Math.min(index, jsxElements.length);
-
+        const targetIndex = Math.max(0, Math.min(index, jsxElements.length - 1));
         if (targetIndex === path.node.children.length) {
             path.node.children.push(newElement);
         } else {

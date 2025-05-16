@@ -1,6 +1,6 @@
 import type { WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
-import type { TemplateNode } from '@onlook/models';
+import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -227,7 +227,6 @@ export class SandboxManager {
         this.fileWatcher = new FileWatcher({
             session: this.session.session,
             onFileChange: async (event) => {
-                // Handle file changes
                 await this.handleFileChange(event);
             },
             excludePatterns,
@@ -238,7 +237,6 @@ export class SandboxManager {
     }
 
     async handleFileChange(event: WatchEvent) {
-        // Handle internal file sync
         for (const path of event.paths) {
             if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
                 continue;
@@ -267,7 +265,6 @@ export class SandboxManager {
     }
 
     async processFileForMapping(file: string) {
-        // Only process JSX files
         const extension = file.split('.').pop();
         if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
             return;

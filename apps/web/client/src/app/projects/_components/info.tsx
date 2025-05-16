@@ -53,7 +53,7 @@ export const ProjectInfo = observer(
                     </AnimatePresence>
                     <div className="flex flex-col gap-1">
                         <p className="text-foreground-tertiary text-regular mb-1 text-balance">
-                            Meta description would go here when we have the meta description ready to go.
+                            {project.metadata.description ?? 'No description'}
                         </p>
                     </div>
                     <p className="text-foreground-tertiary text-mini mb-2">
