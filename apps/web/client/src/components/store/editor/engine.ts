@@ -34,12 +34,12 @@ export class EditorEngine {
     readonly pages: PagesManager;
     readonly canvas: CanvasManager;
 
-    readonly state: StateManager = new StateManager();
+    readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly state: StateManager = new StateManager(this.text);
     readonly sandbox: SandboxManager = new SandboxManager();
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
-    readonly text: TextEditingManager = new TextEditingManager(this);
     readonly insert: InsertManager = new InsertManager(this);
     readonly move: MoveManager = new MoveManager(this);
     readonly copy: CopyManager = new CopyManager(this);

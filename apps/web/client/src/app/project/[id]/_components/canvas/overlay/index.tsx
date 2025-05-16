@@ -38,8 +38,8 @@ export const Overlay = observer(() => {
         <div
             id={EditorAttributes.OVERLAY_CONTAINER_ID}
             className={cn(
-                'opacity-100 transition-opacity duration-150 absolute top-0 left-0 h-0 w-0 pointer-events-none',
-                editorEngine.state.shouldHideOverlay && 'opacity-0',
+                'absolute top-0 left-0 h-0 w-0 pointer-events-none',
+                editorEngine.state.shouldHideOverlay ? 'opacity-0' : 'opacity-100 transition-opacity duration-150',
                 editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
             )}
         >
