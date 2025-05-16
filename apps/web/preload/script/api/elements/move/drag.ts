@@ -20,13 +20,20 @@ export function startDrag(domId: string): number | null {
     const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
     const originalIndex = htmlChildren.indexOf(el);
     prepareElementForDragging(el);
-    createStub(el);
+    if (el.style.position !== 'absolute') {
+        createStub(el);
+    }
     const pos = getAbsolutePosition(el);
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION, JSON.stringify(pos));
+    const rect = el.getBoundingClientRect();
+    const offset = {
+        x: pos.left - rect.left,
+        y: pos.top - rect.top
+    };
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION, JSON.stringify({ ...pos, offset }));
     return originalIndex;
 }
 
-export function drag(domId: string, dx: number, dy: number, x: number, y: number) {
+export function drag(domId: string, dx: number, dy: number, x: number, y: number, positionType: 'fixed' | 'absolute' = 'fixed') {
     const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Dragging element not found');
@@ -41,10 +48,10 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}'
     );
     
-    if (el.style.position !== 'fixed') {
+    if (el.style.position !== positionType) {
         const styles = window.getComputedStyle(el);
         
-        el.style.position = 'fixed';
+        el.style.position = positionType;
         el.style.width = styles.width;
         el.style.height = styles.height;
         
@@ -52,11 +59,40 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         el.style.top = `${pos.top}px`;
     }
     
-    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    if (positionType === 'absolute') {
+        el.style.left = `${dx - (pos.offset?.x || 0)}px`;
+        el.style.top = `${dy - (pos.offset?.y || 0)}px`;
+        el.style.transform = 'none';
+    } else {
+        const finalDx = dx;
+        const finalDy = dy;
+        el.style.transform = `translate(${finalDx}px, ${finalDy}px)`;
+    }
 
-    const parent = el.parentElement;
-    if (parent) {
-        moveStub(el, x, y);
+    // Only move stub for fixed positioning
+    if (positionType === 'fixed') {
+        const parent = el.parentElement;
+        if (parent) {
+            moveStub(el, x, y);
+        }
+    }
+}
+
+export function endDragAbsolute(domId: string): {
+    left: string;
+    top: string;
+} | null {
+    const el = getHtmlElement(domId);
+    if (!el) {
+        console.warn('End drag element not found');
+        return null;
+    }
+    const styles = window.getComputedStyle(el);
+    removeDragAttributes(el);
+    getOrAssignDomId(el);
+    return {
+        left: styles.left,
+        top: styles.top,
     }
 }
 

@@ -28,25 +28,19 @@ export class MoveManager {
         this.dragTarget = el;
         this.isDragInProgress = true;
 
-        if (el.styles?.computed?.position === 'absolute') {
-            this.isDraggingAbsolute = true;
-            this.editorEngine.history.startTransaction();
-            return;
-        } else {
-            try {
-                const index = (await frameView.view.startDrag(el.domId)) as number;
-                if (index === null || index === -1) {
-                    this.clear();
-                    this.isDragInProgress = false;
-                    console.warn('Start drag failed, original index is null or -1');
-                    return;
-                }
-                this.originalIndex = index;
-            } catch (error) {
-                console.error('Error starting drag:', error);
+        try {
+            const index = (await frameView.view.startDrag(el.domId)) as number;
+            if (index === null || index === -1) {
                 this.clear();
                 this.isDragInProgress = false;
+                console.warn('Start drag failed, original index is null or -1');
+                return;
             }
+            this.originalIndex = index;
+        } catch (error) {
+            console.error('Error starting drag:', error);
+            this.clear();
+            this.isDragInProgress = false;
         }
     }
 
@@ -69,82 +63,19 @@ export class MoveManager {
         const dx = x - this.dragOrigin.x;
         const dy = y - this.dragOrigin.y;
 
-        if (this.isDraggingAbsolute) {
-            await this.handleDragAbsolute(this.dragOrigin, this.dragTarget, x, y);
-            return;
-        }
-
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
             try {
-                await frameView.view.drag(this.dragTarget.domId, dx, dy, x, y);
+                const positionType = this.dragTarget.styles?.computed?.position;
+                await frameView.view.drag(this.dragTarget.domId, dx, dy, x, y, positionType);
             } catch (error) {
                 console.error('Error during drag:', error);
             }
         }
     }
 
-    async handleDragAbsolute(
-        dragOrigin: ElementPosition,
-        dragTarget: DomElement,
-        x: number,
-        y: number,
-    ) {
-        const initialOffset = {
-            x: dragOrigin.x - dragTarget.rect.x,
-            y: dragOrigin.y - dragTarget.rect.y,
-        };
-
-        const frameView = this.editorEngine.frames.get(dragTarget.frameId)?.view;
-        if (!frameView) {
-            console.error('No frameView found for drag');
-            return;
-        }
-
-        try {
-            const offsetParent = (await frameView.getOffsetParent(
-                dragTarget.domId,
-            )) as DomElement | null;
-            if (!offsetParent) {
-                console.error('No offset parent found for drag');
-                return;
-            }
-
-            const parentRect = offsetParent.rect;
-            if (!parentRect) {
-                console.error('No parent rect found for drag');
-                return;
-            }
-
-            const newX = Math.round(x - parentRect.x - initialOffset.x);
-            const newY = Math.round(y - parentRect.y - initialOffset.y);
-
-            this.editorEngine.overlay.clear();
-            this.editorEngine.style.updateMultiple({
-                left: `${newX}px`,
-                top: `${newY}px`,
-                transform: 'none',
-            });
-        } catch (error) {
-            console.error('Error handling absolute drag:', error);
-        }
-    }
-
     async end(e: React.MouseEvent<HTMLDivElement>) {
-        if (!this.isDragInProgress) {
-            this.clear();
-            await this.endAllDrag();
-            return;
-        }
-
-        if (this.isDraggingAbsolute) {
-            await this.editorEngine.history.commitTransaction();
-            this.isDraggingAbsolute = false;
-            this.clear();
-            return;
-        }
-
-        if (this.originalIndex === undefined || !this.dragTarget) {
+        if (!this.dragTarget) {
             this.clear();
             await this.endAllDrag();
             return;
@@ -157,27 +88,50 @@ export class MoveManager {
             return;
         }
 
+        if (!this.isDragInProgress) {
+            this.clear();
+            await this.endAllDrag();
+            return;
+        }
+
         try {
             const targetDomId = this.dragTarget.domId;
             this.isDragInProgress = false;
 
-            const res = (await frameView.view.endDrag(targetDomId)) as {
-                newIndex: number;
-                child: DomElement;
-                parent: DomElement;
-            } | null;
+            // Handle absolute positioning
+            const position = this.dragTarget.styles?.computed?.position;
+            console.log('endDrag', targetDomId, position);
+            if (position === ('absolute' as const)) {
+                const res = await frameView.view.endDragAbsolute(targetDomId);
+                console.log('endDragAbsolute', res);
+                if (res) {
+                    const { left, top } = res;
+                    await this.editorEngine.style.updateMultiple({
+                        left: left,
+                        top: top,
+                        transform: 'none',
+                    });
+                }
+            } else {
+                // Handle regular drag with index changes
+                const res = (await frameView.view.endDrag(targetDomId)) as {
+                    newIndex: number;
+                    child: DomElement;
+                    parent: DomElement;
+                } | null;
 
-            if (res) {
-                const { child, parent, newIndex } = res;
-                if (newIndex !== this.originalIndex) {
-                    const moveAction = this.createMoveAction(
-                        frameView.frame.id,
-                        child,
-                        parent,
-                        newIndex,
-                        this.originalIndex,
-                    );
-                    await this.editorEngine.action.run(moveAction);
+                if (res && this.originalIndex !== undefined) {
+                    const { child, parent, newIndex } = res;
+                    if (newIndex !== this.originalIndex) {
+                        const moveAction = this.createMoveAction(
+                            frameView.frame.id,
+                            child,
+                            parent,
+                            newIndex,
+                            this.originalIndex,
+                        );
+                        await this.editorEngine.action.run(moveAction);
+                    }
                 }
             }
         } catch (error) {
