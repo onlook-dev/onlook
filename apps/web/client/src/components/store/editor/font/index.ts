@@ -613,11 +613,11 @@ export class FontManager {
                                     declarator &&
                                     isValidLocalFontDeclaration(declarator, fontName)
                                 ) {
+                                    // @ts-ignore
                                     const configObject = declarator.init?.arguments[0] as t.ObjectExpression;
                                     const srcProp = configObject.properties.find((prop) =>
                                         isPropertyWithName(prop, 'src'),
                                     );
-
                                     if (
                                         srcProp &&
                                         t.isObjectProperty(srcProp) &&
@@ -739,7 +739,7 @@ export class FontManager {
 
             const fonts = Object.values(searchResults)
                 .flatMap((result) => result.result)
-                .map((font) => this.convertFont(font.doc))
+                .map((font) => this.convertFont(font.doc as unknown as RawFont))
                 .filter((font) => !this._fonts.some((f) => f.family === font.family));
 
             if (fonts.length === 0) {

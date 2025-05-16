@@ -30,13 +30,26 @@ export class ChatConversationImpl implements ChatConversation {
         totalTokens: 0,
     };
 
-    constructor(projectId: string, messages: ChatMessageImpl[]) {
+    constructor(projectId: string) {
         this.id = uuidv4();
         this.projectId = projectId;
-        this.messages = messages;
         this.createdAt = new Date().toISOString();
         this.updatedAt = new Date().toISOString();
+        this.getMessagesFromStorage();
         makeAutoObservable(this);
+    }
+
+    async getMessagesFromStorage() {
+        const messages = await api.chat.getMessages.query({ conversationId: this.id });
+        const messagesImpl = messages.map((m) => {
+            if (m.role === ChatMessageRole.USER) {
+                return UserChatMessageImpl.fromJSON(m as UserChatMessage);
+            } else if (m.role === ChatMessageRole.ASSISTANT) {
+                return AssistantChatMessageImpl.fromJSON(m as AssistantChatMessage);
+            }
+        }).filter((m) => m !== null) as ChatMessageImpl[];
+        this.messages = messagesImpl;
+        return messagesImpl;
     }
 
     getMessageById(id: string) {
@@ -44,20 +57,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     static fromJSON(data: ChatConversation) {
-        const messages = data.messages
-            .map((m) => {
-                if (m.role === ChatMessageRole.USER) {
-                    return UserChatMessageImpl.fromJSON(m as UserChatMessage);
-                } else if (m.role === ChatMessageRole.ASSISTANT) {
-                    return AssistantChatMessageImpl.fromJSON(m as AssistantChatMessage);
-                } else {
-                    console.error('Invalid message role', m.role);
-                    return null;
-                }
-            })
-            .filter((m) => m !== null) as ChatMessageImpl[];
-
-        const conversation = new ChatConversationImpl(data.projectId, messages);
+        const conversation = new ChatConversationImpl(data.projectId);
         conversation.id = data.id;
         conversation.displayName = data.displayName;
         conversation.createdAt = data.createdAt;

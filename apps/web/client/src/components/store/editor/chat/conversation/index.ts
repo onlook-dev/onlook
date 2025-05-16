@@ -37,7 +37,7 @@ export class ConversationManager {
 
         this.conversations = await this.getConversations(project.id);
         if (this.conversations.length === 0 && !this.conversations[0]) {
-            this.current = new ChatConversationImpl(project.id, []);
+            this.current = new ChatConversationImpl(project.id);
         } else {
             this.current = this.conversations[0] ?? null;
         }
@@ -72,7 +72,7 @@ export class ConversationManager {
             );
             return;
         }
-        this.current = new ChatConversationImpl(this.projectId, []);
+        this.current = new ChatConversationImpl(this.projectId);
         this.conversations.push(this.current);
         this.saveConversationToStorage();
     }
@@ -107,7 +107,7 @@ export class ConversationManager {
             if (this.conversations.length > 0) {
                 this.current = this.conversations[0] ?? null;
             } else {
-                this.current = new ChatConversationImpl(this.projectId, []);
+                this.current = new ChatConversationImpl(this.projectId);
                 this.conversations.push(this.current);
             }
         }
@@ -145,7 +145,7 @@ export class ConversationManager {
     }
 
     async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
-        const res = await api.chat.getConversation.query({ projectId: id });
+        const res = await api.chat.getConversations.query({ projectId: id });
         return res;
     }
 

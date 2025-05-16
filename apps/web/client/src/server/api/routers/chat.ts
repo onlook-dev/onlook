@@ -4,6 +4,7 @@ import {
     messageInsertSchema,
     messages,
     toConversation,
+    toMessage,
     type Message,
 } from '@onlook/db';
 import type { ChatMessageRole } from '@onlook/models';
@@ -12,18 +13,35 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const chatRouter = createTRPCRouter({
-    getConversation: protectedProcedure
+    getPreviewConversations: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
             const dbConversations = await ctx.db.query.conversations.findMany({
                 where: eq(conversations.projectId, input.projectId),
-                with: {
-                    messages: true,
-                },
             });
-            return dbConversations.map((conversation) =>
-                toConversation(conversation, conversation.messages),
-            );
+            return dbConversations.map((conversation) => ({
+                id: conversation.id,
+                displayName: conversation.displayName,
+                createdAt: conversation.createdAt.toISOString(),
+                updatedAt: conversation.updatedAt.toISOString(),
+                projectId: conversation.projectId,
+            }));
+        }),
+    getConversations: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const dbConversations = await ctx.db.query.conversations.findMany({
+                where: eq(conversations.projectId, input.projectId),
+            });
+            return dbConversations.map((conversation) => toConversation(conversation));
+        }),
+    getMessages: protectedProcedure
+        .input(z.object({ conversationId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const dbMessages = await ctx.db.query.messages.findMany({
+                where: eq(messages.conversationId, input.conversationId),
+            });
+            return dbMessages.map((message) => toMessage(message));
         }),
     saveConversation: protectedProcedure
         .input(z.object({ conversation: conversationInsertSchema }))

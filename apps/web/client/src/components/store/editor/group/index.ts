@@ -1,16 +1,15 @@
 import type { DomElement } from '@onlook/models';
 import type {
-    ActionElement,
     ActionTarget,
     GroupContainer,
     GroupElementsAction,
-    UngroupElementsAction,
+    UngroupElementsAction
 } from '@onlook/models/actions';
 import { createDomId, createOid } from '@onlook/utility';
 import type { EditorEngine } from '../engine';
 
 export class GroupManager {
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     async groupSelectedElements() {
         const selectedEls = this.editorEngine.elements.selected;
@@ -88,7 +87,15 @@ export class GroupManager {
             return null;
         }
 
-        return { frameId: frameId, parentDomId };
+
+        if (!frameId) {
+            if (log) {
+                console.error('No frame id found');
+            }
+            return null;
+        }
+
+        return { frameId, parentDomId };
     }
 
     canGroupElements() {
@@ -157,10 +164,7 @@ export class GroupManager {
         }
 
         // Container is the selected element
-        const actionContainer: ActionElement = await frame.view.getActionElement(
-            selectedEl.domId,
-            true,
-        );
+        const actionContainer = await frame.view.getActionElement(selectedEl.domId);
 
         if (!actionContainer) {
             console.error('Failed to get container');
@@ -197,5 +201,5 @@ export class GroupManager {
         };
     }
 
-    clear() {}
+    clear() { }
 }
