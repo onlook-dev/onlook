@@ -26,7 +26,17 @@ export const ProjectInfo = observer(
 
         return (
             project && (
-                <>
+                <div className="flex flex-col gap-4 max-w-[480px] w-full">
+                    <div className="flex items-center gap-3 mb-1">
+                        {project.metadata.previewImg && (
+                            <img
+                                src={project.metadata.previewImg}
+                                alt="Preview"
+                                className="w-8 h-8 rounded-lg bg-white object-cover border border-border"
+                            />
+                        )}
+                        <span className="text-foreground-onlook text-regular">{project.sandbox.url}</span>
+                    </div>
                     <AnimatePresence mode="wait" custom={direction}>
                         <motion.p
                             key={project.id}
@@ -41,19 +51,23 @@ export const ProjectInfo = observer(
                             {project.name}
                         </motion.p>
                     </AnimatePresence>
-                    <div className="text-foreground-onlook flex flex-col md:flex-row gap-2 md:gap-7 text-small">
-                        <p>
-                            {t('projects.select.lastEdited', {
-                                time: timeAgo(new Date(project.metadata.updatedAt).toISOString()),
-                            })}
+                    <div className="flex flex-col gap-1">
+                        <p className="text-foreground-tertiary text-regular mb-1 text-balance">
+                            Meta description would go here when we have the meta description ready to go.
                         </p>
-                        <p>{project.sandbox.url}</p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
+                    <p className="text-foreground-tertiary text-mini mb-2">
+                        {t('projects.select.lastEdited', {
+                            time: timeAgo(new Date(project.metadata.updatedAt).toISOString()),
+                        })}
+                    </p>
+                    <div className="border-[0.5px] border-border w-full mb-2" />
+                    <div className="flex items-center justify-between w-full gap-3 sm:gap-5">
                         <EditAppButton project={project} />
+                        <div className="flex-1" />
                         <Settings project={project} />
                     </div>
-                </>
+                </div>
             )
         );
     },

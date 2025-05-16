@@ -15,9 +15,8 @@ import { InputSeparator } from './separator';
 
 export const DivSelected = () => {
     return (
-        <div className="flex items-center gap-1">
-            <StateDropdown />
-            <InputSeparator />
+        <div className="flex items-center gap-0.5">
+            {/* <StateDropdown /> */}
             <Width />
             <Height />
             <InputSeparator />
@@ -26,7 +25,6 @@ export const DivSelected = () => {
             <Margin />
             <InputSeparator />
             <Radius />
-            <InputSeparator />
             <Border />
             <InputSeparator />
             <ColorBackground />

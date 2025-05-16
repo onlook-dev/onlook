@@ -330,6 +330,19 @@
         "@onlook/typescript": "*",
       },
     },
+    "packages/seed": {
+      "name": "@onlook/seed",
+      "version": "0.0.0",
+      "dependencies": {
+        "@supabase/supabase-js": "^2.49.1",
+        "dotenv": "^16.5.0",
+        "uuid": "^11.1.0",
+      },
+      "devDependencies": {
+        "drizzle-kit": "^0.31.1",
+        "typescript": "^5.8.2",
+      },
+    },
     "packages/types": {
       "name": "@onlook/types",
       "version": "0.0.0",
@@ -897,6 +910,8 @@
     "@onlook/penpal": ["@onlook/penpal@workspace:packages/penpal"],
 
     "@onlook/rpc": ["@onlook/rpc@workspace:packages/rpc"],
+
+    "@onlook/seed": ["@onlook/seed@workspace:packages/seed"],
 
     "@onlook/types": ["@onlook/types@workspace:packages/types"],
 

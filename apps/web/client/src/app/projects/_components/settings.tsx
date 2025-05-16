@@ -49,9 +49,8 @@ export function Settings({ project }: { project: Project }) {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="default" variant="ghost" className="gap-2 w-full lg:w-auto">
+                    <Button size="default" variant="ghost" className="w-10 h-10 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer">
                         <Icons.DotsVertical />
-                        <p>{t('projects.actions.projectSettings')}</p>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>

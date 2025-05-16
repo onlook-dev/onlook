@@ -1,8 +1,8 @@
+import { canvases, conversations, frames, messages, projects, userProjects, users, type Conversation, type Message, type Project, type User } from '@onlook/db';
+import { db } from '@onlook/db/src/client';
 import { ChatMessageRole, MessageContextType, type ChatMessageContext } from '@onlook/models';
 import { createDefaultCanvas, createDefaultFrame } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from './client';
-import { canvases, conversations, frames, messages, projects, userProjects, users, type Conversation, type Message, type Project, type User } from './schema';
 
 const user0 = {
     id: '2585ea6b-6303-4f21-977c-62af2f5a21f5'
@@ -131,7 +131,7 @@ const message4 = {
 } satisfies Message;
 
 export const seedDb = async () => {
-    console.log('Seeding the database..');
+    console.log('Seeding the database...');
 
     await db.transaction(async (tx) => {
         await tx.insert(users).values(user0);
@@ -170,8 +170,8 @@ export const seedDb = async () => {
     console.log('Database seeded!');
 };
 
-const resetDb = async () => {
-    console.log('Resetting the database..');
+export const resetDb = async () => {
+    console.log('Resetting the database...');
     await db.transaction(async (tx) => {
         await tx.delete(messages);
         await tx.delete(conversations);
@@ -184,17 +184,3 @@ const resetDb = async () => {
 
     console.log('Database reset!');
 };
-
-(async () => {
-    try {
-        if (process.env.NODE_ENV === 'production') {
-            throw new Error('Resetting the database in production is not allowed');
-        }
-        await resetDb();
-        await seedDb();
-        process.exit(0);
-    } catch (error) {
-        console.error('Error seeding database:', error);
-        process.exit(1);
-    }
-})();

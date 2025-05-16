@@ -24,6 +24,7 @@
         "backend:start": "bun --filter @onlook/backend start",
         "db:gen": "bun --filter @onlook/db db:gen",
         "db:push": "bun --filter @onlook/db db:push",
+        "seed": "bun --filter @onlook/seed seed",
         "format": "bun --filter '*' format",
         "lint": "bun --filter @onlook/web-client lint",
         "typecheck": "bun --filter '*' typecheck",

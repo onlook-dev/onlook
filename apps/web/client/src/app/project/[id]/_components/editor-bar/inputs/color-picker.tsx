@@ -25,7 +25,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     function renderPalette() {
         const colors = Object.keys(palette.colors);
         return (
-            <div className="px-0.5 py-1.5">
+            <div className="px-0.5 py-1">
                 {viewMode === 'grid' ? (
                     <div className="grid grid-cols-7 gap-1.5 p-1 text-center justify-between">
                         {colors.map((level) => (
@@ -96,8 +96,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                 }}
             />
             <Separator />
-            <div className="flex flex-row items-center justify-between w-full px-2.5 py-1.5">
-                <span className="text-foreground-secondary text-smallPlus">{palette.name}</span>
+            <div className="flex flex-row items-center justify-between w-full px-2 py-1">
+                <span className="text-foreground-secondary text-small">{palette.name}</span>
                 <button
                     aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
                     className="text-foreground-tertiary hover:text-foreground-hover rounded"
