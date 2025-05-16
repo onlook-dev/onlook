@@ -6,4 +6,4 @@ export enum IdeType {
     ONLOOK = 'Onlook',
 }
 
-export const DEFAULT_IDE = IdeType.CURSOR;
+export const DEFAULT_IDE = IdeType.ONLOOK;

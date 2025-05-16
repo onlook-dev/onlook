@@ -78,7 +78,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                     }
                     break;
                 case MouseAction.DOUBLE_CLICK:
-                    // editorEngine.text.start(el, frameView);
+                    editorEngine.text.start(el, frameData.view);
                     break;
             }
         },

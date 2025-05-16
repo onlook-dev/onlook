@@ -40,7 +40,7 @@ export const RightPanel = observer(() => {
                 defaultWidth={editPanelWidth}
                 forceWidth={editPanelWidth}
                 minWidth={240}
-                maxWidth={700}
+                maxWidth={1440}
             >
                 <Tabs className='h-full' onValueChange={(value) => editorEngine.state.rightPanelTab = value as EditorTabValue} value={selectedTab} >
                     <TabsList className='flex flex-row h-10 w-full border-b-1 border-border items-center bg-transparent select-none pr-2 pl-1.5 justify-between'>

@@ -1,6 +1,7 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { toast } from '@onlook/ui/use-toast';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { adaptRectToCanvas } from '../overlay/utils';
 
@@ -9,7 +10,9 @@ export class TextEditingManager {
     private originalContent: string | null = null;
     private shouldNotStartEditing = false;
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) {
+        makeAutoObservable(this);
+    }
 
     get isEditing(): boolean {
         return this.targetDomEl !== null;

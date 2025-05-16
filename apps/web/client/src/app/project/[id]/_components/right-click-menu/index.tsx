@@ -46,15 +46,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         editorEngine.frames.selected,
     ]);
 
-    const OPEN_DEV_TOOL_ITEM: MenuItem = {
-        label: 'Open devtool',
-        action: () => editorEngine.inspect(),
-        icon: <Icons.Code className="mr-2 h-4 w-4" />,
-        hotkey: Hotkey.OPEN_DEV_TOOL,
-    };
-
     const TOOL_ITEMS: MenuItem[] = [
-        OPEN_DEV_TOOL_ITEM,
         {
             label: 'Add to AI Chat',
             action: () => {
@@ -165,7 +157,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         let menuItems: MenuItem[][] = [];
 
         if (editorEngine.window.areAnyWindowsSelected) {
-            menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
+            menuItems = [WINDOW_ITEMS];
         } else {
             const updatedToolItems = [
                 instance !== null && {

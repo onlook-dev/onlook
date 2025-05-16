@@ -35,7 +35,7 @@ export class StateManager {
     }
 
     get shouldHideOverlay() {
-        return this._canvasScrolling || this.canvasPanning;
+        return this._canvasScrolling || this.canvasPanning
     }
 
     get plansOpen() {

@@ -57,6 +57,7 @@ export class CreateManager {
             createdAt: new Date(),
             updatedAt: new Date(),
             previewImg: null,
+            description: 'Your new project',
         } satisfies DbProject;
         return newProject;
     }
