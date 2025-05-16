@@ -739,7 +739,8 @@ export class FontManager {
 
             const fonts = Object.values(searchResults)
                 .flatMap((result) => result.result)
-                .map((font) => this.convertFont(font.doc as unknown as RawFont))
+                // @ts-ignore
+                .map((font) => this.convertFont(font.doc))
                 .filter((font) => !this._fonts.some((f) => f.family === font.family));
 
             if (fonts.length === 0) {

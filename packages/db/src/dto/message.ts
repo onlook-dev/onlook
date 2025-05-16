@@ -56,7 +56,3 @@ export const fromMessage = (conversationId: string, message: ChatMessage): DbMes
         parts: message.parts
     }
 }
-
-export const sortMessages = (messages: ChatMessage[]): ChatMessage[] => {
-    return messages.toSorted((a, b) => (a.createdAt ?? new Date()).getTime() - (b.createdAt ?? new Date()).getTime());
-}
