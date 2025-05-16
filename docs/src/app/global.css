@@ -1,8 +1,25 @@
 @import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/black.css';
 @import 'fumadocs-ui/css/preset.css';
 
 html,
 body {
   overscroll-behavior: none;
+}
+
+/* Improve header link button visibility and clickability */
+[data-hash-link] {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+[data-hash-link]:hover, 
+h1:hover [data-hash-link], 
+h2:hover [data-hash-link], 
+h3:hover [data-hash-link], 
+h4:hover [data-hash-link], 
+h5:hover [data-hash-link], 
+h6:hover [data-hash-link] {
+  opacity: 1;
+  cursor: pointer;
 }

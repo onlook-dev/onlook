@@ -3,11 +3,10 @@ import { getMDXComponents } from '@/mdx-components';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import {
     DocsBody,
-    DocsDescription,
-    DocsPage,
-    DocsTitle,
+    DocsPage
 } from 'fumadocs-ui/page';
 import { notFound } from 'next/navigation';
+import { EditGitHub } from './edit-gh';
 
 export default async function Page(props: {
     params: Promise<{ slug?: string[] }>;
@@ -18,10 +17,14 @@ export default async function Page(props: {
 
     const MDXContent = page.data.body;
 
+    let filePath = '';
+    if (page.file && typeof page.file === 'object' && 'path' in page.file) {
+        const path = page.file.path as string;
+        filePath = path.replace(/^.*?\/content\//, 'content/');
+    }
+
     return (
         <DocsPage toc={page.data.toc} full={page.data.full}>
-            <DocsTitle>{page.data.title}</DocsTitle>
-            <DocsDescription>{page.data.description}</DocsDescription>
             <DocsBody>
                 <MDXContent
                     components={getMDXComponents({
@@ -30,6 +33,7 @@ export default async function Page(props: {
                     })}
                 />
             </DocsBody>
+            <EditGitHub filePath={filePath} />
         </DocsPage>
     );
 }
