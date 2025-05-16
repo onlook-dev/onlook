@@ -34,7 +34,8 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
-    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType ?? DEFAULT_IDE);
+    //const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType ?? DEFAULT_IDE);
+    const ide = IDE.fromType(DEFAULT_IDE);
 
     useEffect(() => {
         updateMenuItems();
@@ -52,7 +53,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     };
 
     const TOOL_ITEMS: MenuItem[] = [
-        OPEN_DEV_TOOL_ITEM,
+        // OPEN_DEV_TOOL_ITEM,
         {
             label: 'Add to AI Chat',
             action: () => {
@@ -190,7 +191,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     };
 
     function viewSource(oid: string | null) {
-        // editorEngine.sandbox.viewSource(oid);
+        if (!oid) {
+            console.error('No oid found');
+            return;
+        }
+        editorEngine.code.viewCodeBlock(oid);
     }
 
     return (

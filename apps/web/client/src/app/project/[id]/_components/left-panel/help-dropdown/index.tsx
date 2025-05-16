@@ -95,20 +95,20 @@ export const HelpDropdown = observer(() => {
                         ))}
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                     className="text-sm"
                     onClick={() => (editorEngine.state.hotkeysOpen = true)}
                 >
                     <Icons.Keyboard className="w-4 h-4 mr-2" />
                     {t('help.menu.shortcuts')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
+                </DropdownMenuItem> */}
+                {/* <DropdownMenuItem
                     className="text-sm"
                     onClick={() => (editorEngine.state.settingsOpen = true)}
                 >
                     <Icons.Gear className="w-4 h-4 mr-2" />
                     {t('help.menu.openSettings')}
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm">

@@ -1,6 +1,6 @@
 import type { WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
-import type { TemplateNode } from '@onlook/models';
+import { EditorTabValue, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
