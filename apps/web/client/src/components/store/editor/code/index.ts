@@ -33,14 +33,16 @@ export class CodeManager {
 
     viewCodeBlock(oid: string) {
         try {
-            // TODO: Implement highlight range
+            this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
             const element =
                 this.editorEngine.elements.selected.find((el: DomElement) => el.oid === oid) ||
                 this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
+
             if (element) {
-                this.editorEngine.elements.selected = [element];
+                setTimeout(() => {
+                    this.editorEngine.elements.selected = [element];
+                }, 500);
             }
-            this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
         } catch (error) {
             console.error('Error viewing source:', error);
         }
@@ -120,5 +122,5 @@ export class CodeManager {
         return requestByFile;
     }
 
-    clear() {}
+    clear() { }
 }
