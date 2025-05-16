@@ -8,7 +8,6 @@ import {
 } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import type { TextEditingManager } from '../text';
 
 export class StateManager {
     private _plansOpen = false;
@@ -26,7 +25,7 @@ export class StateManager {
     rightPanelTab: EditorTabValue = EditorTabValue.CHAT;
     brandTab: BrandTabValue | null = null;
 
-    constructor(private text: TextEditingManager) {
+    constructor() {
         makeAutoObservable(this);
     }
 
@@ -36,7 +35,7 @@ export class StateManager {
     }
 
     get shouldHideOverlay() {
-        return this._canvasScrolling || this.canvasPanning || this.text.isEditing;
+        return this._canvasScrolling || this.canvasPanning
     }
 
     get plansOpen() {
