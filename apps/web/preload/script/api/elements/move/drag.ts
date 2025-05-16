@@ -1,5 +1,5 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { DomElement } from '@onlook/models';
+import type { DomElement, ElementPosition } from '@onlook/models';
 import { getHtmlElement, isValidHtmlElement } from '../../../helpers';
 import { getOrAssignDomId } from '../../../helpers/ids';
 import { getDomElement, restoreElementStyle } from '../helpers';
@@ -18,79 +18,82 @@ export function startDrag(domId: string): number | null {
         return null;
     }
     const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
-    const originalIndex = htmlChildren.indexOf(el);
+    const originalIndex = htmlChildren.indexOf(el);    
+    const styles = window.getComputedStyle(el);
+
     prepareElementForDragging(el);
-    if (el.style.position !== 'absolute') {
+    
+    if (styles.position !== 'absolute') {
         createStub(el);
     }
     const pos = getAbsolutePosition(el);
-    const rect = el.getBoundingClientRect();
-    const offset = {
+    const rect = el.getBoundingClientRect();    
+
+    const offset = styles.position === 'absolute' ? {
+        x: pos.left,
+        y: pos.top
+    } : {
         x: pos.left - rect.left,
         y: pos.top - rect.top
     };
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION, JSON.stringify({ ...pos, offset }));
+
+    el.setAttribute(
+        EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION,
+        JSON.stringify({ ...pos, offset }),
+    );
     return originalIndex;
 }
 
-export function drag(domId: string, dx: number, dy: number, x: number, y: number, positionType: 'fixed' | 'absolute' = 'fixed') {
+export function dragAbsolute(domId: string, x: number, y: number, origin: ElementPosition) {
     const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Dragging element not found');
         return;
     }
-    
+
+    const parent = el.parentElement;
+    if (parent) {
+        const pos = JSON.parse(
+            el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
+        );
+        
+        const parentRect = parent.getBoundingClientRect();
+        const newLeft = x - parentRect.left - (origin.x - pos.offset.x);
+        const newTop = y - parentRect.top - (origin.y - pos.offset.y);
+        el.style.left = `${newLeft}px`;
+        el.style.top = `${newTop}px`;
+    }
+    el.style.transform = 'none';
+}
+
+export function drag(domId: string, dx: number, dy: number, x: number, y: number) {
+    const el = getHtmlElement(domId);
+    if (!el) {
+        console.warn('Dragging element not found');
+        return;
+    }
     if (!el.style.transition) {
         el.style.transition = 'transform 0.05s cubic-bezier(0.2, 0, 0, 1)';
     }
-    
+
     const pos = JSON.parse(
-        el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}'
+        el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
     );
-    
-    if (el.style.position !== positionType) {
+
+    if (el.style.position !== 'fixed') {
         const styles = window.getComputedStyle(el);
-        
-        el.style.position = positionType;
+        el.style.position = 'fixed';
         el.style.width = styles.width;
         el.style.height = styles.height;
-        
-        if (positionType === 'absolute') {
-            const parent = el.parentElement;
-            if (parent) {
-                const parentRect = parent.getBoundingClientRect();
-                el.style.left = `${pos.left - parentRect.left - pos.offset.x}px`;
-                el.style.top = `${pos.top - parentRect.top - pos.offset.y}px`;
-            }
-        } else {
-            el.style.left = `${pos.left}px`;
-            el.style.top = `${pos.top}px`;
-        }
+        el.style.left = `${pos.left}px`;
+        el.style.top = `${pos.top}px`;
     }
 
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
 
-    if (positionType === 'absolute') {
-        const parent = el.parentElement;    
-        if (parent) {
-            const parentRect = parent.getBoundingClientRect();
-            const newLeft = x - parentRect.left - pos.offset.x;
-            const newTop = y - parentRect.top - pos.offset.y;
-            el.style.left = `${newLeft}px`;
-            el.style.top = `${newTop}px`;
-        }
-        el.style.transform = 'none';
-    } else {
-        const finalDx = dx;
-        const finalDy = dy;
-        el.style.transform = `translate(${finalDx}px, ${finalDy}px)`;
-    }
-
-    // Only move stub for fixed positioning
-    if (positionType === 'fixed') {
-        const parent = el.parentElement;
-        if (parent) {
-            moveStub(el, x, y);
-        }
+    const parent = el.parentElement;
+    if (parent) {
+        moveStub(el, x, y);
     }
 }
 
@@ -109,7 +112,7 @@ export function endDragAbsolute(domId: string): {
     return {
         left: styles.left,
         top: styles.top,
-    }
+    };
 }
 
 export function endDrag(domId: string): {
@@ -168,7 +171,7 @@ function prepareElementForDragging(el: HTMLElement) {
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
-    
+
     // Ensure element appears above others during drag
     el.style.zIndex = '1000';
 

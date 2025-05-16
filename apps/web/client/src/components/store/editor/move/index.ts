@@ -65,8 +65,12 @@ export class MoveManager {
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
             try {
-                const positionType = this.dragTarget.styles?.computed?.position as 'absolute' | 'fixed' | undefined;
-                await frameView.view.drag(this.dragTarget.domId, dx, dy, x, y, positionType);
+                const positionType = this.dragTarget.styles?.computed?.position;
+                if (positionType === 'absolute') {
+                    await frameView.view.dragAbsolute(this.dragTarget.domId, x, y, this.dragOrigin);
+                } else {
+                    await frameView.view.drag(this.dragTarget.domId, dx, dy, x, y);
+                }
             } catch (error) {
                 console.error('Error during drag:', error);
             }

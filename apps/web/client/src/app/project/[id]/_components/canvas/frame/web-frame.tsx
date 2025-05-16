@@ -158,6 +158,7 @@ export const WebFrameComponent = observer(
                 setTheme: promisifyMethod(penpalChild?.setTheme),
                 startDrag: promisifyMethod(penpalChild?.startDrag),
                 drag: promisifyMethod(penpalChild?.drag),
+                dragAbsolute: promisifyMethod(penpalChild?.dragAbsolute),
                 endDragAbsolute: promisifyMethod(penpalChild?.endDragAbsolute),
                 endDrag: promisifyMethod(penpalChild?.endDrag),
                 endAllDrag: promisifyMethod(penpalChild?.endAllDrag),
