@@ -1,9 +1,6 @@
 import '@onlook/ui/globals.css';
 import './global.css';
 
-import { baseOptions } from '@/app/layout.config';
-import { source } from '@/lib/source';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { RootProvider } from 'fumadocs-ui/provider';
 import { type Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -20,26 +17,11 @@ const inter = Inter({
     variable: '--font-inter',
 });
 
-const docsOptions = {
-    ...baseOptions,
-    nav: {
-        ...baseOptions.nav,
-        component: null
-    }
-};
-
 export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
             <body className="flex flex-col min-h-screen">
-                <RootProvider>
-                    <DocsLayout
-                        tree={source.pageTree}
-                        {...docsOptions}
-                    >
-                        {children}
-                    </DocsLayout>
-                </RootProvider>
+                <RootProvider>{children}</RootProvider>
             </body>
         </html>
     );
