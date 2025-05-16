@@ -10,6 +10,8 @@ import {
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     READ_FILES_TOOL_NAME,
     READ_FILES_TOOL_PARAMETERS,
+    CRAWL_URL_TOOL_NAME,
+    CRAWL_URL_TOOL_PARAMETERS,
 } from '@onlook/ai';
 import type { ToolCall } from 'ai';
 import { createContext, useContext } from 'react';
@@ -61,6 +63,8 @@ async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine:
         } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
             const result = ONLOOK_INSTRUCTIONS;
             return result;
+        } else if (toolName === CRAWL_URL_TOOL_NAME) {
+            return 'Web content crawled successfully.';
         } else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
         }
