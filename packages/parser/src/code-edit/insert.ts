@@ -89,7 +89,6 @@ export function insertAtIndex(
     newElement: T.JSXElement | T.JSXFragment,
     index: number,
 ): void {
-    console.log('insertAtIndex', index);
     if (index !== -1) {
         const jsxElements = path.node.children.filter(jsxFilter);
         const targetIndex = Math.min(index, jsxElements.length - 1);
