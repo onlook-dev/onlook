@@ -94,6 +94,7 @@
       },
       "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",
+        "@onlook/seed": "*",
         "@onlook/typescript": "*",
         "@tailwindcss/postcss": "^4.0.15",
         "@types/node": "^20.14.10",

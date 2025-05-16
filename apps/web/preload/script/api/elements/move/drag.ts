@@ -55,13 +55,29 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         el.style.width = styles.width;
         el.style.height = styles.height;
         
-        el.style.left = `${pos.left}px`;
-        el.style.top = `${pos.top}px`;
+        if (positionType === 'absolute') {
+            const parent = el.parentElement;
+            if (parent) {
+                const parentRect = parent.getBoundingClientRect();
+                el.style.left = `${pos.left - parentRect.left - pos.offset.x}px`;
+                el.style.top = `${pos.top - parentRect.top - pos.offset.y}px`;
+            }
+        } else {
+            el.style.left = `${pos.left}px`;
+            el.style.top = `${pos.top}px`;
+        }
     }
-    
+
+
     if (positionType === 'absolute') {
-        el.style.left = `${dx - (pos.offset?.x || 0)}px`;
-        el.style.top = `${dy - (pos.offset?.y || 0)}px`;
+        const parent = el.parentElement;    
+        if (parent) {
+            const parentRect = parent.getBoundingClientRect();
+            const newLeft = x - parentRect.left - pos.offset.x;
+            const newTop = y - parentRect.top - pos.offset.y;
+            el.style.left = `${newLeft}px`;
+            el.style.top = `${newTop}px`;
+        }
         el.style.transform = 'none';
     } else {
         const finalDx = dx;
@@ -148,8 +164,6 @@ function prepareElementForDragging(el: HTMLElement) {
         height: el.style.height,
         left: el.style.left,
         top: el.style.top,
-        zIndex: el.style.zIndex, // Save z-index to ensure element is on top during drag
-        transition: el.style.transition, // Save transition to restore later
     };
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_SAVED_STYLE, JSON.stringify(style));

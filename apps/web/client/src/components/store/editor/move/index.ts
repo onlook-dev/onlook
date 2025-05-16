@@ -9,7 +9,6 @@ export class MoveManager {
     dragTarget: DomElement | undefined;
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 5;
-    isDraggingAbsolute = false;
     isDragInProgress = false;
 
     constructor(private editorEngine: EditorEngine) {}
@@ -66,7 +65,7 @@ export class MoveManager {
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
             try {
-                const positionType = this.dragTarget.styles?.computed?.position;
+                const positionType = this.dragTarget.styles?.computed?.position as 'absolute' | 'fixed' | undefined;
                 await frameView.view.drag(this.dragTarget.domId, dx, dy, x, y, positionType);
             } catch (error) {
                 console.error('Error during drag:', error);
@@ -100,10 +99,9 @@ export class MoveManager {
 
             // Handle absolute positioning
             const position = this.dragTarget.styles?.computed?.position;
-            console.log('endDrag', targetDomId, position);
             if (position === ('absolute' as const)) {
                 const res = await frameView.view.endDragAbsolute(targetDomId);
-                console.log('endDragAbsolute', res);
+
                 if (res) {
                     const { left, top } = res;
                     await this.editorEngine.style.updateMultiple({
@@ -247,7 +245,6 @@ export class MoveManager {
         this.originalIndex = undefined;
         this.dragOrigin = undefined;
         this.dragTarget = undefined;
-        this.isDraggingAbsolute = false;
         this.isDragInProgress = false;
     }
 }
