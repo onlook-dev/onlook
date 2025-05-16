@@ -7,30 +7,36 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
+import { GitHubButton } from './github';
 
 export const TopBar = observer(() => {
     const userManager = useUserManager();
     const user = userManager.user;
 
     return (
-        <div className="w-full flex items-center justify-between p-4">
-            <div className="flex items-center gap-4">
+        <div className="w-full flex items-center justify-between p-4 text-sm text-secondary-foreground font-thin">
+            <div className="flex items-center gap-8">
                 <Link href={Routes.HOME}>
                     <Icons.OnlookTextLogo className="h-3" />
                 </Link>
-                <Link href={Routes.PROJECTS}>GitHub</Link>
-                <Link href={Routes.PROJECTS}>Docs</Link>
+                <Link href="/about" className="text-sm hover:opacity-80">
+                    About
+                </Link>
+                <GitHubButton />
+                <Link href="https://docs.onlook.dev" target="_blank" className="text-sm hover:opacity-80">
+                    Docs
+                </Link>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
                 {user ? (
                     <>
-                        <Button variant="outline" asChild>
+                        <Button variant="secondary" asChild className="rounded">
                             <Link href={Routes.PROJECTS}>Projects</Link>
                         </Button>
                         <CurrentUserAvatar />
                     </>
                 ) : (
-                    <Button variant="outline" asChild>
+                    <Button variant="secondary" asChild className="rounded">
                         <Link href={Routes.LOGIN}>Sign In</Link>
                     </Button>
                 )}
