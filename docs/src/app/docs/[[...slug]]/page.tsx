@@ -17,6 +17,8 @@ export default async function Page(props: {
   if (!page) notFound();
 
   const MDXContent = page.data.body;
+  
+  const filePath = page.file.replace(/^.*?\/content\//, 'content/');
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
@@ -29,6 +31,16 @@ export default async function Page(props: {
             a: createRelativeLink(source, page),
           })}
         />
+        
+        {/* Add Edit on GitHub link */}
+        <a
+          href={`https://github.com/onlook-dev/onlook/blob/main/docs/${filePath}`}
+          rel="noreferrer noopener"
+          target="_blank"
+          className="w-fit border rounded-xl p-2 font-medium text-sm text-fd-secondary-foreground bg-fd-secondary-background hover:bg-fd-secondary-background/80 mt-8 inline-flex items-center gap-2"
+        >
+          Edit on GitHub
+        </a>
       </DocsBody>
     </DocsPage>
   );
