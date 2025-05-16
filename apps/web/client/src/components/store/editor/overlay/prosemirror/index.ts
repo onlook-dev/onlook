@@ -35,7 +35,12 @@ export const schema = new Schema({
 export function applyStylesToEditor(editorView: EditorView, styles: Record<string, string>) {
     const { state, dispatch } = editorView;
     const { tr } = state;
-    tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
+    const styleMark = state.schema.marks?.style;
+    if (!styleMark) {
+        console.error('No style mark found');
+        return;
+    }
+    tr.addMark(0, state.doc.content.size, styleMark.create({ style: styles }));
 
     // Apply container styles
     const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize ?? ''));
