@@ -73,7 +73,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         }
 
         if (creationData) {
-            createManager.resumeCreate();
+            createManager.resumeCreate(editorEngine);
         }
         return () => {
             editorEngine.sandbox.clear();

@@ -2,6 +2,8 @@ import { api } from '@/trpc/client';
 import { CSB_BLANK_TEMPLATE_ID } from '@onlook/constants';
 import type { Project as DbProject } from '@onlook/db';
 import type { ImageMessageContext } from '@onlook/models/chat';
+import { EditorTabValue } from '@onlook/models';
+import type { EditorEngine } from '@/components/store/editor/engine';
 import { makeAutoObservable } from "mobx";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -38,13 +40,23 @@ export class CreateManager {
         return newProject;
     }
 
-    resumeCreate() {
+    resumeCreate(editorEngine: EditorEngine) {
         if (!this.pendingCreationData) {
             console.error('No pending creation data found');
             return;
         }
         const { userId, project, prompt, images } = this.pendingCreationData;
-        console.log('resumeCreate', userId, project, prompt, images);
+        
+        if (images && images.length > 0) {
+            for (const image of images) {
+                editorEngine.chat.context.context.push(image);
+            }
+        }
+        
+        editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+        
+        editorEngine.chat.getStreamMessages(prompt);
+        
         this.pendingCreationData = null;
     }
 
