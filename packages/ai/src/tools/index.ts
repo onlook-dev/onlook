@@ -1,5 +1,6 @@
 import { tool, type ToolSet } from 'ai';
 import { z } from 'zod';
+import { CrawlerService } from './crawler';
 
 export const LIST_FILES_TOOL_NAME = 'list_files';
 export const LIST_FILES_TOOL_PARAMETERS = z.object({
@@ -30,8 +31,44 @@ export const onlookInstructionsTool = tool({
     parameters: z.object({}),
 });
 
+export const CRAWL_URL_TOOL_NAME = 'crawl_url';
+export const CRAWL_URL_TOOL_PARAMETERS = z.object({
+    urls: z.array(z.string()).describe('Array of URLs to crawl'),
+    options: z
+        .object({
+            limit: z.number().optional(),
+            scrapeOptions: z
+                .object({
+                    formats: z
+                        .array(
+                            z.enum([
+                                'markdown',
+                                'html',
+                                'rawHtml',
+                                'content',
+                                'links',
+                                'screenshot',
+                                'screenshot@fullPage',
+                                'extract',
+                                'json',
+                                'changeTracking',
+                            ]),
+                        )
+                        .optional(),
+                })
+                .optional(),
+        })
+        .optional(),
+});
+
+export const crawlUrlTool = tool({
+    description: 'Crawl webpage content from provided URL',
+    parameters: CRAWL_URL_TOOL_PARAMETERS,
+});
+
 export const chatToolSet: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
     [READ_FILES_TOOL_NAME]: readFilesTool,
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
+    [CRAWL_URL_TOOL_NAME]: crawlUrlTool,
 };
