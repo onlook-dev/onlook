@@ -14,29 +14,30 @@ export const TopBar = observer(() => {
     const user = userManager.user;
 
     return (
-        <div className="w-full flex items-center justify-between p-4 text-sm text-secondary-foreground font-thin">
-            <div className="flex items-center gap-8">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 h-12 text-small text-foreground-secondary">
+            <div className="flex items-center gap-10">
                 <Link href={Routes.HOME}>
                     <Icons.OnlookTextLogo className="h-3" />
                 </Link>
-                <Link href="/about" className="text-sm hover:opacity-80">
+                <Link href="/about" className="text-regular hover:opacity-80">
                     About
                 </Link>
-                <GitHubButton />
-                <Link href="https://docs.onlook.dev" target="_blank" className="text-sm hover:opacity-80">
+                <Link href="https://docs.onlook.com" target="_blank" className="text-regular hover:opacity-80">
                     Docs
                 </Link>
+                <GitHubButton />
+
             </div>
             <div className="flex items-center gap-3">
                 {user ? (
                     <>
-                        <Button variant="secondary" asChild className="rounded">
+                        <Button variant="secondary" asChild className="rounded cursor-pointer">
                             <Link href={Routes.PROJECTS}>Projects</Link>
                         </Button>
-                        <CurrentUserAvatar />
+                        <CurrentUserAvatar className="cursor-pointer hover:opacity-80" />
                     </>
                 ) : (
-                    <Button variant="secondary" asChild className="rounded">
+                    <Button variant="secondary" asChild className="rounded cursor-pointer">
                         <Link href={Routes.LOGIN}>Sign In</Link>
                     </Button>
                 )}
