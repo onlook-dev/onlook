@@ -24,10 +24,12 @@ console.log('Resolved root directory:', rootDir);
 
 const clientEnvPath = path.join(rootDir, 'apps', 'web', 'client', '.env');
 console.log('Resolved client env path:', clientEnvPath);
-const seedEnvPath = path.join(rootDir, 'packages', 'seed', '.env');
+
+const dbEnvPath = path.join(rootDir, 'packages', 'db', '.env');
+console.log('Resolved db env path:', dbEnvPath);
 
 program
-    .name('setup-env')
+    .name('setup:env')
     .description('Automate environment setup for Onlook development')
     .version('0.0.1')
     .action(async () => {
@@ -65,8 +67,10 @@ program
         const extractKeys = (
             output: string,
         ): { anonKey: string; serviceRoleKey: string } | null => {
-            const anonKeyMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+)/);
-            const serviceRoleKeyMatch = output.match(/service_role key: (ey[A-Za-z0-9_-]+)/);
+            const anonKeyMatch = output.match(/anon key: (ey[A-Za-z0-9_-]+[^\r\n]*)/);
+            const serviceRoleKeyMatch = output.match(
+                /service_role key: (ey[A-Za-z0-9_-]+[^\r\n]*)/,
+            );
 
             if (anonKeyMatch?.[1] && serviceRoleKeyMatch?.[1]) {
                 return {
@@ -79,6 +83,7 @@ program
 
         let keys: { anonKey: string; serviceRoleKey: string } | null = null;
         let stdoutBuffer = '';
+        let successMessagePrinted = false;
 
         try {
             const backendProcess = spawn('bun run', ['backend:start'], {
@@ -91,34 +96,27 @@ program
                     backendProcess.kill();
                     backendSpinner.fail('Timed out waiting for Supabase keys.');
                     reject(new Error('Timed out waiting for Supabase keys'));
-                }, 120000); // 2 minutes timeout
+                }, 120000);
 
-                backendProcess.stdout?.on('data', (data) => {
-                    const chunk = data.toString();
-                    stdoutBuffer += chunk;
-
+                const handleData = (data: string) => {
+                    stdoutBuffer += data;
                     const extractedKeys = extractKeys(stdoutBuffer);
-                    if (extractedKeys) {
+                    if (extractedKeys && !successMessagePrinted) {
                         clearTimeout(timeout);
                         keys = extractedKeys;
                         backendProcess.kill();
                         backendSpinner.succeed('Successfully extracted Supabase keys.');
+                        successMessagePrinted = true;
                         resolve(extractedKeys);
                     }
+                };
+
+                backendProcess.stdout?.on('data', (data) => {
+                    handleData(data.toString());
                 });
 
                 backendProcess.stderr?.on('data', (data) => {
-                    const chunk = data.toString();
-                    stdoutBuffer += chunk;
-
-                    const extractedKeys = extractKeys(stdoutBuffer);
-                    if (extractedKeys) {
-                        clearTimeout(timeout);
-                        keys = extractedKeys;
-                        backendProcess.kill();
-                        backendSpinner.succeed('Successfully extracted Supabase keys.');
-                        resolve(extractedKeys);
-                    }
+                    handleData(data.toString());
                 });
 
                 backendProcess.on('error', (error) => {
@@ -183,25 +181,23 @@ ANTHROPIC_API_KEY=${apiKeysPrompt.anthropicApiKey || ''}
                 fs.writeFileSync(clientEnvPath, clientEnvContent);
                 clientEnvSpinner.succeed(`Created .env file for web client at ${clientEnvPath}`);
 
-                const seedEnvSpinner = ora(
-                    `Creating .env file for seed package at ${seedEnvPath}`,
+                const dbEnvSpinner = ora(
+                    `Creating .env file for db package at ${dbEnvPath}`,
                 ).start();
 
-                const seedEnvContent = `SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+                const dbEnvContent = `SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
 SUPABASE_URL=http://localhost:54321
 SUPABASE_SERVICE_ROLE_KEY=${keys!.serviceRoleKey}
 `;
 
-                fs.writeFileSync(seedEnvPath, seedEnvContent);
-                seedEnvSpinner.succeed(`Created .env file for seed package at ${seedEnvPath}`);
+                fs.writeFileSync(dbEnvPath, dbEnvContent);
+                dbEnvSpinner.succeed(`Created .env file for db package at ${dbEnvPath}`);
 
                 console.log(chalk.green('✅ Environment files created successfully!'));
                 console.log(
                     chalk.cyan('You can now proceed with the following steps from the guide:'),
                 );
-                console.log(chalk.cyan('6. Initialize the database: bun db:push'));
-                console.log(chalk.cyan('7. Seed the database: bun seed'));
-                console.log(chalk.cyan('8. Run development server: bun dev'));
+                console.log(chalk.cyan('https://docs.onlook.com'));
             } catch (error) {
                 console.error(chalk.red('Error creating .env files:'), error);
                 process.exit(1);
