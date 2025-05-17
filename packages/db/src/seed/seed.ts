@@ -7,9 +7,6 @@ config({ path: '../../.env' });
 
 (async () => {
     try {
-        console.log('process.env.SUPABASE_DATABASE_URL', process.env.SUPABASE_DATABASE_URL);
-        console.log('process.env.SUPABASE_URL', process.env.SUPABASE_URL);
-        console.log('process.env.SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY);
         if (!process.env.SUPABASE_DATABASE_URL || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
             const missingVars = [];
             if (!process.env.SUPABASE_DATABASE_URL) missingVars.push('SUPABASE_DATABASE_URL');
