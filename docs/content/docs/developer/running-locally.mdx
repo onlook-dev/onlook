@@ -53,24 +53,13 @@ These are the prerequisites for running Onlook locally.
 
 ### 5. Set environment variables
 
-   Create a copy of the `.env.example` file under the `apps/web/client` directory and name it `.env`. Fill in the values with your own API keys.
+Run the interactive environment setup script:
 
-    It should look like this:
+```bash
+bun run setup:env
+```
 
-    ```properties
-    # Supabase
-    NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=<Fill in from content after running supabase start>
-
-    # Codesandbox
-    CSB_API_KEY=<Your api key from https://codesandbox.io/api >
-
-    # Drizzle
-    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-
-    # Anthropic
-    ANTHROPIC_API_KEY=<Your api key from https://console.anthropic.com/settings/keys >
-    ```
+Note: If you'd prefer manually setting up the environment variables, see the [appendix](/docs/developer/appendix) for instructions.
 
 ### 6. Initialize the database
 
@@ -81,15 +70,7 @@ Set up the database schema
 
 ### 7. Seed the database with test data
 
-Set environment variables for the seed script under the `packages/seed` directory.
-
-    ```properties
-    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-    SUPABASE_URL=http://localhost:54321
-    SUPABASE_SERVICE_ROLE_KEY=<Your service role key from Supabase>
-    ```
-
-Seed the database with test data. This will create the user along with a test project.
+Seed the database with test data. This will create test users and projects.
    ```bash
    bun seed
    ```
@@ -99,6 +80,8 @@ Seed the database with test data. This will create the user along with a test pr
    ```bash
    bun dev
    ```
+
+Go to [http://localhost:3000](http://localhost:3000) to see the app running. You're all set!
 
 ## What's Next?
 
