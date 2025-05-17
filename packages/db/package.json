@@ -10,7 +10,8 @@
         "typecheck": "tsc --noEmit",
         "db:gen": "drizzle-kit generate",
         "db:push": "drizzle-kit push",
-        "db:studio": "drizzle-kit studio"
+        "db:studio": "drizzle-kit studio",
+        "db:seed": "bun src/seed/seed.ts"
     },
     "dependencies": {
         "dotenv": "^16.5.0",

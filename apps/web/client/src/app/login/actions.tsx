@@ -2,8 +2,8 @@
 
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
+import { SEED_USER } from '@onlook/db';
 import { SignInMethod } from '@onlook/models';
-import { USER_EMAIL, USER_PASSWORD } from '@onlook/seed';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -50,8 +50,8 @@ export async function devLogin() {
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
-        email: USER_EMAIL,
-        password: USER_PASSWORD,
+        email: SEED_USER.EMAIL,
+        password: SEED_USER.PASSWORD,
     });
 
     if (error) {

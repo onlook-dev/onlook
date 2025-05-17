@@ -1,15 +1,29 @@
+import chalk from 'chalk';
+import { Command } from 'commander';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
-import { Command } from 'commander';
-import chalk from 'chalk';
 import ora from 'ora';
 import prompts from 'prompts';
 
 const program = new Command();
 
-const rootDir = path.resolve(process.cwd(), '../..');
+console.log('Current working directory:', process.cwd());
+console.log('Current file path:', __filename);
+console.log('Current directory path:', __dirname);
+
+// Test if we're in packages/scripts
+const isInPackagesScripts = process.cwd().includes('packages/scripts');
+console.log('Is in packages/scripts:', isInPackagesScripts);
+
+// Test the path resolution
+const rootDir = isInPackagesScripts
+    ? path.resolve(process.cwd(), '../..')
+    : path.resolve(process.cwd(), '.');
+console.log('Resolved root directory:', rootDir);
+
 const clientEnvPath = path.join(rootDir, 'apps', 'web', 'client', '.env');
+console.log('Resolved client env path:', clientEnvPath);
 const seedEnvPath = path.join(rootDir, 'packages', 'seed', '.env');
 
 program
@@ -67,7 +81,7 @@ program
         let stdoutBuffer = '';
 
         try {
-            const backendProcess = spawn('bun', ['backend:start'], {
+            const backendProcess = spawn('bun run', ['backend:start'], {
                 cwd: rootDir,
                 shell: true,
             });

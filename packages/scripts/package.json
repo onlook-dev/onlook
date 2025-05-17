@@ -4,14 +4,15 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsup",
-        "dev": "tsup --watch",
+        "build": "bun build src/index.ts --outdir=dist --target=node",
+        "dev": "tsc --watch",
+        "start": "bun run build && bun dist/index.js",
         "typecheck": "tsc --noEmit",
         "lint": "eslint . --ext .ts",
         "format": "prettier --write ."
     },
     "bin": {
-        "setup-env": "./dist/setup-env.js"
+        "env": "dist/index.js"
     },
     "dependencies": {
         "chalk": "^4.1.2",
@@ -23,7 +24,6 @@
         "@onlook/typescript": "*",
         "@types/node": "^20.10.5",
         "@types/prompts": "^2.4.9",
-        "tsup": "^8.0.1",
         "typescript": "^5.3.3"
     }
 }
