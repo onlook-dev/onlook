@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import { Icons } from '@onlook/ui/icons';
 import { Button } from '@onlook/ui/button';
-import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { useTheme } from 'next-themes';
+import { Search } from 'lucide-react';
 
 export function TopBar() {
+  const { theme, setTheme } = useTheme();
+  
   return (
     <div className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
@@ -35,7 +38,7 @@ export function TopBar() {
               document.dispatchEvent(key);
             }}
           >
-            <MagnifyingGlassIcon className="mr-2 h-4 w-4" />
+            <Search className="mr-2 h-4 w-4" />
             <span>Search...</span>
             <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
               <span className="text-xs">{navigator?.platform?.includes('Mac') ? '⌘' : 'Ctrl'}</span>K
@@ -54,14 +57,10 @@ export function TopBar() {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => {
-              const theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-              document.documentElement.classList.toggle('dark');
-              localStorage.setItem('theme', theme);
-            }}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle theme"
           >
-            {typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? (
+            {theme === 'dark' ? (
               <Icons.Moon className="h-4 w-4" />
             ) : (
               <Icons.Sun className="h-4 w-4" />

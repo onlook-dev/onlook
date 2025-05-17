@@ -9,6 +9,8 @@ body {
 
 :root {
   --fd-layout-width: 1200px; /* Customize the max width of docs layout */
+  --fd-sidebar-width: 260px; /* Control sidebar width */
+  --fd-page-width: calc(var(--fd-layout-width) - var(--fd-sidebar-width) - 2rem); /* Control page content width */
 }
 
 /* Improve header link button visibility and clickability */
@@ -26,4 +28,15 @@ h5:hover [data-hash-link],
 h6:hover [data-hash-link] {
   opacity: 1;
   cursor: pointer;
+}
+
+/* Fix for content overflow */
+aside {
+  max-width: var(--fd-sidebar-width);
+  overflow-x: hidden;
+}
+
+article {
+  max-width: var(--fd-page-width);
+  overflow-x: hidden;
 }
