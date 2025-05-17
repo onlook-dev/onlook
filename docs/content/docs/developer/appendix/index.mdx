@@ -1,0 +1,36 @@
+---
+title: Appendix
+description: Appendix for developer setup
+---
+
+## Set up environment variables manually (optional)
+
+##### 1. In `apps/web/client`
+Create a copy of the `.env.example` file under the `apps/web/client` directory and name it `.env`. Fill in the values with your own API keys.
+
+It should look like this:
+
+```properties
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<Fill in from content after running supabase start>
+
+# Codesandbox
+CSB_API_KEY=<Your api key from https://codesandbox.io/api >
+
+# Drizzle
+SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+# Anthropic
+ANTHROPIC_API_KEY=<Your api key from https://console.anthropic.com/settings/keys >
+```
+
+##### 2. In `packages/db`
+
+Create a copy of the `.env.example` file under the `packages/db` directory and name it `.env`. Fill in the values with the values from the output of the `bun backend:start` command.
+
+```properties
+SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+SUPABASE_URL=http://localhost:54321
+SUPABASE_SERVICE_ROLE_KEY=<Your service role key from Supabase>
+```

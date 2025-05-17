@@ -3,7 +3,7 @@ import { resetDb, seedDb } from './db';
 import { seedUser } from './supabase';
 
 // Load .env file
-config();
+config({ path: '../../.env' });
 
 (async () => {
     try {
