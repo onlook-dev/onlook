@@ -38,10 +38,10 @@ export enum EditorAttributes {
 
 export enum Links {
     DISCORD = 'https://discord.gg/hERDfFZCsH',
-    GITHUB = 'https://github.com/onlook-dev/onlook',
-    USAGE_DOCS = 'https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F',
-    WIKI = 'https://github.com/onlook-dev/onlook/wiki',
-    OPEN_ISSUE = 'https://github.com/onlook-dev/onlook/issues/new/choose',
+    GITHUB = 'https://github.com/onlook-dev/desktop',
+    USAGE_DOCS = 'https://github.com/onlook-dev/desktop/wiki/How-to-set-up-my-project%3F',
+    WIKI = 'https://github.com/onlook-dev/desktop/wiki',
+    OPEN_ISSUE = 'https://github.com/onlook-dev/desktop/issues/new/choose',
 }
 
 export enum Orientation {

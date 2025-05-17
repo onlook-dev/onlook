@@ -4,7 +4,7 @@
     "main": "build/bundle.cjs",
     "repository": {
         "type": "git",
-        "url": "https://github.com/onlook-dev/onlook.git"
+        "url": "https://github.com/onlook-dev/desktop.git"
     },
     "type": "module",
     "dependencies": {
