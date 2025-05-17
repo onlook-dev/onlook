@@ -5,6 +5,7 @@ import { RootProvider } from 'fumadocs-ui/provider';
 import { type Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { TopBar } from '@/components/top-bar';
 
 export const metadata: Metadata = {
     title: 'Onlook',
@@ -21,7 +22,8 @@ export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
             <body className="flex flex-col min-h-screen">
-                <RootProvider>{children}</RootProvider>
+                <TopBar />
+                <RootProvider search={{}}>{children}</RootProvider>
             </body>
         </html>
     );

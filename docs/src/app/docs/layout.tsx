@@ -7,7 +7,7 @@ const docsOptions = {
     ...baseOptions,
     nav: {
         ...baseOptions.nav,
-        component: null
+        component: null // Remove the default navigation since we're using our custom top bar
     }
 };
 
