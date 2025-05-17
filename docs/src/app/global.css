@@ -7,6 +7,10 @@ body {
   overscroll-behavior: none;
 }
 
+:root {
+  --fd-layout-width: 1200px; /* Customize the max width of docs layout */
+}
+
 /* Improve header link button visibility and clickability */
 [data-hash-link] {
   opacity: 0;

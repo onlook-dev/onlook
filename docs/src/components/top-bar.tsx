@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { Icons } from '@onlook/ui/icons';
-import { ThemeToggle } from './theme-toggle';
 import { Button } from '@onlook/ui/button';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 
@@ -51,7 +50,23 @@ export function TopBar() {
               <span className="sr-only">GitHub</span>
             </Button>
           </Link>
-          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              const theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+              document.documentElement.classList.toggle('dark');
+              localStorage.setItem('theme', theme);
+            }}
+            aria-label="Toggle theme"
+          >
+            {typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? (
+              <Icons.Moon className="h-4 w-4" />
+            ) : (
+              <Icons.Sun className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </div>
       
