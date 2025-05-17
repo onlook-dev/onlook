@@ -116,7 +116,8 @@ const promptForApiKeys = async () => {
         {
             type: 'password',
             name: 'anthropicApiKey',
-            message: 'Enter your Anthropic API key (optional):',
+            message: 'Enter your Anthropic API key:',
+            validate: (v: string) => (v ? true : 'Required'),
         },
     ]);
 

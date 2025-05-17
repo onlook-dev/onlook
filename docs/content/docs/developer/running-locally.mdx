@@ -29,19 +29,7 @@ These are the prerequisites for running Onlook locally.
    bun install
    ```
 
-### 3. Get API keys
-
-#### a. Get Codesandbox API key
-
-    Request an API key from Codesandbox. This is used to run the dev containers. It should be free to use: https://codesandbox.io/api
-
-    Note: We plan on enabling running the dev containers with Docker Desktop in the future after we figure out the best api. 
-
-#### b. Get Anthropic API key (optional)
-
-    Request an API key from Anthropic. This is used for chatting with your project. https://console.anthropic.com/settings/keys
-
-### 4. Run backend
+### 3. Run backend
 
    Make sure you have Docker running from the instructions above.
 
@@ -50,6 +38,18 @@ These are the prerequisites for running Onlook locally.
    ```
 
     Grab the `anon key` and `service role key` from the output. We'll use these in step 5 and 7.
+
+### 4. Get API keys
+
+#### a. Get Codesandbox API key
+
+    Request an API key from Codesandbox. This is used to run the dev containers. It should be free to use. https://codesandbox.io/api
+
+    Note: We plan on enabling running the dev containers with Docker Desktop in the future after we figure out the best api. 
+
+#### b. Get Anthropic API key
+
+    Request an API key from Anthropic. This is used for chatting with your project. https://console.anthropic.com/settings/keys
 
 ### 5. Set environment variables
 
@@ -72,7 +72,7 @@ Set up the database schema
 
 Seed the database with test data. This will create test users and projects.
    ```bash
-   bun seed
+   bun db:seed
    ```
 
 ### 8. Run development server
