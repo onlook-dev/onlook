@@ -31,6 +31,7 @@
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
+        "setup:env": "./scripts/setup_env.sh",
         "increment_tag": "./scripts/increment_tag.sh",
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh"
