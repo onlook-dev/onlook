@@ -15,4 +15,23 @@ export const baseOptions: BaseLayoutProps = {
             </>
         ),
     },
+    links: [
+        {
+            type: 'main',
+            text: 'Documentation',
+            url: '/docs',
+        },
+        {
+            type: 'main',
+            text: 'GitHub',
+            url: 'https://github.com/onlook-dev/onlook',
+            external: true,
+        },
+        {
+            type: 'main',
+            text: 'Discord',
+            url: 'https://discord.gg/hERDfFZCsH',
+            external: true,
+        }
+    ]
 };
