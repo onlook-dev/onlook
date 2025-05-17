@@ -9,7 +9,7 @@ export const env = createEnv({
     server: {
         NODE_ENV: z.enum(['development', 'test', 'production']),
         CSB_API_KEY: z.string(),
-        ANTHROPIC_API_KEY: z.string(),
+        ANTHROPIC_API_KEY: z.string().optional(),
         SUPABASE_DATABASE_URL: z.string().url(),
     },
     /**
