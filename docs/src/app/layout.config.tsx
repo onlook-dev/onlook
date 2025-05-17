@@ -1,3 +1,4 @@
+import { Icons } from '@onlook/ui/icons/index';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
 /**
@@ -10,28 +11,26 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 export const baseOptions: BaseLayoutProps = {
     nav: {
         title: (
-            <>
-                Onlook Docs
-            </>
+            <div className="flex items-center gap-2">
+                <Icons.OnlookLogo className="w-4 h-4" />
+                <span >Onlook Docs</span>
+            </div>
         ),
     },
     links: [
         {
             type: 'main',
-            text: 'Documentation',
-            url: '/docs',
-        },
-        {
-            type: 'main',
             text: 'GitHub',
             url: 'https://github.com/onlook-dev/onlook',
             external: true,
+            icon: <Icons.GitHubLogo className="w-4 h-4" />
         },
         {
             type: 'main',
             text: 'Discord',
             url: 'https://discord.gg/hERDfFZCsH',
             external: true,
+            icon: <Icons.DiscordLogo className="w-4 h-4" />
         }
     ]
 };
