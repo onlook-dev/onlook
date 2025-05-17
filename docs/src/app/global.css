@@ -9,7 +9,7 @@ body {
 
 :root {
   --fd-layout-width: 1200px; /* Customize the max width of docs layout */
-  --fd-sidebar-width: 260px; /* Control sidebar width */
+  --fd-sidebar-width: 320px; /* Further increased sidebar width to fix squished navigation */
   --fd-page-width: calc(var(--fd-layout-width) - var(--fd-sidebar-width) - 2rem); /* Control page content width */
 }
 
