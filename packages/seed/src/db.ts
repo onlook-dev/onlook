@@ -16,6 +16,7 @@ const project0 = {
     previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
     createdAt: new Date(),
     updatedAt: new Date(),
+    description: 'Test Project Description',
 } satisfies Project;
 
 const project1 = {
@@ -26,6 +27,7 @@ const project1 = {
     previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
     createdAt: new Date(),
     updatedAt: new Date(),
+    description: 'Test Project 1 Description',
 } satisfies Project;
 
 const canvas0 = createDefaultCanvas(project0.id);

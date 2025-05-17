@@ -1,5 +1,11 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
-import type { Action, CodeDiffRequest, FileToRequests } from '@onlook/models';
+import {
+    EditorTabValue,
+    type Action,
+    type CodeDiffRequest,
+    type DomElement,
+    type FileToRequests,
+} from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import {
@@ -26,13 +32,29 @@ export class CodeManager {
     }
 
     viewCodeBlock(oid: string) {
-        console.log('viewCodeBlock', oid);
+        try {
+            this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
+            const element =
+                this.editorEngine.elements.selected.find((el: DomElement) => el.oid === oid) ||
+                this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
+
+            if (element) {
+                setTimeout(() => {
+                    this.editorEngine.elements.selected = [element];
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error viewing source:', error);
+        }
     }
 
     async write(action: Action) {
         // TODO: This is a hack to write code, we should refactor this
         if (action.type === 'write-code' && action.diffs[0]) {
-            await this.editorEngine.sandbox.writeFile(action.diffs[0].path, action.diffs[0].generated);
+            await this.editorEngine.sandbox.writeFile(
+                action.diffs[0].path,
+                action.diffs[0].generated,
+            );
         } else {
             const requests = await this.collectRequests(action);
             await this.writeRequest(requests);
@@ -100,5 +122,5 @@ export class CodeManager {
         return requestByFile;
     }
 
-    clear() {}
+    clear() { }
 }

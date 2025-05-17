@@ -1,7 +1,7 @@
 import { SystemTheme } from '@onlook/models';
 import { useTheme } from 'next-themes';
 import CodeMirrorMerge from 'react-codemirror-merge';
-import { getBasicSetup, getExtensions } from '../../dev-tab/code-mirror-config';
+import { getExtensions } from '../../dev-tab/code-mirror-config';
 interface CodeDiffProps {
     originalCode: string;
     modifiedCode: string;
@@ -16,13 +16,7 @@ const Modified = CodeMirrorMerge.Modified;
 export const CodeDiff = ({ originalCode, modifiedCode }: CodeDiffProps) => {
     const { theme } = useTheme();
 
-    const languageExtension = getExtensions('javascript');
-    const extensions = [
-        ...getBasicSetup(() => {
-            // No-op save function since this is a read-only display
-        }),
-        ...languageExtension,
-    ];
+    const extensions = getExtensions('javascript');
 
     return (
         <CodeMirrorMerge

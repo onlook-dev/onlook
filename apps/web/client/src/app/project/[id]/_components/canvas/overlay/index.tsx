@@ -16,6 +16,7 @@ export const Overlay = observer(() => {
     const editorEngine = useEditorEngine();
     const overlayState = editorEngine.overlay.state;
     const isSingleSelection = editorEngine.elements.selected.length === 1;
+    const isTextEditing = editorEngine.text.isEditing;
 
     const clickRectsElements = useMemo(
         () =>
@@ -38,20 +39,22 @@ export const Overlay = observer(() => {
         <div
             id={EditorAttributes.OVERLAY_CONTAINER_ID}
             className={cn(
-                'opacity-100 transition-opacity duration-150 absolute top-0 left-0 h-0 w-0 pointer-events-none',
-                editorEngine.state.shouldHideOverlay && 'opacity-0',
+                'absolute top-0 left-0 h-0 w-0 pointer-events-none',
+                editorEngine.state.shouldHideOverlay ? 'opacity-0' : 'opacity-100 transition-opacity duration-150',
                 editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
             )}
         >
-            {overlayState.hoverRect && (
+            {!isTextEditing && overlayState.hoverRect && (
                 <HoverRect
                     rect={overlayState.hoverRect.rect}
                     isComponent={overlayState.hoverRect.isComponent}
                 />
             )}
-            {overlayState.insertRect && <InsertRect rect={overlayState.insertRect} />}
-            {clickRectsElements}
-            {overlayState.textEditor && (
+            {overlayState.insertRect && (
+                <InsertRect rect={overlayState.insertRect} />
+            )}
+            {!isTextEditing && clickRectsElements}
+            {isTextEditing && overlayState.textEditor && (
                 <TextEditor
                     rect={overlayState.textEditor.rect}
                     content={overlayState.textEditor.content}

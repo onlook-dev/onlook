@@ -1,6 +1,6 @@
 import { api } from '@/trpc/client';
 import { MAX_NAME_LENGTH } from '@onlook/constants';
-import { fromMessage } from '@onlook/db';
+import { fromConversation, fromMessage } from '@onlook/db';
 import {
     ChatMessageRole,
     type AssistantChatMessage,
@@ -30,39 +30,48 @@ export class ChatConversationImpl implements ChatConversation {
         totalTokens: 0,
     };
 
-    constructor(projectId: string, messages: ChatMessageImpl[]) {
-        this.id = uuidv4();
-        this.projectId = projectId;
-        this.messages = messages;
-        this.createdAt = new Date().toISOString();
-        this.updatedAt = new Date().toISOString();
+    private constructor(conversation: ChatConversation, fetchMessages = false) {
+        this.id = conversation.id;
+        this.projectId = conversation.projectId;
+        this.createdAt = conversation.createdAt;
+        this.updatedAt = conversation.updatedAt;
+        this.displayName = conversation.displayName;
+        if (fetchMessages) {
+            this.getMessagesFromStorage().then((messages) => {
+                this.messages = messages;
+            });
+        }
         makeAutoObservable(this);
+    }
+
+    static create(projectId: string) {
+        return new ChatConversationImpl({
+            id: uuidv4(),
+            projectId,
+            displayName: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        });
+    }
+
+    static fromJSON(conversation: ChatConversation) {
+        return new ChatConversationImpl(conversation, true);
+    }
+
+    async getMessagesFromStorage(): Promise<ChatMessageImpl[]> {
+        const messages = await api.chat.getMessages.query({ conversationId: this.id });
+        const messagesImpl = messages.map((m) => {
+            if (m.role === ChatMessageRole.USER) {
+                return UserChatMessageImpl.fromJSON(m as UserChatMessage);
+            } else if (m.role === ChatMessageRole.ASSISTANT) {
+                return AssistantChatMessageImpl.fromJSON(m as AssistantChatMessage);
+            }
+        }).filter((m) => m !== null) as ChatMessageImpl[];
+        return messagesImpl;
     }
 
     getMessageById(id: string) {
         return this.messages.find((m) => m.id === id);
-    }
-
-    static fromJSON(data: ChatConversation) {
-        const messages = data.messages
-            .map((m) => {
-                if (m.role === ChatMessageRole.USER) {
-                    return UserChatMessageImpl.fromJSON(m as UserChatMessage);
-                } else if (m.role === ChatMessageRole.ASSISTANT) {
-                    return AssistantChatMessageImpl.fromJSON(m as AssistantChatMessage);
-                } else {
-                    console.error('Invalid message role', m.role);
-                    return null;
-                }
-            })
-            .filter((m) => m !== null) as ChatMessageImpl[];
-
-        const conversation = new ChatConversationImpl(data.projectId, messages);
-        conversation.id = data.id;
-        conversation.displayName = data.displayName;
-        conversation.createdAt = data.createdAt;
-        conversation.updatedAt = data.updatedAt;
-        return conversation;
     }
 
     updateTokenUsage(usage: TokenUsage) {
@@ -117,6 +126,16 @@ export class ChatConversationImpl implements ChatConversation {
         this.updatedAt = new Date().toISOString();
         this.messages = [...this.messages];
         this.saveMessageToStorage(message);
+    }
+
+    async saveConversationToStorage() {
+        const success = await api.chat.saveConversation.mutate({
+            conversation: fromConversation(this),
+        });
+        if (!success) {
+            console.error('Failed to save conversation to storage', this);
+        }
+        return success;
     }
 
     async saveMessageToStorage(message: ChatMessageImpl) {

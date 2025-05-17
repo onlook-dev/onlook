@@ -4,6 +4,7 @@ import {
     projectInsertSchema,
     projects,
     toCanvas,
+    toConversation,
     toFrame,
     toProject,
     userProjects,
@@ -26,6 +27,10 @@ export const projectRouter = createTRPCRouter({
                             frames: true,
                         },
                     },
+                    conversations: {
+                        orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
+                        limit: 1,
+                    },
                 },
             });
             if (!project) {
@@ -39,6 +44,7 @@ export const projectRouter = createTRPCRouter({
                 project: toProject(project),
                 canvas: toCanvas(canvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
+                conversation: project.conversations[0] ? toConversation(project.conversations[0]) : null,
             };
         }),
     create: protectedProcedure

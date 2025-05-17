@@ -1,112 +1,51 @@
 ---
-title: Running Onlook
-description: Setup instructions for contributors
+title: Get Started
+description: Learn how to get started with Onlook
 ---
 
-# Running Onlook Locally
+# Welcome to Onlook
 
-This guide will set you up with running Onlook locally. This involves a Next.js app, a Supabase backend, and the ability to run the dev containers with Codesandbox.
+Onlook is a "Cursor for Designers" that enables designers to make live edits to React and TailwindCSS projects directly within the browser DOM. It provides a seamless integration between design and development.
 
-## Prerequisites
+![Onlook Interface](/images/onlook-interface.png)
+*Onlook's intuitive design interface lets you edit React components visually*
 
-These are the prerequisites for running Onlook locally.
+## What is Onlook?
 
-- [Bun](https://bun.sh) - Enables running the monorepo
-- [Docker](https://docs.docker.com/get-started/get-docker/) - Enables running the Supabase backend
+Onlook lets you:
 
-## Setup
+- Edit designs directly in a browser-like interface
+- Have changes automatically reflected in the code
+- Use AI assistance to generate and modify code
+- Manage project styling through a theme system
+- Deploy websites directly from the application
 
-### 1. Clone the repository
+With Onlook, designers can take control of implementation, reducing the gap between design and development. Create production-ready code without requiring deep coding knowledge.
 
-   ```bash
-   git clone https://github.com/onlook-dev/onlook.git
-   cd onlook
-   ```
+## Getting Started
 
-### 2. Install dependencies
+Ready to dive in? Here's how to get started with Onlook:
 
-   ```bash
-   bun install
-   ```
-
-
-### 3. Get API keys
-
-#### a. Get Codesandbox API key
-
-    Request an API key from Codesandbox. This is used to run the dev containers. It should be free to use: https://codesandbox.io/api
-
-    Note: We plan on enabling running the dev containers with Docker Desktop in the future after we figure out the best api. 
-
-
-#### b. Get Anthropic API key (optional)
-
-    Request an API key from Anthropic. This is used for chatting with your project. https://console.anthropic.com/settings/keys
-
-
-### 4. Run backend
-
-   Make sure you have Docker running from the instructions above.
-
-
-   ```bash
-   bun backend:start
-   ```
-
-    Grab the `anon key` from the output. We'll use these in the next step.
-
-### 5. Set environment variables
-
-   Create a copy of the `.env.example` file under the `apps/web/client` directory and name it `.env`. Fill in the values with your own API keys.
-
-    It should look like this:
-
-    ```properties
-    # Supabase
-    NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=<Fill in from content after running supabase start>
-
-    # Codesandbox
-    CSB_API_KEY=<Your api key from https://codesandbox.io/api >
-
-    # Drizzle
-    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-
-    # Anthropic
-    ANTHROPIC_API_KEY=<Your api key from https://console.anthropic.com/settings/keys >
-    ```
-
-### 6. Initialize the database
-
-Set up the database schema
-   ```bash
-   bun db:push
-   ```
-
-### 7. Seed the database with test data
-
-Set environment variables for the seed script under the `packages/seed` directory.
-
-    ```properties
-    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-    SUPABASE_URL=http://localhost:54321
-    SUPABASE_SERVICE_ROLE_KEY=<Your service role key from Supabase>
-    ```
-
-Seed the database with test data. This will create the user along with a test project.
-   ```bash
-   bun seed
-   ```
-
-### 8. Run development server
-
-   ```bash
-   bun dev
-   ```
-
-## What's Next?
-
-<Cards >
-  <Card title="Learn more about Onlook" href="https://onlook.com" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.vercel.app" />
+<Cards>
+  <Card title="User Guide" href="/docs/user-guide" />
+  <Card title="Features" href="/docs/features" />
+  <Card title="Tutorials" href="/docs/tutorials" />
 </Cards>
+
+## For Contributors
+
+Want to contribute to Onlook? Check out our developer documentation:
+
+<Cards>
+  <Card title="Running Locally" href="/docs/developer/running-locally" />
+  <Card title="Architecture" href="/docs/developer/architecture" />
+  <Card title="Contributing" href="/docs/developer/contributing" />
+</Cards>
+
+## Need Help?
+
+If you run into any issues or have questions, you can:
+
+- Join our [Discord community](https://discord.gg/hERDfFZCsH)
+- Check out the [FAQ](/docs/faq)
+- Follow us on [Twitter](https://twitter.com/onlookdev)

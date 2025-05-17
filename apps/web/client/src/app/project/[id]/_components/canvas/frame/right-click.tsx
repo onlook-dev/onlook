@@ -44,15 +44,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         editorEngine.frames.selected,
     ]);
 
-    const OPEN_DEV_TOOL_ITEM: MenuItem = {
-        label: 'Open devtool',
-        action: () => editorEngine.inspect(),
-        icon: <Icons.Code className="mr-2 h-4 w-4" />,
-        hotkey: Hotkey.OPEN_DEV_TOOL,
-    };
-
     const TOOL_ITEMS: MenuItem[] = [
-        OPEN_DEV_TOOL_ITEM,
         {
             label: 'Add to AI Chat',
             action: () => {
@@ -141,12 +133,10 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         },
         {
             label: 'Delete',
-            // action: () => editorEngine.deleteWindow(editorEngine.frames.selected[0].id),
-            action: () => {},
+            action: () => editorEngine.window.delete(editorEngine.frames.selected[0]?.frame.id),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
-            // disabled: !editorEngine.canDeleteWindow(),
         },
     ];
 
@@ -162,7 +152,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         let menuItems: MenuItem[][] = [];
 
         if (!editorEngine.elements.selected.length) {
-            menuItems = [WINDOW_ITEMS, [OPEN_DEV_TOOL_ITEM]];
+            menuItems = [WINDOW_ITEMS];
         } else {
             const updatedToolItems = [
                 instance !== null && {
@@ -190,7 +180,11 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     };
 
     function viewSource(oid: string | null) {
-        // editorEngine.sandbox.viewSource(oid);
+        if (!oid) {
+            console.error('No oid found');
+            return;
+        }
+        editorEngine.code.viewCodeBlock(oid);
     }
 
     return (
