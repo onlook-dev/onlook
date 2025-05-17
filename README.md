@@ -9,14 +9,14 @@
   <p align="center">
     Cursor for Designers
     <br />
-    <a href="https://github.com/onlook-dev/onlook/wiki"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/onlook-dev/desktop/wiki"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://youtu.be/RSX_3EaO5eU?feature=shared">View Demo</a>
     ·
-    <a href="https://github.com/onlook-dev/onlook/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/onlook-dev/desktop/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/onlook-dev/onlook/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/onlook-dev/desktop/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
   <!-- PROJECT SHIELDS -->
 <!--
@@ -86,7 +86,7 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 ### Installation
 
  1. Visit [onlook.com](https://onlook.com/) to download the app.
- 2. Run locally following [this guide](https://github.com/onlook-dev/onlook/wiki/Building-from-source)
+ 2. Run locally following [this guide](https://github.com/onlook-dev/desktop/wiki/Building-from-source)
 
 ### Usage
 
@@ -105,7 +105,7 @@ Use the chat to create or edit a project you're working on. At any time, you can
 
 ![image](https://github.com/user-attachments/assets/f64b51df-03be-44d1-ae35-82e6dc960d06)
 
-See how we're tracking towards major [milestones](<[url](https://github.com/onlook-dev/onlook/milestones)>), and read the [wiki](https://github.com/onlook-dev/onlook/wiki/Roadmap) for details on each version of Onlook. Here's a rough overview of some of the major features we're looking at:
+See how we're tracking towards major [milestones](<[url](https://github.com/onlook-dev/desktop/milestones)>), and read the [wiki](https://github.com/onlook-dev/desktop/wiki/Roadmap) for details on each version of Onlook. Here's a rough overview of some of the major features we're looking at:
 
 -   [x] Browser
 -   [x] Editor
@@ -115,20 +115,20 @@ See how we're tracking towards major [milestones](<[url](https://github.com/onlo
 -   [ ] Components
 -   [ ] Hosting
 
-Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues).
+Also check the [open issues](https://github.com/onlook-dev/desktop/issues) for a full list of proposed features (and known issues).
 
 ## Contributing
 
 ![image](https://github.com/user-attachments/assets/ecc94303-df23-46ae-87dc-66b040396e0b)
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/onlook/issues).
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/desktop/issues).
 
 See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 #### Contributors
 
-<a href="https://github.com/onlook-dev/onlook/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=onlook-dev/onlook&t=1" />
+<a href="https://github.com/onlook-dev/desktop/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=onlook-dev/desktop&t=1" />
 </a>
 
 ## Contact
@@ -136,7 +136,7 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 ![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
 -   Team: [Discord](https://discord.gg/hERDfFZCsH) - [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.com)
--   Project: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
+-   Project: [https://github.com/onlook-dev/desktop](https://github.com/onlook-dev/desktop)
 -   Website: [https://onlook.com](https://onlook.com)
 
 ## Acknowledgments
@@ -156,15 +156,15 @@ Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more 
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [contributors-shield]: https://img.shields.io/github/contributors/onlook-dev/studio.svg?style=for-the-badge
-[contributors-url]: https://github.com/onlook-dev/onlook/graphs/contributors
+[contributors-url]: https://github.com/onlook-dev/desktop/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/onlook-dev/studio.svg?style=for-the-badge
-[forks-url]: https://github.com/onlook-dev/onlook/network/members
+[forks-url]: https://github.com/onlook-dev/desktop/network/members
 [stars-shield]: https://img.shields.io/github/stars/onlook-dev/studio.svg?style=for-the-badge
-[stars-url]: https://github.com/onlook-dev/onlook/stargazers
+[stars-url]: https://github.com/onlook-dev/desktop/stargazers
 [issues-shield]: https://img.shields.io/github/issues/onlook-dev/studio.svg?style=for-the-badge
-[issues-url]: https://github.com/onlook-dev/onlook/issues
+[issues-url]: https://github.com/onlook-dev/desktop/issues
 [license-shield]: https://img.shields.io/github/license/onlook-dev/studio.svg?style=for-the-badge
-[license-url]: https://github.com/onlook-dev/onlook/blob/master/LICENSE.txt
+[license-url]: https://github.com/onlook-dev/desktop/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/onlook-dev
 [twitter-shield]: https://img.shields.io/badge/-Twitter-black?logo=x&colorB=555
