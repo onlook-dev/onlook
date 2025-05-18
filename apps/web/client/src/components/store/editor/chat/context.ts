@@ -1,5 +1,4 @@
 import type { ProjectManager } from '@/components/store/project/manager';
-import { PAGE_SYSTEM_PROMPT } from '@onlook/ai';
 import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
@@ -26,18 +25,6 @@ export class ChatContext {
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
-    }
-
-    async getOriginalPageContext(): Promise<FileMessageContext[]> {
-        const originalPagePath = PAGE_SYSTEM_PROMPT.defaultPath
-        const pageContent = await this.editorEngine.sandbox.readFile(originalPagePath) ?? '';
-
-        return [{
-            type: MessageContextType.FILE,
-            displayName: 'Original Page',
-            path: originalPagePath,
-            content: pageContent,
-        }];
     }
 
     async getChatContext(): Promise<ChatMessageContext[]> {

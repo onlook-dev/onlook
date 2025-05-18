@@ -41,12 +41,8 @@ export class ChatManager {
             return null;
         }
 
-        // Get original page context
-        const originalPageContext = await this.context.getOriginalPageContext();
-
         const messages = await this.getStreamMessages(prompt, [
             ...images,
-            ...originalPageContext,
         ]);
         return messages;
     }
