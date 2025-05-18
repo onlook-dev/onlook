@@ -4,7 +4,7 @@ export const rules = `IMPORTANT:
 - Try to use a distinct style and infer it from the prompt. For example, if the prompt is for something artistic, you should make this look distinct based on the intent.
 `;
 
-export const defaultPath = 'src/app/page.tsx';
+export const defaultPath = 'app/page.tsx';
 
 export const PAGE_SYSTEM_PROMPT = {
     rules,

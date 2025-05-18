@@ -28,7 +28,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null);
     const [center, setCenter] = useState<number | null>(null);
-    const creationData = createManager.pendingCreationData;
     const { sendMessages } = useChatContext();
 
     useEffect(() => {
@@ -78,20 +77,29 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             editorEngine.chat.conversation.setCurrentConversation(conversation);
         }
 
-        if (creationData) {
+        return () => {
+            editorEngine.sandbox.clear();
+        };
+    }, [result]);
+
+    useEffect(() => {
+        const creationData = createManager.pendingCreationData;
+        const shouldCreate = !!creationData && projectId === creationData.project.id;
+        const conversationReady = !!editorEngine.chat.conversation.current;
+        const sandboxConnected = !!editorEngine.sandbox.session.session;
+
+        if (shouldCreate && conversationReady && sandboxConnected) {
             editorEngine.chat.getCreateMessages(creationData.prompt, creationData.images).then((messages) => {
                 if (!messages) {
                     console.error('Failed to get creation messages');
                     return;
                 }
+                createManager.pendingCreationData = null;
                 sendMessages(messages, ChatType.CREATE);
+
             });
         }
-
-        return () => {
-            editorEngine.sandbox.clear();
-        };
-    }, [result, creationData]);
+    }, [editorEngine.chat.conversation.current, createManager.pendingCreationData, editorEngine.sandbox.session.session]);
 
     useEffect(() => {
         if (tabState === 'reactivated' && editorEngine.sandbox.session.session) {
