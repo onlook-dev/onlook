@@ -70,6 +70,7 @@ export class ChatManager {
             console.error('Failed to add user message');
             return null;
         }
+        return []
     }
 
     async getFixErrorMessages(errors: ParsedError[]): Promise<Message[] | null> {
