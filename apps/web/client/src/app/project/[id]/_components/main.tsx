@@ -1,6 +1,7 @@
 'use client';
 
-import { ChatProvider } from '@/app/project/[id]/_hooks/use-chat';
+import { ChatType } from '@/app/api/chat/route';
+import { ChatProvider, useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
@@ -28,6 +29,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const rightPanelRef = useRef<HTMLDivElement>(null);
     const [center, setCenter] = useState<number | null>(null);
     const creationData = createManager.pendingCreationData;
+    const { sendMessages } = useChatContext();
 
     useEffect(() => {
         setTimeout(() => {
@@ -77,7 +79,13 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         }
 
         if (creationData) {
-            createManager.resumeCreate();
+            editorEngine.chat.getCreateMessages(creationData.prompt, creationData.images).then((messages) => {
+                if (!messages) {
+                    console.error('Failed to get creation messages');
+                    return;
+                }
+                sendMessages(messages, ChatType.CREATE);
+            });
         }
 
         return () => {

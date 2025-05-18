@@ -1,7 +1,7 @@
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
-import { ChatMessageRole, StreamRequestType, type AssistantChatMessage } from '@onlook/models/chat';
+import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ImageMessageContext } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -52,6 +52,24 @@ export class ChatManager {
             content,
         });
         return this.generateStreamMessages(content);
+    }
+
+    async getCreateMessages(prompt: string, images: ImageMessageContext[]): Promise<Message[] | null> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return null;
+        }
+
+        // Get original page context
+        const originalPageContext = await this.context.getOriginalPageContext();
+
+        const userMessage = this.conversation.addUserMessage(prompt, [
+            ...images,
+        ]);
+        if (!userMessage) {
+            console.error('Failed to add user message');
+            return null;
+        }
     }
 
     async getFixErrorMessages(errors: ParsedError[]): Promise<Message[] | null> {

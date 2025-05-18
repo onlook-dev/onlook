@@ -1,3 +1,4 @@
+import { ChatType } from '@/app/api/chat/route';
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
@@ -18,7 +19,7 @@ import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 
 export const ChatInput = observer(() => {
-    const { setMessages, stop, reload, isWaiting } = useChatContext();
+    const { sendMessages, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -129,8 +130,7 @@ export const ChatInput = observer(() => {
             return;
         }
 
-        setMessages(streamMessages);
-        reload();
+        sendMessages(streamMessages, ChatType.EDIT);
         setInputValue('');
     }
 

@@ -19,7 +19,7 @@ Only suggest at most a few shell commands at a time, not more than 1-3.
 Do not suggest shell commands for running the project, such as npm run dev. Assume the users is already running the project.
 
 Use the appropriate shell based on the user's system info:
-darwin
+linux
 
 </role><search-replace-rules># *str_replace* block Rules:
 

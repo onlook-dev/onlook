@@ -38,16 +38,6 @@ export class CreateManager {
         return newProject;
     }
 
-    resumeCreate() {
-        if (!this.pendingCreationData) {
-            console.error('No pending creation data found');
-            return;
-        }
-        const { userId, project, prompt, images } = this.pendingCreationData;
-        console.log('resumeCreate', userId, project, prompt, images);
-        this.pendingCreationData = null;
-    }
-
     createDefaultProject(sandboxId: string, previewUrl: string): DbProject {
         const newProject = {
             id: uuidv4(),

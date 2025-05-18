@@ -27,6 +27,15 @@ export class ChatContext {
         );
     }
 
+    async getOriginalPageContext(): Promise<FileMessageContext[]> {
+        return [{
+            type: MessageContextType.FILE,
+            displayName: 'Original Page',
+            path: './src/',
+            content: '',
+        }];
+    }
+
     async getChatContext(): Promise<ChatMessageContext[]> {
         const selected = this.editorEngine.elements.selected;
         const fileNames = new Set<string>();
