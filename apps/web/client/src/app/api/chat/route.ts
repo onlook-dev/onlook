@@ -1,16 +1,23 @@
-import { chatToolSet, initModel, PromptProvider } from '@onlook/ai';
+import { chatToolSet, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 
+export enum ChatType {
+    ASK = 'ask',
+    CREATE = 'create',
+    EDIT = 'edit',
+}
+
 const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET);
-const promptProvider = new PromptProvider();
 
 export async function POST(req: Request) {
-    const { messages, maxSteps } = await req.json();
+    const { messages, maxSteps, chatType } = await req.json();
+
+    const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
 
     const result = streamText({
         model,
-        system: promptProvider.getSystemPrompt(),
+        system: systemPrompt,
         messages,
         maxSteps,
         tools: chatToolSet,

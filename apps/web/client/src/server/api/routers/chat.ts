@@ -73,7 +73,7 @@ export const chatRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             const dbMessages = await ctx.db.query.messages.findMany({
                 where: eq(messages.conversationId, input.conversationId),
-                orderBy: (messages, { desc }) => [desc(messages.createdAt)],
+                orderBy: (messages, { asc }) => [asc(messages.createdAt)],
             });
             return dbMessages.map((message) => toMessage(message));
         }),

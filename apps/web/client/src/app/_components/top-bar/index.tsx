@@ -19,13 +19,10 @@ export const TopBar = observer(() => {
                 <Link href={Routes.HOME}>
                     <Icons.OnlookTextLogo className="h-3" />
                 </Link>
-                <Link href="/about" className="text-sm hover:opacity-80">
-                    About
-                </Link>
-                <GitHubButton />
-                <Link href="https://docs.onlook.dev" target="_blank" className="text-sm hover:opacity-80">
+                <Link href="https://docs.onlook.com" target="_blank" className="text-sm hover:opacity-80">
                     Docs
                 </Link>
+                <GitHubButton />
             </div>
             <div className="flex items-center gap-3">
                 {user ? (

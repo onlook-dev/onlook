@@ -1,3 +1,4 @@
+import { ChatType } from '@/app/api/chat/route';
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import type { ClickRectState } from '@/components/store/editor/overlay/state';
@@ -30,7 +31,7 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const userManager = useUserManager();
-        const { setMessages, reload, isWaiting } = useChatContext();
+        const { sendMessages, reload, isWaiting } = useChatContext();
         const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
@@ -88,7 +89,7 @@ export const OverlayChat = observer(
                 console.error('No stream messages');
                 return;
             }
-            setMessages(streamMessages);
+            sendMessages(streamMessages, ChatType.EDIT);
             reload();
 
             setInputState(DEFAULT_INPUT_STATE);

@@ -1,6 +1,7 @@
 'use client';
 
-import { ChatProvider } from '@/app/project/[id]/_hooks/use-chat';
+import { ChatType } from '@/app/api/chat/route';
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
@@ -27,7 +28,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null);
     const [center, setCenter] = useState<number | null>(null);
-    const creationData = createManager.pendingCreationData;
+    const { sendMessages } = useChatContext();
 
     useEffect(() => {
         setTimeout(() => {
@@ -76,14 +77,29 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             editorEngine.chat.conversation.setCurrentConversation(conversation);
         }
 
-        if (creationData) {
-            createManager.resumeCreate();
-        }
-
         return () => {
             editorEngine.sandbox.clear();
         };
-    }, [result, creationData]);
+    }, [result]);
+
+    useEffect(() => {
+        const creationData = createManager.pendingCreationData;
+        const shouldCreate = !!creationData && projectId === creationData.project.id;
+        const conversationReady = !!editorEngine.chat.conversation.current;
+        const sandboxConnected = !!editorEngine.sandbox.session.session;
+
+        if (shouldCreate && conversationReady && sandboxConnected) {
+            editorEngine.chat.getCreateMessages(creationData.prompt, creationData.images).then((messages) => {
+                if (!messages) {
+                    console.error('Failed to get creation messages');
+                    return;
+                }
+                createManager.pendingCreationData = null;
+                sendMessages(messages, ChatType.CREATE);
+
+            });
+        }
+    }, [editorEngine.chat.conversation.current, createManager.pendingCreationData, editorEngine.sandbox.session.session]);
 
     useEffect(() => {
         if (tabState === 'reactivated' && editorEngine.sandbox.session.session) {
@@ -121,38 +137,36 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     // }
 
     return (
-        <ChatProvider>
-            <TooltipProvider>
-                <div className="h-screen w-screen flex flex-row select-none relative">
-                    <Canvas />
+        <TooltipProvider>
+            <div className="h-screen w-screen flex flex-row select-none relative">
+                <Canvas />
 
-                    <div className="absolute top-0 w-full">
-                        <TopBar />
-                    </div>
-
-                    {/* Left Panel */}
-                    <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-50">
-                        <LeftPanel />
-                    </div>
-
-                    {/* Centered EditorBar */}
-                    <div
-                        className="absolute top-10 z-49"
-                        style={{ left: center ? center : '40%', transform: 'translateX(-50%)' }}
-                    >
-                        <EditorBar />
-                    </div>
-
-                    {/* Right Panel */}
-                    <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-50">
-                        <RightPanel />
-                    </div>
-
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up ">
-                        <BottomBar />
-                    </div>
+                <div className="absolute top-0 w-full">
+                    <TopBar />
                 </div>
-            </TooltipProvider >
-        </ChatProvider >
+
+                {/* Left Panel */}
+                <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-50">
+                    <LeftPanel />
+                </div>
+
+                {/* Centered EditorBar */}
+                <div
+                    className="absolute top-10 z-49"
+                    style={{ left: center ? center : '40%', transform: 'translateX(-50%)' }}
+                >
+                    <EditorBar />
+                </div>
+
+                {/* Right Panel */}
+                <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-50">
+                    <RightPanel />
+                </div>
+
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up ">
+                    <BottomBar />
+                </div>
+            </div>
+        </TooltipProvider >
     );
 });

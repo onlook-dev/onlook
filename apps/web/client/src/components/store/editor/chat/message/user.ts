@@ -1,4 +1,4 @@
-import { PromptProvider } from '@onlook/ai/src/prompt/provider';
+import { getHydratedUserMessage } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
 import type { Message, TextPart } from 'ai';
@@ -10,14 +10,12 @@ export class UserChatMessageImpl implements UserChatMessage {
     content: string;
     context: ChatMessageContext[] = [];
     parts: TextPart[] = [];
-    promptProvider: PromptProvider;
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = uuidv4();
         this.content = content;
         this.parts = [{ type: 'text', text: content }];
         this.context = context;
-        this.promptProvider = new PromptProvider();
     }
 
     static fromJSON(data: UserChatMessage): UserChatMessageImpl {
@@ -45,7 +43,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     }
 
     toStreamMessage(): Message {
-        return this.promptProvider.getHydratedUserMessage(this.id, this.content, this.context);
+        return getHydratedUserMessage(this.id, this.content, this.context);
     }
 
     updateContent(content: string) {

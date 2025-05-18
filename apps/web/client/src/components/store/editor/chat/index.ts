@@ -1,7 +1,7 @@
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
-import { ChatMessageRole, StreamRequestType, type AssistantChatMessage } from '@onlook/models/chat';
+import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ChatMessageContext, type ImageMessageContext } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -35,13 +35,25 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    async getStreamMessages(content: string): Promise<Message[] | null> {
+    async getCreateMessages(prompt: string, images: ImageMessageContext[]): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
         }
 
-        const context = await this.context.getChatContext();
+        const messages = await this.getStreamMessages(prompt, [
+            ...images,
+        ]);
+        return messages;
+    }
+
+    async getStreamMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return null;
+        }
+
+        const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = this.conversation.addUserMessage(content, context);
         this.conversation.current.updateName(content);
         if (!userMessage) {

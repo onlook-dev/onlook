@@ -1,5 +1,6 @@
 // Required context in order to use the useChat hook
 
+import { ChatType } from '@/app/api/chat/route';
 import { useEditorEngine } from '@/components/store/editor';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
@@ -11,11 +12,12 @@ import {
     READ_FILES_TOOL_NAME,
     READ_FILES_TOOL_PARAMETERS,
 } from '@onlook/ai';
-import type { ToolCall } from 'ai';
+import type { Message, ToolCall } from 'ai';
 import { createContext, useContext } from 'react';
 import { z } from 'zod';
 
-const ChatContext = createContext<UseChatHelpers | null>(null);
+type ExtendedUseChatHelpers = UseChatHelpers & { sendMessages: (messages: Message[], type: ChatType) => Promise<string | null | undefined> };
+const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
@@ -33,7 +35,17 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             console.error('Error in chat', error);
         },
     });
-    return <ChatContext.Provider value={chat}>{children}</ChatContext.Provider>;
+
+    const sendMessages = async (messages: Message[], type: ChatType = ChatType.EDIT) => {
+        chat.setMessages(messages);
+        return chat.reload({
+            body: {
+                chatType: type,
+            },
+        });
+    };
+
+    return <ChatContext.Provider value={{ ...chat, sendMessages }}>{children}</ChatContext.Provider>;
 }
 
 export function useChatContext() {
