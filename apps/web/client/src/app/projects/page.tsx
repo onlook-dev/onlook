@@ -9,6 +9,7 @@ import { TopBar } from './_components/top-bar';
 
 const Page = observer(() => {
     const projectsManager = useProjectsManager();
+
     useEffect(() => {
         projectsManager.fetchProjects();
     }, []);
