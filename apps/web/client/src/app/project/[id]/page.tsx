@@ -1,7 +1,5 @@
-'use client';
-
 import { Main } from './_components/main';
-import { ChatProvider } from './_hooks/use-chat';
+import { ChatWrapper } from './chat-wrapper';
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const projectId = (await params).id;
@@ -9,8 +7,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         return <div>Invalid project ID</div>;
     }
     return (
-        <ChatProvider>
+        <ChatWrapper>
             <Main projectId={projectId} />
-        </ChatProvider>
+        </ChatWrapper>
     );
 }

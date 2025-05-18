@@ -7,7 +7,7 @@ import type {
 } from '@onlook/models';
 import type { Attachment, Message, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
-import { CREATE_PAGE_EXAMPLE_CONVERSATION, PAGE_SYSTEM_PROMPT } from './create';
+import { PAGE_SYSTEM_PROMPT } from './create';
 import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
@@ -36,20 +36,14 @@ export function getSystemPrompt() {
 }
 
 export function getCreatePageSystemPrompt() {
-    let prompt = '';
+    let prompt = getSystemPrompt() + '\n\n';
 
     if (shouldWrapXml) {
-        prompt += wrapXml('role', PAGE_SYSTEM_PROMPT.role);
         prompt += wrapXml('rules', PAGE_SYSTEM_PROMPT.rules);
-        prompt += wrapXml(
-            'example-conversation',
-            getExampleConversation(CREATE_PAGE_EXAMPLE_CONVERSATION),
-        );
     } else {
-        prompt += PAGE_SYSTEM_PROMPT.role;
         prompt += PAGE_SYSTEM_PROMPT.rules;
-        prompt += getExampleConversation(CREATE_PAGE_EXAMPLE_CONVERSATION);
     }
+
     return prompt;
 }
 
