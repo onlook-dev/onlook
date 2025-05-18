@@ -1,0 +1,29 @@
+name: Validate Supabase Migrations
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      
+      - name: Start Supabase local development environment
+        run: supabase start
+      
+      - name: Validate migrations
+        run: |
+          # Check if migrations can be applied without errors
+          supabase db reset
+          
+          # Additional validation can be added here
+          echo "Migrations validated successfully"
