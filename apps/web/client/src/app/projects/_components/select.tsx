@@ -28,14 +28,23 @@ export const SelectProject = observer(() => {
 
     return (
         <div className="flex flex-row w-full">
-            <div className="w-3/5 h-full">
-                <Carousel slides={projects} onSlideChange={handleProjectChange} />
-            </div>
-            <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
-                {projects[currentProjectIndex] && (
-                    <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
-                )}
-            </div>
+            {projects.length === 0 ? (
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                    <div className="text-xl text-foreground-secondary">No projects found</div>
+                    <div className="mt-4 text-md text-foreground-tertiary">Create a new project to get started</div>
+                </div>
+            ) : (
+                <>
+                    <div className="w-3/5 h-full">
+                        <Carousel slides={projects} onSlideChange={handleProjectChange} />
+                    </div>
+                    <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
+                        {projects[currentProjectIndex] && (
+                            <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
+                        )}
+                    </div>
+                </>
+            )}
         </div>
     );
 });

@@ -7,6 +7,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
@@ -109,8 +110,9 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
     if (isLoading) {
         return (
-            <div className="h-screen w-screen flex items-center justify-center">
-                <div className="text-xl">Loading...</div>
+            <div className="h-screen w-screen flex items-center justify-center gap-2">
+                <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                <div className="text-xl">Loading project...</div>
             </div>
         );
     }
@@ -126,15 +128,14 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         );
     }
 
-    // TODO: Add better loading state
-    // if (editorEngine.sandbox.session.isConnecting || isLoading) {
-    //     return (
-    //         <div className="h-screen w-screen flex items-center justify-center gap-2">
-    //             <Icons.Shadow className="h-6 w-6 animate-spin" />
-    //             <div className="text-xl">Connecting to sandbox...</div>
-    //         </div>
-    //     );
-    // }
+    if (editorEngine.sandbox.session.isConnecting) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center gap-2">
+                <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                <div className="text-xl">Connecting to sandbox...</div>
+            </div>
+        );
+    }
 
     return (
         <TooltipProvider>
