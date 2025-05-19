@@ -1,6 +1,5 @@
 import { useProjectManager } from '@/components/store/project';
 import { HOSTING_DOMAIN } from '@onlook/constants';
-// import { invokeMainChannel } from '@/lib/utils';
 
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -27,7 +26,7 @@ export const BaseDomain = observer(() => {
         }
 
         const url = getValidUrl(baseUrl);
-        // invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, url);
+        window.open(url, '_blank');
     };
 
     return (

@@ -19,6 +19,7 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
+import { Modals } from '@/components/ui/modal';
 
 export const Main = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
@@ -141,6 +142,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         <TooltipProvider>
             <div className="h-screen w-screen flex flex-row select-none relative">
                 <Canvas />
+                <Modals />
 
                 <div className="absolute top-0 w-full">
                     <TopBar />

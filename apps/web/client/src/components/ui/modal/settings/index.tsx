@@ -10,7 +10,7 @@ import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import AdvancedTab from './advance';
 import { DomainTab } from './domain';
 import { PreferencesTab } from './preferences';
@@ -31,13 +31,13 @@ export const SettingsModal = observer(() => {
     const project = projectsManager.project;
     const pagesManager = editorEngine.pages;
 
-    // useEffect(() => {
-    //     if (editorEngine.state.settingsOpen && project) {
-    //         pagesManager.scanPages();
-    //         editorEngine.image.scanImages();
-    //         projectsManager.scanProjectMetadata(project);
-    //     }
-    // }, [editorEngine.state.settingsOpen]);
+    useEffect(() => {
+        if (editorEngine.state.settingsOpen && project) {
+            pagesManager.scanPages();
+            editorEngine.image.scanImages();
+            projectsManager.scanProjectMetadata();
+        }
+    }, [editorEngine.state.settingsOpen]);
 
     const flattenPages = useMemo(() => {
         return pagesManager.tree.reduce((acc, page) => {
@@ -64,16 +64,16 @@ export const SettingsModal = observer(() => {
             icon: <Icons.Globe className="mr-2 h-4 w-4" />,
             component: <DomainTab />,
         },
-        {
-            label: SettingsTabValue.PROJECT,
-            icon: <Icons.Gear className="mr-2 h-4 w-4" />,
-            component: <ProjectTab />,
-        },
-        {
-            label: SettingsTabValue.VERSIONS,
-            icon: <Icons.Code className="mr-2 h-4 w-4" />,
-            component: <VersionsTab />,
-        },
+        // {
+        //     label: SettingsTabValue.PROJECT,
+        //     icon: <Icons.Gear className="mr-2 h-4 w-4" />,
+        //     component: <ProjectTab />,
+        // },
+        // {
+        //     label: SettingsTabValue.VERSIONS,
+        //     icon: <Icons.Code className="mr-2 h-4 w-4" />,
+        //     component: <VersionsTab />,
+        // },
     ];
 
     const globalTabs: SettingTab[] = [
@@ -82,11 +82,11 @@ export const SettingsModal = observer(() => {
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
             component: <PreferencesTab />,
         },
-        {
-            label: SettingsTabValue.ADVANCED,
-            icon: <Icons.MixerVertical className="mr-2 h-4 w-4" />,
-            component: <AdvancedTab />,
-        },
+        // {
+        //     label: SettingsTabValue.ADVANCED,
+        //     icon: <Icons.MixerVertical className="mr-2 h-4 w-4" />,
+        //     component: <AdvancedTab />,
+        // },
     ];
 
     const pagesTabs: SettingTab[] = flattenPages.map((page) => ({
@@ -95,8 +95,7 @@ export const SettingsModal = observer(() => {
         component: <PageTab metadata={page.metadata} path={page.path} />,
     }));
 
-    const tabs = project ? [...projectOnlyTabs, ...globalTabs, ...pagesTabs] : [...globalTabs];
-
+    const tabs = project ? [...projectOnlyTabs, ...globalTabs, ...pagesTabs] : [...globalTabs];    
     return (
         <AnimatePresence>
             {editorEngine.state.settingsOpen && (
@@ -162,7 +161,7 @@ export const SettingsModal = observer(() => {
                                             ))}
                                         </div>
                                         <Separator />
-                                        <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
+                                        {/* <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
                                             <p className="text-muted-foreground text-smallPlus">
                                                 Page Settings
                                             </p>
@@ -199,7 +198,7 @@ export const SettingsModal = observer(() => {
                                                 </Button>
                                             ))}
                                         </div>
-                                        <Separator />
+                                        <Separator /> */}
                                         <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
                                             <p className="text-muted-foreground text-smallPlus">
                                                 Global Settings
