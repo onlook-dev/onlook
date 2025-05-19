@@ -1,9 +1,9 @@
 import { sendAnalytics } from '@/utils/analytics';
+import type { WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
 import { nanoid } from 'nanoid/non-secure';
-import type { WebFrame } from '../../../../../../../../packages/models/src/project/frame';
-
+import type { FrameImpl } from '../canvas/frame';
+import type { EditorEngine } from '../engine';
 
 export class WindowManager {
     constructor(private editorEngine: EditorEngine) {
@@ -88,15 +88,12 @@ export class WindowManager {
             console.error('Cannot delete the last window');
             return;
         }
-        let settings: WebFrame | null = null;
-        if (id) {
-            settings = this.editorEngine.canvas.getFrame(id) || null;
-        } else if (this.editorEngine.frames.selected.length === 0) {
-            console.error('No window selected');
+        const settings: FrameImpl | null = this.getSelectedFrame(id);
+        if (!settings) {
+            console.error('Window not found');
             return;
-        } else {
-            settings = this.editorEngine.canvas.getFrame(this.editorEngine.frames.selected[0].id) || null;
         }
+
         if (!settings) {
             console.error('Window not found');
             return;
@@ -110,20 +107,15 @@ export class WindowManager {
     }
 
     duplicate(id?: string) {
-        let settings: WebFrame | null = null;
-        if (id) {
-            settings = this.editorEngine.canvas.getFrame(id) || null;
-        } else if (this.editorEngine.frames.selected.length === 0) {
-            console.error('No window selected');
-            return;
-        } else {
-            settings = this.editorEngine.canvas.getFrame(this.editorEngine.frames.selected[0].id) || null;
-        }
+        const settings: FrameImpl | null = this.getSelectedFrame(id);
         if (!settings) {
             console.error('Window not found');
             return;
         }
-        const currentFrame = settings;
+
+        // Force to webframe for now, later we can support other frame types
+        const currentFrame = settings as unknown as WebFrame;
+
         const newFrame: WebFrame = {
             id: nanoid(),
             url: currentFrame.url,
@@ -136,10 +128,32 @@ export class WindowManager {
                 y: currentFrame.position.y,
             },
             type: currentFrame.type,
-            windowMetadata : currentFrame.windowMetadata,
+            windowMetadata: currentFrame.windowMetadata,
         };
 
         this.editorEngine.canvas.frames = [...this.editorEngine.canvas.frames, newFrame];
         sendAnalytics('window duplicate');
+    }
+
+    getSelectedFrame(id?: string): FrameImpl | null {
+        let settings: FrameImpl | null = null;
+        if (id) {
+            settings = this.editorEngine.canvas.getFrame(id) || null;
+        } else if (this.editorEngine.frames.selected.length === 0) {
+            console.error('No window selected');
+            return null;
+        } else {
+            const selectedFrame = this.editorEngine.frames.selected[0];
+            if (!selectedFrame) {
+                console.error('No window selected');
+                return null;
+            }
+            settings = this.editorEngine.canvas.getFrame(selectedFrame.frame.id) || null;
+        }
+        if (!settings) {
+            console.error('Window not found');
+            return null;
+        }
+        return settings as unknown as FrameImpl;
     }
 }
