@@ -14,8 +14,8 @@ export const Height = () => {
 
     return (
         <DropdownMenu>
-            <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow>
-                <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
+                <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow>
                     <Button
                             variant="ghost"
                             size="toolbar"
@@ -33,8 +33,8 @@ export const Height = () => {
                                 </span>
                             )}
                         </Button>
-                </DropdownMenuTrigger>
-            </HoverOnlyTooltip>
+                </HoverOnlyTooltip>
+            </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="start"
                 className="mt-1 w-[280px] space-y-3 rounded-lg p-3"

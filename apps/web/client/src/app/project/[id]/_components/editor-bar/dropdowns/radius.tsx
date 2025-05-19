@@ -19,8 +19,8 @@ export const Radius = () => {
 
     return (
         <DropdownMenu>
-            <HoverOnlyTooltip content="Radius" side="bottom" className="mt-1" hideArrow>
-                <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
+                <HoverOnlyTooltip content="Radius" side="bottom" className="mt-1" hideArrow>
                     <Button
                         variant="ghost"
                         size="toolbar"
@@ -34,8 +34,8 @@ export const Radius = () => {
                             <span className="text-small">{boxState.borderRadius.value}</span>
                         ) : null}
                     </Button>
-                </DropdownMenuTrigger>
-            </HoverOnlyTooltip>
+                </HoverOnlyTooltip>
+            </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-3">
                     <button

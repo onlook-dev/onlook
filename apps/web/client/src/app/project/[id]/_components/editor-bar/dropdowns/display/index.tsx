@@ -36,8 +36,8 @@ export const Display = () => {
 
     return (
         <DropdownMenu>
-            <HoverOnlyTooltip content="Display" side="bottom" className="mt-1" hideArrow>
-                <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
+                <HoverOnlyTooltip content="Display" side="bottom" className="mt-1" hideArrow>
                     <Button
                             variant="ghost"
                             size="toolbar"
@@ -48,8 +48,8 @@ export const Display = () => {
                                 <span className="text-small">{layoutTypeOptions[layoutType]?.label ?? layoutType}</span>
                             )}
                         </Button>
-                </DropdownMenuTrigger>
-            </HoverOnlyTooltip>
+                </HoverOnlyTooltip>
+            </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="min-w-[200px] mt-2 p-1.5 rounded-lg">
                 <div className="p-2 space-y-2.5">
                     <TypeInput />

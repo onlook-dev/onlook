@@ -20,8 +20,8 @@ export const Margin = () => {
 
     return (
         <DropdownMenu>
-            <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow>
-                <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
+                <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow>
                     <Button
                         variant="ghost"
                         size="toolbar"
@@ -35,8 +35,8 @@ export const Margin = () => {
                             <span className="text-small">{boxState.margin.value}</span>
                         ) : null}
                     </Button>
-                </DropdownMenuTrigger>
-            </HoverOnlyTooltip>
+                </HoverOnlyTooltip>
+            </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="start"
                 className="mt-1 w-[280px] rounded-lg p-3"

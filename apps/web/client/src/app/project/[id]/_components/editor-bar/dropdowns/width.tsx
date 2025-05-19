@@ -14,8 +14,8 @@ export const Width = () => {
 
     return (
         <DropdownMenu>
-            <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow>
-                <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
+                <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow>
                     <Button
                         variant="ghost"
                         size="toolbar"
@@ -33,8 +33,8 @@ export const Width = () => {
                                 </span>
                             )}
                     </Button>
-                </DropdownMenuTrigger>
-            </HoverOnlyTooltip>
+                </HoverOnlyTooltip>
+            </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[260px] mt-1 p-3 rounded-lg space-y-3">
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
