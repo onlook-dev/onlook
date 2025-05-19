@@ -22,6 +22,17 @@ export class SessionManager {
         await api.sandbox.hibernate.mutate({ sandboxId });
     }
 
+    async connected(){
+        if (!this.session) return false;
+        try {
+            await this.session.shells.run('echo "ping"');
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+    
+
     async reconnect() {
         if (!this.session) {
             console.error('No session found');
