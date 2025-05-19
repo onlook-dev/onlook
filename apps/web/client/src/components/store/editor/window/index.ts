@@ -84,18 +84,14 @@ export class WindowManager {
     }
 
     delete(id?: string) {
-        if (this.editorEngine.canvas.frames.length === 1) {
-            console.error('Cannot delete the last window');
+        if (!this.canDelete()) {
+            console.error('Cannot delete the last frame');
             return;
         }
         const settings: FrameImpl | null = this.getSelectedFrame(id);
-        if (!settings) {
-            console.error('Window not found');
-            return;
-        }
 
         if (!settings) {
-            console.error('Window not found');
+            console.error('Frame not found');
             return;
         }
         const currentFrame = settings;
@@ -109,7 +105,7 @@ export class WindowManager {
     duplicate(id?: string) {
         const settings: FrameImpl | null = this.getSelectedFrame(id);
         if (!settings) {
-            console.error('Window not found');
+            console.error('Frame not found');
             return;
         }
 
