@@ -33,7 +33,6 @@ export class SessionManager {
         }
     }
 
-
     async reconnect() {
         if (!this.session) {
             console.error('No session found');
