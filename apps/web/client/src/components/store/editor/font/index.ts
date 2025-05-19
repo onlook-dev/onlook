@@ -1,4 +1,9 @@
+"use client";
+
 import type { ProjectManager } from '@/components/store/project/manager';
+import type { ParseResult } from '@babel/parser';
+import * as t from '@babel/types';
+import { DefaultSettings } from '@onlook/constants';
 import {
     createFontConfigAst,
     createFontFamilyProperty,
@@ -16,20 +21,15 @@ import {
     removeFontsFromClassName,
     validateFontImportAndExport,
 } from '@onlook/fonts';
+import { BrandTabValue } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { generate, parse, traverse, type NodePath } from '@onlook/parser';
+import { getFontFileName } from '@onlook/utility';
 import * as FlexSearch from 'flexsearch';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
-import * as WebFont from 'webfontloader';
-import type { EditorEngine } from '../engine';
-
-import type { ParseResult } from '@babel/parser';
-import * as t from '@babel/types';
-import { DefaultSettings } from '@onlook/constants';
-import { BrandTabValue } from '@onlook/models';
-import { getFontFileName } from '@onlook/utility';
 import * as pathModule from 'path';
+import type { EditorEngine } from '../engine';
 import { normalizePath } from '../sandbox/helpers';
 
 type TraverseCallback = (
@@ -202,6 +202,12 @@ export class FontManager {
     }
 
     private async loadFontBatch(fonts: Font[]) {
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const WebFont = await import('webfontloader');
+
         return new Promise<void>((resolve, reject) => {
             WebFont.load({
                 google: {
