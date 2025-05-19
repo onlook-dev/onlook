@@ -128,9 +128,9 @@ Supabase environments are deployed automatically using GitHub Actions:
 Required GitHub Secrets:
 - `SUPABASE_ACCESS_TOKEN` - Personal access token from Supabase
 - `STAGING_DB_PASSWORD` - Database password for staging environment
-- `STAGING_PROJECT_ID` - Project ID for staging environment
+- `SUPABASE_STAGING_PROJECT_ID` - Project ID for staging environment
 - `PRODUCTION_DB_PASSWORD` - Database password for production environment
-- `PRODUCTION_PROJECT_ID` - Project ID for production environment
+- `SUPABASE_PRODUCTION_PROJECT_ID` - Project ID for production environment
 
 ## License
 
