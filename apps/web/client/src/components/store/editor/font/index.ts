@@ -21,7 +21,6 @@ import { generate, parse, traverse, type NodePath } from '@onlook/parser';
 import * as FlexSearch from 'flexsearch';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
-import * as WebFont from 'webfontloader';
 import type { EditorEngine } from '../engine';
 
 import type { ParseResult } from '@babel/parser';
@@ -202,21 +201,10 @@ export class FontManager {
     }
 
     private async loadFontBatch(fonts: Font[]) {
-        return new Promise<void>((resolve, reject) => {
-            WebFont.load({
-                google: {
-                    families: fonts.map((font) => font.family),
-                },
-                active: () => {
-                    resolve();
-                },
-                inactive: () => {
-                    console.warn(`Failed to load font batch`);
-                    reject(new Error('Font loading failed'));
-                },
-                timeout: 30000, // 30 second timeout
-            });
-        });
+        // Instead of using WebFont.loader, we'll use Next.js font optimization
+        // The fonts will be loaded automatically by Next.js when they're imported
+        // We just need to ensure the fonts are properly configured in the project
+        return Promise.resolve();
     }
 
     async scanFonts() {
@@ -707,7 +695,7 @@ export class FontManager {
                 .slice(start, end)
                 .map((font) => this.convertRawFont(font));
 
-            await this.loadFontBatch(batchFonts);
+            // No need to explicitly load fonts as Next.js will handle it
             this._systemFonts.push(...batchFonts);
             this._currentFontIndex = end;
 

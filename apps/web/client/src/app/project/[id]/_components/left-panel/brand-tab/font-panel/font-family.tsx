@@ -11,17 +11,69 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { camelCase } from 'lodash';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ensureGoogleFontLoaded } from '@/utils/fontPreview';
+import { ensureLocalFontLoaded } from '@/utils/localFontPreview';
+
+const tailwindToWeight: Record<string, string> = {
+  'font-thin': '100',
+  'font-extralight': '200',
+  'font-light': '300',
+  'font-normal': '400',
+  'font-medium': '500',
+  'font-semibold': '600',
+  'font-bold': '700',
+  'font-extrabold': '800',
+  'font-black': '900',
+};
 
 interface FontVariantProps {
     name: string;
     isActive?: boolean;
+    fontFamily: string;
+    fontWeight?: string | number;
+    src?: string;
+    isLocal?: boolean;
+    style?: string;
 }
 
-const FontVariant = ({ name }: FontVariantProps) => {
+const FontVariant = ({ name, fontFamily, fontWeight, src, isLocal, style }: FontVariantProps) => {
     const fontVariant = `font-${camelCase(name).toLowerCase()}`;
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    return <div className={cn('text-sm text-muted-foreground', fontVariant)}>{name}</div>;
+    useEffect(() => {
+        if (isLocal && src) {
+            ensureLocalFontLoaded(fontFamily, src, fontWeight, style);
+        }
+        const checkFont = async () => {
+            try {
+                await document.fonts.ready;
+                const isFontLoaded = document.fonts.check(`12px \"${fontFamily}\"`);
+                setIsLoaded(isFontLoaded);
+            } catch (error) {
+                setIsLoaded(false);
+            }
+        };
+        checkFont();
+    }, [fontFamily, src, fontWeight, isLocal, style]);
+
+    return (
+        <div 
+            className={cn(
+                'text-sm text-muted-foreground',
+                fontVariant,
+                !isLoaded && 'opacity-50'
+            )}
+            style={{ 
+                fontFamily: `\"${fontFamily}\", sans-serif`,
+                fontWeight: fontWeight,
+                fontStyle: style,
+                transition: 'opacity 0.2s ease-in-out'
+            }}
+        >
+            {name}
+        </div>
+    );
 };
 
 export interface FontFamilyProps {
@@ -31,8 +83,10 @@ export interface FontFamilyProps {
     onAddFont?: () => void;
     onSetFont?: () => void;
     showDropdown?: boolean;
-    showAddButton?: boolean; // New property to control Add button visibility
+    showAddButton?: boolean;
     isDefault?: boolean;
+    isLocal?: boolean;
+    localSrcs?: { src: string; weight: string | number; style?: string }[];
 }
 
 export const FontFamily = ({
@@ -44,8 +98,34 @@ export const FontFamily = ({
     showDropdown = false,
     showAddButton = true,
     isDefault = false,
+    isLocal = false,
+    localSrcs = [],
 }: FontFamilyProps) => {
     const [expanded, setExpanded] = useState(false);
+    const [isFontLoaded, setIsFontLoaded] = useState(false);
+
+    // Map variants to numeric weights for Google Fonts
+    const numericVariants = variants.map(v => tailwindToWeight[v] || v);
+
+    useEffect(() => {
+        if (isLocal && localSrcs.length) {
+            localSrcs.forEach(({ src, weight, style }) => {
+                ensureLocalFontLoaded(name, src, weight, style);
+            });
+        } else {
+            ensureGoogleFontLoaded(name, numericVariants);
+        }
+        const checkFont = async () => {
+            try {
+                await document.fonts.ready;
+                const isFontLoaded = document.fonts.check(`12px \"${name}\"`);
+                setIsFontLoaded(isFontLoaded);
+            } catch (error) {
+                setIsFontLoaded(false);
+            }
+        };
+        checkFont();
+    }, [name, numericVariants, isLocal, localSrcs]);
 
     const handleToggleDefault = () => {
         onSetFont?.();
@@ -55,7 +135,9 @@ export const FontFamily = ({
         <div
             className="w-full group"
             style={{
-                fontFamily: name,
+                fontFamily: `\"${name}\", sans-serif`,
+                opacity: isFontLoaded ? 1 : 0.5,
+                transition: 'opacity 0.2s ease-in-out',
             }}
         >
             <div className="flex justify-between items-center py-3">
@@ -133,8 +215,16 @@ export const FontFamily = ({
 
             {expanded && variants.length > 0 && (
                 <div className="pl-7 flex flex-col gap-2 pb-6">
-                    {variants.map((variant) => (
-                        <FontVariant key={`${name}-${variant}`} name={variant} />
+                    {variants.map((variant, idx) => (
+                        <FontVariant 
+                            key={`${name}-${variant}`} 
+                            name={variant} 
+                            fontFamily={name}
+                            fontWeight={tailwindToWeight[variant] || variant}
+                            src={isLocal ? localSrcs[idx]?.src : undefined}
+                            isLocal={isLocal}
+                            style={isLocal ? localSrcs[idx]?.style : undefined}
+                        />
                     ))}
                 </div>
             )}

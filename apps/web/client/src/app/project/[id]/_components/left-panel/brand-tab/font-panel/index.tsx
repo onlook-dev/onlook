@@ -15,9 +15,34 @@ const FontPanel = observer(() => {
     const [isLoading, setIsLoading] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [loadedFonts, setLoadedFonts] = useState<Set<string>>(new Set());
 
     const editorEngine = useEditorEngine();
     const fontManager = editorEngine.font;
+
+    // Handle font loading status
+    useEffect(() => {
+        const checkFontsLoaded = async () => {
+            await document.fonts.ready;
+            const newLoadedFonts = new Set<string>();
+            
+            // Check all fonts in the panel
+            const allFonts = [
+                ...fontManager.fonts,
+                ...(searchQuery ? fontManager.searchResults : fontManager.systemFonts)
+            ];
+            
+            allFonts.forEach(font => {
+                if (document.fonts.check(`12px "${font.family}"`)) {
+                    newLoadedFonts.add(font.family);
+                }
+            });
+            
+            setLoadedFonts(newLoadedFonts);
+        };
+
+        checkFontsLoaded();
+    }, [fontManager.fonts, fontManager.searchResults, fontManager.systemFonts, searchQuery]);
 
     const handleClose = () => {
         editorEngine.state.brandTab = null;
@@ -249,17 +274,7 @@ const FontPanel = observer(() => {
                 </div>
             </div>
 
-            {/* Upload Button - Fixed at bottom */}
-            <div className="p-4 border-t border-border mt-auto">
-                <Button
-                    variant="ghost"
-                    className="w-full h-11 text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
-                    onClick={handleUploadFont}
-                >
-                    Upload a custom font
-                </Button>
-            </div>
-
+            {/* Upload Modal */}
             <UploadModal
                 isOpen={isUploadModalOpen}
                 onOpenChange={setIsUploadModalOpen}
