@@ -103,7 +103,11 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     }, [editorEngine.chat.conversation.current, createManager.pendingCreationData, editorEngine.sandbox.session.session]);
 
     useEffect(() => {
-        if (tabState === 'reactivated' && editorEngine.sandbox.session.session) {
+        if (
+            tabState === 'reactivated' &&
+            editorEngine.sandbox.session.session &&
+            !editorEngine.sandbox.session.connected()
+        ) {
             editorEngine.sandbox.session.reconnect();
         }
     }, [tabState]);
