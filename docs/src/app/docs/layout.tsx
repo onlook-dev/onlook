@@ -4,11 +4,7 @@ import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import type { ReactNode } from 'react';
 
 const docsOptions = {
-    ...baseOptions,
-    nav: {
-        ...baseOptions.nav,
-        component: null
-    }
+    ...baseOptions
 };
 
 export default function Layout({ children }: { children: ReactNode }) {
