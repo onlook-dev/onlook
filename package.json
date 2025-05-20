@@ -17,7 +17,8 @@
         "docs"
     ],
     "scripts": {
-        "build": "bun --filter '*' build",
+        "build": "bun --filter @onlook/web build:client",
+        "start": "bun --filter @onlook/web start:client",
         "dev": "bun --filter @onlook/web dev",
         "test": "bun --filter '*' test",
         "docs": "bun --filter @onlook/docs dev",
