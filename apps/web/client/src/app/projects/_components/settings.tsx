@@ -29,7 +29,6 @@ export function Settings({ project }: { project: Project }) {
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
-    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
 
     useEffect(() => {
         setProjectName(project.name);

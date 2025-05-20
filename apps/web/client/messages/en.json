@@ -55,8 +55,7 @@
         "dialogs": {
             "delete": {
                 "title": "Are you sure you want to delete this project?",
-                "description": "This action cannot be undone. This will permanently delete your project and remove all associated data.",
-                "moveToTrash": "Also move folder to trash"
+                "description": "This action cannot be undone. This will permanently delete your project and remove all associated data."
             },
             "rename": {
                 "title": "Rename Project",

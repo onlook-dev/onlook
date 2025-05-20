@@ -55,8 +55,7 @@
         "dialogs": {
             "delete": {
                 "title": "确定要删除此项目吗？",
-                "description": "此操作无法撤销。这将永久删除您的项目并移除所有相关数据。",
-                "moveToTrash": "同时将文件夹移至回收站"
+                "description": "此操作无法撤销。这将永久删除您的项目并移除所有相关数据。"
             },
             "rename": {
                 "title": "重命名项目",
