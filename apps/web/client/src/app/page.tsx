@@ -29,7 +29,7 @@ export default function Main() {
         },
         {
             question: 'Why would I use Onlook?',
-            answer: 'When you design in Onlook you design in the real product – in other words, the source of truth. Other products are great for ideating, but Onlook is the only on that lets you design with the existing product and the only one that translates your designs to code instantly.',
+            answer: 'When you design in Onlook you design in the real product – in other words, the source of truth. Other products are great for ideating, but Onlook is the only one that lets you design with the existing product and the only one that translates your designs to code instantly.',
         },
         {
             question: 'Who owns the code that I write with Onlook?',
