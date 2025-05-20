@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - ci/supabase
   workflow_dispatch:
 
 jobs:
