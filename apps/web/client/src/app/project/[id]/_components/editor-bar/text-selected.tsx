@@ -28,15 +28,14 @@ const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
     useEffect(() => {
         (async () => {
             try {
-                await editorEngine.font.scanFonts();
+                await editorEngine.font.scanFonts().then((fonts) => {
+                    setFonts(fonts);
+                });
             } catch (error) {
                 console.error('Failed to scan fonts:', error);
             }
         })();
     }, []);
-    useEffect(() => {
-        setFonts(editorEngine.font.fonts);
-    }, [editorEngine.font.fonts]);
 
     return (
         <DropdownMenu>
