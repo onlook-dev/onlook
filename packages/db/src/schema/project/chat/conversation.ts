@@ -14,7 +14,7 @@ export const conversations = pgTable("conversations", {
     displayName: varchar("display_name"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}).enableRLS();
 
 export const conversationInsertSchema = createInsertSchema(conversations);
 
