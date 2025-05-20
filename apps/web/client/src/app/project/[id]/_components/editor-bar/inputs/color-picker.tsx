@@ -95,14 +95,17 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     }, [color]);
 
     useEffect(() => {        
-        editorEngine.theme.scanConfig();
+        (async () => {
+            try {
+                await editorEngine.theme.scanConfig().then(() => {
+                    setColorGroups(editorEngine.theme.colorGroups);
+                    setColorDefaults(editorEngine.theme.colorDefaults);
+                });
+            } catch (error) {
+                console.error('Failed to scan fonts:', error);
+            }
+        })();
     }, []);
-
-    useEffect(() => {
-        setColorGroups(editorEngine.theme.colorGroups);
-        setColorDefaults(editorEngine.theme.colorDefaults);
-    }, [editorEngine.theme]);
-
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
