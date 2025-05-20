@@ -1,0 +1,24 @@
+name: Deploy Drizzle Migrations to Supabase Staging
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_DATABASE_URL: ${{ secrets.STAGING_SUPABASE_DATABASE_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.2.x
+
+      - run: bun install
+
+      - run: bun run db:push
