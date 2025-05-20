@@ -3,7 +3,7 @@ import { defineConfig } from 'drizzle-kit';
 const DEFAULT_DATABASE_URL = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 export default defineConfig({
     schema: './src/schema',
-    out: './src/migrations',
+    out: '../../apps/backend/supabase/migrations',
     dialect: "postgresql",
     schemaFilter: ["public"],
     dbCredentials: {
