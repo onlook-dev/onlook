@@ -1,5 +1,8 @@
 import { sendAnalytics } from '@/utils/analytics';
+import type { WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid/non-secure';
+import type { FrameImpl } from '../canvas/frame';
 import type { EditorEngine } from '../engine';
 
 export class WindowManager {
@@ -81,69 +84,72 @@ export class WindowManager {
     }
 
     delete(id?: string) {
-        // if (!this.canDeleteWindow()) {
-        //     console.error('Cannot delete the last window');
-        //     return;
-        // }
-        // let settings = null;
-        // if (id) {
-        //     settings = this.editorEngine.frames.get(id);
-        //     if (!settings) {
-        //         console.error('Window not found');
-        //         return;
-        //     }
-        // } else if (this.editorEngine.frames.selected.length === 0) {
-        //     console.error('No window selected');
-        //     return;
-        // } else {
-        //     settings = this.editorEngine.frames.get(this.editorEngine.frames.selected[0].id) || null;
-        // }
-        // if (!settings) {
-        //     console.error('Window not found');
-        //     return;
-        // }
-        // this.ast.mappings.remove(settings.id);
-        // this.canvas.frames = this.canvas.frames.filter((frame) => frame.id !== settings.id);
-        // const frameView = this.webviews.getWebview(settings.id);
-        // if (frameView) {
-        //     this.webviews.deregister(frameView);
-        // }
+        if (!this.canDelete()) {
+            console.error('Cannot delete the last frame');
+            return;
+        }
+        const settings: FrameImpl | null = this.getSelectedFrame(id);
+
+        if (!settings) {
+            console.error('Frame not found');
+            return;
+        }
+        const currentFrame = settings;
+        this.editorEngine.ast.mappings.remove(settings.id);
+        this.editorEngine.canvas.frames = this.editorEngine.canvas.frames.filter((frame) => frame.id !== settings.id);
+        this.editorEngine.frames.deselect(currentFrame);
+        this.editorEngine.frames.disposeFrame(currentFrame.id);
         sendAnalytics('window delete');
     }
 
     duplicate(id?: string) {
-        // let settings: Frames | null = null;
-        // if (id) {
-        //     settings = this.canvas.getFrame(id) || null;
-        // } else if (this.webviews.selected.length === 0) {
-        //     console.error('No window selected');
-        //     return;
-        // } else {
-        //     settings = this.canvas.getFrame(this.webviews.selected[0].id) || null;
-        // }
-        // if (!settings) {
-        //     console.error('Window not found');
-        //     return;
-        // }
-        // const currentFrame = settings;
-        // const newFrame: Frames = {
-        //     id: nanoid(),
-        //     url: currentFrame.url,
-        //     dimension: {
-        //         width: currentFrame.dimension.width,
-        //         height: currentFrame.dimension.height,
-        //     },
-        //     position: {
-        //         x: currentFrame.position.x + currentFrame.dimension.width + 100,
-        //         y: currentFrame.position.y,
-        //     },
-        //     aspectRatioLocked: currentFrame.aspectRatioLocked,
-        //     orientation: currentFrame.orientation,
-        //     device: currentFrame.device,
-        //     theme: currentFrame.theme,
-        // };
+        const settings: FrameImpl | null = this.getSelectedFrame(id);
+        if (!settings) {
+            console.error('Frame not found');
+            return;
+        }
 
-        // this.canvas.frames = [...this.canvas.frames, newFrame];
+        // Force to webframe for now, later we can support other frame types
+        const currentFrame = settings as unknown as WebFrame;
+
+        const newFrame: WebFrame = {
+            id: nanoid(),
+            url: currentFrame.url,
+            dimension: {
+                width: currentFrame.dimension.width,
+                height: currentFrame.dimension.height,
+            },
+            position: {
+                x: currentFrame.position.x + currentFrame.dimension.width + 100,
+                y: currentFrame.position.y,
+            },
+            type: currentFrame.type,
+            windowMetadata: currentFrame.windowMetadata,
+        };
+
+        this.editorEngine.canvas.frames = [...this.editorEngine.canvas.frames, newFrame];
         sendAnalytics('window duplicate');
+    }
+
+    getSelectedFrame(id?: string): FrameImpl | null {
+        let settings: FrameImpl | null = null;
+        if (id) {
+            settings = this.editorEngine.canvas.getFrame(id) || null;
+        } else if (this.editorEngine.frames.selected.length === 0) {
+            console.error('No window selected');
+            return null;
+        } else {
+            const selectedFrame = this.editorEngine.frames.selected[0];
+            if (!selectedFrame) {
+                console.error('No window selected');
+                return null;
+            }
+            settings = this.editorEngine.canvas.getFrame(selectedFrame.frame.id) || null;
+        }
+        if (!settings) {
+            console.error('Window not found');
+            return null;
+        }
+        return settings as unknown as FrameImpl;
     }
 }

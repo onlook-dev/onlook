@@ -1,0 +1,68 @@
+---
+title: Electron to Web Migration
+description: Documenting migration from Electron to Web
+---
+
+# Electron to Web Migration
+
+## Reasoning for shifting to web
+
+With Electron, there was a lot of friction to getting started
+- Downloading hundreds of MB of app (though it could be smaller)
+- Setting up / managing local dev environment. Our users lean less technical so this is unneeded friction.
+- We spent a lot of support time helping users debug their local machine
+
+With web, we get the benefit of
+- Start editing anywhere on any machine
+- Resume editing across desktop and sharing across teams
+- Real-time collaboration
+- No more local machine setup/maintenance
+
+## Mapping to web equivalent
+
+### The “front-end”
+```
+BrowserView 		-> 	Next.js app
+```
+
+Thankfully, Electron ships web UI so most of our React/TailwindCSS styling was intact. Though many of the server communication had to be mapped from Electron IPC to Client-Server. We replaced those with tRPC to preserve type safety.
+
+### The canvas/frame:
+```
+WebView 		-> 	iFrame
+```
+
+We previously used Electron webview which acted similar to an iFrame with better cross-origin support. The webview allowed us to communicate between the BrowserView and Webview to modify the DOM tree of the app directly. We replace that with iframe which is much more limited in terms of inter-process communication. For example, it is forbidden by the browser for websites to interact directly with iFrame elements if they’re not from the same origin. Our web app is not on the same origin as the served app so we had to work around this. 
+
+What we decided to do was inject a script on the user app side which enables interprocess communication with postMessage. 
+https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
+
+The script is internally called a preload script and is injected into the app’s layout through a CDN.
+
+### The “backend”
+```
+Node Server		-> 	Remote container
+```
+Because Electron is a served Node server with filesystem access, we previously used the node server to edit the code of the users app directly. Since we no longer have a “user machine”, we replace that with an abstracted cloud container. This can be any system with a filesystem API that we can read/write/listen to. Currently using CodeSandbox but could be any provider or even a local running container. 
+
+### Extra stuff
+```
+Local memory 	->	Supabase + Caching
+```
+Previously, we were storing most user/project information on the users machine as serialized JSON. Now, we store them in Postgres tables in Supabase. We maintain a caching layer on top of Postgres on the browser for ease of access and better loading. 
+
+## Before Architecture
+
+![Before Architecture](/images/electron-to-web-before.png)
+
+## After Architecture
+![After Architecture](/images/electron-to-web-after.png)
+
+## Full After Architecture with Everything
+
+![Full After Architecture](/images/full-architecture.png)
+
+## References
+
+- [Electron Repository](https://github.com/onlook-dev/desktop)
+- [Web Repository](https://github.com/onlook-dev/onlook)

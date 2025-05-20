@@ -35,3 +35,10 @@ yarn.lock
 
 # Env variables
 .env
+.env.production
+.env.development
+.env.test
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

@@ -1,5 +1,3 @@
-// Required context in order to use the useChat hook
-
 import { ChatType } from '@/app/api/chat/route';
 import { useEditorEngine } from '@/components/store/editor';
 import type { EditorEngine } from '@/components/store/editor/engine';
