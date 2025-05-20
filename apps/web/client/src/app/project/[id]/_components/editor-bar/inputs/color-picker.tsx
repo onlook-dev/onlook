@@ -1,20 +1,14 @@
 import { ColorPicker } from '@onlook/ui/color-picker';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
-import { Color, type Palette } from '@onlook/utility';
-import { useEffect, useState, useRef } from 'react';
+import { Color, toNormalCase, type Palette } from '@onlook/utility';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@onlook/ui/tabs';
 import { Input } from '@onlook/ui/input';
 import { useEditorEngine } from '@/components/store/editor';
 import { SystemTheme } from '@onlook/models/assets';
 import type { TailwindColor } from '@onlook/models/style';
 
-const toNormalCase = (str: string) => {
-    return str
-        .split(/(?=[A-Z])|[-_]/)
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-};
 
 const ColorGroup = ({
     name,
@@ -92,11 +86,23 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const editorEngine = useEditorEngine();
+    const [colorGroups, setColorGroups] = useState<Record<string, TailwindColor[]>>({});
+    const [colorDefaults, setColorDefaults] = useState<Record<string, TailwindColor[]>>({});
     const [theme] = useState<SystemTheme>(SystemTheme.LIGHT);
 
     useEffect(() => {
         setPalette(color.palette);
     }, [color]);
+
+    useEffect(() => {        
+        editorEngine.theme.scanConfig();
+    }, []);
+
+    useEffect(() => {
+        setColorGroups(editorEngine.theme.colorGroups);
+        setColorDefaults(editorEngine.theme.colorDefaults);
+    }, [editorEngine.theme]);
+
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -109,7 +115,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         }
     };
 
-    const filteredColorGroups = Object.entries(editorEngine.theme.colorGroups).filter(
+    const filteredColorGroups = Object.entries(colorGroups).filter(
         ([name, colors]) => {
             const query = searchQuery.toLowerCase();
             return (
@@ -119,7 +125,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         },
     );
 
-    const filteredColorDefaults = Object.entries(editorEngine.theme.colorDefaults).filter(
+    const filteredColorDefaults = Object.entries(colorDefaults).filter(
         ([name, colors]) => {
             const query = searchQuery.toLowerCase();
             return (

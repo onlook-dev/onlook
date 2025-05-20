@@ -53,7 +53,6 @@ export class ThemeManager {
         private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
-        this.scanConfig();
     }
 
     async scanConfig() {
