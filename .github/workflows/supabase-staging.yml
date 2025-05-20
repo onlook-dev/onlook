@@ -11,7 +11,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.STAGING_SUPABASE_DATABASE_URL }}
+      SUPABASE_DATABASE_URL: ${{ secrets.STAGING_SUPABASE_DATABASE_URL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -22,4 +22,4 @@ jobs:
 
       - run: bun install
 
-      - run: bun run drizzle:push
+      - run: bun run db:push
