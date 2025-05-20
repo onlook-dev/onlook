@@ -72,8 +72,8 @@ enum TabValue {
 
 interface ColorPickerProps {
     color: Color;
-    onChange: (color: Color) => void;
-    onChangeEnd: (color: Color) => void;
+    onChange: (color: Color | TailwindColor) => void;
+    onChangeEnd: (color: Color | TailwindColor) => void;
 }
 
 export const ColorPickerContent: React.FC<ColorPickerProps> = ({
@@ -138,10 +138,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     );
 
     const handleColorSelect = (colorItem: TailwindColor) => {
-        const colorValue = theme === SystemTheme.DARK
-            ? colorItem.darkColor ?? colorItem.lightColor
-            : colorItem.lightColor;
-        onChangeEnd(Color.from(colorValue));
+        onChangeEnd(colorItem);
     };
 
     function renderPalette() {

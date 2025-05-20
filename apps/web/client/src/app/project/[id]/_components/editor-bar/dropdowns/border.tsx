@@ -37,7 +37,6 @@ export const Border = () => {
 
     const handleColorChange = (color: string) => {
         setBorderColor(color);
-        editorEngine.style.update('borderColor', color);
     };
 
     const borderStyle = {
@@ -122,7 +121,7 @@ export const Border = () => {
                         (boxState.borderLeftWidth.num ?? 0) > 0)
                 ) && (
                     <div className="mt-3">
-                        <InputColor color={borderColor} onColorChange={handleColorChange} />
+                        <InputColor color={borderColor} elementStyleKey="borderColor" onColorChange={handleColorChange} />
                     </div>
                 )}
             </DropdownMenuContent>

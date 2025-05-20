@@ -19,6 +19,8 @@ import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
 import { useEditorEngine } from '@/components/store/editor';
 import type { Font } from '@onlook/models/assets';
+import type { TailwindColor } from '@onlook/models';
+import { useColorUpdate } from './hooks/use-color-update';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
@@ -289,19 +291,27 @@ const TextColor = memo(
         textColor: string;
     }) => {
         const [tempColor, setTempColor] = useState<Color>(Color.from(textColor));
+        const { handleColorUpdate } = useColorUpdate({
+            elementStyleKey: 'color',
+            onValueChange: (_, value) => handleTextColorChange(value)
+        });
 
-        const handleColorChange = (newColor: Color) => {
+        const handleColorChange = (newColor: Color | TailwindColor) => {
             try {
-                setTempColor(newColor);
+                setTempColor(newColor instanceof Color ? newColor : Color.from(newColor.lightColor));
             } catch (error) {
                 console.error('Error converting color:', error);
             }
         };
 
-        const handleColorChangeEnd = (newColor: Color) => {
+        const handleColorChangeEnd = (newColor: Color | TailwindColor) => {
             try {
-                setTempColor(newColor);
-                handleTextColorChange(newColor.toHex());
+                if (newColor instanceof Color) {
+                    setTempColor(newColor);
+                } else {
+                    setTempColor(Color.from(newColor.lightColor));
+                }
+                handleColorUpdate(newColor);
             } catch (error) {
                 console.error('Error converting color:', error);
             }

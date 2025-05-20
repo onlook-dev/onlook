@@ -146,7 +146,7 @@ export function Typography({ className }: TypographyProps) {
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground w-24">Color</span>
                             <div className="flex-1">
-                                <InputColor color={textColor} onColorChange={setTextColor} />
+                                <InputColor color={textColor} onColorChange={setTextColor} elementStyleKey="color" />
                             </div>
                         </div>
 
