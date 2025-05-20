@@ -9,16 +9,16 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useState } from 'react';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
+import { ColorPickerContent } from './inputs/color-picker';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
 import { useEditorEngine } from '@/components/store/editor';
 import type { Font } from '@onlook/models/assets';
-import { ColorPickerContent } from './inputs/color-picker';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
@@ -118,11 +118,10 @@ const FontWeightSelector = memo(
                     <DropdownMenuItem
                         key={weight.value}
                         onClick={() => handleFontWeightChange(weight.value)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
-                            fontWeight === weight.value
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontWeight === weight.value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
                                 : ''
-                        }`}
+                            }`}
                     >
                         {weight.name}
                         {fontWeight === weight.value && (
@@ -201,11 +200,10 @@ const FontSizeSelector = memo(
                         <DropdownMenuItem
                             key={size}
                             onClick={() => handleFontSizeChange(size)}
-                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${
-                                size === fontSize
+                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
                                     ? 'bg-background-tertiary/20 border-border border text-white'
                                     : ''
-                            }`}
+                                }`}
                         >
                             {size}
                         </DropdownMenuItem>
@@ -269,11 +267,10 @@ const TextAlignSelector = memo(
                     <DropdownMenuItem
                         key={value}
                         onClick={() => handleTextAlignChange(value)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
-                            textAlign === value
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
                                 : ''
-                        }`}
+                            }`}
                     >
                         <Icon className="h-4 w-4" />
                     </DropdownMenuItem>
@@ -331,7 +328,7 @@ const TextColor = memo(
                     </div>
                 </Tooltip>
                 <PopoverContent
-                    className="z-10 w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    className="w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"
                     align="start"
                 >
