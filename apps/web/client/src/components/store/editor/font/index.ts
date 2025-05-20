@@ -203,6 +203,7 @@ export class FontManager {
 
     private async loadFontBatch(fonts: Font[]) {
         if (typeof window === 'undefined') {
+            console.error('window is undefined');
             return;
         }
 

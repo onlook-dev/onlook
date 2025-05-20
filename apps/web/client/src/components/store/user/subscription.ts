@@ -12,6 +12,7 @@ export class SubscriptionManager {
 
     private restoreCachedPlan() {
         if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            console.error('window or localStorage is undefined');
             return;
         }
         const cachedPlan = window.localStorage?.getItem('currentPlan');
@@ -20,6 +21,7 @@ export class SubscriptionManager {
 
     async updatePlan(plan: UsagePlanType) {
         if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            console.error('window or localStorage is undefined');
             return;
         }
         this.plan = plan;
