@@ -84,7 +84,6 @@ export const useTextControl = () => {
             ...prev,
             textColor,
         }));
-        editorEngine.style.update('color', textColor);
     };
 
     return {

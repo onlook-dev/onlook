@@ -21,23 +21,21 @@ export const Border = () => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
         useBoxControl('border');
-    const [borderColor, setBorderColor] = useState(
-        Color.from(
-            editorEngine.style.selectedStyle?.styles.computed.borderColor ?? '#080808',
-        ).toHex(),
-    );
+    const [borderColor, setBorderColor] = useState<string>('#080808');
 
     useEffect(() => {
-        setBorderColor(
-            Color.from(
-                editorEngine.style.selectedStyle?.styles.computed.borderColor ?? '#080808',
-            ).toHex(),
-        );
+        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;        
+        if (color) {
+            setBorderColor(
+                Color.from(
+                    color ?? '#080808',
+                ).toHex(),
+            );
+        }
     }, [editorEngine.style.selectedStyle?.styles.computed.borderColor]);
 
     const handleColorChange = (color: string) => {
         setBorderColor(color);
-        editorEngine.style.update('borderColor', color);
     };
 
     const borderStyle = {
@@ -122,7 +120,7 @@ export const Border = () => {
                         (boxState.borderLeftWidth.num ?? 0) > 0)
                 ) && (
                     <div className="mt-3">
-                        <InputColor color={borderColor} onColorChange={handleColorChange} />
+                        <InputColor color={borderColor} elementStyleKey="borderColor" onColorChange={handleColorChange} />
                     </div>
                 )}
             </DropdownMenuContent>

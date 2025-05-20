@@ -720,7 +720,6 @@ export class ThemeManager {
     async scanTailwindConfig() {
         try {
             const { configPath, cssPath } = this.getConfigPath();
-            console.log(configPath, cssPath);
 
             if (!configPath || !cssPath) {
                 return null;

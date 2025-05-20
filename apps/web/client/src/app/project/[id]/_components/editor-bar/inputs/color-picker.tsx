@@ -1,13 +1,79 @@
+import { useEditorEngine } from '@/components/store/editor';
+import { SystemTheme } from '@onlook/models/assets';
+import type { TailwindColor } from '@onlook/models/style';
 import { ColorPicker } from '@onlook/ui/color-picker';
 import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
-import { Color, type Palette } from '@onlook/utility';
-import { useEffect, useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { Color, toNormalCase, type Palette } from '@onlook/utility';
+import { useEffect, useRef, useState } from 'react';
+
+
+const ColorGroup = ({
+    name,
+    colors,
+    onColorSelect,
+    isDefault = false,
+    isExpanded = false,
+}: {
+    name: string;
+    colors: TailwindColor[];
+    onColorSelect: (color: TailwindColor) => void;
+    isDefault?: boolean;
+    isExpanded?: boolean;
+}) => {
+    const [expanded, setExpanded] = useState(false);
+
+    useEffect(() => {
+        setExpanded(isExpanded);
+    }, [isExpanded]);
+
+    return (
+        <div className="w-full group">
+            <button
+                aria-label={`Toggle ${expanded ? 'closed' : 'open'}`}
+                className="rounded flex items-center p-1 w-full"
+                onClick={() => setExpanded(!expanded)}
+            >
+                <div className="flex items-center gap-1 flex-1">
+                    <span className="text-xs font-normal capitalize">{toNormalCase(name)}</span>
+                    {isDefault && (
+                        <span className="ml-2 text-xs text-muted-foreground">Default</span>
+                    )}
+                </div>
+                {expanded ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+            </button>
+
+            {expanded &&
+                colors.map((color) => (
+                    <div
+                        key={color.name}
+                        className="flex items-center gap-1.5 hover:bg-background-secondary rounded-md p-1 hover:cursor-pointer"
+                        onClick={() => onColorSelect(color)}
+                    >
+                        <div
+                            className="w-5 h-5 rounded-sm"
+                            style={{ backgroundColor: color.lightColor }}
+                        />
+                        <span className="text-xs font-normal truncate max-w-32">
+                            {toNormalCase(color.name)}
+                        </span>
+                    </div>
+                ))}
+        </div>
+    );
+};
+
+enum TabValue {
+    BRAND = 'brand',
+    CUSTOM = 'custom',
+}
 
 interface ColorPickerProps {
     color: Color;
-    onChange: (color: Color) => void;
-    onChangeEnd: (color: Color) => void;
+    onChange: (color: Color | TailwindColor) => void;
+    onChangeEnd: (color: Color | TailwindColor) => void;
 }
 
 export const ColorPickerContent: React.FC<ColorPickerProps> = ({
@@ -17,10 +83,63 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
 }) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [palette, setPalette] = useState<Palette>(color.palette);
+    const [searchQuery, setSearchQuery] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
+    const editorEngine = useEditorEngine();
+    const [colorGroups, setColorGroups] = useState<Record<string, TailwindColor[]>>({});
+    const [colorDefaults, setColorDefaults] = useState<Record<string, TailwindColor[]>>({});
+    const [theme] = useState<SystemTheme>(SystemTheme.LIGHT);
 
     useEffect(() => {
         setPalette(color.palette);
     }, [color]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                await editorEngine.theme.scanConfig()
+                setColorGroups(editorEngine.theme.colorGroups);
+                setColorDefaults(editorEngine.theme.colorDefaults);
+            } catch (error) {
+                console.error('Failed to scan fonts:', error);
+            }
+        })();
+    }, []);
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            setSearchQuery('');
+        }
+        if (e.key === 'Escape') {
+            setSearchQuery('');
+            inputRef.current?.blur();
+        }
+    };
+
+    const filteredColorGroups = Object.entries(colorGroups).filter(
+        ([name, colors]) => {
+            const query = searchQuery.toLowerCase();
+            return (
+                name.toLowerCase().includes(query) ||
+                colors.some((color) => color.name.toLowerCase().includes(query))
+            );
+        },
+    );
+
+    const filteredColorDefaults = Object.entries(colorDefaults).filter(
+        ([name, colors]) => {
+            const query = searchQuery.toLowerCase();
+            return (
+                name.toLowerCase().includes(query) ||
+                colors.some((color) => color.name.toLowerCase().includes(query))
+            );
+        },
+    );
+
+    const handleColorSelect = (colorItem: TailwindColor) => {
+        onChangeEnd(colorItem);
+    };
 
     function renderPalette() {
         const colors = Object.keys(palette.colors);
@@ -40,15 +159,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                         ),
                                     )
                                 }
-                            >
-                                {/* Commenting out so that we can use this for tooltips over these grid elements */}
-                                {/* <p
-                                    className={cn(
-                                        'text-xs text-white drop-shadow-lg',
-                                        parseInt(level) < 500 ? 'invert' : '',
-                                    )}
-                                > */}
-                            </div>
+                            />
                         ))}
                     </div>
                 ) : (
@@ -87,31 +198,94 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
 
     return (
         <div className="flex flex-col justify-between items-center">
-            <ColorPicker
-                color={color}
-                onChange={onChange}
-                onChangeEnd={(val) => {
-                    onChangeEnd?.(val);
-                    setPalette(val.palette);
-                }}
-            />
-            <Separator />
-            <div className="flex flex-row items-center justify-between w-full px-2 py-1">
-                <span className="text-foreground-secondary text-small">{palette.name}</span>
-                <button
-                    aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
-                    className="text-foreground-tertiary hover:text-foreground-hover rounded"
-                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                >
-                    {viewMode === 'grid' ? (
-                        <Icons.ViewGrid className="h-4 w-4" />
-                    ) : (
-                        <Icons.ViewHorizontal className="h-4 w-4" />
-                    )}
-                </button>
-            </div>
-            <Separator />
-            <div className="h-28 px-1 overflow-hidden overflow-y-auto">{renderPalette()}</div>
+            <Tabs defaultValue={TabValue.BRAND} className="w-full">
+                <TabsList className="bg-transparent px-2 m-0 gap-2">
+                    <TabsTrigger
+                        value={TabValue.BRAND}
+                        className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                    >
+                        Brand
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value={TabValue.CUSTOM}
+                        className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                    >
+                        Custom
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">
+                    <div className="border-b border-t">
+                        <div className="relative">
+                            <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input
+                                ref={inputRef}
+                                type="text"
+                                placeholder="Search colors"
+                                className="text-xs pl-7 pr-8 rounded-none border-none"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                            {searchQuery && (
+                                <button
+                                    className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
+                                    onClick={() => setSearchQuery('')}
+                                >
+                                    <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1 overflow-y-auto max-h-96 p-2">
+                        {filteredColorGroups.map(([name, colors]) => (
+                            <ColorGroup
+                                key={name}
+                                name={name}
+                                colors={colors}
+                                onColorSelect={handleColorSelect}
+                            />
+                        ))}
+                        {filteredColorDefaults.map(([name, colors]) => (
+                            <ColorGroup
+                                key={name}
+                                name={name}
+                                colors={colors}
+                                onColorSelect={handleColorSelect}
+                                isDefault
+                            />
+                        ))}
+                    </div>
+                </TabsContent>
+
+                <TabsContent value={TabValue.CUSTOM} className="p-0 m-0">
+                    <ColorPicker
+                        color={color}
+                        onChange={onChange}
+                        onChangeEnd={(val) => {
+                            onChangeEnd?.(val);
+                            setPalette(val.palette);
+                        }}
+                    />
+                    <Separator />
+                    <div className="flex flex-row items-center justify-between w-full px-2 py-1">
+                        <span className="text-foreground-secondary text-small">{palette.name}</span>
+                        <button
+                            aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
+                            className="text-foreground-tertiary hover:text-foreground-hover rounded"
+                            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                        >
+                            {viewMode === 'grid' ? (
+                                <Icons.ViewGrid className="h-4 w-4" />
+                            ) : (
+                                <Icons.ViewHorizontal className="h-4 w-4" />
+                            )}
+                        </button>
+                    </div>
+                    <Separator />
+                    <div className="h-28 px-1 overflow-hidden overflow-y-auto">{renderPalette()}</div>
+                </TabsContent>
+            </Tabs>
         </div>
     );
 };

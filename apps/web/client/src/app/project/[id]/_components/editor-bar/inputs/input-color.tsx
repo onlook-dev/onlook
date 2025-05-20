@@ -4,33 +4,48 @@ import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/
 import { Color } from '@onlook/utility';
 import { useCallback, useState } from 'react';
 import { ColorPickerContent } from './color-picker';
+import type { TailwindColor } from '@onlook/models';
+import { useColorUpdate } from '../hooks/use-color-update';
 
 interface InputColorProps {
     color: string;
-    onColorChange?: (color: string) => void;
+    elementStyleKey: string;
+    onColorChange: (color: string) => void;
 }
 
-export const InputColor = ({ color, onColorChange }: InputColorProps) => {
+export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColorProps) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [tempColor, setTempColor] = useState(color);
+    const [tempColor, setTempColor] = useState<Color>(Color.from(color));
 
-    const handleColorChange = useCallback((newColor: Color) => {
-        setTempColor(newColor.toHex());
+    const { handleColorUpdate } = useColorUpdate({
+        elementStyleKey,
+        onValueChange: (_, value) => onColorChange(value),
+    });
+
+    const handleColorChange = useCallback((newColor: Color | TailwindColor) => {
+        setTempColor(newColor instanceof Color ? newColor : Color.from(newColor.lightColor));
     }, []);
 
     const handleColorChangeEnd = useCallback(
-        (newColor: Color) => {
-            const hexColor = newColor.toHex();
-            setTempColor(hexColor);
-            onColorChange?.(hexColor);
+        (newColor: Color | TailwindColor) => {
+            try {
+                if (newColor instanceof Color) {
+                    setTempColor(newColor);
+                } else {
+                    setTempColor(Color.from(newColor.lightColor));
+                }
+                handleColorUpdate(newColor);
+            } catch (error) {
+                console.error('Error updating color:', error);
+            }
         },
-        [onColorChange],
+        [handleColorUpdate],
     );
 
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value;
-            setTempColor(value);
+            setTempColor(Color.from(value));
             onColorChange?.(value);
         },
         [onColorChange],
@@ -45,7 +60,7 @@ export const InputColor = ({ color, onColorChange }: InputColorProps) => {
                     <PopoverTrigger>
                         <div
                             className="mr-2 aspect-square h-5 w-5 rounded-sm"
-                            style={{ backgroundColor: tempColor }}
+                            style={{ backgroundColor: tempColor.toHex() }}
                             onClick={() => setIsOpen(!isOpen)}
                         />
                     </PopoverTrigger>
@@ -55,7 +70,7 @@ export const InputColor = ({ color, onColorChange }: InputColorProps) => {
                         align="start"
                     >
                         <ColorPickerContent
-                            color={Color.from(tempColor)}
+                            color={tempColor}
                             onChange={handleColorChange}
                             onChangeEnd={handleColorChangeEnd}
                         />
@@ -64,7 +79,7 @@ export const InputColor = ({ color, onColorChange }: InputColorProps) => {
 
                 <input
                     type="text"
-                    value={tempColor}
+                    value={tempColor.toHex()}
                     onChange={handleInputChange}
                     className="h-full w-full bg-transparent text-sm text-white focus:outline-none"
                 />
