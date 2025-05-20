@@ -15,7 +15,6 @@ export const useColorUpdate = ({ elementStyleKey, onValueChange }: ColorUpdateOp
 
     const handleColorUpdate = useCallback(
         (newValue: Color | TailwindColor) => {
-            console.log('handleColorUpdate', newValue);
             try {
                 if (newValue instanceof Color) {
                     // Handle direct Color object updates

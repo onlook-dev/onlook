@@ -39,7 +39,7 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
             console.error('Error updating color:', error);
            }
         },
-        [onColorChange],
+        [onColorChange, handleColorUpdate],
     );
 
     const handleInputChange = useCallback(
