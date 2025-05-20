@@ -118,20 +118,6 @@ Projects we're inspired by:
 
 - [Supabase](https://github.com/supabase/supabase)
 
-## CI/CD for Supabase
-
-Supabase environments are deployed automatically using GitHub Actions:
-
-- **Staging**: Changes to the `develop` branch are automatically deployed to the staging Supabase project
-- **Production**: Changes to the `main` branch are automatically deployed to the production Supabase project
-
-Required GitHub Secrets:
-- `SUPABASE_ACCESS_TOKEN` - Personal access token from Supabase
-- `STAGING_DB_PASSWORD` - Database password for staging environment
-- `SUPABASE_STAGING_PROJECT_ID` - Project ID for staging environment
-- `PRODUCTION_DB_PASSWORD` - Database password for production environment
-- `SUPABASE_PRODUCTION_PROJECT_ID` - Project ID for production environment
-
 ## License
 
 Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more
