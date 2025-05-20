@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import type { Font } from '@onlook/models';
 import { convertFontString } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 
@@ -49,12 +50,9 @@ export const useTextControl = () => {
         setTextState(getInitialState());
     }, [editorEngine.style.selectedStyle]);
 
-    const handleFontFamilyChange = (fontFamily: string) => {
-        setTextState((prev) => ({
-            ...prev,
-            fontFamily,
-        }));
-        editorEngine.style.update('fontFamily', fontFamily);
+    const handleFontFamilyChange = (fontFamily: Font) => {
+        editorEngine.style.updateFontFamily('fontFamily', fontFamily);
+        editorEngine.frames.reloadAll();
     };
 
     const handleFontSizeChange = (fontSize: number) => {

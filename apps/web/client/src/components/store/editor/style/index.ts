@@ -1,4 +1,4 @@
-import type { DomElement, DomElementStyles } from '@onlook/models';
+import type { DomElement, DomElementStyles, Font } from '@onlook/models';
 import {
     type Change,
     type StyleActionTarget,
@@ -8,6 +8,7 @@ import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { CSSProperties } from 'react';
 import type { EditorEngine } from '../engine';
+import { convertFontString } from '@onlook/utility';
 
 export interface SelectedStyle {
     styles: DomElementStyles;
@@ -49,6 +50,39 @@ export class StyleManager {
         const action = this.getUpdateStyleAction(styles);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(styles);
+    }
+
+    updateFontFamily(style: string, value: Font) {
+        const styleObj = { [style]: value.id };
+        
+        const action = this.getUpdateStyleAction(styleObj);
+        const formattedAction = {
+            ...action,
+            targets: action.targets.map((val) => ({
+                ...val,
+                change: {
+                    original: Object.fromEntries(
+                        Object.entries(val.change.original).map(([key, styleChange]) => [
+                            key,
+                            {
+                                ...styleChange,
+                                value: convertFontString(styleChange.value),
+                            },
+                        ]),
+                    ),
+                    updated: Object.fromEntries(
+                        Object.entries(val.change.updated).map(([key, styleChange]) => [
+                            key,
+                            {
+                                ...styleChange,
+                                value: convertFontString(styleChange.value),
+                            },
+                        ]),
+                    ),
+                },
+            })),
+        };
+        this.editorEngine.action.run(formattedAction);
     }
 
     getUpdateStyleAction(

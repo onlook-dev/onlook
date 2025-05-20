@@ -10,30 +10,73 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { Color, convertFontWeight } from '@onlook/utility';
-import { memo, useState } from 'react';
+import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
+import { memo, useEffect, useState } from 'react';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
+import { useEditorEngine } from '@/components/store/editor';
+import type { Font } from '@onlook/models/assets';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
 const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
+    const editorEngine = useEditorEngine();
+    const [fonts, setFonts] = useState<Font[]>([]);
+    const { handleFontFamilyChange } = useTextControl();
+    
+    useEffect(() => {
+        (async () => {
+            try {
+                const fonts = await editorEngine.font.scanFonts();
+                setFonts(fonts);
+            } catch (error) {
+                console.error('Failed to scan fonts:', error);
+            }
+        })();
+    }, []);
+
     return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="toolbar"
-                    className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                >
-                    <span className="truncate text-sm">{fontFamily}</span>
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="mt-1" hideArrow>
-                Font Family
-            </TooltipContent>
-        </Tooltip>
+        <DropdownMenu>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="toolbar"
+                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            <span className="truncate text-sm">{toNormalCase(fontFamily)}</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="mt-1" hideArrow>
+                    Font Family
+                </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent
+                align="center"
+                className="mt-1 min-w-[200px] max-h-[300px] overflow-y-auto rounded-lg p-1"
+            >
+                {fonts.map((font: Font) => (
+                    <DropdownMenuItem
+                        key={font.id}
+                        onClick={() => handleFontFamilyChange(font)}
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontFamily === font.family
+                            ? "bg-background-tertiary/20 border-border border text-white"
+                            : ""
+                            }`}
+                    >
+                        <span className="font-medium" style={{ fontFamily: font.family }}>
+                            {font.family}
+                        </span>
+                        {fontFamily === font.family && (
+                            <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />
+                        )}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 });
 
