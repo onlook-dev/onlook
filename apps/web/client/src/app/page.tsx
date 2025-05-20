@@ -33,7 +33,7 @@ export default function Main() {
         },
         {
             question: 'Who owns the code that I write with Onlook?',
-            answer: "The code you make with Onlook is all yours. Your code is written locally directly to your files, and isn't hosted off your of your device.",
+            answer: "The code you make with Onlook is all yours. Your code is written locally directly to your files, and isn't hosted off your device.",
         },
     ];
     const [openIndex, setOpenIndex] = React.useState<number | null>(null);
