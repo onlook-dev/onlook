@@ -26,7 +26,13 @@ const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
     const { handleFontFamilyChange } = useTextControl();
     
     useEffect(() => {
-        editorEngine.font.scanFonts()
+        (async () => {
+            try {
+                await editorEngine.font.scanFonts();
+            } catch (error) {
+                console.error('Failed to scan fonts:', error);
+            }
+        })();
     }, []);
     useEffect(() => {
         setFonts(editorEngine.font.fonts);
