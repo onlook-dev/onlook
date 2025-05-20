@@ -12,7 +12,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Color, convertFontWeight } from '@onlook/utility';
 import { memo, useState } from 'react';
-import { StateDropdown } from './dropdowns/state-dropdown';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
@@ -49,22 +48,24 @@ const FontWeightSelector = memo(
         handleFontWeightChange: (weight: string) => void;
     }) => (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Tooltip>
+            <Tooltip>
+                <div>
                     <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex w-24 cursor-pointer items-center justify-start gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                        >
-                            <span className="text-smallPlus">{convertFontWeight(fontWeight)}</span>
-                        </Button>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="toolbar"
+                                className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex w-24 cursor-pointer items-center justify-start gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            >
+                                <span className="text-smallPlus">{convertFontWeight(fontWeight)}</span>
+                            </Button>
+                        </DropdownMenuTrigger>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="mt-1" hideArrow>
                         Font Weight
                     </TooltipContent>
-                </Tooltip>
-            </DropdownMenuTrigger>
+                </div>
+            </Tooltip>
             <DropdownMenuContent
                 align="center"
                 className="mt-1 min-w-[120px] rounded-lg p-1"
@@ -104,64 +105,67 @@ const FontSizeSelector = memo(
         };
 
         return (
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="flex items-center gap-0.5">
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            onClick={() => adjustFontSize(-1)}
-                            className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
-                        >
-                            <Icons.Minus className="h-4 w-4" />
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <input
-                                    type="number"
-                                    value={fontSize}
-                                    onChange={(e) => {
-                                        const value = parseInt(e.target.value);
-                                        if (!isNaN(value) && value > 0) {
-                                            handleFontSizeChange(value);
-                                        }
-                                    }}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="border-border/0 text-muted-foreground hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border focus:bg-background-tertiary/20 focus:ring-border h-8 max-w-[40px] min-w-[40px] [appearance:textfield] rounded-lg border px-1 text-center text-sm hover:border hover:text-white focus:ring-1 focus:outline-none data-[state=open]:border data-[state=open]:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                align="center"
-                                className="mt-1 w-[48px] min-w-[48px] rounded-lg p-1"
-                            >
-                                {FONT_SIZES.map((size) => (
-                                    <DropdownMenuItem
-                                        key={size}
-                                        onClick={() => handleFontSizeChange(size)}
-                                        className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
-                                            ? 'bg-background-tertiary/20 border-border border text-white'
-                                            : ''
-                                            }`}
-                                    >
-                                        {size}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            onClick={() => adjustFontSize(1)}
-                            className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
-                        >
-                            <Icons.Plus className="h-4 w-4" />
-                        </Button>
+            <DropdownMenu>
+                <Tooltip>
+                    <div>
+                        <TooltipTrigger asChild>
+                            <div className="flex items-center gap-0.5">
+                                <Button
+                                    variant="ghost"
+                                    size="toolbar"
+                                    onClick={() => adjustFontSize(-1)}
+                                    className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
+                                >
+                                    <Icons.Minus className="h-4 w-4" />
+                                </Button>
+                                <DropdownMenuTrigger asChild>
+                                    <input
+                                        type="number"
+                                        value={fontSize}
+                                        onChange={(e) => {
+                                            const value = parseInt(e.target.value);
+                                            if (!isNaN(value) && value > 0) {
+                                                handleFontSizeChange(value);
+                                            }
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="border-border/0 text-muted-foreground hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border focus:bg-background-tertiary/20 focus:ring-border h-8 max-w-[40px] min-w-[40px] [appearance:textfield] rounded-lg border px-1 text-center text-sm hover:border hover:text-white focus:ring-1 focus:outline-none data-[state=open]:border data-[state=open]:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                    />
+                                </DropdownMenuTrigger>
+
+                                <Button
+                                    variant="ghost"
+                                    size="toolbar"
+                                    onClick={() => adjustFontSize(1)}
+                                    className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
+                                >
+                                    <Icons.Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="mt-1" hideArrow>
+                            Font Size
+                        </TooltipContent>
                     </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-1" hideArrow>
-                    Font Size
-                </TooltipContent>
-            </Tooltip>
+                </Tooltip>
+                <DropdownMenuContent
+                    align="center"
+                    className="mt-1 w-[48px] min-w-[48px] rounded-lg p-1"
+                >
+                    {FONT_SIZES.map((size) => (
+                        <DropdownMenuItem
+                            key={size}
+                            onClick={() => handleFontSizeChange(size)}
+                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
+                                ? 'bg-background-tertiary/20 border-border border text-white'
+                                : ''
+                                }`}
+                        >
+                            {size}
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
         );
     },
 );
@@ -173,35 +177,32 @@ const TextAlignSelector = memo(
         textAlign,
         handleTextAlignChange,
     }: {
-        textAlign: TextAlign;
-        handleTextAlignChange: (align: TextAlign) => void;
+        textAlign: TextAlign
+        handleTextAlignChange: (align: TextAlign) => void
     }) => (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Tooltip>
+            <Tooltip>
+                <div>
                     <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                        >
-                            {textAlign === "left" && <Icons.TextAlignLeft className="h-4 w-4" />}
-                            {textAlign === "center" && (
-                                <Icons.TextAlignCenter className="h-4 w-4" />
-                            )}
-                            {textAlign === "right" && (
-                                <Icons.TextAlignRight className="h-4 w-4" />
-                            )}
-                            {textAlign === "justify" && (
-                                <Icons.TextAlignJustified className="h-4 w-4" />
-                            )}
-                        </Button>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="toolbar"
+                                className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            >
+                                {textAlign === "left" && <Icons.TextAlignLeft className="h-4 w-4" />}
+                                {textAlign === "center" && <Icons.TextAlignCenter className="h-4 w-4" />}
+                                {textAlign === "right" && <Icons.TextAlignRight className="h-4 w-4" />}
+                                {textAlign === "justify" && <Icons.TextAlignJustified className="h-4 w-4" />}
+                            </Button>
+                        </DropdownMenuTrigger>
+
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="mt-1" hideArrow>
                         Text Align
                     </TooltipContent>
-                </Tooltip>
-            </DropdownMenuTrigger>
+                </div>
+            </Tooltip>
             <DropdownMenuContent
                 align="center"
                 className="mt-1 flex min-w-fit gap-1 rounded-lg p-1"
@@ -225,8 +226,9 @@ const TextAlignSelector = memo(
                 ))}
             </DropdownMenuContent>
         </DropdownMenu>
-    ),
-);
+
+    )
+)
 
 export const TextSelected = () => {
     const {
@@ -241,35 +243,17 @@ export const TextSelected = () => {
         <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
             <div className="flex items-center gap-0.5">
                 {/* <StateDropdown /> */}
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <FontFamilySelector fontFamily={textState.fontFamily} />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="mt-1" hideArrow>
-                        Font Family
-                    </TooltipContent>
-                </Tooltip>
+                <FontFamilySelector fontFamily={textState.fontFamily} />
                 <InputSeparator />
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <FontWeightSelector
-                            fontWeight={textState.fontWeight}
-                            handleFontWeightChange={handleFontWeightChange}
-                        />
-                    </TooltipTrigger>
-                </Tooltip>
+                <FontWeightSelector
+                    fontWeight={textState.fontWeight}
+                    handleFontWeightChange={handleFontWeightChange}
+                />
                 <InputSeparator />
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <FontSizeSelector
-                            fontSize={textState.fontSize}
-                            handleFontSizeChange={handleFontSizeChange}
-                        />
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="mt-1" hideArrow>
-                        Font Size
-                    </TooltipContent>
-                </Tooltip>
+                <FontSizeSelector
+                    fontSize={textState.fontSize}
+                    handleFontSizeChange={handleFontSizeChange}
+                />
                 <InputSeparator />
                 <TextColor
                     handleTextColorChange={handleTextColorChange}
@@ -281,7 +265,7 @@ export const TextSelected = () => {
                 />
                 <ViewButtons />
             </div>
-        </div>
+        </div >
     );
 };
 
@@ -316,7 +300,7 @@ const TextColor =
 
         return (
             <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                     <div className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white">
                         <Icons.TextColorSymbol className="h-3.5 w-3.5" />
                         <div

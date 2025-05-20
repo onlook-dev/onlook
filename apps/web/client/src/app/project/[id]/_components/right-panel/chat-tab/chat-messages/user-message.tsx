@@ -1,3 +1,4 @@
+import { ChatType } from '@/app/api/chat/route';
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import type { UserChatMessageImpl } from '@/components/store/editor/chat/message/user';
@@ -15,7 +16,7 @@ interface UserMessageProps {
 
 export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const { reload, setMessages } = useChatContext();
+    const { sendMessages } = useChatContext();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -74,8 +75,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
             console.error('Failed to resubmit message');
             return;
         }
-        setMessages(newMessages);
-        await reload();
+        sendMessages(newMessages, ChatType.EDIT);
     };
 
     function renderEditingInput() {

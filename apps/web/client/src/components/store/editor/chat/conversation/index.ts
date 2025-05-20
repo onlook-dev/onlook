@@ -1,50 +1,59 @@
 import { type ProjectManager } from '@/components/store/project/manager';
 import { api } from '@/trpc/client';
-import { fromConversation } from '@onlook/db';
 import { type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Project } from '@onlook/models/project';
 import type { Message } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../../engine';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
 
 export class ConversationManager {
-    projectId: string | null = null;
-    current: ChatConversationImpl | null = null;
-    conversations: ChatConversationImpl[] = [];
+    private projectId: string | null = null;
+    private _current: ChatConversationImpl | null = null;
+    private _conversations: ChatConversation[] = [];
 
     constructor(
-        private editorEngine: EditorEngine,
         private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
         reaction(
             () => this.projectManager.project,
-            (current) => this.getCurrentProjectConversations(current),
+            (current) => this.handleCurrentProject(current),
         );
     }
 
-    async getCurrentProjectConversations(project: Project | null) {
-        if (!project) {
-            return;
-        }
-        if (this.projectId === project.id) {
+    get current() {
+        return this._current;
+    }
+
+    get conversations() {
+        return this._conversations;
+    }
+
+    setCurrentConversation(conversation: ChatConversation) {
+        this._current = ChatConversationImpl.fromJSON(conversation);
+        this._conversations.push(this._current);
+    }
+
+    async handleCurrentProject(project: Project | null) {
+        if (!project || this.projectId === project.id) {
             return;
         }
         this.projectId = project.id;
 
-        this.conversations = await this.getConversations(project.id);
-        if (this.conversations.length === 0 && !this.conversations[0]) {
-            this.current = new ChatConversationImpl(project.id, []);
+        this._conversations = await this.getConversations(project.id);
+
+        if (this.conversations.length > 0 && !!this.conversations[0]) {
+            this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
         } else {
-            this.current = this.conversations[0] ?? null;
+            console.error('No conversations found, creating new conversation');
+            this.startNewConversation();
         }
     }
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
-        const res: ChatConversation[] | null = await this.getConversationFromStorage(projectId);
+        const res: ChatConversation[] | null = await this.getConversationsFromStorage(projectId);
         if (!res) {
             console.error('No conversations found');
             return [];
@@ -58,32 +67,33 @@ export class ConversationManager {
     }
 
     startNewConversation() {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
         if (!this.projectId) {
             console.error('No project id found');
             return;
         }
-        if (this.current.messages.length === 0 && !this.current.displayName) {
+        if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
             console.error(
                 'Error starting new conversation. Current conversation is already empty.',
             );
             return;
         }
-        this.current = new ChatConversationImpl(this.projectId, []);
-        this.conversations.push(this.current);
-        this.saveConversationToStorage();
+        console.log('Starting new conversation');
+        this._current = ChatConversationImpl.create(this.projectId);
+        this._conversations.push(this._current);
+        this._current.saveConversationToStorage();
     }
 
     selectConversation(id: string) {
+        if (!this.projectId) {
+            console.error('No project id found');
+            return;
+        }
         const match = this.conversations.find((c) => c.id === id);
         if (!match) {
             console.error('No conversation found with id', id);
             return;
         }
-        this.current = match;
+        this._current = ChatConversationImpl.fromJSON(match);
     }
 
     deleteConversation(id: string) {
@@ -104,11 +114,10 @@ export class ConversationManager {
         this.conversations.splice(index, 1);
         this.deleteConversationInStorage(id);
         if (this.current.id === id) {
-            if (this.conversations.length > 0) {
-                this.current = this.conversations[0] ?? null;
+            if (this.conversations.length > 0 && !!this.conversations[0]) {
+                this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
             } else {
-                this.current = new ChatConversationImpl(this.projectId, []);
-                this.conversations.push(this.current);
+                this.startNewConversation();
             }
         }
     }
@@ -142,11 +151,11 @@ export class ConversationManager {
             return;
         }
         await this.current.addOrUpdateMessage(message);
+        await this.current.saveConversationToStorage();
     }
 
-    async getConversationFromStorage(id: string): Promise<ChatConversation[] | null> {
-        const res = await api.chat.getConversation.query({ projectId: id });
-        return res;
+    async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
+        return api.chat.getConversations.query({ projectId: id });
     }
 
     async deleteConversationInStorage(id: string) {
@@ -154,18 +163,11 @@ export class ConversationManager {
         if (!success) {
             console.error('Failed to delete conversation in storage', id);
         }
+        return success;
     }
 
-    async saveConversationToStorage() {
-        if (!this.current) {
-            console.error('No conversation found');
-            return Promise.resolve();
-        }
-        const res = await api.chat.saveConversation.mutate({
-            conversation: fromConversation(this.current),
-        });
-        if (!res) {
-            console.error('Failed to save conversation to storage', this.current);
-        }
+    clear() {
+        this._current = null;
+        this._conversations = [];
     }
 }

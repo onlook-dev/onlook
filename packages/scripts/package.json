@@ -1,0 +1,29 @@
+{
+    "name": "@onlook/scripts",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "bun build src/index.ts --outdir=dist --target=node",
+        "dev": "tsc --watch",
+        "start": "bun run build && bun dist/index.js",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint . --ext .ts",
+        "format": "prettier --write ."
+    },
+    "bin": {
+        "env": "dist/index.js"
+    },
+    "dependencies": {
+        "chalk": "^4.1.2",
+        "commander": "^4.1.1",
+        "prompts": "^2.4.2",
+        "ora": "^5.4.1"
+    },
+    "devDependencies": {
+        "@onlook/typescript": "*",
+        "@types/node": "^20.10.5",
+        "@types/prompts": "^2.4.9",
+        "typescript": "^5.3.3"
+    }
+}

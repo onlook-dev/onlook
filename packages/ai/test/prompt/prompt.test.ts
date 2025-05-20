@@ -2,7 +2,15 @@ import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
 import { SEARCH_REPLACE_EXAMPLE_CONVERSATION } from 'src/prompt/edit';
-import { PromptProvider } from '../../src/prompt/provider';
+import {
+    getCreatePageSystemPrompt,
+    getExampleConversation,
+    getFilesContent,
+    getHighlightsContent,
+    getHydratedUserMessage,
+    getSummaryPrompt,
+    getSystemPrompt,
+} from '../../src/prompt/provider';
 
 const __dirname = import.meta.dir;
 
@@ -18,7 +26,7 @@ describe('Prompt', () => {
     test('System prompt should be the same', async () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
 
-        const prompt = new PromptProvider().getSystemPrompt('darwin');
+        const prompt = getSystemPrompt();
         if (SHOULD_WRITE_SYSTEM) {
             await Bun.write(systemPath, prompt);
         }
@@ -30,9 +38,7 @@ describe('Prompt', () => {
     test('Examples should be the same', async () => {
         const examplesPath = path.resolve(__dirname, './data/examples.txt');
 
-        const prompt = new PromptProvider().getExampleConversation(
-            SEARCH_REPLACE_EXAMPLE_CONVERSATION,
-        );
+        const prompt = getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
         if (SHOULD_WRITE_EXAMPLES) {
             await Bun.write(examplesPath, prompt);
         }
@@ -44,7 +50,7 @@ describe('Prompt', () => {
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
 
-        const message = new PromptProvider().getHydratedUserMessage('test', [
+        const message = getHydratedUserMessage('test', '', [
             {
                 path: 'test.txt',
                 content: 'test',
@@ -74,10 +80,7 @@ describe('Prompt', () => {
             },
         ]);
 
-        const prompt =
-            typeof message.content === 'string'
-                ? message.content
-                : message.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+        const prompt = message.content;
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
@@ -90,11 +93,8 @@ describe('Prompt', () => {
     test('User empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
-        const message = new PromptProvider().getHydratedUserMessage('test', []);
-        const prompt =
-            typeof message.content === 'string'
-                ? message.content
-                : message.content.map((c) => (c.type === 'text' ? c.text : '')).join('');
+        const message = getHydratedUserMessage('test', '', []);
+        const prompt = message.content;
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
@@ -107,7 +107,7 @@ describe('Prompt', () => {
     test('File content should be the same', async () => {
         const fileContentPath = path.resolve(__dirname, './data/file.txt');
 
-        const prompt = new PromptProvider().getFilesContent(
+        const prompt = getFilesContent(
             [
                 {
                     path: 'test.txt',
@@ -145,7 +145,7 @@ describe('Prompt', () => {
     test('Highlights should be the same', async () => {
         const highlightsPath = path.resolve(__dirname, './data/highlights.txt');
 
-        const prompt = new PromptProvider().getHighlightsContent('test.txt', [
+        const prompt = getHighlightsContent('test.txt', [
             {
                 path: 'test.txt',
                 start: 1,
@@ -174,7 +174,7 @@ describe('Prompt', () => {
     test('Summary prompt should be the same', async () => {
         const summaryPath = path.resolve(__dirname, './data/summary.txt');
 
-        const prompt = new PromptProvider().getSummaryPrompt();
+        const prompt = getSummaryPrompt();
         if (SHOULD_WRITE_SUMMARY) {
             await Bun.write(summaryPath, prompt);
         }
@@ -186,7 +186,7 @@ describe('Prompt', () => {
     test('Create page system prompt should be the same', async () => {
         const createPageSystemPath = path.resolve(__dirname, './data/create-page-system.txt');
 
-        const prompt = new PromptProvider().getCreatePageSystemPrompt();
+        const prompt = getCreatePageSystemPrompt();
         if (SHOULD_WRITE_CREATE_PAGE_SYSTEM) {
             await Bun.write(createPageSystemPath, prompt);
         }

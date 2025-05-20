@@ -29,19 +29,7 @@ These are the prerequisites for running Onlook locally.
    bun install
    ```
 
-### 3. Get API keys
-
-#### a. Get Codesandbox API key
-
-    Request an API key from Codesandbox. This is used to run the dev containers. It should be free to use: https://codesandbox.io/api
-
-    Note: We plan on enabling running the dev containers with Docker Desktop in the future after we figure out the best api. 
-
-#### b. Get Anthropic API key (optional)
-
-    Request an API key from Anthropic. This is used for chatting with your project. https://console.anthropic.com/settings/keys
-
-### 4. Run backend
+### 3. Run backend
 
    Make sure you have Docker running from the instructions above.
 
@@ -51,26 +39,27 @@ These are the prerequisites for running Onlook locally.
 
     Grab the `anon key` and `service role key` from the output. We'll use these in step 5 and 7.
 
+### 4. Get API keys
+
+#### a. Get Codesandbox API key
+
+    Request an API key from Codesandbox. This is used to run the dev containers. It should be free to use. https://codesandbox.io/api
+
+    Note: We plan on enabling running the dev containers with Docker Desktop in the future after we figure out the best api. 
+
+#### b. Get Anthropic API key
+
+    Request an API key from Anthropic. This is used for chatting with your project. https://console.anthropic.com/settings/keys
+
 ### 5. Set environment variables
 
-   Create a copy of the `.env.example` file under the `apps/web/client` directory and name it `.env`. Fill in the values with your own API keys.
+Run the interactive environment setup script:
 
-    It should look like this:
+```bash
+bun run setup:env
+```
 
-    ```properties
-    # Supabase
-    NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=<Fill in from content after running supabase start>
-
-    # Codesandbox
-    CSB_API_KEY=<Your api key from https://codesandbox.io/api >
-
-    # Drizzle
-    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-
-    # Anthropic
-    ANTHROPIC_API_KEY=<Your api key from https://console.anthropic.com/settings/keys >
-    ```
+Note: If you'd prefer manually setting up the environment variables, see the [appendix](/docs/developer/appendix) for instructions.
 
 ### 6. Initialize the database
 
@@ -81,17 +70,9 @@ Set up the database schema
 
 ### 7. Seed the database with test data
 
-Set environment variables for the seed script under the `packages/seed` directory.
-
-    ```properties
-    SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-    SUPABASE_URL=http://localhost:54321
-    SUPABASE_SERVICE_ROLE_KEY=<Your service role key from Supabase>
-    ```
-
-Seed the database with test data. This will create the user along with a test project.
+Seed the database with test data. This will create test users and projects.
    ```bash
-   bun seed
+   bun db:seed
    ```
 
 ### 8. Run development server
@@ -99,6 +80,8 @@ Seed the database with test data. This will create the user along with a test pr
    ```bash
    bun dev
    ```
+
+Go to [http://localhost:3000](http://localhost:3000) to see the app running. You're all set!
 
 ## What's Next?
 

@@ -1,11 +1,10 @@
 'use client';
 
-import React from 'react';
 import { Icons } from '@onlook/ui/icons/index';
-import { TopBar } from './_components/top-bar';
-import { Create } from './_components/hero/create';
-import { ContributorSection } from './_components/landing-page/ContributorSection';
+import React from 'react';
 import { Hero } from './_components/hero';
+import { ContributorSection } from './_components/landing-page/ContributorSection';
+import { TopBar } from './_components/top-bar';
 
 // Reusable button-link component
 function ButtonLink({ href, children, rightIcon }: { href: string; children: React.ReactNode; rightIcon?: React.ReactNode }) {

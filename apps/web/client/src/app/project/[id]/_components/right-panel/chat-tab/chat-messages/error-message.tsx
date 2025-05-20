@@ -1,12 +1,20 @@
 import { useEditorEngine } from '@/components/store/editor';
+import type { UsageCheckResult } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 
 export const ErrorMessage = observer(() => {
     const editorEngine = useEditorEngine();
-    // TODO: Add rate limiting
-    const rateLimited = null;
+
+    const rateLimited: UsageCheckResult | null = true ? null : {
+        reason: 'daily',
+        daily_requests_limit: 100,
+        monthly_requests_limit: 1000,
+        exceeded: true,
+        daily_requests_count: 100,
+        monthly_requests_count: 1000,
+    };
 
     if (rateLimited) {
         const requestLimit =
@@ -29,7 +37,6 @@ export const ErrorMessage = observer(() => {
         );
     }
 
-    // TODO: Add error message
     const errorMessage = null;
     if (errorMessage) {
         return (
