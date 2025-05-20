@@ -1,13 +1,13 @@
-import { ColorPicker } from '@onlook/ui/color-picker';
-import { Icons } from '@onlook/ui/icons';
-import { Separator } from '@onlook/ui/separator';
-import { Color, toNormalCase, type Palette } from '@onlook/utility';
-import { useEffect, useState, useRef, useMemo } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@onlook/ui/tabs';
-import { Input } from '@onlook/ui/input';
 import { useEditorEngine } from '@/components/store/editor';
 import { SystemTheme } from '@onlook/models/assets';
 import type { TailwindColor } from '@onlook/models/style';
+import { ColorPicker } from '@onlook/ui/color-picker';
+import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
+import { Separator } from '@onlook/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { Color, toNormalCase, type Palette } from '@onlook/utility';
+import { useEffect, useRef, useState } from 'react';
 
 
 const ColorGroup = ({
@@ -94,19 +94,18 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         setPalette(color.palette);
     }, [color]);
 
-    useEffect(() => {        
+    useEffect(() => {
         (async () => {
             try {
-                await editorEngine.theme.scanConfig().then(() => {
-                    setColorGroups(editorEngine.theme.colorGroups);
-                    setColorDefaults(editorEngine.theme.colorDefaults);
-                });
+                await editorEngine.theme.scanConfig()
+                setColorGroups(editorEngine.theme.colorGroups);
+                setColorDefaults(editorEngine.theme.colorDefaults);
             } catch (error) {
                 console.error('Failed to scan fonts:', error);
             }
         })();
     }, []);
-    
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -139,8 +138,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     );
 
     const handleColorSelect = (colorItem: TailwindColor) => {
-        const colorValue = theme === SystemTheme.DARK 
-            ? colorItem.darkColor ?? colorItem.lightColor 
+        const colorValue = theme === SystemTheme.DARK
+            ? colorItem.darkColor ?? colorItem.lightColor
             : colorItem.lightColor;
         onChangeEnd(Color.from(colorValue));
     };
