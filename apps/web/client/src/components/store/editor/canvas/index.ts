@@ -8,6 +8,7 @@ import type { ProjectManager } from '../../project/manager';
 import { FrameImpl, WebFrameImpl } from './frame';
 
 type SettingsObserver = (settings: Frame) => void;
+
 export class CanvasManager {
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
