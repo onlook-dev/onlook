@@ -24,9 +24,7 @@ export const Border = () => {
     const [borderColor, setBorderColor] = useState<string>('#080808');
 
     useEffect(() => {
-        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;
-        console.log(color);
-        
+        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;        
         if (color) {
             setBorderColor(
                 Color.from(
