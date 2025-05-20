@@ -21,18 +21,19 @@ export const Border = () => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
         useBoxControl('border');
-    const [borderColor, setBorderColor] = useState(
-        Color.from(
-            editorEngine.style.selectedStyle?.styles.computed.borderColor ?? '#080808',
-        ).toHex(),
-    );
+    const [borderColor, setBorderColor] = useState<string>('#080808');
 
     useEffect(() => {
-        setBorderColor(
-            Color.from(
-                editorEngine.style.selectedStyle?.styles.computed.borderColor ?? '#080808',
-            ).toHex(),
-        );
+        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;
+        console.log(color);
+        
+        if (color) {
+            setBorderColor(
+                Color.from(
+                    color ?? '#080808',
+                ).toHex(),
+            );
+        }
     }, [editorEngine.style.selectedStyle?.styles.computed.borderColor]);
 
     const handleColorChange = (color: string) => {

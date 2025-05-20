@@ -19,7 +19,7 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
 
     const { handleColorUpdate } = useColorUpdate({
         elementStyleKey,
-        onValueChange: (_, value) => onColorChange(value)
+        onValueChange: (_, value) => onColorChange(value),
     });
 
     const handleColorChange = useCallback((newColor: Color | TailwindColor) => {
@@ -28,18 +28,18 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
 
     const handleColorChangeEnd = useCallback(
         (newColor: Color | TailwindColor) => {
-           try {
-            if (newColor instanceof Color) {
-                setTempColor(newColor);
-            } else {
-                setTempColor(Color.from(newColor.lightColor));
+            try {
+                if (newColor instanceof Color) {
+                    setTempColor(newColor);
+                } else {
+                    setTempColor(Color.from(newColor.lightColor));
+                }
+                handleColorUpdate(newColor);
+            } catch (error) {
+                console.error('Error updating color:', error);
             }
-            handleColorUpdate(tempColor);
-           } catch (error) {
-            console.error('Error updating color:', error);
-           }
         },
-        [onColorChange, handleColorUpdate],
+        [handleColorUpdate],
     );
 
     const handleInputChange = useCallback(

@@ -6,26 +6,43 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Color } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 import { ColorPickerContent } from '../inputs/color-picker';
-
+import { useColorUpdate } from '../hooks/use-color-update';
+import type { TailwindColor } from '@onlook/models';
 export const ColorBackground = () => {
-    const [tempColor, setTempColor] = useState('#000000');
+    const [tempColor, setTempColor] = useState<Color>(Color.from('#000000'));
+
+    const { handleColorUpdate } = useColorUpdate({
+        elementStyleKey: 'backgroundColor'
+    });
 
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
-        setTempColor(
-            editorEngine.style.selectedStyle?.styles.computed.backgroundColor ?? '#000000',
-        );
+        const color = editorEngine.style.selectedStyle?.styles.computed.backgroundColor;
+        if (color) {
+            setTempColor(Color.from(color));
+        }
     }, [editorEngine.style.selectedStyle?.styles.computed.backgroundColor]);
 
-    const handleColorChange = (newColor: Color) => {
-        setTempColor(newColor.toHex());
+    const handleColorChange = (newColor: Color | TailwindColor) => {
+        try {
+            setTempColor(newColor instanceof Color ? newColor : Color.from(newColor.lightColor));
+        } catch (error) {
+            console.error('Error converting color:', error);
+        }
     };
 
-    const handleColorChangeEnd = (newColor: Color) => {
-        const hexColor = newColor.toHex();
-        setTempColor(hexColor);
-        editorEngine.style.update('backgroundColor', hexColor);
+    const handleColorChangeEnd = (newColor: Color | TailwindColor) => {
+        try {
+            if (newColor instanceof Color) {
+                setTempColor(newColor);
+            } else {
+                setTempColor(Color.from(newColor.lightColor));
+            }
+            handleColorUpdate(newColor);
+        } catch (error) {
+            console.error('Error converting color:', error);
+        }
     };
 
     return (
@@ -36,7 +53,7 @@ export const ColorBackground = () => {
                         <Icons.PaintBucket className="h-2 w-2" />
                         <div
                             className="h-[4px] w-6 rounded-full bg-current"
-                            style={{ backgroundColor: tempColor }}
+                            style={{ backgroundColor: tempColor?.toHex() }}
                         />
                     </div>
                 </PopoverTrigger>
@@ -46,7 +63,7 @@ export const ColorBackground = () => {
                     align="start"
                 >
                     <ColorPickerContent
-                        color={Color.from(tempColor)}
+                        color={tempColor}
                         onChange={handleColorChange}
                         onChangeEnd={handleColorChangeEnd}
                     />
