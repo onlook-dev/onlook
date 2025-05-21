@@ -85,7 +85,8 @@ const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
                 </TooltipContent>
             </Tooltip>
             <PopoverContent
-                align="center"
+                side="bottom"
+                align="start"
                 className="mt-1 min-w-[300px] max-h-[400px] overflow-y-auto rounded-xl p-0 bg-background shadow-lg border border-border flex flex-col"
             >
                 <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
