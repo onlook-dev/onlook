@@ -21,6 +21,9 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { Font } from '@onlook/models/assets';
 import type { TailwindColor } from '@onlook/models';
 import { useColorUpdate } from './hooks/use-color-update';
+import { Height } from './dropdowns/height';
+import { Width } from './dropdowns/width';
+import { Opacity } from './dropdowns/opacity';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
@@ -50,7 +53,7 @@ const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
                             size="toolbar"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         >
-                            <span className="truncate text-sm">{toNormalCase(fontFamily)}</span>
+                            <span className="truncate text-smallPlus">{toNormalCase(fontFamily)}</span>
                         </Button>
                     </DropdownMenuTrigger>
                 </TooltipTrigger>
@@ -71,7 +74,7 @@ const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
                             : ""
                             }`}
                     >
-                        <span className="font-medium" style={{ fontFamily: font.family }}>
+                        <span className="text-smallPlus" style={{ fontFamily: font.family }}>
                             {font.family}
                         </span>
                         {fontFamily === font.family && (
@@ -368,6 +371,10 @@ export const TextSelected = () => {
         <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
             <div className="flex items-center gap-0.5">
                 {/* <StateDropdown /> */}
+                <Opacity />
+                <Width />
+                <Height />
+                <InputSeparator />
                 <FontFamilySelector fontFamily={textState.fontFamily} />
                 <InputSeparator />
                 <FontWeightSelector

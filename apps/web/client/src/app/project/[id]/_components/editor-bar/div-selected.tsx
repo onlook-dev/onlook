@@ -12,11 +12,14 @@ import { StateDropdown } from './dropdowns/state-dropdown';
 import { Width } from './dropdowns/width';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
+import { Opacity } from './dropdowns/opacity';
 
 export const DivSelected = () => {
     return (
         <div className="flex items-center gap-0.5">
             {/* <StateDropdown /> */}
+            <Opacity />
+            <InputSeparator />
             <Width />
             <Height />
             <InputSeparator />
