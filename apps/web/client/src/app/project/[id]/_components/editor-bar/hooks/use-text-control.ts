@@ -127,7 +127,7 @@ export const useTextControl = () => {
             ...prev,
             textDecoration,
         }));
-        editorEngine.style.update('textDecoration', textDecoration);
+        editorEngine.style.update('textDecorationLine', textDecoration);
     };
 
     const handleLineHeightChange = (lineHeight: string) => {

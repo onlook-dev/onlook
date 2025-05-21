@@ -9,9 +9,9 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
+import { convertFontWeight, toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useState } from 'react';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ColorPickerContent } from './inputs/color-picker';
@@ -399,7 +399,7 @@ const TextColor = memo(
                     </div>
                 </Tooltip>
                 <PopoverContent
-                    className="w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    className="w-[224px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"
                     align="start"
                 >
@@ -416,7 +416,7 @@ const TextColor = memo(
 
 TextColor.displayName = 'TextColor';
 
-const AdvancedTypography = memo(() => {
+const AdvancedTypography = () => {
     const {
         textState,
         handleLetterSpacingChange,
@@ -424,7 +424,7 @@ const AdvancedTypography = memo(() => {
         handleTextDecorationChange,
         handleLineHeightChange,
     } = useTextControl();
-    
+
     const [open, setOpen] = useState(false);
     const handleClose = () => {
         setOpen(false);
@@ -531,9 +531,7 @@ const AdvancedTypography = memo(() => {
             </PopoverContent>
         </Popover>
     );
-});
-
-AdvancedTypography.displayName = 'AdvancedTypography';
+}
 
 export const TextSelected = () => {
     const {
