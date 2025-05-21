@@ -24,12 +24,12 @@ export class FileWatcher {
 
     async start(): Promise<void> {
         try {
-            this.watcher = await this.session.fs.watch('./', {
+            const watcher = await this.session.fs.watch('./', {
                 recursive: true,
                 excludes: this.excludePatterns,
             });
-
-            this.watcher?.onEvent(async (event) => {
+            this.watcher = watcher
+            watcher.onEvent(async (event) => {
                 // Publish the event to all subscribers
                 this.eventBus.publish({
                     type: event.type,

@@ -16,15 +16,18 @@ export const sandboxRouter = createTRPCRouter({
         });
         return session;
     }),
+
     hibernate: publicProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {
         await sdk.sandboxes.hibernate(input.sandboxId);
     }),
+
     list: publicProcedure.query(async () => {
         const listResponse = await sdk.sandboxes.list();
         return listResponse;
     }),
+
     fork: publicProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {
@@ -37,6 +40,7 @@ export const sandboxRouter = createTRPCRouter({
             previewUrl: `https://${sandbox.id}-8084.csb.app`,
         };
     }),
+
     delete: publicProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {

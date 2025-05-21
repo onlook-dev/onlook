@@ -34,7 +34,6 @@ export function shortenUuid(uuid: string, maxLength: number): string {
     for (let i = 0; i < uuid.length; i++) {
         const char = uuid.charCodeAt(i);
         hash = (hash << 5) - hash + char;
-        hash = hash & hash;
     }
 
     // Convert to base36 (alphanumeric) for compact representation
