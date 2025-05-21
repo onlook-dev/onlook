@@ -21,10 +21,7 @@ export function isSubdirectory(filePath: string, directories: string[]): boolean
     }
     // Always resolve filePath relative to sandbox root if not absolute, but also if it starts with SANDBOX_ROOT, keep as is
     let absFilePath = path.isAbsolute(filePath) ? filePath : path.join(SANDBOX_ROOT, filePath);
-    // If filePath is absolute but inside SANDBOX_ROOT, keep as is
-    if (absFilePath.startsWith(SANDBOX_ROOT + '/')) {
-        absFilePath = absFilePath;
-    }
+
     const normalizedFilePath = normalize(path.resolve(absFilePath));
 
     for (let directory of directories) {
