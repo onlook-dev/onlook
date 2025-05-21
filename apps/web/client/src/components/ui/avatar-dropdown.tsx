@@ -27,8 +27,8 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
     };
 
     return (
-        <DropdownMenu open={!disableDropdown}>
-            <DropdownMenuTrigger asChild>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild disabled={disableDropdown}>
                 <Avatar className={className}>
                     {user?.image && <AvatarImage src={user.image} alt={initials} />}
                     <AvatarFallback>{initials}</AvatarFallback>
