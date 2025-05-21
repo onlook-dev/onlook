@@ -9,7 +9,7 @@ import { useColorUpdate } from '../hooks/use-color-update';
 interface InputColorProps {
     color: string;
     elementStyleKey: string;
-    onColorChange: (color: string) => void;
+    onColorChange?: (color: string) => void;
 }
 
 export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColorProps) => {
@@ -17,7 +17,7 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
 
     const { handleColorUpdateEnd, handleColorUpdate, tempColor } = useColorUpdate({
         elementStyleKey,
-        onValueChange: (_, value) => onColorChange(value),
+        onValueChange: (_, value) => onColorChange?.(value),
         initialColor: color,
     });
 
