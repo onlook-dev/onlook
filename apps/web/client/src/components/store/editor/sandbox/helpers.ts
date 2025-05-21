@@ -12,14 +12,32 @@ export function normalizePath(p: string): string {
 }
 
 export function isSubdirectory(filePath: string, directories: string[]): boolean {
-    // Normalize the file path by replacing backslashes with forward slashes
-    const normalizedFilePath = path.resolve(filePath.replace(/\\/g, '/'));
+    // Always normalize to forward slashes and remove trailing slashes
+    function normalize(p: string): string {
+        let s = p.replace(/\\/g, '/');
+        // Remove trailing slashes (but not for root)
+        if (s.length > 1 && s.endsWith('/')) s = s.replace(/\/+$/, '');
+        return s;
+    }
+    // Always resolve filePath relative to sandbox root if not absolute, but also if it starts with SANDBOX_ROOT, keep as is
+    let absFilePath = path.isAbsolute(filePath) ? filePath : path.join(SANDBOX_ROOT, filePath);
+    // If filePath is absolute but inside SANDBOX_ROOT, keep as is
+    if (absFilePath.startsWith(SANDBOX_ROOT + '/')) {
+        absFilePath = absFilePath;
+    }
+    const normalizedFilePath = normalize(path.resolve(absFilePath));
 
-    for (const directory of directories) {
-        // Normalize the directory path by replacing backslashes with forward slashes
-        const normalizedDir = path.resolve(directory.replace(/\\/g, '/'));
-        const relative = path.relative(normalizedDir, normalizedFilePath);
-        if (relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative))) {
+    for (let directory of directories) {
+        // Always resolve directory relative to sandbox root if not absolute
+        const absDir = path.isAbsolute(directory) ? directory : path.join(SANDBOX_ROOT, directory);
+        const normalizedDir = normalize(path.resolve(absDir));
+        // Ensure trailing slash for directory unless it's root
+        const dirWithSlash = normalizedDir === '/' ? '/' : normalizedDir + '/';
+        // Check if filePath is the directory or inside it
+        if (
+            normalizedFilePath === normalizedDir ||
+            normalizedFilePath.startsWith(dirWithSlash)
+        ) {
             return true;
         }
     }
