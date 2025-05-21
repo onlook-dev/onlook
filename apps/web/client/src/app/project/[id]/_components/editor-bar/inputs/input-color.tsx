@@ -4,7 +4,6 @@ import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/
 import { Color } from '@onlook/utility';
 import { useCallback, useState } from 'react';
 import { ColorPickerContent } from './color-picker';
-import type { TailwindColor } from '@onlook/models';
 import { useColorUpdate } from '../hooks/use-color-update';
 
 interface InputColorProps {
@@ -15,37 +14,17 @@ interface InputColorProps {
 
 export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColorProps) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [tempColor, setTempColor] = useState<Color>(Color.from(color));
 
-    const { handleColorUpdate } = useColorUpdate({
+    const { handleColorUpdateEnd, handleColorUpdate, tempColor } = useColorUpdate({
         elementStyleKey,
         onValueChange: (_, value) => onColorChange(value),
+        initialColor: color,
     });
-
-    const handleColorChange = useCallback((newColor: Color | TailwindColor) => {
-        setTempColor(newColor instanceof Color ? newColor : Color.from(newColor.lightColor));
-    }, []);
-
-    const handleColorChangeEnd = useCallback(
-        (newColor: Color | TailwindColor) => {
-            try {
-                if (newColor instanceof Color) {
-                    setTempColor(newColor);
-                } else {
-                    setTempColor(Color.from(newColor.lightColor));
-                }
-                handleColorUpdate(newColor);
-            } catch (error) {
-                console.error('Error updating color:', error);
-            }
-        },
-        [handleColorUpdate],
-    );
 
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value;
-            setTempColor(Color.from(value));
+            handleColorUpdateEnd(Color.from(value));
             onColorChange?.(value);
         },
         [onColorChange],
@@ -71,8 +50,8 @@ export const InputColor = ({ color, elementStyleKey, onColorChange }: InputColor
                     >
                         <ColorPickerContent
                             color={tempColor}
-                            onChange={handleColorChange}
-                            onChangeEnd={handleColorChangeEnd}
+                            onChange={handleColorUpdate}
+                            onChangeEnd={handleColorUpdateEnd}
                         />
                     </PopoverContent>
                 </Popover>

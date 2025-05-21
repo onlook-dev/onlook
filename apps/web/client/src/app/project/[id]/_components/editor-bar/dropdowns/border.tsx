@@ -18,29 +18,24 @@ import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 
 export const Border = () => {
     const editorEngine = useEditorEngine();
+    const initialColor = editorEngine.style.selectedStyle?.styles.computed.borderColor;
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
         useBoxControl('border');
-    const [borderColor, setBorderColor] = useState<string>('#080808');
-
-    useEffect(() => {
-        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;        
-        if (color) {
-            setBorderColor(
-                Color.from(
-                    color ?? '#080808',
-                ).toHex(),
-            );
-        }
-    }, [editorEngine.style.selectedStyle?.styles.computed.borderColor]);
+    const [borderColor, setBorderColor] = useState<string>(Color.from(initialColor ?? '#080808').toHex());
 
     const handleColorChange = (color: string) => {
         setBorderColor(color);
     };
 
+    useEffect(() => {
+        setBorderColor(Color.from(initialColor ?? '#080808').toHex());
+    }, [initialColor]);
+
     const borderStyle = {
         borderWidth: boxState.borderWidth.num ? `1px` : '0px',
         borderStyle: 'solid',
+        borderColor: initialColor,
     };
 
     return (
