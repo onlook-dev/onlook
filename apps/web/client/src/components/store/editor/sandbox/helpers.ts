@@ -2,12 +2,15 @@ import path from 'path';
 import parserEstree from 'prettier/plugins/estree';
 import parserTypescript from 'prettier/plugins/typescript';
 import prettier from 'prettier/standalone';
-import isSubdir from 'is-subdir';
 
 const SANDBOX_ROOT = '/project/sandbox';
 
 export function normalizePath(p: string): string {
-    let abs = path.isAbsolute(p) ? p : path.join(SANDBOX_ROOT, p);
+    // First extract the workspace path if it exists
+    const workspacePath = p.split('workspace/').pop() || p;
+
+    // Then proceed with the existing normalization
+    let abs = path.isAbsolute(workspacePath) ? workspacePath : path.join(SANDBOX_ROOT, workspacePath);
     let relative = path.relative(SANDBOX_ROOT, abs);
     return relative.replace(/\\/g, '/'); // Always POSIX style
 }

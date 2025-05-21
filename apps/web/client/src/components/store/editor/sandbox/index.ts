@@ -5,6 +5,7 @@ import { getContentFromTemplateNode } from '@onlook/parser';
 import { isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
+import path from 'path';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
@@ -65,7 +66,7 @@ export class SandboxManager {
         }
 
         try {
-            return await this.session.session.fs.readTextFile(filePath);
+            return await this.session.session.fs.readTextFile(normalizePath(filePath));
         } catch (error) {
             console.error(`Error reading remote file ${filePath}:`, error);
             return null;
@@ -185,8 +186,9 @@ export class SandboxManager {
         const entries = await this.session.session.fs.readdir(dir);
 
         for (const entry of entries) {
-            const fullPath = `${dir}/${entry.name}`;
+            const fullPath = path.join(dir, entry.name);
             const normalizedPath = normalizePath(fullPath);
+            console.log('normalizedPath', normalizedPath);
             if (entry.type === 'directory') {
                 if (ignore.includes(entry.name)) {
                     continue;
