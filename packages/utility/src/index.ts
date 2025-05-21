@@ -10,6 +10,7 @@ export * from './id';
 export * from './image';
 export * from './math';
 export * from './null';
+export * from './path';
 export * from './string';
 export * from './tailwind';
 export * from './time';

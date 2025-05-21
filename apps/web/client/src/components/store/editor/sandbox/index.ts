@@ -7,10 +7,10 @@ import { makeAutoObservable, reaction } from 'mobx';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
-import { formatContent, isSubdirectory, normalizePath } from './helpers';
+import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
-
+import { isSubdirectory } from '@onlook/utility';
 export class SandboxManager {
     readonly session: SessionManager = new SessionManager();
     private fileWatcher: FileWatcher | null = null;
