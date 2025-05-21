@@ -10,7 +10,7 @@ import { ImgSelected } from './img-selected';
 import { TextSelected } from './text-selected';
 
 const TAG_TYPES: Record<string, string[]> = {
-    text: ['h1', 'h2'],
+    text: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'a', 'strong', 'b', 'em', 'i', 'mark', 'code', 'small', 'blockquote', 'pre', 'time', 'sub', 'sup', 'del', 'ins', 'u', 'abbr', 'cite', 'q'],
     div: ['div'],
     image: ['img'],
     video: ['video'],
