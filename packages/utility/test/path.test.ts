@@ -93,4 +93,54 @@ describe('isSubdirectory', () => {
             ]),
         ).toBe(true);
     });
+
+    test('absolute file and directory paths (POSIX)', () => {
+        expect(isSubdirectory('/a/b/c/file.txt', ['/a/b/c'])).toBe(true);
+        expect(isSubdirectory('/a/b/c/d/file.txt', ['/a/b/c'])).toBe(true);
+        expect(isSubdirectory('/a/b/c', ['/a/b/c'])).toBe(true);
+        expect(isSubdirectory('/a/b/c', ['/a/b/c/'])).toBe(true);
+        expect(isSubdirectory('/a/b/c/', ['/a/b/c'])).toBe(true);
+        expect(isSubdirectory('/a/b/c/../c/file.txt', ['/a/b/c'])).toBe(true);
+        expect(isSubdirectory('/a/b/d/file.txt', ['/a/b/c'])).toBe(false);
+    });
+
+    test('relative file and directory paths', () => {
+        expect(isSubdirectory('foo/bar.txt', ['foo'])).toBe(true);
+        expect(isSubdirectory('foo/bar/baz.txt', ['foo'])).toBe(true);
+        expect(isSubdirectory('foo', ['foo'])).toBe(true);
+        expect(isSubdirectory('foo/', ['foo'])).toBe(true);
+        expect(isSubdirectory('foo/../foo/bar.txt', ['foo'])).toBe(true);
+        expect(isSubdirectory('bar/baz.txt', ['foo'])).toBe(false);
+    });
+
+    test('absolute file, relative directory', () => {
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['foo'])).toBe(true);
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['bar'])).toBe(false);
+    });
+
+    test('relative file, absolute directory', () => {
+        expect(isSubdirectory('sandbox/foo/bar.txt', ['/sandbox/foo'])).toBe(true);
+        expect(isSubdirectory('sandbox/bar.txt', ['/sandbox/foo'])).toBe(false);
+    });
+
+    test('mixed absolute and relative paths', () => {
+        expect(isSubdirectory('/a/b/c/file.txt', ['b/c'])).toBe(true);
+        expect(isSubdirectory('a/b/c/file.txt', ['/a/b'])).toBe(true);
+        expect(isSubdirectory('/a/b/c/file.txt', ['a/b'])).toBe(true);
+        expect(isSubdirectory('a/b/c/file.txt', ['/a/b/c'])).toBe(true);
+    });
+
+    test('edge cases: trailing slashes, dot segments, case sensitivity', () => {
+        expect(isSubdirectory('/A/B/C/file.txt', ['/A/B/C'])).toBe(true);
+        expect(isSubdirectory('/A/B/C/file.txt', ['/a/b/c'])).toBe(false); // case sensitive
+        expect(isSubdirectory('/a/b/c/./file.txt', ['/a/b/c'])).toBe(true);
+        expect(isSubdirectory('/a/b/c/../c/file.txt', ['/a/b/c'])).toBe(true);
+        expect(isSubdirectory('/a/b/c', ['/a/b/c/.'])).toBe(true);
+    });
+
+    test('negative cases: file outside, above, or in sibling directories', () => {
+        expect(isSubdirectory('/a/b/file.txt', ['/a/b/c'])).toBe(false);
+        expect(isSubdirectory('/a/b/c/../../file.txt', ['/a/b/c'])).toBe(false);
+        expect(isSubdirectory('/a/b/d/file.txt', ['/a/b/c'])).toBe(false);
+    });
 });
