@@ -30,9 +30,17 @@ const FloatingRings = () => {
                 const response = await fetch('https://api.github.com/repos/onlook-dev/onlook/contributors?per_page=100');
                 const data = await response.json();
                 
-                const filteredContributors = data.filter((contributor: Contributor) => 
-                    contributor.avatar_url && !contributor.avatar_url.includes('no-user-image')
-                );
+                const filteredContributors = data.filter((contributor: Contributor) => {
+                    if (!contributor.avatar_url) return false;
+                    
+                    const isDefaultAvatar = 
+                        contributor.avatar_url.includes('no-user-image') || 
+                        contributor.avatar_url.includes('u/') ||
+                        contributor.avatar_url.includes('identicon') ||
+                        contributor.avatar_url.includes('gravatar');
+                    
+                    return !isDefaultAvatar;
+                });
                 setContributors(filteredContributors);
                 setIsLoading(false);
             } catch (error) {
@@ -61,7 +69,7 @@ const FloatingRings = () => {
                     const angle = (i / 24) * 2 * Math.PI;
                     const x = center + Math.cos(angle) * innerRadius;
                     const y = center + Math.sin(angle) * innerRadius;
-                    const contributor = !isLoading && contributors[i % contributors.length];
+                    const contributor = !isLoading && contributors.length > 0 ? contributors[i % contributors.length] : null;
                     return (
                         <div
                             key={`inner-${i}`}
@@ -71,6 +79,7 @@ const FloatingRings = () => {
                                 height: 56,
                                 left: x - 28,
                                 top: y - 28,
+                                animation: 'counter-spin 280s linear infinite'
                             }}
                         >
                             {contributor && (
@@ -91,7 +100,7 @@ const FloatingRings = () => {
                     const angle = (i / 30) * 2 * Math.PI;
                     const x = center + Math.cos(angle) * outerRadius;
                     const y = center + Math.sin(angle) * outerRadius;
-                    const contributorIndex = (i + 24) % contributors.length;
+                    const contributorIndex = (i + 24) % (contributors.length || 1);
                     const contributor = !isLoading && contributors.length > 0 ? contributors[contributorIndex] : null;
                     return (
                         <div
@@ -102,6 +111,7 @@ const FloatingRings = () => {
                                 height: 56,
                                 left: x - 28,
                                 top: y - 28,
+                                animation: 'counter-spin-reverse 290s linear infinite'
                             }}
                         >
                             {contributor && (
@@ -178,6 +188,22 @@ export function ContributorSection({
                             transform: translate(-50%, -50%) rotate(-360deg);
                         }
                     }
+                    @keyframes counter-spin {
+                        from {
+                            transform: rotate(0deg);
+                        }
+                        to {
+                            transform: rotate(-360deg);
+                        }
+                    }
+                    @keyframes counter-spin-reverse {
+                        from {
+                            transform: rotate(0deg);
+                        }
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    }
                 `}</style>
                 <h2 className="text-foreground-primary text-3xl md:text-4xl font-light text-center mb-2">
                     Supported by You &<br />
@@ -197,4 +223,4 @@ export function ContributorSection({
             </div>
         </div>
     );
-}   
+}     
