@@ -70,25 +70,25 @@ export const TopBar = observer(() => {
                             </Tooltip>
                         ))}
                     </motion.div>
-                    <Tooltip>
+                    {/* TODO: Enable */}
+                    {/* <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-8"
-                                // onClick={() => {
-                                //     editorEngine.settingsTab = SettingsTabValue.VERSIONS;
-                                //     editorEngine.isSettingsOpen = true;
-                                // }}
+                                onClick={() => {
+                                    editorEngine.settingsTab = SettingsTabValue.VERSIONS;
+                                    editorEngine.isSettingsOpen = true;
+                                }}
                             >
                                 <Icons.CounterClockwiseClock className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
-                        {/* Hide version history for now */}
-                        {/* <TooltipContent side="bottom">
+                        <TooltipContent side="bottom">
                             {t('editor.toolbar.versionHistory')}
-                        </TooltipContent> */}
-                    </Tooltip>
+                        </TooltipContent>
+                    </Tooltip> */}
                 </div>
             </div>
         </div>
