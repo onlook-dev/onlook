@@ -10,6 +10,53 @@ import { TopBar } from './_components/top-bar';
 import { Button } from '@onlook/ui/button';;
 import { FAQDropdown } from './_components/landing-page/FAQDropdown';
 import { TestimonialCard } from './_components/landing-page/TestimonialCard';
+import { cn } from '@onlook/ui/utils';
+import { NodeIcon } from './project/[id]/_components/left-panel/layers-tab/tree/node-icon';
+import { CodeOneToOneSection } from './_components/landing-page/CodeOneToOneSection';
+
+// Mock data for layers
+const mockLayers = [
+  { id: '1', name: 'Overview', tagName: 'SECTION', selected: true },
+  { id: '2', name: 'Client Logo', tagName: 'IMG', selected: false },
+  { id: '3', name: 'Component', tagName: 'COMPONENT', selected: false },
+  { id: '4', name: 'Share', tagName: 'BUTTON', selected: false },
+  { id: '5', name: 'New project', tagName: 'BUTTON', selected: false },
+  { id: '6', name: 'Projects section', tagName: 'SECTION', selected: false },
+  { id: '7', name: 'Controls', tagName: 'DIV', selected: false },
+  { id: '8', name: 'Filter', tagName: 'INPUT', selected: false },
+];
+
+function MockLayersTab() {
+  const [hoveredId, setHoveredId] = React.useState<string | null>(null);
+  const [selectedId, setSelectedId] = React.useState<string>('1');
+
+  return (
+    <div className="w-72 bg-background/80 rounded-lg shadow-lg p-2 overflow-hidden border border-border max-h-96 flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
+        {mockLayers.map((layer) => (
+          <div
+            key={layer.id}
+            className={cn(
+              'flex items-center h-7 px-2 rounded cursor-pointer transition-colors select-none text-regular',
+              selectedId === layer.id
+                ? 'bg-red-500 text-foreground-primary'
+                : hoveredId === layer.id
+                ? 'bg-background-onlook text-foreground-primary'
+                : 'text-foreground-secondary',
+            )}
+            onMouseEnter={() => setHoveredId(layer.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            onClick={() => setSelectedId(layer.id)}
+            style={{ userSelect: 'none' }}
+          >
+            <NodeIcon iconClass="w-4 h-4 mr-2" tagName={layer.tagName} />
+            <span className="truncate">{layer.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Main() {
     const faqs = [
@@ -43,8 +90,9 @@ export default function Main() {
                 </h2>
                 <ButtonLink href="#" rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>Browse more</ButtonLink>
             </div>
+
             {/* New Features Section */}
-            <div className="w-full max-w-6xl mx-auto py-20 px-8 flex flex-col md:flex-row items-start md:items-stretch gap-12 md:gap-0">
+                        <div className="w-full max-w-6xl mx-auto py-20 px-8 flex flex-col md:flex-row items-start md:items-stretch gap-12 md:gap-0">
                 <div className="flex-1 mb-12 md:mb-0 md:mr-8">
                     <h3 className="text-foreground-primary text-lg mb-4">Real Code</h3>
                     <p className="text-foreground-secondary text-regular text-balance">This is where more information<br />would go</p>
@@ -58,9 +106,16 @@ export default function Main() {
                     <p className="text-foreground-secondary text-regular text-balance">Share a link with colleagues or<br />attach a domain in seconds</p>
                 </div>
             </div>
+
+            {/* Code 1:1*/}
+            <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col md:flex-row items-start md:items-stretch gap-12 md:gap-0">
+                <CodeOneToOneSection />
+            </div>
+
+
             {/* Testimonials Section */}
             <div className="w-full max-w-6xl mx-auto py-48 px-8">
-                <h2 className="text-foreground-primary text-[5vw] leading-[1.1] font-light mb-16 max-w-4xl text-left text-balance">
+                <h2 className="text-foreground-primary text-[4vw] leading-[1.1] font-light mb-16 max-w-4xl text-left text-balance">
                     Thousands of builders <br />love Onlook
                 </h2>
                 <div className="w-full flex flex-col md:flex-row gap-6 md:gap-8">
@@ -169,7 +224,9 @@ export default function Main() {
                     <h2 className="text-foreground-primary text-[4vw] leading-[1.1] font-light mb-8 max-w-xl">What can<br />Onlook do?</h2>
                     {/* Direct editing */}
                     <div className="flex flex-col gap-4">
-                        <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6" />
+                        <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 overflow-hidden">
+                            <MockLayersTab />
+                        </div>
                         <div className="flex flex-row items-start gap-8 w-full">
                             {/* Icon + Title */}
                             <div className="flex flex-col items-start w-1/2">
@@ -177,7 +234,7 @@ export default function Main() {
                             <span className="text-foreground-primary text-largePlus font-light">Direct editing</span>
                         </div>
                         {/* Description */}
-                            <p className="text-foreground-secondary text-regular text-balance w-1/2 mt-2">Drag-and-drop, rearrange, scale, and more with elements directly in the editor.</p>
+                            <p className="text-foreground-secondary text-regular text-balance w-1/2">Drag-and-drop, rearrange, scale, and more with elements directly in the editor.</p>
                         </div>
                     </div>
                     {/* Components */}
@@ -190,7 +247,7 @@ export default function Main() {
                             <span className="text-foreground-primary text-largePlus font-light">Components</span>
                         </div>
                         {/* Description */}
-                            <p className="text-foreground-secondary text-regular text-balance w-1/2 mt-2">Customize reusable components that you can swap-out across websites.</p>
+                            <p className="text-foreground-secondary text-regular text-balance w-1/2">Customize reusable components that you can swap-out across websites.</p>
                         </div>
                     </div>
                     {/* Layers */}
@@ -203,7 +260,7 @@ export default function Main() {
                             <span className="text-foreground-primary text-largePlus font-light">Layers</span>
                         </div>
                         {/* Description */}
-                            <p className="text-foreground-secondary text-regular text-balance w-1/2 mt-2">Select elements exactly where you need them to be</p>
+                            <p className="text-foreground-secondary text-regular text-balance w-1/2">Select elements exactly where you need them to be</p>
                         </div>
                     </div>
                 </div>
@@ -220,7 +277,7 @@ export default function Main() {
                                 <span className="text-foreground-primary text-largePlus font-light">Work in the <span className='underline'>true</span> product</span>
                             </div>
                             {/* Description */}
-                            <p className="text-foreground-secondary text-regular text-balance w-1/2 mt-2">Work an entirely new dimension – experience your designs come to life</p>
+                            <p className="text-foreground-secondary text-regular text-balance w-1/2">Work an entirely new dimension – experience your designs come to life</p>
                         </div>
                     </div>
                     {/* Brand compliance */}
@@ -234,7 +291,7 @@ export default function Main() {
                                 <span className="text-foreground-primary text-largePlus font-light">Brand compliance</span>
                             </div>
                             {/* Description */}
-                            <p className="text-foreground-secondary text-regular text-balance w-1/2 mt-2">Make your fonts, colors, and styles all speak the same language.</p>
+                            <p className="text-foreground-secondary text-regular text-balance w-1/2">Make your fonts, colors, and styles all speak the same language.</p>
                         </div>
                     </div>
                     {/* Instantly responsive */}
@@ -247,7 +304,7 @@ export default function Main() {
                                 <span className="text-foreground-primary text-largePlus font-light">Instantly responsive</span>
                             </div>
                             {/* Description */}
-                            <p className="text-foreground-secondary text-regular text-balance w-1/2 mt-2">Craft sites that look great on laptops, tablets, and phones with minimal adjustments.</p>
+                            <p className="text-foreground-secondary text-regular text-balance w-1/2">Craft sites that look great on laptops, tablets, and phones with minimal adjustments.</p>
                         </div>
                     </div>
                     {/* Revision history */}
@@ -260,7 +317,7 @@ export default function Main() {
                                 <span className="text-foreground-primary text-largePlus font-light">Revision history</span>
                             </div>
                             {/* Description */}
-                            <p className="text-foreground-secondary text-regular text-balance w-1/2 mt-2">Never lose your progress – revert when you need to</p>
+                            <p className="text-foreground-secondary text-regular text-balance w-1/2">Never lose your progress – revert when you need to</p>
                         </div>
                     </div>
                 </div>
