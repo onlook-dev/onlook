@@ -5,6 +5,7 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
+import { useUserManager } from '@/components/store/user';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
@@ -24,6 +25,8 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
     const createManager = useCreateManager();
+    const userManager = useUserManager();
+
     const { tabState } = useTabActive();
     const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
     const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -57,7 +60,11 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         projectManager.project = project;
 
         if (project.sandbox?.id) {
-            editorEngine.sandbox.session.start(project.sandbox.id);
+            if (userManager.user?.id) {
+                editorEngine.sandbox.session.start(project.sandbox.id, userManager.user?.id);
+            } else {
+                console.error('No user id');
+            }
         } else {
             console.error('No sandbox id');
         }
@@ -81,7 +88,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         return () => {
             editorEngine.sandbox.clear();
         };
-    }, [result]);
+    }, [result, userManager.user?.id]);
 
     useEffect(() => {
         const creationData = createManager.pendingCreationData;
@@ -101,16 +108,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             });
         }
     }, [editorEngine.chat.conversation.current, createManager.pendingCreationData, editorEngine.sandbox.session.session]);
-
-    useEffect(() => {
-        if (
-            tabState === 'reactivated' &&
-            editorEngine.sandbox.session.session &&
-            !editorEngine.sandbox.session.connected()
-        ) {
-            editorEngine.sandbox.session.reconnect();
-        }
-    }, [tabState]);
 
     if (isLoading) {
         return (

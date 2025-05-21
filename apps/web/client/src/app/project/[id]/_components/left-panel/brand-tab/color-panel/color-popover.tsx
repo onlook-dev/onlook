@@ -1,11 +1,12 @@
 'use client';
 
+import { DEFAULT_COLOR_NAME } from '@onlook/constants';
+import type { TailwindColor } from '@onlook/models';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { toNormalCase, type Color } from '@onlook/utility';
 import { useEffect, useState } from 'react';
-import { ColorNameInput } from './color-name-input';
-import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import { ColorPickerContent } from '../../../editor-bar/inputs/color-picker';
+import { ColorNameInput } from './color-name-input';
 
 export const ColorPopover = ({
     color,
@@ -27,7 +28,7 @@ export const ColorPopover = ({
     const [editedColor, setEditedColor] = useState<Color>(color);
     const [editedName, setEditedName] = useState<string>(brandColor);
 
-    const handleColorChange = (newColor: Color) => {
+    const handleColorChange = (newColor: Color | TailwindColor) => {
         setEditedColor(newColor);
     };
 
