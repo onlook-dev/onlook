@@ -1,8 +1,8 @@
-import type { WatchEvent, Watcher, WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxSession, WatchEvent, Watcher } from '@codesandbox/sdk';
 import { FileEventBus } from './file-event-bus';
 
 interface FileWatcherOptions {
-    session: WebSocketSession;
+    session: SandboxSession;
     onFileChange: (event: WatchEvent) => Promise<void>;
     excludePatterns?: string[];
     fileEventBus: FileEventBus;
@@ -10,7 +10,7 @@ interface FileWatcherOptions {
 
 export class FileWatcher {
     private watcher: Watcher | null = null;
-    private readonly session: WebSocketSession;
+    private readonly session: SandboxSession;
     private readonly onFileChange: (event: WatchEvent) => Promise<void>;
     private readonly excludePatterns: string[];
     private readonly eventBus: FileEventBus;
@@ -24,12 +24,12 @@ export class FileWatcher {
 
     async start(): Promise<void> {
         try {
-            const watcher = await this.session.fs.watch('./', {
+            this.watcher = await this.session.fs.watch('./', {
                 recursive: true,
                 excludes: this.excludePatterns,
             });
-            this.watcher = watcher
-            watcher.onEvent(async (event) => {
+
+            this.watcher.onEvent(async (event) => {
                 // Publish the event to all subscribers
                 this.eventBus.publish({
                     type: event.type,
