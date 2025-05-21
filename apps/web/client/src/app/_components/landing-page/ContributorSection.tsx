@@ -33,13 +33,9 @@ const FloatingRings = () => {
                 const filteredContributors = data.filter((contributor: Contributor) => {
                     if (!contributor.avatar_url) return false;
                     
-                    const isDefaultAvatar = 
-                        contributor.avatar_url.includes('no-user-image') || 
-                        contributor.avatar_url.includes('u/') ||
-                        contributor.avatar_url.includes('identicon') ||
-                        contributor.avatar_url.includes('gravatar');
+                    if (contributor.login.includes('[bot]')) return false;
                     
-                    return !isDefaultAvatar;
+                    return true;
                 });
                 setContributors(filteredContributors);
                 setIsLoading(false);
@@ -223,4 +219,4 @@ export function ContributorSection({
             </div>
         </div>
     );
-}     
+}         
