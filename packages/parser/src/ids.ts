@@ -4,7 +4,6 @@ import { isReactFragment } from './helpers';
 import { type NodePath, type t as T, types as t, traverse } from './packages';
 
 export function addOidsToAst(ast: T.File): { ast: T.File; modified: boolean } {
-    console.log('addOidsToAst', ast);
     const oids: Set<string> = new Set();
     let modified = false;
 
@@ -15,12 +14,11 @@ export function addOidsToAst(ast: T.File): { ast: T.File; modified: boolean } {
             }
             const attributes = path.node.attributes;
             const existingOid = getExistingOid(attributes);
-            console.log('existingOid', existingOid);
+
             if (existingOid) {
                 // If the element already has an oid, we need to check if it's unique
                 const { value, index } = existingOid;
                 if (oids.has(value)) {
-                    console.log('oid is not unique', value);
                     // If the oid is not unique, we need to create a new one
                     const newOid = createOid();
                     const attr = attributes[index] as T.JSXAttribute;
@@ -28,7 +26,6 @@ export function addOidsToAst(ast: T.File): { ast: T.File; modified: boolean } {
                     oids.add(newOid);
                     modified = true;
                 } else {
-                    console.log('oid is unique', value);
                     // If the oid is unique, we can add it to the set
                     oids.add(value);
                 }
