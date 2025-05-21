@@ -1,12 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+interface Contributor {
+    login: string;
+    avatar_url: string;
+    id: number;
+}
 
 // Floating Circles: two concentric rings
 const FloatingRings = () => {
     const [isMd, setIsMd] = React.useState(
         typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : false
     );
+    const [contributors, setContributors] = useState<Contributor[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     React.useEffect(() => {
         const media = window.matchMedia('(min-width: 768px)');
@@ -14,6 +22,26 @@ const FloatingRings = () => {
         media.addEventListener('change', listener);
         setIsMd(media.matches);
         return () => media.removeEventListener('change', listener);
+    }, []);
+
+    useEffect(() => {
+        const fetchContributors = async () => {
+            try {
+                const response = await fetch('https://api.github.com/repos/onlook-dev/onlook/contributors?per_page=100');
+                const data = await response.json();
+                
+                const filteredContributors = data.filter((contributor: Contributor) => 
+                    contributor.avatar_url && !contributor.avatar_url.includes('no-user-image')
+                );
+                setContributors(filteredContributors);
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Failed to fetch contributors:', error);
+                setIsLoading(false);
+            }
+        };
+
+        fetchContributors();
     }, []);
 
     // Tighter radii for mobile
@@ -33,17 +61,27 @@ const FloatingRings = () => {
                     const angle = (i / 24) * 2 * Math.PI;
                     const x = center + Math.cos(angle) * innerRadius;
                     const y = center + Math.sin(angle) * innerRadius;
+                    const contributor = !isLoading && contributors[i % contributors.length];
                     return (
                         <div
                             key={`inner-${i}`}
-                            className="absolute rounded-full bg-white/20 border border-white/40 shadow-lg"
+                            className="absolute rounded-full bg-white/20 border border-white/40 shadow-lg overflow-hidden"
                             style={{
                                 width: 56,
                                 height: 56,
                                 left: x - 28,
                                 top: y - 28,
                             }}
-                        />
+                        >
+                            {contributor && (
+                                <img 
+                                    src={contributor.avatar_url} 
+                                    alt={`${contributor.login}'s avatar`} 
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                />
+                            )}
+                        </div>
                     );
                 })}
             </div>
@@ -53,17 +91,28 @@ const FloatingRings = () => {
                     const angle = (i / 30) * 2 * Math.PI;
                     const x = center + Math.cos(angle) * outerRadius;
                     const y = center + Math.sin(angle) * outerRadius;
+                    const contributorIndex = (i + 24) % contributors.length;
+                    const contributor = !isLoading && contributors.length > 0 ? contributors[contributorIndex] : null;
                     return (
                         <div
                             key={`outer-${i}`}
-                            className="absolute rounded-full bg-white/20 border border-white/40 shadow-lg"
+                            className="absolute rounded-full bg-white/20 border border-white/40 shadow-lg overflow-hidden"
                             style={{
                                 width: 56,
                                 height: 56,
                                 left: x - 28,
                                 top: y - 28,
                             }}
-                        />
+                        >
+                            {contributor && (
+                                <img 
+                                    src={contributor.avatar_url} 
+                                    alt={`${contributor.login}'s avatar`} 
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                />
+                            )}
+                        </div>
                     );
                 })}
             </div>
@@ -79,9 +128,33 @@ interface ContributorSectionProps {
 
 export function ContributorSection({
     contributorCount = 9412,
-    githubLink = "#",
+    githubLink = "https://github.com/onlook-dev/onlook",
     discordLink = "#"
 }: ContributorSectionProps) {
+    const [starCount, setStarCount] = useState<string>("0");
+    const [isLoading, setIsLoading] = useState(true);
+
+    const formatStarCount = (count: number): string => {
+        return count.toLocaleString();
+    };
+
+    useEffect(() => {
+        const fetchStarCount = async () => {
+            try {
+                const response = await fetch('https://api.github.com/repos/onlook-dev/onlook');
+                const data = await response.json();
+                setStarCount(formatStarCount(data.stargazers_count));
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Failed to fetch star count:', error);
+                setStarCount(formatStarCount(contributorCount));
+                setIsLoading(false);
+            }
+        };
+
+        fetchStarCount();
+    }, [contributorCount]);
+
     return (
         <div className="relative w-full flex items-center justify-center py-32 mt-8 overflow-hidden">
             {/* Main Contributors Content */}
@@ -106,7 +179,10 @@ export function ContributorSection({
                         }
                     }
                 `}</style>
-                <h2 className="text-foreground-primary text-3xl md:text-4xl font-light text-center mb-2">Supported by You &<br />{contributorCount.toLocaleString()} other contributors</h2>
+                <h2 className="text-foreground-primary text-3xl md:text-4xl font-light text-center mb-2">
+                    Supported by You &<br />
+                    {isLoading ? '...' : starCount} other builders
+                </h2>
                 <p className="text-foreground-secondary text-regular text-center mb-8 max-w-xl">Join our mission and be a part of changing<br />the way people craft software</p>
                 <div className="flex gap-4 flex-col md:flex-row w-full justify-center items-center">
                     <a href={githubLink} className="bg-white text-black font-medium rounded-lg px-6 py-3 flex items-center gap-2 shadow hover:bg-gray-100 transition">
@@ -121,4 +197,4 @@ export function ContributorSection({
             </div>
         </div>
     );
-} 
+}   
