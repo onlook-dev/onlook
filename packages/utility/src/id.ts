@@ -26,7 +26,7 @@ export function getDomId(node: HTMLElement): string | undefined {
 }
 
 /**
- * Shortens a UUID while maintaining uniqueness.
+ * Shortens a UUID; maintains uniqueness probabilistically (collisions are possible).
  */
 
 export function shortenUuid(uuid: string, maxLength: number): string {
