@@ -1,7 +1,8 @@
 import type { WatchEvent } from '@codesandbox/sdk';
-import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { CSS_FILE_EXTENSIONS, IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
+import { isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import { FileEventBus } from './file-event-bus';
@@ -10,7 +11,6 @@ import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
-import { isSubdirectory } from '@onlook/utility';
 export class SandboxManager {
     readonly session: SessionManager = new SessionManager();
     private fileWatcher: FileWatcher | null = null;
@@ -41,8 +41,9 @@ export class SandboxManager {
         const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [
             ...JSX_FILE_EXTENSIONS,
             ...JS_FILE_EXTENSIONS,
-            'css',
+            ...CSS_FILE_EXTENSIONS,
         ]);
+        console.log('files', files);
         for (const file of files) {
             const normalizedPath = normalizePath(file);
             const content = await this.readFile(normalizedPath);
