@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { isSubdirectory } from '../../src/components/store/editor/sandbox/helpers';
 
-// Helper to simulate sandbox root
-const SANDBOX_ROOT = '/project/sandbox';
-
 describe('isSubdirectory', () => {
     test('returns true for direct subdirectory', () => {
         expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['/project/sandbox/foo'])).toBe(true);

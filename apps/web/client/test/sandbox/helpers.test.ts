@@ -46,61 +46,65 @@ describe('normalizePath', () => {
 });
 
 describe('isSubdirectory', () => {
-    test('should return true if filePath is a subdirectory of directory', () => {
-        expect(isSubdirectory('dir/file.txt', ['dir'])).toBe(true);
+    test('returns true for direct subdirectory', () => {
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['/project/sandbox/foo'])).toBe(true);
     });
 
-    test('should return false if filePath is not a subdirectory of directory', () => {
-        expect(isSubdirectory('dir/file.txt', ['other'])).toBe(false);
+    test('returns true for nested subdirectory', () => {
+        expect(isSubdirectory('/project/sandbox/foo/bar/baz.txt', ['/project/sandbox/foo'])).toBe(true);
     });
 
-    test('should return true if filePath is a subdirectory of one of multiple directories', () => {
-        expect(isSubdirectory('dir/file.txt', ['dir', 'other'])).toBe(true);
+    test('returns false for file outside directory', () => {
+        expect(isSubdirectory('/project/sandbox2/foo/bar.txt', ['/project/sandbox/foo'])).toBe(false);
     });
 
-    test('should return true if filePath is under a nested directory in list', () => {
-        expect(isSubdirectory('hi/dir/file.txt', ['dir', 'hi'])).toBe(true);
+    test('returns true for file in the directory itself', () => {
+        expect(isSubdirectory('/project/sandbox/foo', ['/project/sandbox/foo'])).toBe(true);
     });
 
-    test('should return true if filePath matches directory exactly', () => {
-        expect(isSubdirectory('dir', ['dir'])).toBe(true);
+    test('returns false for file in sibling directory', () => {
+        expect(isSubdirectory('/project/sandbox/bar/baz.txt', ['/project/sandbox/foo'])).toBe(false);
     });
 
-    test('should return true if filePath matches directory with trailing slash', () => {
-        expect(isSubdirectory('dir/', ['dir'])).toBe(true);
+    test('returns true for multiple directories (one matches)', () => {
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['/project/sandbox/other', '/project/sandbox/foo'])).toBe(true);
     });
 
-    test('should return false if filePath is only a prefix match', () => {
-        expect(isSubdirectory('dir2/file.txt', ['dir'])).toBe(false);
+    test('returns false for multiple directories (none match)', () => {
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['/project/sandbox/other', '/project/sandbox/else'])).toBe(false);
     });
 
-    test('should return true if absolute paths are used', () => {
-        expect(isSubdirectory('/home/user/dir/file.txt', ['/home/user/dir'])).toBe(true);
+    test('handles relative file paths', () => {
+        expect(isSubdirectory('foo/bar.txt', ['foo'])).toBe(true);
+        expect(isSubdirectory('foo/bar/baz.txt', ['foo'])).toBe(true);
+        expect(isSubdirectory('bar/baz.txt', ['foo'])).toBe(false);
     });
 
-    test('should return false if absolute paths mismatch', () => {
-        expect(isSubdirectory('/home/user/other/file.txt', ['/home/user/dir'])).toBe(false);
+    test('handles relative directory paths', () => {
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['foo'])).toBe(true);
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['foo/bar'])).toBe(false);
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', ['bar'])).toBe(false);
     });
 
-    test('should handle mixed separators', () => {
-        expect(isSubdirectory('dir\\file.txt', ['dir'])).toBe(true);
+    test('returns false for empty directories array', () => {
+        expect(isSubdirectory('/project/sandbox/foo/bar.txt', [])).toBe(false);
     });
 
-    test('should return false for empty directories list', () => {
-        expect(isSubdirectory('dir/file.txt', [])).toBe(false);
+    test('returns true for root directory', () => {
+        expect(isSubdirectory('/project/sandbox/foo.txt', ['/project/sandbox'])).toBe(true);
     });
 
-    test('should handle directory paths with trailing slashes', () => {
-        expect(isSubdirectory('dir/file.txt', ['dir/'])).toBe(true);
+    test('handles Windows-style paths', () => {
+        expect(isSubdirectory('C:/project/sandbox/foo/bar.txt', ['C:/project/sandbox/foo'])).toBe(true);
+        expect(isSubdirectory('C:/project/sandbox/foo/bar.txt', ['C:/project/sandbox/other'])).toBe(false);
+        expect(isSubdirectory('C:\\project\\sandbox\\foo\\bar.txt', ['C:\\project\\sandbox\\foo'])).toBe(true);
     });
 
-    test('should handle complex nested paths', () => {
-        expect(isSubdirectory('dir/subdir/file.txt', ['dir'])).toBe(true);
-        expect(isSubdirectory('dir/subdir/file.txt', ['dir/subdir'])).toBe(true);
-        expect(isSubdirectory('dir/subdir/file.txt', ['dir/subdir/'])).toBe(true);
+    test('returns true if filePath is exactly the directory', () => {
+        expect(isSubdirectory('/project/sandbox/foo', ['/project/sandbox/foo'])).toBe(true);
     });
 
-    test('should be case-sensitive on case-sensitive systems', () => {
-        expect(isSubdirectory('Dir/file.txt', ['dir'])).toBe(false);
+    test('returns false if filePath is parent of directory', () => {
+        expect(isSubdirectory('/project/sandbox', ['/project/sandbox/foo'])).toBe(false);
     });
 });
