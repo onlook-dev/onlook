@@ -1,4 +1,5 @@
 import { CodeSandbox } from '@codesandbox/sdk';
+import { shortenUuid } from '@onlook/utility';
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../trpc';
 
@@ -11,7 +12,7 @@ export const sandboxRouter = createTRPCRouter({
     })).mutation(async ({ input }) => {
         const startData = await sdk.sandboxes.resume(input.sandboxId);
         const session = await startData.createBrowserSession({
-            id: input.userId,
+            id: shortenUuid(input.userId, 20)
         });
         return session;
     }),

@@ -51,6 +51,7 @@ export const projectRouter = createTRPCRouter({
         .input(z.object({ project: projectInsertSchema, userId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db.transaction(async (tx) => {
+                console.log('input.userId', input.userId);
                 // 1. Insert the new project
                 const [newProject] = await tx.insert(projects).values(input.project).returning();
                 if (!newProject) {
