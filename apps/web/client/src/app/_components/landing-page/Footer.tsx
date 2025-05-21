@@ -36,9 +36,12 @@ export function Footer() {
                     <div>
                         <h4 className="text-regularPlus mb-4">Follow Us</h4>
                         <div className="flex gap-6 mt-2">
-                            {[...Array(5)].map((_, i) => (
-                                <Icons.Component key={i} className="w-6 h-6 text-white hover:text-white/70 transition-colors" />
-                            ))}
+                            <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+                                <Icons.GitHubLogo className="w-6 h-6 text-white hover:text-white/70 transition-colors" />
+                            </a>
+                            <a href="https://discord.com" target="_blank" rel="noopener noreferrer">
+                                <Icons.DiscordLogo className="w-6 h-6 text-white hover:text-white/70 transition-colors" />
+                            </a>
                         </div>
                     </div>
                 </div>

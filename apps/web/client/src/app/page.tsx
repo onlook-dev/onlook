@@ -230,7 +230,7 @@ export default function Main() {
                         <div className="flex flex-row items-start gap-8 w-full">
                             {/* Icon + Title */}
                             <div className="flex flex-col items-start w-1/2">
-                            <div className="mb-2"><Icons.Edit className="w-10 h-10 text-foreground-primary" /></div>
+                            <div className="mb-2"><Icons.DirectManipulation className="w-6 h-6 text-foreground-primary" /></div>
                             <span className="text-foreground-primary text-largePlus font-light">Direct editing</span>
                         </div>
                         {/* Description */}
