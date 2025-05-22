@@ -73,7 +73,7 @@ export const BottomBar = observer(() => {
                 >
                     <ToggleGroup
                         type="single"
-                        value={editorEngine.state.editorMode.toString()}
+                        value={editorEngine.state.editorMode}
                         onValueChange={(value) => {
                             if (value) {
                                 editorEngine.state.editorMode = value as EditorMode;
@@ -82,9 +82,9 @@ export const BottomBar = observer(() => {
                     >
                         {toolbarItems.map((item) => (
                             <Tooltip key={item.mode}>
-                                <TooltipTrigger asChild>
+                                <TooltipTrigger >
                                     <ToggleGroupItem
-                                        value={item.mode.toString()}
+                                        value={item.mode}
                                         aria-label={item.hotkey.description}
                                         disabled={item.disabled}
                                         className="hover:text-foreground-hover text-foreground-tertiary"
