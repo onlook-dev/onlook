@@ -1,28 +1,21 @@
 'use client';
 
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Border } from './dropdowns/border';
 import { ColorBackground } from './dropdowns/color-background';
 import { Display } from './dropdowns/display';
 import { Height } from './dropdowns/height';
 import { ImageBackground } from './dropdowns/img-background';
 import { Margin } from './dropdowns/margin';
+import { Opacity } from './dropdowns/opacity';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { Width } from './dropdowns/width';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
-import { Opacity } from './dropdowns/opacity';
-{/*import {
-  FontFamilySelector,
-  FontWeightSelector,
-  FontSizeSelector,
-  TextColor,
-  TextAlignSelector
-} from './text-selected'; */}
-import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 
 const COMPONENT_MAP: { [key: string]: any } = {
     Opacity,
@@ -36,41 +29,35 @@ const COMPONENT_MAP: { [key: string]: any } = {
     ColorBackground,
     ImageBackground,
     ViewButtons,
-    // Typography controls
-    // FontFamily: FontFamilySelector,
-    // FontWeight: FontWeightSelector,
-    // FontSize: FontSizeSelector,
-    // FontColor: TextColor,
-    // TextAlign: TextAlignSelector,
 };
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
-  {
-    key: 'dimensions',
-    label: 'Dimensions',
-    components: ['Width', 'Height'],
-  },
-  {
-    key: 'base',
-    label: 'Base',
-    components: ['ColorBackground', 'Border', 'Radius'],
-  },
-  {
-    key: 'layout',
-    label: 'Layout',
-    components: ['Display', 'Padding', 'Margin'],
-  },
-  {
-    key: 'typography',
-    label: 'Typography',
-    components: ['FontFamily', 'FontWeight', 'FontSize', 'FontColor', 'TextAlign'],
-  },
-  {
-    key: 'opacity',
-    label: 'Opacity',
-    components: ['Opacity'],
-  },
+    {
+        key: 'dimensions',
+        label: 'Dimensions',
+        components: ['Width', 'Height'],
+    },
+    {
+        key: 'base',
+        label: 'Base',
+        components: ['ColorBackground', 'Border', 'Radius'],
+    },
+    {
+        key: 'layout',
+        label: 'Layout',
+        components: ['Display', 'Padding', 'Margin'],
+    },
+    {
+        key: 'typography',
+        label: 'Typography',
+        components: ['FontFamily', 'FontWeight', 'FontSize', 'FontColor', 'TextAlign'],
+    },
+    {
+        key: 'opacity',
+        label: 'Opacity',
+        components: ['Opacity'],
+    },
 ];
 
 export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
@@ -100,7 +87,7 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
     // Update visible count based on available width
     const updateVisibleCount = useCallback(() => {
         if (!groupWidths.length || !availableWidth) return;
-        
+
         const OVERFLOW_BUTTON_WIDTH = 32; // Reduced from 48px
         const MIN_GROUP_WIDTH = 80; // Reduced from 100px
         const SEPARATOR_WIDTH = 8; // Width of the InputSeparator
@@ -110,10 +97,10 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
         for (let i = 0; i < groupWidths.length; i++) {
             const width = groupWidths[i] ?? 0;
             if (width < MIN_GROUP_WIDTH) continue;
-            
+
             // Add separator width if this isn't the first group
             const totalWidth = width + (count > 0 ? SEPARATOR_WIDTH : 0);
-            
+
             if (used + totalWidth <= availableWidth - OVERFLOW_BUTTON_WIDTH) {
                 used += totalWidth;
                 count++;
@@ -121,7 +108,7 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
                 break;
             }
         }
-        
+
         setVisibleCount(count);
     }, [groupWidths, availableWidth]);
 
@@ -185,7 +172,7 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
-                        {overflowGroups.map((group, groupIdx) => (
+                            {overflowGroups.map((group, groupIdx) => (
                                 <React.Fragment key={group.key}>
                                     {groupIdx > 0 && <InputSeparator />}
                                     <div className="flex items-center gap-0.5">

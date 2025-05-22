@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { Input } from "@onlook/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
 import { useEditorEngine } from "@/components/store/editor";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
+import { Input } from "@onlook/ui/input";
+import { useEffect, useRef, useState } from "react";
 import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 
 const OPACITY_PRESETS = [100, 80, 75, 50, 25, 10, 0];
@@ -19,7 +19,7 @@ const useOpacityControl = () => {
             const element = selectedElements[0];
             const currentOpacity = element.styles?.defined?.opacity;
             // Convert opacity from decimal to percentage (e.g., 0.5 -> 50)
-            const opacityPercentage = currentOpacity ? Math.round(parseFloat(currentOpacity) * 100) : 100;
+            const opacityPercentage = (currentOpacity !== undefined && currentOpacity !== null) ? Math.round(parseFloat(currentOpacity) * 100) : 100;
             setOpacity(opacityPercentage);
         } else {
             setOpacity(100);
@@ -93,18 +93,3 @@ export const Opacity = () => {
         </DropdownMenu>
     );
 };
-
-/* Add the following CSS to your global stylesheet (e.g., globals.css):
-input.hide-spin-buttons::-webkit-inner-spin-button,
-input.hide-spin-buttons::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input.hide-spin-buttons[type=number] {
-  -moz-appearance: textfield;
-}
-input.no-focus-ring:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-*/
