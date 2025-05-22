@@ -50,7 +50,7 @@ describe('Prompt', () => {
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
 
-        const message = getHydratedUserMessage('test', '', [
+        const message = getHydratedUserMessage('test', 'test', [
             {
                 path: 'test.txt',
                 content: 'test',

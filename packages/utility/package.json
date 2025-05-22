@@ -33,6 +33,7 @@
     "dependencies": {
         "@onlook/fonts": "*",
         "browser-image-compression": "^2.0.2",
+        "is-subdir": "^1.2.0",
         "normalize-url": "^8.0.1",
         "tldts": "^6.1.82",
         "uuid": "^11.1.0"

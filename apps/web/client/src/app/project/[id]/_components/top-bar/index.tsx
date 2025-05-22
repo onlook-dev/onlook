@@ -2,6 +2,7 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
+import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
@@ -9,23 +10,25 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { useChatContext } from '../../_hooks/use-chat';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 
 export const TopBar = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
+    const { isWaiting } = useChatContext();
 
     const UNDO_REDO_BUTTONS = [
         {
             click: () => editorEngine.action.undo(),
-            isDisabled: !editorEngine.history.canUndo,
+            isDisabled: !editorEngine.history.canUndo || isWaiting,
             hotkey: Hotkey.UNDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1" />,
         },
         {
             click: () => editorEngine.action.redo(),
-            isDisabled: !editorEngine.history.canRedo,
+            isDisabled: !editorEngine.history.canRedo || isWaiting,
             hotkey: Hotkey.REDO,
             icon: <Icons.Reset className="h-4 w-4 mr-1 scale-x-[-1]" />,
         },
@@ -70,25 +73,26 @@ export const TopBar = observer(() => {
                             </Tooltip>
                         ))}
                     </motion.div>
-                    <Tooltip>
+                    {/* TODO: Enable */}
+                    {/* <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-8"
-                                // onClick={() => {
-                                //     editorEngine.settingsTab = SettingsTabValue.VERSIONS;
-                                //     editorEngine.isSettingsOpen = true;
-                                // }}
+                                onClick={() => {
+                                    editorEngine.settingsTab = SettingsTabValue.VERSIONS;
+                                    editorEngine.isSettingsOpen = true;
+                                }}
                             >
                                 <Icons.CounterClockwiseClock className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
-                        {/* Hide version history for now */}
-                        {/* <TooltipContent side="bottom">
+                        <TooltipContent side="bottom">
                             {t('editor.toolbar.versionHistory')}
-                        </TooltipContent> */}
-                    </Tooltip>
+                        </TooltipContent>
+                    </Tooltip> */}
+                    <CurrentUserAvatar className="h-8 w-8 cursor-pointer hover:opacity-80" disableDropdown={true} />
                 </div>
             </div>
         </div>
