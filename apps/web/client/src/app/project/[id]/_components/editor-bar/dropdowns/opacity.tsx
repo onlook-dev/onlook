@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@onlook/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
-import { Icons } from "@onlook/ui/icons";
 import { useEditorEngine } from "@/components/store/editor";
 import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 
@@ -67,7 +66,7 @@ export const Opacity = () => {
                             max={100}
                             value={opacity}
                             onChange={onInputChange}
-                            className="w-12 text-left text-small focus:text-foreground-primary !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary cursor-pointer transition-colors duration-150 hover"
+                            className="w-14 text-left text-small focus:text-foreground-primary !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary cursor-pointer transition-colors duration-150 hover"
                             aria-label="Opacity percentage"
                             onClick={e => e.stopPropagation()} // Prevents dropdown from closing when clicking input
                         />
@@ -77,7 +76,7 @@ export const Opacity = () => {
                     </div>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
-            <DropdownMenuContent align="center" className="mt-1 w-[70px] min-w-[70px] rounded-lg p-1 text-foreground-tertiary">
+            <DropdownMenuContent align="center" className="mt-1 w-[70px] min-w-[40px] rounded-lg p-1 text-foreground-tertiary">
                 {OPACITY_PRESETS.map((preset) => (
                     <DropdownMenuItem
                         key={preset}

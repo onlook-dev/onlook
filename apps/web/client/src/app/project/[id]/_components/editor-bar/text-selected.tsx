@@ -13,8 +13,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useState, useRef, useCallback } from 'react';
-import { convertFontWeight, toNormalCase } from '@onlook/utility';
-import { memo, useEffect, useState } from 'react';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ColorPickerContent } from './inputs/color-picker';
 import { ViewButtons } from './panels/panel-bar/bar';
@@ -41,7 +39,36 @@ import { InputColor } from './inputs/input-color';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
-const FontFamilySelector = memo(({ fontFamily, handleFontFamilyChange }: { fontFamily: string, handleFontFamilyChange: (font: Font) => void }) => {
+// Group definitions for the text-selected toolbar
+export const TEXT_SELECTED_GROUPS = [
+    {
+        key: 'typography',
+        label: 'Typography',
+        components: ['FontFamily', 'FontWeight', 'FontSize', 'TextColor', 'TextAlign', 'AdvancedTypography'],
+    },
+    {
+        key: 'dimensions',
+        label: 'Dimensions',
+        components: ['Width', 'Height'],
+    },
+    {
+        key: 'base',
+        label: 'Base',
+        components: ['ColorBackground', 'Border', 'Radius'],
+    },
+    {
+        key: 'layout',
+        label: 'Layout',
+        components: ['Display', 'Padding', 'Margin'],
+    },
+    {
+        key: 'opacity',
+        label: 'Opacity',
+        components: ['Opacity'],
+    },
+];
+
+const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
     const editorEngine = useEditorEngine();
     const [fonts, setFonts] = useState<Font[]>([]);
     const [search, setSearch] = useState('');
@@ -92,7 +119,7 @@ const FontFamilySelector = memo(({ fontFamily, handleFontFamilyChange }: { fontF
                             tabIndex={0}
                             onClick={handleClose}
                         >
-                            <span className="truncate text-smallPlus">{toNormalCase(fontFamily)}</span>
+                            <span className="truncate text-sm">{toNormalCase(fontFamily)}</span>
                         </Button>
                     </PopoverTrigger>
                 </TooltipTrigger>
@@ -113,20 +140,6 @@ const FontFamilySelector = memo(({ fontFamily, handleFontFamilyChange }: { fontF
                         className="h-7 w-7 rounded-md hover:bg-background-secondary"
                         onClick={handleClose}
                     >
-<<<<<<< HEAD
-<span className="text-smallPlus" style={{ fontFamily: font.family }}>
-    {font.family}
-</span>
-{
-    fontFamily === font.family && (
-        <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />
-    )
-}
-                    </DropdownMenuItem >
-                ))}
-            </DropdownMenuContent >
-        </DropdownMenu >
-=======
                         <Icons.CrossS className="h-4 w-4" />
                     </Button>
                 </div>
@@ -187,7 +200,6 @@ const FontFamilySelector = memo(({ fontFamily, handleFontFamilyChange }: { fontF
                 </div>
             </PopoverContent>
         </Popover>
->>>>>>> main
     );
 });
 
@@ -377,14 +389,9 @@ const TextAlignSelector = memo(
                     <DropdownMenuItem
                         key={value}
                         onClick={() => handleTextAlignChange(value)}
-<<<<<<< HEAD
-                        className={`text-foreground-primary data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
-                            ? 'bg-background-tertiary/20 border-border border text-foreground-primary data-[highlighted]:text-foreground-primary'
-=======
                         className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
                             textAlign === value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
->>>>>>> main
                             : ''
                             }`}
                     >
@@ -448,56 +455,6 @@ const TextColor = memo(
 
 TextColor.displayName = 'TextColor';
 
-<<<<<<< HEAD
-const COMPONENT_MAP: { [key: string]: any } = {
-    Opacity,
-    Width,
-    Height,
-    FontFamily: FontFamilySelector,
-    FontWeight: FontWeightSelector,
-    FontSize: FontSizeSelector,
-    TextColor: TextColor,
-    TextAlign: TextAlignSelector,
-    Display,
-    Padding,
-    Margin,
-    Radius,
-    Border,
-    ColorBackground,
-    ViewButtons,
-};
-
-// Group definitions for the text-selected toolbar
-export const TEXT_SELECTED_GROUPS = [
-    {
-        key: 'dimensions',
-        label: 'Dimensions',
-        components: ['Width', 'Height'],
-    },
-    {
-        key: 'typography',
-        label: 'Typography',
-        components: ['FontFamily', 'FontWeight', 'FontSize', 'TextColor', 'TextAlign'],
-    },
-    {
-        key: 'base',
-        label: 'Base',
-        components: ['ColorBackground', 'Border', 'Radius'],
-    },
-    {
-        key: 'layout',
-        label: 'Layout',
-        components: ['Display', 'Padding', 'Margin'],
-    },
-    {
-        key: 'opacity',
-        label: 'Opacity',
-        components: ['Opacity'],
-    },
-];
-
-export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
-=======
 const AdvancedTypography = () => {
     const {
         textState,
@@ -615,84 +572,14 @@ const AdvancedTypography = () => {
     );
 }
 
-export const TextSelected = () => {
->>>>>>> main
+export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
     const {
         textState,
         handleFontSizeChange,
         handleFontWeightChange,
         handleTextAlignChange,
         handleTextColorChange,
-        handleFontFamilyChange,
     } = useTextControl();
-
-    // Helper to render components with correct props
-    function renderComponent(compKey: string) {
-        switch (compKey) {
-            case 'FontFamily':
-                return (
-                    <FontFamilySelector
-                        key="FontFamily"
-                        fontFamily={textState.fontFamily}
-                        handleFontFamilyChange={handleFontFamilyChange}
-                    />
-                );
-            case 'FontWeight':
-                return (
-                    <FontWeightSelector
-                        key="FontWeight"
-                        fontWeight={textState.fontWeight}
-                        handleFontWeightChange={handleFontWeightChange}
-                    />
-                );
-            case 'FontSize':
-                return (
-                    <FontSizeSelector
-                        key="FontSize"
-                        fontSize={textState.fontSize}
-                        handleFontSizeChange={handleFontSizeChange}
-                    />
-                );
-            case 'TextColor':
-                return (
-                    <TextColor
-                        key="TextColor"
-                        handleTextColorChange={handleTextColorChange}
-                        textColor={textState.textColor}
-                    />
-                );
-            case 'TextAlign':
-                return (
-                    <TextAlignSelector
-                        key="TextAlign"
-                        textAlign={textState.textAlign}
-                        handleTextAlignChange={handleTextAlignChange}
-                    />
-                );
-            case 'Opacity':
-                return <Opacity key="Opacity" />;
-            case 'Width':
-                return <Width key="Width" />;
-            case 'Height':
-                return <Height key="Height" />;
-            case 'ColorBackground':
-                return <ColorBackground key="ColorBackground" />;
-            case 'Border':
-                return <Border key="Border" />;
-            case 'Radius':
-                return <Radius key="Radius" />;
-            case 'Display':
-                return <Display key="Display" />;
-            case 'Padding':
-                return <Padding key="Padding" />;
-            case 'Margin':
-                return <Margin key="Margin" />;
-            case 'ViewButtons':
-                return <ViewButtons key="ViewButtons" />;
-            default:
-                return null;
-        }
-    }
 
     const groupRefs = useRef<(HTMLDivElement | null)[]>([]);
     const [groupWidths, setGroupWidths] = useState<number[]>([]);
@@ -758,8 +645,47 @@ export const TextSelected = () => {
     const visibleGroups = TEXT_SELECTED_GROUPS.slice(0, visibleCount);
     const overflowGroups = TEXT_SELECTED_GROUPS.slice(visibleCount);
 
+    // Create component map with current textState and handlers
+    const COMPONENT_MAP: { [key: string]: React.ComponentType<any> } = {
+        Opacity,
+        Width,
+        Height,
+        FontFamily: () => <FontFamilySelector fontFamily={textState.fontFamily} />,
+        FontWeight: () => (
+            <FontWeightSelector
+                fontWeight={textState.fontWeight}
+                handleFontWeightChange={handleFontWeightChange}
+            />
+        ),
+        FontSize: () => (
+            <FontSizeSelector
+                fontSize={textState.fontSize}
+                handleFontSizeChange={handleFontSizeChange}
+            />
+        ),
+        TextColor: () => (
+            <TextColor
+                handleTextColorChange={handleTextColorChange}
+                textColor={textState.textColor}
+            />
+        ),
+        TextAlign: () => (
+            <TextAlignSelector
+                textAlign={textState.textAlign}
+                handleTextAlignChange={handleTextAlignChange}
+            />
+        ),
+        AdvancedTypography: () => <AdvancedTypography />,
+        Display,
+        Padding,
+        Margin,
+        Radius,
+        Border,
+        ColorBackground,
+        ViewButtons,
+    };
+
     return (
-<<<<<<< HEAD
         <>
             {/* Hidden measurement container */}
             <div style={{ position: 'absolute', visibility: 'hidden', height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
@@ -769,78 +695,58 @@ export const TextSelected = () => {
                         className="flex items-center justify-center gap-0.5"
                         ref={el => { groupRefs.current[groupIdx] = el; }}
                     >
-                        {group.components.map((compKey, idx) => renderComponent(compKey))}
+                        {group.components.map((compKey, idx) => {
+                            const Comp = COMPONENT_MAP[compKey];
+                            return Comp ? <Comp key={compKey + idx} /> : null;
+                        })}
                     </div>
                 ))}
-=======
-        <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
-                    <div className="flex items-center gap-0.5">
-                        <FontFamilySelector fontFamily={textState.fontFamily} />
-                        <InputSeparator />
-                        <FontWeightSelector
-                            fontWeight={textState.fontWeight}
-                            handleFontWeightChange={handleFontWeightChange}
-                        />
-                        <InputSeparator />
-                        <FontSizeSelector
-                            fontSize={textState.fontSize}
-                            handleFontSizeChange={handleFontSizeChange}
-                        />
-                        <InputSeparator />
-                        <TextColor
-                            handleTextColorChange={handleTextColorChange}
-                            textColor={textState.textColor}
-                        />
-                        <TextAlignSelector
-                            textAlign={textState.textAlign}
-                            handleTextAlignChange={handleTextAlignChange}
-                        />
-                        <InputSeparator />
-                        <AdvancedTypography />
-                        <ViewButtons />
->>>>>>> main
-                    </div>
-                    <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
-                        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
-                            {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
-                                groupIdx < visibleCount ? (
-                                    <React.Fragment key={group.key}>
-                                        {groupIdx > 0 && <InputSeparator />}
-                                        <div className="flex items-center justify-center gap-0.5">
-                                            {group.components.map((compKey, idx) => renderComponent(compKey))}
-                                        </div>
-                                    </React.Fragment>
-                                ) : null
+            </div>
+            <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
+                {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
+                    groupIdx < visibleCount ? (
+                        <React.Fragment key={group.key}>
+                            {groupIdx > 0 && <InputSeparator />}
+                            <div className="flex items-center justify-center gap-0.5">
+                                {group.components.map((compKey, idx) => {
+                                    const Comp = COMPONENT_MAP[compKey];
+                                    return Comp ? <Comp key={compKey + idx} /> : null;
+                                })}
+                            </div>
+                        </React.Fragment>
+                    ) : null
+                ))}
+                <InputSeparator />
+                {overflowGroups.length > 0 && (
+                    <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="toolbar"
+                                className="w-8 h-8 flex items-center justify-center"
+                                aria-label="Show more toolbar controls"
+                            >
+                                <Icons.DotsHorizontal className="w-5 h-5" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
+                            {overflowGroups.map((group, groupIdx) => (
+                                <React.Fragment key={group.key}>
+                                    {groupIdx > 0 && <InputSeparator />}
+                                    <div className="flex items-center gap-0.5">
+                                        {group.components.map((compKey, idx) => {
+                                            const Comp = COMPONENT_MAP[compKey];
+                                            return Comp ? <Comp key={compKey + idx} /> : null;
+                                        })}
+                                    </div>
+                                </React.Fragment>
                             ))}
-                            <InputSeparator />
-                            {overflowGroups.length > 0 && (
-                                <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="toolbar"
-                                            className="w-8 h-8 flex items-center justify-center"
-                                            aria-label="Show more toolbar controls"
-                                        >
-                                            <Icons.DotsHorizontal className="w-5 h-5" />
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
-                                        {overflowGroups.map((group, groupIdx) => (
-                                            <React.Fragment key={group.key}>
-                                                {groupIdx > 0 && <InputSeparator />}
-                                                <div className="flex items-center gap-0.5">
-                                                    {group.components.map((compKey, idx) => renderComponent(compKey))}
-                                                </div>
-                                            </React.Fragment>
-                                        ))}
-                                    </PopoverContent>
-                                </Popover>
-                            )}
-                        </div>
-                    </div>
-                </>
-                );
+                        </PopoverContent>
+                    </Popover>
+                )}
+            </div>
+        </>
+    );
 };
 
-                export {FontFamilySelector, FontWeightSelector, FontSizeSelector, TextColor, TextAlignSelector};
+export { FontFamilySelector, FontWeightSelector, FontSizeSelector, TextColor, TextAlignSelector };

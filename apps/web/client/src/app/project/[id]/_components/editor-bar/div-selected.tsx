@@ -12,13 +12,13 @@ import { Width } from './dropdowns/width';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
 import { Opacity } from './dropdowns/opacity';
-import {
+{/*import {
   FontFamilySelector,
   FontWeightSelector,
   FontSizeSelector,
   TextColor,
   TextAlignSelector
-} from './text-selected';
+} from './text-selected'; */}
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Button } from '@onlook/ui/button';
@@ -37,11 +37,11 @@ const COMPONENT_MAP: { [key: string]: any } = {
     ImageBackground,
     ViewButtons,
     // Typography controls
-    FontFamily: FontFamilySelector,
-    FontWeight: FontWeightSelector,
-    FontSize: FontSizeSelector,
-    FontColor: TextColor,
-    TextAlign: TextAlignSelector,
+    // FontFamily: FontFamilySelector,
+    // FontWeight: FontWeightSelector,
+    // FontSize: FontSizeSelector,
+    // FontColor: TextColor,
+    // TextAlign: TextAlignSelector,
 };
 
 // Group definitions for the div-selected toolbar
@@ -171,7 +171,7 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
                         </React.Fragment>
                     ) : null
                 ))}
-                <InputSeparator />
+                {overflowGroups.length > 0 && visibleCount > 0 && <InputSeparator />}
                 {overflowGroups.length > 0 && (
                     <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
                         <PopoverTrigger asChild>
