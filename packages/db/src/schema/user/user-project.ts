@@ -1,15 +1,16 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, primaryKey, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { projects } from '../project';
 import { users } from './user';
 
 export const userProjects = pgTable("user_projects", {
-    id: uuid("id").primaryKey(),
     userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
     projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade", onUpdate: "cascade" }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-}).enableRLS();
+}, (table) => ([
+    primaryKey({ columns: [table.userId, table.projectId] }),
+])).enableRLS();
 
 export const userProjectsRelations = relations(userProjects, ({ one }) => ({
     user: one(users, {

@@ -9,7 +9,6 @@ export const userSettings = pgTable("user_settings", {
     userId: uuid("user_id")
         .notNull()
         .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
-
     autoApplyCode: boolean("auto_apply_code").notNull().default(true),
     expandCodeBlocks: boolean("expand_code_blocks").notNull().default(true),
     showSuggestions: boolean("show_suggestions").notNull().default(true),
