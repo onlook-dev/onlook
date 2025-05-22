@@ -1,6 +1,7 @@
+'use client';
+
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
-import type { DropElementProperties } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
@@ -9,9 +10,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-
-// import Terminal from './Terminal';
 
 const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
     {
@@ -55,43 +53,6 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
 export const BottomBar = observer(() => {
     const t = useTranslations();
     const editorEngine = useEditorEngine();
-    const [mode, setMode] = useState<EditorMode>(editorEngine.state.editorMode);
-    const [terminalHidden, setTerminalHidden] = useState(true);
-
-    const createDragPreview = (properties: DropElementProperties): HTMLElement => {
-        const preview = document.createElement('div');
-        Object.assign(preview.style, {
-            width: '100px',
-            height: '100px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            ...properties.styles,
-        });
-
-        if (properties.textContent) {
-            preview.textContent = properties.textContent;
-        }
-
-        return preview;
-    };
-
-    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, mode: EditorMode) => {
-        // const properties = editorEngine.insert.getDefaultProperties(mode);
-        // e.dataTransfer.setData('text/plain', mode);
-        // e.dataTransfer.setData('application/json', JSON.stringify(properties));
-        // e.dataTransfer.effectAllowed = 'copy';
-        // editorEngine.state.editorMode = mode;
-        // // Disable pointer-events on webviews during drag
-        // for (const frameView of editorEngine.frames.webviews.values()) {
-        //     frameView.frameView.style.pointerEvents = 'none';
-        // }
-        // const dragPreview = createDragPreview(properties);
-        // document.body.appendChild(dragPreview);
-        // e.dataTransfer.setDragImage(dragPreview, 50, 50);
-        // setTimeout(() => document.body.removeChild(dragPreview), 0);
-    };
-
     const toolbarItems = TOOLBAR_ITEMS({ t });
 
     return (
@@ -110,84 +71,33 @@ export const BottomBar = observer(() => {
                         damping: 25,
                     }}
                 >
-                    {terminalHidden ? (
-                        <motion.div layout className="flex items-center gap-1">
-                            <ToggleGroup
-                                type="single"
-                                value={mode}
-                                onValueChange={(value) => {
-                                    if (value) {
-                                        editorEngine.state.editorMode = value as EditorMode;
-                                        setMode(value as EditorMode);
-                                    }
-                                }}
-                            >
-                                {toolbarItems.map((item) => (
-                                    <Tooltip key={item.mode}>
-                                        <TooltipTrigger asChild>
-                                            <div
-                                                draggable={item.draggable}
-                                                onDragStart={(e) => handleDragStart(e, item.mode)}
-                                            >
-                                                <ToggleGroupItem
-                                                    value={item.mode}
-                                                    aria-label={item.hotkey.description}
-                                                    disabled={item.disabled}
-                                                    className="hover:text-foreground-hover text-foreground-tertiary"
-                                                >
-                                                    <item.icon />
-                                                </ToggleGroupItem>
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <HotkeyLabel hotkey={item.hotkey} />
-                                        </TooltipContent>
-                                    </Tooltip>
-                                ))}
-                            </ToggleGroup>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={() => setTerminalHidden(!terminalHidden)}
-                                        className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-md"
+                    <ToggleGroup
+                        type="single"
+                        value={editorEngine.state.editorMode}
+                        onValueChange={(value) => {
+                            if (value) {
+                                editorEngine.state.editorMode = value as EditorMode;
+                            }
+                        }}
+                    >
+                        {toolbarItems.map((item) => (
+                            <Tooltip key={item.mode}>
+                                <TooltipTrigger >
+                                    <ToggleGroupItem
+                                        value={item.mode}
+                                        aria-label={item.hotkey.description}
+                                        disabled={item.disabled}
+                                        className="hover:text-foreground-hover text-foreground-tertiary"
                                     >
-                                        <Icons.Terminal />
-                                    </button>
+                                        <item.icon />
+                                    </ToggleGroupItem>
                                 </TooltipTrigger>
-                                <TooltipContent>Toggle Terminal</TooltipContent>
+                                <TooltipContent>
+                                    <HotkeyLabel hotkey={item.hotkey} />
+                                </TooltipContent>
                             </Tooltip>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            layout
-                            className="flex items-center justify-between w-full mb-1"
-                        >
-                            <motion.span
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.7 }}
-                                className="text-small text-foreground-secondary ml-2 select-none"
-                            >
-                                Terminal
-                            </motion.span>
-                            <div className="flex items-center gap-1">
-                                <motion.div layout>{/* <RunButton /> */}</motion.div>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <button
-                                            onClick={() => setTerminalHidden(!terminalHidden)}
-                                            className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-lg"
-                                        >
-                                            <Icons.ChevronDown />
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Toggle Terminal</TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </motion.div>
-                    )}
-                    {/* <Terminal hidden={terminalHidden} /> */}
+                        ))}
+                    </ToggleGroup>
                 </motion.div>
             )}
         </AnimatePresence>
