@@ -4,7 +4,7 @@ import { useEditorEngine } from "@/components/store/editor";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
 import { Input } from "@onlook/ui/input";
 import { useEffect, useRef, useState } from "react";
-import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
+import { HoverOnlyTooltip } from "../hover-tooltip";
 
 const OPACITY_PRESETS = [100, 80, 75, 50, 25, 10, 0];
 

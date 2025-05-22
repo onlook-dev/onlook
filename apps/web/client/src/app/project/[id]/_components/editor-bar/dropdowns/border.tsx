@@ -11,7 +11,7 @@ import { Icons } from "@onlook/ui/icons";
 import { Color } from "@onlook/utility";
 import { useEffect, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
-import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
+import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputColor } from "../inputs/input-color";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";

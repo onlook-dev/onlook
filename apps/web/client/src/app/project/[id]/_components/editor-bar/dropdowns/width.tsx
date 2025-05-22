@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/
 import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
 import { useDimensionControl } from '../hooks/use-dimension-control';
-import { HoverOnlyTooltip } from '../HoverOnlyTooltip';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
 
 export const Width = () => {

@@ -17,6 +17,11 @@ const TAG_TYPES: Record<string, string[]> = {
 } as const;
 
 const getSelectedTag = (selected: DomElement[]): 'div' | 'text' | 'image' | 'video' => {
+    // TODO: Test
+    return 'text';
+    // Remove
+
+
     if (selected.length === 0) {
         return 'div';
     }
