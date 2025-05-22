@@ -5,6 +5,7 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
+import { useUserManager } from '@/components/store/user';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
@@ -24,30 +25,16 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
     const createManager = useCreateManager();
+    const userManager = useUserManager();
+    const { sendMessages } = useChatContext();
+
     const { tabState } = useTabActive();
     const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
     const leftPanelRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null);
-    const [center, setCenter] = useState<number | null>(null);
-    const { sendMessages } = useChatContext();
-
-    useEffect(() => {
-        setTimeout(() => {
-            updateCenter();
-        }, 100);
-        window.addEventListener('resize', updateCenter);
-        return () => {
-            window.removeEventListener('resize', updateCenter);
-        };
-    }, []);
-
-    function updateCenter() {
-        const left = leftPanelRef.current?.getBoundingClientRect();
-        const right = rightPanelRef.current?.getBoundingClientRect();
-        if (left && right) {
-            setCenter(left.right + (right.left - left.right) / 2);
-        }
-    }
+    const [toolbarLeft, setToolbarLeft] = useState<number>(0);
+    const [toolbarRight, setToolbarRight] = useState<number>(0);
+    const [editorBarAvailableWidth, setEditorBarAvailableWidth] = useState<number>(0);
 
     useEffect(() => {
         if (!result) {
@@ -103,6 +90,50 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     }, [editorEngine.chat.conversation.current, createManager.pendingCreationData, editorEngine.sandbox.session.session]);
 
     useEffect(() => {
+        function measure() {
+            const left = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
+            const right = window.innerWidth - (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
+            setToolbarLeft(left);
+            setToolbarRight(right);
+            setEditorBarAvailableWidth(window.innerWidth - left - right);
+        }
+        // Initial measure after DOM paint
+        requestAnimationFrame(measure);
+
+        // Poll until both panels are rendered and positioned
+        let pollInterval: NodeJS.Timeout | null = null;
+        pollInterval = setInterval(() => {
+            const left = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
+            const right = window.innerWidth - (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
+            if (left > 0 && right > 0) {
+                measure();
+                if (pollInterval) clearInterval(pollInterval);
+            }
+        }, 30);
+
+        window.addEventListener('resize', measure);
+
+        // ResizeObservers for left and right panels
+        let leftObserver: ResizeObserver | null = null;
+        let rightObserver: ResizeObserver | null = null;
+        if (leftPanelRef.current) {
+            leftObserver = new ResizeObserver(measure);
+            leftObserver.observe(leftPanelRef.current);
+        }
+        if (rightPanelRef.current) {
+            rightObserver = new ResizeObserver(measure);
+            rightObserver.observe(rightPanelRef.current);
+        }
+
+        return () => {
+            window.removeEventListener('resize', measure);
+            if (leftObserver) leftObserver.disconnect();
+            if (rightObserver) rightObserver.disconnect();
+            if (pollInterval) clearInterval(pollInterval);
+        };
+    }, []);
+
+    useEffect(() => {
         if (
             tabState === 'reactivated' &&
             editorEngine.sandbox.session.session &&
@@ -155,12 +186,23 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     <LeftPanel />
                 </div>
 
-                {/* Centered EditorBar */}
+                {/* EditorBar anchored between panels */}
                 <div
                     className="absolute top-10 z-49"
-                    style={{ left: center ? center : '40%', transform: 'translateX(-50%)' }}
+                    style={{
+                        left: toolbarLeft,
+                        right: toolbarRight,
+                        overflow: 'hidden',
+                        pointerEvents: 'none',
+                        maxWidth: editorBarAvailableWidth,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'flex-start',
+                    }}
                 >
-                    <EditorBar />
+                    <div style={{ pointerEvents: 'auto' }}>
+                        <EditorBar availableWidth={editorBarAvailableWidth} />
+                    </div>
                 </div>
 
                 {/* Right Panel */}

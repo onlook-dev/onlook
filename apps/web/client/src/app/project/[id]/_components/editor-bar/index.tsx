@@ -32,7 +32,7 @@ const getSelectedTag = (selected: DomElement[]): 'div' | 'text' | 'image' | 'vid
     return 'div';
 };
 
-export const EditorBar = observer(() => {
+export const EditorBar = observer(({ availableWidth }: { availableWidth?: number }) => {
     const editorEngine = useEditorEngine();
     const selectedTag = getSelectedTag(editorEngine.elements.selected);
 
@@ -42,7 +42,7 @@ export const EditorBar = observer(() => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className={cn(
-                "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50",
+                "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden",
                 editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
             )}
             transition={{
@@ -53,8 +53,8 @@ export const EditorBar = observer(() => {
                 damping: 25,
             }}
         >
-            {selectedTag === 'text' && <TextSelected />}
-            {selectedTag === 'div' && <DivSelected />}
+            {selectedTag === 'text' && <TextSelected availableWidth={availableWidth} />}
+            {selectedTag === 'div' && <DivSelected availableWidth={availableWidth} />}
             {selectedTag === 'image' && <ImgSelected />}
         </motion.div>
     );

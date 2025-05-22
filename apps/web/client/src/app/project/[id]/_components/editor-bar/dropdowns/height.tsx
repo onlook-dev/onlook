@@ -28,7 +28,7 @@ export const Height = () => {
                             ) && (
                                 <span className="text-small">
                                     {dimensionState.height.unit === 'px'
-                                        ? dimensionState.height.num
+                                        ? Math.round(dimensionState.height.num ?? 0)
                                         : dimensionState.height.value}
                                 </span>
                             )}
