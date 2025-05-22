@@ -49,6 +49,12 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             label: 'editor.panels.layers.tabs.apps',
             disabled: true,
         },
+        {
+            value: LeftPanelTabValue.COMPONENTS,
+            icon: <Icons.Component className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.components',
+            disabled: true,
+        },
     ];
 
 export const LeftPanel = observer(() => {
