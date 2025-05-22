@@ -33,15 +33,15 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hi
         //     hidden: false,
         // },
         {
-            value: LeftPanelTabValue.WINDOWS,
-            icon: <Icons.Desktop className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.windows.name',
-            hidden: false,
-        },
-        {
             value: LeftPanelTabValue.BRAND,
             icon: <Icons.Brand className="w-5 h-5" />,
             label: 'editor.panels.layers.tabs.brand',
+            hidden: false,
+        },
+        {
+            value: LeftPanelTabValue.WINDOWS,
+            icon: <Icons.Desktop className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.windows.name',
             hidden: false,
         },
         // {
