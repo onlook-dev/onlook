@@ -1,11 +1,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { DeviceSettings } from './device-settings';
-import { FrameDimensions } from './frame-dimensions';
 
 export const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -24,7 +21,6 @@ export const WindowsTab = observer(() => {
             </p>
         );
     }
-
 
     return (
         <div className={`${WIDTH} flex flex-col gap-3 p-4`}>
@@ -48,9 +44,9 @@ export const WindowsTab = observer(() => {
                 </Button>
             </div>
 
-            <FrameDimensions frame={frameData} />
+            {/* <FrameDimensions frame={frameData} />
             <Separator />
-            <DeviceSettings frame={frameData} />
+            <DeviceSettings frame={frameData} /> */}
         </div>
     );
 });
