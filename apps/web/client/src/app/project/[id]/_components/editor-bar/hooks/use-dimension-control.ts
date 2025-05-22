@@ -49,25 +49,40 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
     const editorEngine = useEditorEngine();
 
     const getInitialState = useCallback((): DimensionStateMap<T> => {
-        const computedStyles = editorEngine.style.selectedStyle?.styles.computed;
-        if (!computedStyles) {
+        const definedStyles = editorEngine.style.selectedStyle?.styles.defined;
+        if (!definedStyles) {
             return createDefaultState(dimension);
         }
-        const { num, unit } = stringToParsedValue(computedStyles[dimension]?.toString() ?? '--');
-        const { num: maxNum, unit: maxUnit } = stringToParsedValue(
-            computedStyles[
-                `max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties
-            ]?.toString() ?? '--',
-        );
-        const { num: minNum, unit: minUnit } = stringToParsedValue(
-            computedStyles[
-                `min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties
-            ]?.toString() ?? '--',
-        );
+
+        const dimensionValue = definedStyles[dimension]?.toString() ?? '--';
+        const { num, unit } = stringToParsedValue(dimensionValue);
+
+        const maxDimensionKey = `max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties;
+        const maxDimensionValue = definedStyles[maxDimensionKey]?.toString() ?? '--';
+        const { num: maxNum, unit: maxUnit } = stringToParsedValue(maxDimensionValue);
+
+        const minDimensionKey = `min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties;
+        const minDimensionValue = definedStyles[minDimensionKey]?.toString() ?? '--';
+        const { num: minNum, unit: minUnit } = stringToParsedValue(minDimensionValue);
 
         const defaultState = createDefaultState(dimension);
-        const capitalized = (dimension.charAt(0).toUpperCase() +
-            dimension.slice(1)) as Capitalize<T>;
+        const capitalized = (dimension.charAt(0).toUpperCase() + dimension.slice(1)) as Capitalize<T>;
+
+        const getDropdownValue = (value: string) => {
+            const { mode } = parseModeAndValue(value);
+            switch (mode) {
+                case LayoutMode.Fit:
+                    return 'Hug';
+                case LayoutMode.Fill:
+                    return 'Fill';
+                case LayoutMode.Relative:
+                    return 'Relative';
+                case LayoutMode.Fixed:
+                    return 'Fixed';
+                default:
+                    return 'Fixed';
+            }
+        };
 
         return {
             ...defaultState,
@@ -75,19 +90,19 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
                 num: num,
                 unit: unit,
                 value: num ? `${num}${unit}` : 'auto',
-                dropdownValue: num ? 'Fixed' : 'Hug',
+                dropdownValue: getDropdownValue(dimensionValue),
             },
             [`max${capitalized}`]: {
                 num: maxNum,
                 unit: maxUnit,
                 value: maxNum ? `${maxNum}${maxUnit}` : '--',
-                dropdownValue: 'Fixed',
+                dropdownValue: getDropdownValue(maxDimensionValue),
             },
             [`min${capitalized}`]: {
                 num: minNum,
                 unit: minUnit,
                 value: minNum ? `${minNum}${minUnit}` : '--',
-                dropdownValue: 'Fixed',
+                dropdownValue: getDropdownValue(minDimensionValue),
             },
         } as DimensionStateMap<T>;
     }, [dimension, editorEngine.style.selectedStyle]);

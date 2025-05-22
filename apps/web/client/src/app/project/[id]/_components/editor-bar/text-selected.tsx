@@ -1,6 +1,9 @@
 'use client';
 
+import { useEditorEngine } from '@/components/store/editor';
 import { VARIANTS } from '@onlook/fonts';
+import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
+import type { Font } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,31 +14,26 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
-import { memo, useEffect, useState, useRef, useCallback } from 'react';
-import { useTextControl, type TextAlign } from './hooks/use-text-control';
-import { ColorPickerContent } from './inputs/color-picker';
-import { ViewButtons } from './panels/panel-bar/bar';
-import { InputSeparator } from './separator';
-import { useEditorEngine } from '@/components/store/editor';
-import type { Font } from '@onlook/models/assets';
-import { useColorUpdate } from './hooks/use-color-update';
-import { Height } from './dropdowns/height';
-import { Width } from './dropdowns/width';
-import { Opacity } from './dropdowns/opacity';
-import { Display } from './dropdowns/display';
-import { Padding } from './dropdowns/padding';
-import { Margin } from './dropdowns/margin';
-import { Radius } from './dropdowns/radius';
+import { convertFontWeight, toNormalCase } from '@onlook/utility';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { FontFamily } from '../left-panel/brand-tab/font-panel/font-family';
 import { Border } from './dropdowns/border';
 import { ColorBackground } from './dropdowns/color-background';
-import React from 'react';
-import { baseKeymap } from 'prosemirror-commands';
-import { FontFamily } from '../left-panel/brand-tab/font-panel/font-family';
-import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
+import { Display } from './dropdowns/display';
+import { Height } from './dropdowns/height';
+import { Margin } from './dropdowns/margin';
+import { Opacity } from './dropdowns/opacity';
+import { Padding } from './dropdowns/padding';
+import { Radius } from './dropdowns/radius';
+import { Width } from './dropdowns/width';
+import { useColorUpdate } from './hooks/use-color-update';
+import { useTextControl, type TextAlign } from './hooks/use-text-control';
+import { ColorPickerContent } from './inputs/color-picker';
+import { InputColor } from './inputs/input-color';
 import { InputIcon } from './inputs/input-icon';
 import { InputRadio } from './inputs/input-radio';
-import { InputColor } from './inputs/input-color';
+import { ViewButtons } from './panels/panel-bar/bar';
+import { InputSeparator } from './separator';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
@@ -240,8 +238,8 @@ const FontWeightSelector = memo(
                         key={weight.value}
                         onClick={() => handleFontWeightChange(weight.value)}
                         className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontWeight === weight.value
-                                ? 'bg-background-tertiary/20 border-border border text-white'
-                                : ''
+                            ? 'bg-background-tertiary/20 border-border border text-white'
+                            : ''
                             }`}
                     >
                         {weight.name}
@@ -265,12 +263,24 @@ const FontSizeSelector = memo(
         fontSize: number;
         handleFontSizeChange: (size: number) => void;
     }) => {
+        const [open, setOpen] = useState(false);
+        const inputRef = useRef<HTMLInputElement>(null);
+
         const adjustFontSize = (amount: number) => {
             handleFontSizeChange(Math.max(1, fontSize + amount));
         };
 
+        const handleInputClick = () => {
+            setOpen(true);
+            // Use setTimeout to ensure the input is focused after the popover opens
+            setTimeout(() => {
+                inputRef.current?.focus();
+                inputRef.current?.select();
+            }, 0);
+        };
+
         return (
-            <DropdownMenu>
+            <Popover open={open} onOpenChange={setOpen}>
                 <Tooltip>
                     <div>
                         <TooltipTrigger asChild>
@@ -283,8 +293,9 @@ const FontSizeSelector = memo(
                                 >
                                     <Icons.Minus className="h-4 w-4" />
                                 </Button>
-                                <DropdownMenuTrigger asChild>
+                                <PopoverTrigger asChild>
                                     <input
+                                        ref={inputRef}
                                         type="number"
                                         value={fontSize}
                                         onChange={(e) => {
@@ -293,10 +304,10 @@ const FontSizeSelector = memo(
                                                 handleFontSizeChange(value);
                                             }
                                         }}
-                                        onClick={(e) => e.stopPropagation()}
+                                        onClick={handleInputClick}
                                         className="border-border/0 text-muted-foreground hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border focus:bg-background-tertiary/20 focus:ring-border h-8 max-w-[40px] min-w-[40px] [appearance:textfield] rounded-lg border px-1 text-center text-sm hover:border hover:text-white focus:ring-1 focus:outline-none data-[state=open]:border data-[state=open]:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                     />
-                                </DropdownMenuTrigger>
+                                </PopoverTrigger>
 
                                 <Button
                                     variant="ghost"
@@ -313,24 +324,29 @@ const FontSizeSelector = memo(
                         </TooltipContent>
                     </div>
                 </Tooltip>
-                <DropdownMenuContent
+                <PopoverContent
                     align="center"
                     className="mt-1 w-[48px] min-w-[48px] rounded-lg p-1"
                 >
-                    {FONT_SIZES.map((size) => (
-                        <DropdownMenuItem
-                            key={size}
-                            onClick={() => handleFontSizeChange(size)}
-                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
+                    <div className="grid grid-cols-1 gap-1">
+                        {FONT_SIZES.map((size) => (
+                            <button
+                                key={size}
+                                onClick={() => {
+                                    handleFontSizeChange(size);
+                                    setOpen(false);
+                                }}
+                                className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
                                     ? 'bg-background-tertiary/20 border-border border text-white'
                                     : ''
-                                }`}
-                        >
-                            {size}
-                        </DropdownMenuItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
+                                    }`}
+                            >
+                                {size}
+                            </button>
+                        ))}
+                    </div>
+                </PopoverContent>
+            </Popover>
         );
     },
 );
@@ -353,7 +369,7 @@ const TextAlignSelector = memo(
                             <Button
                                 variant="ghost"
                                 size="toolbar"
-                                className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                                className="text-white border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                             >
                                 {(() => {
                                     switch (textAlign) {
@@ -389,10 +405,9 @@ const TextAlignSelector = memo(
                     <DropdownMenuItem
                         key={value}
                         onClick={() => handleTextAlignChange(value)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
-                            textAlign === value
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
-                            : ''
+                                : ''
                             }`}
                     >
                         <Icon className="h-4 w-4" />
@@ -749,4 +764,5 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
     );
 };
 
-export { FontFamilySelector, FontWeightSelector, FontSizeSelector, TextColor, TextAlignSelector };
+export { FontFamilySelector, FontSizeSelector, FontWeightSelector, TextAlignSelector, TextColor };
+
