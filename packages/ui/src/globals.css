@@ -215,6 +215,11 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
+
+    button:not([disabled]),
+    [role='button']:not([disabled]) {
+        cursor: pointer;
+    }
 }
 
 :root {
@@ -566,8 +571,8 @@
     ::-webkit-scrollbar {
         @apply hidden;
     }
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
+    input[type='number']::-webkit-inner-spin-button,
+    input[type='number']::-webkit-outer-spin-button {
         -webkit-appearance: none;
         margin: 0;
     }

@@ -65,10 +65,6 @@ export function getHydratedUserMessage(
     content: UserContent,
     context: ChatMessageContext[],
 ): Message {
-    if (content.length === 0) {
-        throw new Error('Message is required');
-    }
-
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
     const errors = context.filter((c) => c.type === 'error').map((c) => c);

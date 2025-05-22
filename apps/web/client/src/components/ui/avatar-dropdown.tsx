@@ -11,7 +11,7 @@ import {
 import { Icons } from '@onlook/ui/icons/index';
 import { redirect, usePathname } from 'next/navigation';
 
-export const CurrentUserAvatar = ({ className }: { className?: string }) => {
+export const CurrentUserAvatar = ({ className, disableDropdown = false }: { className?: string, disableDropdown?: boolean }) => {
     const currentPath = usePathname();
     const userManager = useUserManager();
     const user = userManager.user;
@@ -28,7 +28,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild disabled={disableDropdown}>
                 <Avatar className={className}>
                     {user?.image && <AvatarImage src={user.image} alt={initials} />}
                     <AvatarFallback>{initials}</AvatarFallback>

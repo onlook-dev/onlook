@@ -11,6 +11,10 @@ interface TextState {
     fontWeight: string;
     textAlign: TextAlign;
     textColor: string;
+    letterSpacing: string;
+    capitalization: string;
+    textDecorationLine: string;
+    lineHeight: string;
 }
 
 const DefaultState: TextState = {
@@ -19,6 +23,10 @@ const DefaultState: TextState = {
     fontWeight: '400',
     textAlign: 'left',
     textColor: '#000000',
+    letterSpacing: '0',
+    capitalization: 'none',
+    textDecorationLine: 'none',
+    lineHeight: '1.5',
 };
 
 export const useTextControl = () => {
@@ -41,6 +49,18 @@ export const useTextControl = () => {
                 DefaultState.textAlign) as TextAlign,
             textColor:
                 editorEngine.style.selectedStyle?.styles.computed.color ?? DefaultState.textColor,
+            letterSpacing:
+                editorEngine.style.selectedStyle?.styles.computed.letterSpacing?.toString() ??
+                DefaultState.letterSpacing,
+            capitalization:
+                editorEngine.style.selectedStyle?.styles.computed.textTransform?.toString() ??
+                DefaultState.capitalization,
+            textDecorationLine:
+                editorEngine.style.selectedStyle?.styles.computed.textDecorationLine?.toString() ??
+                DefaultState.textDecorationLine,
+            lineHeight:
+                editorEngine.style.selectedStyle?.styles.computed.lineHeight?.toString() ??
+                DefaultState.lineHeight,
         };
     };
 
@@ -86,6 +106,38 @@ export const useTextControl = () => {
         }));
     };
 
+    const handleLetterSpacingChange = (letterSpacing: string) => {
+        setTextState((prev) => ({
+            ...prev,
+            letterSpacing,
+        }));
+        editorEngine.style.update('letterSpacing', `${letterSpacing}px`);
+    };
+
+    const handleCapitalizationChange = (capitalization: string) => {
+        setTextState((prev) => ({
+            ...prev,
+            capitalization,
+        }));
+        editorEngine.style.update('textTransform', capitalization);
+    };
+
+    const handleTextDecorationChange = (textDecorationLine: string) => {
+        setTextState((prev) => ({
+            ...prev,
+            textDecorationLine,
+        }));
+        editorEngine.style.update('textDecorationLine', textDecorationLine);
+    };
+
+    const handleLineHeightChange = (lineHeight: string) => {
+        setTextState((prev) => ({
+            ...prev,
+            lineHeight,
+        }));
+        editorEngine.style.update('lineHeight', lineHeight);
+    };
+
     return {
         textState,
         handleFontFamilyChange,
@@ -93,5 +145,9 @@ export const useTextControl = () => {
         handleFontWeightChange,
         handleTextAlignChange,
         handleTextColorChange,
+        handleLetterSpacingChange,
+        handleCapitalizationChange,
+        handleTextDecorationChange,
+        handleLineHeightChange,
     };
 };

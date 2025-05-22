@@ -1,24 +1,20 @@
 import { api } from '@/trpc/client';
-import type { WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { makeAutoObservable } from 'mobx';
 
 export class SessionManager {
-    session: WebSocketSession | null = null;
+    session: SandboxSession | null = null;
     isConnecting = false;
 
     constructor() {
         makeAutoObservable(this);
     }
 
-    async start(sandboxId: string, userId: string) {
+    async start(sandboxId: string) {
         this.isConnecting = true;
-        this.session = await connectToSandbox({
-            session: await api.sandbox.start.mutate({ sandboxId, userId }),
-            getSession: async (id) => {
-                return await api.sandbox.start.mutate({ sandboxId, userId });
-            },
-        });
+        const startData = await api.sandbox.start.mutate({ sandboxId });
+        this.session = await connectToSandbox(startData);
         this.isConnecting = false;
     }
 
@@ -26,8 +22,29 @@ export class SessionManager {
         await api.sandbox.hibernate.mutate({ sandboxId });
     }
 
+    async connected() {
+        if (!this.session) return false;
+        try {
+            await this.session.shells.run('echo "ping"');
+            return true;
+        } catch (error) {
+            console.error('Failed to connect to sandbox', error);
+            return false;
+        }
+    }
+
     async reconnect() {
-        await this.session?.reconnect();
+        if (!this.session) {
+            console.error('No session found');
+            return;
+        }
+        const sandboxId = this.session.id;
+        this.session.disconnect();
+        this.session = null;
+        this.isConnecting = true;
+        const startData = await api.sandbox.reconnect.mutate({ sandboxId });
+        this.session = await connectToSandbox(startData);
+        this.isConnecting = false;
     }
 
     async disconnect() {

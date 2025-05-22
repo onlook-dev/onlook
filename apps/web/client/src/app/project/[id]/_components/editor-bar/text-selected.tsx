@@ -13,13 +13,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useState, useRef, useCallback } from 'react';
+import { convertFontWeight, toNormalCase } from '@onlook/utility';
+import { memo, useEffect, useState } from 'react';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ColorPickerContent } from './inputs/color-picker';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
 import { useEditorEngine } from '@/components/store/editor';
 import type { Font } from '@onlook/models/assets';
-import type { TailwindColor } from '@onlook/models';
 import { useColorUpdate } from './hooks/use-color-update';
 import { Height } from './dropdowns/height';
 import { Width } from './dropdowns/width';
@@ -32,14 +33,21 @@ import { Border } from './dropdowns/border';
 import { ColorBackground } from './dropdowns/color-background';
 import React from 'react';
 import { baseKeymap } from 'prosemirror-commands';
-
+import { FontFamily } from '../left-panel/brand-tab/font-panel/font-family';
+import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
+import { InputIcon } from './inputs/input-icon';
+import { InputRadio } from './inputs/input-radio';
+import { InputColor } from './inputs/input-color';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
 const FontFamilySelector = memo(({ fontFamily, handleFontFamilyChange }: { fontFamily: string, handleFontFamilyChange: (font: Font) => void }) => {
     const editorEngine = useEditorEngine();
     const [fonts, setFonts] = useState<Font[]>([]);
-    
+    const [search, setSearch] = useState('');
+    const [open, setOpen] = useState(false);
+    const { handleFontFamilyChange } = useTextControl();
+
     useEffect(() => {
         (async () => {
             try {
@@ -51,47 +59,135 @@ const FontFamilySelector = memo(({ fontFamily, handleFontFamilyChange }: { fontF
         })();
     }, []);
 
+    // Filter fonts by search
+    const filteredFonts = fonts.filter((font) =>
+        font.family.toLowerCase().includes(search.toLowerCase()),
+    );
+
+    const handleClose = () => {
+        setOpen(false);
+        editorEngine.state.brandTab = null;
+        if (editorEngine.state.leftPanelTab === LeftPanelTabValue.BRAND) {
+            editorEngine.state.leftPanelTab = null;
+        }
+        setSearch('');
+    };
+
     return (
-        <DropdownMenu>
+        <Popover
+            open={open}
+            onOpenChange={(v) => {
+                setOpen(v);
+                if (!v) editorEngine.state.brandTab = null;
+            }}
+        >
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
+                    <PopoverTrigger asChild>
                         <Button
                             variant="ghost"
                             size="toolbar"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            aria-label="Font Family Selector"
+                            tabIndex={0}
+                            onClick={handleClose}
                         >
                             <span className="truncate text-smallPlus">{toNormalCase(fontFamily)}</span>
                         </Button>
-                    </DropdownMenuTrigger>
+                    </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="mt-1" hideArrow>
                     Font Family
                 </TooltipContent>
             </Tooltip>
-            <DropdownMenuContent
-                align="center"
-                className="mt-1 min-w-[200px] max-h-[300px] overflow-y-auto rounded-lg p-1"
+            <PopoverContent
+                side="bottom"
+                align="start"
+                className="mt-1 min-w-[300px] max-h-[400px] overflow-y-auto rounded-xl p-0 bg-background shadow-lg border border-border flex flex-col"
             >
-                {fonts.map((font: Font) => (
-                    <DropdownMenuItem
-                        key={font.id}
-                        onClick={() => handleFontFamilyChange(font)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontFamily === font.family
-                            ? "bg-background-tertiary/20 border-border border text-white"
-                            : ""
-                            }`}
+                <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
+                    <h2 className="text-sm font-normal text-foreground">Fonts</h2>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 rounded-md hover:bg-background-secondary"
+                        onClick={handleClose}
                     >
-                        <span className="text-smallPlus" style={{ fontFamily: font.family }}>
-                            {font.family}
-                        </span>
-                        {fontFamily === font.family && (
-                            <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />
-                        )}
-                    </DropdownMenuItem>
+<<<<<<< HEAD
+<span className="text-smallPlus" style={{ fontFamily: font.family }}>
+    {font.family}
+</span>
+{
+    fontFamily === font.family && (
+        <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />
+    )
+}
+                    </DropdownMenuItem >
                 ))}
-            </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent >
+        </DropdownMenu >
+=======
+                        <Icons.CrossS className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="px-4 py-2">
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search fonts..."
+                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        aria-label="Search fonts"
+                        tabIndex={0}
+                    />
+                    <div className="text-sm text-muted-foreground mb-1 mt-2">Brand fonts</div>
+                </div>
+                <div className="flex-1 overflow-y-auto px-2 pb-2 divide-y divide-border">
+                    {filteredFonts.length === 0 ? (
+                        <div className="flex justify-center items-center h-20">
+                            <span className="text-sm text-muted-foreground">No fonts found</span>
+                        </div>
+                    ) : (
+                        filteredFonts.map((font) => (
+                            <div key={font.id} className="py-1">
+                                <FontFamily
+                                    name={font.family}
+                                    variants={
+                                        font.weight?.map(
+                                            (weight) =>
+                                                VARIANTS.find((v) => v.value === weight)?.name ||
+                                                weight,
+                                        ) as string[]
+                                    }
+                                    showDropdown={false}
+                                    showAddButton={false}
+                                    isDefault={fontFamily === font.family}
+                                    onSetFont={() => handleFontFamilyChange(font)}
+                                />
+                            </div>
+                        ))
+                    )}
+                </div>
+                <div className="p-4 border-t border-border bg-background sticky bottom-0">
+                    <Button
+                        variant="secondary"
+                        size="lg"
+                        className="w-full rounded-md text-sm font-medium"
+                        aria-label="Manage Brand fonts"
+                        tabIndex={0}
+                        onClick={() => {
+                            editorEngine.state.brandTab = BrandTabValue.FONTS;
+                            editorEngine.state.leftPanelTab = LeftPanelTabValue.BRAND;
+
+                            setOpen(false);
+                        }}
+                    >
+                        Manage Brand fonts
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
+>>>>>>> main
     );
 });
 
@@ -281,9 +377,15 @@ const TextAlignSelector = memo(
                     <DropdownMenuItem
                         key={value}
                         onClick={() => handleTextAlignChange(value)}
+<<<<<<< HEAD
                         className={`text-foreground-primary data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
-                                ? 'bg-background-tertiary/20 border-border border text-foreground-primary data-[highlighted]:text-foreground-primary'
-                                : ''
+                            ? 'bg-background-tertiary/20 border-border border text-foreground-primary data-[highlighted]:text-foreground-primary'
+=======
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
+                            textAlign === value
+                                ? 'bg-background-tertiary/20 border-border border text-white'
+>>>>>>> main
+                            : ''
                             }`}
                     >
                         <Icon className="h-4 w-4" />
@@ -302,32 +404,11 @@ const TextColor = memo(
         handleTextColorChange: (color: string) => void;
         textColor: string;
     }) => {
-        const [tempColor, setTempColor] = useState<Color>(Color.from(textColor));
-        const { handleColorUpdate } = useColorUpdate({
+        const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
             elementStyleKey: 'color',
-            onValueChange: (_, value) => handleTextColorChange(value)
+            onValueChange: (_, value) => handleTextColorChange(value),
+            initialColor: textColor,
         });
-
-        const handleColorChange = (newColor: Color | TailwindColor) => {
-            try {
-                setTempColor(newColor instanceof Color ? newColor : Color.from(newColor.lightColor));
-            } catch (error) {
-                console.error('Error converting color:', error);
-            }
-        };
-
-        const handleColorChangeEnd = (newColor: Color | TailwindColor) => {
-            try {
-                if (newColor instanceof Color) {
-                    setTempColor(newColor);
-                } else {
-                    setTempColor(Color.from(newColor.lightColor));
-                }
-                handleColorUpdate(newColor);
-            } catch (error) {
-                console.error('Error converting color:', error);
-            }
-        };
 
         return (
             <Popover>
@@ -350,14 +431,14 @@ const TextColor = memo(
                     </div>
                 </Tooltip>
                 <PopoverContent
-                    className="w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    className="w-[224px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"
                     align="start"
                 >
                     <ColorPickerContent
                         color={tempColor}
-                        onChange={handleColorChange}
-                        onChangeEnd={handleColorChangeEnd}
+                        onChange={handleColorUpdate}
+                        onChangeEnd={handleColorUpdateEnd}
                     />
                 </PopoverContent>
             </Popover>
@@ -367,6 +448,7 @@ const TextColor = memo(
 
 TextColor.displayName = 'TextColor';
 
+<<<<<<< HEAD
 const COMPONENT_MAP: { [key: string]: any } = {
     Opacity,
     Width,
@@ -387,34 +469,154 @@ const COMPONENT_MAP: { [key: string]: any } = {
 
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [
-  {
-    key: 'dimensions',
-    label: 'Dimensions',
-    components: ['Width', 'Height'],
-  },
-  {
-    key: 'typography',
-    label: 'Typography',
-    components: ['FontFamily', 'FontWeight', 'FontSize', 'TextColor', 'TextAlign'],
-  },
-  {
-    key: 'base',
-    label: 'Base',
-    components: ['ColorBackground', 'Border', 'Radius'],
-  },
-  {
-    key: 'layout',
-    label: 'Layout',
-    components: ['Display', 'Padding', 'Margin'],
-  },
-  {
-    key: 'opacity',
-    label: 'Opacity',
-    components: ['Opacity'],
-  },
+    {
+        key: 'dimensions',
+        label: 'Dimensions',
+        components: ['Width', 'Height'],
+    },
+    {
+        key: 'typography',
+        label: 'Typography',
+        components: ['FontFamily', 'FontWeight', 'FontSize', 'TextColor', 'TextAlign'],
+    },
+    {
+        key: 'base',
+        label: 'Base',
+        components: ['ColorBackground', 'Border', 'Radius'],
+    },
+    {
+        key: 'layout',
+        label: 'Layout',
+        components: ['Display', 'Padding', 'Margin'],
+    },
+    {
+        key: 'opacity',
+        label: 'Opacity',
+        components: ['Opacity'],
+    },
 ];
 
 export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
+=======
+const AdvancedTypography = () => {
+    const {
+        textState,
+        handleLetterSpacingChange,
+        handleCapitalizationChange,
+        handleTextDecorationChange,
+        handleLineHeightChange,
+    } = useTextControl();
+
+    const [open, setOpen] = useState(false);
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const capitalizationOptions = [
+        { value: 'uppercase', label: 'AA' },
+        { value: 'capitalize', label: 'Aa' },
+        { value: 'lowercase', label: 'aa' },
+        { value: 'none', icon: <Icons.CrossL className="h-4 w-4" /> },
+    ];
+
+    const decorationOptions = [
+        { value: 'underline', icon: <Icons.TextUnderline className="h-4 w-4" /> },
+        { value: 'overline', icon: <Icons.TextOverline className="h-4 w-4" /> },
+        { value: 'line-through', icon: <Icons.TextStrikeThrough className="h-4 w-4" /> },
+        { value: 'none', icon: <Icons.CrossL className="h-4 w-4" /> },
+    ];
+
+    return (
+        <Popover open={open} onOpenChange={(v) => setOpen(v)}>
+            <Tooltip>
+                <div>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="toolbar"
+                                className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            >
+                                <Icons.AdvancedTypography className="h-4 w-4" />
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="mt-1" hideArrow>
+                        Advanced Typography
+                    </TooltipContent>
+                </div>
+            </Tooltip>
+            <PopoverContent
+                side="bottom"
+                align="start"
+                className="mt-1 w-[300px] rounded-xl p-0 bg-background shadow-lg border border-border"
+            >
+                <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
+                    <h2 className="text-sm font-normal text-foreground">Advanced Typography</h2>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 rounded-md hover:bg-background-secondary"
+                        onClick={handleClose}
+                    >
+                        <Icons.CrossS className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="space-y-4 px-4 py-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground w-20">Color</span>
+                        <div className="flex-1">
+                            <InputColor color={textState.textColor} elementStyleKey="color" />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground w-20">Line</span>
+                        <div className="flex-1">
+                            <InputIcon
+                                value={isNaN(parseFloat(textState.lineHeight)) ? 0 : parseFloat(textState.lineHeight)}
+                                onChange={(value) => handleLineHeightChange(value.toString())}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground w-20">Letter</span>
+                        <div className="flex-1">
+                            <InputIcon
+                                value={isNaN(parseFloat(textState.letterSpacing)) ? 0 : parseFloat(textState.letterSpacing)}
+                                onChange={(value) => handleLetterSpacingChange(value.toString())}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-20">Capitalize</span>
+                        <div className="w-[225px]">
+                            <InputRadio
+                                options={capitalizationOptions}
+                                value={textState.capitalization}
+                                onChange={handleCapitalizationChange}
+                                className="flex-1"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-20">Decorate</span>
+                        <div className="w-[225px]">
+                            <InputRadio
+                                options={decorationOptions}
+                                value={textState.textDecorationLine}
+                                onChange={handleTextDecorationChange}
+                                className="flex-1"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
+export const TextSelected = () => {
+>>>>>>> main
     const {
         textState,
         handleFontSizeChange,
@@ -426,70 +628,70 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
 
     // Helper to render components with correct props
     function renderComponent(compKey: string) {
-      switch (compKey) {
-        case 'FontFamily':
-          return (
-            <FontFamilySelector
-              key="FontFamily"
-              fontFamily={textState.fontFamily}
-              handleFontFamilyChange={handleFontFamilyChange}
-            />
-          );
-        case 'FontWeight':
-          return (
-            <FontWeightSelector
-              key="FontWeight"
-              fontWeight={textState.fontWeight}
-              handleFontWeightChange={handleFontWeightChange}
-            />
-          );
-        case 'FontSize':
-          return (
-            <FontSizeSelector
-              key="FontSize"
-              fontSize={textState.fontSize}
-              handleFontSizeChange={handleFontSizeChange}
-            />
-          );
-        case 'TextColor':
-          return (
-            <TextColor
-              key="TextColor"
-              handleTextColorChange={handleTextColorChange}
-              textColor={textState.textColor}
-            />
-          );
-        case 'TextAlign':
-          return (
-            <TextAlignSelector
-              key="TextAlign"
-              textAlign={textState.textAlign}
-              handleTextAlignChange={handleTextAlignChange}
-            />
-          );
-        case 'Opacity':
-          return <Opacity key="Opacity" />;
-        case 'Width':
-          return <Width key="Width" />;
-        case 'Height':
-          return <Height key="Height" />;
-        case 'ColorBackground':
-          return <ColorBackground key="ColorBackground" />;
-        case 'Border':
-          return <Border key="Border" />;
-        case 'Radius':
-          return <Radius key="Radius" />;
-        case 'Display':
-          return <Display key="Display" />;
-        case 'Padding':
-          return <Padding key="Padding" />;
-        case 'Margin':
-          return <Margin key="Margin" />;
-        case 'ViewButtons':
-          return <ViewButtons key="ViewButtons" />;
-        default:
-          return null;
-      }
+        switch (compKey) {
+            case 'FontFamily':
+                return (
+                    <FontFamilySelector
+                        key="FontFamily"
+                        fontFamily={textState.fontFamily}
+                        handleFontFamilyChange={handleFontFamilyChange}
+                    />
+                );
+            case 'FontWeight':
+                return (
+                    <FontWeightSelector
+                        key="FontWeight"
+                        fontWeight={textState.fontWeight}
+                        handleFontWeightChange={handleFontWeightChange}
+                    />
+                );
+            case 'FontSize':
+                return (
+                    <FontSizeSelector
+                        key="FontSize"
+                        fontSize={textState.fontSize}
+                        handleFontSizeChange={handleFontSizeChange}
+                    />
+                );
+            case 'TextColor':
+                return (
+                    <TextColor
+                        key="TextColor"
+                        handleTextColorChange={handleTextColorChange}
+                        textColor={textState.textColor}
+                    />
+                );
+            case 'TextAlign':
+                return (
+                    <TextAlignSelector
+                        key="TextAlign"
+                        textAlign={textState.textAlign}
+                        handleTextAlignChange={handleTextAlignChange}
+                    />
+                );
+            case 'Opacity':
+                return <Opacity key="Opacity" />;
+            case 'Width':
+                return <Width key="Width" />;
+            case 'Height':
+                return <Height key="Height" />;
+            case 'ColorBackground':
+                return <ColorBackground key="ColorBackground" />;
+            case 'Border':
+                return <Border key="Border" />;
+            case 'Radius':
+                return <Radius key="Radius" />;
+            case 'Display':
+                return <Display key="Display" />;
+            case 'Padding':
+                return <Padding key="Padding" />;
+            case 'Margin':
+                return <Margin key="Margin" />;
+            case 'ViewButtons':
+                return <ViewButtons key="ViewButtons" />;
+            default:
+                return null;
+        }
     }
 
     const groupRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -518,7 +720,7 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
     // Update visible count based on available width
     const updateVisibleCount = useCallback(() => {
         if (!groupWidths.length || !availableWidth) return;
-        
+
         const OVERFLOW_BUTTON_WIDTH = 32; // Reduced from 48px
         const MIN_GROUP_WIDTH = 80; // Reduced from 100px
         const SEPARATOR_WIDTH = 8; // Width of the InputSeparator
@@ -528,10 +730,10 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
         for (let i = 0; i < groupWidths.length; i++) {
             const width = groupWidths[i] ?? 0;
             if (width < MIN_GROUP_WIDTH) continue;
-            
+
             // Add separator width if this isn't the first group
             const totalWidth = width + (count > 0 ? SEPARATOR_WIDTH : 0);
-            
+
             if (used + totalWidth <= availableWidth - OVERFLOW_BUTTON_WIDTH) {
                 used += totalWidth;
                 count++;
@@ -539,7 +741,7 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
                 break;
             }
         }
-        
+
         setVisibleCount(count);
     }, [groupWidths, availableWidth]);
 
@@ -557,6 +759,7 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
     const overflowGroups = TEXT_SELECTED_GROUPS.slice(visibleCount);
 
     return (
+<<<<<<< HEAD
         <>
             {/* Hidden measurement container */}
             <div style={{ position: 'absolute', visibility: 'hidden', height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
@@ -569,48 +772,75 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
                         {group.components.map((compKey, idx) => renderComponent(compKey))}
                     </div>
                 ))}
-            </div>
-            <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
-                <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
-                    {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
-                        groupIdx < visibleCount ? (
-                            <React.Fragment key={group.key}>
-                                {groupIdx > 0 && <InputSeparator />}
-                                <div className="flex items-center justify-center gap-0.5">
-                                    {group.components.map((compKey, idx) => renderComponent(compKey))}
-                                </div>
-                            </React.Fragment>
-                        ) : null
-                    ))}
-                    <InputSeparator />
-                    {overflowGroups.length > 0 && (
-                        <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="toolbar"
-                                    className="w-8 h-8 flex items-center justify-center"
-                                    aria-label="Show more toolbar controls"
-                                >
-                                    <Icons.DotsHorizontal className="w-5 h-5" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
-                                {overflowGroups.map((group, groupIdx) => (
+=======
+        <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
+                    <div className="flex items-center gap-0.5">
+                        <FontFamilySelector fontFamily={textState.fontFamily} />
+                        <InputSeparator />
+                        <FontWeightSelector
+                            fontWeight={textState.fontWeight}
+                            handleFontWeightChange={handleFontWeightChange}
+                        />
+                        <InputSeparator />
+                        <FontSizeSelector
+                            fontSize={textState.fontSize}
+                            handleFontSizeChange={handleFontSizeChange}
+                        />
+                        <InputSeparator />
+                        <TextColor
+                            handleTextColorChange={handleTextColorChange}
+                            textColor={textState.textColor}
+                        />
+                        <TextAlignSelector
+                            textAlign={textState.textAlign}
+                            handleTextAlignChange={handleTextAlignChange}
+                        />
+                        <InputSeparator />
+                        <AdvancedTypography />
+                        <ViewButtons />
+>>>>>>> main
+                    </div>
+                    <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
+                        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
+                            {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
+                                groupIdx < visibleCount ? (
                                     <React.Fragment key={group.key}>
                                         {groupIdx > 0 && <InputSeparator />}
-                                        <div className="flex items-center gap-0.5">
+                                        <div className="flex items-center justify-center gap-0.5">
                                             {group.components.map((compKey, idx) => renderComponent(compKey))}
                                         </div>
                                     </React.Fragment>
-                                ))}
-                            </PopoverContent>
-                        </Popover>
-                    )}
-                </div>
-            </div>
-        </>
-    );
+                                ) : null
+                            ))}
+                            <InputSeparator />
+                            {overflowGroups.length > 0 && (
+                                <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="toolbar"
+                                            className="w-8 h-8 flex items-center justify-center"
+                                            aria-label="Show more toolbar controls"
+                                        >
+                                            <Icons.DotsHorizontal className="w-5 h-5" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
+                                        {overflowGroups.map((group, groupIdx) => (
+                                            <React.Fragment key={group.key}>
+                                                {groupIdx > 0 && <InputSeparator />}
+                                                <div className="flex items-center gap-0.5">
+                                                    {group.components.map((compKey, idx) => renderComponent(compKey))}
+                                                </div>
+                                            </React.Fragment>
+                                        ))}
+                                    </PopoverContent>
+                                </Popover>
+                            )}
+                        </div>
+                    </div>
+                </>
+                );
 };
 
-export { FontFamilySelector, FontWeightSelector, FontSizeSelector, TextColor, TextAlignSelector };
+                export {FontFamilySelector, FontWeightSelector, FontSizeSelector, TextColor, TextAlignSelector};

@@ -9,15 +9,16 @@ import {
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
 import { Color } from "@onlook/utility";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
+import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 import { InputColor } from "../inputs/input-color";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
-import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 
 export const Border = () => {
     const editorEngine = useEditorEngine();
+    const initialColor = editorEngine.style.selectedStyle?.styles.computed.borderColor;
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
         useBoxControl('border');
@@ -25,7 +26,7 @@ export const Border = () => {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;        
+        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;
         if (color) {
             setBorderColor(
                 Color.from(
@@ -39,9 +40,14 @@ export const Border = () => {
         setBorderColor(color);
     };
 
+    useEffect(() => {
+        setBorderColor(Color.from(initialColor ?? '#080808').toHex());
+    }, [initialColor]);
+
     const borderStyle = {
         borderWidth: boxState.borderWidth.num ? `1px` : '0px',
         borderStyle: 'solid',
+        borderColor: initialColor,
     };
 
     return (
@@ -61,10 +67,10 @@ export const Border = () => {
                             <span className="text-small">{boxState.borderWidth.value}</span>
                         ) : null}
                         {(boxState.borderWidth.num ?? 0) > 0 ||
-                         (boxState.borderTopWidth?.num ?? 0) > 0 ||
-                         (boxState.borderRightWidth?.num ?? 0) > 0 ||
-                         (boxState.borderBottomWidth?.num ?? 0) > 0 ||
-                         (boxState.borderLeftWidth?.num ?? 0) > 0 ? (
+                            (boxState.borderTopWidth?.num ?? 0) > 0 ||
+                            (boxState.borderRightWidth?.num ?? 0) > 0 ||
+                            (boxState.borderBottomWidth?.num ?? 0) > 0 ||
+                            (boxState.borderLeftWidth?.num ?? 0) > 0 ? (
                             <div
                                 className="w-5 h-5 rounded-md"
                                 style={borderStyle}
@@ -120,10 +126,10 @@ export const Border = () => {
                         (boxState.borderBottomWidth.num ?? 0) > 0 ||
                         (boxState.borderLeftWidth.num ?? 0) > 0)
                 ) && (
-                    <div className="mt-3">
-                        <InputColor color={borderColor} elementStyleKey="borderColor" onColorChange={handleColorChange} />
-                    </div>
-                )}
+                        <div className="mt-3">
+                            <InputColor color={borderColor} elementStyleKey="borderColor" onColorChange={handleColorChange} />
+                        </div>
+                    )}
             </DropdownMenuContent>
         </DropdownMenu>
     );

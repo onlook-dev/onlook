@@ -1,5 +1,5 @@
 import { sendAnalytics } from '@/utils/analytics';
-import type { DomElement, LayerNode } from '@onlook/models';
+import type { DomElement } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import {
     type Action,
@@ -17,9 +17,9 @@ import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
 import { debounce } from 'lodash';
 import type { EditorEngine } from '../engine';
-import type { FrameData } from '../frames';
+
 export class ActionManager {
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     async run(action: Action) {
         await this.editorEngine.history.push(action);
@@ -141,11 +141,8 @@ export class ActionManager {
                     console.error('Failed to insert element');
                     return;
                 }
-                // sendToWebview(frameView, WebviewChannels.INSERT_ELEMENT, {
-                //     element,
-                //     location,
-                //     editText,
-                // });
+
+                this.refreshAndClickMutatedElement(domEl);
             } catch (err) {
                 console.error('Error inserting element:', err);
             }
@@ -169,10 +166,7 @@ export class ActionManager {
 
             await this.editorEngine.overlay.refresh();
 
-            // this.editorEngine.elements.click([domEl], frameView);
-            // sendToWebview(frameView, WebviewChannels.REMOVE_ELEMENT, {
-            //     location,
-            // });
+            this.refreshAndClickMutatedElement(domEl);
         }
     }
 
@@ -188,10 +182,7 @@ export class ActionManager {
                 console.error('Failed to move element');
                 return;
             }
-            // sendToWebview(frameView, WebviewChannels.MOVE_ELEMENT, {
-            //     domId: target.domId,
-            //     newIndex: location.index,
-            // });
+            this.refreshAndClickMutatedElement(domEl);
         }
     }
 
@@ -207,10 +198,8 @@ export class ActionManager {
                 console.error('Failed to edit text');
                 return;
             }
-            // sendToWebview(frameView, WebviewChannels.EDIT_ELEMENT_TEXT, {
-            //     domId: target.domId,
-            //     content: newContent,
-            // });
+
+            this.refreshAndClickMutatedElement(domEl);
         }
     }
 
@@ -232,11 +221,7 @@ export class ActionManager {
             return;
         }
 
-        const result = [domEl] as DomElement[];
-
-        this.editorEngine.elements.click(result);
-
-        // sendToWebview(frameView, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
+        this.refreshAndClickMutatedElement(domEl);
     }
 
     private async ungroupElements({ parent, container }: UngroupElementsAction) {
@@ -253,7 +238,7 @@ export class ActionManager {
             return;
         }
 
-        // sendToWebview(frameView, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
+        this.refreshAndClickMutatedElement(domEl);
     }
 
     private insertImage({ targets, image }: InsertImageAction) {
@@ -285,13 +270,13 @@ export class ActionManager {
 
     async refreshAndClickMutatedElement(
         domEl: DomElement,
-        newMap: Map<string, LayerNode>,
-        frameData: FrameData,
+        // newMap: Map<string, LayerNode>,
+        // frameData: FrameData,
     ) {
         this.editorEngine.state.editorMode = EditorMode.DESIGN;
-        await this.editorEngine.ast.refreshAstDoc(frameData.view);
+        // await this.editorEngine.ast.refreshAstDoc(frameData.view);
         this.editorEngine.elements.click([domEl]);
-        this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
+        // this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
     }
 
     clear() {
