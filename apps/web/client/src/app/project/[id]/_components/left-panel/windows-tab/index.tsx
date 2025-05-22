@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { FrameDimensions } from './frame-dimensions';
-import { Separator } from '@onlook/ui/separator';
 import { DeviceSettings } from './device-settings';
+import { FrameDimensions } from './frame-dimensions';
 
 export const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -31,7 +31,7 @@ export const WindowsTab = observer(() => {
                 <Button
                     variant={'outline'}
                     className="flex-1 h-fit py-1.5 px-2.5 text-foreground-tertiary items-center"
-                    onClick={() => editorEngine.window.duplicate(frameData.id)}
+                    onClick={() => editorEngine.frames.duplicate(frameData.id)}
                 >
                     <Icons.Copy className="mr-2" />
                     <span className="text-xs">Duplicate</span>
@@ -39,8 +39,8 @@ export const WindowsTab = observer(() => {
                 <Button
                     variant={'outline'}
                     className="flex-1 h-fit py-1.5 px-2.5 text-foreground-tertiary items-center"
-                    disabled={!editorEngine.window.canDelete()}
-                    onClick={() => editorEngine.window.delete(frameData.id)}
+                    disabled={!editorEngine.frames.canDelete()}
+                    onClick={() => editorEngine.frames.delete(frameData.id)}
                 >
                     <Icons.Trash className="mr-2" />
                     <span className="text-xs">Delete</span>
