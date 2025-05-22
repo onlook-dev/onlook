@@ -8,55 +8,59 @@ import { Border } from './dropdowns/border';
 import { ColorBackground } from './dropdowns/color-background';
 import { Display } from './dropdowns/display';
 import { Height } from './dropdowns/height';
-import { ImageBackground } from './dropdowns/img-background';
 import { Margin } from './dropdowns/margin';
 import { Opacity } from './dropdowns/opacity';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { Width } from './dropdowns/width';
-import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
-
-const COMPONENT_MAP: { [key: string]: any } = {
-    Opacity,
-    Width,
-    Height,
-    Display,
-    Padding,
-    Margin,
-    Radius,
-    Border,
-    ColorBackground,
-    ImageBackground,
-    ViewButtons,
-};
+import { FontFamilySelector } from './text-inputs/font-family';
+import { FontSizeSelector } from './text-inputs/font-size';
+import { FontWeightSelector } from './text-inputs/font-weight';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
     {
         key: 'dimensions',
         label: 'Dimensions',
-        components: ['Width', 'Height'],
+        components: [
+            <Width />,
+            <Height />,
+        ],
     },
     {
         key: 'base',
         label: 'Base',
-        components: ['ColorBackground', 'Border', 'Radius'],
+        components: [
+            <ColorBackground />,
+            <Border />,
+            <Radius />,
+        ]
     },
     {
         key: 'layout',
         label: 'Layout',
-        components: ['Display', 'Padding', 'Margin'],
+        components: [
+            <Display />,
+            <Padding />,
+            <Margin />,
+        ],
     },
     {
         key: 'typography',
         label: 'Typography',
-        components: ['FontFamily', 'FontWeight', 'FontSize', 'FontColor', 'TextAlign'],
+        components: [
+            <FontFamilySelector fontFamily="Arial" />,
+            <FontWeightSelector fontWeight="normal" handleFontWeightChange={() => { }} />,
+            <FontSizeSelector fontSize={16} handleFontSizeChange={() => { }} />,
+        ],
     },
     {
         key: 'opacity',
         label: 'Opacity',
-        components: ['Opacity'],
+        components: [
+            <Opacity />,
+        ]
     },
 ];
 
@@ -135,10 +139,11 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
                         className="flex items-center justify-center gap-0.5"
                         ref={el => { groupRefs.current[groupIdx] = el; }}
                     >
-                        {group.components.map((compKey, idx) => {
-                            const Comp = COMPONENT_MAP[compKey];
-                            return Comp ? <Comp key={compKey + idx} /> : null;
-                        })}
+                        {group.components.map((comp, idx) => (
+                            <React.Fragment key={idx}>
+                                {comp}
+                            </React.Fragment>
+                        ))}
                     </div>
                 ))}
             </div>
@@ -150,10 +155,11 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
                         <React.Fragment key={group.key}>
                             {groupIdx > 0 && <InputSeparator />}
                             <div className="flex items-center justify-center gap-0.5">
-                                {group.components.map((compKey, idx) => {
-                                    const Comp = COMPONENT_MAP[compKey];
-                                    return Comp ? <Comp key={compKey + idx} /> : null;
-                                })}
+                                {group.components.map((comp, idx) => (
+                                    <React.Fragment key={idx}>
+                                        {comp}
+                                    </React.Fragment>
+                                ))}
                             </div>
                         </React.Fragment>
                     ) : null
@@ -176,10 +182,11 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
                                 <React.Fragment key={group.key}>
                                     {groupIdx > 0 && <InputSeparator />}
                                     <div className="flex items-center gap-0.5">
-                                        {group.components.map((compKey, idx) => {
-                                            const Comp = COMPONENT_MAP[compKey];
-                                            return Comp ? <Comp key={compKey + idx} /> : null;
-                                        })}
+                                        {group.components.map((comp, idx) => (
+                                            <React.Fragment key={idx}>
+                                                {comp}
+                                            </React.Fragment>
+                                        ))}
                                     </div>
                                 </React.Fragment>
                             ))}

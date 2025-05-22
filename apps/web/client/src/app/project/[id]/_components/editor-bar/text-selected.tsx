@@ -4,51 +4,71 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Border } from '../dropdowns/border';
-import { ColorBackground } from '../dropdowns/color-background';
-import { Display } from '../dropdowns/display';
-import { Height } from '../dropdowns/height';
-import { Margin } from '../dropdowns/margin';
-import { Opacity } from '../dropdowns/opacity';
-import { Padding } from '../dropdowns/padding';
-import { Radius } from '../dropdowns/radius';
-import { Width } from '../dropdowns/width';
-import { useTextControl } from '../hooks/use-text-control';
-import { ViewButtons } from '../panels/panel-bar/bar';
-import { InputSeparator } from '../separator';
-import { AdvancedTypography } from './advanced-typography';
-import { FontFamilySelector } from './font-family';
-import { FontSizeSelector } from './font-size';
-import { FontWeightSelector } from './font-weight';
-import { TextAlignSelector } from './text-align';
-import { TextColor } from './text-color';
+import { Border } from './dropdowns/border';
+import { ColorBackground } from './dropdowns/color-background';
+import { Display } from './dropdowns/display';
+import { Height } from './dropdowns/height';
+import { Margin } from './dropdowns/margin';
+import { Opacity } from './dropdowns/opacity';
+import { Padding } from './dropdowns/padding';
+import { Radius } from './dropdowns/radius';
+import { Width } from './dropdowns/width';
+import { useTextControl } from './hooks/use-text-control';
+import { ViewButtons } from './panels/panel-bar/bar';
+import { InputSeparator } from './separator';
+import { AdvancedTypography } from './text-inputs/advanced-typography';
+import { FontFamilySelector } from './text-inputs/font-family';
+import { FontSizeSelector } from './text-inputs/font-size';
+import { FontWeightSelector } from './text-inputs/font-weight';
+import { TextAlignSelector } from './text-inputs/text-align';
+import { TextColor } from './text-inputs/text-color';
 
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [
     {
         key: 'typography',
         label: 'Typography',
-        components: ['FontFamily', 'FontWeight', 'FontSize', 'TextColor', 'TextAlign', 'AdvancedTypography'],
+        components: [
+            <FontFamilySelector fontFamily="Arial" />,
+            <FontWeightSelector fontWeight="normal" handleFontWeightChange={() => { }} />,
+            <FontSizeSelector fontSize={16} handleFontSizeChange={() => { }} />,
+            <TextColor handleTextColorChange={() => { }} textColor="black" />,
+            <TextAlignSelector textAlign="left" handleTextAlignChange={() => { }} />,
+            <AdvancedTypography />,
+        ],
     },
     {
         key: 'dimensions',
         label: 'Dimensions',
-        components: ['Width', 'Height'],
+        components: [
+            <Width />,
+            <Height />,
+        ],
     },
     {
         key: 'base',
         label: 'Base',
-        components: ['ColorBackground', 'Border', 'Radius'],
+        components: [
+            <ColorBackground />,
+            <Border />,
+            <Radius />,
+        ],
     },
     {
         key: 'layout',
         label: 'Layout',
-        components: ['Display', 'Padding', 'Margin'],
+        components: [
+            <Display />,
+            <Padding />,
+            <Margin />,
+        ],
     },
     {
         key: 'opacity',
         label: 'Opacity',
-        components: ['Opacity'],
+        components: [
+            <Opacity />,
+        ],
     },
 ];
 
@@ -175,10 +195,11 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
                         className="flex items-center justify-center gap-0.5"
                         ref={el => { groupRefs.current[groupIdx] = el; }}
                     >
-                        {group.components.map((compKey, idx) => {
-                            const Comp = COMPONENT_MAP[compKey];
-                            return Comp ? <Comp key={compKey + idx} /> : null;
-                        })}
+                        {group.components.map((comp, idx) => (
+                            <React.Fragment key={idx}>
+                                {comp}
+                            </React.Fragment>
+                        ))}
                     </div>
                 ))}
             </div>
@@ -188,10 +209,11 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
                         <React.Fragment key={group.key}>
                             {groupIdx > 0 && <InputSeparator />}
                             <div className="flex items-center justify-center gap-0.5">
-                                {group.components.map((compKey, idx) => {
-                                    const Comp = COMPONENT_MAP[compKey];
-                                    return Comp ? <Comp key={compKey + idx} /> : null;
-                                })}
+                                {group.components.map((comp, idx) => (
+                                    <React.Fragment key={idx}>
+                                        {comp}
+                                    </React.Fragment>
+                                ))}
                             </div>
                         </React.Fragment>
                     ) : null
@@ -214,10 +236,11 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
                                 <React.Fragment key={group.key}>
                                     {groupIdx > 0 && <InputSeparator />}
                                     <div className="flex items-center gap-0.5">
-                                        {group.components.map((compKey, idx) => {
-                                            const Comp = COMPONENT_MAP[compKey];
-                                            return Comp ? <Comp key={compKey + idx} /> : null;
-                                        })}
+                                        {group.components.map((comp, idx) => (
+                                            <React.Fragment key={idx}>
+                                                {comp}
+                                            </React.Fragment>
+                                        ))}
                                     </div>
                                 </React.Fragment>
                             ))}
