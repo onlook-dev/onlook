@@ -14,42 +14,42 @@ import { ZoomControls } from './zoom-controls';
 
 const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hidden: boolean }[] =
     [
-        {
-            value: LeftPanelTabValue.LAYERS,
-            icon: <Icons.Layers className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.layers',
-            hidden: false,
-        },
-        {
-            value: LeftPanelTabValue.PAGES,
-            icon: <Icons.File className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.pages',
-            hidden: false,
-        },
-        {
-            value: LeftPanelTabValue.IMAGES,
-            icon: <Icons.Image className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.images',
-            hidden: false,
-        },
-        {
-            value: LeftPanelTabValue.WINDOWS,
-            icon: <Icons.Desktop className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.windows.name',
-            hidden: false,
-        },
+        // {
+        //     value: LeftPanelTabValue.LAYERS,
+        //     icon: <Icons.Layers className="w-5 h-5" />,
+        //     label: 'editor.panels.layers.tabs.layers',
+        //     hidden: false,
+        // },
+        // {
+        //     value: LeftPanelTabValue.PAGES,
+        //     icon: <Icons.File className="w-5 h-5" />,
+        //     label: 'editor.panels.layers.tabs.pages',
+        //     hidden: false,
+        // },
+        // {
+        //     value: LeftPanelTabValue.IMAGES,
+        //     icon: <Icons.Image className="w-5 h-5" />,
+        //     label: 'editor.panels.layers.tabs.images',
+        //     hidden: false,
+        // },
+        // {
+        //     value: LeftPanelTabValue.WINDOWS,
+        //     icon: <Icons.Desktop className="w-5 h-5" />,
+        //     label: 'editor.panels.layers.tabs.windows.name',
+        //     hidden: false,
+        // },
         {
             value: LeftPanelTabValue.BRAND,
             icon: <Icons.Brand className="w-5 h-5" />,
             label: 'editor.panels.layers.tabs.brand',
             hidden: false,
         },
-        {
-            value: LeftPanelTabValue.APPS,
-            icon: <Icons.ViewGrid className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.apps',
-            hidden: true,
-        },
+        // {
+        //     value: LeftPanelTabValue.APPS,
+        //     icon: <Icons.ViewGrid className="w-5 h-5" />,
+        //     label: 'editor.panels.layers.tabs.apps',
+        //     hidden: true,
+        // },
     ];
 
 export const LeftPanel = observer(() => {
@@ -142,12 +142,10 @@ export const LeftPanel = observer(() => {
                     <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
                             {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
-                            {/* {selectedTab === LayersPanelTabValue.COMPONENTS && <ComponentsTab components={editorEngine.state.components} />} */}
                             {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
                             {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
                             {selectedTab === LeftPanelTabValue.WINDOWS && <WindowsTab />}
                             {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
-                            {/* {selectedTab === LayersPanelTabValue.APPS && <AppsTab />} */}
                         </div>
                     </div>
 
