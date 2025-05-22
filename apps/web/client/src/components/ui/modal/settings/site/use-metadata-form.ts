@@ -1,6 +1,5 @@
 import type { PageMetadata } from '@onlook/models';
 import { useEffect, useState } from 'react';
-
 interface UseMetadataFormProps {
     initialMetadata?: PageMetadata;
     defaultTitle?: string;

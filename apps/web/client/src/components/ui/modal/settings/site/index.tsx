@@ -6,12 +6,13 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
+import { DefaultSettings } from '@onlook/constants';
 
 export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectManager();
     const project = projectsManager.project;
-    const siteSetting = project?.metadata;
+    const siteSetting = project?.siteMetadata;
     const baseUrl = project?.domains?.custom?.url ?? project?.domains?.base?.url ?? project?.url;
 
     const {
@@ -83,7 +84,7 @@ export const SiteTab = observer(() => {
 
             projectsManager.updatePartialProject({
                 ...project,
-                metadata: updatedMetadata,
+                siteMetadata: updatedMetadata,
             });
 
             await editorEngine.pages.updateMetadataPage('/', updatedMetadata);

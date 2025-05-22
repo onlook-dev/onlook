@@ -1,5 +1,5 @@
 import { useProjectManager } from '@/components/store/project';
-import type { DomainType } from '@onlook/models';
+import { DomainType } from '@onlook/models';
 import { PublishStatus } from '@onlook/models/hosting';
 
 import { Button } from '@onlook/ui/button';

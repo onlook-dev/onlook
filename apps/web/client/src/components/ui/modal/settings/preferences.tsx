@@ -30,10 +30,10 @@ export const PreferencesTab = observer(() => {
         await userManager.settings.updateEditor({ ideType: ide.type });
     }
 
-    async function updateAnalytics(enabled: boolean) {
-        await userManager.settings.update({ enableAnalytics: enabled });
-        invokeMainChannel(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
-    }
+    // async function updateAnalytics(enabled: boolean) {
+    //     await userManager.settings.update({ enableAnalytics: enabled });
+    //     invokeMainChannel(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
+    // }
 
     async function updateDeleteWarning(enabled: boolean) {
         await userManager.settings.updateEditor({ shouldWarnDelete: enabled });
@@ -173,7 +173,7 @@ export const PreferencesTab = observer(() => {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <div className="flex justify-between items-center gap-4">
+            {/* <div className="flex justify-between items-center gap-4">
                 <div className="flex flex-col gap-2">
                     <p className="text-largePlus">Analytics</p>
                     <p className="text-foreground-onlook text-small">
@@ -197,7 +197,7 @@ export const PreferencesTab = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </div>
+            </div> */}
         </div>
     );
 });
