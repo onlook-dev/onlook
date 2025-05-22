@@ -122,12 +122,12 @@ export const useTextControl = () => {
         editorEngine.style.update('textTransform', capitalization);
     };
 
-    const handleTextDecorationChange = (textDecoration: string) => {
+    const handleTextDecorationChange = (textDecorationLine: string) => {
         setTextState((prev) => ({
             ...prev,
-            textDecoration,
+            textDecorationLine,
         }));
-        editorEngine.style.update('textDecorationLine', textDecoration);
+        editorEngine.style.update('textDecorationLine', textDecorationLine);
     };
 
     const handleLineHeightChange = (lineHeight: string) => {

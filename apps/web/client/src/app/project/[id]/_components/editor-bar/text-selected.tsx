@@ -491,7 +491,7 @@ const AdvancedTypography = () => {
                         <span className="text-sm text-muted-foreground w-20">Line</span>
                         <div className="flex-1">
                             <InputIcon
-                                value={parseFloat(textState.lineHeight)}
+                                value={isNaN(parseFloat(textState.lineHeight)) ? 0 : parseFloat(textState.lineHeight)}
                                 onChange={(value) => handleLineHeightChange(value.toString())}
                             />
                         </div>
@@ -500,7 +500,7 @@ const AdvancedTypography = () => {
                         <span className="text-sm text-muted-foreground w-20">Letter</span>
                         <div className="flex-1">
                             <InputIcon
-                                value={parseFloat(textState.letterSpacing) ?? 0}
+                                value={isNaN(parseFloat(textState.letterSpacing)) ? 0 : parseFloat(textState.letterSpacing)}
                                 onChange={(value) => handleLetterSpacingChange(value.toString())}
                             />
                         </div>
