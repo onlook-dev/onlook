@@ -4,19 +4,19 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Border } from '../dropdowns/border';
-import { ColorBackground } from '../dropdowns/color-background';
-import { Display } from '../dropdowns/display';
-import { Height } from '../dropdowns/height';
-import { Margin } from '../dropdowns/margin';
-import { Opacity } from '../dropdowns/opacity';
-import { Padding } from '../dropdowns/padding';
-import { Radius } from '../dropdowns/radius';
-import { Width } from '../dropdowns/width';
-import { InputSeparator } from '../separator';
-import { FontFamilySelector } from '../text-selected/font-family';
-import { FontSizeSelector } from '../text-selected/font-size';
-import { FontWeightSelector } from '../text-selected/font-weight';
+import { Border } from './dropdowns/border';
+import { ColorBackground } from './dropdowns/color-background';
+import { Display } from './dropdowns/display';
+import { Height } from './dropdowns/height';
+import { Margin } from './dropdowns/margin';
+import { Opacity } from './dropdowns/opacity';
+import { Padding } from './dropdowns/padding';
+import { Radius } from './dropdowns/radius';
+import { Width } from './dropdowns/width';
+import { InputSeparator } from './separator';
+import { FontFamilySelector } from './text-inputs/font-family';
+import { FontSizeSelector } from './text-inputs/font-size';
+import { FontWeightSelector } from './text-inputs/font-weight';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
