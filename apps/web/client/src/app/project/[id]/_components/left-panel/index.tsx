@@ -12,44 +12,43 @@ import { PagesTab } from './page-tab';
 import { WindowsTab } from './windows-tab';
 import { ZoomControls } from './zoom-controls';
 
-const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; hidden: boolean }[] =
+const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; disabled?: boolean }[] =
     [
-        // {
-        //     value: LeftPanelTabValue.LAYERS,
-        //     icon: <Icons.Layers className="w-5 h-5" />,
-        //     label: 'editor.panels.layers.tabs.layers',
-        //     hidden: false,
-        // },
-        // {
-        //     value: LeftPanelTabValue.PAGES,
-        //     icon: <Icons.File className="w-5 h-5" />,
-        //     label: 'editor.panels.layers.tabs.pages',
-        //     hidden: false,
-        // },
-        // {
-        //     value: LeftPanelTabValue.IMAGES,
-        //     icon: <Icons.Image className="w-5 h-5" />,
-        //     label: 'editor.panels.layers.tabs.images',
-        //     hidden: false,
-        // },
+
         {
             value: LeftPanelTabValue.BRAND,
             icon: <Icons.Brand className="w-5 h-5" />,
             label: 'editor.panels.layers.tabs.brand',
-            hidden: false,
         },
         {
             value: LeftPanelTabValue.WINDOWS,
             icon: <Icons.Desktop className="w-5 h-5" />,
             label: 'editor.panels.layers.tabs.windows.name',
-            hidden: false,
         },
-        // {
-        //     value: LeftPanelTabValue.APPS,
-        //     icon: <Icons.ViewGrid className="w-5 h-5" />,
-        //     label: 'editor.panels.layers.tabs.apps',
-        //     hidden: true,
-        // },
+        {
+            value: LeftPanelTabValue.LAYERS,
+            icon: <Icons.Layers className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.layers',
+            disabled: true,
+        },
+        {
+            value: LeftPanelTabValue.PAGES,
+            icon: <Icons.File className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.pages',
+            disabled: true,
+        },
+        {
+            value: LeftPanelTabValue.IMAGES,
+            icon: <Icons.Image className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.images',
+            disabled: true,
+        },
+        {
+            value: LeftPanelTabValue.APPS,
+            icon: <Icons.ViewGrid className="w-5 h-5" />,
+            label: 'editor.panels.layers.tabs.apps',
+            disabled: true,
+        },
     ];
 
 export const LeftPanel = observer(() => {
@@ -117,13 +116,14 @@ export const LeftPanel = observer(() => {
                         key={tab.value}
                         className={cn(
                             'w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2',
-                            tab.hidden && 'hidden',
                             selectedTab === tab.value && isLocked
                                 ? 'bg-accent text-foreground border-[0.5px] border-foreground/20 '
                                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                            tab.disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground',
                         )}
-                        onClick={() => handleClick(tab.value)}
-                        onMouseEnter={() => handleMouseEnter(tab.value)}
+                        disabled={tab.disabled}
+                        onClick={() => !tab.disabled && handleClick(tab.value)}
+                        onMouseEnter={() => !tab.disabled && handleMouseEnter(tab.value)}
                     >
                         {tab.icon}
                         <span className="text-xs leading-tight">{t(tab.label)}</span>
