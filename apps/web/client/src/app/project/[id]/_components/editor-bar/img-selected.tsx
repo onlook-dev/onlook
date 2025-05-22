@@ -6,6 +6,7 @@ import { Height } from './dropdowns/height';
 import { ImageBackground } from './dropdowns/img-background';
 import { ImgFit } from './dropdowns/img-fit';
 import { Margin } from './dropdowns/margin';
+import { Opacity } from './dropdowns/opacity';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { StateDropdown } from './dropdowns/state-dropdown';
@@ -17,6 +18,8 @@ export const ImgSelected = () => {
     return (
         <div className="flex items-center gap-0.5">
             {/* <StateDropdown /> */}
+            <Opacity />
+            <InputSeparator />
             <Width />
             <InputSeparator />
             <Height />

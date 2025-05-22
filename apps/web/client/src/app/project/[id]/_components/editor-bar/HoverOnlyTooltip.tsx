@@ -8,6 +8,7 @@ interface HoverOnlyTooltipProps {
   side?: "top" | "right" | "bottom" | "left";
   className?: string;
   hideArrow?: boolean;
+  disabled?: boolean;
 }
 
 export function HoverOnlyTooltip({
@@ -16,14 +17,15 @@ export function HoverOnlyTooltip({
   side = "bottom",
   className,
   hideArrow = false,
+  disabled = false,
 }: HoverOnlyTooltipProps) {
   const [hovered, setHovered] = useState(false);
 
   return (
-    <Tooltip open={hovered}>
+    <Tooltip open={hovered && !disabled}>
       <TooltipTrigger
         asChild
-        onMouseEnter={() => setHovered(true)}
+        onMouseEnter={() => !disabled && setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onBlur={() => setHovered(false)}
       >

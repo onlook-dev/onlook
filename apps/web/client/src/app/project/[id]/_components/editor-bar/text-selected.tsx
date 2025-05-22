@@ -11,8 +11,8 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { convertFontWeight, toNormalCase } from '@onlook/utility';
-import { memo, useEffect, useState } from 'react';
+import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
+import { memo, useEffect, useState, useRef, useCallback } from 'react';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ColorPickerContent } from './inputs/color-picker';
 import { ViewButtons } from './panels/panel-bar/bar';
@@ -20,6 +20,17 @@ import { InputSeparator } from './separator';
 import { useEditorEngine } from '@/components/store/editor';
 import type { Font } from '@onlook/models/assets';
 import { useColorUpdate } from './hooks/use-color-update';
+import { Height } from './dropdowns/height';
+import { Width } from './dropdowns/width';
+import { Opacity } from './dropdowns/opacity';
+import { Display } from './dropdowns/display';
+import { Padding } from './dropdowns/padding';
+import { Margin } from './dropdowns/margin';
+import { Radius } from './dropdowns/radius';
+import { Border } from './dropdowns/border';
+import { ColorBackground } from './dropdowns/color-background';
+import React from 'react';
+import { baseKeymap } from 'prosemirror-commands';
 import { FontFamily } from '../left-panel/brand-tab/font-panel/font-family';
 import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
 import { InputIcon } from './inputs/input-icon';
@@ -27,6 +38,35 @@ import { InputRadio } from './inputs/input-radio';
 import { InputColor } from './inputs/input-color';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
+
+// Group definitions for the text-selected toolbar
+export const TEXT_SELECTED_GROUPS = [
+    {
+        key: 'typography',
+        label: 'Typography',
+        components: ['FontFamily', 'FontWeight', 'FontSize', 'TextColor', 'TextAlign', 'AdvancedTypography'],
+    },
+    {
+        key: 'dimensions',
+        label: 'Dimensions',
+        components: ['Width', 'Height'],
+    },
+    {
+        key: 'base',
+        label: 'Base',
+        components: ['ColorBackground', 'Border', 'Radius'],
+    },
+    {
+        key: 'layout',
+        label: 'Layout',
+        components: ['Display', 'Padding', 'Margin'],
+    },
+    {
+        key: 'opacity',
+        label: 'Opacity',
+        components: ['Opacity'],
+    },
+];
 
 const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
     const editorEngine = useEditorEngine();
@@ -199,11 +239,10 @@ const FontWeightSelector = memo(
                     <DropdownMenuItem
                         key={weight.value}
                         onClick={() => handleFontWeightChange(weight.value)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
-                            fontWeight === weight.value
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontWeight === weight.value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
                                 : ''
-                        }`}
+                            }`}
                     >
                         {weight.name}
                         {fontWeight === weight.value && (
@@ -282,11 +321,10 @@ const FontSizeSelector = memo(
                         <DropdownMenuItem
                             key={size}
                             onClick={() => handleFontSizeChange(size)}
-                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${
-                                size === fontSize
+                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
                                     ? 'bg-background-tertiary/20 border-border border text-white'
                                     : ''
-                            }`}
+                                }`}
                         >
                             {size}
                         </DropdownMenuItem>
@@ -317,18 +355,19 @@ const TextAlignSelector = memo(
                                 size="toolbar"
                                 className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                             >
-                                {textAlign === 'left' && (
-                                    <Icons.TextAlignLeft className="h-4 w-4" />
-                                )}
-                                {textAlign === 'center' && (
-                                    <Icons.TextAlignCenter className="h-4 w-4" />
-                                )}
-                                {textAlign === 'right' && (
-                                    <Icons.TextAlignRight className="h-4 w-4" />
-                                )}
-                                {textAlign === 'justify' && (
-                                    <Icons.TextAlignJustified className="h-4 w-4" />
-                                )}
+                                {(() => {
+                                    switch (textAlign) {
+                                        case 'center':
+                                            return <Icons.TextAlignCenter className="h-4 w-4" />;
+                                        case 'right':
+                                            return <Icons.TextAlignRight className="h-4 w-4" />;
+                                        case 'justify':
+                                            return <Icons.TextAlignJustified className="h-4 w-4" />;
+                                        case 'left':
+                                        default:
+                                            return <Icons.TextAlignLeft className="h-4 w-4" />;
+                                    }
+                                })()}
                             </Button>
                         </DropdownMenuTrigger>
                     </TooltipTrigger>
@@ -353,8 +392,8 @@ const TextAlignSelector = memo(
                         className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
                             textAlign === value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
-                                : ''
-                        }`}
+                            : ''
+                            }`}
                     >
                         <Icon className="h-4 w-4" />
                     </DropdownMenuItem>
@@ -533,7 +572,7 @@ const AdvancedTypography = () => {
     );
 }
 
-export const TextSelected = () => {
+export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
     const {
         textState,
         handleFontSizeChange,
@@ -542,33 +581,172 @@ export const TextSelected = () => {
         handleTextColorChange,
     } = useTextControl();
 
+    const groupRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const [groupWidths, setGroupWidths] = useState<number[]>([]);
+    const [overflowOpen, setOverflowOpen] = useState(false);
+    const [visibleCount, setVisibleCount] = useState(TEXT_SELECTED_GROUPS.length);
+
+    // Calculate total width of a group including margins and padding
+    const calculateGroupWidth = useCallback((element: HTMLElement | null): number => {
+        if (!element) return 0;
+        const style = window.getComputedStyle(element);
+        const width = element.offsetWidth;
+        const marginLeft = parseFloat(style.marginLeft);
+        const marginRight = parseFloat(style.marginRight);
+        const paddingLeft = parseFloat(style.paddingLeft);
+        const paddingRight = parseFloat(style.paddingRight);
+        return width + marginLeft + marginRight + paddingLeft + paddingRight;
+    }, []);
+
+    // Measure all group widths
+    const measureGroups = useCallback(() => {
+        const widths = groupRefs.current.map(ref => calculateGroupWidth(ref));
+        setGroupWidths(widths);
+    }, [calculateGroupWidth]);
+
+    // Update visible count based on available width
+    const updateVisibleCount = useCallback(() => {
+        if (!groupWidths.length || !availableWidth) return;
+
+        const OVERFLOW_BUTTON_WIDTH = 32; // Reduced from 48px
+        const MIN_GROUP_WIDTH = 80; // Reduced from 100px
+        const SEPARATOR_WIDTH = 8; // Width of the InputSeparator
+        let used = 0;
+        let count = 0;
+
+        for (let i = 0; i < groupWidths.length; i++) {
+            const width = groupWidths[i] ?? 0;
+            if (width < MIN_GROUP_WIDTH) continue;
+
+            // Add separator width if this isn't the first group
+            const totalWidth = width + (count > 0 ? SEPARATOR_WIDTH : 0);
+
+            if (used + totalWidth <= availableWidth - OVERFLOW_BUTTON_WIDTH) {
+                used += totalWidth;
+                count++;
+            } else {
+                break;
+            }
+        }
+
+        setVisibleCount(count);
+    }, [groupWidths, availableWidth]);
+
+    // Measure group widths after mount and when groupRefs change
+    useEffect(() => {
+        measureGroups();
+    }, [measureGroups, availableWidth]);
+
+    // Update visible count when measurements change
+    useEffect(() => {
+        updateVisibleCount();
+    }, [updateVisibleCount]);
+
+    const visibleGroups = TEXT_SELECTED_GROUPS.slice(0, visibleCount);
+    const overflowGroups = TEXT_SELECTED_GROUPS.slice(visibleCount);
+
+    // Create component map with current textState and handlers
+    const COMPONENT_MAP: { [key: string]: React.ComponentType<any> } = {
+        Opacity,
+        Width,
+        Height,
+        FontFamily: () => <FontFamilySelector fontFamily={textState.fontFamily} />,
+        FontWeight: () => (
+            <FontWeightSelector
+                fontWeight={textState.fontWeight}
+                handleFontWeightChange={handleFontWeightChange}
+            />
+        ),
+        FontSize: () => (
+            <FontSizeSelector
+                fontSize={textState.fontSize}
+                handleFontSizeChange={handleFontSizeChange}
+            />
+        ),
+        TextColor: () => (
+            <TextColor
+                handleTextColorChange={handleTextColorChange}
+                textColor={textState.textColor}
+            />
+        ),
+        TextAlign: () => (
+            <TextAlignSelector
+                textAlign={textState.textAlign}
+                handleTextAlignChange={handleTextAlignChange}
+            />
+        ),
+        AdvancedTypography: () => <AdvancedTypography />,
+        Display,
+        Padding,
+        Margin,
+        Radius,
+        Border,
+        ColorBackground,
+        ViewButtons,
+    };
+
     return (
-        <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
-            <div className="flex items-center gap-0.5">
-                <FontFamilySelector fontFamily={textState.fontFamily} />
-                <InputSeparator />
-                <FontWeightSelector
-                    fontWeight={textState.fontWeight}
-                    handleFontWeightChange={handleFontWeightChange}
-                />
-                <InputSeparator />
-                <FontSizeSelector
-                    fontSize={textState.fontSize}
-                    handleFontSizeChange={handleFontSizeChange}
-                />
-                <InputSeparator />
-                <TextColor
-                    handleTextColorChange={handleTextColorChange}
-                    textColor={textState.textColor}
-                />
-                <TextAlignSelector
-                    textAlign={textState.textAlign}
-                    handleTextAlignChange={handleTextAlignChange}
-                />
-                <InputSeparator />
-                <AdvancedTypography />
-                <ViewButtons />
+        <>
+            {/* Hidden measurement container */}
+            <div style={{ position: 'absolute', visibility: 'hidden', height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+                {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
+                    <div
+                        key={group.key}
+                        className="flex items-center justify-center gap-0.5"
+                        ref={el => { groupRefs.current[groupIdx] = el; }}
+                    >
+                        {group.components.map((compKey, idx) => {
+                            const Comp = COMPONENT_MAP[compKey];
+                            return Comp ? <Comp key={compKey + idx} /> : null;
+                        })}
+                    </div>
+                ))}
             </div>
-        </div>
+            <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
+                {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
+                    groupIdx < visibleCount ? (
+                        <React.Fragment key={group.key}>
+                            {groupIdx > 0 && <InputSeparator />}
+                            <div className="flex items-center justify-center gap-0.5">
+                                {group.components.map((compKey, idx) => {
+                                    const Comp = COMPONENT_MAP[compKey];
+                                    return Comp ? <Comp key={compKey + idx} /> : null;
+                                })}
+                            </div>
+                        </React.Fragment>
+                    ) : null
+                ))}
+                <InputSeparator />
+                {overflowGroups.length > 0 && (
+                    <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="toolbar"
+                                className="w-8 h-8 flex items-center justify-center"
+                                aria-label="Show more toolbar controls"
+                            >
+                                <Icons.DotsHorizontal className="w-5 h-5" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
+                            {overflowGroups.map((group, groupIdx) => (
+                                <React.Fragment key={group.key}>
+                                    {groupIdx > 0 && <InputSeparator />}
+                                    <div className="flex items-center gap-0.5">
+                                        {group.components.map((compKey, idx) => {
+                                            const Comp = COMPONENT_MAP[compKey];
+                                            return Comp ? <Comp key={compKey + idx} /> : null;
+                                        })}
+                                    </div>
+                                </React.Fragment>
+                            ))}
+                        </PopoverContent>
+                    </Popover>
+                )}
+            </div>
+        </>
     );
 };
+
+export { FontFamilySelector, FontWeightSelector, FontSizeSelector, TextColor, TextAlignSelector };
