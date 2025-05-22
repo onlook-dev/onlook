@@ -10,6 +10,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { debounce } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 
 const UNITS = ['PX', '%', 'EM', 'REM'];
 
@@ -56,6 +57,24 @@ export const InputDropdown = ({
         };
     }, [debouncedOnChange]);
 
+    const handleIncrement = (step: number) => {
+        const currentValue = parseFloat(localValue);
+        if (!isNaN(currentValue)) {
+            const newValue = (currentValue + step).toString();
+            setLocalValue(newValue);
+            debouncedOnChange(newValue);
+        }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const step = e.shiftKey ? 10 : 1;
+            const direction = e.key === 'ArrowUp' ? 1 : -1;
+            handleIncrement(step * direction);
+        }
+    };
+
     return (
         <div className="flex items-center">
             <div className="flex flex-1 items-center bg-background-tertiary/50 justify-between rounded-l-md px-2.5 h-[36px] min-w-[72px]">
@@ -67,7 +86,9 @@ export const InputDropdown = ({
                         setLocalValue(newValue);
                         debouncedOnChange(newValue);
                     }}
+                    onKeyDown={handleKeyDown}
                     className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
+                    aria-label="Value input"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger className="text-sm text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">

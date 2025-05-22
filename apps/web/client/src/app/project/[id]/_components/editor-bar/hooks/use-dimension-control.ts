@@ -49,18 +49,18 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
     const editorEngine = useEditorEngine();
 
     const getInitialState = useCallback((): DimensionStateMap<T> => {
-        const computedStyles = editorEngine.style.selectedStyle?.styles.computed;
-        if (!computedStyles) {
+        const definedStyles = editorEngine.style.selectedStyle?.styles.defined;
+        if (!definedStyles) {
             return createDefaultState(dimension);
         }
-        const { num, unit } = stringToParsedValue(computedStyles[dimension]?.toString() ?? '--');
+        const { num, unit } = stringToParsedValue(definedStyles[dimension]?.toString() ?? '--');
         const { num: maxNum, unit: maxUnit } = stringToParsedValue(
-            computedStyles[
+            definedStyles[
                 `max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties
             ]?.toString() ?? '--',
         );
         const { num: minNum, unit: minUnit } = stringToParsedValue(
-            computedStyles[
+            definedStyles[
                 `min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}` as keyof CSSProperties
             ]?.toString() ?? '--',
         );
