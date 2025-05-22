@@ -11,7 +11,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { Color, convertFontWeight, toNormalCase } from '@onlook/utility';
+import { convertFontWeight, toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useState } from 'react';
 import { useTextControl, type TextAlign } from './hooks/use-text-control';
 import { ColorPickerContent } from './inputs/color-picker';
@@ -19,16 +19,22 @@ import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
 import { useEditorEngine } from '@/components/store/editor';
 import type { Font } from '@onlook/models/assets';
-import type { TailwindColor } from '@onlook/models';
 import { useColorUpdate } from './hooks/use-color-update';
+import { FontFamily } from '../left-panel/brand-tab/font-panel/font-family';
+import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
+import { InputIcon } from './inputs/input-icon';
+import { InputRadio } from './inputs/input-radio';
+import { InputColor } from './inputs/input-color';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
 const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
     const editorEngine = useEditorEngine();
     const [fonts, setFonts] = useState<Font[]>([]);
+    const [search, setSearch] = useState('');
+    const [open, setOpen] = useState(false);
     const { handleFontFamilyChange } = useTextControl();
-    
+
     useEffect(() => {
         (async () => {
             try {
@@ -40,47 +46,120 @@ const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
         })();
     }, []);
 
+    // Filter fonts by search
+    const filteredFonts = fonts.filter((font) =>
+        font.family.toLowerCase().includes(search.toLowerCase()),
+    );
+
+    const handleClose = () => {
+        setOpen(false);
+        editorEngine.state.brandTab = null;
+        if (editorEngine.state.leftPanelTab === LeftPanelTabValue.BRAND) {
+            editorEngine.state.leftPanelTab = null;
+        }
+        setSearch('');
+    };
+
     return (
-        <DropdownMenu>
+        <Popover
+            open={open}
+            onOpenChange={(v) => {
+                setOpen(v);
+                if (!v) editorEngine.state.brandTab = null;
+            }}
+        >
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
+                    <PopoverTrigger asChild>
                         <Button
                             variant="ghost"
                             size="toolbar"
                             className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            aria-label="Font Family Selector"
+                            tabIndex={0}
+                            onClick={handleClose}
                         >
                             <span className="truncate text-sm">{toNormalCase(fontFamily)}</span>
                         </Button>
-                    </DropdownMenuTrigger>
+                    </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="mt-1" hideArrow>
                     Font Family
                 </TooltipContent>
             </Tooltip>
-            <DropdownMenuContent
-                align="center"
-                className="mt-1 min-w-[200px] max-h-[300px] overflow-y-auto rounded-lg p-1"
+            <PopoverContent
+                side="bottom"
+                align="start"
+                className="mt-1 min-w-[300px] max-h-[400px] overflow-y-auto rounded-xl p-0 bg-background shadow-lg border border-border flex flex-col"
             >
-                {fonts.map((font: Font) => (
-                    <DropdownMenuItem
-                        key={font.id}
-                        onClick={() => handleFontFamilyChange(font)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontFamily === font.family
-                            ? "bg-background-tertiary/20 border-border border text-white"
-                            : ""
-                            }`}
+                <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
+                    <h2 className="text-sm font-normal text-foreground">Fonts</h2>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 rounded-md hover:bg-background-secondary"
+                        onClick={handleClose}
                     >
-                        <span className="font-medium" style={{ fontFamily: font.family }}>
-                            {font.family}
-                        </span>
-                        {fontFamily === font.family && (
-                            <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />
-                        )}
-                    </DropdownMenuItem>
-                ))}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                        <Icons.CrossS className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="px-4 py-2">
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search fonts..."
+                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        aria-label="Search fonts"
+                        tabIndex={0}
+                    />
+                    <div className="text-sm text-muted-foreground mb-1 mt-2">Brand fonts</div>
+                </div>
+                <div className="flex-1 overflow-y-auto px-2 pb-2 divide-y divide-border">
+                    {filteredFonts.length === 0 ? (
+                        <div className="flex justify-center items-center h-20">
+                            <span className="text-sm text-muted-foreground">No fonts found</span>
+                        </div>
+                    ) : (
+                        filteredFonts.map((font) => (
+                            <div key={font.id} className="py-1">
+                                <FontFamily
+                                    name={font.family}
+                                    variants={
+                                        font.weight?.map(
+                                            (weight) =>
+                                                VARIANTS.find((v) => v.value === weight)?.name ||
+                                                weight,
+                                        ) as string[]
+                                    }
+                                    showDropdown={false}
+                                    showAddButton={false}
+                                    isDefault={fontFamily === font.family}
+                                    onSetFont={() => handleFontFamilyChange(font)}
+                                />
+                            </div>
+                        ))
+                    )}
+                </div>
+                <div className="p-4 border-t border-border bg-background sticky bottom-0">
+                    <Button
+                        variant="secondary"
+                        size="lg"
+                        className="w-full rounded-md text-sm font-medium"
+                        aria-label="Manage Brand fonts"
+                        tabIndex={0}
+                        onClick={() => {
+                            editorEngine.state.brandTab = BrandTabValue.FONTS;
+                            editorEngine.state.leftPanelTab = LeftPanelTabValue.BRAND;
+
+                            setOpen(false);
+                        }}
+                    >
+                        Manage Brand fonts
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
     );
 });
 
@@ -120,10 +199,11 @@ const FontWeightSelector = memo(
                     <DropdownMenuItem
                         key={weight.value}
                         onClick={() => handleFontWeightChange(weight.value)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${fontWeight === weight.value
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
+                            fontWeight === weight.value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
                                 : ''
-                            }`}
+                        }`}
                     >
                         {weight.name}
                         {fontWeight === weight.value && (
@@ -202,10 +282,11 @@ const FontSizeSelector = memo(
                         <DropdownMenuItem
                             key={size}
                             onClick={() => handleFontSizeChange(size)}
-                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
+                            className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${
+                                size === fontSize
                                     ? 'bg-background-tertiary/20 border-border border text-white'
                                     : ''
-                                }`}
+                            }`}
                         >
                             {size}
                         </DropdownMenuItem>
@@ -269,10 +350,11 @@ const TextAlignSelector = memo(
                     <DropdownMenuItem
                         key={value}
                         onClick={() => handleTextAlignChange(value)}
-                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${textAlign === value
+                        className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border rounded-md border px-2 py-1.5 data-[highlighted]:text-foreground cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
+                            textAlign === value
                                 ? 'bg-background-tertiary/20 border-border border text-white'
                                 : ''
-                            }`}
+                        }`}
                     >
                         <Icon className="h-4 w-4" />
                     </DropdownMenuItem>
@@ -290,32 +372,11 @@ const TextColor = memo(
         handleTextColorChange: (color: string) => void;
         textColor: string;
     }) => {
-        const [tempColor, setTempColor] = useState<Color>(Color.from(textColor));
-        const { handleColorUpdate } = useColorUpdate({
+        const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
             elementStyleKey: 'color',
-            onValueChange: (_, value) => handleTextColorChange(value)
+            onValueChange: (_, value) => handleTextColorChange(value),
+            initialColor: textColor,
         });
-
-        const handleColorChange = (newColor: Color | TailwindColor) => {
-            try {
-                setTempColor(newColor instanceof Color ? newColor : Color.from(newColor.lightColor));
-            } catch (error) {
-                console.error('Error converting color:', error);
-            }
-        };
-
-        const handleColorChangeEnd = (newColor: Color | TailwindColor) => {
-            try {
-                if (newColor instanceof Color) {
-                    setTempColor(newColor);
-                } else {
-                    setTempColor(Color.from(newColor.lightColor));
-                }
-                handleColorUpdate(newColor);
-            } catch (error) {
-                console.error('Error converting color:', error);
-            }
-        };
 
         return (
             <Popover>
@@ -338,14 +399,14 @@ const TextColor = memo(
                     </div>
                 </Tooltip>
                 <PopoverContent
-                    className="w-[280px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                    className="w-[224px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"
                     align="start"
                 >
                     <ColorPickerContent
                         color={tempColor}
-                        onChange={handleColorChange}
-                        onChangeEnd={handleColorChangeEnd}
+                        onChange={handleColorUpdate}
+                        onChangeEnd={handleColorUpdateEnd}
                     />
                 </PopoverContent>
             </Popover>
@@ -354,6 +415,123 @@ const TextColor = memo(
 );
 
 TextColor.displayName = 'TextColor';
+
+const AdvancedTypography = () => {
+    const {
+        textState,
+        handleLetterSpacingChange,
+        handleCapitalizationChange,
+        handleTextDecorationChange,
+        handleLineHeightChange,
+    } = useTextControl();
+
+    const [open, setOpen] = useState(false);
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const capitalizationOptions = [
+        { value: 'uppercase', label: 'AA' },
+        { value: 'capitalize', label: 'Aa' },
+        { value: 'lowercase', label: 'aa' },
+        { value: 'none', icon: <Icons.CrossL className="h-4 w-4" /> },
+    ];
+
+    const decorationOptions = [
+        { value: 'underline', icon: <Icons.TextUnderline className="h-4 w-4" /> },
+        { value: 'overline', icon: <Icons.TextOverline className="h-4 w-4" /> },
+        { value: 'line-through', icon: <Icons.TextStrikeThrough className="h-4 w-4" /> },
+        { value: 'none', icon: <Icons.CrossL className="h-4 w-4" /> },
+    ];
+
+    return (
+        <Popover open={open} onOpenChange={(v) => setOpen(v)}>
+            <Tooltip>
+                <div>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="toolbar"
+                                className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                            >
+                                <Icons.AdvancedTypography className="h-4 w-4" />
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="mt-1" hideArrow>
+                        Advanced Typography
+                    </TooltipContent>
+                </div>
+            </Tooltip>
+            <PopoverContent
+                side="bottom"
+                align="start"
+                className="mt-1 w-[300px] rounded-xl p-0 bg-background shadow-lg border border-border"
+            >
+                <div className="flex justify-between items-center pl-4 pr-2.5 py-1.5 border-b border-border">
+                    <h2 className="text-sm font-normal text-foreground">Advanced Typography</h2>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 rounded-md hover:bg-background-secondary"
+                        onClick={handleClose}
+                    >
+                        <Icons.CrossS className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="space-y-4 px-4 py-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground w-20">Color</span>
+                        <div className="flex-1">
+                            <InputColor color={textState.textColor} elementStyleKey="color" />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground w-20">Line</span>
+                        <div className="flex-1">
+                            <InputIcon
+                                value={isNaN(parseFloat(textState.lineHeight)) ? 0 : parseFloat(textState.lineHeight)}
+                                onChange={(value) => handleLineHeightChange(value.toString())}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground w-20">Letter</span>
+                        <div className="flex-1">
+                            <InputIcon
+                                value={isNaN(parseFloat(textState.letterSpacing)) ? 0 : parseFloat(textState.letterSpacing)}
+                                onChange={(value) => handleLetterSpacingChange(value.toString())}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-20">Capitalize</span>
+                        <div className="w-[225px]">
+                            <InputRadio
+                                options={capitalizationOptions}
+                                value={textState.capitalization}
+                                onChange={handleCapitalizationChange}
+                                className="flex-1"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground w-20">Decorate</span>
+                        <div className="w-[225px]">
+                            <InputRadio
+                                options={decorationOptions}
+                                value={textState.textDecorationLine}
+                                onChange={handleTextDecorationChange}
+                                className="flex-1"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+}
 
 export const TextSelected = () => {
     const {
@@ -367,7 +545,6 @@ export const TextSelected = () => {
     return (
         <div className="bg-background flex flex-col drop-shadow-xl backdrop-blur">
             <div className="flex items-center gap-0.5">
-                {/* <StateDropdown /> */}
                 <FontFamilySelector fontFamily={textState.fontFamily} />
                 <InputSeparator />
                 <FontWeightSelector
@@ -388,6 +565,8 @@ export const TextSelected = () => {
                     textAlign={textState.textAlign}
                     handleTextAlignChange={handleTextAlignChange}
                 />
+                <InputSeparator />
+                <AdvancedTypography />
                 <ViewButtons />
             </div>
         </div>

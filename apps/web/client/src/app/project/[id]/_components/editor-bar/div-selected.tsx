@@ -8,7 +8,6 @@ import { ImageBackground } from './dropdowns/img-background';
 import { Margin } from './dropdowns/margin';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
-import { StateDropdown } from './dropdowns/state-dropdown';
 import { Width } from './dropdowns/width';
 import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
