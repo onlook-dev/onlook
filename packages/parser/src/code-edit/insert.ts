@@ -92,15 +92,14 @@ export function insertAtIndex(
 ): void {
     if (index !== -1) {
         const jsxElements = path.node.children.filter(jsxFilter);
-        const targetIndex = Math.max(0, Math.min(index, jsxElements.length));
-        // Append to the end of the node if the index is greater than the number of children
-        // Or if the node is empty
-        if (targetIndex === path.node.children.length || jsxElements.length === 0) {
+        const targetIndex = Math.min(index, jsxElements.length);
+        if (targetIndex === path.node.children.length) {
             path.node.children.push(newElement);
         } else {
             const targetChild = jsxElements[targetIndex];
             if (!targetChild) {
                 console.error('Target child not found');
+                path.node.children.push(newElement);
                 return;
             }
             const targetChildIndex = path.node.children.indexOf(targetChild);
