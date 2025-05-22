@@ -7,9 +7,9 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
+import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 
