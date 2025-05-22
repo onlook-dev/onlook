@@ -1,19 +1,15 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
-import type { Frame } from '@onlook/models';
+import { sendAnalytics } from '@/utils/analytics';
+import type { Frame, WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
 
 export interface FrameData {
     frame: Frame;
     view: WebFrameView;
     selected: boolean;
-    // state: FrameState;
 }
-
-const DEFAULT_DATA = {
-    selected: false,
-    // state: FrameState.NOT_RUNNING,
-};
 
 export class FramesManager {
     private frameIdToData = new Map<string, FrameData>();
@@ -40,7 +36,7 @@ export class FramesManager {
     }
 
     register(frame: Frame, view: WebFrameView) {
-        this.frameIdToData.set(frame.id, { frame, view, ...DEFAULT_DATA });
+        this.frameIdToData.set(frame.id, { frame, view, selected: false });
     }
 
     deregister(frame: Frame) {
@@ -55,14 +51,18 @@ export class FramesManager {
         return this.frameIdToData.get(id)?.selected ?? false;
     }
 
-    select(frame: Frame) {
-        const data = this.frameIdToData.get(frame.id);
-        if (data) {
-            data.selected = true;
-            this.frameIdToData.set(frame.id, data);
-            // this.editorEngine.pages.handleWebviewUrlChange(frameView.id);
-            this.notify();
+    select(frames: Frame[]) {
+        this.deselectAll();
+
+        for (const frame of frames) {
+            const data = this.frameIdToData.get(frame.id);
+            if (data) {
+                data.selected = true;
+                this.frameIdToData.set(frame.id, data);
+                // this.editorEngine.pages.handleWebviewUrlChange(frameView.id);
+            }
         }
+        this.notify();
     }
 
     deselect(frame: Frame) {
@@ -113,5 +113,85 @@ export class FramesManager {
             return;
         }
         frame.view.reload();
+    }
+
+    screenshot(id: string) {
+        const frame = this.frameIdToData.get(id);
+        if (!frame) {
+            console.error('Frame not found', id);
+            return;
+        }
+        // frame.view.screenshot();
+    }
+
+    delete(id: string) {
+        if (!this.canDelete()) {
+            console.error('Cannot delete the last frame');
+            return;
+        }
+        const data = this.get(id);
+
+        if (!data) {
+            console.error('Frame not found');
+            return;
+        }
+        const { frame } = data
+        this.editorEngine.ast.mappings.remove(frame.id);
+        this.editorEngine.canvas.frames = this.editorEngine.canvas.frames.filter((f) => f.id !== frame.id);
+        this.editorEngine.frames.deselect(frame);
+        this.editorEngine.frames.disposeFrame(frame.id);
+        sendAnalytics('window deleted');
+    }
+
+    duplicate(id: string) {
+        const data = this.get(id);
+        if (!data) {
+            console.error('Frame not found');
+            return;
+        }
+
+        // Force to webframe for now, later we can support other frame types
+        const frame = data.frame as unknown as WebFrame;
+
+        const newFrame: WebFrame = {
+            id: uuid(),
+            url: frame.url,
+            dimension: {
+                width: frame.dimension.width,
+                height: frame.dimension.height,
+            },
+            position: {
+                x: frame.position.x + frame.dimension.width + 100,
+                y: frame.position.y,
+            },
+            type: frame.type,
+        };
+
+        this.editorEngine.canvas.frames = [...this.editorEngine.canvas.frames, newFrame];
+        sendAnalytics('window duplicate');
+    }
+
+    canDelete() {
+        return this.editorEngine.frames.getAll().length > 1;
+    }
+
+    canDuplicate() {
+        return this.editorEngine.frames.selected.length > 0;
+    }
+
+    duplicateSelected() {
+        for (const frame of this.selected) {
+            this.duplicate(frame.frame.id);
+        }
+    }
+
+    deleteSelected() {
+        for (const frame of this.selected) {
+            if (!this.canDelete()) {
+                console.error('Cannot delete the last frame');
+                return;
+            }
+            this.delete(frame.frame.id);
+        }
     }
 }

@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { FrameImpl } from '@/components/store/editor/canvas/frame';
 import { DefaultSettings, DEVICE_OPTIONS, Orientation } from '@onlook/constants';
-import type { Frame, FrameType } from '@onlook/models';
+import type { FrameType, WindowMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
@@ -15,23 +15,26 @@ import {
     SelectValue,
 } from '@onlook/ui/select';
 import { Separator } from '@onlook/ui/separator';
+import { computeWindowMetadata } from '@onlook/utility';
 import { Fragment, useEffect, useState } from 'react';
 
 export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
     const editorEngine = useEditorEngine();
-    const [device, setDevice] = useState(frame.windowMetadata.device ?? DefaultSettings.DEVICE);
+
+    const settings = computeWindowMetadata(frame.dimension.width.toString(), frame.dimension.height.toString());
+    const [device, setDevice] = useState(settings.device || DefaultSettings.DEVICE);
     const [orientation, setOrientation] = useState(
-        frame.windowMetadata.orientation ?? DefaultSettings.ORIENTATION,
+        settings.orientation || DefaultSettings.ORIENTATION,
     );
     const [width, setWidth] = useState(
-        frame.dimension.width ?? DefaultSettings.FRAME_DIMENSION.width,
+        settings.width || DefaultSettings.FRAME_DIMENSION.width,
     );
     const [height, setHeight] = useState(
-        frame.dimension.height ?? DefaultSettings.FRAME_DIMENSION.height,
+        settings.height || DefaultSettings.FRAME_DIMENSION.height,
     );
     // const [responsive, setResponsive] = useState('Closest Size');
     const [aspectRatioLocked, setAspectRatioLocked] = useState(
-        frame.windowMetadata.aspectRatioLocked ?? DefaultSettings.ASPECT_RATIO_LOCKED,
+        settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
     );
     const [aspectRatio, setAspectRatio] = useState(width / height);
     const [step, setStep] = useState(1);
@@ -40,28 +43,9 @@ export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
         width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
     });
 
-    useEffect(() => {
-        const observer = (newSettings: Frame) => {
-            if (newSettings.dimension.width !== width) {
-                setWidth(newSettings.dimension.width);
-            }
-            if (newSettings.dimension.height !== height) {
-                setHeight(newSettings.dimension.height);
-            }
-        };
-
-        editorEngine.canvas.observeSettings(frame.id, observer);
-
-        return editorEngine.canvas.unobserveSettings(frame.id, observer);
-    }, []);
-
-    useEffect(() => {
-        setDevice(frame.windowMetadata.device || DefaultSettings.DEVICE);
-        setOrientation(frame.windowMetadata.orientation || DefaultSettings.ORIENTATION);
-        setWidth(frame.dimension.width || DefaultSettings.FRAME_DIMENSION.width);
-        setHeight(frame.dimension.height || DefaultSettings.FRAME_DIMENSION.height);
-        setAspectRatioLocked(frame.windowMetadata.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED);
-    }, [frame.id]);
+    const updateFrame = (metadata: Partial<WindowMetadata>) => {
+        console.log(metadata);
+    }
 
     useEffect(() => {
         const [deviceCategory, deviceName] = device.split(':');
@@ -69,10 +53,8 @@ export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
 
 
             if (deviceName === 'Custom') {
-                editorEngine.canvas.saveFrame(frame.id, {
-                    windowMetadata: {
-                        device: device as FrameType,
-                    }
+                updateFrame({
+                    device: device as FrameType,
                 });
                 return;
             }
@@ -89,11 +71,10 @@ export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
                 } else {
                     setWidth(parseInt(deviceWidth));
                     setHeight(parseInt(deviceHeight));
-                    editorEngine.canvas.saveFrame(frame.id, {
-                        dimension: { width: parseInt(deviceWidth), height: parseInt(deviceHeight) },
-                        windowMetadata: {
-                            device: device as FrameType,
-                        }
+                    updateFrame({
+                        width: parseInt(deviceWidth),
+                        height: parseInt(deviceHeight),
+                        device: device as FrameType,
                     });
                     if (aspectRatioLocked) {
                         setAspectRatio(parseInt(deviceWidth) / parseInt(deviceHeight));
@@ -132,8 +113,9 @@ export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
                 setOrientation(Orientation.Landscape);
             }
 
-            editorEngine.canvas.saveFrame(frame.id, {
-                dimension: { width: width, height: height },
+            updateFrame({
+                width: width,
+                height: height,
             });
         }
     }, [height, width]);
@@ -157,18 +139,14 @@ export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
                 width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
             });
         }
-        editorEngine.canvas.saveFrame(frame.id, {
-            windowMetadata: {
-                aspectRatioLocked: aspectRatioLocked,
-            }
+        updateFrame({
+            aspectRatioLocked: aspectRatioLocked,
         });
     }, [aspectRatioLocked]);
 
     useEffect(() => {
-        editorEngine.canvas.saveFrame(frame.id, {
-            windowMetadata: {
-                orientation: orientation,
-            }
+        updateFrame({
+            orientation: orientation,
         });
     }, [orientation]);
 
@@ -283,10 +261,8 @@ export const FrameDimensions = ({ frame }: { frame: FrameImpl }) => {
 
     const handleAspectRatioLock = () => {
         setAspectRatioLocked((prev) => !prev);
-        editorEngine.canvas.saveFrame(frame.id, {
-            windowMetadata: {
-                aspectRatioLocked: !aspectRatioLocked,
-            }
+        updateFrame({
+            aspectRatioLocked: !aspectRatioLocked,
         });
     };
 

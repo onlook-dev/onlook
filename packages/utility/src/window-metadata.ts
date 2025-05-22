@@ -7,6 +7,8 @@ export const computeWindowMetadata = (width: string, height: string): WindowMeta
         aspectRatioLocked: true,
         device: computeDevice(width, height),
         theme: Theme.System,
+        width: Number(width),
+        height: Number(height),
     };
 };
 

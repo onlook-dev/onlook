@@ -23,7 +23,6 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
-import { WindowManager } from './window';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -49,9 +48,6 @@ export class EditorEngine {
     readonly style: StyleManager = new StyleManager(this);
     readonly frames: FramesManager = new FramesManager(this);
     readonly code: CodeManager = new CodeManager(this);
-
-    // TODO: This could be part of frames manager
-    readonly window: WindowManager = new WindowManager(this);
 
     constructor(
         private projectManager: ProjectManager,

@@ -113,7 +113,6 @@ export class CanvasManager {
             position: defaults.position ?? DefaultSettings.FRAME_POSITION,
             dimension: defaults.dimension ?? DefaultSettings.FRAME_DIMENSION,
             type: FrameType.WEB,
-            windowMetadata: defaults.windowMetadata ?? {},
         };
     }
 

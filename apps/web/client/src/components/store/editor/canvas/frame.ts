@@ -1,4 +1,4 @@
-import type { Frame, FrameType, RectDimension, RectPosition, WebFrame, WindowMetadata } from '@onlook/models';
+import type { Frame, FrameType, RectDimension, RectPosition, WebFrame } from '@onlook/models';
 import { makeObservable, observable } from 'mobx';
 
 export class FrameImpl implements Frame {
@@ -6,20 +6,17 @@ export class FrameImpl implements Frame {
     position: RectPosition;
     dimension: RectDimension;
     type: FrameType;
-    windowMetadata: WindowMetadata;
 
     constructor(frame: Frame) {
         this.id = frame.id;
         this.position = frame.position;
         this.dimension = frame.dimension;
         this.type = frame.type;
-        this.windowMetadata = frame.windowMetadata ?? {};
         makeObservable(this, {
             id: observable,
             position: observable,
             dimension: observable,
             type: observable,
-            windowMetadata: observable
         });
     }
 
