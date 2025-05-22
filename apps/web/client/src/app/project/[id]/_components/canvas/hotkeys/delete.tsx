@@ -19,7 +19,7 @@ export const DeleteKey = () => {
     const userManager = useUserManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(
-        userManager.settings.settings?.editor?.shouldWarnDelete ?? true,
+        userManager.settings.settings?.editor?.shouldWarnDelete ?? false,
     );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
