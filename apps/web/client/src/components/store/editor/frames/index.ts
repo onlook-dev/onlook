@@ -51,14 +51,18 @@ export class FramesManager {
         return this.frameIdToData.get(id)?.selected ?? false;
     }
 
-    select(frame: Frame) {
-        const data = this.frameIdToData.get(frame.id);
-        if (data) {
-            data.selected = true;
-            this.frameIdToData.set(frame.id, data);
-            // this.editorEngine.pages.handleWebviewUrlChange(frameView.id);
-            this.notify();
+    select(frames: Frame[]) {
+        this.deselectAll();
+
+        for (const frame of frames) {
+            const data = this.frameIdToData.get(frame.id);
+            if (data) {
+                data.selected = true;
+                this.frameIdToData.set(frame.id, data);
+                // this.editorEngine.pages.handleWebviewUrlChange(frameView.id);
+            }
         }
+        this.notify();
     }
 
     deselect(frame: Frame) {
@@ -161,7 +165,6 @@ export class FramesManager {
                 y: frame.position.y,
             },
             type: frame.type,
-            windowMetadata: frame.windowMetadata,
         };
 
         this.editorEngine.canvas.frames = [...this.editorEngine.canvas.frames, newFrame];

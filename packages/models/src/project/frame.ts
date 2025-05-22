@@ -10,7 +10,6 @@ export interface Frame {
     position: RectPosition;
     type: FrameType;
     dimension: RectDimension;
-    windowMetadata: WindowMetadata;
 }
 
 export interface WebFrame extends Frame {
@@ -19,8 +18,10 @@ export interface WebFrame extends Frame {
 }
 
 export interface WindowMetadata {
-    orientation?: Orientation;
-    aspectRatioLocked?: boolean;
-    device?: string;
-    theme?: Theme;
+    orientation: Orientation;
+    aspectRatioLocked: boolean;
+    device: string;
+    theme: Theme;
+    width: number;
+    height: number;
 }

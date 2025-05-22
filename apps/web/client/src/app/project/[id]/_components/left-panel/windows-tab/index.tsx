@@ -10,11 +10,12 @@ import { FrameDimensions } from './frame-dimensions';
 export const WindowsTab = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    // const frameData = editorEngine.frames.get(editorEngine.elements.selected[0]?.frameId ?? '');
-    const frameData = editorEngine.canvas.getFrame(editorEngine.elements.selected[0]?.frameId ?? '')
     const WIDTH = 'w-[275px]';
 
-    if (!frameData) {
+    const selected = editorEngine.frames.selected;
+    const frameData = selected[0]?.frame;
+
+    if (selected.length === 0 || !frameData) {
         return (
             <p
                 className={`${WIDTH} h-full flex items-center justify-center p-2 text-center text-sm text-foreground-secondary`}
