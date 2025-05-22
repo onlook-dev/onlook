@@ -1,17 +1,10 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { EditorMode } from '@onlook/models';
-import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
-import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { motion } from 'motion/react';
 import { useState } from 'react';
-// import Terminal from './terminal';
 
 export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
     const [terminalHidden, setTerminalHidden] = useState(true);
-    const editorEngine = useEditorEngine();
-    const [mode, setMode] = useState<EditorMode>(editorEngine.state.editorMode);
 
     return (
         <>
