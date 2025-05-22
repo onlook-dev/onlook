@@ -133,7 +133,7 @@ export class FramesManager {
         }
         const { frame } = data
         this.editorEngine.ast.mappings.remove(frame.id);
-        this.editorEngine.canvas.frames = this.editorEngine.canvas.frames.filter((frame) => frame.id !== frame.id);
+        this.editorEngine.canvas.frames = this.editorEngine.canvas.frames.filter((f) => f.id !== frame.id);
         this.editorEngine.frames.deselect(frame);
         this.editorEngine.frames.disposeFrame(frame.id);
         sendAnalytics('window deleted');
