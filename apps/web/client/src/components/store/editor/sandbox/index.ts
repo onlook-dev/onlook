@@ -93,7 +93,6 @@ export class SandboxManager {
         }
 
         try {
-            this.processFileForMapping(filePath);
             await this.session.session.fs.writeTextFile(filePath, fileContent);
             return true;
         } catch (error) {
