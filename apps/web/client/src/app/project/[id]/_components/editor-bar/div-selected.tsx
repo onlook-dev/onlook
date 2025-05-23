@@ -59,8 +59,6 @@ export const DivSelected = ({ availableWidth = 0 }: { availableWidth?: number })
     const visibleGroups = DIV_SELECTED_GROUPS.slice(0, visibleCount);
     const overflowGroups = DIV_SELECTED_GROUPS.slice(visibleCount);
 
-    console.log('re-render', visibleCount, availableWidth);
-
     return (
         <>
             {/* Hidden measurement container */}

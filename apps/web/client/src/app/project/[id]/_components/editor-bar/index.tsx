@@ -35,7 +35,6 @@ const getSelectedTag = (selected: DomElement[]): 'div' | 'text' | 'image' | 'vid
 export const EditorBar = observer(({ availableWidth }: { availableWidth?: number }) => {
     const editorEngine = useEditorEngine();
     const selectedTag = getSelectedTag(editorEngine.elements.selected);
-    console.log('re-render selected tag', availableWidth);
 
     return (
         <motion.div
