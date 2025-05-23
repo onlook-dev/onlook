@@ -10,9 +10,30 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useState } from 'react';
-import { FontFamily } from '../../left-panel/brand-tab/font-panel/font-family';
 import { useTextControl } from '../hooks/use-text-control';
 import { observer } from 'mobx-react-lite';
+
+const FontFamily = memo(
+    ({ name, isActive, onSetFont }: { name: string; isActive: boolean; onSetFont: () => void }) => {
+        console.log(name, isActive);
+        return (
+            <div
+                key={name}
+                onClick={onSetFont}
+                className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
+                    isActive
+                        ? 'bg-background-tertiary/20 border-border border text-white'
+                        : ''
+                }`}
+            >
+                <span className="font-medium" style={{ fontFamily: name }}>
+                    {name}
+                </span>
+                {isActive && <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />}
+            </div>
+        );
+    },
+);
 
 export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
@@ -46,6 +67,8 @@ export const FontFamilySelector = observer(() => {
         setSearch('');
     };
 
+    console.log(textState.fontFamily);
+
     return (
         <Popover
             open={open}
@@ -65,7 +88,9 @@ export const FontFamilySelector = observer(() => {
                             tabIndex={0}
                             onClick={handleClose}
                         >
-                            <span className="truncate text-sm">{toNormalCase(textState.fontFamily)}</span>
+                            <span className="truncate text-sm">
+                                {toNormalCase(textState.fontFamily)}
+                            </span>
                         </Button>
                     </PopoverTrigger>
                 </TooltipTrigger>
@@ -111,17 +136,8 @@ export const FontFamilySelector = observer(() => {
                             <div key={font.id} className="py-1">
                                 <FontFamily
                                     name={font.family}
-                                    variants={
-                                        font.weight?.map(
-                                            (weight) =>
-                                                VARIANTS.find((v) => v.value === weight)?.name ||
-                                                weight,
-                                        ) as string[]
-                                    }
-                                    showDropdown={false}
-                                    showAddButton={false}
-                                    isDefault={textState.fontFamily === font.family}
                                     onSetFont={() => handleFontFamilyChange(font)}
+                                    isActive={textState.fontFamily.toLowerCase() === font.id.toLowerCase()}
                                 />
                             </div>
                         ))

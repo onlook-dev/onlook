@@ -2,11 +2,19 @@ import { useCallback, useEffect, useState } from 'react';
 
 // Pre-calculated approximate widths for each group type
 const GROUP_WIDTHS = {
+    // Div groups
     dimensions: 160, // Width + Height
     base: 180, // Color + Border + Radius
     layout: 180, // Display + Padding + Margin
     typography: 240, // Font Family + Weight + Size
     opacity: 80, // Opacity
+
+    // Text groups (wider due to more components)
+    'text-typography': 360, // Font Family + Weight + Size + Color + Align + Advanced
+    'text-dimensions': 160, // Width + Height
+    'text-base': 180, // Color + Border + Radius
+    'text-layout': 180, // Display + Padding + Margin
+    'text-opacity': 80, // Opacity
 };
 
 export const useMeasureGroup = ({ availableWidth = 0, count = 0 }: { availableWidth?: number, count?: number }) => {

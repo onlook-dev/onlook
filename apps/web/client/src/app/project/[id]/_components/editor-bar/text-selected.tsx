@@ -3,7 +3,7 @@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Border } from './dropdowns/border';
 import { ColorBackground } from './dropdowns/color-background';
 import { Display } from './dropdowns/display';
@@ -13,8 +13,6 @@ import { Opacity } from './dropdowns/opacity';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { Width } from './dropdowns/width';
-import { useTextControl } from './hooks/use-text-control';
-import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
 import { AdvancedTypography } from './text-inputs/advanced-typography';
 import { FontFamilySelector } from './text-inputs/font-family';
@@ -27,7 +25,7 @@ import { useMeasureGroup } from './hooks/use-measure-group';
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [
     {
-        key: 'typography',
+        key: 'text-typography',
         label: 'Typography',
         components: [
             <FontFamilySelector />,
@@ -39,7 +37,7 @@ export const TEXT_SELECTED_GROUPS = [
         ],
     },
     {
-        key: 'dimensions',
+        key: 'text-dimensions',
         label: 'Dimensions',
         components: [
             <Width />,
@@ -47,7 +45,7 @@ export const TEXT_SELECTED_GROUPS = [
         ],
     },
     {
-        key: 'base',
+        key: 'text-base',
         label: 'Base',
         components: [
             <ColorBackground />,
@@ -56,7 +54,7 @@ export const TEXT_SELECTED_GROUPS = [
         ],
     },
     {
-        key: 'layout',
+        key: 'text-layout',
         label: 'Layout',
         components: [
             <Display />,
@@ -65,7 +63,7 @@ export const TEXT_SELECTED_GROUPS = [
         ],
     },
     {
-        key: 'opacity',
+        key: 'text-opacity',
         label: 'Opacity',
         components: [
             <Opacity />,
@@ -74,75 +72,55 @@ export const TEXT_SELECTED_GROUPS = [
 ];
 
 export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
-    const { groupRefs, visibleCount } = useMeasureGroup({ availableWidth, count: TEXT_SELECTED_GROUPS.length });
-
+    const { visibleCount } = useMeasureGroup({ availableWidth, count: TEXT_SELECTED_GROUPS.length });
     const [overflowOpen, setOverflowOpen] = useState(false);
 
     const visibleGroups = TEXT_SELECTED_GROUPS.slice(0, visibleCount);
     const overflowGroups = TEXT_SELECTED_GROUPS.slice(visibleCount);
+
     return (
-        <>
-            {/* Hidden measurement container */}
-            <div style={{ position: 'absolute', visibility: 'hidden', height: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-                {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
-                    <div
-                        key={group.key}
-                        className="flex items-center justify-center gap-0.5"
-                        ref={el => { groupRefs.current[groupIdx] = el; }}
-                    >
+        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
+            {visibleGroups.map((group, groupIdx) => (
+                <React.Fragment key={group.key}>
+                    {groupIdx > 0 && <InputSeparator />}
+                    <div className="flex items-center justify-center gap-0.5">
                         {group.components.map((comp, idx) => (
                             <React.Fragment key={idx}>
                                 {comp}
                             </React.Fragment>
                         ))}
                     </div>
-                ))}
-            </div>
-            <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
-                {TEXT_SELECTED_GROUPS.map((group, groupIdx) => (
-                    groupIdx < visibleCount ? (
-                        <React.Fragment key={group.key}>
-                            {groupIdx > 0 && <InputSeparator />}
-                            <div className="flex items-center justify-center gap-0.5">
-                                {group.components.map((comp, idx) => (
-                                    <React.Fragment key={idx}>
-                                        {comp}
-                                    </React.Fragment>
-                                ))}
-                            </div>
-                        </React.Fragment>
-                    ) : null
-                ))}
-                <InputSeparator />
-                {overflowGroups.length > 0 && (
-                    <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="toolbar"
-                                className="w-8 h-8 flex items-center justify-center"
-                                aria-label="Show more toolbar controls"
-                            >
-                                <Icons.DotsHorizontal className="w-5 h-5" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
-                            {overflowGroups.map((group, groupIdx) => (
-                                <React.Fragment key={group.key}>
-                                    {groupIdx > 0 && <InputSeparator />}
-                                    <div className="flex items-center gap-0.5">
-                                        {group.components.map((comp, idx) => (
-                                            <React.Fragment key={idx}>
-                                                {comp}
-                                            </React.Fragment>
-                                        ))}
-                                    </div>
-                                </React.Fragment>
-                            ))}
-                        </PopoverContent>
-                    </Popover>
-                )}
-            </div>
-        </>
+                </React.Fragment>
+            ))}
+            {overflowGroups.length > 0 && visibleCount > 0 && <InputSeparator />}
+            {overflowGroups.length > 0 && (
+                <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="toolbar"
+                            className="w-8 h-8 flex items-center justify-center"
+                            aria-label="Show more toolbar controls"
+                        >
+                            <Icons.DotsHorizontal className="w-5 h-5" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
+                        {overflowGroups.map((group, groupIdx) => (
+                            <React.Fragment key={group.key}>
+                                {groupIdx > 0 && <InputSeparator />}
+                                <div className="flex items-center gap-0.5">
+                                    {group.components.map((comp, idx) => (
+                                        <React.Fragment key={idx}>
+                                            {comp}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </React.Fragment>
+                        ))}
+                    </PopoverContent>
+                </Popover>
+            )}
+        </div>
     );
 };
