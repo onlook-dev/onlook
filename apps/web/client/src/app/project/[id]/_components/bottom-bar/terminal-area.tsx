@@ -2,6 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { motion } from 'motion/react';
 import { useState } from 'react';
+import { Terminal } from './terminal';
 
 export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
     const [terminalHidden, setTerminalHidden] = useState(true);
@@ -53,7 +54,7 @@ export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
                     </div>
                 </motion.div>
             )}
-            {/* <Terminal hidden={terminalHidden} /> */}
+            <Terminal hidden={terminalHidden} />
         </>
     );
 };
