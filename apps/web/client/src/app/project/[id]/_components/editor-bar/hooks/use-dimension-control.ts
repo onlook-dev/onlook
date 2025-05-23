@@ -113,8 +113,8 @@ export const useDimensionControl = <T extends DimensionType>(dimension: T) => {
         setDimensionState(getInitialState());
     }, [getInitialState]);
 
-    const handleDimensionChange = useCallback((property: DimensionProperty<T>, value: string) => {
-        const parsedValue = value === '--' ? undefined : value;
+    const handleDimensionChange = useCallback((property: DimensionProperty<T>, value: number) => {
+        const parsedValue =  value;
         const currentState = dimensionState[property];
 
         if (!currentState) return;

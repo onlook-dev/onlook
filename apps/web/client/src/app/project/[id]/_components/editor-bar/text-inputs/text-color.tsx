@@ -3,22 +3,19 @@
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { memo } from 'react';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { ColorPickerContent } from '../inputs/color-picker';
+import { useTextControl } from '../hooks/use-text-control';
+import { observer } from 'mobx-react-lite';
 
-export const TextColor = memo(
-    ({
-        handleTextColorChange,
-        textColor,
-    }: {
-        handleTextColorChange: (color: string) => void;
-        textColor: string;
-    }) => {
+export const TextColor = observer(
+    () => {
+        const { handleTextColorChange, textState } = useTextControl();
+
         const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
             elementStyleKey: 'color',
             onValueChange: (_, value) => handleTextColorChange(value),
-            initialColor: textColor,
+            initialColor: textState.textColor,
         });
 
         return (

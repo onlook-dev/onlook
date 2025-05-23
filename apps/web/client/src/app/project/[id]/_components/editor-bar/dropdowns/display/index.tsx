@@ -10,6 +10,7 @@ import { HorizontalAlignInput, VerticalAlignInput } from './align';
 import { DirectionInput } from './direction';
 import { GapInput } from './gap';
 import { TypeInput } from './type';
+import { observer } from 'mobx-react-lite';
 
 export interface CssValue {
     value: string;
@@ -23,7 +24,7 @@ export const layoutTypeOptions: Record<string, CssValue> = {
     grid: { value: "grid", label: "Grid" },
 };
 
-export const Display = () => {
+export const Display = observer(() => {
     const editorEngine = useEditorEngine();
     const [layoutType, setLayoutType] = useState(
         editorEngine.style.selectedStyle?.styles.computed.display ?? 'block',
@@ -60,4 +61,4 @@ export const Display = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

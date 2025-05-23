@@ -12,8 +12,9 @@ import { useBoxControl } from "../hooks/use-box-control";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
+import { observer } from "mobx-react-lite";
 
-export const Padding = () => {
+export const Padding = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
 
@@ -79,4 +80,4 @@ export const Padding = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

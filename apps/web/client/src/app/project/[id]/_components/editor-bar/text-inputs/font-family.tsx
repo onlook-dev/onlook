@@ -12,13 +12,14 @@ import { toNormalCase } from '@onlook/utility';
 import { memo, useEffect, useState } from 'react';
 import { FontFamily } from '../../left-panel/brand-tab/font-panel/font-family';
 import { useTextControl } from '../hooks/use-text-control';
+import { observer } from 'mobx-react-lite';
 
-export const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
+export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
     const [fonts, setFonts] = useState<Font[]>([]);
     const [search, setSearch] = useState('');
     const [open, setOpen] = useState(false);
-    const { handleFontFamilyChange } = useTextControl();
+    const { handleFontFamilyChange, textState } = useTextControl();
 
     useEffect(() => {
         (async () => {
@@ -64,7 +65,7 @@ export const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) 
                             tabIndex={0}
                             onClick={handleClose}
                         >
-                            <span className="truncate text-sm">{toNormalCase(fontFamily)}</span>
+                            <span className="truncate text-sm">{toNormalCase(textState.fontFamily)}</span>
                         </Button>
                     </PopoverTrigger>
                 </TooltipTrigger>
@@ -119,7 +120,7 @@ export const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) 
                                     }
                                     showDropdown={false}
                                     showAddButton={false}
-                                    isDefault={fontFamily === font.family}
+                                    isDefault={textState.fontFamily === font.family}
                                     onSetFont={() => handleFontFamilyChange(font)}
                                 />
                             </div>

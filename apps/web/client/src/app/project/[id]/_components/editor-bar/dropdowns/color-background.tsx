@@ -6,12 +6,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { useMemo } from 'react';
 import { ColorPickerContent } from '../inputs/color-picker';
 import { useColorUpdate } from '../hooks/use-color-update';
+import { observer } from 'mobx-react-lite';
 
 interface ColorBackgroundProps {
     className?: string;
 }
 
-export const ColorBackground = ({ className }: ColorBackgroundProps) => {
+export const ColorBackground = observer(({ className }: ColorBackgroundProps) => {
     const editorEngine = useEditorEngine();
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.backgroundColor;
 
@@ -64,4 +65,4 @@ export const ColorBackground = ({ className }: ColorBackgroundProps) => {
             </Popover>
         </div>
     );
-};
+});

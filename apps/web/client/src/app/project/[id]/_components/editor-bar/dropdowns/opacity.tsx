@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@onlook/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { HoverOnlyTooltip } from "../hover-tooltip";
+import { observer } from "mobx-react-lite";
 
 const OPACITY_PRESETS = [100, 80, 75, 50, 25, 10, 0];
 
@@ -37,7 +38,7 @@ const useOpacityControl = () => {
     return { opacity, handleOpacityChange };
 };
 
-export const Opacity = () => {
+export const Opacity = observer(() => {
     const { opacity, handleOpacityChange } = useOpacityControl();
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -92,4 +93,4 @@ export const Opacity = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

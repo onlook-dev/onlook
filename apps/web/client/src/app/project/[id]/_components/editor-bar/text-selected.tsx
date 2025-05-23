@@ -22,6 +22,7 @@ import { FontSizeSelector } from './text-inputs/font-size';
 import { FontWeightSelector } from './text-inputs/font-weight';
 import { TextAlignSelector } from './text-inputs/text-align';
 import { TextColor } from './text-inputs/text-color';
+import { useMeasureGroup } from './hooks/use-measure-group';
 
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [
@@ -29,11 +30,11 @@ export const TEXT_SELECTED_GROUPS = [
         key: 'typography',
         label: 'Typography',
         components: [
-            <FontFamilySelector fontFamily="Arial" />,
-            <FontWeightSelector fontWeight="normal" handleFontWeightChange={() => { }} />,
-            <FontSizeSelector fontSize={16} handleFontSizeChange={() => { }} />,
-            <TextColor handleTextColorChange={() => { }} textColor="black" />,
-            <TextAlignSelector textAlign="left" handleTextAlignChange={() => { }} />,
+            <FontFamilySelector />,
+            <FontWeightSelector />,
+            <FontSizeSelector />,
+            <TextColor />,
+            <TextAlignSelector />,
             <AdvancedTypography />,
         ],
     },
@@ -73,118 +74,12 @@ export const TEXT_SELECTED_GROUPS = [
 ];
 
 export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
-    const {
-        textState,
-        handleFontSizeChange,
-        handleFontWeightChange,
-        handleTextAlignChange,
-        handleTextColorChange,
-    } = useTextControl();
+    const { groupRefs, visibleCount } = useMeasureGroup({ availableWidth, count: TEXT_SELECTED_GROUPS.length });
 
-    const groupRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [groupWidths, setGroupWidths] = useState<number[]>([]);
     const [overflowOpen, setOverflowOpen] = useState(false);
-    const [visibleCount, setVisibleCount] = useState(TEXT_SELECTED_GROUPS.length);
-
-    // Calculate total width of a group including margins and padding
-    const calculateGroupWidth = useCallback((element: HTMLElement | null): number => {
-        if (!element) return 0;
-        const style = window.getComputedStyle(element);
-        const width = element.offsetWidth;
-        const marginLeft = parseFloat(style.marginLeft);
-        const marginRight = parseFloat(style.marginRight);
-        const paddingLeft = parseFloat(style.paddingLeft);
-        const paddingRight = parseFloat(style.paddingRight);
-        return width + marginLeft + marginRight + paddingLeft + paddingRight;
-    }, []);
-
-    // Measure all group widths
-    const measureGroups = useCallback(() => {
-        const widths = groupRefs.current.map(ref => calculateGroupWidth(ref));
-        setGroupWidths(widths);
-    }, [calculateGroupWidth]);
-
-    // Update visible count based on available width
-    const updateVisibleCount = useCallback(() => {
-        if (!groupWidths.length || !availableWidth) return;
-
-        const OVERFLOW_BUTTON_WIDTH = 32; // Reduced from 48px
-        const MIN_GROUP_WIDTH = 80; // Reduced from 100px
-        const SEPARATOR_WIDTH = 8; // Width of the InputSeparator
-        let used = 0;
-        let count = 0;
-
-        for (let i = 0; i < groupWidths.length; i++) {
-            const width = groupWidths[i] ?? 0;
-            if (width < MIN_GROUP_WIDTH) continue;
-
-            // Add separator width if this isn't the first group
-            const totalWidth = width + (count > 0 ? SEPARATOR_WIDTH : 0);
-
-            if (used + totalWidth <= availableWidth - OVERFLOW_BUTTON_WIDTH) {
-                used += totalWidth;
-                count++;
-            } else {
-                break;
-            }
-        }
-
-        setVisibleCount(count);
-    }, [groupWidths, availableWidth]);
-
-    // Measure group widths after mount and when groupRefs change
-    useEffect(() => {
-        measureGroups();
-    }, [measureGroups, availableWidth]);
-
-    // Update visible count when measurements change
-    useEffect(() => {
-        updateVisibleCount();
-    }, [updateVisibleCount]);
 
     const visibleGroups = TEXT_SELECTED_GROUPS.slice(0, visibleCount);
     const overflowGroups = TEXT_SELECTED_GROUPS.slice(visibleCount);
-
-    // Create component map with current textState and handlers
-    const COMPONENT_MAP: { [key: string]: React.ComponentType<any> } = {
-        Opacity,
-        Width,
-        Height,
-        FontFamily: () => <FontFamilySelector fontFamily={textState.fontFamily} />,
-        FontWeight: () => (
-            <FontWeightSelector
-                fontWeight={textState.fontWeight}
-                handleFontWeightChange={handleFontWeightChange}
-            />
-        ),
-        FontSize: () => (
-            <FontSizeSelector
-                fontSize={textState.fontSize}
-                handleFontSizeChange={handleFontSizeChange}
-            />
-        ),
-        TextColor: () => (
-            <TextColor
-                handleTextColorChange={handleTextColorChange}
-                textColor={textState.textColor}
-            />
-        ),
-        TextAlign: () => (
-            <TextAlignSelector
-                textAlign={textState.textAlign}
-                handleTextAlignChange={handleTextAlignChange}
-            />
-        ),
-        AdvancedTypography: () => <AdvancedTypography />,
-        Display,
-        Padding,
-        Margin,
-        Radius,
-        Border,
-        ColorBackground,
-        ViewButtons,
-    };
-
     return (
         <>
             {/* Hidden measurement container */}

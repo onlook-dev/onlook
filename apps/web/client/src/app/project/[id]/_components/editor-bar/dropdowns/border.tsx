@@ -15,8 +15,9 @@ import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputColor } from "../inputs/input-color";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
+import { observer } from "mobx-react-lite";
 
-export const Border = () => {
+export const Border = observer(() => {
     const editorEngine = useEditorEngine();
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.borderColor;
     const [activeTab, setActiveTab] = useState('all');
@@ -133,4 +134,4 @@ export const Border = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

@@ -7,8 +7,9 @@ import { LayoutMode } from '@onlook/utility';
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
+import { observer } from 'mobx-react-lite';
 
-export const Height = () => {
+export const Height = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('height');
 
@@ -43,7 +44,7 @@ export const Height = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-muted-white text-sm">Height</span>
                         <InputDropdown
-                            value={dimensionState.height.num?.toString() ?? '--'}
+                            value={dimensionState.height.num ?? 0}
                             unit={dimensionState.height.unit}
                             dropdownValue={dimensionState.height.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -55,7 +56,7 @@ export const Height = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground text-sm">Min</span>
                         <InputDropdown
-                            value={dimensionState.minHeight.num?.toString() ?? '--'}
+                            value={dimensionState.minHeight.num ?? 0}
                             unit={dimensionState.minHeight.unit}
                             dropdownValue={dimensionState.minHeight.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -67,7 +68,7 @@ export const Height = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground text-sm">Max</span>
                         <InputDropdown
-                            value={dimensionState.maxHeight.num?.toString() ?? '--'}
+                            value={dimensionState.maxHeight.num ?? 0}
                             unit={dimensionState.maxHeight.unit}
                             dropdownValue={dimensionState.maxHeight.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -80,4 +81,4 @@ export const Height = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});
