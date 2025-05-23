@@ -62,6 +62,7 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
     useEffect(() => {
         if (!sandboxSession) {
+            console.error('sandboxSession is null');
             return;
         }
 
@@ -86,9 +87,12 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
         };
     }, [sandboxSession]);
 
-    async function initTerminal(session: WebSocketSession) {
+    async function initTerminal(session: WebSocketSession): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
         if (!terminalRef.current) {
-            return;
+            return {
+                terminalOutputListener: { dispose: () => { } },
+                xtermDataListener: { dispose: () => { } },
+            };
         }
         const terminal = await session.terminals.create()
 
