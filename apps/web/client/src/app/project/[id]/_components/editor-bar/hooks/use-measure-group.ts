@@ -1,45 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
-import { useCallback } from 'react';
-import { DIV_SELECTED_GROUPS } from '../div-selected';
+import { useCallback, useEffect, useState } from 'react';
+
+// Pre-calculated approximate widths for each group type
+const GROUP_WIDTHS = {
+    dimensions: 160, // Width + Height
+    base: 180, // Color + Border + Radius
+    layout: 180, // Display + Padding + Margin
+    typography: 240, // Font Family + Weight + Size
+    opacity: 80, // Opacity
+};
 
 export const useMeasureGroup = ({ availableWidth = 0, count = 0 }: { availableWidth?: number, count?: number }) => {
-    const groupRefs = useRef<(HTMLDivElement | null)[]>([]);
-    const [groupWidths, setGroupWidths] = useState<number[]>([]);
     const [visibleCount, setVisibleCount] = useState(count);
-
-
-    // Calculate total width of a group including margins and padding
-    const calculateGroupWidth = useCallback((element: HTMLElement | null): number => {
-        if (!element) return 0;
-        const style = window.getComputedStyle(element);
-        const width = element.offsetWidth;
-        const marginLeft = parseFloat(style.marginLeft);
-        const marginRight = parseFloat(style.marginRight);
-        const paddingLeft = parseFloat(style.paddingLeft);
-        const paddingRight = parseFloat(style.paddingRight);
-        return width + marginLeft + marginRight + paddingLeft + paddingRight;
-    }, []);
-
-    // Measure all group widths
-    const measureGroups = useCallback(() => {
-        const widths = groupRefs.current.map((ref) => calculateGroupWidth(ref));
-        setGroupWidths(widths);
-    }, [calculateGroupWidth]);
 
     // Update visible count based on available width
     const updateVisibleCount = useCallback(() => {
-        if (!groupWidths.length || !availableWidth) return;
+        if (!availableWidth) return;
 
-        const OVERFLOW_BUTTON_WIDTH = 32; // Reduced from 48px
-        const MIN_GROUP_WIDTH = 80; // Reduced from 100px
-        const SEPARATOR_WIDTH = 8; // Width of the InputSeparator
+        const OVERFLOW_BUTTON_WIDTH = 32;
+        const SEPARATOR_WIDTH = 8;
         let used = 0;
         let count = 0;
 
-        for (let i = 0; i < groupWidths.length; i++) {
-            const width = groupWidths[i] ?? 0;
-            if (width < MIN_GROUP_WIDTH) continue;
+        // Get all group keys in order
+        const groupKeys = Object.keys(GROUP_WIDTHS);
 
+        for (let i = 0; i < groupKeys.length; i++) {
+            const width = GROUP_WIDTHS[groupKeys[i] as keyof typeof GROUP_WIDTHS];
+            
             // Add separator width if this isn't the first group
             const totalWidth = width + (count > 0 ? SEPARATOR_WIDTH : 0);
 
@@ -52,20 +39,14 @@ export const useMeasureGroup = ({ availableWidth = 0, count = 0 }: { availableWi
         }
 
         setVisibleCount(count);
-    }, [groupWidths, availableWidth]);
+    }, [availableWidth]);
 
-    // Update visible count when measurements change
+    // Update visible count when available width changes
     useEffect(() => {
         updateVisibleCount();
     }, [updateVisibleCount]);
 
-    // Measure group widths after mount and when groupRefs change
-    useEffect(() => {
-        measureGroups();
-    }, [measureGroups, availableWidth]);
-
     return {
-        groupRefs,
         visibleCount,
     };
 };
