@@ -3,6 +3,45 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../trpc';
 
+const userSettingsRoute = createTRPCRouter({
+    get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+        const settings = await ctx.db.query.userSettings.findFirst({
+            where: eq(userSettings.userId, input),
+        });
+
+        if (!settings) {
+            return getDefaultUserSettings();
+        }
+        return toUserSettings(settings);
+    }),
+    upsert: publicProcedure.input(z.object({
+        userId: z.string(),
+        settings: userSettingsInsertSchema,
+    })).mutation(async ({ ctx, input }) => {
+        if (!input.userId) {
+            throw new Error('User ID is required');
+        }
+
+        const [updatedSettings] = await ctx.db
+            .insert(userSettings)
+            .values({
+                ...input.settings,
+                userId: input.userId,
+            })
+            .onConflictDoUpdate({
+                target: [userSettings.userId],
+                set: input.settings,
+            })
+            .returning();
+
+        if (!updatedSettings) {
+            throw new Error('Failed to update user settings');
+        }
+
+        return toUserSettings(updatedSettings);
+    }),
+});
+
 export const userRouter = createTRPCRouter({
     getById: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
         const user = await ctx.db.query.users.findFirst({
@@ -24,19 +63,5 @@ export const userRouter = createTRPCRouter({
         }
         return user[0];
     }),
-    getSettings: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-        const settings = await ctx.db.query.userSettings.findFirst({
-            where: eq(userSettings.userId, input),
-        });
-        if (!settings) {
-            return getDefaultUserSettings();
-        }
-        return toUserSettings(settings);
-    }),
-    updateSettings: publicProcedure.input(userSettingsInsertSchema).mutation(async ({ ctx, input }) => {
-        if (!input.userId) {
-            throw new Error('User ID is required');
-        }
-        await ctx.db.update(userSettings).set(input).where(eq(userSettings.userId, input.userId));
-    }),
+    settings: userSettingsRoute,
 });

@@ -7,22 +7,16 @@ import { UserSettingsManager } from './settings';
 import { SubscriptionManager } from './subscription';
 
 export class UserManager {
+    readonly supabase = createClient();
     readonly settings: UserSettingsManager;
-
     readonly subscription = new SubscriptionManager();
     readonly language = new LanguageManager();
-    readonly supabase = createClient();
-
-    private _user: UserMetadata | null = null;
+    user: UserMetadata | null = null;
 
     constructor() {
-        this.fetchUser();
-        this.settings = new UserSettingsManager(this);
         makeAutoObservable(this);
-    }
-
-    get user() {
-        return this._user;
+        this.settings = new UserSettingsManager(this);
+        this.fetchUser();
     }
 
     async fetchUser() {
@@ -31,7 +25,7 @@ export class UserManager {
             console.error(error);
             return;
         }
-        this._user = this.fromAuthUser(data.user);
+        this.user = this.fromAuthUser(data.user);
     }
 
     fromAuthUser(authUser: AuthUser): UserMetadata {
@@ -48,6 +42,6 @@ export class UserManager {
 
     async signOut() {
         await this.supabase.auth.signOut();
-        this._user = null;
+        this.user = null;
     }
 }

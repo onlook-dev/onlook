@@ -1,6 +1,5 @@
 import { api } from '@/trpc/client';
-import { DefaultSettings } from '@onlook/constants';
-import { getDefaultUserSettings } from '@onlook/db';
+import { fromUserSettings, getDefaultUserSettings } from '@onlook/db';
 import type { ChatSettings, UserSettings } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
@@ -28,7 +27,7 @@ export class UserSettingsManager {
             console.error('No user found');
             return;
         }
-        const settings = await api.user.getSettings.query(user.id);
+        const settings = await api.user.settings.get.query(user.id);
         this.settings = settings;
     }
 
@@ -39,26 +38,18 @@ export class UserSettingsManager {
             return;
         }
 
-        await api.user.updateSettings.mutate({
-            id: this.settings.id,
-            userId: user.id,
+        this.settings = {
+            ...this.settings,
             ...newSettings,
+        };
+
+        await api.user.settings.upsert.mutate({
+            userId: user.id,
+            settings: fromUserSettings(user.id, this.settings),
         });
-        this.settings = { ...this.settings, ...newSettings };
     }
 
     async updateChat(newSettings: Partial<ChatSettings>) {
-        const newChatSettings = {
-            ...DefaultSettings.CHAT_SETTINGS,
-            ...this.settings?.chat,
-            ...newSettings,
-        };
-
-        this.settings = {
-            ...this.settings,
-            chat: newChatSettings,
-        };
-
-        await this.update({ chat: newChatSettings });
+        await this.update({ ...this.settings, chat: { ...this.settings.chat, ...newSettings } });
     }
 }
