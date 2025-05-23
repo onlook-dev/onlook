@@ -61,24 +61,35 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
 
     useEffect(() => {
-        if (!sandboxSession || !terminalRef.current) {
+        if (!sandboxSession) {
             return;
         }
 
-        initTerminal(
-            sandboxSession,
-            terminalRef.current,
-        );
+        let terminalOutputListener: { dispose: () => void } | undefined;
+        let xtermDataListener: { dispose: () => void } | undefined;
+
+        (async () => {
+            const { terminalOutputListener: outputListener, xtermDataListener: dataListener } = await initTerminal(
+                sandboxSession,
+            );
+            terminalOutputListener = outputListener;
+            xtermDataListener = dataListener;
+        })();
 
         return () => {
             xterm?.dispose();
             terminal?.kill();
             setTerminal(null);
             setXterm(null);
+            terminalOutputListener?.dispose();
+            xtermDataListener?.dispose();
         };
     }, [sandboxSession]);
 
-    async function initTerminal(session: WebSocketSession, container: HTMLDivElement) {
+    async function initTerminal(session: WebSocketSession) {
+        if (!terminalRef.current) {
+            return;
+        }
         const terminal = await session.terminals.create()
 
         const xterm = new XTerm({
@@ -93,19 +104,24 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
             macOptionIsMeta: true,
         });
 
-        xterm.open(container);
+        xterm.open(terminalRef.current);
         await terminal.open();
 
-        terminal.onOutput((output: string) => {
+        const terminalOutputListener = terminal.onOutput((output: string) => {
             xterm.write(output)
         });
 
-        xterm.onData((data: string) => {
+        const xtermDataListener = xterm.onData((data: string) => {
             terminal.write(data)
         })
 
         setXterm(xterm);
         setTerminal(terminal);
+
+        return {
+            terminalOutputListener,
+            xtermDataListener,
+        };
     }
 
     return (
