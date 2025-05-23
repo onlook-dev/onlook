@@ -15,6 +15,13 @@
       "when": 1747780749310,
       "tag": "0001_graceful_exodus",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748028633785,
+      "tag": "0002_red_crusher_hogan",
+      "breakpoints": true
     }
   ]
 }
