@@ -1,4 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
+import type { UserMetadata } from '@onlook/models';
+import type { User as AuthUser } from '@supabase/supabase-js';
 import { makeAutoObservable } from 'mobx';
 import { LanguageManager } from './language';
 import { UserSettingsManager } from './settings';
@@ -6,15 +8,11 @@ import { SubscriptionManager } from './subscription';
 
 export class UserManager {
     readonly subscription = new SubscriptionManager();
-    readonly settings = new UserSettingsManager();
+    readonly settings = new UserSettingsManager(this);
     readonly language = new LanguageManager();
     readonly supabase = createClient();
 
-    private _user: {
-        id: string | null;
-        name: string | null;
-        image: string | null;
-    } | null = null;
+    private _user: UserMetadata | null = null;
 
     constructor() {
         this.fetchUser();
@@ -31,14 +29,18 @@ export class UserManager {
             console.error(error);
             return;
         }
-        this._user = {
-            id: data.user.id,
+        this._user = this.fromAuthUser(data.user);
+    }
+
+    fromAuthUser(authUser: AuthUser): UserMetadata {
+        return {
+            id: authUser.id,
             name:
-                data.user.user_metadata?.full_name ||
-                data.user.user_metadata?.name ||
-                data.user.email ||
+                authUser.user_metadata?.full_name ||
+                authUser.user_metadata?.name ||
+                authUser.email ||
                 'Anonymous',
-            image: data.user.user_metadata?.avatar_url || null,
+            avatarUrl: authUser.user_metadata?.avatar_url || null,
         };
     }
 
