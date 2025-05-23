@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { TerminalArea } from './terminal-area';
 
 const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
     {
@@ -71,33 +72,35 @@ export const BottomBar = observer(() => {
                         damping: 25,
                     }}
                 >
-                    <ToggleGroup
-                        type="single"
-                        value={editorEngine.state.editorMode}
-                        onValueChange={(value) => {
-                            if (value) {
-                                editorEngine.state.editorMode = value as EditorMode;
-                            }
-                        }}
-                    >
-                        {toolbarItems.map((item) => (
-                            <Tooltip key={item.mode}>
-                                <TooltipTrigger >
-                                    <ToggleGroupItem
-                                        value={item.mode}
-                                        aria-label={item.hotkey.description}
-                                        disabled={item.disabled}
-                                        className="hover:text-foreground-hover text-foreground-tertiary"
-                                    >
-                                        <item.icon />
-                                    </ToggleGroupItem>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <HotkeyLabel hotkey={item.hotkey} />
-                                </TooltipContent>
-                            </Tooltip>
-                        ))}
-                    </ToggleGroup>
+                    <TerminalArea>
+                        <ToggleGroup
+                            type="single"
+                            value={editorEngine.state.editorMode}
+                            onValueChange={(value) => {
+                                if (value) {
+                                    editorEngine.state.editorMode = value as EditorMode;
+                                }
+                            }}
+                        >
+                            {toolbarItems.map((item) => (
+                                <Tooltip key={item.mode}>
+                                    <TooltipTrigger >
+                                        <ToggleGroupItem
+                                            value={item.mode}
+                                            aria-label={item.hotkey.description}
+                                            disabled={item.disabled}
+                                            className="hover:text-foreground-hover text-foreground-tertiary"
+                                        >
+                                            <item.icon />
+                                        </ToggleGroupItem>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <HotkeyLabel hotkey={item.hotkey} />
+                                    </TooltipContent>
+                                </Tooltip>
+                            ))}
+                        </ToggleGroup>
+                    </TerminalArea>
                 </motion.div>
             )}
         </AnimatePresence>

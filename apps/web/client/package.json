@@ -54,6 +54,7 @@
         "@types/webfontloader": "^1.6.38",
         "@uiw/codemirror-extensions-basic-setup": "^4.23.10",
         "@uiw/react-codemirror": "^4.23.10",
+        "@xterm/xterm": "^5.5.0",
         "ai": "^4.3.10",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
