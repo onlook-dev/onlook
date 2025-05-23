@@ -1,7 +1,12 @@
+'use client';
+
+import '@xterm/xterm/css/xterm.css';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useProjectsManager } from '@/components/store/projects';
+import type { Terminal as CsbTerminal, WebSocketSession } from '@codesandbox/sdk';
 import { cn } from '@onlook/ui/utils';
 import { Terminal as XTerm, type ITheme } from '@xterm/xterm';
-import '@xterm/xterm/css/xterm.css';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
@@ -38,39 +43,45 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
 };
 
 export const Terminal = observer(({ hidden = false }: TerminalProps) => {
+    const editorEngine = useEditorEngine();
+    const sandboxSession = editorEngine.sandbox.session.session;
     const terminalRef = useRef<HTMLDivElement>(null);
-    const [terminal, setTerminal] = useState<XTerm | null>(null);
+    const [xterm, setXterm] = useState<XTerm | null>(null);
+    const [terminal, setTerminal] = useState<CsbTerminal | null>(null);
     const projectsManager = useProjectsManager();
-    // const runner = projectsManager.runner;
+
     const { theme } = useTheme();
 
     useEffect(() => {
-        if (terminal) {
-            terminal.options.theme = theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
+        if (xterm) {
+            xterm.options.theme = theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
         }
     }, [theme]);
 
-    useEffect(() => {
-        // if (!terminalRef.current || !runner || terminal) {
-        //     return;
-        // }
 
-        // const { term, terminalDataListener, stateListener } = initTerminal(
-        //     runner,
-        //     terminalRef.current,
-        // );
-        // setTerminal(term);
+
+    useEffect(() => {
+        if (!sandboxSession || !terminalRef.current) {
+            return;
+        }
+
+        initTerminal(
+            sandboxSession,
+            terminalRef.current,
+        );
 
         return () => {
-            // term.dispose();
-            // setTerminal(null);
-            // window.api.removeListener(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
-            // window.api.removeListener(MainChannels.RUN_STATE_CHANGED, stateListener);
+            xterm?.dispose();
+            terminal?.kill();
+            setTerminal(null);
+            setXterm(null);
         };
-    }, []);
+    }, [sandboxSession]);
 
-    function initTerminal(runner: RunManager, container: HTMLDivElement) {
-        const term = new XTerm({
+    async function initTerminal(session: WebSocketSession, container: HTMLDivElement) {
+        const terminal = await session.terminals.create()
+
+        const xterm = new XTerm({
             cursorBlink: true,
             fontSize: 12,
             fontFamily: 'monospace',
@@ -82,38 +93,19 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
             macOptionIsMeta: true,
         });
 
-        term.open(container);
-        const { cols, rows } = term;
-        // runner.resizeTerminal(cols, rows);
+        xterm.open(container);
+        await terminal.open();
 
-        // runner.getHistory().then((history) => {
-        //     if (history) {
-        //         term.write(history);
-        //     }
-        // });
-
-        // Set up event listeners
-        term.onData((data) => {
-            runner.handleTerminalInput(data);
+        terminal.onOutput((output: string) => {
+            xterm.write(output)
         });
 
-        term.onResize(({ cols, rows }) => {
-            runner.resizeTerminal(cols, rows);
-        });
+        xterm.onData((data: string) => {
+            terminal.write(data)
+        })
 
-        const terminalDataListener = (message: TerminalMessage) => {
-            if (message.id === projectsManager.project?.id) {
-                term.write(message.data);
-            }
-        };
-
-        const stateListener = ({ message }: { message: string }) => {
-            term.write('\x1b[96m' + message + '\x1b[0m\n');
-        };
-
-        // window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
-        // window.api.on(MainChannels.RUN_STATE_CHANGED, stateListener);
-        return { term, terminalDataListener, stateListener };
+        setXterm(xterm);
+        setTerminal(terminal);
     }
 
     return (
