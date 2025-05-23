@@ -15,7 +15,6 @@ import { observer } from 'mobx-react-lite';
 
 const FontFamily = memo(
     ({ name, isActive, onSetFont }: { name: string; isActive: boolean; onSetFont: () => void }) => {
-        console.log(name, isActive);
         return (
             <div
                 key={name}
@@ -66,8 +65,6 @@ export const FontFamilySelector = observer(() => {
         }
         setSearch('');
     };
-
-    console.log(textState.fontFamily);
 
     return (
         <Popover
