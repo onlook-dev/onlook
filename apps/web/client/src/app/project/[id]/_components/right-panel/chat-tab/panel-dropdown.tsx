@@ -39,22 +39,7 @@ export const ChatPanelDropdown = observer(({
                 <div className="flex items-center">{children}</div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="min-w-[220px]">
-                {/* <DropdownMenuItem
-                    className="flex items-center py-1.5"
-                    onClick={(e) => {
-                        updateChatSettings(e, {
-                            showSuggestions: !chatSettings.showSuggestions,
-                        });
-                    }}
-                >
-                    <Icons.Check
-                        className={cn(
-                            'mr-2 h-4 w-4',
-                            chatSettings.showSuggestions ? 'opacity-100' : 'opacity-0',
-                        )}
-                    />
-                    Show suggestions
-                </DropdownMenuItem> */}
+
                 <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
@@ -87,6 +72,26 @@ export const ChatPanelDropdown = observer(({
                     />
                     Show code while rendering
                 </DropdownMenuItem>
+
+                {/* TODO: Reenable */}
+                {/* <DropdownMenuItem
+                    className="flex items-center py-1.5"
+                    onClick={(e) => {
+                        updateChatSettings(e, {
+                            showSuggestions: !chatSettings.showSuggestions,
+                        });
+                    }}
+                >
+                    <Icons.Check
+                        className={cn(
+                            'mr-2 h-4 w-4',
+                            chatSettings.showSuggestions ? 'opacity-100' : 'opacity-0',
+                        )}
+                    />
+                    Show suggestions
+                </DropdownMenuItem> */}
+
+                {/* TODO: Reenable */}
                 {/* <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {

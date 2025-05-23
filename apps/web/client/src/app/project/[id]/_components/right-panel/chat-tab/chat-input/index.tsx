@@ -236,6 +236,7 @@ export const ChatInput = observer(() => {
                 }
             }}
         >
+            {/* TODO: Reenable suggestions */}
             {/* <Suggestions
                 ref={suggestionRef}
                 disabled={disabled}

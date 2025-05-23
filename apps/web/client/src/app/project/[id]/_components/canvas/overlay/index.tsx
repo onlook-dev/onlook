@@ -69,6 +69,7 @@ export const Overlay = observer(() => {
                     toRect={overlayState.measurement.toRect}
                 />
             )}
+            {/* TODO: Reenable overlay chat */}
             {/* {overlayState.clickRects.length > 0 && (
                 <OverlayChat
                     elementId={editorEngine.elements.selected[0]?.domId ?? ''}
