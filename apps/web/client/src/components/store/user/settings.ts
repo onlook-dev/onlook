@@ -1,57 +1,55 @@
-import { DefaultSettings } from '@onlook/constants';
-import type { ChatSettings, EditorSettings, UserSettings } from '@onlook/models/settings';
-import { makeAutoObservable } from 'mobx';
+import { api } from '@/trpc/client';
+import { fromUserSettings, getDefaultUserSettings } from '@onlook/db';
+import type { ChatSettings, UserSettings } from '@onlook/models';
+import { makeAutoObservable, reaction } from 'mobx';
+import type { UserManager } from './manager';
 
 export class UserSettingsManager {
-    settings: UserSettings | null = null;
-    defaultProjectPath: string | null = null;
+    settings: UserSettings = getDefaultUserSettings();
 
-    constructor() {
-        this.restoreSettings();
+    constructor(private userManager: UserManager) {
         makeAutoObservable(this);
+
+        this.restoreSettings();
+        reaction(
+            () => this.userManager.user,
+            (user) => {
+                if (user) {
+                    this.restoreSettings();
+                }
+            }
+        );
     }
 
     async restoreSettings() {
-        // this.settings = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
-        // this.defaultProjectPath = await invokeMainChannel(MainChannels.GET_CREATE_PROJECT_PATH);
+        const user = this.userManager.user;
+        if (!user) {
+            console.error('No user found');
+            return;
+        }
+        const settings = await api.user.settings.get.query(user.id);
+        this.settings = settings;
     }
 
-    async update(settings: Partial<UserSettings>) {
-        this.settings = { ...this.settings, ...settings };
-        // await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, settings);
+    async update(newSettings: Partial<UserSettings>) {
+        const user = this.userManager.user;
+        if (!user) {
+            console.error('No user found');
+            return;
+        }
+
+        this.settings = {
+            ...this.settings,
+            ...newSettings,
+        };
+
+        await api.user.settings.upsert.mutate({
+            userId: user.id,
+            settings: fromUserSettings(user.id, this.settings),
+        });
     }
 
     async updateChat(newSettings: Partial<ChatSettings>) {
-        const newChatSettings = {
-            ...DefaultSettings.CHAT_SETTINGS,
-            ...this.settings?.chat,
-            ...newSettings,
-        };
-
-        this.settings = {
-            ...this.settings,
-            chat: newChatSettings,
-        };
-
-        // await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, {
-        //     chat: newChatSettings,
-        // });
-    }
-
-    async updateEditor(newSettings: Partial<EditorSettings>) {
-        const newEditorSettings = {
-            ...DefaultSettings.EDITOR_SETTINGS,
-            ...this.settings?.editor,
-            ...newSettings,
-        };
-
-        this.settings = {
-            ...this.settings,
-            editor: newEditorSettings,
-        };
-
-        // await invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, {
-        //     editor: newEditorSettings,
-        // });
+        await this.update({ ...this.settings, chat: { ...this.settings.chat, ...newSettings } });
     }
 }

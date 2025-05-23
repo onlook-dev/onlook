@@ -1,7 +1,6 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
 import { useEditorEngine } from '@/components/store/editor';
-import { useUserManager } from '@/components/store/user';
 import { EditorTabValue } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import { DEFAULT_IDE } from '@onlook/models/ide';
@@ -34,9 +33,8 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
-    const userManager = useUserManager();
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
-    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType ?? DEFAULT_IDE);
+    const ide = IDE.fromType(DEFAULT_IDE);
 
     useEffect(() => {
         updateMenuItems();

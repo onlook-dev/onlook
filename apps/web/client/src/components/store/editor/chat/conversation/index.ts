@@ -4,6 +4,7 @@ import { type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Project } from '@onlook/models/project';
 import type { Message } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
+import type { ChatManager } from '..';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
@@ -14,6 +15,7 @@ export class ConversationManager {
     private _conversations: ChatConversation[] = [];
 
     constructor(
+        private chatManager: ChatManager,
         private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
@@ -142,6 +144,7 @@ export class ConversationManager {
         }
         const newMessage = AssistantChatMessageImpl.fromMessage(message);
         await this.addMessage(newMessage);
+        this.chatManager.autoApplyCode(newMessage);
         return newMessage;
     }
 

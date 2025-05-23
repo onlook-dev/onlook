@@ -15,7 +15,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
-import { Suggestions, type SuggestionsRef } from '../suggestions';
+import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 
 export const ChatInput = observer(() => {
@@ -236,7 +236,8 @@ export const ChatInput = observer(() => {
                 }
             }}
         >
-            <Suggestions
+            {/* TODO: Reenable suggestions */}
+            {/* <Suggestions
                 ref={suggestionRef}
                 disabled={disabled}
                 inputValue={inputValue}
@@ -254,7 +255,7 @@ export const ChatInput = observer(() => {
                         textareaRef.current?.focus();
                     }
                 }}
-            />
+            /> */}
             <div className="flex flex-col w-full p-4">
                 <InputContextPills />
                 <Textarea

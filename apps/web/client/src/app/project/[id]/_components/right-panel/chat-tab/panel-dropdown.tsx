@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
-import { DefaultSettings } from '@onlook/constants';
 import type { ChatSettings } from '@onlook/models';
 import { EditorTabValue } from '@onlook/models';
 import {
@@ -12,8 +11,9 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 
-export const ChatPanelDropdown = ({
+export const ChatPanelDropdown = observer(({
     children,
     isChatHistoryOpen,
     setIsChatHistoryOpen,
@@ -25,7 +25,7 @@ export const ChatPanelDropdown = ({
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
 
-    const chatSettings = userManager.settings.settings?.chat ?? DefaultSettings.CHAT_SETTINGS;
+    const chatSettings = userManager.settings.settings.chat;
     const selectedTab = editorEngine.state.rightPanelTab;
 
     const updateChatSettings = (e: React.MouseEvent, settings: Partial<ChatSettings>) => {
@@ -39,22 +39,7 @@ export const ChatPanelDropdown = ({
                 <div className="flex items-center">{children}</div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="min-w-[220px]">
-                <DropdownMenuItem
-                    className="flex items-center py-1.5"
-                    onClick={(e) => {
-                        updateChatSettings(e, {
-                            showSuggestions: !chatSettings.showSuggestions,
-                        });
-                    }}
-                >
-                    <Icons.Check
-                        className={cn(
-                            'mr-2 h-4 w-4',
-                            chatSettings.showSuggestions ? 'opacity-100' : 'opacity-0',
-                        )}
-                    />
-                    Show suggestions
-                </DropdownMenuItem>
+
                 <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
@@ -87,7 +72,27 @@ export const ChatPanelDropdown = ({
                     />
                     Show code while rendering
                 </DropdownMenuItem>
-                <DropdownMenuItem
+
+                {/* TODO: Reenable */}
+                {/* <DropdownMenuItem
+                    className="flex items-center py-1.5"
+                    onClick={(e) => {
+                        updateChatSettings(e, {
+                            showSuggestions: !chatSettings.showSuggestions,
+                        });
+                    }}
+                >
+                    <Icons.Check
+                        className={cn(
+                            'mr-2 h-4 w-4',
+                            chatSettings.showSuggestions ? 'opacity-100' : 'opacity-0',
+                        )}
+                    />
+                    Show suggestions
+                </DropdownMenuItem> */}
+
+                {/* TODO: Reenable */}
+                {/* <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
                         updateChatSettings(e, {
@@ -102,7 +107,7 @@ export const ChatPanelDropdown = ({
                         )}
                     />
                     Show mini chat
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsChatHistoryOpen(!isChatHistoryOpen)}>
                     <Icons.CounterClockwiseClock className="mr-2 h-4 w-4" />
@@ -111,4 +116,4 @@ export const ChatPanelDropdown = ({
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

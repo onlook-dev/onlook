@@ -59,7 +59,7 @@ export const DefaultSettings = {
     CHAT_SETTINGS: {
         showSuggestions: true,
         autoApplyCode: true,
-        expandCodeBlocks: false,
+        expandCodeBlocks: true,
         showMiniChat: true,
     },
     EDITOR_SETTINGS: {

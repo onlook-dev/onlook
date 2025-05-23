@@ -1,11 +1,9 @@
-// import { useEditorEngine } from '@/components/Context';
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
 import { EditorMode, EditorTabValue } from '@onlook/models';
 import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { DeleteKey } from './delete';
 
 export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -56,6 +54,7 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
     useHotkeys(Hotkey.REFRESH_LAYERS.command, () => editorEngine.refreshLayers());
     useHotkeys(Hotkey.OPEN_DEV_TOOL.command, () => editorEngine.inspect());
+    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => editorEngine.elements.delete());
 
     // Group
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
@@ -93,7 +92,6 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
 
     return (
         <>
-            <DeleteKey />
             {children}
         </>
     );

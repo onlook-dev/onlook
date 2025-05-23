@@ -1,33 +1,33 @@
 import { CodeSandbox } from '@codesandbox/sdk';
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 const sdk = new CodeSandbox(process.env.CSB_API_KEY!);
 
 export const sandboxRouter = createTRPCRouter({
-    start: publicProcedure.input(z.object({
+    start: protectedProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {
         const startData = await sdk.sandbox.start(input.sandboxId);
         return startData;
     }),
     // Same as start - Separate endpoint for different state management
-    reconnect: publicProcedure.input(z.object({
+    reconnect: protectedProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {
         const startData = await sdk.sandbox.start(input.sandboxId);
         return startData;
     }),
-    hibernate: publicProcedure.input(z.object({
+    hibernate: protectedProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {
         await sdk.sandbox.hibernate(input.sandboxId);
     }),
-    list: publicProcedure.query(async () => {
+    list: protectedProcedure.query(async () => {
         const listResponse = await sdk.sandbox.list();
         return listResponse;
     }),
-    fork: publicProcedure.input(z.object({
+    fork: protectedProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {
         const sandbox = await sdk.sandbox.create({ template: input.sandboxId });
@@ -36,7 +36,7 @@ export const sandboxRouter = createTRPCRouter({
             previewUrl: `https://${sandbox.id}-8084.csb.app`,
         };
     }),
-    delete: publicProcedure.input(z.object({
+    delete: protectedProcedure.input(z.object({
         sandboxId: z.string(),
     })).mutation(async ({ input }) => {
         await sdk.sandbox.shutdown(input.sandboxId);

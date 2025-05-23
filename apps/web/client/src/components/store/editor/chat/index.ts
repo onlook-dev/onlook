@@ -25,7 +25,7 @@ export class ChatManager {
         private userManager: UserManager,
     ) {
         this.context = new ChatContext(this.editorEngine, this.projectManager);
-        this.conversation = new ConversationManager(this.projectManager);
+        this.conversation = new ConversationManager(this, this.projectManager);
         this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectManager);
         makeAutoObservable(this);
@@ -121,16 +121,16 @@ export class ChatManager {
             console.error('No conversation found');
             return null;
         }
-        // Save current changes before sending to AI
+        this.createCommit(userPrompt);
+        return this.conversation.current.getMessagesForStream();
+    }
 
+    createCommit(userPrompt?: string) {
         // TODO: Reenable this
-        // this.projectsManager.versions?.createCommit(
-        //     userPrompt ?? "Save before chat",
+        // this.projectManager.versions?.createCommit(
+        //     "Save before chat",
         //     false,
         // );
-
-        const messages = this.conversation.current.getMessagesForStream();
-        return messages;
     }
 
     autoApplyCode(assistantMessage: AssistantChatMessage) {

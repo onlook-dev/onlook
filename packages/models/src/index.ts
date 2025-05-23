@@ -11,5 +11,5 @@ export * from './llm/';
 export * from './pages/';
 export * from './project/';
 export * from './run/';
-export * from './settings/';
 export * from './style/';
+export * from './user/';
