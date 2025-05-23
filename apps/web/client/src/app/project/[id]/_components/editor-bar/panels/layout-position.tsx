@@ -28,8 +28,8 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
         'left' | 'center' | 'right' | 'space-between'
     >('center');
     const [gap, setGap] = useState('12');
-    const [width, setWidth] = useState('100');
-    const [height, setHeight] = useState('228');
+    const [width, setWidth] = useState(100);
+    const [height, setHeight] = useState(228);
     const [positionType, setPositionType] = useState('Relative');
     const [showMarginInputs, setShowMarginInputs] = useState(false);
     const [showPaddingInputs, setShowPaddingInputs] = useState(false);
@@ -254,7 +254,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                             <span className="text-sm text-muted-foreground w-24">Min</span>
                             <div className="flex-1">
                                 <InputDropdown
-                                    value="--"
+                                    value={0}
                                     unit="-"
                                     dropdownValue="Rel"
                                     dropdownOptions={['Rel', 'PX', 'VW']}
@@ -267,7 +267,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                             <span className="text-sm text-muted-foreground w-24">Max</span>
                             <div className="flex-1">
                                 <InputDropdown
-                                    value="--"
+                                    value={0}
                                     unit="-"
                                     dropdownValue="Rel"
                                     dropdownOptions={['Rel', 'PX', 'VW']}
@@ -294,7 +294,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                             <span className="text-sm text-muted-foreground w-24">Min</span>
                             <div className="flex-1">
                                 <InputDropdown
-                                    value="--"
+                                    value={0}
                                     unit="-"
                                     dropdownValue="Rel"
                                     dropdownOptions={['Rel', 'PX', 'VH']}
@@ -307,7 +307,7 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
                             <span className="text-sm text-muted-foreground w-24">Max</span>
                             <div className="flex-1">
                                 <InputDropdown
-                                    value="--"
+                                    value={0}
                                     unit="-"
                                     dropdownValue="Rel"
                                     dropdownOptions={['Rel', 'PX', 'VH']}

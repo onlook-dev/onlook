@@ -4,11 +4,12 @@ import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
+import { observer } from 'mobx-react-lite';
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
 
-export const Width = () => {
+export const Width = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('width');
 
@@ -22,16 +23,9 @@ export const Width = () => {
                         className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                     >
                         <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
-                        {(dimensionState.width.unit === 'px'
-                            ? dimensionState.width.num !== undefined
-                            : (dimensionState.width.value && dimensionState.width.value !== "auto")
-                        ) && (
-                                <span className="text-small">
-                                    {dimensionState.width.unit === 'px'
-                                        ? Math.round(dimensionState.width.num ?? 0)
-                                        : dimensionState.width.value}
-                                </span>
-                            )}
+                        <span className="text-small">
+                            {dimensionState.width.value}
+                        </span>
                     </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
@@ -40,7 +34,7 @@ export const Width = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-white">Width</span>
                         <InputDropdown
-                            value={dimensionState.width.num?.toString() ?? '--'}
+                            value={dimensionState.width.num ?? 0}
                             unit={dimensionState.width.unit}
                             dropdownValue={dimensionState.width.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -52,7 +46,7 @@ export const Width = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Min</span>
                         <InputDropdown
-                            value={dimensionState.minWidth.num?.toString() ?? '--'}
+                            value={dimensionState.minWidth.num ?? 0}
                             unit={dimensionState.minWidth.unit}
                             dropdownValue={dimensionState.minWidth.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -64,7 +58,7 @@ export const Width = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Max</span>
                         <InputDropdown
-                            value={dimensionState.maxWidth.num?.toString() ?? '--'}
+                            value={dimensionState.maxWidth.num ?? 0}
                             unit={dimensionState.maxWidth.unit}
                             dropdownValue={dimensionState.maxWidth.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -77,4 +71,4 @@ export const Width = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+})

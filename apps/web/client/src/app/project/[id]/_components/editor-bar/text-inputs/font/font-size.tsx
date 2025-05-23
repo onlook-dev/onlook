@@ -4,23 +4,20 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { memo, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useRef, useState } from 'react';
+import { useTextControl } from '../../hooks/use-text-control';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
-export const FontSizeSelector = memo(
-    ({
-        fontSize,
-        handleFontSizeChange,
-    }: {
-        fontSize: number;
-        handleFontSizeChange: (size: number) => void;
-    }) => {
+export const FontSizeSelector = observer(
+    () => {
         const [open, setOpen] = useState(false);
         const inputRef = useRef<HTMLInputElement>(null);
+        const { handleFontSizeChange, textState } = useTextControl();
 
         const adjustFontSize = (amount: number) => {
-            handleFontSizeChange(Math.max(1, fontSize + amount));
+            handleFontSizeChange(Math.max(1, textState.fontSize + amount));
         };
 
         const handleInputClick = () => {
@@ -50,7 +47,7 @@ export const FontSizeSelector = memo(
                                     <input
                                         ref={inputRef}
                                         type="number"
-                                        value={fontSize}
+                                        value={textState.fontSize}
                                         onChange={(e) => {
                                             const value = parseInt(e.target.value);
                                             if (!isNaN(value) && value > 0) {
@@ -89,7 +86,7 @@ export const FontSizeSelector = memo(
                                     handleFontSizeChange(size);
                                     setOpen(false);
                                 }}
-                                className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === fontSize
+                                className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === textState.fontSize
                                     ? 'bg-background-tertiary/20 border-border border text-white'
                                     : ''
                                     }`}

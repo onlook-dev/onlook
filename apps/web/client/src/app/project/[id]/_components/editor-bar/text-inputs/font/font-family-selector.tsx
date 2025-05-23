@@ -1,7 +1,6 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { VARIANTS } from '@onlook/fonts';
 import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
@@ -9,16 +8,17 @@ import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toNormalCase } from '@onlook/utility';
-import { memo, useEffect, useState } from 'react';
-import { FontFamily } from '../../left-panel/brand-tab/font-panel/font-family';
-import { useTextControl } from '../hooks/use-text-control';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
+import { useTextControl } from '../../hooks/use-text-control';
+import { FontFamily } from './font-family';
 
-export const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) => {
+export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
     const [fonts, setFonts] = useState<Font[]>([]);
     const [search, setSearch] = useState('');
     const [open, setOpen] = useState(false);
-    const { handleFontFamilyChange } = useTextControl();
+    const { handleFontFamilyChange, textState } = useTextControl();
 
     useEffect(() => {
         (async () => {
@@ -64,7 +64,9 @@ export const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) 
                             tabIndex={0}
                             onClick={handleClose}
                         >
-                            <span className="truncate text-sm">{toNormalCase(fontFamily)}</span>
+                            <span className="truncate text-sm">
+                                {toNormalCase(textState.fontFamily)}
+                            </span>
                         </Button>
                     </PopoverTrigger>
                 </TooltipTrigger>
@@ -110,17 +112,8 @@ export const FontFamilySelector = memo(({ fontFamily }: { fontFamily: string }) 
                             <div key={font.id} className="py-1">
                                 <FontFamily
                                     name={font.family}
-                                    variants={
-                                        font.weight?.map(
-                                            (weight) =>
-                                                VARIANTS.find((v) => v.value === weight)?.name ||
-                                                weight,
-                                        ) as string[]
-                                    }
-                                    showDropdown={false}
-                                    showAddButton={false}
-                                    isDefault={fontFamily === font.family}
                                     onSetFont={() => handleFontFamilyChange(font)}
+                                    isActive={textState.fontFamily.toLowerCase() === font.id.toLowerCase()}
                                 />
                             </div>
                         ))

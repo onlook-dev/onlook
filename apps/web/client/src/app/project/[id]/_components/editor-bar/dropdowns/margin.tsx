@@ -12,10 +12,10 @@ import { useBoxControl } from "../hooks/use-box-control";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
+import { observer } from "mobx-react-lite";
 
-export const Margin = () => {
+export const Margin = observer(() => {
     const [activeTab, setActiveTab] = useState("all");
-    const [hovered, setHovered] = useState(false);
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('margin');
 
     return (
@@ -83,4 +83,4 @@ export const Margin = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

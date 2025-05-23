@@ -1,4 +1,5 @@
 import type { BoxType } from '../hooks/use-box-control';
+import { useInputControl } from '../hooks/use-input-control';
 import { InputIcon } from './input-icon';
 
 type IconType =
@@ -47,8 +48,6 @@ const getIconNames = (type: BoxType): IconMap => {
 
 export const SpacingInputs = ({ type, values, onChange }: SpacingInputsProps) => {
     const icons = getIconNames(type);
-    console.log(values);
-    
     const positions =
         type === 'radius'
             ? ['topLeft', 'topRight', 'bottomLeft', 'bottomRight']

@@ -52,12 +52,7 @@ export const FontFamily = ({
     };
 
     return (
-        <div
-            className="w-full group"
-            style={{
-                fontFamily: name,
-            }}
-        >
+        <div className="w-full group">
             <div className="flex justify-between items-center py-3">
                 <div
                     className="flex flex-1 items-center cursor-pointer max-w-52"
@@ -68,7 +63,10 @@ export const FontFamily = ({
                     />
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className={`text-sm truncate transition-opacity duration-200`}>
+                            <span
+                                className={`text-sm truncate transition-opacity duration-200`}
+                                style={{ fontFamily: name }}
+                            >
                                 {name}
                             </span>
                         </TooltipTrigger>
@@ -132,7 +130,12 @@ export const FontFamily = ({
             </div>
 
             {expanded && variants.length > 0 && (
-                <div className="pl-7 flex flex-col gap-2 pb-6">
+                <div
+                    className="pl-7 flex flex-col gap-2 pb-6"
+                    style={{
+                        fontFamily: name,
+                    }}
+                >
                     {variants.map((variant) => (
                         <FontVariant key={`${name}-${variant}`} name={variant} />
                     ))}

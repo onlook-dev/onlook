@@ -6,6 +6,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
+import { useInputControl } from '../hooks/use-input-control';
 
 const UNITS = ['px', '%', 'rem', 'vw', 'vh'];
 type Unit = (typeof UNITS)[number];
@@ -29,25 +30,9 @@ interface InputIconProps {
 }
 
 export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: InputIconProps) => {
-    const [inputValue, setInputValue] = useState(value.toString());
     const [unitValue, setUnitValue] = useState(unit);
+    const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        setInputValue(newValue);
-
-        const numericValue = parseFloat(newValue);
-        if (!isNaN(numericValue) && onChange) {
-            onChange(numericValue);
-        }
-    };
-
-    const handleBlur = () => {
-        const numericValue = parseFloat(inputValue);
-        if (isNaN(numericValue)) {
-            setInputValue(value.toString());
-        }
-    };
 
     const IconComponent = icon ? Icons[icon] : null;
 
@@ -61,9 +46,9 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    value={inputValue}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                    value={localValue}
+                    onChange={(e) => handleChange(Number(e.target.value))}
+                    onKeyDown={handleKeyDown}
                     className="w-full bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
                 />
 
