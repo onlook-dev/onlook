@@ -44,7 +44,11 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         projectManager.project = project;
 
         if (project.sandbox?.id) {
-            editorEngine.sandbox.session.start(project.sandbox.id);
+            if (userManager.user?.id) {
+                editorEngine.sandbox.session.start(project.sandbox.id, userManager.user?.id);
+            } else {
+                console.error('No user id');
+            }
         } else {
             console.error('No sandbox id');
         }
@@ -68,7 +72,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         return () => {
             editorEngine.sandbox.clear();
         };
-    }, [result]);
+    }, [result, userManager.user?.id]);
 
     useEffect(() => {
         const creationData = createManager.pendingCreationData;
@@ -132,16 +136,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             if (pollInterval) clearInterval(pollInterval);
         };
     }, []);
-
-    useEffect(() => {
-        if (
-            tabState === 'reactivated' &&
-            editorEngine.sandbox.session.session &&
-            !editorEngine.sandbox.session.connected()
-        ) {
-            editorEngine.sandbox.session.reconnect();
-        }
-    }, [tabState]);
 
     if (isLoading) {
         return (
