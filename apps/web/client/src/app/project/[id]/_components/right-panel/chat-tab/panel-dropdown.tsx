@@ -39,7 +39,7 @@ export const ChatPanelDropdown = observer(({
                 <div className="flex items-center">{children}</div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="min-w-[220px]">
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
                         updateChatSettings(e, {
@@ -54,7 +54,7 @@ export const ChatPanelDropdown = observer(({
                         )}
                     />
                     Show suggestions
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
@@ -87,7 +87,7 @@ export const ChatPanelDropdown = observer(({
                     />
                     Show code while rendering
                 </DropdownMenuItem>
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
                         updateChatSettings(e, {
@@ -102,7 +102,7 @@ export const ChatPanelDropdown = observer(({
                         )}
                     />
                     Show mini chat
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsChatHistoryOpen(!isChatHistoryOpen)}>
                     <Icons.CounterClockwiseClock className="mr-2 h-4 w-4" />
