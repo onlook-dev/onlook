@@ -4,14 +4,15 @@ import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
+import { observer } from 'mobx-react-lite';
 import { useDimensionControl } from '../hooks/use-dimension-control';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
-import { observer } from 'mobx-react-lite';
 
 export const Width = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('width');
+
     return (
         <DropdownMenu>
             <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow>
@@ -22,16 +23,9 @@ export const Width = observer(() => {
                         className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                     >
                         <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
-                        {(dimensionState.width.unit === 'px'
-                            ? dimensionState.width.num !== undefined
-                            : (dimensionState.width.value && dimensionState.width.value !== "auto")
-                        ) && (
-                                <span className="text-small">
-                                    {dimensionState.width.unit === 'px'
-                                        ? Math.round(dimensionState.width.num ?? 0)
-                                        : dimensionState.width.value}
-                                </span>
-                            )}
+                        <span className="text-small">
+                            {dimensionState.width.value}
+                        </span>
                     </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
