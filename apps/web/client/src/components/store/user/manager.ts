@@ -7,8 +7,9 @@ import { UserSettingsManager } from './settings';
 import { SubscriptionManager } from './subscription';
 
 export class UserManager {
+    readonly settings: UserSettingsManager;
+
     readonly subscription = new SubscriptionManager();
-    readonly settings = new UserSettingsManager(this);
     readonly language = new LanguageManager();
     readonly supabase = createClient();
 
@@ -16,6 +17,7 @@ export class UserManager {
 
     constructor() {
         this.fetchUser();
+        this.settings = new UserSettingsManager(this);
         makeAutoObservable(this);
     }
 

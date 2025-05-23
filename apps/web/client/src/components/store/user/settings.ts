@@ -1,49 +1,47 @@
 import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
 import { getDefaultUserSettings } from '@onlook/db';
-import type { ChatSettings, UserMetadata, UserSettings } from '@onlook/models';
+import type { ChatSettings, UserSettings } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
 export class UserSettingsManager {
     settings: UserSettings = getDefaultUserSettings();
-    private _user: UserMetadata | null = null;
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
 
-        reaction
-            (() => this.userManager.user,
-                (user) => {
-                    this._user = user;
+        this.restoreSettings();
+        reaction(
+            () => this.userManager.user,
+            (user) => {
+                if (user) {
                     this.restoreSettings();
-                },
-            );
+                }
+            }
+        );
     }
 
     async restoreSettings() {
-        if (!this.userManager.user) {
+        const user = this.userManager.user;
+        if (!user) {
             console.error('No user found');
             return;
         }
-        const settings = await api.user.getSettings.query(this.userManager.user.id);
+        const settings = await api.user.getSettings.query(user.id);
         this.settings = settings;
     }
 
     async update(newSettings: Partial<UserSettings>) {
-        if (!this.settings) {
-            console.error('No settings found');
-            return;
-        }
-
-        if (!this._user) {
+        const user = this.userManager.user;
+        if (!user) {
             console.error('No user found');
             return;
         }
 
         await api.user.updateSettings.mutate({
             id: this.settings.id,
-            userId: this._user.id,
+            userId: user.id,
             ...newSettings,
         });
         this.settings = { ...this.settings, ...newSettings };

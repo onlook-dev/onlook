@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
-import { DefaultSettings } from '@onlook/constants';
 import type { ChatSettings } from '@onlook/models';
 import { EditorTabValue } from '@onlook/models';
 import {
@@ -12,8 +11,9 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 
-export const ChatPanelDropdown = ({
+export const ChatPanelDropdown = observer(({
     children,
     isChatHistoryOpen,
     setIsChatHistoryOpen,
@@ -25,7 +25,7 @@ export const ChatPanelDropdown = ({
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
 
-    const chatSettings = userManager.settings.settings?.chat ?? DefaultSettings.CHAT_SETTINGS;
+    const chatSettings = userManager.settings.settings.chat;
     const selectedTab = editorEngine.state.rightPanelTab;
 
     const updateChatSettings = (e: React.MouseEvent, settings: Partial<ChatSettings>) => {
@@ -111,4 +111,4 @@ export const ChatPanelDropdown = ({
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});
