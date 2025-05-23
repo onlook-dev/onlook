@@ -13,11 +13,11 @@ import { Opacity } from './dropdowns/opacity';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { Width } from './dropdowns/width';
-import { InputSeparator } from './separator';
-import { FontFamilySelector } from './text-inputs/font-family';
-import { FontSizeSelector } from './text-inputs/font-size';
-import { FontWeightSelector } from './text-inputs/font-weight';
 import { useMeasureGroup } from './hooks/use-measure-group';
+import { InputSeparator } from './separator';
+import { FontFamilySelector } from './text-inputs/font/font-family-selector';
+import { FontSizeSelector } from './text-inputs/font/font-size';
+import { FontWeightSelector } from './text-inputs/font/font-weight';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [

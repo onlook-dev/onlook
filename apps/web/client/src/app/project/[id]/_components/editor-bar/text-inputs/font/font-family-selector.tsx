@@ -1,7 +1,6 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { VARIANTS } from '@onlook/fonts';
 import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
@@ -9,30 +8,10 @@ import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toNormalCase } from '@onlook/utility';
-import { memo, useEffect, useState } from 'react';
-import { useTextControl } from '../hooks/use-text-control';
 import { observer } from 'mobx-react-lite';
-
-const FontFamily = memo(
-    ({ name, isActive, onSetFont }: { name: string; isActive: boolean; onSetFont: () => void }) => {
-        return (
-            <div
-                key={name}
-                onClick={onSetFont}
-                className={`text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border flex items-center justify-between rounded-md border px-2 py-1.5 text-sm data-[highlighted]:text-white cursor-pointer transition-colors duration-150 hover:bg-background-tertiary/20 hover:text-foreground ${
-                    isActive
-                        ? 'bg-background-tertiary/20 border-border border text-white'
-                        : ''
-                }`}
-            >
-                <span className="font-medium" style={{ fontFamily: name }}>
-                    {name}
-                </span>
-                {isActive && <Icons.Check className="ml-2 h-4 w-4 text-foreground-primary" />}
-            </div>
-        );
-    },
-);
+import { useEffect, useState } from 'react';
+import { useTextControl } from '../../hooks/use-text-control';
+import { FontFamily } from './font-family';
 
 export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();

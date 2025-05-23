@@ -13,14 +13,14 @@ import { Opacity } from './dropdowns/opacity';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { Width } from './dropdowns/width';
+import { useMeasureGroup } from './hooks/use-measure-group';
 import { InputSeparator } from './separator';
 import { AdvancedTypography } from './text-inputs/advanced-typography';
-import { FontFamilySelector } from './text-inputs/font-family';
-import { FontSizeSelector } from './text-inputs/font-size';
-import { FontWeightSelector } from './text-inputs/font-weight';
+import { FontFamilySelector } from './text-inputs/font/font-family-selector';
+import { FontSizeSelector } from './text-inputs/font/font-size';
+import { FontWeightSelector } from './text-inputs/font/font-weight';
 import { TextAlignSelector } from './text-inputs/text-align';
 import { TextColor } from './text-inputs/text-color';
-import { useMeasureGroup } from './hooks/use-measure-group';
 
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [

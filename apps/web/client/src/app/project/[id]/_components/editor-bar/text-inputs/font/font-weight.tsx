@@ -12,7 +12,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { convertFontWeight } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useTextControl } from '../hooks/use-text-control';
+import { useTextControl } from '../../hooks/use-text-control';
 
 export const FontWeightSelector = observer(
     () => {

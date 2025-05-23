@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
-import { useTextControl } from '../hooks/use-text-control';
+import { useTextControl } from '../../hooks/use-text-control';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
