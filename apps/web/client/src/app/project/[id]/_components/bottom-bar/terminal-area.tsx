@@ -11,7 +11,6 @@ import { Terminal } from './terminal';
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
     const terminalSessions = editorEngine.sandbox.session.terminalSessions;
-    const activeSession = editorEngine.sandbox.session.activeTerminalSession;
     const activeSessionId = editorEngine.sandbox.session.activeTerminalSessionId;
 
     const [terminalHidden, setTerminalHidden] = useState(true);
@@ -73,24 +72,25 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
             )}
             <div
                 className={cn(
-                    'bg-background rounded-lg overflow-auto transition-all duration-300',
+                    'bg-background rounded-lgtransition-all duration-300 flex flex-col items-center justify-between h-full overflow-auto',
                     terminalHidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
                 )}
             >
-                <div className="flex flex-col items-center justify-between h-full">
-                    <Tabs defaultValue={'cli'} value={activeSessionId} onValueChange={(value) => editorEngine.sandbox.session.activeTerminalSessionId = value} className="w-full">
-                        <TabsList className="w-full h-8 rounded-none border-b border-border">
-                            {terminalSessions.map((terminal) => (
-                                <TabsTrigger key={terminal.id} value={terminal.id} className="flex-1">{terminal.name}</TabsTrigger>
-                            ))}
-                        </TabsList>
+                <Tabs defaultValue={'cli'} value={activeSessionId} onValueChange={(value) => editorEngine.sandbox.session.activeTerminalSessionId = value}
+                    className="w-full h-full">
+                    <TabsList className="w-full h-8 rounded-none border-b border-border">
+                        {terminalSessions.map((terminal) => (
+                            <TabsTrigger key={terminal.id} value={terminal.id} className="flex-1">{terminal.name}</TabsTrigger>
+                        ))}
+                    </TabsList>
+                    <div className="w-full h-full overflow-auto">
                         {terminalSessions.map((terminal) => (
                             <TabsContent key={terminal.id} forceMount value={terminal.id} className="h-full" hidden={activeSessionId !== terminal.id}>
                                 <Terminal hidden={terminalHidden} terminalSessionId={terminal.id} />
                             </TabsContent>
                         ))}
-                    </Tabs>
-                </div>
+                    </div>
+                </Tabs>
             </div >
         </>
     );

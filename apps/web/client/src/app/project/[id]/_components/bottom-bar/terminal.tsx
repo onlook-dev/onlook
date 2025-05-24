@@ -107,18 +107,15 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
             macOptionIsMeta: true,
         });
 
-        xterm.open(containerRef.current);
-        const output = await terminalSession?.terminal.open();
-        xterm.write(output || '');
-
-        const terminalOutputListener = terminalSession?.terminal.onOutput((output: string) => {
+        const terminalOutputListener = (terminalSession?.terminal ?? terminalSession?.task)?.onOutput((output: string) => {
             xterm.write(output)
         });
-
         const xtermDataListener = xterm.onData((data: string) => {
-            terminalSession?.terminal.write(data)
+            terminalSession?.terminal?.write(data)
         })
 
+        xterm.open(containerRef.current);
+        await (terminalSession?.terminal ?? terminalSession?.task)?.open();
         xtermRef.current = xterm;
 
         return {
@@ -135,6 +132,5 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
                 hidden ? 'opacity-0' : 'opacity-100 delay-300',
             )}
         />
-
     );
 }));

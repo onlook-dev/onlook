@@ -1,18 +1,37 @@
 import { api } from '@/trpc/client';
-import type { Terminal, WebSocketSession } from '@codesandbox/sdk';
+import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { makeAutoObservable } from 'mobx';
 
-interface TerminalSession {
+enum CLISessionType {
+    TERMINAL = 'terminal',
+    TASK = 'task',
+}
+
+interface CLISession {
     id: string;
     name: string;
+    type: CLISessionType;
+    terminal?: Terminal;
+    // Task is readonly
+    task?: Task;
+}
+
+interface TaskSession extends CLISession {
+    type: CLISessionType.TASK;
+    task: Task;
+}
+
+interface TerminalSession extends CLISession {
+    type: CLISessionType.TERMINAL;
     terminal: Terminal;
 }
+
 
 export class SessionManager {
     session: WebSocketSession | null = null;
     isConnecting = false;
-    terminalSessions: TerminalSession[] = [];
+    terminalSessions: CLISession[] = [];
     activeTerminalSessionId: string = 'cli';
 
     constructor() {
@@ -31,41 +50,51 @@ export class SessionManager {
         await this.createTerminalSessions();
     }
 
-    get activeTerminalSession() {
-        return this.terminalSessions.find(terminal => terminal.id === this.activeTerminalSessionId);
-    }
-
     getTerminalSession(id: string) {
         return this.terminalSessions.find(terminal => terminal.id === id);
     }
 
     async createTerminalSessions() {
+        const devTask = await this.createDevTaskTerminal();
+        if (devTask) {
+            this.terminalSessions.push({
+                id: 'dev-task',
+                name: 'Dev Task',
+                type: CLISessionType.TASK,
+                task: devTask,
+            });
+        }
         const terminal = await this.createTerminal();
         if (terminal) {
             this.terminalSessions.push({
                 id: 'cli',
                 name: 'CLI',
+                type: CLISessionType.TERMINAL,
                 terminal,
             });
         }
-        const terminal1 = await this.createTerminal();
-        if (terminal1) {
-            this.terminalSessions.push({
-                id: 'dev-task',
-                name: 'Dev Task',
-                terminal: terminal1,
-            });
-        }
+
     }
 
     async createTerminal() {
         return this.session?.terminals.create();
     }
 
+    async createDevTaskTerminal() {
+        const task = this.session?.tasks.getTask('dev');
+        if (!task) {
+            console.error('No dev task found');
+            return;
+        }
+        return task;
+    }
+
     async disposeTerminal(id: string) {
         const terminal = this.terminalSessions.find(terminal => terminal.id === id);
         if (terminal) {
-            await terminal.terminal.kill();
+            if (terminal.type === 'terminal') {
+                await terminal.terminal?.kill();
+            }
             this.terminalSessions = this.terminalSessions.filter(terminal => terminal.id !== id);
         }
     }
@@ -87,7 +116,9 @@ export class SessionManager {
         this.session = null;
         this.isConnecting = false;
         this.terminalSessions.forEach(terminal => {
-            terminal.terminal.kill();
+            if (terminal.type === 'terminal') {
+                terminal.terminal?.kill();
+            }
         });
         this.terminalSessions = [];
     }
