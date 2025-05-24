@@ -43,22 +43,30 @@ export class SessionManager {
                 terminal,
             });
         }
-        const terminal1 = await this.createTerminal();
-        if (terminal1) {
-            this.terminalSessions.push({
-                id: 'dev-task',
-                name: 'Dev Task',
-                terminal: terminal1,
-            });
-        }
+        // const terminal1 = await this.createTerminal();
+        // if (terminal1) {
+        //     this.terminalSessions.push({
+        //         id: 'dev-task',
+        //         name: 'Dev Task',
+        //         terminal: terminal1,
+        //     });
+        // }
     }
 
     async createTerminal() {
         const terminal = await this.session?.terminals.create();
-        if (terminal) {
-            await terminal.open();
-        }
+        // if (terminal) {
+        //     await terminal.open();
+        // }
         return terminal;
+    }
+
+    async disposeTerminal(id: string) {
+        const terminal = this.terminalSessions.find(terminal => terminal.id === id);
+        if (terminal) {
+            await terminal.terminal.kill();
+            this.terminalSessions = this.terminalSessions.filter(terminal => terminal.id !== id);
+        }
     }
 
     async hibernate(sandboxId: string) {
@@ -77,5 +85,9 @@ export class SessionManager {
         await this.session.disconnect();
         this.session = null;
         this.isConnecting = false;
+        this.terminalSessions.forEach(terminal => {
+            terminal.terminal.kill();
+        });
+        this.terminalSessions = [];
     }
 }

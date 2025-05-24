@@ -9,9 +9,10 @@ import { useState } from 'react';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
-    const [terminalHidden, setTerminalHidden] = useState(true);
     const editorEngine = useEditorEngine();
     const terminalSessions = editorEngine.sandbox.session.terminalSessions;
+
+    const [terminalHidden, setTerminalHidden] = useState(true);
     const [activeTerminal, setActiveTerminal] = useState(terminalSessions[0]);
 
     const setActiveTerminalTab = (id: string | undefined) => {

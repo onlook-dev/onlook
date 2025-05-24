@@ -7,7 +7,7 @@ import { cn } from '@onlook/ui/utils';
 import { Terminal as XTerm, type IDisposable, type ITheme } from '@xterm/xterm';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 interface TerminalProps {
     hidden: boolean;
@@ -41,12 +41,12 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
     DARK: {}, // Use default dark theme
 };
 
-export const Terminal = observer(({ hidden = false, terminalSessionId }: TerminalProps) => {
+export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: TerminalProps) => {
+    const editorEngine = useEditorEngine();
+    const terminalSession = editorEngine.sandbox.session.getTerminalSession(terminalSessionId);
     const xtermRef = useRef<XTerm | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
-    const editorEngine = useEditorEngine();
-    const terminalSession = editorEngine.sandbox.session.getTerminalSession(terminalSessionId);
 
     useEffect(() => {
         if (xtermRef.current) {
@@ -63,8 +63,10 @@ export const Terminal = observer(({ hidden = false, terminalSessionId }: Termina
     }, [hidden]);
 
     useEffect(() => {
-
-        if (xtermRef.current) return; // Already initialized
+        if (xtermRef.current) {
+            console.log('xterm already initialized');
+            return;
+        }
 
         let terminalOutputListener: IDisposable | undefined;
         let xtermDataListener: IDisposable | undefined;
@@ -76,8 +78,8 @@ export const Terminal = observer(({ hidden = false, terminalSessionId }: Termina
         })();
 
         return () => {
+            console.log('dispose terminal');
             xtermRef.current?.dispose();
-            terminalSession?.terminal.kill();
             xtermRef.current = null;
             terminalOutputListener?.dispose();
             xtermDataListener?.dispose();
@@ -86,8 +88,9 @@ export const Terminal = observer(({ hidden = false, terminalSessionId }: Termina
 
     async function initTerminal(): Promise<{ terminalOutputListener: IDisposable | undefined, xtermDataListener: IDisposable | undefined }> {
         if (!containerRef.current) {
+            console.log('containerRef.current is null');
             return {
-                terminalOutputListener: { dispose: () => { } } as IDisposable,
+                terminalOutputListener: { dispose: () => { } },
                 xtermDataListener: { dispose: () => { } },
             };
         }
@@ -104,10 +107,9 @@ export const Terminal = observer(({ hidden = false, terminalSessionId }: Termina
             macOptionIsMeta: true,
         });
 
-        console.log('open terminal', terminalSession);
         xterm.open(containerRef.current);
-        await terminalSession?.terminal.open();
-        terminalSession?.terminal.write('\n');
+        const output = await terminalSession?.terminal.open();
+        xterm.write(output || '');
 
         const terminalOutputListener = terminalSession?.terminal.onOutput((output: string) => {
             xterm.write(output)
@@ -135,4 +137,4 @@ export const Terminal = observer(({ hidden = false, terminalSessionId }: Termina
         />
 
     );
-});
+}));
