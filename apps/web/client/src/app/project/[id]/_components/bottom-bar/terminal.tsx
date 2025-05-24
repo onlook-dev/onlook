@@ -2,8 +2,6 @@
 
 import '@xterm/xterm/css/xterm.css';
 
-import { useEditorEngine } from '@/components/store/editor';
-import type { Terminal as CsbTerminal, WebSocketSession } from '@codesandbox/sdk';
 import { cn } from '@onlook/ui/utils';
 import { Terminal as XTerm, type ITheme } from '@xterm/xterm';
 import { observer } from 'mobx-react-lite';
@@ -11,7 +9,13 @@ import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
 
 interface TerminalProps {
-    hidden?: boolean;
+    hidden: boolean;
+    terminalSession: {
+        onOutput: any;
+        open: () => void;
+        write: (data: string) => void;
+        kill: () => void;
+    };
 }
 
 const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
@@ -41,12 +45,8 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
     DARK: {}, // Use default dark theme
 };
 
-export const Terminal = observer(({ hidden = false }: TerminalProps) => {
-    const editorEngine = useEditorEngine();
-    const sandboxSession = editorEngine.sandbox.session.session;
-    const sessionId = useRef<string | null>(null);
+export const Terminal = observer(({ hidden = false, terminalSession }: TerminalProps) => {
     const xtermRef = useRef<XTerm | null>(null);
-    const terminalRef = useRef<CsbTerminal | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 
@@ -65,48 +65,38 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
     }, [hidden]);
 
     useEffect(() => {
-        if (!sandboxSession) {
-            console.error('sandboxSession is null');
+        if (!terminalSession) {
+            console.error('session is null');
             return;
         }
 
-        if (sessionId.current === sandboxSession.id) {
-            console.error('sessionId is the same');
-            return;
-        }
-        sessionId.current = sandboxSession.id;
-
-        if (xtermRef.current || terminalRef.current) return; // Already initialized
+        if (xtermRef.current) return; // Already initialized
 
         let terminalOutputListener: { dispose: () => void } | undefined;
         let xtermDataListener: { dispose: () => void } | undefined;
 
         (async () => {
-            const { terminalOutputListener: outputListener, xtermDataListener: dataListener } = await initTerminal(
-                sandboxSession,
-            );
+            const { terminalOutputListener: outputListener, xtermDataListener: dataListener } = await initTerminal();
             terminalOutputListener = outputListener;
             xtermDataListener = dataListener;
         })();
 
         return () => {
             xtermRef.current?.dispose();
-            terminalRef.current?.kill();
+            terminalSession.kill();
             xtermRef.current = null;
-            terminalRef.current = null;
             terminalOutputListener?.dispose();
             xtermDataListener?.dispose();
         };
-    }, [sandboxSession]);
+    }, [terminalSession]);
 
-    async function initTerminal(session: WebSocketSession): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
+    async function initTerminal(): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
         if (!containerRef.current) {
             return {
                 terminalOutputListener: { dispose: () => { } },
                 xtermDataListener: { dispose: () => { } },
             };
         }
-        const terminal = await session.terminals.create()
 
         const xterm = new XTerm({
             cursorBlink: true,
@@ -121,19 +111,18 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         xterm.open(containerRef.current);
-        await terminal.open();
-        terminal.write('\n')
+        await terminalSession.open();
+        terminalSession.write('\n');
 
-        const terminalOutputListener = terminal.onOutput((output: string) => {
+        const terminalOutputListener = terminalSession.onOutput((output: string) => {
             xterm.write(output)
         });
 
         const xtermDataListener = xterm.onData((data: string) => {
-            terminal.write(data)
+            terminalSession.write(data)
         })
 
         xtermRef.current = xterm;
-        terminalRef.current = terminal;
 
         return {
             terminalOutputListener,
