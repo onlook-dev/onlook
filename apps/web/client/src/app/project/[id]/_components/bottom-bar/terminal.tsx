@@ -3,15 +3,15 @@
 import '@xterm/xterm/css/xterm.css';
 
 import { useEditorEngine } from '@/components/store/editor';
-import type { Terminal as CsbTerminal, WebSocketSession } from '@codesandbox/sdk';
 import { cn } from '@onlook/ui/utils';
-import { Terminal as XTerm, type ITheme } from '@xterm/xterm';
+import { type ITheme } from '@xterm/xterm';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 interface TerminalProps {
-    hidden?: boolean;
+    hidden: boolean;
+    terminalSessionId: string;
 }
 
 const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
@@ -41,120 +41,52 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
     DARK: {}, // Use default dark theme
 };
 
-export const Terminal = observer(({ hidden = false }: TerminalProps) => {
+export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: TerminalProps) => {
     const editorEngine = useEditorEngine();
-    const sandboxSession = editorEngine.sandbox.session.session;
-    const sessionId = useRef<string | null>(null);
-    const xtermRef = useRef<XTerm | null>(null);
-    const terminalRef = useRef<CsbTerminal | null>(null);
+    const terminalSession = editorEngine.sandbox.session.getTerminalSession(terminalSessionId);
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 
+    // Mount xterm to DOM
     useEffect(() => {
-        if (xtermRef.current) {
-            xtermRef.current.options.theme = theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
+        if (!containerRef.current || !terminalSession?.xterm) return;
+        // Only open if not already attached
+        if (!terminalSession.xterm.element || terminalSession.xterm.element.parentElement !== containerRef.current) {
+            terminalSession.xterm.open(containerRef.current);
         }
-    }, [theme]);
+        return () => {
+            // Detach xterm from DOM on unmount (but do not dispose)
+            if (
+                terminalSession.xterm.element &&
+                containerRef.current &&
+                terminalSession.xterm.element.parentElement === containerRef.current
+            ) {
+                containerRef.current.innerHTML = '';
+            }
+        };
+    }, [terminalSessionId, terminalSession, containerRef]);
 
     useEffect(() => {
-        if (!hidden && xtermRef.current) {
+        if (terminalSession?.xterm) {
+            terminalSession.xterm.options.theme = theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
+        }
+    }, [theme, terminalSession]);
+
+    useEffect(() => {
+        if (!hidden && terminalSession?.xterm) {
             setTimeout(() => {
-                xtermRef.current?.focus();
+                terminalSession.xterm?.focus();
             }, 100);
         }
-    }, [hidden]);
-
-    useEffect(() => {
-        if (!sandboxSession) {
-            console.error('sandboxSession is null');
-            return;
-        }
-
-        if (sessionId.current === sandboxSession.id) {
-            console.error('sessionId is the same');
-            return;
-        }
-        sessionId.current = sandboxSession.id;
-
-        if (xtermRef.current || terminalRef.current) return; // Already initialized
-
-        let terminalOutputListener: { dispose: () => void } | undefined;
-        let xtermDataListener: { dispose: () => void } | undefined;
-
-        (async () => {
-            const { terminalOutputListener: outputListener, xtermDataListener: dataListener } = await initTerminal(
-                sandboxSession,
-            );
-            terminalOutputListener = outputListener;
-            xtermDataListener = dataListener;
-        })();
-
-        return () => {
-            xtermRef.current?.dispose();
-            terminalRef.current?.kill();
-            xtermRef.current = null;
-            terminalRef.current = null;
-            terminalOutputListener?.dispose();
-            xtermDataListener?.dispose();
-        };
-    }, [sandboxSession]);
-
-    async function initTerminal(session: WebSocketSession): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
-        if (!containerRef.current) {
-            return {
-                terminalOutputListener: { dispose: () => { } },
-                xtermDataListener: { dispose: () => { } },
-            };
-        }
-        const terminal = await session.terminals.create()
-
-        const xterm = new XTerm({
-            cursorBlink: true,
-            fontSize: 12,
-            fontFamily: 'monospace',
-            theme: theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK,
-            convertEol: true,
-            allowTransparency: true,
-            disableStdin: false,
-            allowProposedApi: true,
-            macOptionIsMeta: true,
-        });
-
-        xterm.open(containerRef.current);
-        await terminal.open();
-        terminal.write('\n')
-
-        const terminalOutputListener = terminal.onOutput((output: string) => {
-            xterm.write(output)
-        });
-
-        const xtermDataListener = xterm.onData((data: string) => {
-            terminal.write(data)
-        })
-
-        xtermRef.current = xterm;
-        terminalRef.current = terminal;
-
-        return {
-            terminalOutputListener,
-            xtermDataListener,
-        };
-    }
+    }, [hidden, terminalSession]);
 
     return (
         <div
+            ref={containerRef}
             className={cn(
-                'bg-background rounded-lg overflow-auto transition-all duration-300',
-                hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
+                'h-full w-full p-2 transition-opacity duration-200',
+                hidden ? 'opacity-0' : 'opacity-100 delay-300',
             )}
-        >
-            <div
-                ref={containerRef}
-                className={cn(
-                    'h-full w-full p-2 transition-opacity duration-200',
-                    hidden ? 'opacity-0' : 'opacity-100 delay-300',
-                )}
-            />
-        </div>
+        />
     );
-});
+}));
