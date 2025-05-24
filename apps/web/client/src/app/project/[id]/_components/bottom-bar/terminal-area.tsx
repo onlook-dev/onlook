@@ -1,11 +1,24 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { Terminal } from './terminal';
+import { TerminalTabs } from './terminal-tabs';
 
 export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
     const [terminalHidden, setTerminalHidden] = useState(true);
+    const editorEngine = useEditorEngine();
+
+    const handleToggleTerminal = async () => {
+        if (terminalHidden && editorEngine.terminal.activeSessions.length === 0) {
+            try {
+                await editorEngine.terminal.createSession();
+            } catch (error) {
+                console.error('Failed to create initial terminal:', error);
+            }
+        }
+        setTerminalHidden(!terminalHidden);
+    };
 
     return (
         <>
@@ -15,7 +28,7 @@ export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
-                                onClick={() => setTerminalHidden(!terminalHidden)}
+                                onClick={handleToggleTerminal}
                                 className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-md"
                             >
                                 <Icons.Terminal />
@@ -43,7 +56,7 @@ export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button
-                                    onClick={() => setTerminalHidden(!terminalHidden)}
+                                    onClick={handleToggleTerminal}
                                     className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-lg"
                                 >
                                     <Icons.ChevronDown />
@@ -54,7 +67,7 @@ export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
                     </div>
                 </motion.div>
             )}
-            <Terminal hidden={terminalHidden} />
+            <TerminalTabs hidden={terminalHidden} />
         </>
     );
 };

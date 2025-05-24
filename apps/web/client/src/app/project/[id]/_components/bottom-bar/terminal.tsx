@@ -12,6 +12,7 @@ import { useEffect, useRef } from 'react';
 
 interface TerminalProps {
     hidden?: boolean;
+    terminalId?: string;
 }
 
 const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
@@ -41,8 +42,9 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
     DARK: {}, // Use default dark theme
 };
 
-export const Terminal = observer(({ hidden = false }: TerminalProps) => {
+export const Terminal = observer(({ hidden = false, terminalId }: TerminalProps) => {
     const editorEngine = useEditorEngine();
+    const terminalSession = terminalId ? editorEngine.terminal.activeSessions.find(s => s.id === terminalId) : null;
     const sandboxSession = editorEngine.sandbox.session.session;
     const sessionId = useRef<string | null>(null);
     const xtermRef = useRef<XTerm | null>(null);
@@ -65,13 +67,11 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
     }, [hidden]);
 
     useEffect(() => {
-        if (!sandboxSession) {
-            console.error('sandboxSession is null');
+        if (!sandboxSession || !terminalSession?.terminal) {
             return;
         }
 
-        if (sessionId.current === sandboxSession.id) {
-            console.error('sessionId is the same');
+        if (sessionId.current === sandboxSession.id && terminalRef.current === terminalSession.terminal) {
             return;
         }
         sessionId.current = sandboxSession.id;
@@ -83,7 +83,7 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         (async () => {
             const { terminalOutputListener: outputListener, xtermDataListener: dataListener } = await initTerminal(
-                sandboxSession,
+                terminalSession.terminal!,
             );
             terminalOutputListener = outputListener;
             xtermDataListener = dataListener;
@@ -91,22 +91,20 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         return () => {
             xtermRef.current?.dispose();
-            terminalRef.current?.kill();
             xtermRef.current = null;
             terminalRef.current = null;
             terminalOutputListener?.dispose();
             xtermDataListener?.dispose();
         };
-    }, [sandboxSession]);
+    }, [sandboxSession, terminalSession?.terminal]);
 
-    async function initTerminal(session: WebSocketSession): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
+    async function initTerminal(terminal: CsbTerminal): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
         if (!containerRef.current) {
             return {
                 terminalOutputListener: { dispose: () => { } },
                 xtermDataListener: { dispose: () => { } },
             };
         }
-        const terminal = await session.terminals.create()
 
         const xterm = new XTerm({
             cursorBlink: true,
