@@ -3,13 +3,12 @@
 import '@xterm/xterm/css/xterm.css';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectsManager } from '@/components/store/projects';
 import type { Terminal as CsbTerminal, WebSocketSession } from '@codesandbox/sdk';
 import { cn } from '@onlook/ui/utils';
 import { Terminal as XTerm, type ITheme } from '@xterm/xterm';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface TerminalProps {
     hidden?: boolean;
@@ -45,26 +44,39 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
 export const Terminal = observer(({ hidden = false }: TerminalProps) => {
     const editorEngine = useEditorEngine();
     const sandboxSession = editorEngine.sandbox.session.session;
-    const terminalRef = useRef<HTMLDivElement>(null);
-    const [xterm, setXterm] = useState<XTerm | null>(null);
-    const [terminal, setTerminal] = useState<CsbTerminal | null>(null);
-    const projectsManager = useProjectsManager();
-
+    const sessionId = useRef<string | null>(null);
+    const xtermRef = useRef<XTerm | null>(null);
+    const terminalRef = useRef<CsbTerminal | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 
     useEffect(() => {
-        if (xterm) {
-            xterm.options.theme = theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
+        if (xtermRef.current) {
+            xtermRef.current.options.theme = theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK;
         }
     }, [theme]);
 
-
+    useEffect(() => {
+        if (!hidden && xtermRef.current) {
+            setTimeout(() => {
+                xtermRef.current?.focus();
+            }, 100);
+        }
+    }, [hidden]);
 
     useEffect(() => {
         if (!sandboxSession) {
             console.error('sandboxSession is null');
             return;
         }
+
+        if (sessionId.current === sandboxSession.id) {
+            console.error('sessionId is the same');
+            return;
+        }
+        sessionId.current = sandboxSession.id;
+
+        if (xtermRef.current || terminalRef.current) return; // Already initialized
 
         let terminalOutputListener: { dispose: () => void } | undefined;
         let xtermDataListener: { dispose: () => void } | undefined;
@@ -78,17 +90,17 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
         })();
 
         return () => {
-            xterm?.dispose();
-            terminal?.kill();
-            setTerminal(null);
-            setXterm(null);
+            xtermRef.current?.dispose();
+            terminalRef.current?.kill();
+            xtermRef.current = null;
+            terminalRef.current = null;
             terminalOutputListener?.dispose();
             xtermDataListener?.dispose();
         };
     }, [sandboxSession]);
 
     async function initTerminal(session: WebSocketSession): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
-        if (!terminalRef.current) {
+        if (!containerRef.current) {
             return {
                 terminalOutputListener: { dispose: () => { } },
                 xtermDataListener: { dispose: () => { } },
@@ -108,8 +120,9 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
             macOptionIsMeta: true,
         });
 
-        xterm.open(terminalRef.current);
+        xterm.open(containerRef.current);
         await terminal.open();
+        terminal.write('\n')
 
         const terminalOutputListener = terminal.onOutput((output: string) => {
             xterm.write(output)
@@ -119,8 +132,8 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
             terminal.write(data)
         })
 
-        setXterm(xterm);
-        setTerminal(terminal);
+        xtermRef.current = xterm;
+        terminalRef.current = terminal;
 
         return {
             terminalOutputListener,
@@ -136,7 +149,7 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
             )}
         >
             <div
-                ref={terminalRef}
+                ref={containerRef}
                 className={cn(
                     'h-full w-full p-2 transition-opacity duration-200',
                     hidden ? 'opacity-0' : 'opacity-100 delay-300',
