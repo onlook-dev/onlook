@@ -143,18 +143,12 @@ export const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
     return (
         <div
+            ref={containerRef}
             className={cn(
-                'bg-background rounded-lg overflow-auto transition-all duration-300',
-                hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
+                'h-full w-full p-2 transition-opacity duration-200',
+                hidden ? 'opacity-0' : 'opacity-100 delay-300',
             )}
-        >
-            <div
-                ref={containerRef}
-                className={cn(
-                    'h-full w-full p-2 transition-opacity duration-200',
-                    hidden ? 'opacity-0' : 'opacity-100 delay-300',
-                )}
-            />
-        </div>
+        />
+
     );
 });

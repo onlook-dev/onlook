@@ -1,5 +1,7 @@
 import { Icons } from '@onlook/ui/icons';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { Terminal } from './terminal';
@@ -54,7 +56,27 @@ export const TerminalArea = ({ children }: { children: React.ReactNode }) => {
                     </div>
                 </motion.div>
             )}
-            <Terminal hidden={terminalHidden} />
+            <div
+                className={cn(
+                    'bg-background rounded-lg overflow-auto transition-all duration-300',
+                    terminalHidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
+                )}
+            >
+                <div className="flex flex-col items-center justify-between h-full">
+                    <Tabs defaultValue="dev-task" className="w-full">
+                        <TabsList className="w-full h-8 rounded-none border-b border-border">
+                            <TabsTrigger value="dev-task" className="flex-1">Dev Task</TabsTrigger>
+                            <TabsTrigger value="cli" className="flex-1">CLI</TabsTrigger>
+                        </TabsList>
+                        <TabsContent forceMount value="dev-task" className="h-full">
+                            <Terminal hidden={terminalHidden} />
+                        </TabsContent>
+                        <TabsContent forceMount value="cli" className="h-full">
+                            <Terminal hidden={terminalHidden} />
+                        </TabsContent>
+                    </Tabs>
+                </div>
+            </div >
         </>
     );
 };
