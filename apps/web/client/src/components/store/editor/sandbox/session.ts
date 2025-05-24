@@ -1,33 +1,8 @@
 import { api } from '@/trpc/client';
-import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
+import type { WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { Terminal as XTerm } from '@xterm/xterm';
 import { makeAutoObservable } from 'mobx';
-
-enum CLISessionType {
-    TERMINAL = 'terminal',
-    TASK = 'task',
-}
-
-interface CLISession {
-    id: string;
-    name: string;
-    type: CLISessionType;
-    terminal?: Terminal;
-    // Task is readonly
-    task?: Task;
-    xterm: XTerm;
-}
-
-interface TaskSession extends CLISession {
-    type: CLISessionType.TASK;
-    task: Task;
-}
-
-interface TerminalSession extends CLISession {
-    type: CLISessionType.TERMINAL;
-    terminal: Terminal;
-}
+import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
 export class SessionManager {
     session: WebSocketSession | null = null;
@@ -48,79 +23,19 @@ export class SessionManager {
             },
         });
         this.isConnecting = false;
-        await this.createTerminalSessions();
+        await this.createTerminalSessions(this.session);
     }
 
     getTerminalSession(id: string) {
         return this.terminalSessions.find(terminal => terminal.id === id) as TerminalSession | undefined;
     }
 
-    async createTerminalSessions() {
-        const devTask = await this.createDevTaskTerminal();
-        if (devTask) {
-            const xterm = this.createXTerm();
-            this.terminalSessions.push({
-                id: 'dev-task',
-                name: 'Dev Task',
-                type: CLISessionType.TASK,
-                task: devTask,
-                xterm,
-            });
-
-            devTask.onOutput((data: string) => {
-                console.log('devTask.onOutput', data);
-                xterm.write(data);
-            });
-
-            devTask.open();
-        }
-        const terminal = await this.createTerminal();
-        if (terminal) {
-            const xterm = this.createXTerm();
-            this.terminalSessions.push({
-                id: 'cli',
-                name: 'CLI',
-                type: CLISessionType.TERMINAL,
-                terminal,
-                xterm,
-            });
-
-            terminal.onOutput((data: string) => {
-                xterm.write(data);
-            });
-
-            xterm.onData((data: string) => {
-                terminal.write(data);
-            });
-
-            terminal.open();
-        }
-    }
-
-    createXTerm() {
-        return new XTerm({
-            cursorBlink: true,
-            fontSize: 12,
-            fontFamily: 'monospace',
-            convertEol: true,
-            allowTransparency: true,
-            disableStdin: false,
-            allowProposedApi: true,
-            macOptionIsMeta: true,
-        });
-    }
-
-    async createTerminal() {
-        return this.session?.terminals.create();
-    }
-
-    async createDevTaskTerminal() {
-        const task = this.session?.tasks.getTask('dev');
-        if (!task) {
-            console.error('No dev task found');
-            return;
-        }
-        return task;
+    async createTerminalSessions(session: WebSocketSession) {
+        const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session);
+        this.terminalSessions.push(task);
+        const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session);
+        this.terminalSessions.push(terminal);
+        this.activeTerminalSessionId = task.id;
     }
 
     async disposeTerminal(id: string) {
