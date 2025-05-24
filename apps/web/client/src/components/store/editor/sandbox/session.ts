@@ -13,6 +13,7 @@ export class SessionManager {
     session: WebSocketSession | null = null;
     isConnecting = false;
     terminalSessions: TerminalSession[] = [];
+    activeTerminalSessionId: string = 'cli';
 
     constructor() {
         makeAutoObservable(this);
@@ -30,6 +31,10 @@ export class SessionManager {
         await this.createTerminalSessions();
     }
 
+    get activeTerminalSession() {
+        return this.terminalSessions.find(terminal => terminal.id === this.activeTerminalSessionId);
+    }
+
     getTerminalSession(id: string) {
         return this.terminalSessions.find(terminal => terminal.id === id);
     }
@@ -43,22 +48,18 @@ export class SessionManager {
                 terminal,
             });
         }
-        // const terminal1 = await this.createTerminal();
-        // if (terminal1) {
-        //     this.terminalSessions.push({
-        //         id: 'dev-task',
-        //         name: 'Dev Task',
-        //         terminal: terminal1,
-        //     });
-        // }
+        const terminal1 = await this.createTerminal();
+        if (terminal1) {
+            this.terminalSessions.push({
+                id: 'dev-task',
+                name: 'Dev Task',
+                terminal: terminal1,
+            });
+        }
     }
 
     async createTerminal() {
-        const terminal = await this.session?.terminals.create();
-        // if (terminal) {
-        //     await terminal.open();
-        // }
-        return terminal;
+        return this.session?.terminals.create();
     }
 
     async disposeTerminal(id: string) {

@@ -11,19 +11,10 @@ import { Terminal } from './terminal';
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
     const terminalSessions = editorEngine.sandbox.session.terminalSessions;
+    const activeSession = editorEngine.sandbox.session.activeTerminalSession;
+    const activeSessionId = editorEngine.sandbox.session.activeTerminalSessionId;
 
     const [terminalHidden, setTerminalHidden] = useState(true);
-    const [activeTerminal, setActiveTerminal] = useState(terminalSessions[0]);
-
-    const setActiveTerminalTab = (id: string | undefined) => {
-        if (!id) {
-            return;
-        }
-        const terminal = terminalSessions.find(terminal => terminal.id === id);
-        if (terminal) {
-            setActiveTerminal(terminal);
-        }
-    }
 
     if (!terminalSessions.length) {
         return (
@@ -87,14 +78,14 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                 )}
             >
                 <div className="flex flex-col items-center justify-between h-full">
-                    <Tabs value={activeTerminal?.id} onValueChange={(value) => setActiveTerminalTab(value)} className="w-full">
+                    <Tabs defaultValue={'cli'} value={activeSessionId} onValueChange={(value) => editorEngine.sandbox.session.activeTerminalSessionId = value} className="w-full">
                         <TabsList className="w-full h-8 rounded-none border-b border-border">
                             {terminalSessions.map((terminal) => (
-                                <TabsTrigger value={terminal.id} className="flex-1">{terminal.name}</TabsTrigger>
+                                <TabsTrigger key={terminal.id} value={terminal.id} className="flex-1">{terminal.name}</TabsTrigger>
                             ))}
                         </TabsList>
                         {terminalSessions.map((terminal) => (
-                            <TabsContent forceMount value={terminal.id} className="h-full" hidden={activeTerminal?.id !== terminal.id}>
+                            <TabsContent key={terminal.id} forceMount value={terminal.id} className="h-full" hidden={activeSessionId !== terminal.id}>
                                 <Terminal hidden={terminalHidden} terminalSessionId={terminal.id} />
                             </TabsContent>
                         ))}
