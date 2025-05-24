@@ -1,11 +1,18 @@
 import { api } from '@/trpc/client';
-import type { WebSocketSession } from '@codesandbox/sdk';
+import type { Terminal, WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { makeAutoObservable } from 'mobx';
+
+interface TerminalSession {
+    id: string;
+    name: string;
+    terminal: Terminal;
+}
 
 export class SessionManager {
     session: WebSocketSession | null = null;
     isConnecting = false;
+    terminalSessions: TerminalSession[] = [];
 
     constructor() {
         makeAutoObservable(this);
@@ -16,10 +23,42 @@ export class SessionManager {
         this.session = await connectToSandbox({
             session: await api.sandbox.start.mutate({ sandboxId, userId }),
             getSession: async (id) => {
-                return await api.sandbox.start.mutate({ sandboxId, userId });
+                return await api.sandbox.start.mutate({ sandboxId: id, userId });
             },
         });
         this.isConnecting = false;
+        await this.createTerminalSessions();
+    }
+
+    getTerminalSession(id: string) {
+        return this.terminalSessions.find(terminal => terminal.id === id);
+    }
+
+    async createTerminalSessions() {
+        const terminal = await this.createTerminal();
+        if (terminal) {
+            this.terminalSessions.push({
+                id: 'cli',
+                name: 'CLI',
+                terminal,
+            });
+        }
+        const terminal1 = await this.createTerminal();
+        if (terminal1) {
+            this.terminalSessions.push({
+                id: 'dev-task',
+                name: 'Dev Task',
+                terminal: terminal1,
+            });
+        }
+    }
+
+    async createTerminal() {
+        const terminal = await this.session?.terminals.create();
+        if (terminal) {
+            await terminal.open();
+        }
+        return terminal;
     }
 
     async hibernate(sandboxId: string) {

@@ -2,20 +2,16 @@
 
 import '@xterm/xterm/css/xterm.css';
 
+import { useEditorEngine } from '@/components/store/editor';
 import { cn } from '@onlook/ui/utils';
-import { Terminal as XTerm, type ITheme } from '@xterm/xterm';
+import { Terminal as XTerm, type IDisposable, type ITheme } from '@xterm/xterm';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef } from 'react';
 
 interface TerminalProps {
     hidden: boolean;
-    terminalSession: {
-        onOutput: any;
-        open: () => void;
-        write: (data: string) => void;
-        kill: () => void;
-    };
+    terminalSessionId: string;
 }
 
 const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
@@ -45,10 +41,12 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
     DARK: {}, // Use default dark theme
 };
 
-export const Terminal = observer(({ hidden = false, terminalSession }: TerminalProps) => {
+export const Terminal = observer(({ hidden = false, terminalSessionId }: TerminalProps) => {
     const xtermRef = useRef<XTerm | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
+    const editorEngine = useEditorEngine();
+    const terminalSession = editorEngine.sandbox.session.getTerminalSession(terminalSessionId);
 
     useEffect(() => {
         if (xtermRef.current) {
@@ -65,15 +63,11 @@ export const Terminal = observer(({ hidden = false, terminalSession }: TerminalP
     }, [hidden]);
 
     useEffect(() => {
-        if (!terminalSession) {
-            console.error('session is null');
-            return;
-        }
 
         if (xtermRef.current) return; // Already initialized
 
-        let terminalOutputListener: { dispose: () => void } | undefined;
-        let xtermDataListener: { dispose: () => void } | undefined;
+        let terminalOutputListener: IDisposable | undefined;
+        let xtermDataListener: IDisposable | undefined;
 
         (async () => {
             const { terminalOutputListener: outputListener, xtermDataListener: dataListener } = await initTerminal();
@@ -83,17 +77,17 @@ export const Terminal = observer(({ hidden = false, terminalSession }: TerminalP
 
         return () => {
             xtermRef.current?.dispose();
-            terminalSession.kill();
+            terminalSession?.terminal.kill();
             xtermRef.current = null;
             terminalOutputListener?.dispose();
             xtermDataListener?.dispose();
         };
-    }, [terminalSession]);
+    }, []);
 
-    async function initTerminal(): Promise<{ terminalOutputListener: { dispose: () => void }, xtermDataListener: { dispose: () => void } }> {
+    async function initTerminal(): Promise<{ terminalOutputListener: IDisposable | undefined, xtermDataListener: IDisposable | undefined }> {
         if (!containerRef.current) {
             return {
-                terminalOutputListener: { dispose: () => { } },
+                terminalOutputListener: { dispose: () => { } } as IDisposable,
                 xtermDataListener: { dispose: () => { } },
             };
         }
@@ -110,16 +104,17 @@ export const Terminal = observer(({ hidden = false, terminalSession }: TerminalP
             macOptionIsMeta: true,
         });
 
+        console.log('open terminal', terminalSession);
         xterm.open(containerRef.current);
-        await terminalSession.open();
-        terminalSession.write('\n');
+        await terminalSession?.terminal.open();
+        terminalSession?.terminal.write('\n');
 
-        const terminalOutputListener = terminalSession.onOutput((output: string) => {
+        const terminalOutputListener = terminalSession?.terminal.onOutput((output: string) => {
             xterm.write(output)
         });
 
         const xtermDataListener = xterm.onData((data: string) => {
-            terminalSession.write(data)
+            terminalSession?.terminal.write(data)
         })
 
         xtermRef.current = xterm;

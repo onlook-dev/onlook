@@ -1,40 +1,30 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { Terminal as CsbTerminal } from '@codesandbox/sdk';
 import { Icons } from '@onlook/ui/icons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
     const [terminalHidden, setTerminalHidden] = useState(true);
     const editorEngine = useEditorEngine();
-    const sandboxSession = editorEngine.sandbox.session.session;
-    const [cliTerminalSession, setCliTerminalSession] = useState<CsbTerminal | null>(null);
-    const memoizedCliTerminalSession = useMemo(() => cliTerminalSession, [cliTerminalSession]);
-    const [tabValue, setTabValue] = useState('dev-task');
+    const terminalSessions = editorEngine.sandbox.session.terminalSessions;
+    const [activeTerminal, setActiveTerminal] = useState(terminalSessions[0]);
 
-    const terminalSession = useMemo(() => ({
-        onOutput: (output: string) => { console.log(output); },
-        open: () => { console.log('open'); },
-        kill: () => { console.log('kill'); },
-        write: (data: string) => { console.log(data); }
-    }), []);
-
-    useEffect(() => {
-        let isMounted = true;
-        if (sandboxSession) {
-            sandboxSession.terminals.create().then((terminal: CsbTerminal) => {
-                if (isMounted) setCliTerminalSession(terminal);
-            });
+    const setActiveTerminalTab = (id: string | undefined) => {
+        if (!id) {
+            return;
         }
-        return () => { isMounted = false; };
-    }, [sandboxSession]);
+        const terminal = terminalSessions.find(terminal => terminal.id === id);
+        if (terminal) {
+            setActiveTerminal(terminal);
+        }
+    }
 
-    if (!sandboxSession) {
+    if (!terminalSessions.length) {
         return (
             <div className="flex items-center justify-center h-full">
                 Initializing Sandbox...
@@ -96,19 +86,17 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                 )}
             >
                 <div className="flex flex-col items-center justify-between h-full">
-                    <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">
+                    <Tabs value={activeTerminal?.id} onValueChange={(value) => setActiveTerminalTab(value)} className="w-full">
                         <TabsList className="w-full h-8 rounded-none border-b border-border">
-                            <TabsTrigger value="dev-task" className="flex-1">Dev Task</TabsTrigger>
-                            <TabsTrigger value="cli" className="flex-1">CLI</TabsTrigger>
+                            {terminalSessions.map((terminal) => (
+                                <TabsTrigger value={terminal.id} className="flex-1">{terminal.name}</TabsTrigger>
+                            ))}
                         </TabsList>
-                        <TabsContent forceMount value="dev-task" className="h-full" hidden={tabValue !== 'dev-task'}>
-                            <Terminal hidden={terminalHidden} terminalSession={terminalSession} />
-                        </TabsContent>
-                        <TabsContent forceMount value="cli" className="h-full" hidden={tabValue !== 'cli'}>
-                            {memoizedCliTerminalSession && (
-                                <Terminal hidden={terminalHidden} terminalSession={memoizedCliTerminalSession} />
-                            )}
-                        </TabsContent>
+                        {terminalSessions.map((terminal) => (
+                            <TabsContent forceMount value={terminal.id} className="h-full" hidden={activeTerminal?.id !== terminal.id}>
+                                <Terminal hidden={terminalHidden} terminalSessionId={terminal.id} />
+                            </TabsContent>
+                        ))}
                     </Tabs>
                 </div>
             </div >
