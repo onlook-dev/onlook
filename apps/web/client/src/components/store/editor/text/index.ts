@@ -62,7 +62,9 @@ export class TextEditingManager {
             this.editorEngine.overlay.state.addTextEditor(
                 adjustedRect,
                 this.originalContent,
-                el.styles?.computed ?? {},
+                this.editorEngine.style.domIdToStyle.get(el.domId)?.computed ??
+                    computedStyles ??
+                    {},
                 (content: string) => {
                     this.edit(content);
                 },
