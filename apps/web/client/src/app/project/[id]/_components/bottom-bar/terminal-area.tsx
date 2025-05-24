@@ -72,7 +72,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
             )}
             <div
                 className={cn(
-                    'bg-background rounded-lgtransition-all duration-300 flex flex-col items-center justify-between h-full overflow-auto',
+                    'bg-background rounded-lg transition-all duration-300 flex flex-col items-center justify-between h-full overflow-auto',
                     terminalHidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
                 )}
             >
