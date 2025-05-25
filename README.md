@@ -100,7 +100,7 @@ This architecture can theorectically scale to any language or framework that
 displays DOM elements declaratively (e.g. jsx/tsx/html). We are currently
 focused on making it work well with Next.js and TailwindCSS.
 
-Full a full walkthrought, checkout our
+For a full walkthrough, check out our
 [Architecture Docs](https://docs.onlook.com/docs/developer/architecture)
 
 ## Contributing
