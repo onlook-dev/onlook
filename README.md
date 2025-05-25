@@ -15,8 +15,6 @@
 
 # Becoming web-first 🚧
 
-We're in the process of migrating our Electron app to web-first.
-
 If you're looking for the electron app, it's here:
 https://github.com/onlook-dev/desktop
 
@@ -25,14 +23,43 @@ https://github.com/onlook-dev/desktop
 Open-source alternative to Bolt.new, Lovable, V0, Figma Make, etc. With our own
 spin.
 
+- [x] Create Next.js app in seconds
+  - [x] Start from text or image
+  - [ ] Use prebuilt templates
+  - [ ] Import from Figma
+  - [ ] Start from GitHub repo
+  - [ ] Import from Figma
+- [x] Visually edit your app
+  - [x] Use Figma-like UI
+  - [x] Preview your app in real-time
+  - [x] Manage brand assets and tokens
+- [x] Development Tools
+  - [x] Real-time code editor
+  - [x] Save and restore from checkpoints
+  - [x] Run commands via CLI
+  - [x] Connect with app marketplace
+- [ ] Deploy your app in seconds
+  - [ ] Generate sharable links
+  - [ ] Link your custom domain
+- [ ] Collaborate with your team
+  - [ ] Real-time editing
+  - [ ] Leave comments
+
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 
 ### Built With
 
-- Next.js
-- Drizzle
-- Supabase
-- Bun
+- [Next.js](https://nextjs.org/)
+- [Drizzle](https://orm.drizzle.team/)
+- [Supabase](https://supabase.com/)
+- [Bun](https://bun.sh/)
+
+## Documentation
+
+For full documentation, visit [docs.onlook.com](https://docs.onlook.com)
+
+To see how to Contribute, visit
+[Getting Started](https://docs.onlook.com/docs/developer/contributing)
 
 ## Getting Started
 
@@ -40,7 +67,8 @@ spin.
 
 ### Installation
 
-1. Hosted version coming soon
+Use the [hosted app](onlook.com) or
+[run locally](https://docs.onlook.com/docs/developer/running-locally)
 
 ### Usage
 
