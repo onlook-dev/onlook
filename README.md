@@ -96,7 +96,7 @@ screen.
 6. When the element is edited, we edit the element in our iFrame, then in code
 7. Our AI chat also has code access and tools to understand and edit the code
 
-This architecture can theorectically scale to any language or framework that
+This architecture can theoretically scale to any language or framework that
 displays DOM elements declaratively (e.g. jsx/tsx/html). We are currently
 focused on making it work well with Next.js and TailwindCSS.
 
