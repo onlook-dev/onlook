@@ -28,7 +28,6 @@ spin.
   - [ ] Use prebuilt templates
   - [ ] Import from Figma
   - [ ] Start from GitHub repo
-  - [ ] Import from Figma
 - [x] Visually edit your app
   - [x] Use Figma-like UI
   - [x] Preview your app in real-time
@@ -66,19 +65,15 @@ To see how to Contribute, visit
 
 ## Getting Started
 
-![image](https://github.com/user-attachments/assets/18b6ad5a-1d5a-4396-af8c-8b85936acf39)
-
-### Installation
-
-Use the [hosted app](onlook.com) or
-[run locally](https://docs.onlook.com/docs/developer/running-locally)
+Available soon with a [hosted app](https://onlook.com) or
+[run locally](https://docs.onlook.com/docs/developer/running-locally).
 
 ### Usage
 
 Onlook will run on any Next.js + TailwindCSS project, import your project
 through V0, Figma, etc. into Onlook
 
-<img width="676" alt="Screenshot 2024-11-27 at 9 36 47 AM" src="https://github.com/user-attachments/assets/ec5c9bb2-7d0a-4754-962e-5d0c9fe0d706">
+<img width="676" alt="create new project" src="https://github.com/user-attachments/assets/ec5c9bb2-7d0a-4754-962e-5d0c9fe0d706">
 
 Use the chat to create or edit a project you're working on. At any time, you can
 always right-click an element to open up the exact location of the element in
@@ -86,6 +81,25 @@ code. Just be sure to choose your preferred IDE in the upper-right Corner of the
 screen.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/4ad9f411-b172-4430-81ef-650f4f314666" />
+
+## How it works
+
+<img width="676" alt="architecture" src="assets/architecture.png">
+
+1. When you create an app, we load the code into a web container
+2. The container runs and serves the code
+3. Our editor receives the preview link and displays it it an iFrame
+4. Our editor reads and indexes the code from the container
+5. We instrument the code in order to map elements to their place in code
+6. When the element is edited, we edit the element in our iFrame, then in code
+7. Our AI chat also has code access and tools to understand and edit the code
+
+This architecture can theorectically scale to any language or framework that
+displays DOM elements declaratively (e.g. jsx/tsx/html). We are currently
+focused on making it work well with Next.js and TailwindCSS.
+
+Full a full walkthrought, checkout our
+[Architecture Docs](https://docs.onlook.com/docs/developer/architecture)
 
 ## Contributing
 
