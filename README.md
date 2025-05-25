@@ -45,6 +45,9 @@ spin.
   - [ ] Real-time editing
   - [ ] Leave comments
 
+Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a
+full list of proposed features (and known issues).
+
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 
 ### Built With
@@ -83,34 +86,6 @@ code. Just be sure to choose your preferred IDE in the upper-right Corner of the
 screen.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/4ad9f411-b172-4430-81ef-650f4f314666" />
-
-## Roadmap
-
-![image](https://github.com/user-attachments/assets/f64b51df-03be-44d1-ae35-82e6dc960d06)
-
-See how we're tracking towards major
-[milestones]([url](https://github.com/onlook-dev/onlook/milestones)), and read
-the [wiki](https://github.com/onlook-dev/onlook/wiki/Roadmap) for details on
-each version of Onlook. Here's a rough overview of some of the major features
-we're looking at:
-
-Port over desktop app functionalities
-
-- [x] Sandbox
-- [x] Editor
-- [x] AI chat
-- [x] Variables
-- [ ] Hosting
-- [ ] Layers
-
-Planned functionalities
-
-- [ ] Collaboration
-- [ ] Components
-- [ ] Sync to IDE (Cursor, VSCode, etc.)
-
-Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a
-full list of proposed features (and known issues).
 
 ## Contributing
 
