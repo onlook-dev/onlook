@@ -1,11 +1,32 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 
-<a id="readme-top"></a>
-
-![image](https://github.com/user-attachments/assets/7b787ac7-96cd-44fd-90da-46996e1e1bf5)
-
 <div align="center">
 <h3 align="center">Onlook</h3>
+  <p align="center">
+    Cursor for Designers
+    <br />
+    <a href="https://docs.onlook.com"><strong>Explore the docs »</strong></a>
+    <br />
+    <br />
+    <a href="https://youtu.be/RSX_3EaO5eU?feature=shared">View Demo</a>
+    ·
+    <a href="https://github.com/onlook-dev/desktop/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    ·
+    <a href="https://github.com/onlook-dev/desktop/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+  </p>
+  <!-- PROJECT SHIELDS -->
+<!--
+*** I'm using markdown "reference style" links for readability.
+*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
+*** See the bottom of this document for the declaration of the reference variables
+*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
+*** https://www.markdownguide.org/basic-syntax/#reference-style-links
+-->
+<!-- [![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![Apache License][license-shield]][license-url] -->
 
 [![Discord][discord-shield]][discord-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
@@ -13,15 +34,13 @@
 
 </div>
 
-# Becoming web-first 🚧
+# The Cursor for Designers
 
-If you're looking for the electron app, it's here:
-https://github.com/onlook-dev/desktop
+Integrate with any website or web app running on Next.js + TailwindCSS, and make
+live edits directly in the browser DOM. Customize your design, control your
+codebase, and push your changes without compromise.
 
-# The open-source vibecoding app
-
-Open-source alternative to Bolt.new, Lovable, V0, Figma Make, etc. With our own
-spin.
+Open-source alternative to Figma Make, Bolt.new, Lovable, V0, etc.
 
 - [x] Create Next.js app in seconds
   - [x] Start from text or image
@@ -49,21 +68,13 @@ full list of proposed features (and known issues).
 
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 
-### Built With
+#### PSA: Onlook is becoming web-first 🚧
 
-- [Next.js](https://nextjs.org/)
-- [Supabase](https://supabase.com/)
-- [Drizzle](https://orm.drizzle.team/)
-- [TailwindCSS](https://tailwindcss.com/)
-- [Bun](https://bun.sh/)
-- [tRPC](https://trpc.io/)
+We're in early preview for Onlook Web. If you're looking for the electron app,
+it's moved to [Onlook Desktop](https://github.com/onlook-dev/desktop).
 
-## Documentation
-
-For full documentation, visit [docs.onlook.com](https://docs.onlook.com)
-
-To see how to Contribute, visit
-[Getting Started](https://docs.onlook.com/docs/developer/contributing)
+For the full reasoning and archictecture details, see
+[Migrating from Eletron to Web](https://docs.onlook.com/docs/developer/electron-to-web-migration)
 
 ## Getting Started
 
@@ -84,6 +95,13 @@ screen.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/4ad9f411-b172-4430-81ef-650f4f314666" />
 
+## Documentation
+
+For full documentation, visit [docs.onlook.com](https://docs.onlook.com)
+
+To see how to Contribute, visit
+[Getting Started](https://docs.onlook.com/docs/developer/contributing)
+
 ## How it works
 
 <img width="676" alt="architecture" src="assets/architecture.png">
@@ -102,6 +120,15 @@ focused on making it work well with Next.js and TailwindCSS.
 
 For a full walkthrough, check out our
 [Architecture Docs](https://docs.onlook.com/docs/developer/architecture)
+
+### Built With
+
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.com/)
+- [Drizzle](https://orm.drizzle.team/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [Bun](https://bun.sh/)
+- [tRPC](https://trpc.io/)
 
 ## Contributing
 
