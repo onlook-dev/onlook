@@ -1,6 +1,6 @@
 export interface ParsedError {
     sourceId: string;
-    type: 'frameView' | 'terminal';
+    type: 'frame' | 'terminal';
     content: string;
 }
 
