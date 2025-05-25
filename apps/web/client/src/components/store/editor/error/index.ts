@@ -1,16 +1,11 @@
-import type { ProjectManager } from '@/components/store/project/manager';
 import { type ParsedError, compareErrors } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
 
 export class ErrorManager {
     private terminalErrors: ParsedError[] = [];
     hideErrors = false;
 
-    constructor(
-        private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
-    ) {
+    constructor() {
         makeAutoObservable(this);
     }
 
@@ -18,11 +13,8 @@ export class ErrorManager {
         return [...this.terminalErrors];
     }
 
-    removeErrorsFromMap(errors: ParsedError[]) {
-
-    }
-
     addError(message: string) {
+        console.log('Error message received', message);
         const error: ParsedError = {
             sourceId: 'terminal',
             type: 'terminal',
@@ -36,9 +28,12 @@ export class ErrorManager {
     }
 
     addSuccess(message: string) {
-        console.log('addSuccess', message);
-        // Should clear errors
-        // this.terminalErrors = [];
+        console.log('Success message received, clearing errors', message);
+        this.clearTerminalErrors();
+    }
+
+    clearTerminalErrors() {
+        this.terminalErrors = [];
     }
 
     clear() {

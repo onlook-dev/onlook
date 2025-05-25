@@ -55,7 +55,7 @@ export class EditorEngine {
     ) {
         this.chat = new ChatManager(this, this.projectManager, this.userManager);
         this.pages = new PagesManager(this, this.projectManager);
-        this.error = new ErrorManager(this, this.projectManager);
+        this.error = new ErrorManager();
         this.image = new ImageManager(this, this.projectManager);
         this.theme = new ThemeManager(this, this.projectManager);
         this.font = new FontManager(this, this.projectManager);
