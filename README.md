@@ -90,7 +90,7 @@ screen.
 
 1. When you create an app, we load the code into a web container
 2. The container runs and serves the code
-3. Our editor receives the preview link and displays it it an iFrame
+3. Our editor receives the preview link and displays it in an iFrame
 4. Our editor reads and indexes the code from the container
 5. We instrument the code in order to map elements to their place in code
 6. When the element is edited, we edit the element in our iFrame, then in code
