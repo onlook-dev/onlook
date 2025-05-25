@@ -52,9 +52,11 @@ full list of proposed features (and known issues).
 ### Built With
 
 - [Next.js](https://nextjs.org/)
-- [Drizzle](https://orm.drizzle.team/)
 - [Supabase](https://supabase.com/)
+- [Drizzle](https://orm.drizzle.team/)
+- [TailwindCSS](https://tailwindcss.com/)
 - [Bun](https://bun.sh/)
+- [tRPC](https://trpc.io/)
 
 ## Documentation
 
@@ -128,12 +130,6 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 - Project:
   [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
 - Website: [https://onlook.com](https://onlook.com)
-
-## Acknowledgments
-
-Projects we're inspired by:
-
-- [Supabase](https://github.com/supabase/supabase)
 
 ## License
 
