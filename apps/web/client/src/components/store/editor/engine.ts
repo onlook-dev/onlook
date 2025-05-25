@@ -35,7 +35,7 @@ export class EditorEngine {
 
     readonly text: TextEditingManager = new TextEditingManager(this);
     readonly state: StateManager = new StateManager();
-    readonly sandbox: SandboxManager = new SandboxManager();
+    readonly sandbox: SandboxManager = new SandboxManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);

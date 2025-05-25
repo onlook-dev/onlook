@@ -5,7 +5,6 @@ import type { EditorEngine } from '../engine';
 
 export class ErrorManager {
     private terminalErrors: ParsedError[] = [];
-
     hideErrors = false;
 
     constructor(
@@ -34,6 +33,12 @@ export class ErrorManager {
             this.terminalErrors = [...existingErrors, error];
         }
         this.hideErrors = false;
+    }
+
+    addSuccess(message: string) {
+        console.log('addSuccess', message);
+        // Should clear errors
+        // this.terminalErrors = [];
     }
 
     clear() {
