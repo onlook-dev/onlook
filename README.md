@@ -15,8 +15,6 @@
 
 # Becoming web-first 🚧
 
-We're in the process of migrating our Electron app to web-first.
-
 If you're looking for the electron app, it's here:
 https://github.com/onlook-dev/desktop
 
@@ -25,29 +23,59 @@ https://github.com/onlook-dev/desktop
 Open-source alternative to Bolt.new, Lovable, V0, Figma Make, etc. With our own
 spin.
 
+- [x] Create Next.js app in seconds
+  - [x] Start from text or image
+  - [ ] Use prebuilt templates
+  - [ ] Import from Figma
+  - [ ] Start from GitHub repo
+- [x] Visually edit your app
+  - [x] Use Figma-like UI
+  - [x] Preview your app in real-time
+  - [x] Manage brand assets and tokens
+- [x] Development Tools
+  - [x] Real-time code editor
+  - [x] Save and restore from checkpoints
+  - [x] Run commands via CLI
+  - [x] Connect with app marketplace
+- [ ] Deploy your app in seconds
+  - [ ] Generate sharable links
+  - [ ] Link your custom domain
+- [ ] Collaborate with your team
+  - [ ] Real-time editing
+  - [ ] Leave comments
+
+Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a
+full list of proposed features (and known issues).
+
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 
 ### Built With
 
-- Next.js
-- Drizzle
-- Supabase
-- Bun
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.com/)
+- [Drizzle](https://orm.drizzle.team/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [Bun](https://bun.sh/)
+- [tRPC](https://trpc.io/)
+
+## Documentation
+
+For full documentation, visit [docs.onlook.com](https://docs.onlook.com)
+
+To see how to Contribute, visit
+[Getting Started](https://docs.onlook.com/docs/developer/contributing)
 
 ## Getting Started
 
-![image](https://github.com/user-attachments/assets/18b6ad5a-1d5a-4396-af8c-8b85936acf39)
-
-### Installation
-
-1. Hosted version coming soon
+Available soon with a [hosted app](https://onlook.com) or
+[run locally](https://docs.onlook.com/docs/developer/running-locally).
 
 ### Usage
 
 Onlook will run on any Next.js + TailwindCSS project, import your project
 through V0, Figma, etc. into Onlook
 
-<img width="676" alt="Screenshot 2024-11-27 at 9 36 47 AM" src="https://github.com/user-attachments/assets/ec5c9bb2-7d0a-4754-962e-5d0c9fe0d706">
+<img width="676" alt="create new project" src="https://github.com/user-attachments/assets/ec5c9bb2-7d0a-4754-962e-5d0c9fe0d706">
 
 Use the chat to create or edit a project you're working on. At any time, you can
 always right-click an element to open up the exact location of the element in
@@ -56,33 +84,24 @@ screen.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/4ad9f411-b172-4430-81ef-650f4f314666" />
 
-## Roadmap
+## How it works
 
-![image](https://github.com/user-attachments/assets/f64b51df-03be-44d1-ae35-82e6dc960d06)
+<img width="676" alt="architecture" src="assets/architecture.png">
 
-See how we're tracking towards major
-[milestones]([url](https://github.com/onlook-dev/onlook/milestones)), and read
-the [wiki](https://github.com/onlook-dev/onlook/wiki/Roadmap) for details on
-each version of Onlook. Here's a rough overview of some of the major features
-we're looking at:
+1. When you create an app, we load the code into a web container
+2. The container runs and serves the code
+3. Our editor receives the preview link and displays it in an iFrame
+4. Our editor reads and indexes the code from the container
+5. We instrument the code in order to map elements to their place in code
+6. When the element is edited, we edit the element in our iFrame, then in code
+7. Our AI chat also has code access and tools to understand and edit the code
 
-Port over desktop app functionalities
+This architecture can theoretically scale to any language or framework that
+displays DOM elements declaratively (e.g. jsx/tsx/html). We are currently
+focused on making it work well with Next.js and TailwindCSS.
 
-- [x] Sandbox
-- [x] Editor
-- [x] AI chat
-- [x] Variables
-- [ ] Hosting
-- [ ] Layers
-
-Planned functionalities
-
-- [ ] Collaboration
-- [ ] Components
-- [ ] Sync to IDE (Cursor, VSCode, etc.)
-
-Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a
-full list of proposed features (and known issues).
+For a full walkthrough, check out our
+[Architecture Docs](https://docs.onlook.com/docs/developer/architecture)
 
 ## Contributing
 
@@ -111,12 +130,6 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 - Project:
   [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
 - Website: [https://onlook.com](https://onlook.com)
-
-## Acknowledgments
-
-Projects we're inspired by:
-
-- [Supabase](https://github.com/supabase/supabase)
 
 ## License
 
