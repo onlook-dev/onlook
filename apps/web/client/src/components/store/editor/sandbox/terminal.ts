@@ -76,11 +76,14 @@ export class CLISessionImpl implements CLISession {
             return;
         }
         this.task = task;
+        const output = await task.open();
+        this.xterm.write(output);
+        this.errorManager.processMessage(output);
         task.onOutput((data: string) => {
             this.xterm.write(data);
             this.errorManager.processMessage(data);
         });
-        task.open();
+
     }
 
     createXTerm() {
