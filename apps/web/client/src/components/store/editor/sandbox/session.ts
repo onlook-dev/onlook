@@ -2,8 +2,8 @@ import { api } from '@/trpc/client';
 import type { WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { makeAutoObservable } from 'mobx';
-import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 import type { EditorEngine } from '../engine';
+import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
 export class SessionManager {
     session: WebSocketSession | null = null;
@@ -32,9 +32,9 @@ export class SessionManager {
     }
 
     async createTerminalSessions(session: WebSocketSession) {
-        const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error.addError, this.editorEngine.error.addSuccess);
+        const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
         this.terminalSessions.push(task);
-        const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error.addError, this.editorEngine.error.addSuccess);
+        const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
         this.terminalSessions.push(terminal);
         this.activeTerminalSessionId = task.id;
     }

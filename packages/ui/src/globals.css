@@ -94,36 +94,6 @@
         }
     }
 
-    /* Color tokens */
-    --color-amber-default: oklch(0.72 0.11 178);
-    --color-amber-100: oklch(0.95 0.05 178);
-    --color-amber-200: oklch(0.85 0.08 178);
-    --color-amber-300: oklch(0.8 0.09 178);
-    --color-amber-400: oklch(0.72 0.11 178);
-    --color-amber-500: oklch(0.65 0.12 178);
-    --color-amber-600: oklch(0.55 0.13 178);
-    --color-amber-700: oklch(0.45 0.14 178);
-    --color-amber-800: oklch(0.35 0.15 178);
-    --color-amber-900: oklch(0.25 0.16 178);
-    --color-amber-950: oklch(0.15 0.17 178);
-
-    --color-black-default: oklch(0 0 0);
-    --color-black-30: oklch(0 0 0 / 0.3);
-    --color-black-60: oklch(0 0 0 / 0.6);
-    --color-black-85: oklch(0 0 0 / 0.85);
-
-    --color-purple-default: oklch(0.75 0.2 300);
-    --color-purple-100: oklch(0.95 0.05 300);
-    --color-purple-200: oklch(0.85 0.1 300);
-    --color-purple-300: oklch(0.8 0.15 300);
-    --color-purple-400: oklch(0.75 0.2 300);
-    --color-purple-500: oklch(0.65 0.25 300);
-    --color-purple-600: oklch(0.55 0.3 300);
-    --color-purple-700: oklch(0.45 0.35 300);
-    --color-purple-800: oklch(0.35 0.4 300);
-    --color-purple-900: oklch(0.25 0.45 300);
-    --color-purple-950: oklch(0.15 0.5 300);
-
     /* Font size tokens */
     --font-size-title1: 2.25rem;
     --font-leading-title1: auto;
