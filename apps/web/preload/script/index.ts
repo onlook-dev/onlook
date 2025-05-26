@@ -2,6 +2,7 @@ import { PENPAL_CHILD_CHANNEL, type PromisifiedPenpalParentMethods } from '@onlo
 import debounce from 'lodash/debounce';
 import { WindowMessenger, connect } from 'penpal';
 import { preloadMethods } from './api';
+import { listenForEvents } from './listeners';
 
 export let penpalParent: PromisifiedPenpalParentMethods | null = null;
 let isConnecting = false;
@@ -56,3 +57,4 @@ const reconnect = debounce(() => {
 }, 1000);
 
 createMessageConnection();
+listenForEvents();

@@ -212,7 +212,10 @@ export const WebFrameComponent = observer(
                 allow="geolocation; microphone; camera; midi; encrypted-media"
                 style={{ width: frame.dimension.width, height: frame.dimension.height }}
                 onLoad={setupPenpalConnection}
-                onError={debouncedReloadIframe}
+                onError={(e) => {
+                    console.error('error inside iframe', e);
+                    debouncedReloadIframe();
+                }}
                 {...props}
             />
         );

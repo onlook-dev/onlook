@@ -17155,6 +17155,21 @@ var preloadMethods = {
   handleBodyReady
 };
 
+// script/listeners/index.ts
+"use client";
+var listenForEvents2 = () => {
+  console.log("listening for events");
+  window.addEventListener("error", (event) => {
+    console.error("xxxiframe inside iframe", event);
+  });
+  window.addEventListener("error", (e) => {
+    console.error("xxxiframe inside iframe", e);
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    console.error("xxxiframe rejection inside iframe", e);
+  });
+};
+
 // script/index.ts
 var penpalParent = null;
 var isConnecting = false;
@@ -17198,9 +17213,10 @@ var reconnect = import_debounce2.default(() => {
   createMessageConnection();
 }, 1000);
 createMessageConnection();
+listenForEvents2();
 export {
   penpalParent
 };
 
-//# debugId=BBDD2620C8642F0564756E2164756E21
+//# debugId=4BBA540F7070152C64756E2164756E21
 //# sourceMappingURL=index.js.map

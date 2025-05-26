@@ -29,6 +29,19 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                         strategy="beforeInteractive"
                     />
                 )}
+                <Script
+                    id="error-handler"
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                                    window.addEventListener('error', (event) => {
+                                        console.error('error inside xxxiframe', event);
+                                    });
+                                    window.addEventListener('unhandledrejection', (event) => {
+                                        console.error('xxxiframe', event.reason);
+                                    });
+                                `,
+                    }}
+                />
             </head>
             <body className={inter.className} data-oid="mwz9mme">
                 {children}
