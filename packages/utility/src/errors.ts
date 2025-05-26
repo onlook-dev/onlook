@@ -65,13 +65,9 @@ export function isErrorMessage(data: string) {
 }
 
 export function isSuccessMessage(data: string): boolean {
-    // Strip ANSI escape codes to get plain text
-    const stripAnsi = (str: string) => str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
-
-    const plainText = stripAnsi(data).trim().toLowerCase();
     const successPatterns = ['get / 200'];
 
-    if (successPatterns.some((pattern) => plainText.includes(pattern))) {
+    if (successPatterns.some((pattern) => data.includes(pattern))) {
         return true;
     }
     return false;

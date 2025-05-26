@@ -35,7 +35,7 @@ export class ErrorManager {
     addError(message: string) {
         console.error('Terminal error message received', message);
         const error: ParsedError = {
-            sourceId: 'terminal',
+            sourceId: 'Dev Server Error (CLI)',
             type: 'terminal',
             content: message,
         };

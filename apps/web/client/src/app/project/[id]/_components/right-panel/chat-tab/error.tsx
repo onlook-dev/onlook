@@ -44,14 +44,14 @@ export const ErrorSection = observer(() => {
                                 )}
                             />
                             <div className="text-start min-w-0 flex-1">
-                                <div className="text-amber-800 dark:text-amber-200 truncate text-small pointer-events-none select-none">
+                                <p className="text-amber-800 dark:text-amber-200 truncate text-small pointer-events-none select-none">
                                     {errorCount === 1 ? 'Error' : `${errorCount} Errors`}
-                                </div>
-                                <div className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
+                                </p>
+                                <p className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
                                     {errorCount === 1
                                         ? editorEngine.error.errors[0]?.content
                                         : `You have ${errorCount} errors`}
-                                </div>
+                                </p>
                             </div>
                         </div>
                     </CollapsibleTrigger>
