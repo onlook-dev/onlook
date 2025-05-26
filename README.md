@@ -43,25 +43,25 @@ codebase, and push your changes without compromise.
 Open-source alternative to Figma Make, Bolt.new, Lovable, V0, etc.
 
 - [x] Create Next.js app in seconds
-  - [x] Start from text or image
-  - [ ] Use prebuilt templates
-  - [ ] Import from Figma
-  - [ ] Start from GitHub repo
+    - [x] Start from text or image
+    - [ ] Use prebuilt templates
+    - [ ] Import from Figma
+    - [ ] Start from GitHub repo
 - [x] Visually edit your app
-  - [x] Use Figma-like UI
-  - [x] Preview your app in real-time
-  - [x] Manage brand assets and tokens
+    - [x] Use Figma-like UI
+    - [x] Preview your app in real-time
+    - [x] Manage brand assets and tokens
 - [x] Development Tools
-  - [x] Real-time code editor
-  - [x] Save and restore from checkpoints
-  - [x] Run commands via CLI
-  - [x] Connect with app marketplace
+    - [x] Real-time code editor
+    - [x] Save and restore from checkpoints
+    - [x] Run commands via CLI
+    - [x] Connect with app marketplace
 - [ ] Deploy your app in seconds
-  - [ ] Generate sharable links
-  - [ ] Link your custom domain
+    - [ ] Generate sharable links
+    - [ ] Link your custom domain
 - [ ] Collaborate with your team
-  - [ ] Real-time editing
-  - [ ] Leave comments
+    - [ ] Real-time editing
+    - [ ] Leave comments
 
 Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a
 full list of proposed features (and known issues).
@@ -73,8 +73,8 @@ full list of proposed features (and known issues).
 We're in early preview for Onlook Web. If you're looking for the electron app,
 it's moved to [Onlook Desktop](https://github.com/onlook-dev/desktop).
 
-For the full reasoning and archictecture details, see
-[Migrating from Eletron to Web](https://docs.onlook.com/docs/developer/electron-to-web-migration)
+For the full reasoning and architecture details, see
+[Migrating from Electron to Web](https://docs.onlook.com/docs/developer/electron-to-web-migration)
 
 ## Getting Started
 
@@ -90,7 +90,7 @@ through V0, Figma, etc. into Onlook
 
 Use the chat to create or edit a project you're working on. At any time, you can
 always right-click an element to open up the exact location of the element in
-code. Just be sure to choose your preferred IDE in the upper-right Corner of the
+code. Just be sure to choose your preferred IDE in the upper-right corner of the
 screen.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/4ad9f411-b172-4430-81ef-650f4f314666" />
