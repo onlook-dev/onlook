@@ -11,7 +11,14 @@ export function compareErrors(a: ParsedError, b: ParsedError): boolean {
     return false;
 }
 
-export function checkMessageError(data: string) {
+export function shouldIgnoreMessage(message: string) {
+    if (message.startsWith('<w>')) {
+        return true;
+    }
+    return false;
+}
+
+export function isErrorMessage(data: string) {
     // Critical CLI errors
     const errorPatterns = [
         // Next.js errors
@@ -55,7 +62,7 @@ export function checkMessageError(data: string) {
     return errorFound;
 }
 
-export function checkMessageSuccess(data: string): boolean {
+export function isSuccessMessage(data: string): boolean {
     // Strip ANSI escape codes to get plain text
     const stripAnsi = (str: string) => str.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
 
@@ -66,4 +73,67 @@ export function checkMessageSuccess(data: string): boolean {
         return true;
     }
     return false;
+}
+
+// Stateful buffer for terminal output
+export class TerminalBuffer {
+    private buffer: string[] = [];
+    private readonly maxLines: number;
+    private errorCallback?: (errorLines: string[]) => void;
+    private successCallback?: () => void;
+
+    constructor(maxLines: number = 20) {
+        this.maxLines = maxLines;
+    }
+
+    /**
+     * Register a callback to be called when an error is detected.
+     */
+    onError(callback: (errorLines: string[]) => void) {
+        this.errorCallback = callback;
+    }
+
+    /**
+     * Register a callback to be called when a success is detected (buffer is cleared).
+     */
+    onSuccess(callback: () => void) {
+        this.successCallback = callback;
+    }
+
+    /**
+     * Add a new line to the buffer and process for errors/success.
+     */
+    addLine(line: string) {
+        this.buffer.push(line);
+        if (this.buffer.length > this.maxLines) {
+            this.buffer.shift();
+        }
+        // Check for error in the buffer
+        if (this.buffer.some(isErrorMessage)) {
+            if (this.errorCallback) {
+                this.errorCallback([...this.buffer]);
+            }
+        }
+        // Check for success in the buffer
+        if (this.buffer.some(isSuccessMessage)) {
+            this.clear();
+            if (this.successCallback) {
+                this.successCallback();
+            }
+        }
+    }
+
+    /**
+     * Clear the buffer.
+     */
+    clear() {
+        this.buffer = [];
+    }
+
+    /**
+     * Get the current buffer contents.
+     */
+    getBuffer() {
+        return [...this.buffer];
+    }
 }

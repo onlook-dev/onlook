@@ -1,20 +1,38 @@
-import { type ParsedError, compareErrors } from '@onlook/utility';
+import { type ParsedError, compareErrors, isErrorMessage, shouldIgnoreMessage, TerminalBuffer } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 
 export class ErrorManager {
     private terminalErrors: ParsedError[] = [];
     hideErrors = false;
+    private buffer: TerminalBuffer;
 
     constructor() {
         makeAutoObservable(this);
+        this.buffer = new TerminalBuffer(20);
+        this.buffer.onError((lines) => {
+            // Add all error lines to error state
+            lines.forEach((line) => {
+                if (!shouldIgnoreMessage(line) && isErrorMessage(line)) {
+                    this.addError(line);
+                }
+            });
+        });
+        this.buffer.onSuccess(() => {
+            this.addSuccess('Success detected in buffer');
+        });
     }
 
     get errors() {
         return [...this.terminalErrors];
     }
 
+    processMessage(message: string) {
+        // Always add to buffer, which will handle error/success detection
+        this.buffer.addLine(message);
+    }
+
     addError(message: string) {
-        console.warn('Terminal error message received', message);
+        console.error('Terminal error message received', message);
         const error: ParsedError = {
             sourceId: 'terminal',
             type: 'terminal',
