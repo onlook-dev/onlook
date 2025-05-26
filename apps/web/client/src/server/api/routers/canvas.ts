@@ -15,7 +15,6 @@ export const canvasRouter = createTRPCRouter({
         }
         return toCanvas(dbCanvas);
     }),
-
     update: protectedProcedure.input(canvasUpdateSchema).mutation(async ({ ctx, input }) => {
         try {
             if (!input.id) {

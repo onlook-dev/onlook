@@ -21,9 +21,12 @@ export class FrameImpl implements Frame {
     }
 
     static fromJSON(frame: Frame): FrameImpl {
-        return frame.type === FrameType.WEB
-            ? WebFrameImpl.fromJSON(frame as WebFrame)
-            : FrameImpl.fromJSON(frame);
+        switch (frame.type) {
+            case FrameType.WEB:
+                return WebFrameImpl.fromJSON(frame as WebFrame);
+            default:
+                return new FrameImpl(frame);
+        }
     }
 }
 

@@ -20,7 +20,6 @@ export const frameRouter = createTRPCRouter({
             }
             return toFrame(dbFrame);
         }),
-
     getByCanvas: protectedProcedure
         .input(
             z.object({
