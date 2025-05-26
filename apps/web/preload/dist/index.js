@@ -17201,3 +17201,6 @@ createMessageConnection();
 export {
   penpalParent
 };
+
+//# debugId=BBDD2620C8642F0564756E2164756E21
+//# sourceMappingURL=index.js.map
