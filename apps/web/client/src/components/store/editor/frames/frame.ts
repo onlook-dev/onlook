@@ -1,4 +1,4 @@
-import type { Frame, FrameType, RectDimension, RectPosition, WebFrame } from '@onlook/models';
+import { FrameType, type Frame, type RectDimension, type RectPosition, type WebFrame } from '@onlook/models';
 import { makeObservable, observable } from 'mobx';
 
 export class FrameImpl implements Frame {
@@ -20,8 +20,13 @@ export class FrameImpl implements Frame {
         });
     }
 
-    static fromJSON(json: Frame) {
-        return new FrameImpl(json);
+    static fromJSON(frame: Frame): FrameImpl {
+        switch (frame.type) {
+            case FrameType.WEB:
+                return WebFrameImpl.fromJSON(frame as WebFrame);
+            default:
+                return new FrameImpl(frame);
+        }
     }
 }
 

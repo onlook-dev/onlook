@@ -32,6 +32,7 @@ export class EditorEngine {
     readonly font: FontManager;
     readonly pages: PagesManager;
     readonly canvas: CanvasManager;
+    readonly frames: FramesManager;
 
     readonly text: TextEditingManager = new TextEditingManager(this);
     readonly state: StateManager = new StateManager();
@@ -46,7 +47,6 @@ export class EditorEngine {
     readonly ast: AstManager = new AstManager(this);
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
-    readonly frames: FramesManager = new FramesManager(this);
     readonly code: CodeManager = new CodeManager(this);
 
     constructor(
@@ -60,6 +60,7 @@ export class EditorEngine {
         this.theme = new ThemeManager(this, this.projectManager);
         this.font = new FontManager(this, this.projectManager);
         this.canvas = new CanvasManager(this.projectManager)
+        this.frames = new FramesManager(this, this.projectManager);
         makeAutoObservable(this);
     }
 

@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { FrameImpl } from '@/components/store/editor/canvas/frame';
+import type { FrameImpl } from '@/components/store/editor/frames/frame';
 import type { Theme } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
@@ -49,8 +49,8 @@ export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
                     <Button
                         size={'icon'}
                         className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.SYSTEM
-                                ? 'bg-background-tertiary hover:bg-background-tertiary'
-                                : 'hover:bg-background-tertiary/50 text-foreground-onlook'
+                            ? 'bg-background-tertiary hover:bg-background-tertiary'
+                            : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                             }`}
                         variant={'ghost'}
                         onClick={() => changeTheme(SystemTheme.SYSTEM)}
@@ -60,8 +60,8 @@ export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
                     <Button
                         size={'icon'}
                         className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.DARK
-                                ? 'bg-background-tertiary hover:bg-background-tertiary'
-                                : 'hover:bg-background-tertiary/50 text-foreground-onlook'
+                            ? 'bg-background-tertiary hover:bg-background-tertiary'
+                            : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                             }`}
                         variant={'ghost'}
                         onClick={() => changeTheme(SystemTheme.DARK)}
@@ -71,8 +71,8 @@ export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
                     <Button
                         size={'icon'}
                         className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.LIGHT
-                                ? 'bg-background-tertiary hover:bg-background-tertiary'
-                                : 'hover:bg-background-tertiary/50 text-foreground-onlook'
+                            ? 'bg-background-tertiary hover:bg-background-tertiary'
+                            : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                             }`}
                         variant={'ghost'}
                         onClick={() => changeTheme(SystemTheme.LIGHT)}
