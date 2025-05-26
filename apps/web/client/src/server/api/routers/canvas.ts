@@ -1,10 +1,10 @@
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { z } from "zod";
-import { eq } from "drizzle-orm";
 import { canvases, canvasUpdateSchema, toCanvas } from "@onlook/db";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const canvasRouter = createTRPCRouter({
-    getCanvas: protectedProcedure.input(z.object({
+    get: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }) => {
         const dbCanvas = await ctx.db.query.canvases.findFirst({
@@ -16,7 +16,7 @@ export const canvasRouter = createTRPCRouter({
         return toCanvas(dbCanvas);
     }),
 
-    updateCanvas: protectedProcedure.input(canvasUpdateSchema).mutation(async ({ ctx, input }) => {
+    update: protectedProcedure.input(canvasUpdateSchema).mutation(async ({ ctx, input }) => {
         try {
             if (!input.id) {
                 throw new Error('Canvas ID is required');

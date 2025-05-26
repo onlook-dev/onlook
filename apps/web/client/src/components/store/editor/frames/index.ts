@@ -52,7 +52,7 @@ export class FramesManager {
             return null;
         }
 
-        const canvas = await api.canvas.getCanvas.query({ projectId });
+        const canvas = await api.canvas.get.query({ projectId });
         if (!canvas) {
             console.error('Canvas not found');
             return null;
@@ -185,7 +185,7 @@ export class FramesManager {
         const data = this.validateFrameData(id, 'delete');
         if (!data) return;
 
-        const success = await api.frame.deleteFrame.mutate({
+        const success = await api.frame.delete.mutate({
             frameId: data.frame.id,
         });
 
@@ -202,7 +202,7 @@ export class FramesManager {
         const canvas = await this.getProjectCanvas();
         if (!canvas) return;
 
-        const success = await api.frame.createFrame.mutate(
+        const success = await api.frame.create.mutate(
             fromFrame(canvas.id, this.roundDimensions(frame)),
         );
 
@@ -250,7 +250,7 @@ export class FramesManager {
 
     async updateAndSaveToStorage(frame: WebFrame) {
         try {
-            const dbFrame = await api.frame.getFrame.query({
+            const dbFrame = await api.frame.get.query({
                 frameId: frame.id,
             });
 
@@ -265,7 +265,7 @@ export class FramesManager {
             const frameToUpdate = fromFrame(canvas.id, this.roundDimensions(frame));
             frameToUpdate.id = dbFrame.id;
 
-            const success = await api.frame.updateFrame.mutate(frameToUpdate);
+            const success = await api.frame.update.mutate(frameToUpdate);
 
             if (success) {
                 const oldFrame = this.validateFrame(frame.id, 'update');

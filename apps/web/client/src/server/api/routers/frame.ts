@@ -1,11 +1,11 @@
-import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { z } from 'zod';
-import { eq } from 'drizzle-orm';
 import { frameInsertSchema, frames, frameUpdateSchema, toFrame } from '@onlook/db';
 import { FrameType } from '@onlook/models';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const frameRouter = createTRPCRouter({
-    getFrame: protectedProcedure
+    get: protectedProcedure
         .input(
             z.object({
                 frameId: z.string(),
@@ -21,7 +21,7 @@ export const frameRouter = createTRPCRouter({
             return toFrame(dbFrame);
         }),
 
-    getFrames: protectedProcedure
+    getByCanvas: protectedProcedure
         .input(
             z.object({
                 canvasId: z.string(),
@@ -34,7 +34,7 @@ export const frameRouter = createTRPCRouter({
             });
             return dbFrames.map((frame) => toFrame(frame));
         }),
-    createFrame: protectedProcedure.input(frameInsertSchema).mutation(async ({ ctx, input }) => {
+    create: protectedProcedure.input(frameInsertSchema).mutation(async ({ ctx, input }) => {
         try {
             const normalizedInput = {
                 ...input,
@@ -47,7 +47,7 @@ export const frameRouter = createTRPCRouter({
             return false;
         }
     }),
-    updateFrame: protectedProcedure.input(frameUpdateSchema).mutation(async ({ ctx, input }) => {
+    update: protectedProcedure.input(frameUpdateSchema).mutation(async ({ ctx, input }) => {
         try {
             if (!input.id) {
                 throw new Error('Frame ID is required');
@@ -63,7 +63,7 @@ export const frameRouter = createTRPCRouter({
             return false;
         }
     }),
-    deleteFrame: protectedProcedure
+    delete: protectedProcedure
         .input(
             z.object({
                 frameId: z.string(),

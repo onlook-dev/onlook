@@ -64,7 +64,7 @@ export class CanvasManager {
     }
 
     async updateCanvas(canvas: Canvas) {
-        const success = await api.canvas.updateCanvas.mutate(
+        const success = await api.canvas.update.mutate(
             fromCanvas(this.projects.project?.id ?? '', canvas),
         );
         if (!success) {
