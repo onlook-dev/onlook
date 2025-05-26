@@ -31,14 +31,14 @@ export const TopBar = observer(
                     y: startPositionY + deltaY,
                 };
 
-                editorEngine.frames.saveFrame(frame.id, frame);
+                editorEngine.frames.updateLocally(frame.id, frame);
             };
 
             const endMove = (e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
 
-                editorEngine.frames.update(frame);
+                editorEngine.frames.updateAndSaveToStorage(frame);
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };

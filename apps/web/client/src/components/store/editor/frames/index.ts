@@ -1,13 +1,13 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
+import { api } from '@/trpc/client';
 import { sendAnalytics } from '@/utils/analytics';
+import { fromFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
-import type { EditorEngine } from '../engine';
-import { api } from '@/trpc/client';
 import type { ProjectManager } from '../../project/manager';
-import { fromFrame } from '@onlook/db';
 import { FrameImpl, WebFrameImpl } from '../canvas/frame';
+import type { EditorEngine } from '../engine';
 
 export interface FrameData {
     frame: Frame;
@@ -182,14 +182,6 @@ export class FramesManager {
         // frameData.view.screenshot();
     }
 
-    saveFrame(id: string, newFrame: Partial<Frame>) {
-        const frame = this.validateFrame(id, 'save');
-        if (!frame) return;
-
-        const updatedFrame = this.createFrameImpl({ ...frame, ...newFrame });
-        this.updateFramesArray(id, updatedFrame);
-    }
-
     async delete(id: string) {
         if (!this.canDelete()) {
             console.error('Cannot delete the last frame');
@@ -217,7 +209,7 @@ export class FramesManager {
         if (!canvas) return;
 
         const success = await api.frame.createFrame.mutate(
-            fromFrame(canvas.id, this.roundFrameDimensions(frame)),
+            fromFrame(canvas.id, this.roundDimensions(frame)),
         );
 
         if (success) {
@@ -233,8 +225,12 @@ export class FramesManager {
         if (!data) return;
 
         // Force to webframe for now, later we can support other frame types
-        const frame = data.frame as unknown as WebFrame;
+        if (data.frame.type !== FrameType.WEB) {
+            console.error('No handler for this frame type', data.frame.type);
+            return;
+        }
 
+        const frame = data.frame as WebFrame;
         const newFrame: WebFrame = {
             id: uuid(),
             url: frame.url,
@@ -250,7 +246,15 @@ export class FramesManager {
         this.trackFrameAction('duplicate');
     }
 
-    async update(frame: WebFrame) {
+    updateLocally(id: string, newFrame: Partial<Frame>) {
+        const frame = this.validateFrame(id, 'save');
+        if (!frame) return;
+
+        const updatedFrame = this.createFrameImpl({ ...frame, ...newFrame });
+        this.updateFramesArray(id, updatedFrame);
+    }
+
+    async updateAndSaveToStorage(frame: WebFrame) {
         try {
             const dbFrame = await api.frame.getFrame.query({
                 frameId: frame.id,
@@ -264,7 +268,7 @@ export class FramesManager {
             const canvas = await this.getProjectCanvas();
             if (!canvas) return;
 
-            const frameToUpdate = fromFrame(canvas.id, this.roundFrameDimensions(frame));
+            const frameToUpdate = fromFrame(canvas.id, this.roundDimensions(frame));
             frameToUpdate.id = dbFrame.id;
 
             const success = await api.frame.updateFrame.mutate(frameToUpdate);
@@ -308,7 +312,7 @@ export class FramesManager {
         }
     }
 
-    roundFrameDimensions(frame: WebFrame): WebFrame {
+    roundDimensions(frame: WebFrame): WebFrame {
         return {
             ...frame,
             position: {
