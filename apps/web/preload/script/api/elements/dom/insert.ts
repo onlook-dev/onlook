@@ -1,8 +1,7 @@
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/constants';
 import type { DomElement } from '@onlook/models';
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
-import { assertNever } from '@onlook/utility';
-import { getHtmlElement } from '../../../helpers';
+import { assertNever, getHtmlElement } from '../../../helpers';
 import { getInstanceId, getOid, getOrAssignDomId } from '../../../helpers/ids';
 import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
