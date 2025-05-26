@@ -67,7 +67,7 @@ export function isErrorMessage(data: string) {
 export function isSuccessMessage(data: string): boolean {
     const successPatterns = ['get / 200'];
 
-    if (successPatterns.some((pattern) => data.includes(pattern))) {
+    if (successPatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()))) {
         return true;
     }
     return false;
