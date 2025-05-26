@@ -7,7 +7,6 @@ import { WebFrameComponent, type WebFrameView } from './web-frame';
 
 export const FrameView = ({ frame }: { frame: Frame }) => {
     const webFrameRef = useRef<WebFrameView>(null);
-    console.log('frame', frame);
     return (
         <div
             className="flex flex-col fixed"
