@@ -2,12 +2,13 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import type { WebFrame } from '@onlook/models';
-import { type PenpalChildMethods, type PromisifiedPendpalChildMethods } from '@onlook/penpal/src/child';
 import {
     PENPAL_PARENT_CHANNEL,
+    promisifyMethod,
+    type PenpalChildMethods,
     type PenpalParentMethods,
-} from '@onlook/penpal/src/parent';
-import { promisifyMethod } from '@onlook/penpal/src/utils';
+    type PromisifiedPendpalChildMethods,
+} from '@onlook/penpal';
 import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';

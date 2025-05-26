@@ -856,7 +856,6 @@ var require_mapping_list = __commonJS((exports) => {
 
 // ../../../packages/penpal/src/child.ts
 var PENPAL_CHILD_CHANNEL = "PENPAL_CHILD";
-
 // script/index.ts
 var import_debounce2 = __toESM(require_debounce(), 1);
 
@@ -2033,13 +2032,13 @@ var getDeepElement = (x, y) => {
   return nested_shadow || el;
 };
 var getDomElement = (el, getStyle) => {
-  const parent = el.parentElement;
-  const parentDomElement = parent ? {
-    domId: parent.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */),
+  const parent2 = el.parentElement;
+  const parentDomElement = parent2 ? {
+    domId: parent2.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */),
     frameId: getFrameId(),
-    oid: parent.getAttribute("data-oid" /* DATA_ONLOOK_ID */),
-    instanceId: parent.getAttribute("data-oiid" /* DATA_ONLOOK_INSTANCE_ID */),
-    rect: parent.getBoundingClientRect()
+    oid: parent2.getAttribute("data-oid" /* DATA_ONLOOK_ID */),
+    instanceId: parent2.getAttribute("data-oiid" /* DATA_ONLOOK_INSTANCE_ID */),
+    rect: parent2.getBoundingClientRect()
   } : null;
   const rect = el.getBoundingClientRect();
   const styles = getStyle ? getStyles(el) : null;
@@ -2069,14 +2068,14 @@ function restoreElementStyle(el) {
   }
 }
 function getElementLocation(targetEl) {
-  const parent = targetEl.parentElement;
-  if (!parent) {
+  const parent2 = targetEl.parentElement;
+  if (!parent2) {
     return;
   }
   const location = {
     type: "index",
-    targetDomId: parent.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */),
-    targetOid: getInstanceId(parent) || getOid(parent) || null,
+    targetDomId: parent2.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */),
+    targetOid: getInstanceId(parent2) || getOid(parent2) || null,
     index: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
     originalIndex: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl)
   };
@@ -2153,18 +2152,18 @@ var getOffsetParent = (domId) => {
 };
 
 // script/api/elements/dom/group.ts
-function groupElements(parent, container, children) {
-  const parentEl = getHtmlElement(parent.domId);
+function groupElements(parent2, container, children) {
+  const parentEl = getHtmlElement(parent2.domId);
   if (!parentEl) {
-    console.warn("Failed to find parent element", parent.domId);
+    console.warn("Failed to find parent element", parent2.domId);
     return null;
   }
   const containerEl = createContainerElement(container);
   const childrenMap = new Set(children.map((c) => c.domId));
-  const childrenWithIndices = Array.from(parentEl.children).map((child, index) => ({
-    element: child,
+  const childrenWithIndices = Array.from(parentEl.children).map((child2, index) => ({
+    element: child2,
     index,
-    domId: getOrAssignDomId(child)
+    domId: getOrAssignDomId(child2)
   })).filter(({ domId }) => childrenMap.has(domId));
   if (childrenWithIndices.length === 0) {
     console.warn("No valid children found to group");
@@ -2181,20 +2180,20 @@ function groupElements(parent, container, children) {
   });
   return getDomElement(containerEl, true);
 }
-function ungroupElements(parent, container) {
-  const parentEl = getHtmlElement(parent.domId);
+function ungroupElements(parent2, container) {
+  const parentEl = getHtmlElement(parent2.domId);
   if (!parentEl) {
-    console.warn("Failed to find parent element", parent.domId);
+    console.warn("Failed to find parent element", parent2.domId);
     return null;
   }
-  const containerEl = Array.from(parentEl.children).find((child) => child.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */) === container.domId);
+  const containerEl = Array.from(parentEl.children).find((child2) => child2.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */) === container.domId);
   if (!containerEl) {
-    console.warn("Failed to find container element", parent.domId);
+    console.warn("Failed to find container element", parent2.domId);
     return null;
   }
-  Array.from(containerEl.children).forEach((child) => {
-    child.setAttribute("data-onlook-inserted" /* DATA_ONLOOK_INSERTED */, "true");
-    parentEl.insertBefore(child, containerEl);
+  Array.from(containerEl.children).forEach((child2) => {
+    child2.setAttribute("data-onlook-inserted" /* DATA_ONLOOK_INSERTED */, "true");
+    parentEl.insertBefore(child2, containerEl);
   });
   containerEl.style.display = "none";
   return getDomElement(parentEl, true);
@@ -2217,8 +2216,8 @@ function removeIdsFromChildElement(el) {
   if (children.length === 0) {
     return;
   }
-  children.forEach((child) => {
-    removeIdsFromChildElement(child);
+  children.forEach((child2) => {
+    removeIdsFromChildElement(child2);
   });
 }
 
@@ -2245,7 +2244,7 @@ function getActionElementFromHtmlElement(el) {
     oid,
     domId: getOrAssignDomId(el),
     tagName: el.tagName.toLowerCase(),
-    children: Array.from(el.children).map((child) => getActionElementFromHtmlElement(child)).filter(Boolean),
+    children: Array.from(el.children).map((child2) => getActionElementFromHtmlElement(child2)).filter(Boolean),
     attributes,
     textContent: getImmediateTextContent(el) || null,
     styles: {}
@@ -2256,17 +2255,17 @@ function getActionLocation(domId) {
   if (!el) {
     throw new Error("Element not found for domId: " + domId);
   }
-  const parent = el.parentElement;
-  if (!parent) {
+  const parent2 = el.parentElement;
+  if (!parent2) {
     throw new Error("Inserted element has no parent");
   }
-  const targetOid = getInstanceId(parent) || getOid(parent);
+  const targetOid = getInstanceId(parent2) || getOid(parent2);
   if (!targetOid) {
     console.warn("Parent element has no oid");
     return null;
   }
-  const targetDomId = getOrAssignDomId(parent);
-  const index = Array.from(parent.children).indexOf(el);
+  const targetDomId = getOrAssignDomId(parent2);
+  const index = Array.from(parent2.children).indexOf(el);
   if (index === -1) {
     return {
       type: "append",
@@ -3577,17 +3576,17 @@ function readSequence(recognizer) {
         this.next();
         continue;
     }
-    let child = recognizer.getNode.call(this, context);
-    if (child === undefined) {
+    let child2 = recognizer.getNode.call(this, context);
+    if (child2 === undefined) {
       break;
     }
     if (space) {
       if (recognizer.onWhiteSpace) {
-        recognizer.onWhiteSpace.call(this, child, children, context);
+        recognizer.onWhiteSpace.call(this, child2, children, context);
       }
       space = false;
     }
-    children.push(child);
+    children.push(child2);
   }
   if (space && recognizer.onWhiteSpace) {
     recognizer.onWhiteSpace.call(this, null, children, context);
@@ -7249,7 +7248,7 @@ class Lexer {
     });
     return warns.length ? warns : false;
   }
-  createDescriptor(syntax, type, name, parent = null) {
+  createDescriptor(syntax, type, name, parent2 = null) {
     const ref = {
       type,
       name
@@ -7257,7 +7256,7 @@ class Lexer {
     const descriptor = {
       type,
       name,
-      parent,
+      parent: parent2,
       serializable: typeof syntax === "string" || syntax && typeof syntax.type === "string",
       syntax: null,
       match: null,
@@ -9778,13 +9777,13 @@ function parse13(kind = "media") {
   };
 }
 function generate13(node) {
-  node.children.forEach((child) => {
-    if (child.type === "Condition") {
+  node.children.forEach((child2) => {
+    if (child2.type === "Condition") {
       this.token(LeftParenthesis, "(");
-      this.node(child);
+      this.node(child2);
       this.token(RightParenthesis, ")");
     } else {
-      this.node(child);
+      this.node(child2);
     }
   });
 }
@@ -11217,7 +11216,7 @@ var structure43 = {
 function parse44() {
   const start = this.tokenStart;
   const children = this.createList();
-  let child;
+  let child2;
   scan:
     while (!this.eof) {
       switch (this.tokenType) {
@@ -11229,21 +11228,21 @@ function parse44() {
             this.next();
             continue;
           }
-          child = this.Comment();
+          child2 = this.Comment();
           break;
         case CDO:
-          child = this.CDO();
+          child2 = this.CDO();
           break;
         case CDC:
-          child = this.CDC();
+          child2 = this.CDC();
           break;
         case AtKeyword:
-          child = this.parseWithFallback(this.Atrule, consumeRaw5);
+          child2 = this.parseWithFallback(this.Atrule, consumeRaw5);
           break;
         default:
-          child = this.parseWithFallback(this.Rule, consumeRaw5);
+          child2 = this.parseWithFallback(this.Rule, consumeRaw5);
       }
-      children.push(child);
+      children.push(child2);
     }
   return {
     type: "StyleSheet",
@@ -12369,8 +12368,8 @@ function findClosestIndex(container, y) {
   }
   let closestIndex = 0;
   let minDistance = Infinity;
-  children.forEach((child, index) => {
-    const rect = child.getBoundingClientRect();
+  children.forEach((child2, index) => {
+    const rect = child2.getBoundingClientRect();
     const childMiddle = rect.top + rect.height / 2;
     const distance = Math.abs(y - childMiddle);
     if (distance < minDistance) {
@@ -12466,8 +12465,8 @@ function createElement(element) {
   for (const [key, value] of Object.entries(element.styles)) {
     newEl.style.setProperty(cssManager.jsToCssProperty(key), value);
   }
-  for (const child of element.children) {
-    const childEl = createElement(child);
+  for (const child2 of element.children) {
+    const childEl = createElement(child2);
     newEl.appendChild(childEl);
   }
   return newEl;
@@ -12568,18 +12567,18 @@ function getElementIndex(domId) {
   return index;
 }
 function moveElToIndex(el, newIndex) {
-  const parent = el.parentElement;
-  if (!parent) {
+  const parent2 = el.parentElement;
+  if (!parent2) {
     console.warn("Parent not found");
     return;
   }
-  parent.removeChild(el);
-  if (newIndex >= parent.children.length) {
-    parent.appendChild(el);
+  parent2.removeChild(el);
+  if (newIndex >= parent2.children.length) {
+    parent2.appendChild(el);
     return el;
   }
-  const referenceNode = parent.children[newIndex];
-  parent.insertBefore(el, referenceNode ?? null);
+  const referenceNode = parent2.children[newIndex];
+  parent2.insertBefore(el, referenceNode ?? null);
   return el;
 }
 
@@ -12627,9 +12626,9 @@ function findInsertionIndex(elements, x, y, displayDirection) {
   }
   return elements.length;
 }
-function findGridInsertionIndex(parent, siblings, x, y) {
-  const parentRect = parent.getBoundingClientRect();
-  const gridComputedStyle = window.getComputedStyle(parent);
+function findGridInsertionIndex(parent2, siblings, x, y) {
+  const parentRect = parent2.getBoundingClientRect();
+  const gridComputedStyle = window.getComputedStyle(parent2);
   const columns = gridComputedStyle.gridTemplateColumns.split(" ").length;
   const rows = gridComputedStyle.gridTemplateRows.split(" ").length;
   const cellWidth = parentRect.width / columns;
@@ -12661,32 +12660,32 @@ function moveStub(el, x, y) {
   if (!stub) {
     return;
   }
-  const parent = el.parentElement;
-  if (!parent) {
+  const parent2 = el.parentElement;
+  if (!parent2) {
     return;
   }
   let displayDirection = el.getAttribute("data-onlook-drag-direction" /* DATA_ONLOOK_DRAG_DIRECTION */);
   if (!displayDirection) {
-    displayDirection = getDisplayDirection(parent);
+    displayDirection = getDisplayDirection(parent2);
   }
-  const parentStyle = window.getComputedStyle(parent);
+  const parentStyle = window.getComputedStyle(parent2);
   const isGridLayout = parentStyle.display === "grid";
   const isFlexRow = !isGridLayout && parentStyle.display === "flex" && (parentStyle.flexDirection === "row" || parentStyle.flexDirection === "");
   if (isFlexRow) {
     displayDirection = "horizontal" /* HORIZONTAL */;
   }
-  const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
+  const siblings = Array.from(parent2.children).filter((child2) => child2 !== el && child2 !== stub);
   let insertionIndex;
   if (isGridLayout) {
-    insertionIndex = findGridInsertionIndex(parent, siblings, x, y);
+    insertionIndex = findGridInsertionIndex(parent2, siblings, x, y);
   } else {
     insertionIndex = findInsertionIndex(siblings, x, y, displayDirection);
   }
   stub.remove();
   if (insertionIndex >= siblings.length) {
-    parent.appendChild(stub);
+    parent2.appendChild(stub);
   } else {
-    parent.insertBefore(stub, siblings[insertionIndex] ?? null);
+    parent2.insertBefore(stub, siblings[insertionIndex] ?? null);
   }
   stub.style.display = "block";
 }
@@ -12697,12 +12696,12 @@ function removeStub() {
   }
   stub.remove();
 }
-function getCurrentStubIndex(parent, el) {
+function getCurrentStubIndex(parent2, el) {
   const stub = document.getElementById("onlook-drag-stub" /* ONLOOK_STUB_ID */);
   if (!stub) {
     return -1;
   }
-  const siblings = Array.from(parent.children).filter((child) => child !== el);
+  const siblings = Array.from(parent2.children).filter((child2) => child2 !== el);
   return siblings.indexOf(stub);
 }
 
@@ -12713,12 +12712,12 @@ function startDrag(domId) {
     console.warn(`Start drag element not found: ${domId}`);
     return null;
   }
-  const parent = el.parentElement;
-  if (!parent) {
+  const parent2 = el.parentElement;
+  if (!parent2) {
     console.warn("Start drag parent not found");
     return null;
   }
-  const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
+  const htmlChildren = Array.from(parent2.children).filter(isValidHtmlElement);
   const originalIndex = htmlChildren.indexOf(el);
   const styles = window.getComputedStyle(el);
   prepareElementForDragging(el);
@@ -12743,10 +12742,10 @@ function dragAbsolute(domId, x, y, origin) {
     console.warn("Dragging element not found");
     return;
   }
-  const parent = el.parentElement;
-  if (parent) {
+  const parent2 = el.parentElement;
+  if (parent2) {
     const pos = JSON.parse(el.getAttribute("data-onlook-drag-start-position" /* DATA_ONLOOK_DRAG_START_POSITION */) || "{}");
-    const parentRect = parent.getBoundingClientRect();
+    const parentRect = parent2.getBoundingClientRect();
     const newLeft = x - parentRect.left - (origin.x - pos.offset.x);
     const newTop = y - parentRect.top - (origin.y - pos.offset.y);
     el.style.left = `${newLeft}px`;
@@ -12773,8 +12772,8 @@ function drag(domId, dx, dy, x, y) {
     el.style.top = `${pos.top}px`;
   }
   el.style.transform = `translate(${dx}px, ${dy}px)`;
-  const parent = el.parentElement;
-  if (parent) {
+  const parent2 = el.parentElement;
+  if (parent2) {
     moveStub(el, x, y);
   }
 }
@@ -12799,26 +12798,26 @@ function endDrag(domId) {
     endAllDrag();
     return null;
   }
-  const parent = el.parentElement;
-  if (!parent) {
+  const parent2 = el.parentElement;
+  if (!parent2) {
     console.warn("End drag parent not found");
     cleanUpElementAfterDragging(el);
     return null;
   }
-  const stubIndex = getCurrentStubIndex(parent, el);
+  const stubIndex = getCurrentStubIndex(parent2, el);
   cleanUpElementAfterDragging(el);
   removeStub();
   if (stubIndex === -1) {
     return null;
   }
-  const elementIndex = Array.from(parent.children).indexOf(el);
+  const elementIndex = Array.from(parent2.children).indexOf(el);
   if (stubIndex === elementIndex) {
     return null;
   }
   return {
     newIndex: stubIndex,
     child: getDomElement(el, false),
-    parent: getDomElement(parent, false)
+    parent: getDomElement(parent2, false)
   };
 }
 function prepareElementForDragging(el) {
@@ -12838,9 +12837,9 @@ function prepareElementForDragging(el) {
   el.setAttribute("data-onlook-dragging" /* DATA_ONLOOK_DRAGGING */, "true");
   el.style.zIndex = "1000";
   if (el.getAttribute("data-onlook-drag-direction" /* DATA_ONLOOK_DRAG_DIRECTION */) !== null) {
-    const parent = el.parentElement;
-    if (parent) {
-      const displayDirection = getDisplayDirection(parent);
+    const parent2 = el.parentElement;
+    if (parent2) {
+      const displayDirection = getDisplayDirection(parent2);
       el.setAttribute("data-onlook-drag-direction" /* DATA_ONLOOK_DRAG_DIRECTION */, displayDirection);
     }
   }
@@ -12873,8 +12872,8 @@ function endAllDrag() {
 
 // script/api/events/publish.ts
 function publishEditText(domEl) {
-  const parent = getHtmlElement(domEl.domId)?.parentElement;
-  const layerMap = parent ? buildLayerTree(parent) : null;
+  const parent2 = getHtmlElement(domEl.domId)?.parentElement;
+  const layerMap = parent2 ? buildLayerTree(parent2) : null;
   if (!domEl || !layerMap) {
     console.warn("No domEl or layerMap found for edit text event");
     return;
@@ -12949,14 +12948,14 @@ function listenForDomMutation() {
     let removed = new Map;
     for (const mutation of mutationsList) {
       if (mutation.type === "childList") {
-        const parent = mutation.target;
+        const parent2 = mutation.target;
         for (const node of mutation.addedNodes) {
           if (node.nodeType === Node.TEXT_NODE || shouldIgnoreMutatedNode(node)) {
             continue;
           }
           const element = node;
           dedupNewElement(element);
-          const layerMap = buildLayerTree(parent);
+          const layerMap = buildLayerTree(parent2);
           if (layerMap) {
             added = new Map([...added, ...layerMap]);
           }
@@ -12965,7 +12964,7 @@ function listenForDomMutation() {
           if (node.nodeType === Node.TEXT_NODE || shouldIgnoreMutatedNode(node)) {
             continue;
           }
-          const layerMap = buildLayerTree(parent);
+          const layerMap = buildLayerTree(parent2);
           if (layerMap) {
             removed = new Map([...removed, ...layerMap]);
           }
@@ -13535,9 +13534,9 @@ var _ZodEnum_cache;
 var _ZodNativeEnum_cache;
 
 class ParseInputLazyPath {
-  constructor(parent, value, path, key) {
+  constructor(parent2, value, path, key) {
     this._cachedPath = [];
-    this.parent = parent;
+    this.parent = parent2;
     this.data = value;
     this._path = path;
     this._key = key;
@@ -17173,13 +17172,13 @@ var createMessageConnection = async () => {
     messenger,
     methods: preloadMethods
   });
-  connection.promise.then((parent) => {
-    if (!parent) {
+  connection.promise.then((parent2) => {
+    if (!parent2) {
       console.error(`${PENPAL_CHILD_CHANNEL} - Failed to setup penpal connection: child is null`);
       reconnect();
       return;
     }
-    const remote = parent;
+    const remote = parent2;
     penpalParent = remote;
     console.log(`${PENPAL_CHILD_CHANNEL} - Penpal connection set`);
   }).finally(() => {

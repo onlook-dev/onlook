@@ -1,5 +1,4 @@
-import { PENPAL_CHILD_CHANNEL } from '@onlook/penpal/src/child';
-import { type PromisifiedPenpalParentMethods } from '@onlook/penpal/src/parent';
+import { PENPAL_CHILD_CHANNEL, type PromisifiedPenpalParentMethods } from '@onlook/penpal';
 import debounce from 'lodash/debounce';
 import { WindowMessenger, connect } from 'penpal';
 import { preloadMethods } from './api';
