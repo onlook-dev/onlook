@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
 import { api } from '@/trpc/client';
 import type { ProjectManager } from '../../project/manager';
+import { fromFrame } from '@onlook/db';
 
 export interface FrameData {
     frame: Frame;
@@ -17,7 +18,10 @@ export class FramesManager {
     private frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
 
-    constructor(private editorEngine: EditorEngine, private projectManager: ProjectManager) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectManager: ProjectManager,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -137,7 +141,7 @@ export class FramesManager {
             console.error('Frame not found');
             return;
         }
-        const { frame } = data
+        const { frame } = data;
 
         const success = await api.frame.deleteFrame.mutate({
             frameId: frame.id,
@@ -160,15 +164,8 @@ export class FramesManager {
         if (!canvas) {
             return;
         }
-        const success = await api.frame.createFrame.mutate({
-            canvasId: canvas.id,
-            url: frame.url,
-            type: frame.type,
-            x: frame.position.x.toString(),
-            y: frame.position.y.toString(),
-            width: frame.dimension.width.toString(),
-            height: frame.dimension.height.toString(),
-        });
+
+        const success = await api.frame.createFrame.mutate(fromFrame(canvas.id, frame));
 
         if (success) {
             this.editorEngine.canvas.addFrame(frame);
@@ -216,24 +213,30 @@ export class FramesManager {
                 console.error('Frame not found');
                 return;
             }
-            const success = await api.frame.updateFrame.mutate({
-                frameId: frame.id,
-                x: frame.position.x,
-                y: frame.position.y,
-                width: frame.dimension.width,
-                height: frame.dimension.height,
+
+            const canvas = await api.canvas.getCanvas.query({
+                projectId: this.projectManager.project?.id ?? '',
             });
+
+            if (!canvas) {
+                console.error('Canvas not found');
+                return;
+            }
+
+            const frameToUpdate = fromFrame(canvas.id, frame);
+            frameToUpdate.id = dbFrame.id;
+
+            const success = await api.frame.updateFrame.mutate(frameToUpdate);
 
             if (success) {
                 this.editorEngine.canvas.saveFrame(frame.id, frame);
             } else {
                 console.error('Failed to update frame');
             }
-            
         } catch (error) {
             console.error('Failed to update frame', error);
         }
-    }   
+    }
 
     canDelete() {
         return this.editorEngine.frames.getAll().length > 1;

@@ -2,7 +2,7 @@ import { FrameType } from "@onlook/models";
 import { relations } from "drizzle-orm";
 import { numeric, pgEnum, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { canvases } from "./canvas";
-import { createInsertSchema } from "drizzle-zod";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 
 export const frameType = pgEnum("frame_type", FrameType);
 
@@ -22,6 +22,7 @@ export const frames = pgTable("frames", {
 }).enableRLS();
 
 export const frameInsertSchema = createInsertSchema(frames);
+export const frameUpdateSchema = createUpdateSchema(frames);
 
 export type Frame = typeof frames.$inferSelect;
 export type NewFrame = typeof frames.$inferInsert;

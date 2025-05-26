@@ -1,7 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { frameInsertSchema, frames, toFrame } from '@onlook/db';
+import { frameInsertSchema, frames, frameUpdateSchema, toFrame } from '@onlook/db';
 import { FrameType } from '@onlook/models';
 
 export const frameRouter = createTRPCRouter({
@@ -47,33 +47,22 @@ export const frameRouter = createTRPCRouter({
             return false;
         }
     }),
-    updateFrame: protectedProcedure
-        .input(
-            z.object({
-                frameId: z.string(),
-                x: z.number(),
-                y: z.number(),
-                width: z.number(),
-                height: z.number(),
-            }),
-        )
-        .mutation(async ({ ctx, input }) => {
-            try {
-                await ctx.db
-                    .update(frames)
-                    .set({
-                        x: input.x.toString(),
-                        y: input.y.toString(),
-                        width: input.width.toString(),
-                        height: input.height.toString(),
-                    })
-                    .where(eq(frames.id, input.frameId));
-                return true;
-            } catch (error) {
-                console.error('Error updating frame', error);
-                return false;
+    updateFrame: protectedProcedure.input(frameUpdateSchema).mutation(async ({ ctx, input }) => {
+        try {
+            if (!input.id) {
+                throw new Error('Frame ID is required');
             }
-        }),
+            const normalizedInput = {
+                ...input,
+                type: input.type as FrameType,
+            };
+            await ctx.db.update(frames).set(normalizedInput).where(eq(frames.id, input.id));
+            return true;
+        } catch (error) {
+            console.error('Error updating frame', error);
+            return false;
+        }
+    }),
     deleteFrame: protectedProcedure
         .input(
             z.object({
