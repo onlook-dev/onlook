@@ -1,4 +1,5 @@
 import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
+import { checkMessageError, checkMessageSuccess } from '@onlook/utility';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -37,6 +38,8 @@ export class CLISessionImpl implements CLISession {
         public readonly name: string,
         public readonly type: CLISessionType,
         private readonly session: WebSocketSession,
+        private readonly emitError: (message: string) => void,
+        private readonly emitSuccess: (message: string) => void,
     ) {
         this.id = uuidv4();
         this.xterm = this.createXTerm();
@@ -76,6 +79,11 @@ export class CLISessionImpl implements CLISession {
         this.task = task;
         task.onOutput((data: string) => {
             this.xterm.write(data);
+            if (checkMessageError(data)) {
+                this.emitError(data);
+            } else if (checkMessageSuccess(data)) {
+                this.emitSuccess(data);
+            }
         });
         task.open();
     }

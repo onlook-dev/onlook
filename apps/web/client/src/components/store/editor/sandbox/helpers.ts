@@ -2,7 +2,6 @@ import path from 'path';
 import parserEstree from 'prettier/plugins/estree';
 import parserTypescript from 'prettier/plugins/typescript';
 import prettier from 'prettier/standalone';
-import isSubdir from 'is-subdir';
 
 const SANDBOX_ROOT = '/project/sandbox';
 

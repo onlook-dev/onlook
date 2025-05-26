@@ -3,6 +3,7 @@ import type { WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { makeAutoObservable } from 'mobx';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
+import type { EditorEngine } from '../engine';
 
 export class SessionManager {
     session: WebSocketSession | null = null;
@@ -10,7 +11,7 @@ export class SessionManager {
     terminalSessions: CLISession[] = [];
     activeTerminalSessionId: string = 'cli';
 
-    constructor() {
+    constructor(private readonly editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -31,9 +32,9 @@ export class SessionManager {
     }
 
     async createTerminalSessions(session: WebSocketSession) {
-        const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session);
+        const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error.addError, this.editorEngine.error.addSuccess);
         this.terminalSessions.push(task);
-        const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session);
+        const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error.addError, this.editorEngine.error.addSuccess);
         this.terminalSessions.push(terminal);
         this.activeTerminalSessionId = task.id;
     }

@@ -11,7 +11,7 @@ const user0 = {
 const project0 = {
     id: uuidv4(),
     name: 'Test Project',
-    sandboxId: '123',
+    sandboxId: '3f5rf6',
     sandboxUrl: 'http://localhost:8084',
     previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
     createdAt: new Date(),

@@ -5,6 +5,7 @@ import { getContentFromTemplateNode } from '@onlook/parser';
 import { isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
+import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
@@ -13,13 +14,14 @@ import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 export class SandboxManager {
-    readonly session: SessionManager = new SessionManager();
+    readonly session: SessionManager
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
     readonly fileEventBus: FileEventBus = new FileEventBus();
 
-    constructor() {
+    constructor(private readonly editorEngine: EditorEngine) {
+        this.session = new SessionManager(this.editorEngine);
         makeAutoObservable(this);
 
         reaction(

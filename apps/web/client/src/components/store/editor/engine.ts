@@ -26,7 +26,6 @@ import { ThemeManager } from './theme';
 
 export class EditorEngine {
     readonly chat: ChatManager;
-    readonly error: ErrorManager;
     readonly image: ImageManager;
     readonly theme: ThemeManager;
     readonly font: FontManager;
@@ -34,9 +33,10 @@ export class EditorEngine {
     readonly canvas: CanvasManager;
     readonly frames: FramesManager;
 
-    readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
-    readonly sandbox: SandboxManager = new SandboxManager();
+    readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly sandbox: SandboxManager = new SandboxManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
@@ -55,7 +55,6 @@ export class EditorEngine {
     ) {
         this.chat = new ChatManager(this, this.projectManager, this.userManager);
         this.pages = new PagesManager(this, this.projectManager);
-        this.error = new ErrorManager(this, this.projectManager);
         this.image = new ImageManager(this, this.projectManager);
         this.theme = new ThemeManager(this, this.projectManager);
         this.font = new FontManager(this, this.projectManager);
@@ -92,20 +91,6 @@ export class EditorEngine {
         this.overlay.clear();
         this.elements.clear();
         this.frames.deselectAll();
-    }
-
-    inspect() {
-        // const selected = this.elements.selected;
-        // if (selected.length === 0) {
-        //     return;
-        // }
-        // const selectedEl = selected[0];
-        // const frameId = selectedEl.frameId;
-        // const frameView = this.webviews.getWebview(frameId);
-        // if (!frameView) {
-        //     return;
-        // }
-        // frameView.openDevTools();
     }
 
     async refreshLayers() {
