@@ -31,7 +31,7 @@ export const TopBar = observer(
                     y: startPositionY + deltaY,
                 };
 
-                editorEngine.canvas.saveFrame(frame.id, frame);
+                editorEngine.frames.saveFrame(frame.id, frame);
             };
 
             const endMove = (e: MouseEvent) => {

@@ -1,12 +1,13 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import { sendAnalytics } from '@/utils/analytics';
-import type { Frame, WebFrame } from '@onlook/models';
+import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
 import { api } from '@/trpc/client';
 import type { ProjectManager } from '../../project/manager';
 import { fromFrame } from '@onlook/db';
+import { FrameImpl, WebFrameImpl } from '../canvas/frame';
 
 export interface FrameData {
     frame: Frame;
@@ -17,12 +18,80 @@ export interface FrameData {
 export class FramesManager {
     private frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
+    private _frames: FrameImpl[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
         private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
+    }
+
+    private createFrameImpl(frame: Frame): FrameImpl {
+        return frame.type === FrameType.WEB
+            ? WebFrameImpl.fromJSON(frame as WebFrame)
+            : FrameImpl.fromJSON(frame);
+    }
+
+    private validateFrameData(id: string, operation: string): FrameData | null {
+        const data = this.frameIdToData.get(id);
+        if (!data) {
+            console.error(`Frame not found for ${operation}`, id);
+            return null;
+        }
+        return data;
+    }
+
+    private validateFrame(id: string, operation: string): FrameImpl | null {
+        const frame = this.frames.find((f) => f.id === id);
+        if (!frame) {
+            console.error(`Frame not found for ${operation}`, id);
+            return null;
+        }
+        return frame;
+    }
+
+    private async getProjectCanvas() {
+        const projectId = this.projectManager.project?.id;
+        if (!projectId) {
+            console.error('No project ID available');
+            return null;
+        }
+
+        const canvas = await api.canvas.getCanvas.query({ projectId });
+        if (!canvas) {
+            console.error('Canvas not found');
+            return null;
+        }
+        return canvas;
+    }
+
+    private updateFramesArray(id: string, updatedFrame: FrameImpl): void {
+        this.frames = this.frames.map((f) => (f.id === id ? updatedFrame : f));
+    }
+
+    private updateFrameSelection(id: string, selected: boolean): void {
+        const data = this.frameIdToData.get(id);
+        if (data) {
+            data.selected = selected;
+            this.frameIdToData.set(id, data);
+        }
+    }
+
+    private trackFrameAction(action: 'created' | 'deleted' | 'duplicate'): void {
+        sendAnalytics(`window ${action}`);
+    }
+
+    applyFrames(frames: Frame[]) {
+        this.frames = frames.map((frame) => this.createFrameImpl(frame));
+    }
+
+    get frames() {
+        return this._frames;
+    }
+
+    set frames(frames: FrameImpl[]) {
+        this._frames = frames;
     }
 
     get webviews() {
@@ -61,28 +130,19 @@ export class FramesManager {
         this.deselectAll();
 
         for (const frame of frames) {
-            const data = this.frameIdToData.get(frame.id);
-            if (data) {
-                data.selected = true;
-                this.frameIdToData.set(frame.id, data);
-                // this.editorEngine.pages.handleWebviewUrlChange(frameView.id);
-            }
+            this.updateFrameSelection(frame.id, true);
         }
         this.notify();
     }
 
     deselect(frame: Frame) {
-        const data = this.frameIdToData.get(frame.id);
-        if (data) {
-            data.selected = false;
-            this.frameIdToData.set(frame.id, data);
-            this.notify();
-        }
+        this.updateFrameSelection(frame.id, false);
+        this.notify();
     }
 
     deselectAll() {
-        for (const [id, data] of this.frameIdToData) {
-            this.frameIdToData.set(id, { ...data, selected: false });
+        for (const [id] of this.frameIdToData) {
+            this.updateFrameSelection(id, false);
         }
         this.notify();
     }
@@ -93,17 +153,13 @@ export class FramesManager {
 
     clear() {
         this.deregisterAll();
-
-        // Run all disposers
         this.disposers.forEach((dispose) => dispose());
         this.disposers = [];
     }
 
     disposeFrame(frameId: string) {
         this.frameIdToData.delete(frameId);
-
         this.editorEngine?.ast?.mappings?.remove(frameId);
-        // this.editorEngine?.errors.clear();
     }
 
     reloadAll() {
@@ -113,21 +169,25 @@ export class FramesManager {
     }
 
     reload(id: string) {
-        const frame = this.frameIdToData.get(id);
-        if (!frame) {
-            console.error('Frame not found', id);
-            return;
-        }
-        frame.view.reload();
+        const frameData = this.validateFrameData(id, 'reload');
+        if (!frameData) return;
+
+        frameData.view.reload();
     }
 
     screenshot(id: string) {
-        const frame = this.frameIdToData.get(id);
-        if (!frame) {
-            console.error('Frame not found', id);
-            return;
-        }
-        // frame.view.screenshot();
+        const frameData = this.validateFrameData(id, 'screenshot');
+        if (!frameData) return;
+
+        // frameData.view.screenshot();
+    }
+
+    saveFrame(id: string, newFrame: Partial<Frame>) {
+        const frame = this.validateFrame(id, 'save');
+        if (!frame) return;
+
+        const updatedFrame = this.createFrameImpl({ ...frame, ...newFrame });
+        this.updateFramesArray(id, updatedFrame);
     }
 
     async delete(id: string) {
@@ -135,52 +195,42 @@ export class FramesManager {
             console.error('Cannot delete the last frame');
             return;
         }
-        const data = this.get(id);
 
-        if (!data) {
-            console.error('Frame not found');
-            return;
-        }
-        const { frame } = data;
+        const data = this.validateFrameData(id, 'delete');
+        if (!data) return;
 
         const success = await api.frame.deleteFrame.mutate({
-            frameId: frame.id,
+            frameId: data.frame.id,
         });
 
         if (success) {
-            this.editorEngine.frames.disposeFrame(frame.id);
-            this.editorEngine.canvas.deleteFrame(frame.id);
-            sendAnalytics('window deleted');
+            this.disposeFrame(data.frame.id);
+            this.frames = this.frames.filter((f) => f.id !== id);
+            this.trackFrameAction('deleted');
         } else {
             console.error('Failed to delete frame');
         }
     }
 
     async create(frame: WebFrame) {
-        const canvas = await api.canvas.getCanvas.query({
-            projectId: this.projectManager.project?.id ?? '',
-        });
+        const canvas = await this.getProjectCanvas();
+        if (!canvas) return;
 
-        if (!canvas) {
-            return;
-        }
-
-        const success = await api.frame.createFrame.mutate(fromFrame(canvas.id, frame));
+        const success = await api.frame.createFrame.mutate(
+            fromFrame(canvas.id, this.roundFrameDimensions(frame)),
+        );
 
         if (success) {
-            this.editorEngine.canvas.addFrame(frame);
-            sendAnalytics('window created');
+            this.frames.push(this.createFrameImpl(frame));
+            this.trackFrameAction('created');
         } else {
             console.error('Failed to create frame');
         }
     }
 
     async duplicate(id: string) {
-        const data = this.get(id);
-        if (!data) {
-            console.error('Frame not found');
-            return;
-        }
+        const data = this.validateFrameData(id, 'duplicate');
+        if (!data) return;
 
         // Force to webframe for now, later we can support other frame types
         const frame = data.frame as unknown as WebFrame;
@@ -188,10 +238,7 @@ export class FramesManager {
         const newFrame: WebFrame = {
             id: uuid(),
             url: frame.url,
-            dimension: {
-                width: frame.dimension.width,
-                height: frame.dimension.height,
-            },
+            dimension: { ...frame.dimension },
             position: {
                 x: frame.position.x + frame.dimension.width + 100,
                 y: frame.position.y,
@@ -200,7 +247,7 @@ export class FramesManager {
         };
 
         await this.create(newFrame);
-        sendAnalytics('window duplicate');
+        this.trackFrameAction('duplicate');
     }
 
     async update(frame: WebFrame) {
@@ -210,26 +257,24 @@ export class FramesManager {
             });
 
             if (!dbFrame) {
-                console.error('Frame not found');
+                console.error('Frame not found in database');
                 return;
             }
 
-            const canvas = await api.canvas.getCanvas.query({
-                projectId: this.projectManager.project?.id ?? '',
-            });
+            const canvas = await this.getProjectCanvas();
+            if (!canvas) return;
 
-            if (!canvas) {
-                console.error('Canvas not found');
-                return;
-            }
-
-            const frameToUpdate = fromFrame(canvas.id, frame);
+            const frameToUpdate = fromFrame(canvas.id, this.roundFrameDimensions(frame));
             frameToUpdate.id = dbFrame.id;
 
             const success = await api.frame.updateFrame.mutate(frameToUpdate);
 
             if (success) {
-                this.editorEngine.canvas.saveFrame(frame.id, frame);
+                const oldFrame = this.validateFrame(frame.id, 'update');
+                if (!oldFrame) return;
+
+                const updatedFrame = this.createFrameImpl({ ...oldFrame, ...frame });
+                this.updateFramesArray(frame.id, updatedFrame);
             } else {
                 console.error('Failed to update frame');
             }
@@ -239,11 +284,11 @@ export class FramesManager {
     }
 
     canDelete() {
-        return this.editorEngine.frames.getAll().length > 1;
+        return this.getAll().length > 1;
     }
 
     canDuplicate() {
-        return this.editorEngine.frames.selected.length > 0;
+        return this.selected.length > 0;
     }
 
     duplicateSelected() {
@@ -253,12 +298,27 @@ export class FramesManager {
     }
 
     deleteSelected() {
+        if (!this.canDelete()) {
+            console.error('Cannot delete the last frame');
+            return;
+        }
+
         for (const frame of this.selected) {
-            if (!this.canDelete()) {
-                console.error('Cannot delete the last frame');
-                return;
-            }
             this.delete(frame.frame.id);
         }
+    }
+
+    roundFrameDimensions(frame: WebFrame): WebFrame {
+        return {
+            ...frame,
+            position: {
+                x: Math.round(frame.position.x),
+                y: Math.round(frame.position.y),
+            },
+            dimension: {
+                width: Math.round(frame.dimension.width),
+                height: Math.round(frame.dimension.height),
+            },
+        };
     }
 }

@@ -5,14 +5,15 @@ import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuidv4 } from 'uuid';
 import type { ProjectManager } from '../../project/manager';
-import { FrameImpl, WebFrameImpl } from './frame';
+import { api } from '@/trpc/client';
+import { fromCanvas } from '@onlook/db';
 
 type SettingsObserver = (settings: Frame) => void;
 
 export class CanvasManager {
+    private _id: string = '';
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
-    private _frames: FrameImpl[] = [];
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
     constructor(private projects: ProjectManager) {
@@ -21,18 +22,9 @@ export class CanvasManager {
     }
 
     applyCanvas(canvas: Canvas) {
+        this.id = canvas.id;
         this.scale = canvas.scale ?? DefaultSettings.SCALE;
         this.position = canvas.position ?? this.getDefaultPanPosition();
-    }
-
-    applyFrames(frames: Frame[]) {
-        this.frames = frames.map((frame) => {
-            if (frame.type === FrameType.WEB) {
-                return WebFrameImpl.fromJSON(frame as WebFrame);
-            } else {
-                return FrameImpl.fromJSON(frame);
-            }
-        });
     }
 
     getDefaultPanPosition(): RectPosition {
@@ -45,6 +37,14 @@ export class CanvasManager {
         }
 
         return { x, y };
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    set id(value: string) {
+        this._id = value;
     }
 
     get scale() {
@@ -65,57 +65,16 @@ export class CanvasManager {
         this.saveSettings();
     }
 
-    get frames() {
-        return this._frames;
-    }
-
-    set frames(frames: FrameImpl[]) {
-        this._frames = frames;
-    }
-
-    getFrame(id: string) {
-        return this.frames.find((f) => f.id === id);
-    }
-
-    saveFrame(id: string, newFrame: Partial<Frame>) {
-        const frame = this.frames.find((f) => f.id === id);
-        if (!frame) {
-            return;
+    async updateCanvas(canvas: Canvas) {
+        const success = await api.canvas.updateCanvas.mutate(
+            fromCanvas(this.projects.project?.id ?? '', canvas),
+        );
+        if (!success) {
+            console.error('Failed to update canvas');
         }
-
-        const updatedFrame = frame.type === FrameType.WEB 
-            ? WebFrameImpl.fromJSON({ ...frame, ...newFrame } as WebFrame)
-            : FrameImpl.fromJSON({ ...frame, ...newFrame });
-        
-        this.frames = this.frames.map((f) => (f.id === id ? updatedFrame : f));
-        this.saveSettings();
-    }
-
-    addFrame(frame: Frame) {
-        this.frames.push(
-            frame.type === FrameType.WEB 
-                ? WebFrameImpl.fromJSON(frame as WebFrame)
-                : FrameImpl.fromJSON(frame)
-        );
-        this.saveSettings();
-    }
-
-    saveFrames(newFrames: Frame[]) {
-        this.frames = newFrames.map(frame => 
-            frame.type === FrameType.WEB 
-                ? WebFrameImpl.fromJSON(frame as WebFrame)
-                : FrameImpl.fromJSON(frame)
-        );
-        this.saveSettings();
-    }
-
-    deleteFrame(id: string) {
-        this.frames = this.frames.filter((f) => f.id !== id);
-        this.saveSettings();
     }
 
     clear() {
-        this.frames = [];
         this._scale = DefaultSettings.SCALE;
         this._position = DefaultSettings.PAN_POSITION;
     }
@@ -154,9 +113,14 @@ export class CanvasManager {
     }
 
     private undebouncedSaveSettings() {
-        // TODO: Save settings in persistence
         if (this.projects.project) {
-            this.projects.updateProject(this.projects.project);
+            this.updateCanvas(
+                {
+                    id: this.id,
+                    position: this.position,
+                    scale: this.scale,
+                },
+            );
         }
     }
 }

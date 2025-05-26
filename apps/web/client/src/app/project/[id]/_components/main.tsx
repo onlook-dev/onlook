@@ -60,7 +60,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         }
 
         if (frames) {
-            editorEngine.canvas.applyFrames(frames);
+            editorEngine.frames.applyFrames(frames);
         } else {
             console.error('No frames');
         }
