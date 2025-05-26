@@ -84,8 +84,7 @@ export const BottomBar = observer(() => {
                         >
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
-                                    <TooltipTrigger>
-                                        <div>
+                                    <TooltipTrigger asChild>
                                             <ToggleGroupItem
                                                 value={item.mode}
                                                 aria-label={item.hotkey.description}
@@ -94,7 +93,6 @@ export const BottomBar = observer(() => {
                                             >
                                                 <item.icon />
                                             </ToggleGroupItem>
-                                        </div>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <HotkeyLabel hotkey={item.hotkey} />
