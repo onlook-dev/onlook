@@ -14,7 +14,7 @@ export class ErrorManager {
     }
 
     addError(message: string) {
-        console.log('Error message received', message);
+        console.warn('Terminal error message received', message);
         const error: ParsedError = {
             sourceId: 'terminal',
             type: 'terminal',
