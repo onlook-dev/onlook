@@ -53,7 +53,6 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
     useHotkeys(Hotkey.REFRESH_LAYERS.command, () => editorEngine.refreshLayers());
-    useHotkeys(Hotkey.OPEN_DEV_TOOL.command, () => editorEngine.inspect());
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => editorEngine.elements.delete());
 
     // Group
