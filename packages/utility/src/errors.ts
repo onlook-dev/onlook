@@ -14,15 +14,20 @@ export function compareErrors(a: ParsedError, b: ParsedError): boolean {
 export function checkMessageError(data: string) {
     // Critical CLI errors
     const errorPatterns = [
+        // Next.js errors
+        'Syntax Error',
+        'Reference Error',
+        'Type Error',
+
         'command not found',
         'ENOENT:',
         'fatal:',
         'error:',
 
         // Critical Node.js errors
-        'TypeError:',
-        'ReferenceError:',
-        'SyntaxError:',
+        'TypeError',
+        'ReferenceError',
+        'SyntaxError',
         'Cannot find module',
         'Module not found',
 
