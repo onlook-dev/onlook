@@ -6,6 +6,7 @@ export enum ChatType {
     ASK = 'ask',
     CREATE = 'create',
     EDIT = 'edit',
+    FIX = 'fix',
 }
 
 const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4);
