@@ -84,15 +84,17 @@ export const BottomBar = observer(() => {
                         >
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
-                                    <TooltipTrigger >
-                                        <ToggleGroupItem
-                                            value={item.mode}
-                                            aria-label={item.hotkey.description}
-                                            disabled={item.disabled}
-                                            className="hover:text-foreground-hover text-foreground-tertiary"
-                                        >
-                                            <item.icon />
-                                        </ToggleGroupItem>
+                                    <TooltipTrigger>
+                                        <div>
+                                            <ToggleGroupItem
+                                                value={item.mode}
+                                                aria-label={item.hotkey.description}
+                                                disabled={item.disabled}
+                                                className="hover:text-foreground-hover text-foreground-tertiary"
+                                            >
+                                                <item.icon />
+                                            </ToggleGroupItem>
+                                        </div>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <HotkeyLabel hotkey={item.hotkey} />

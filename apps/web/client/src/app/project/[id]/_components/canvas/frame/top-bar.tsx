@@ -30,13 +30,15 @@ export const TopBar = observer(
                     x: startPositionX + deltaX,
                     y: startPositionY + deltaY,
                 };
-                editorEngine.frames.update(frame);
+
+                editorEngine.canvas.saveFrame(frame.id, frame);
             };
 
             const endMove = (e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
 
+                editorEngine.frames.update(frame);
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };

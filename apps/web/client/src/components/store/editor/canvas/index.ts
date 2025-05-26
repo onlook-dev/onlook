@@ -83,7 +83,9 @@ export class CanvasManager {
             return;
         }
 
-        const updatedFrame = new FrameImpl({ ...frame, ...newFrame });
+        const updatedFrame = frame.type === FrameType.WEB 
+            ? WebFrameImpl.fromJSON({ ...frame, ...newFrame } as WebFrame)
+            : FrameImpl.fromJSON({ ...frame, ...newFrame });
         
         this.frames = this.frames.map((f) => (f.id === id ? updatedFrame : f));
         this.saveSettings();
