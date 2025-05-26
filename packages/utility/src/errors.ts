@@ -1,3 +1,5 @@
+import stripAnsi from 'strip-ansi';
+
 export interface ParsedError {
     sourceId: string;
     type: 'frame' | 'terminal';
@@ -104,7 +106,9 @@ export class TerminalBuffer {
      * Add a new line to the buffer and process for errors/success.
      */
     addLine(line: string) {
-        this.buffer.push(line);
+        const rawMessage = stripAnsi(line);
+
+        this.buffer.push(rawMessage);
         if (this.buffer.length > this.maxLines) {
             this.buffer.shift();
         }

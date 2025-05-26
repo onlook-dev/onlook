@@ -7,7 +7,6 @@ export class ErrorManager {
     private buffer: TerminalBuffer;
 
     constructor() {
-        makeAutoObservable(this);
         this.buffer = new TerminalBuffer(20);
         this.buffer.onError((lines) => {
             // Add all error lines to error state
@@ -20,9 +19,11 @@ export class ErrorManager {
         this.buffer.onSuccess(() => {
             this.addSuccess('Success detected in buffer');
         });
+
+        makeAutoObservable(this);
     }
 
-    get errors() {
+    get errors(): ParsedError[] {
         return [...this.terminalErrors];
     }
 

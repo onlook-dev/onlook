@@ -83,7 +83,6 @@ export class CLISessionImpl implements CLISession {
             this.xterm.write(data);
             this.errorManager.processMessage(data);
         });
-
     }
 
     createXTerm() {

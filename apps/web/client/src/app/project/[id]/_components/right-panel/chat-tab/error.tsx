@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useChatContext } from '../../../_hooks/use-chat';
 
-export const Error = observer(() => {
+export const ErrorSection = observer(() => {
     const { isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
@@ -20,8 +20,7 @@ export const Error = observer(() => {
             onOpenChange={setIsOpen}
             className={cn(
                 'flex flex-col m-2',
-                errorCount === 0 && 'hidden',
-                !editorEngine.error.shouldShowErrean && 'hidden',
+                (errorCount === 0 || editorEngine.error.hideErrors) && 'hidden',
             )}
         >
             <div
@@ -64,7 +63,7 @@ export const Error = observer(() => {
                             className="h-7 px-2 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none"
                             onClick={async (e) => {
                                 e.stopPropagation();
-                                await editorEngine.error.sendFixError();
+                                // await editorEngine.error.sendFixError();
                             }}
                         >
                             <Icons.MagicWand className="h-4 w-4 mr-2" />
