@@ -4,6 +4,8 @@ import type { Frame, WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
+import { api } from '@/trpc/client';
+import type { ProjectManager } from '../../project/manager';
 
 export interface FrameData {
     frame: Frame;
@@ -15,7 +17,7 @@ export class FramesManager {
     private frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(private editorEngine: EditorEngine, private projectManager: ProjectManager) {
         makeAutoObservable(this);
     }
 
@@ -96,7 +98,7 @@ export class FramesManager {
     disposeFrame(frameId: string) {
         this.frameIdToData.delete(frameId);
 
-        // this.editorEngine?.ast?.mappings?.remove(id);
+        this.editorEngine?.ast?.mappings?.remove(frameId);
         // this.editorEngine?.errors.clear();
     }
 
@@ -124,7 +126,7 @@ export class FramesManager {
         // frame.view.screenshot();
     }
 
-    delete(id: string) {
+    async delete(id: string) {
         if (!this.canDelete()) {
             console.error('Cannot delete the last frame');
             return;
@@ -136,14 +138,47 @@ export class FramesManager {
             return;
         }
         const { frame } = data
-        this.editorEngine.ast.mappings.remove(frame.id);
-        this.editorEngine.canvas.frames = this.editorEngine.canvas.frames.filter((f) => f.id !== frame.id);
-        this.editorEngine.frames.deselect(frame);
-        this.editorEngine.frames.disposeFrame(frame.id);
-        sendAnalytics('window deleted');
+
+        const success = await api.frame.deleteFrame.mutate({
+            frameId: frame.id,
+        });
+
+        if (success) {
+            this.editorEngine.frames.disposeFrame(frame.id);
+            this.editorEngine.canvas.deleteFrame(frame.id);
+            sendAnalytics('window deleted');
+        } else {
+            console.error('Failed to delete frame');
+        }
     }
 
-    duplicate(id: string) {
+    async create(frame: WebFrame) {
+        const canvas = await api.canvas.getCanvas.query({
+            projectId: this.projectManager.project?.id ?? '',
+        });
+
+        if (!canvas) {
+            return;
+        }
+        const success = await api.frame.createFrame.mutate({
+            canvasId: canvas.id,
+            url: frame.url,
+            type: frame.type,
+            x: frame.position.x.toString(),
+            y: frame.position.y.toString(),
+            width: frame.dimension.width.toString(),
+            height: frame.dimension.height.toString(),
+        });
+
+        if (success) {
+            this.editorEngine.canvas.addFrame(frame);
+            sendAnalytics('window created');
+        } else {
+            console.error('Failed to create frame');
+        }
+    }
+
+    async duplicate(id: string) {
         const data = this.get(id);
         if (!data) {
             console.error('Frame not found');
@@ -167,9 +202,38 @@ export class FramesManager {
             type: frame.type,
         };
 
-        this.editorEngine.canvas.frames = [...this.editorEngine.canvas.frames, newFrame];
+        await this.create(newFrame);
         sendAnalytics('window duplicate');
     }
+
+    async update(frame: WebFrame) {
+        try {
+            const dbFrame = await api.frame.getFrame.query({
+                frameId: frame.id,
+            });
+
+            if (!dbFrame) {
+                console.error('Frame not found');
+                return;
+            }
+            const success = await api.frame.updateFrame.mutate({
+                frameId: frame.id,
+                x: frame.position.x,
+                y: frame.position.y,
+                width: frame.dimension.width,
+                height: frame.dimension.height,
+            });
+
+            if (success) {
+                this.editorEngine.canvas.saveFrame(frame.id, frame);
+            } else {
+                console.error('Failed to update frame');
+            }
+            
+        } catch (error) {
+            console.error('Failed to update frame', error);
+        }
+    }   
 
     canDelete() {
         return this.editorEngine.frames.getAll().length > 1;

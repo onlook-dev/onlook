@@ -1,4 +1,5 @@
-import type { Frame, FrameType, RectDimension, RectPosition, WebFrame } from '@onlook/models';
+import { api } from '@/trpc/client';
+import { FrameType, type Frame, type RectDimension, type RectPosition, type WebFrame } from '@onlook/models';
 import { makeObservable, observable } from 'mobx';
 
 export class FrameImpl implements Frame {
@@ -22,6 +23,21 @@ export class FrameImpl implements Frame {
 
     static fromJSON(json: Frame) {
         return new FrameImpl(json);
+    }
+
+    async createFrame(canvasId: string, sandboxUrl: string, x: number, y: number, width: number, height: number) {
+        const success = await api.frame.createFrame.mutate({
+            canvasId,
+            url: sandboxUrl,
+            x: x.toString(),
+            y: y.toString(),
+            width: width.toString(),
+            height: height.toString(),
+            type: FrameType.WEB,
+        });
+        if (!success) {
+            console.error('Failed to create frame', canvasId, sandboxUrl, x, y, width, height);
+        }
     }
 }
 
