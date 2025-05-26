@@ -1,4 +1,3 @@
-import { api } from '@/trpc/client';
 import { FrameType, type Frame, type RectDimension, type RectPosition, type WebFrame } from '@onlook/models';
 import { makeObservable, observable } from 'mobx';
 
@@ -21,10 +20,11 @@ export class FrameImpl implements Frame {
         });
     }
 
-    static fromJSON(json: Frame) {
-        return new FrameImpl(json);
+    static fromJSON(frame: Frame): FrameImpl {
+        return frame.type === FrameType.WEB
+            ? WebFrameImpl.fromJSON(frame as WebFrame)
+            : FrameImpl.fromJSON(frame);
     }
-
 }
 
 export class WebFrameImpl extends FrameImpl implements WebFrame {

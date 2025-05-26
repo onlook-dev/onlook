@@ -1,12 +1,10 @@
+import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
-import type { Canvas, Frame, RectPosition, WebFrame } from '@onlook/models';
-import { FrameType } from '@onlook/models';
+import { fromCanvas } from '@onlook/db';
+import type { Canvas, Frame, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import { v4 as uuidv4 } from 'uuid';
 import type { ProjectManager } from '../../project/manager';
-import { api } from '@/trpc/client';
-import { fromCanvas } from '@onlook/db';
 
 type SettingsObserver = (settings: Frame) => void;
 
@@ -77,23 +75,6 @@ export class CanvasManager {
     clear() {
         this._scale = DefaultSettings.SCALE;
         this._position = DefaultSettings.PAN_POSITION;
-    }
-
-    getFrameMap(frames: Frame[]): Map<string, Frame> {
-        const map = new Map<string, Frame>();
-        frames.forEach((frame) => {
-            map.set(frame.id, frame);
-        });
-        return map;
-    }
-
-    getDefaultFrame(defaults: Partial<Frame>): Frame {
-        return {
-            id: defaults.id ?? uuidv4(),
-            position: defaults.position ?? DefaultSettings.FRAME_POSITION,
-            dimension: defaults.dimension ?? DefaultSettings.FRAME_DIMENSION,
-            type: FrameType.WEB,
-        };
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);

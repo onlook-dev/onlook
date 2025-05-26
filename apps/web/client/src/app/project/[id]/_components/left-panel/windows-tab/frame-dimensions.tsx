@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { FrameImpl } from '@/components/store/editor/canvas/frame';
+import type { FrameImpl } from '@/components/store/editor/frames/frame';
 import { DefaultSettings, DEVICE_OPTIONS, Orientation } from '@onlook/constants';
 import type { FrameType, WindowMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';

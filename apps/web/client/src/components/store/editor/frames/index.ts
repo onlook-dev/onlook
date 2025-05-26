@@ -6,8 +6,8 @@ import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { ProjectManager } from '../../project/manager';
-import { FrameImpl, WebFrameImpl } from '../canvas/frame';
 import type { EditorEngine } from '../engine';
+import { FrameImpl } from './frame';
 
 export interface FrameData {
     frame: Frame;
@@ -25,12 +25,6 @@ export class FramesManager {
         private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
-    }
-
-    private createFrameImpl(frame: Frame): FrameImpl {
-        return frame.type === FrameType.WEB
-            ? WebFrameImpl.fromJSON(frame as WebFrame)
-            : FrameImpl.fromJSON(frame);
     }
 
     private validateFrameData(id: string, operation: string): FrameData | null {
@@ -83,7 +77,7 @@ export class FramesManager {
     }
 
     applyFrames(frames: Frame[]) {
-        this.frames = frames.map((frame) => this.createFrameImpl(frame));
+        this.frames = frames.map((frame) => FrameImpl.fromJSON(frame));
     }
 
     get frames() {
@@ -213,7 +207,7 @@ export class FramesManager {
         );
 
         if (success) {
-            this.frames.push(this.createFrameImpl(frame));
+            this.frames.push(FrameImpl.fromJSON(frame));
             this.trackFrameAction('created');
         } else {
             console.error('Failed to create frame');
@@ -250,7 +244,7 @@ export class FramesManager {
         const frame = this.validateFrame(id, 'save');
         if (!frame) return;
 
-        const updatedFrame = this.createFrameImpl({ ...frame, ...newFrame });
+        const updatedFrame = FrameImpl.fromJSON({ ...frame, ...newFrame });
         this.updateFramesArray(id, updatedFrame);
     }
 
@@ -277,7 +271,7 @@ export class FramesManager {
                 const oldFrame = this.validateFrame(frame.id, 'update');
                 if (!oldFrame) return;
 
-                const updatedFrame = this.createFrameImpl({ ...oldFrame, ...frame });
+                const updatedFrame = FrameImpl.fromJSON({ ...oldFrame, ...frame });
                 this.updateFramesArray(frame.id, updatedFrame);
             } else {
                 console.error('Failed to update frame');

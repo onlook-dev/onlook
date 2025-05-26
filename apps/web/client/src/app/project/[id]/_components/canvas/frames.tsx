@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import type { FrameImpl } from '@/components/store/editor/canvas/frame';
+import type { FrameImpl } from '@/components/store/editor/frames/frame';
 import { observer } from 'mobx-react-lite';
 import { FrameView } from './frame';
 
