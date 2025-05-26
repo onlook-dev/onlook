@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { numeric, pgTable, uuid } from "drizzle-orm/pg-core";
 import { projects } from "../project";
 import { frames } from "./frame";
+import { createUpdateSchema } from "drizzle-zod";
 
 export const canvases = pgTable("canvas", {
     id: uuid("id").primaryKey().defaultRandom(),
@@ -12,6 +13,8 @@ export const canvases = pgTable("canvas", {
     x: numeric("x").notNull(),
     y: numeric("y").notNull(),
 }).enableRLS();
+
+export const canvasUpdateSchema = createUpdateSchema(canvases);
 
 export type Canvas = typeof canvases.$inferSelect;
 export type NewCanvas = typeof canvases.$inferInsert;

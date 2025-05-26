@@ -1,18 +1,17 @@
+import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
-import type { Canvas, Frame, RectPosition, WebFrame } from '@onlook/models';
-import { FrameType } from '@onlook/models';
+import { fromCanvas } from '@onlook/db';
+import type { Canvas, Frame, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import { v4 as uuidv4 } from 'uuid';
 import type { ProjectManager } from '../../project/manager';
-import { FrameImpl, WebFrameImpl } from './frame';
 
 type SettingsObserver = (settings: Frame) => void;
 
 export class CanvasManager {
+    private _id: string = '';
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
-    private _frames: FrameImpl[] = [];
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
     constructor(private projects: ProjectManager) {
@@ -21,18 +20,9 @@ export class CanvasManager {
     }
 
     applyCanvas(canvas: Canvas) {
+        this.id = canvas.id;
         this.scale = canvas.scale ?? DefaultSettings.SCALE;
         this.position = canvas.position ?? this.getDefaultPanPosition();
-    }
-
-    applyFrames(frames: Frame[]) {
-        this.frames = frames.map((frame) => {
-            if (frame.type === FrameType.WEB) {
-                return WebFrameImpl.fromJSON(frame as WebFrame);
-            } else {
-                return FrameImpl.fromJSON(frame);
-            }
-        });
     }
 
     getDefaultPanPosition(): RectPosition {
@@ -45,6 +35,14 @@ export class CanvasManager {
         }
 
         return { x, y };
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    set id(value: string) {
+        this._id = value;
     }
 
     get scale() {
@@ -65,55 +63,18 @@ export class CanvasManager {
         this.saveSettings();
     }
 
-    get frames() {
-        return this._frames;
-    }
-
-    set frames(frames: FrameImpl[]) {
-        this._frames = frames;
-    }
-
-    getFrame(id: string) {
-        return this.frames.find((f) => f.id === id);
-    }
-
-    saveFrame(id: string, newFrame: Partial<Frame>) {
-        let frame = this.frames.find((f) => f.id === id);
-        if (!frame) {
-            return;
+    async updateCanvas(canvas: Canvas) {
+        const success = await api.canvas.update.mutate(
+            fromCanvas(this.projects.project?.id ?? '', canvas),
+        );
+        if (!success) {
+            console.error('Failed to update canvas');
         }
-
-        frame = { ...frame, ...newFrame };
-        this.frames = this.frames.map((f) => (f.id === id ? frame : f));
-        this.saveSettings();
-    }
-
-    saveFrames(newFrames: Frame[]) {
-        this.frames = newFrames;
-        this.saveSettings();
     }
 
     clear() {
-        this.frames = [];
         this._scale = DefaultSettings.SCALE;
         this._position = DefaultSettings.PAN_POSITION;
-    }
-
-    getFrameMap(frames: Frame[]): Map<string, Frame> {
-        const map = new Map<string, Frame>();
-        frames.forEach((frame) => {
-            map.set(frame.id, frame);
-        });
-        return map;
-    }
-
-    getDefaultFrame(defaults: Partial<Frame>): Frame {
-        return {
-            id: defaults.id ?? uuidv4(),
-            position: defaults.position ?? DefaultSettings.FRAME_POSITION,
-            dimension: defaults.dimension ?? DefaultSettings.FRAME_DIMENSION,
-            type: FrameType.WEB,
-        };
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);
@@ -133,9 +94,14 @@ export class CanvasManager {
     }
 
     private undebouncedSaveSettings() {
-        // TODO: Save settings in persistence
         if (this.projects.project) {
-            this.projects.updateProject(this.projects.project);
+            this.updateCanvas(
+                {
+                    id: this.id,
+                    position: this.position,
+                    scale: this.scale,
+                },
+            );
         }
     }
 }
