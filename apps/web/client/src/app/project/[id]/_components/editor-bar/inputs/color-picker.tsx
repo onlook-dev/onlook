@@ -15,7 +15,7 @@ const ColorGroup = ({
     colors,
     onColorSelect,
     isDefault = false,
-    isExpanded = false,
+    isExpanded = true,
 }: {
     name: string;
     colors: TailwindColor[];
@@ -23,7 +23,7 @@ const ColorGroup = ({
     isDefault?: boolean;
     isExpanded?: boolean;
 }) => {
-    const [expanded, setExpanded] = useState(false);
+    const [expanded, setExpanded] = useState(true);
 
     useEffect(() => {
         setExpanded(isExpanded);

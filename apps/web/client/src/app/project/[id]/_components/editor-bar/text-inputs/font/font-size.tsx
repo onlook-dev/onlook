@@ -5,23 +5,27 @@ import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
+import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { useTextControl } from '../../hooks/use-text-control';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
 export const FontSizeSelector = observer(
     () => {
-        const [open, setOpen] = useState(false);
         const inputRef = useRef<HTMLInputElement>(null);
         const { handleFontSizeChange, textState } = useTextControl();
+        
+        const { isOpen, onOpenChange } = useDropdownControl({ 
+            id: 'font-size-popover' 
+        });
 
         const adjustFontSize = (amount: number) => {
             handleFontSizeChange(Math.max(1, textState.fontSize + amount));
         };
 
         const handleInputClick = () => {
-            setOpen(true);
+            onOpenChange(true);
             // Use setTimeout to ensure the input is focused after the popover opens
             setTimeout(() => {
                 inputRef.current?.focus();
@@ -30,7 +34,7 @@ export const FontSizeSelector = observer(
         };
 
         return (
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover open={isOpen} onOpenChange={onOpenChange}>
                 <Tooltip>
                     <div>
                         <TooltipTrigger asChild>
@@ -84,7 +88,7 @@ export const FontSizeSelector = observer(
                                 key={size}
                                 onClick={() => {
                                     handleFontSizeChange(size);
-                                    setOpen(false);
+                                    onOpenChange(false);
                                 }}
                                 className={`cursor-pointer text-muted-foreground data-[highlighted]:bg-background-tertiary/10 border-border/0 data-[highlighted]:border-border justify-center rounded-md border px-2 py-1 text-sm data-[highlighted]:text-white ${size === textState.fontSize
                                     ? 'bg-background-tertiary/20 border-border border text-white'
