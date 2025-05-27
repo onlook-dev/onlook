@@ -52,7 +52,7 @@ async function getOrCreateUser(userId: string): Promise<User> {
     return user;
 }
 
-async function trackUserSignedIn(userId: string, properties: Record<string, any>) {
+function trackUserSignedIn(userId: string, properties: Record<string, any>) {
     try {
         client.identify({
             distinctId: userId,
