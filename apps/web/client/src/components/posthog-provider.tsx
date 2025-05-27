@@ -23,11 +23,15 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
 
     useEffect(() => {
         if (userManager.user) {
-            posthog.identify(userManager.user.id, {
-                name: userManager.user.name,
-                email: userManager.user.email,
-                avatar_url: userManager.user.avatarUrl,
-            })
+            try {
+                posthog.identify(userManager.user.id, {
+                    name: userManager.user.name,
+                    email: userManager.user.email,
+                    avatar_url: userManager.user.avatarUrl,
+                })
+            } catch (error) {
+                console.error('Error identifying user:', error);
+            }
         }
     }, [userManager.user])
 

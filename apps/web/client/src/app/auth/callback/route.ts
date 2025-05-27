@@ -53,9 +53,13 @@ async function getOrCreateUser(userId: string): Promise<User> {
 }
 
 async function trackUserSignedIn(userId: string, properties: Record<string, any>) {
-    client.identify({
-        distinctId: userId,
-        properties: properties
-    });
-    client.capture({ event: 'user_signed_in', distinctId: userId });
+    try {
+        client.identify({
+            distinctId: userId,
+            properties: properties
+        });
+        client.capture({ event: 'user_signed_in', distinctId: userId });
+    } catch (error) {
+        console.error('Error tracking user signed in:', error);
+    }
 }
