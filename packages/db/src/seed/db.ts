@@ -1,4 +1,4 @@
-import { canvases, conversations, frames, messages, projects, userProjects, users, type Conversation, type Message, type Project, type User } from '@onlook/db';
+import { canvases, conversations, frames, messages, projects, userProjects, userCanvases, users, type Conversation, type Message, type Project, type User } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ChatMessageRole, MessageContextType, type ChatMessageContext } from '@onlook/models';
 import { createDefaultCanvas, createDefaultFrame } from '@onlook/utility';

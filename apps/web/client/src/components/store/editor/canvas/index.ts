@@ -64,9 +64,7 @@ export class CanvasManager {
     }
 
     async updateCanvas(canvas: Canvas) {
-        const success = await api.canvas.update.mutate(
-            fromCanvas(this.projects.project?.id ?? '', canvas),
-        );
+        const success = await api.userCanvas.update.mutate(fromCanvas(canvas));
         if (!success) {
             console.error('Failed to update canvas');
         }
@@ -95,13 +93,11 @@ export class CanvasManager {
 
     private undebouncedSaveSettings() {
         if (this.projects.project) {
-            this.updateCanvas(
-                {
-                    id: this.id,
-                    position: this.position,
-                    scale: this.scale,
-                },
-            );
+            this.updateCanvas({
+                id: this.id,
+                position: this.position,
+                scale: this.scale,
+            });
         }
     }
 }
