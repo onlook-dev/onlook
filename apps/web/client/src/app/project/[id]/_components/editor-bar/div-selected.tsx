@@ -14,10 +14,12 @@ import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { Width } from './dropdowns/width';
 import { useMeasureGroup } from './hooks/use-measure-group';
+import { useDropdownControl } from './hooks/use-dropdown-manager';
 import { InputSeparator } from './separator';
 import { FontFamilySelector } from './text-inputs/font/font-family-selector';
 import { FontSizeSelector } from './text-inputs/font/font-size';
 import { FontWeightSelector } from './text-inputs/font/font-weight';
+import { TextColor } from './text-inputs/text-color';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
@@ -41,9 +43,16 @@ export const DIV_SELECTED_GROUPS = [
         label: 'Typography',
         components: [
             <FontFamilySelector />,
+            <InputSeparator />,
             <FontWeightSelector />,
+            <InputSeparator />,
             <FontSizeSelector />,
         ],
+    },
+    {
+        key: 'text-color',
+        label: 'Text Color',
+        components: [<TextColor />],
     },
     {
         key: 'opacity',
@@ -53,8 +62,11 @@ export const DIV_SELECTED_GROUPS = [
 ];
 
 export const DivSelected = memo(({ availableWidth = 0 }: { availableWidth?: number }) => {
-    const [overflowOpen, setOverflowOpen] = useState(false);
     const { visibleCount } = useMeasureGroup({ availableWidth, count: DIV_SELECTED_GROUPS.length });
+    
+    const { isOpen: overflowOpen, onOpenChange: setOverflowOpen } = useDropdownControl({ 
+        id: 'div-selected-overflow-popover' 
+    });
 
     const visibleGroups = DIV_SELECTED_GROUPS.slice(0, visibleCount);
     const overflowGroups = DIV_SELECTED_GROUPS.slice(visibleCount);
