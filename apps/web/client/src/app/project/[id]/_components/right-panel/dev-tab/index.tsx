@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
 import { SystemTheme } from '@onlook/models';
 import {
@@ -13,11 +14,10 @@ import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import { useTheme } from 'next-themes';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions, getLanguageFromFileName } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
-import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 
 enum TabValue {
     CONSOLE = 'console',
@@ -226,7 +226,7 @@ export const DevTab = observer(() => {
                     console.error('File not found:', filePath);
                     return;
                 }
-                
+
                 const newFile: EditorFile = {
                     id: existingFile.id,
                     filename: existingFile.filename,
@@ -416,10 +416,10 @@ export const DevTab = observer(() => {
         const updatedFiles = openedFiles.map((file) =>
             file.id === fileId
                 ? {
-                      ...file,
-                      content: content,
-                      isDirty: hasChanged,
-                  }
+                    ...file,
+                    content: content,
+                    isDirty: hasChanged,
+                }
                 : file,
         );
 
@@ -445,8 +445,8 @@ export const DevTab = observer(() => {
     }, []);
 
     return (
-        <div className="h-full flex flex-col w-full border-l-[0.5px] border-t-[0.5px] border-b-[0.5px] backdrop-blur shadow rounded-tl-xl">
-            <div className="flex items-center justify-between h-11 pl-4 pr-2 rounded-tl-xl border-b-[0.5px]">
+        <div className="h-full flex flex-col w-full">
+            <div className="flex items-center justify-between h-11 pl-4 pr-2 border-b-[0.5px]">
                 <div className="flex items-center space-x-5 h-full">
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full">
