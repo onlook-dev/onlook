@@ -13,7 +13,12 @@ import {
     type User,
 } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { ChatMessageRole, MessageContextType, type ChatMessageContext } from '@onlook/models';
+import {
+    ChatMessageRole,
+    MessageContextType,
+    ProjectRole,
+    type ChatMessageContext,
+} from '@onlook/models';
 import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -156,10 +161,12 @@ export const seedDb = async () => {
             {
                 userId: user0.id,
                 projectId: project0.id,
+                role: ProjectRole.OWNER,
             },
             {
                 userId: user0.id,
                 projectId: project1.id,
+                role: ProjectRole.OWNER,
             },
         ]);
         await tx.insert(canvases).values([canvas0, canvas1]);
