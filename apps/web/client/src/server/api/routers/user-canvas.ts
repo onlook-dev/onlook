@@ -1,9 +1,8 @@
 import {
     canvases,
-    canvasUpdateSchema,
     toCanvas,
     userCanvases,
-    userCanvasUpdateSchema,
+    userCanvasUpdateSchema
 } from '@onlook/db';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -28,7 +27,7 @@ export const userCanvasRouter = createTRPCRouter({
             });
 
             if (!userCanvas) {
-                return null;
+                throw new Error('User canvas not found');
             }
             return toCanvas(userCanvas);
         }),
