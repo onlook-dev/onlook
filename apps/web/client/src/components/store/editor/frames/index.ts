@@ -1,6 +1,6 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import { api } from '@/trpc/client';
-import { sendAnalytics } from '@/utils/analytics';
+import { sendAnalytics } from '@/utils/posthog';
 import { fromFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';

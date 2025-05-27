@@ -1,5 +1,5 @@
 import type { ProjectManager } from '@/components/store/project/manager';
-import { sendAnalytics } from '@/utils/analytics';
+import { sendAnalytics } from '@/utils/posthog';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
 import type { FrameData } from 'motion/react';

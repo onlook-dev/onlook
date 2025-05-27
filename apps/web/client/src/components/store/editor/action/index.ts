@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/utils/analytics';
+import { sendAnalytics } from '@/utils/posthog';
 import type { DomElement } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import {

@@ -1,6 +1,6 @@
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { UserManager } from '@/components/store/user/manager';
-import { sendAnalytics } from '@/utils/analytics';
+import { sendAnalytics } from '@/utils/posthog';
 import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ChatMessageContext, type ImageMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';

@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/utils/analytics';
+import { sendAnalytics } from '@/utils/posthog';
 import { CodeBlockProcessor } from '@onlook/ai';
 import type { WriteCodeAction } from '@onlook/models/actions';
 import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
@@ -153,5 +153,5 @@ export class ChatCodeManager {
         return fileToCode;
     }
 
-    clear() {}
+    clear() { }
 }
