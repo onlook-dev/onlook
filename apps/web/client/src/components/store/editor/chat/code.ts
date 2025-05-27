@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/utils/posthog';
+import { sendAnalytics } from '@/utils/analytics';
 import { CodeBlockProcessor } from '@onlook/ai';
 import type { WriteCodeAction } from '@onlook/models/actions';
 import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';

@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/utils/posthog';
+import { sendAnalytics } from '@/utils/analytics';
 import {
     type BrandTabValue,
     EditorMode,

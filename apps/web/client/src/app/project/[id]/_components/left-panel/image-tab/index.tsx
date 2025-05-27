@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
-import { sendAnalytics } from '@/utils/posthog';
+import { sendAnalytics } from '@/utils/analytics';
 import { EditorMode, type ImageContentData } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
@@ -364,8 +364,8 @@ export const ImagesTab = observer(() => {
                                 </span>
                                 <div
                                     className={`absolute right-2 top-2 ${activeDropdown === image.fileName
-                                            ? 'opacity-100'
-                                            : 'opacity-0'
+                                        ? 'opacity-100'
+                                        : 'opacity-0'
                                         } group-hover:opacity-100 transition-opacity duration-300`}
                                 >
                                     <DropdownMenu

@@ -1,5 +1,5 @@
+import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
-import { sendAnalytics } from '@/utils/posthog';
 import type { Project } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';

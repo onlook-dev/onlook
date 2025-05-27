@@ -1,5 +1,5 @@
 import { ProjectManager } from '@/components/store/project/manager';
-import { sendAnalytics } from '@/utils/posthog';
+import { sendAnalytics } from '@/utils/analytics';
 import type { ChatSuggestion, Project } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';

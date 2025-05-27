@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
-import { sendAnalytics } from '@/utils/posthog';
+import { sendAnalytics } from '@/utils/analytics';
 import { SystemTheme } from '@onlook/models';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
