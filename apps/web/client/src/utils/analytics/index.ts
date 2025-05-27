@@ -1,3 +1,4 @@
-export function sendAnalytics(event: string, properties?: Record<any, any>) {
+
+export function sendAnalytics(event: string, properties?: Record<string, any>) {
     console.log('sendAnalytics', event, properties);
 }

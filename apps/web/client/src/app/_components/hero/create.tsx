@@ -15,12 +15,14 @@ import { compressImage } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
 
 export function Create() {
     const t = useTranslations();
     const createManager = useCreateManager();
     const router = useRouter();
+    const posthog = usePostHog();
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
@@ -46,6 +48,9 @@ export function Create() {
     };
 
     const createProject = async (prompt: string, images: ImageMessageContext[]) => {
+        posthog.capture('user_create_project', {
+            prompt,
+        });
         if (!userManager.user?.id) {
             console.error('No user ID found');
             return;

@@ -73,9 +73,9 @@ export const SubscriptionModal = observer(() => {
             setIsCheckingOut(UsagePlanType.PRO);
             const res:
                 | {
-                      success: boolean;
-                      error?: string;
-                  }
+                    success: boolean;
+                    error?: string;
+                }
                 | undefined = await invokeMainChannel(MainChannels.CREATE_STRIPE_CHECKOUT);
             if (res?.success) {
                 toast({
@@ -103,9 +103,9 @@ export const SubscriptionModal = observer(() => {
             setIsCheckingOut(UsagePlanType.BASIC);
             const res:
                 | {
-                      success: boolean;
-                      error?: string;
-                  }
+                    success: boolean;
+                    error?: string;
+                }
                 | undefined = await invokeMainChannel(MainChannels.MANAGE_SUBSCRIPTION);
             if (res?.success) {
                 toast({
@@ -185,7 +185,7 @@ export const SubscriptionModal = observer(() => {
                                             )}
                                             buttonText={
                                                 userManager.subscription.plan ===
-                                                UsagePlanType.BASIC
+                                                    UsagePlanType.BASIC
                                                     ? t('pricing.buttons.currentPlan')
                                                     : t('pricing.buttons.manageSubscription')
                                             }
@@ -195,7 +195,7 @@ export const SubscriptionModal = observer(() => {
                                                 },
                                                 disabled:
                                                     userManager.subscription.plan ===
-                                                        UsagePlanType.BASIC ||
+                                                    UsagePlanType.BASIC ||
                                                     isCheckingOut === UsagePlanType.BASIC,
                                             }}
                                             delay={0.1}
@@ -220,7 +220,7 @@ export const SubscriptionModal = observer(() => {
                                                 onClick: startProCheckout,
                                                 disabled:
                                                     userManager.subscription.plan ===
-                                                        UsagePlanType.PRO ||
+                                                    UsagePlanType.PRO ||
                                                     isCheckingOut === UsagePlanType.PRO,
                                             }}
                                             delay={0.2}

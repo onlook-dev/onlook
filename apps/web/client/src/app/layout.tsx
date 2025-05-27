@@ -7,6 +7,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
+import { PostHogProvider } from '@/components/posthog-provider';
 
 export const metadata: Metadata = {
     title: 'Onlook',
@@ -25,16 +26,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
             <body>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="dark"
-                    enableSystem
-                    disableTransitionOnChange
-                >
-                    <TRPCReactProvider>
-                        <NextIntlClientProvider>{children}</NextIntlClientProvider>
-                    </TRPCReactProvider>
-                </ThemeProvider>
+                <PostHogProvider>
+                    <ThemeProvider
+                        attribute="class"
+                        defaultTheme="dark"
+                        enableSystem
+                        disableTransitionOnChange
+                    >
+                        <TRPCReactProvider>
+                            <NextIntlClientProvider>{children}</NextIntlClientProvider>
+                        </TRPCReactProvider>
+                    </ThemeProvider>
+                </PostHogProvider>
             </body>
         </html>
     );
