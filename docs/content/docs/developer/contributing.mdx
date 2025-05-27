@@ -7,51 +7,51 @@ description: How to contribute to the Onlook project
 
 We welcome contributions to Onlook! This guide will help you get started with contributing to the project.
 
-## Getting Started
+When contributing to this repository, please first discuss the change you wish to make via [issues](https://github.com/onlook-dev/onlook/issues),
+[Discord](https://discord.gg/hERDfFZCsH), [email](mailto:contact@onlook.dev), or any other method with the owners of this repository before making a change. 
 
-Before contributing, please:
+Please note we have a [code of conduct](https://github.com/onlook-dev/onlook/blob/main/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
-1. Read our [Code of Conduct](https://github.com/onlook-dev/onlook/blob/main/CODE_OF_CONDUCT.md)
-2. Set up the project locally following the [Running Locally](/docs/developer/running-locally) guide
-3. Familiarize yourself with the [Architecture](/docs/developer/architecture) and [Core Systems](/docs/developer/core-systems)
+## Pull Request Process
 
-## Contribution Process
+1. To create a Pull Request (PR), [create a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) of the project. 
 
-1. **Find an Issue**: Look for open issues on our [GitHub Issues](https://github.com/onlook-dev/onlook/issues) page or create a new one
-2. **Discuss**: For significant changes, please discuss your approach in the issue before starting work
-3. **Fork and Clone**: Fork the repository and clone it locally
-4. **Create a Branch**: Create a branch for your changes
-5. **Make Changes**: Implement your changes following our coding standards
-6. **Test**: Test your changes thoroughly
-7. **Submit a Pull Request**: Submit a pull request with a clear description of your changes
+![fork](/images/contribute-fork.png)
 
-## Pull Request Guidelines
+2. Create your changes in your fork and [open a PR from that fork.](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork)
 
-When submitting a pull request:
+![contribute](/images/contribute-open-pr.png)
 
-1. Ensure your code follows our coding standards
-2. Include tests for your changes
-3. Update documentation as needed
-4. Write a clear description of your changes
-5. Link to any related issues
+3. Update the PR description with details of the changes. Link the issue if relevant.
 
-## Development Workflow
+4. Be sure to check the box to "Allow edits from maintainer". This allows maintainers to update your PR if necessary which speeds up the review process. [See more here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork).
 
-1. **Install Dependencies**: Run `bun install` to install dependencies
-2. **Run Development Server**: Run `bun dev` to start the development server
-3. **Test Changes**: Test your changes thoroughly before submitting a pull request
+![allow edits](/images/contribute-allow-edits.png)
 
-## Coding Standards
+5. Request a review of one of the maintainers. Once accepted, they will be able to merge your PR. 
 
-- Follow the existing code style
-- Write clear, concise, and descriptive code
-- Include comments where necessary
-- Write tests for your code
+## Style guide
 
-## Getting Help
+We try to follow guidelines from [Clean Code](https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29) and the boy scoute rule:
 
-If you need help with contributing, please:
+"Leave the code cleaner, not messier, than how you found it". 
 
-1. Check the documentation
-2. Ask questions in the issue you're working on
-3. Join our [Discord community](https://discord.gg/onlook)
+
+## Building and running
+You can build the project from source using instructions [here](/docs/developer/running-locally).
+
+## Testing
+We use [Bun](https://bun.sh/) for testing.
+
+```bash
+bun test
+```
+
+## Linting
+
+We use [ESLint](https://eslint.org/) for linting and [Prettier](https://prettier.io/) for formatting. This runs on every commit.
+
+```bash
+bun lint
+bun format
+```
