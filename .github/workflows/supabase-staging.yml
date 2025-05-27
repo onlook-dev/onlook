@@ -3,7 +3,8 @@ name: Deploy Migrations to Staging
 on:
   push:
     branches:
-      - develop
+      - main
+      - feat/supabase-cicd
   workflow_dispatch:
 
 jobs:
