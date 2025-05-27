@@ -27,6 +27,9 @@ export const projectRouter = createTRPCRouter({
                     canvas: {
                         with: {
                             frames: true,
+                            userCanvases: {
+                                where: eq(userCanvases.userId, ctx.user.id),
+                            },
                         },
                     },
                     conversations: {

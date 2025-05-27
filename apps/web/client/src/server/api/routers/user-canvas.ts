@@ -17,22 +17,20 @@ export const userCanvasRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
-            const result = await ctx.db
-                .select()
-                .from(canvases)
-                .innerJoin(userCanvases, eq(canvases.id, userCanvases.canvasId))
-                .where(
-                    and(
-                        eq(canvases.projectId, input.projectId),
-                        eq(userCanvases.userId, ctx.user.id),
-                    ),
-                )
-                .limit(1);
+            const userCanvas = await ctx.db.query.userCanvases.findFirst({
+                where: and(
+                    eq(canvases.projectId, input.projectId),
+                    eq(userCanvases.userId, ctx.user.id),
+                ),
+                with: {
+                    canvas: true,
+                },
+            });
 
-            if (!result[0]) {
+            if (!userCanvas) {
                 return null;
             }
-            return toCanvas(result[0].user_canvases);
+            return toCanvas(userCanvas);
         }),
     update: protectedProcedure.input(userCanvasUpdateSchema).mutation(async ({ ctx, input }) => {
         try {
