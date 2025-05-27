@@ -1,9 +1,4 @@
-import {
-    canvases,
-    toCanvas,
-    userCanvases,
-    userCanvasUpdateSchema
-} from '@onlook/db';
+import { canvases, toCanvas, userCanvases, userCanvasUpdateSchema } from '@onlook/db';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
