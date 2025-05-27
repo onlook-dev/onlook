@@ -1,29 +1,26 @@
-name: Deploy Migrations to Staging
+name: Deploy Drizzle Migrations to Supabase Staging
 
 on:
   push:
     branches:
       - main
-      - feat/supabase-cicd
+    paths:
+      - 'apps/backend/supabase/migrations/**'
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-      SUPABASE_PROJECT_ID: ${{ secrets.STAGING_PROJECT_ID }}
+      SUPABASE_DATABASE_URL: ${{ secrets.STAGING_SUPABASE_DATABASE_URL }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: supabase/setup-cli@v1
+      - uses: oven-sh/setup-bun@v1
         with:
-          version: latest
+          bun-version: latest
 
-      - run: supabase link --project-ref $SUPABASE_PROJECT_ID
-        working-directory: apps/backend/supabase
-      - run: supabase db push
-        working-directory: apps/backend/supabase
+      - run: bun install
+
+      - run: bun run db:push -- --yes
