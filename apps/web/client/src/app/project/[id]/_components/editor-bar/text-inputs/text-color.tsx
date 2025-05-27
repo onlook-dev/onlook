@@ -12,7 +12,6 @@ import { observer } from 'mobx-react-lite';
 export const TextColor = observer(
     () => {
         const { handleTextColorChange, textState } = useTextControl();
-        
         const { isOpen, onOpenChange } = useDropdownControl({ 
             id: 'text-color-popover' 
         });
@@ -33,7 +32,7 @@ export const TextColor = observer(
                                     <Icons.TextColorSymbol className="h-3.5 w-3.5" />
                                     <div
                                         className="h-[2.5px] w-5.5 rounded-full bg-current"
-                                        style={{ backgroundColor: tempColor.toHex() || '#000000' }}
+                                        style={{ backgroundColor: textState.textColor || '#000000' }}
                                     />
                                 </div>
                             </PopoverTrigger>

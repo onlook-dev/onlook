@@ -37,7 +37,7 @@ export const Display = observer(() => {
 
     useEffect(() => {
         setLayoutType(editorEngine.style.selectedStyle?.styles.computed.display ?? 'block');
-    }, [editorEngine.style.selectedStyle]);
+    }, [editorEngine.style.selectedStyle?.styles.computed.display]);
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
