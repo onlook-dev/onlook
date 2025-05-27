@@ -1,4 +1,4 @@
-import { identifyUser } from '@/utils/analytics';
+import { client } from '@/utils/analytics/server';
 import { createClient } from '@/utils/supabase/server';
 import type { User } from '@onlook/db';
 import { NextResponse } from 'next/server';
@@ -19,10 +19,13 @@ export async function GET(request: Request) {
             const user = await getOrCreateUser(data.user.id);
 
             // Track user identification in PostHog
-            identifyUser(user.id, {
-                name: data.user.user_metadata.name,
-                email: data.user.email,
-                avatar_url: data.user.user_metadata.avatar_url,
+            client.identify({
+                distinctId: user.id, properties:
+                {
+                    name: data.user.user_metadata.name,
+                    email: data.user.email,
+                    avatar_url: data.user.user_metadata.avatar_url,
+                }
             });
 
             if (isLocalEnv) {
