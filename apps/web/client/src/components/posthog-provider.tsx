@@ -10,7 +10,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         posthog.init(
             env.NEXT_PUBLIC_POSTHOG_KEY, {
             api_host: env.NEXT_PUBLIC_POSTHOG_HOST,
-            capture_pageview: 'history_change'
+            capture_pageview: 'history_change',
+            capture_exceptions: true,
+            debug: process.env.NODE_ENV === 'development'
         })
     }, [])
 
