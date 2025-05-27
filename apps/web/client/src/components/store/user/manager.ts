@@ -34,9 +34,9 @@ export class UserManager {
             name:
                 authUser.user_metadata?.full_name ||
                 authUser.user_metadata?.name ||
-                authUser.email ||
-                'Anonymous',
-            avatarUrl: authUser.user_metadata?.avatar_url || null,
+                authUser.email,
+            email: authUser.email,
+            avatarUrl: authUser.user_metadata?.avatar_url,
         };
     }
 
