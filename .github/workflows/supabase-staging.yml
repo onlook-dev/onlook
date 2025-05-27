@@ -5,8 +5,8 @@ on:
     branches:
       - main
       - feat/supabase-cicd
-    # paths:
-    #   - 'apps/backend/supabase/migrations/**'
+    paths:
+      - 'apps/backend/supabase/migrations/**'
   workflow_dispatch:
 
 jobs:
