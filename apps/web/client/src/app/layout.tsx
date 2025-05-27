@@ -7,7 +7,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
-import { PostHogProvider } from '@/components/PostHogProvider';
+import { PostHogProvider } from '@/components/posthog-provider';
 
 export const metadata: Metadata = {
     title: 'Onlook',

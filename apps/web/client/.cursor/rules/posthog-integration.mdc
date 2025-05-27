@@ -23,7 +23,3 @@ If a custom property for a person or event is at any point referenced in two or 
 # Naming
 
 Before creating any new event or property names, consult with the developer for any existing naming convention. Consistency in naming is essential, and additional context may exist outside this project. Similarly, be careful about any changes to existing event and property names, as this may break reporting and distort data for the project.
-
-
-
-
