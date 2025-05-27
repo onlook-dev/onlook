@@ -1,11 +1,29 @@
-import { canvases, conversations, frames, messages, projects, userCanvases, userProjects, users, type Conversation, type Message, type Project, type User } from '@onlook/db';
+import {
+    canvases,
+    conversations,
+    frames,
+    messages,
+    projects,
+    userCanvases,
+    userProjects,
+    users,
+    type Conversation,
+    type Message,
+    type Project,
+    type User,
+} from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { ChatMessageRole, MessageContextType, type ChatMessageContext } from '@onlook/models';
+import {
+    ChatMessageRole,
+    MessageContextType,
+    ProjectRole,
+    type ChatMessageContext,
+} from '@onlook/models';
 import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
 
 const user0 = {
-    id: '2585ea6b-6303-4f21-977c-62af2f5a21f5'
+    id: '2585ea6b-6303-4f21-977c-62af2f5a21f5',
 } satisfies User;
 
 const project0 = {
@@ -13,7 +31,8 @@ const project0 = {
     name: 'Test Project',
     sandboxId: '3f5rf6',
     sandboxUrl: 'http://localhost:8084',
-    previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    previewImg:
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
     createdAt: new Date(),
     updatedAt: new Date(),
     description: 'Test Project Description',
@@ -24,7 +43,8 @@ const project1 = {
     name: 'Test Project 1',
     sandboxId: '3f5rf6',
     sandboxUrl: 'https://3f5rf6-8084.csb.app',
-    previewImg: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    previewImg:
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
     createdAt: new Date(),
     updatedAt: new Date(),
     description: 'Test Project 1 Description',
@@ -69,10 +89,7 @@ const context1 = {
     end: 10,
 } satisfies ChatMessageContext;
 
-const contexts = [
-    context0,
-    context1,
-];
+const contexts = [context0, context1];
 
 const message0 = {
     id: uuidv4(),
@@ -139,40 +156,24 @@ export const seedDb = async () => {
 
     await db.transaction(async (tx) => {
         await tx.insert(users).values(user0);
-        await tx.insert(projects).values([
-            project0,
-            project1,
+        await tx.insert(projects).values([project0, project1]);
+        await tx.insert(userProjects).values([
+            {
+                userId: user0.id,
+                projectId: project0.id,
+                role: ProjectRole.OWNER,
+            },
+            {
+                userId: user0.id,
+                projectId: project1.id,
+                role: ProjectRole.OWNER,
+            },
         ]);
-        await tx.insert(userProjects).values([{
-            userId: user0.id,
-            projectId: project0.id,
-        }, {
-            userId: user0.id,
-            projectId: project1.id,
-        }]);
-        await tx.insert(canvases).values([
-            canvas0,
-            canvas1,
-        ]);
-        await tx.insert(userCanvases).values([
-            userCanvas0,
-            userCanvas1,
-        ]);
-        await tx.insert(frames).values([
-            frame0,
-            frame1,
-        ]);
-        await tx.insert(conversations).values([
-            conversation0,
-            conversation1,
-        ]);
-        await tx.insert(messages).values([
-            message0,
-            message1,
-            message2,
-            message3,
-            message4,
-        ]);
+        await tx.insert(canvases).values([canvas0, canvas1]);
+        await tx.insert(userCanvases).values([userCanvas0, userCanvas1]);
+        await tx.insert(frames).values([frame0, frame1]);
+        await tx.insert(conversations).values([conversation0, conversation1]);
+        await tx.insert(messages).values([message0, message1, message2, message3, message4]);
     });
 
     console.log('Database seeded!');

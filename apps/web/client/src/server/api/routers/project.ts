@@ -16,6 +16,7 @@ import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { ProjectRole } from '@onlook/models';
 
 export const projectRouter = createTRPCRouter({
     getFullProject: protectedProcedure
@@ -77,6 +78,7 @@ export const projectRouter = createTRPCRouter({
                 await tx.insert(userProjects).values({
                     userId: input.userId,
                     projectId: newProject.id,
+                    role: ProjectRole.OWNER,
                 });
 
                 // 3. Create the default canvas
