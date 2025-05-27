@@ -3,15 +3,17 @@ import { pgTable, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { authUsers } from '../supabase/user';
 import { userSettings } from './settings';
+import { userCanvases } from './user-canvas';
 import { userProjects } from './user-project';
 
-export const users = pgTable("users", {
-    id: uuid("id")
+export const users = pgTable('users', {
+    id: uuid('id')
         .primaryKey()
-        .references(() => authUsers.id, { onDelete: "cascade", onUpdate: "cascade" }),
+        .references(() => authUsers.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 }).enableRLS();
 
 export const usersRelations = relations(users, ({ many, one }) => ({
+    userCanvases: many(userCanvases),
     userProjects: many(userProjects),
     userSettings: one(userSettings),
 }));

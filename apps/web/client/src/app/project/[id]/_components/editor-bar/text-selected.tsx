@@ -25,54 +25,48 @@ import { TextColor } from './text-inputs/text-color';
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [
     {
-        key: 'text-typography',
-        label: 'Typography',
-        components: [
-            <FontFamilySelector />,
-            <FontWeightSelector />,
-            <FontSizeSelector />,
-            <TextColor />,
-            <TextAlignSelector />,
-            <AdvancedTypography />,
-        ],
-    },
-    {
         key: 'text-dimensions',
         label: 'Dimensions',
-        components: [
-            <Width />,
-            <Height />,
-        ],
+        components: [<Width />, <Height />],
     },
     {
         key: 'text-base',
         label: 'Base',
-        components: [
-            <ColorBackground />,
-            <Border />,
-            <Radius />,
-        ],
+        components: [<ColorBackground />, <Border />, <Radius />],
     },
     {
         key: 'text-layout',
         label: 'Layout',
+        components: [<Display />, <Padding />, <Margin />],
+    },
+    {
+        key: 'text-font',
+        label: 'Font',
         components: [
-            <Display />,
-            <Padding />,
-            <Margin />,
+            <FontFamilySelector />,
+            <InputSeparator />,
+            <FontWeightSelector />,
+            <InputSeparator />,
+            <FontSizeSelector />,
         ],
+    },
+    {
+        key: 'text-typography',
+        label: 'Typography',
+        components: [<TextColor />, <TextAlignSelector />, <AdvancedTypography />],
     },
     {
         key: 'text-opacity',
         label: 'Opacity',
-        components: [
-            <Opacity />,
-        ],
+        components: [<Opacity />],
     },
 ];
 
 export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
-    const { visibleCount } = useMeasureGroup({ availableWidth, count: TEXT_SELECTED_GROUPS.length });
+    const { visibleCount } = useMeasureGroup({
+        availableWidth,
+        count: TEXT_SELECTED_GROUPS.length,
+    });
     const [overflowOpen, setOverflowOpen] = useState(false);
 
     const visibleGroups = TEXT_SELECTED_GROUPS.slice(0, visibleCount);
@@ -85,9 +79,7 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
                     {groupIdx > 0 && <InputSeparator />}
                     <div className="flex items-center justify-center gap-0.5">
                         {group.components.map((comp, idx) => (
-                            <React.Fragment key={idx}>
-                                {comp}
-                            </React.Fragment>
+                            <React.Fragment key={idx}>{comp}</React.Fragment>
                         ))}
                     </div>
                 </React.Fragment>
@@ -105,15 +97,16 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
                             <Icons.DotsHorizontal className="w-5 h-5" />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent align="end" className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]">
+                    <PopoverContent
+                        align="end"
+                        className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]"
+                    >
                         {overflowGroups.map((group, groupIdx) => (
                             <React.Fragment key={group.key}>
                                 {groupIdx > 0 && <InputSeparator />}
                                 <div className="flex items-center gap-0.5">
                                     {group.components.map((comp, idx) => (
-                                        <React.Fragment key={idx}>
-                                            {comp}
-                                        </React.Fragment>
+                                        <React.Fragment key={idx}>{comp}</React.Fragment>
                                     ))}
                                 </div>
                             </React.Fragment>

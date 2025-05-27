@@ -16,4 +16,5 @@ export * from './tailwind';
 export * from './time';
 export * from './unit';
 export * from './urls';
+export * from './user-canvas';
 export * from './window-metadata';

@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { useMemo } from 'react';
 import { ColorPickerContent } from '../inputs/color-picker';
 import { useColorUpdate } from '../hooks/use-color-update';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { observer } from 'mobx-react-lite';
 
 interface ColorBackgroundProps {
@@ -16,6 +17,9 @@ export const ColorBackground = observer(({ className }: ColorBackgroundProps) =>
     const editorEngine = useEditorEngine();
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.backgroundColor;
 
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'color-background-popover' 
+    });
 
     const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
         elementStyleKey: 'backgroundColor',
@@ -26,7 +30,7 @@ export const ColorBackground = observer(({ className }: ColorBackgroundProps) =>
 
     const ColorTrigger = useMemo(() => (
         <div 
-            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center rounded-md border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white"
+            className="gap-1 text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center rounded-md border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white"
             role="button"
             tabIndex={0}
             aria-label="Change background color"
@@ -47,7 +51,7 @@ export const ColorBackground = observer(({ className }: ColorBackgroundProps) =>
 
     return (
         <div className={`flex flex-col gap-2 ${className ?? ''}`}>
-            <Popover>
+            <Popover open={isOpen} onOpenChange={onOpenChange}>
                 <PopoverTrigger asChild>
                     {ColorTrigger}
                 </PopoverTrigger>
