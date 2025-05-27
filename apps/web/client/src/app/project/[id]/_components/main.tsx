@@ -40,7 +40,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         if (!result) {
             return;
         }
-        const { project, canvas, frames, conversation } = result;
+        const { project, canvas, userCanvas, frames, conversation } = result;
         projectManager.project = project;
 
         if (project.sandbox?.id) {
@@ -54,7 +54,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         }
 
         if (canvas) {
-            editorEngine.canvas.applyCanvas(canvas);
+            editorEngine.canvas.applyCanvas(userCanvas);
         } else {
             console.error('No canvas');
         }
@@ -81,22 +81,29 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         const sandboxConnected = !!editorEngine.sandbox.session.session;
 
         if (shouldCreate && conversationReady && sandboxConnected) {
-            editorEngine.chat.getCreateMessages(creationData.prompt, creationData.images).then((messages) => {
-                if (!messages) {
-                    console.error('Failed to get creation messages');
-                    return;
-                }
-                createManager.pendingCreationData = null;
-                sendMessages(messages, ChatType.CREATE);
-
-            });
+            editorEngine.chat
+                .getCreateMessages(creationData.prompt, creationData.images)
+                .then((messages) => {
+                    if (!messages) {
+                        console.error('Failed to get creation messages');
+                        return;
+                    }
+                    createManager.pendingCreationData = null;
+                    sendMessages(messages, ChatType.CREATE);
+                });
         }
-    }, [editorEngine.chat.conversation.current, createManager.pendingCreationData, editorEngine.sandbox.session.session]);
+    }, [
+        editorEngine.chat.conversation.current,
+        createManager.pendingCreationData,
+        editorEngine.sandbox.session.session,
+    ]);
 
     useEffect(() => {
         function measure() {
             const left = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
-            const right = window.innerWidth - (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
+            const right =
+                window.innerWidth -
+                (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
             setToolbarLeft(left);
             setToolbarRight(right);
             setEditorBarAvailableWidth(window.innerWidth - left - right);
@@ -108,7 +115,9 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         let pollInterval: NodeJS.Timeout | null = null;
         pollInterval = setInterval(() => {
             const left = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
-            const right = window.innerWidth - (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
+            const right =
+                window.innerWidth -
+                (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
             if (left > 0 && right > 0) {
                 measure();
                 if (pollInterval) clearInterval(pollInterval);
@@ -176,7 +185,10 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 </div>
 
                 {/* Left Panel */}
-                <div ref={leftPanelRef} className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-50">
+                <div
+                    ref={leftPanelRef}
+                    className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-50"
+                >
                     <LeftPanel />
                 </div>
 
@@ -200,7 +212,10 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 </div>
 
                 {/* Right Panel */}
-                <div ref={rightPanelRef} className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-50">
+                <div
+                    ref={rightPanelRef}
+                    className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-50"
+                >
                     <RightPanel />
                 </div>
 
@@ -208,6 +223,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     <BottomBar />
                 </div>
             </div>
-        </TooltipProvider >
+        </TooltipProvider>
     );
 });

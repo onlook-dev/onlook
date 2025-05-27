@@ -22,6 +22,13 @@
       "when": 1748028633785,
       "tag": "0002_red_crusher_hogan",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1748335865371,
+      "tag": "0003_loud_ozymandias",
+      "breakpoints": true
     }
   ]
 }

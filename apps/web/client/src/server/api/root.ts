@@ -4,6 +4,7 @@ import { chatRouter } from './routers/chat';
 import { sandboxRouter } from './routers/sandbox';
 import { frameRouter } from './routers/frame';
 import { canvasRouter } from './routers/canvas';
+import { userCanvasRouter } from './routers/user-canvas';
 
 /**
  * This is the primary router for your server.
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
     chat: chatRouter,
     frame: frameRouter,
     canvas: canvasRouter,
+    userCanvas: userCanvasRouter,
 });
 
 // export type definition of API

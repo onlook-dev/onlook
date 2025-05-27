@@ -1,7 +1,7 @@
-import { canvases, conversations, frames, messages, projects, userProjects, users, type Conversation, type Message, type Project, type User } from '@onlook/db';
+import { canvases, conversations, frames, messages, projects, userCanvases, userProjects, users, type Conversation, type Message, type Project, type User } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ChatMessageRole, MessageContextType, type ChatMessageContext } from '@onlook/models';
-import { createDefaultCanvas, createDefaultFrame } from '@onlook/utility';
+import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
 
 const user0 = {
@@ -34,6 +34,8 @@ const canvas0 = createDefaultCanvas(project0.id);
 const canvas1 = createDefaultCanvas(project1.id);
 const frame0 = createDefaultFrame(canvas0.id, project0.sandboxUrl);
 const frame1 = createDefaultFrame(canvas1.id, project1.sandboxUrl);
+const userCanvas0 = createDefaultUserCanvas(user0.id, canvas0.id);
+const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
 
 const conversation0 = {
     id: uuidv4(),
@@ -151,6 +153,10 @@ export const seedDb = async () => {
         await tx.insert(canvases).values([
             canvas0,
             canvas1,
+        ]);
+        await tx.insert(userCanvases).values([
+            userCanvas0,
+            userCanvas1,
         ]);
         await tx.insert(frames).values([
             frame0,
