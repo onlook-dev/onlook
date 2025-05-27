@@ -18,7 +18,6 @@ export async function GET(request: Request) {
             const isLocalEnv = process.env.NODE_ENV === 'development';
             const user = await getOrCreateUser(data.user.id);
 
-            // Track user identification in PostHog
             trackUserSignedIn(user.id, {
                 name: data.user.user_metadata.name,
                 email: data.user.email,
