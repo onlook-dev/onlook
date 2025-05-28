@@ -12,7 +12,7 @@ import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
@@ -39,11 +39,11 @@ const usePanelMeasurements = (
         const right =
             window.innerWidth -
             (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
-        
+
         // Update refs immediately
         toolbarLeftRef.current = left;
         toolbarRightRef.current = right;
-        
+
         // Update state to trigger re-renders
         setToolbarLeft(left);
         setToolbarRight(right);
@@ -53,7 +53,7 @@ const usePanelMeasurements = (
     useEffect(() => {
         // Initial measurement
         measure();
-        
+
         // Measure after DOM paint
         const rafId = requestAnimationFrame(measure);
 
@@ -63,14 +63,14 @@ const usePanelMeasurements = (
 
         // ResizeObservers for panels - observe both the panels and their children
         const observers: ResizeObserver[] = [];
-        
+
         const createObserver = (element: HTMLElement) => {
             const observer = new ResizeObserver(() => {
                 // Use requestAnimationFrame to debounce rapid changes
                 requestAnimationFrame(measure);
             });
             observer.observe(element);
-            
+
             // Also observe all child elements that might affect width
             const children = element.querySelectorAll('*');
             children.forEach(child => {
@@ -78,15 +78,15 @@ const usePanelMeasurements = (
                     observer.observe(child);
                 }
             });
-            
+
             return observer;
         };
-        
+
         if (leftPanelRef.current) {
             const leftObserver = createObserver(leftPanelRef.current);
             observers.push(leftObserver);
         }
-        
+
         if (rightPanelRef.current) {
             const rightObserver = createObserver(rightPanelRef.current);
             observers.push(rightObserver);
@@ -96,7 +96,7 @@ const usePanelMeasurements = (
         const pollInterval = setInterval(() => {
             const currentLeft = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
             const currentRight = window.innerWidth - (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
-            
+
             // Use refs for comparison to avoid dependency on state values
             if (Math.abs(currentLeft - toolbarLeftRef.current) > 1 || Math.abs(currentRight - toolbarRightRef.current) > 1) {
                 measure();
@@ -105,26 +105,26 @@ const usePanelMeasurements = (
 
         // MutationObserver to detect DOM changes that might affect panel width
         const mutationObservers: MutationObserver[] = [];
-        
+
         const createMutationObserver = (element: HTMLElement) => {
             const observer = new MutationObserver(() => {
                 requestAnimationFrame(measure);
             });
-            
+
             observer.observe(element, {
                 childList: true,
                 subtree: true,
                 attributes: true,
                 attributeFilter: ['class', 'style', 'width']
             });
-            
+
             return observer;
         };
-        
+
         if (leftPanelRef.current) {
             mutationObservers.push(createMutationObserver(leftPanelRef.current));
         }
-        
+
         if (rightPanelRef.current) {
             mutationObservers.push(createMutationObserver(rightPanelRef.current));
         }
@@ -152,7 +152,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
-    
+
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
         rightPanelRef
@@ -194,7 +194,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         return () => {
             editorEngine.sandbox.clear();
         };
-    }, [result, userManager.user?.id, editorEngine, projectManager]);
+    }, [result, userManager.user?.id]);
 
     useEffect(() => {
         const creationData = createManager.pendingCreationData;
