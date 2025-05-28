@@ -48,6 +48,13 @@ export const invitationRouter = createTRPCRouter({
                 });
             }
 
+            if (!ctx.user.email) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'You must have an email to invite a user',
+                });
+            }
+
             const invitation = await ctx.db
                 .transaction(async (tx) => {
                     const existingUser = await tx
@@ -116,6 +123,14 @@ export const invitationRouter = createTRPCRouter({
                     message: 'You must be logged in to accept an invitation',
                 });
             }
+
+            if (!ctx.user.email) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'You must have an email to accept an invitation',
+                });
+            }
+
 
             const invitation = await ctx.db.query.projectInvitations.findFirst({
                 where: and(
