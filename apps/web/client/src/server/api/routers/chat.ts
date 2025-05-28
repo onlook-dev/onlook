@@ -12,8 +12,8 @@ import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-export const chatRouter = createTRPCRouter({
-    getConversations: protectedProcedure
+const conversationRouter = createTRPCRouter({
+    get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
             const dbConversations = await ctx.db.query.conversations.findMany({
@@ -22,7 +22,7 @@ export const chatRouter = createTRPCRouter({
             });
             return dbConversations.map((conversation) => toConversation(conversation));
         }),
-    saveConversation: protectedProcedure
+    upsert: protectedProcedure
         .input(z.object({ conversation: conversationInsertSchema }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db
@@ -35,14 +35,17 @@ export const chatRouter = createTRPCRouter({
                     },
                 });
         }),
-    deleteConversation: protectedProcedure
+    delete: protectedProcedure
         .input(z.object({ conversationId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db
                 .delete(conversations)
                 .where(eq(conversations.id, input.conversationId));
         }),
-    getMessages: protectedProcedure
+});
+
+const messageRouter = createTRPCRouter({
+    get: protectedProcedure
         .input(z.object({ conversationId: z.string() }))
         .query(async ({ ctx, input }) => {
             const dbMessages = await ctx.db.query.messages.findMany({
@@ -51,7 +54,7 @@ export const chatRouter = createTRPCRouter({
             });
             return dbMessages.map((message) => toMessage(message));
         }),
-    saveMessage: protectedProcedure
+    upsert: protectedProcedure
         .input(z.object({ message: messageInsertSchema }))
         .mutation(async ({ ctx, input }) => {
             const normalizedMessage = {
@@ -70,9 +73,14 @@ export const chatRouter = createTRPCRouter({
                 });
 
         }),
-    deleteMessages: protectedProcedure
+    delete: protectedProcedure
         .input(z.object({ messageIds: z.array(z.string()) }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
         }),
+})
+
+export const chatRouter = createTRPCRouter({
+    conversation: conversationRouter,
+    message: messageRouter,
 });
