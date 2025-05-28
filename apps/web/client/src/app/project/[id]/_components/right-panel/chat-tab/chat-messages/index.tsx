@@ -17,6 +17,7 @@ export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const { messages: uiMessages } = useChatContext();
+    const conversation = editorEngine.chat.conversation.current;
     const messages = editorEngine.chat.conversation.current?.messages;
 
     const renderMessage = (message: AssistantChatMessageImpl | UserChatMessageImpl) => {
@@ -33,6 +34,14 @@ export const ChatMessages = observer(() => {
         }
         return <div key={`message-${message.id}`}>{messageNode}</div>;
     };
+
+    if (!conversation) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80 h-full">
+                No conversation selected
+            </div>
+        );
+    }
 
     if (!messages || messages.length === 0) {
         return (

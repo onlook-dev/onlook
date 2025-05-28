@@ -4,7 +4,6 @@ import {
     projectInsertSchema,
     projects,
     toCanvas,
-    toConversation,
     toFrame,
     toProject,
     userCanvases,
@@ -12,9 +11,9 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { ProjectRole, type ChatConversation } from '@onlook/models';
-import { createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
-import { and, eq } from 'drizzle-orm';
+import { ProjectRole } from '@onlook/models';
+import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -28,6 +27,9 @@ export const projectRouter = createTRPCRouter({
                     canvas: {
                         with: {
                             frames: true,
+                            userCanvases: {
+                                where: eq(userCanvases.userId, ctx.user.id),
+                            },
                         },
                     },
                     conversations: {
@@ -40,28 +42,13 @@ export const projectRouter = createTRPCRouter({
                 console.error('project not found');
                 return null;
             }
-            const canvas: Canvas = project.canvas
-                ? project.canvas
-                : createDefaultCanvas(project.id);
-
-            const dbUserCanvas = await ctx.db.query.userCanvases.findFirst({
-                where: and(
-                    eq(userCanvases.canvasId, canvas.id),
-                    eq(userCanvases.userId, ctx.user.id),
-                ),
-            });
-
-            const userCanvas: UserCanvas =
-                dbUserCanvas ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
-
-            const conversation: ChatConversation = toConversation(project.conversations[0] ?? createDefaultConversation(project.id));
+            const canvas: Canvas = project.canvas ?? createDefaultCanvas(project.id);
+            const userCanvas: UserCanvas = project.canvas?.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
 
             return {
                 project: toProject(project),
-                canvas,
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
-                conversation
             };
         }),
     create: protectedProcedure

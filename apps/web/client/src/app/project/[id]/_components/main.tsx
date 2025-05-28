@@ -41,7 +41,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             if (!result) {
                 return;
             }
-            const { project, canvas, userCanvas, frames, conversation } = result;
+            const { project, userCanvas, frames } = result;
             projectManager.project = project;
 
             if (project.sandbox?.id) {
@@ -56,24 +56,10 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 console.error('Initializing project: No sandbox id');
             }
 
-            if (canvas) {
-                editorEngine.canvas.applyCanvas(userCanvas);
-            } else {
-                console.error('Initializing project: No canvas');
-            }
-
-            if (frames) {
-                editorEngine.frames.applyFrames(frames);
-            } else {
-                console.error('Initializing project: No frames');
-            }
-
-            if (conversation) {
-                editorEngine.chat.conversation.setCurrentConversation(conversation);
-                resumeCreate();
-            } else {
-                console.error('Initializing project: No conversation');
-            }
+            editorEngine.canvas.applyCanvas(userCanvas);
+            editorEngine.frames.applyFrames(frames);
+            await editorEngine.chat.conversation.fetchOrCreateConversation(project.id);
+            resumeCreate();
         };
 
         initializeProject().catch(error => {
@@ -86,13 +72,11 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     }, [result, userManager.user?.id]);
 
     const resumeCreate = async () => {
-        console.log('resumeCreate', createManager.pendingCreationData);
         const creationData = createManager.pendingCreationData;
         if (!creationData) return;
 
         if (projectId !== creationData.project.id) return;
 
-        console.log('sending messages 1', creationData.prompt, creationData.images);
         const messages = await editorEngine.chat.getStreamMessages(creationData.prompt, creationData.images);
 
         if (!messages) {
@@ -100,8 +84,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             return;
         }
         createManager.pendingCreationData = null;
-
-        console.log('sending messages', messages);
         sendMessages(messages, ChatType.CREATE);
     }
 

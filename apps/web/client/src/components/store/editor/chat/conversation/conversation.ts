@@ -5,8 +5,7 @@ import {
     ChatMessageRole,
     type AssistantChatMessage,
     type ChatConversation,
-    type TokenUsage,
-    type UserChatMessage,
+    type UserChatMessage
 } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -24,18 +23,13 @@ export class ChatConversationImpl implements ChatConversation {
     createdAt: string;
     updatedAt: string;
 
-    public tokenUsage: TokenUsage = {
-        promptTokens: 0,
-        completionTokens: 0,
-        totalTokens: 0,
-    };
-
     private constructor(conversation: ChatConversation, fetchMessages = false) {
         this.id = conversation.id;
         this.projectId = conversation.projectId;
         this.createdAt = conversation.createdAt;
         this.updatedAt = conversation.updatedAt;
         this.displayName = conversation.displayName;
+
         if (fetchMessages) {
             this.getMessagesFromStorage().then((messages) => {
                 this.messages = messages;
@@ -74,9 +68,6 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.find((m) => m.id === id);
     }
 
-    updateTokenUsage(usage: TokenUsage) {
-        this.tokenUsage = usage;
-    }
 
     getMessagesForStream(): Message[] {
         return this.messages.map((m) => m.toStreamMessage());

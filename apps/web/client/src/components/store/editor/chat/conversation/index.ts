@@ -27,6 +27,17 @@ export class ConversationManager {
         return this._conversations;
     }
 
+    async fetchOrCreateConversation(projectId: string) {
+        this._conversations = await this.getConversations(projectId);
+
+        if (this.conversations.length > 0 && !!this.conversations[0]) {
+            this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
+        } else {
+            console.error('No conversations found, creating new conversation');
+            this.startNewConversation();
+        }
+    }
+
     setCurrentConversation(conversation: ChatConversation) {
         this._current = ChatConversationImpl.fromJSON(conversation);
         this._conversations.push(this._current);
