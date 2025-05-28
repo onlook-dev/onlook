@@ -17,7 +17,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useRef, useState, useEffect } from 'react';
 
-// Add TypeScript declarations for UnicornStudio
+// Add TypeScript declarations for background
 declare global {
     interface Window {
         UnicornStudio: {
@@ -43,7 +43,7 @@ export function Create() {
     const [isComposing, setIsComposing] = useState(false);
     const imageRef = useRef<HTMLInputElement>(null);
 
-    // Add useEffect for Unicorn Studio initialization
+    // Add useEffect for background initialization
     useEffect(() => {
         if (!window.UnicornStudio) {
             window.UnicornStudio = { 
