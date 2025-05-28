@@ -74,7 +74,7 @@ const faqSections = [
             },
             {
                 question: "Where is Onlook based?",
-                answer: "Onlook was founded in Cincinatti, Ohio, USA, and started as a remote-first company between Cincinatti and New York City. After the YC Winter 2025 batch, Onlook opened a barracks in San Francisco. Our open-source contributors are scattered across the world, bringing their unique perspectives and incredible talent to the project as we continue to push the limits of design and development."
+                answer: "Onlook was founded in Cincinnati, Ohio, USA, and started as a remote-first company between Cincinnati and New York City. After the YC Winter 2025 batch, Onlook opened a barracks in San Francisco. Our open-source contributors are scattered across the world, bringing their unique perspectives and incredible talent to the project as we continue to push the limits of design and development."
             },
         ]
     }
