@@ -66,7 +66,7 @@ const faqSections = [
         faqs: [
             {
                 question: "Why was Onlook created?",
-                answer: "Both the founders come from either side of the design and development divide. We realized that AI could be the final leap to solve the problem of designers and developers work together. Onlook is a continuous iterations towards the new state-of-the-art for collaboration in code."
+                answer: "Both the founders come from either side of the design and development divide. We realized that AI could be the final leap to solve the problem of designers and developers work together. Onlook is a continuous iteration towards the new state-of-the-art for collaboration in code."
             },
             {
                 question: "Why is Onlook open-source?",
