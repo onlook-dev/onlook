@@ -45,7 +45,9 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
         if (project.sandbox?.id) {
             if (userManager.user?.id) {
-                editorEngine.sandbox.session.start(project.sandbox.id, userManager.user?.id);
+                if (!editorEngine.sandbox.session.session) {
+                    editorEngine.sandbox.session.start(project.sandbox.id, userManager.user.id);
+                }
             } else {
                 console.error('No user id');
             }
@@ -75,26 +77,36 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     }, [result, userManager.user?.id]);
 
     useEffect(() => {
+        console.log('useEffect creationData',
+            editorEngine.chat.conversation.current,
+            createManager.pendingCreationData,
+            editorEngine.sandbox.session.session,
+            projectId
+        );
         const creationData = createManager.pendingCreationData;
-        const shouldCreate = !!creationData && projectId === creationData.project.id;
+        if (!creationData) return;
+
+        if (projectId !== creationData.project.id) return;
+
         const conversationReady = !!editorEngine.chat.conversation.current;
         const sandboxConnected = !!editorEngine.sandbox.session.session;
 
-        if (shouldCreate && conversationReady && sandboxConnected) {
-            editorEngine.chat
-                .getCreateMessages(creationData.prompt, creationData.images)
-                .then((messages) => {
-                    if (!messages) {
-                        console.error('Failed to get creation messages');
-                        return;
-                    }
-                    createManager.pendingCreationData = null;
-                    sendMessages(messages, ChatType.CREATE);
-                })
-                .catch((error) => {
-                    console.error('Error getting creation messages:', error);
-                });
-        }
+        if (!conversationReady || !sandboxConnected) return;
+
+        console.log('creating creationData');
+        editorEngine.chat
+            .getCreateMessages(creationData.prompt, creationData.images)
+            .then((messages) => {
+                if (!messages) {
+                    console.error('Failed to get creation messages');
+                    return;
+                }
+                createManager.pendingCreationData = null;
+                sendMessages(messages, ChatType.CREATE);
+            })
+            .catch((error) => {
+                console.error('Error getting creation messages:', error);
+            });
     }, [
         editorEngine.chat.conversation.current,
         createManager.pendingCreationData,
