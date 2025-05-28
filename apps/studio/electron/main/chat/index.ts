@@ -80,7 +80,7 @@ class LlmManager {
                 } as CoreSystemMessage;
                 messages = [systemMessage, ...messages];
             }
-            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET, {
+            const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4, {
                 requestType,
             });
 
