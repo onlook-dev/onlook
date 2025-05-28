@@ -1,23 +1,22 @@
+import { env } from '@/env';
+import { emailClient } from '@/utils/email';
 import {
+    authUsers,
     projectInvitationInsertSchema,
     projectInvitations,
     userCanvases,
-    userProjects,
-    users,
+    userProjects
 } from '@onlook/db';
+import { sendInvitationEmail } from '@onlook/email';
+import { ProjectRole } from '@onlook/models';
+import { createDefaultUserCanvas } from '@onlook/utility';
+import { TRPCError } from '@trpc/server';
+import dayjs from 'dayjs';
 import { and, eq } from 'drizzle-orm';
+import urlJoin from 'url-join';
+import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { ProjectRole } from '@onlook/models';
-import { v4 as uuidv4 } from 'uuid';
-import dayjs from 'dayjs';
-import { TRPCError } from '@trpc/server';
-import { createDefaultUserCanvas } from '@onlook/utility';
-import { authUsers } from '@onlook/db';
-import { sendInvitationEmail } from '@onlook/email';
-import urlJoin from 'url-join';
-import { emailClient } from '@/utils/email';
-import { env } from '@/env';
 
 export const invitationRouter = createTRPCRouter({
     list: protectedProcedure
@@ -42,7 +41,7 @@ export const invitationRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.user.email) {
+            if (!ctx.user.id) {
                 throw new TRPCError({
                     code: 'UNAUTHORIZED',
                     message: 'You must be logged in to invite a user',
@@ -111,7 +110,7 @@ export const invitationRouter = createTRPCRouter({
     accept: protectedProcedure
         .input(z.object({ token: z.string(), id: z.string() }))
         .mutation(async ({ ctx, input }) => {
-            if (!ctx.user.email) {
+            if (!ctx.user.id) {
                 throw new TRPCError({
                     code: 'UNAUTHORIZED',
                     message: 'You must be logged in to accept an invitation',
