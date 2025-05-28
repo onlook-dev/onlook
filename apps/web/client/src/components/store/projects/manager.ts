@@ -3,6 +3,7 @@ import { fromProject } from '@onlook/db';
 import type { Project } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from '../user/manager';
+import posthog from 'posthog-js';
 
 export class ProjectsManager {
     private _projects: Project[] = [];
@@ -38,6 +39,10 @@ export class ProjectsManager {
     }
 
     async deleteProject(project: Project) {
+        posthog.capture('user_delete_project', {
+            project_id: project.id,
+            project_name: project.name,
+        });
         this.projects = this.projects.filter((p) => p.id !== project.id);
         await api.project.delete.mutate({ id: project.id });
         await api.sandbox.delete.mutate({ sandboxId: project.sandbox.id });
