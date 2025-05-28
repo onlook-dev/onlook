@@ -92,7 +92,7 @@ export const TopBar = observer(() => {
                             {t('editor.toolbar.versionHistory')}
                         </TooltipContent>
                     </Tooltip> */}
-                    <CurrentUserAvatar className="h-8 w-8 cursor-pointer hover:opacity-80" disableDropdown={true} />
+                    <CurrentUserAvatar className="h-8 w-8 cursor-pointer hover:opacity-80" />
                 </div>
             </div>
         </div>
