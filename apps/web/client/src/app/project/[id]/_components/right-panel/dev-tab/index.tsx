@@ -56,6 +56,17 @@ export const DevTab = observer(() => {
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
 
+    // Helper function to check if sandbox is connected and ready
+    const isSandboxReady = (): boolean => {
+        return !!(editorEngine.sandbox.session.session && !editorEngine.sandbox.session.isConnecting);
+    };
+
+    // Helper function to handle sandbox not ready scenarios
+    const handleSandboxNotReady = (operation: string): void => {
+        const message = `Cannot ${operation}: sandbox not connected`;
+        console.error(message);
+    };
+
     const getActiveEditorView = (): EditorView | undefined => {
         if (!activeFile) {
             return undefined;
@@ -104,9 +115,8 @@ export const DevTab = observer(() => {
             return null;
         }
 
-        // Check if sandbox is connected before attempting to get element code range
-        if (!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) {
-            console.warn('Cannot get element code range: sandbox not connected');
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('get element code range');
             return null;
         }
 
@@ -229,7 +239,7 @@ export const DevTab = observer(() => {
     useEffect(() => {
         const loadInitialFiles = async () => {
             // Only load files if sandbox is connected and not connecting
-            if (!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) {
+            if (!isSandboxReady()) {
                 return;
             }
 
@@ -249,7 +259,7 @@ export const DevTab = observer(() => {
 
     // Clear files and opened files when sandbox disconnects
     useEffect(() => {
-        if (!editorEngine.sandbox.session.session && !editorEngine.sandbox.session.isConnecting) {
+        if (!isSandboxReady()) {
             // Clear all state when sandbox is disconnected
             setFiles([]);
             setOpenedFiles([]);
@@ -265,9 +275,8 @@ export const DevTab = observer(() => {
     }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
 
     const handleRefreshFiles = async () => {
-        // Check if sandbox is connected before attempting to refresh files
-        if (!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) {
-            console.warn('Cannot refresh files: sandbox not connected');
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('refresh files');
             return;
         }
 
@@ -284,9 +293,8 @@ export const DevTab = observer(() => {
     };
 
     async function loadNewContent(filePath: string) {
-        // Check if sandbox is connected before attempting to load new content
-        if (!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) {
-            console.warn('Cannot load new content: sandbox not connected');
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('load new content');
             return;
         }
 
@@ -323,9 +331,8 @@ export const DevTab = observer(() => {
     }
 
     async function loadFile(filePath: string): Promise<EditorFile | null> {
-        // Check if sandbox is connected before attempting to load file
-        if (!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) {
-            console.warn('Cannot load file: sandbox not connected');
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('load file');
             return null;
         }
 
@@ -378,9 +385,8 @@ export const DevTab = observer(() => {
     }
 
     async function getFilePathFromOid(oid: string): Promise<string | null> {
-        // Check if sandbox is connected before attempting to get file path
-        if (!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) {
-            console.warn('Cannot get file path from OID: sandbox not connected');
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('get file path from OID');
             return null;
         }
 
@@ -403,13 +409,8 @@ export const DevTab = observer(() => {
             return;
         }
 
-        // Check if sandbox is connected before attempting to save file
-        if (!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) {
-            toast({
-                title: 'Save failed',
-                description: 'Cannot save file: sandbox not connected.',
-                variant: 'destructive',
-            });
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('save file');
             return;
         }
 
@@ -589,7 +590,7 @@ export const DevTab = observer(() => {
             </div>
 
             {/* Show connection status when sandbox is not ready */}
-            {(!editorEngine.sandbox.session.session || editorEngine.sandbox.session.isConnecting) && (
+            {!isSandboxReady() && (
                 <div className="flex-1 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
@@ -603,7 +604,7 @@ export const DevTab = observer(() => {
             )}
 
             {/* Main content - only show when sandbox is connected */}
-            {editorEngine.sandbox.session.session && !editorEngine.sandbox.session.isConnecting && (
+            {isSandboxReady() && (
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {isFilesVisible && <FileTree onFileSelect={loadFile} files={files} isLoading={isFilesLoading} onRefresh={handleRefreshFiles} />}
 

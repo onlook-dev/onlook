@@ -47,7 +47,7 @@ export const BorderColor = observer(() => {
                 />
             </div>
         ),
-        [],
+        [colorHex],
     );
 
     return (

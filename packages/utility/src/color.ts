@@ -176,10 +176,10 @@ export class Color {
     }
 
     static rgb(rgb: { r: number; g: number; b: number; a?: number }): Color {
-        return new Color({ ...rgb2hsv(rgb), a: rgb.a });
+        return new Color({ ...rgb2hsv(rgb), a: rgb.a ?? 1 });
     }
     static hsl(hsl: { h: number; s: number; l: number; a?: number }): Color {
-        return new Color({ ...hsl2hsv(hsl), a: hsl.a });
+        return new Color({ ...hsl2hsv(hsl), a: hsl.a ?? 1 });
     }
 
     static oklch(oklchColor: { l: number; c: number; h: number; a?: number }): Color {
@@ -225,14 +225,14 @@ export class Color {
                     r: (color.values[0] ?? 0) / 255,
                     g: (color.values[1] ?? 0) / 255,
                     b: (color.values[2] ?? 0) / 255,
-                    a: color.alpha,
+                    a: color.alpha ?? 1,
                 });
             } else if (color.type === 'hsl') {
                 return Color.hsl({
                     h: (color.values[0] ?? 0) / 360,
                     s: (color.values[1] ?? 0) / 100,
                     l: (color.values[2] ?? 0) / 100,
-                    a: color.alpha,
+                    a: color.alpha ?? 1,
                 });
             }
         }
