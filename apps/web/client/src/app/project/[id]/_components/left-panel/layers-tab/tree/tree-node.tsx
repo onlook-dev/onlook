@@ -122,7 +122,7 @@ export const TreeNode = memo(
                         case MouseAction.MOUSE_DOWN:
                             if (isWindow) {
                                 editorEngine.clearUI();
-                                editorEngine.frames.select(frameView.frame);
+                                editorEngine.frames.select([frameView.frame]);
                                 return;
                             }
                             if (e.shiftKey) {
@@ -247,10 +247,10 @@ export const TreeNode = memo(
                     (node.data.component
                         ? node.data.component
                         : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                                node.data.tagName.toLowerCase(),
-                            )
-                          ? ''
-                          : node.data.tagName.toLowerCase()) +
+                            node.data.tagName.toLowerCase(),
+                        )
+                            ? ''
+                            : node.data.tagName.toLowerCase()) +
                     ' ' +
                     node.data.textContent
                 );
@@ -299,8 +299,8 @@ export const TreeNode = memo(
                                             hovered && !selected
                                                 ? 'text-purple-600 dark:text-purple-200 '
                                                 : selected
-                                                  ? 'text-purple-100 dark:text-purple-100'
-                                                  : 'text-purple-500 dark:text-purple-300',
+                                                    ? 'text-purple-100 dark:text-purple-100'
+                                                    : 'text-purple-500 dark:text-purple-300',
                                         )}
                                     />
                                 ) : (
@@ -347,8 +347,8 @@ export const TreeNode = memo(
                                             ? selected
                                                 ? 'text-purple-100 dark:text-purple-100'
                                                 : hovered
-                                                  ? 'text-purple-600 dark:text-purple-200'
-                                                  : 'text-purple-500 dark:text-purple-300'
+                                                    ? 'text-purple-600 dark:text-purple-200'
+                                                    : 'text-purple-500 dark:text-purple-300'
                                             : '',
                                         !node.data.isVisible && 'opacity-80',
                                         selected && 'mr-5',

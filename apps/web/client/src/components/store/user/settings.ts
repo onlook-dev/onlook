@@ -1,11 +1,12 @@
 import { api } from '@/trpc/client';
-import { fromUserSettings, getDefaultUserSettings } from '@onlook/db';
+import { fromUserSettings, toUserSettings } from '@onlook/db';
 import type { ChatSettings, UserSettings } from '@onlook/models';
+import { createDefaultUserSettings } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
 export class UserSettingsManager {
-    settings: UserSettings = getDefaultUserSettings();
+    settings: UserSettings = toUserSettings(createDefaultUserSettings(''));
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
@@ -27,7 +28,7 @@ export class UserSettingsManager {
             console.error('No user found');
             return;
         }
-        const settings = await api.user.settings.get.query(user.id);
+        const settings = await api.user.settings.get.query({ userId: user.id });
         this.settings = settings;
     }
 

@@ -84,7 +84,6 @@ export const OverlayChat = observer(
             const messageToSend = inputState.value;
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
             const streamMessages = await editorEngine.chat.getStreamMessages(messageToSend);
-            // TODO: Send messages to the chat
             if (!streamMessages) {
                 console.error('No stream messages');
                 return;

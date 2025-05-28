@@ -6,9 +6,3 @@ export interface UsageCheckResult {
     daily_requests_limit: number;
     monthly_requests_limit: number;
 }
-
-export interface TokenUsage {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-}

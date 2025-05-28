@@ -4,19 +4,18 @@ import {
     projectInsertSchema,
     projects,
     toCanvas,
-    toConversation,
     toFrame,
     toProject,
     userCanvases,
     userProjects,
     type Canvas,
-    type UserCanvas,
+    type UserCanvas
 } from '@onlook/db';
+import { ProjectRole } from '@onlook/models';
 import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { ProjectRole } from '@onlook/models';
 
 export const projectRouter = createTRPCRouter({
     getFullProject: protectedProcedure
@@ -28,6 +27,9 @@ export const projectRouter = createTRPCRouter({
                     canvas: {
                         with: {
                             frames: true,
+                            userCanvases: {
+                                where: eq(userCanvases.userId, ctx.user.id),
+                            },
                         },
                     },
                     conversations: {
@@ -40,28 +42,13 @@ export const projectRouter = createTRPCRouter({
                 console.error('project not found');
                 return null;
             }
-            const canvas: Canvas = project.canvas
-                ? project.canvas
-                : createDefaultCanvas(project.id);
-
-            const dbUserCanvas = await ctx.db.query.userCanvases.findFirst({
-                where: and(
-                    eq(userCanvases.canvasId, canvas.id),
-                    eq(userCanvases.userId, ctx.user.id),
-                ),
-            });
-
-            const userCanvas: UserCanvas =
-                dbUserCanvas ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
+            const canvas: Canvas = project.canvas ?? createDefaultCanvas(project.id);
+            const userCanvas: UserCanvas = project.canvas?.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
 
             return {
                 project: toProject(project),
-                canvas,
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
-                conversation: project.conversations[0]
-                    ? toConversation(project.conversations[0])
-                    : null,
             };
         }),
     create: protectedProcedure
