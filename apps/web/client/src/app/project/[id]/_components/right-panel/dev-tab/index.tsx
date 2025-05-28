@@ -52,6 +52,7 @@ export const DevTab = observer(() => {
     const [isDirty, setIsDirty] = useState(false);
     const [isFilesVisible, setIsFilesVisible] = useState(true);
     const [files, setFiles] = useState<string[]>([]);
+    const [isFilesLoading, setIsFilesLoading] = useState(true);
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
 
@@ -189,10 +190,17 @@ export const DevTab = observer(() => {
     // Subscribe to file events
     useEffect(() => {
         const handleFileEvent = async (event: FileEvent) => {
-            // Only fetch all files on initial load or when files are added/removed
-            if (event.type === 'add' || event.type === 'remove' || files.length === 0) {
-                const files = await editorEngine.sandbox.listAllFiles();
-                setFiles(files);
+            // Only fetch all files when files are added/removed
+            if (event.type === 'add' || event.type === 'remove') {
+                setIsFilesLoading(true);
+                try {
+                    const files = await editorEngine.sandbox.listAllFiles();
+                    setFiles(files);
+                } catch (error) {
+                    console.error('Error loading files:', error);
+                } finally {
+                    setIsFilesLoading(false);
+                }
             }
 
             if (event.type === 'change') {
@@ -209,7 +217,37 @@ export const DevTab = observer(() => {
         return () => {
             unsubscribe();
         };
-    }, [editorEngine.sandbox, activeFile]);
+    }, [editorEngine, activeFile]);
+
+    // Initial file loading
+    useEffect(() => {
+        const loadInitialFiles = async () => {
+            setIsFilesLoading(true);
+            try {
+                const files = await editorEngine.sandbox.listAllFiles();
+                setFiles(files);
+            } catch (error) {
+                console.error('Error loading initial files:', error);
+            } finally {
+                setIsFilesLoading(false);
+            }
+        };
+
+        loadInitialFiles();
+    }, [editorEngine]);
+
+    const handleRefreshFiles = async () => {
+        setIsFilesLoading(true);
+        try {
+            await editorEngine.sandbox.index();
+            const files = await editorEngine.sandbox.listAllFiles();
+            setFiles(files);
+        } catch (error) {
+            console.error('Error refreshing files:', error);
+        } finally {
+            setIsFilesLoading(false);
+        }
+    };
 
     async function loadNewContent(filePath: string) {
         try {
@@ -489,7 +527,7 @@ export const DevTab = observer(() => {
             </div>
 
             <div className="flex flex-1 min-h-0 overflow-hidden">
-                {isFilesVisible && <FileTree onFileSelect={loadFile} files={files} />}
+                {isFilesVisible && <FileTree onFileSelect={loadFile} files={files} isLoading={isFilesLoading} onRefresh={handleRefreshFiles} />}
 
                 {/* Editor section */}
                 <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
