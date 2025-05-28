@@ -15,7 +15,17 @@ import { compressImage } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+
+// Add TypeScript declarations for UnicornStudio
+declare global {
+    interface Window {
+        UnicornStudio: {
+            isInitialized: boolean;
+            init: () => void;
+        };
+    }
+}
 
 export function Create() {
     const t = useTranslations();
@@ -32,6 +42,28 @@ export function Create() {
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
     const imageRef = useRef<HTMLInputElement>(null);
+
+    // Add useEffect for Unicorn Studio initialization
+    useEffect(() => {
+        if (!window.UnicornStudio) {
+            window.UnicornStudio = { 
+                isInitialized: false,
+                init: () => {
+                    // This will be replaced by the actual init function when the script loads
+                    console.log('UnicornStudio init placeholder');
+                }
+            };
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v1.4.22/dist/unicornStudio.umd.js";
+            script.onload = function() {
+                if (!window.UnicornStudio.isInitialized) {
+                    window.UnicornStudio.init();
+                    window.UnicornStudio.isInitialized = true;
+                }
+            };
+            (document.head || document.body).appendChild(script);
+        }
+    }, []);
 
     const handleSubmit = async () => {
         if (isInputInvalid) {
@@ -204,12 +236,22 @@ export function Create() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center">
-            <div className="flex flex-col gap-4 items-center">
-                <h1 className="text-6xl font-light leading-tight text-center line-height-1">
+        <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
+            <div 
+                data-us-project="Gr1LmwbKSeJOXhpYEdit" 
+                className="absolute inset-0 w-full h-full z-0"
+                style={{ pointerEvents: 'none' }}
+            />
+            {/* Overlay */}
+            <div
+                className="absolute left-0 bottom-0 w-full bg-background z-10"
+                style={{ height: '80px' }}
+            />
+            <div className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2">
+                <h1 className="text-6xl font-light leading-tight text-center !leading-[0.9]">
                     Make your<br />
                     <span className="font-light">designs </span>
-                    <span className="italic font-normal">real</span>
+                    <span className="italic font-normal vujahday-script-regular text-[4.75rem] ml-1 leading-[1.0]">real</span>
                 </h1>
                 <p className="text-lg text-foreground-secondary max-w-xl text-center mt-2">
                     Onlook is a next-generation visual code editor<br />
@@ -217,7 +259,7 @@ export function Create() {
                     web experiences with AI
                 </p>
             </div>
-            <div className="flex flex-col gap-4 items-center">
+            <div className="flex flex-col gap-4 items-center relative z-20">
                 <Card
                     className={cn(
                         'w-[600px] backdrop-blur-md bg-background/30 overflow-hidden gap-4',

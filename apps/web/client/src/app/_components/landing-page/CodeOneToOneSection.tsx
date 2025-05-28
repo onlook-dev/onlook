@@ -55,9 +55,9 @@ export function CodeOneToOneSection() {
   const [selectedDiv, setSelectedDiv] = useState<number | null>(null);
 
   return (
-    <section className="relative w-full flex justify-center bg-transparent min-h-[480px]">
+    <section className="relative w-full flex justify-center bg-transparent min-h-[480px] max-w-6xl mx-auto px-8">
       <div className="absolute left-0 top-0 w-full max-w-6xl mx-auto z-10 pointer-events-none">
-        <h2 className="text-white text-[4vw] leading-[1.1] font-light max-w-4xl text-left drop-shadow-xl">
+        <h2 className="text-white text-[4vw] leading-[1.1] font-light max-w-4xl text-left ml-12 drop-shadow-xl">
           Truly one-to-one<br />with code
         </h2>
       </div>
@@ -78,7 +78,7 @@ export function CodeOneToOneSection() {
           </div>
         </div>
         {/* Right: Code Overlay */}
-        <div className="absolute right-12 top-1/2 -translate-y-1/2 z-20" style={{transform: 'translateY(-50%) translateX(20%)'}}>
+        <div className="absolute right-24 top-1/2 -translate-y-1/2 z-20" style={{transform: 'translateY(-50%) translateX(20%)'}}>
           <div className="backdrop-blur-xl bg-background/80 border border-border/10 border-[0.5px] rounded-2xl shadow-xl shadow-black/40 p-3 w-[440px] h-[400px] flex flex-col text-left text-small font-mono text-foreground-secondary relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none rounded-2xl border border-white/10 shadow-2xl p-5" >
             <pre className="relative z-10 whitespace-pre-wrap">

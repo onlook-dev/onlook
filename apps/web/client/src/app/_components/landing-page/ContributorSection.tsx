@@ -83,7 +83,7 @@ export function ContributorSection({
     discordLink = "#"
 }: ContributorSectionProps) {
     return (
-        <div className="relative w-full flex items-center justify-center py-32 mt-8 overflow-hidden">
+        <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col md:flex-row items-right gap-24 md:gap-12 relative overflow-hidden">
             {/* Main Contributors Content */}
             <div className="w-full max-w-6xl mx-auto relative z-10 flex flex-col items-center justify-center bg-background-onlook rounded-3xl px-12 py-32 shadow-xl overflow-hidden md:[--md-scale:1] [--md-scale:0]" style={{ minWidth: 420 }}>
                 {/* Floating Circles: two concentric rings */}

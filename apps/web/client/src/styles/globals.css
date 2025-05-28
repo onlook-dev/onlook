@@ -3,3 +3,13 @@ body {
   overscroll-behavior: none;
   overflow-x: hidden;
 }
+
+.font-vujahday {
+  font-family: 'Vujahday Script', cursive;
+}
+
+.vujahday-script-regular {
+  font-family: "Vujahday Script", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
