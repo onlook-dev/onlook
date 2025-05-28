@@ -103,7 +103,9 @@ export function parseOklchValue(value: string): Color | null {
         );
 
         if (oklchMatch) {
-            l = parseFloat(oklchMatch[1] ?? '0');
+            l = oklchMatch[1]?.trim().endsWith('%')
+                ? parseFloat(oklchMatch[1]) / 100
+                : parseFloat(oklchMatch[1] ?? '0');
             c = parseFloat(oklchMatch[2] ?? '0');
 
             // Parse hue with unit support
