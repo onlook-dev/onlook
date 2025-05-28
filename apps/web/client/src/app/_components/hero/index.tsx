@@ -1,7 +1,6 @@
 'use client';
 
 import { Create } from './create';
-import { ContributorSection } from '../landing-page/ContributorSection';
 
 export function Hero() {
     return (
