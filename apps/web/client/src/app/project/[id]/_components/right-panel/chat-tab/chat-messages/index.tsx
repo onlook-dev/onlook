@@ -37,8 +37,9 @@ export const ChatMessages = observer(() => {
 
     if (!conversation) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80 h-full">
-                No conversation selected
+            <div className="flex-1 flex flex-row items-center justify-center text-foreground-tertiary/80 h-full gap-2">
+                <Icons.Shadow className="animate-spin" />
+                <p className="text-regularPlus">Loading conversation...</p>
             </div>
         );
     }
