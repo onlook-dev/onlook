@@ -42,7 +42,7 @@ const faqSections = [
             },
             {
                 question: "What is the difference between Onlook and other design tools?",
-                answer: "Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can created are unconstained by Onlook's interface. "
+                answer: "Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook's interface. "
             }
         ]
     },
