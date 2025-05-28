@@ -108,6 +108,10 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             setToolbarRight(right);
             setEditorBarAvailableWidth(window.innerWidth - left - right);
         }
+        
+        // Run measure immediately on init
+        measure();
+        
         // Initial measure after DOM paint
         requestAnimationFrame(measure);
 
@@ -139,7 +143,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         }
 
         return () => {
-            window.removeEventListener('resize', measure);
+            window.removeEventListener('resize', measure);            
             if (leftObserver) leftObserver.disconnect();
             if (rightObserver) rightObserver.disconnect();
             if (pollInterval) clearInterval(pollInterval);

@@ -217,7 +217,7 @@ export const DevTab = observer(() => {
         return () => {
             unsubscribe();
         };
-    }, [editorEngine, activeFile]);
+    }, [editorEngine.sandbox, activeFile]);
 
     // Initial file loading
     useEffect(() => {

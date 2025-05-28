@@ -56,11 +56,11 @@ export const Border = observer(() => {
                         size="toolbar"
                         className="flex items-center gap-1 text-muted-foreground hover:text-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                     >
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-center gap-1 p-1.5">
                             <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
                             <p className="text-xs">{boxState.borderWidth.num ?? 0}</p>
                         </div>
-                        <div className="flex flex-col gap-1 justify-center items-center">
+                        <div className="flex flex-col gap-1 justify-center items-center p-1.5">
                             <Icons.PencilIcon className="h-4 w-4 min-h-4 min-w-4" />
                             <div
                                 className="h-[4px] w-6 rounded-full bg-current"
