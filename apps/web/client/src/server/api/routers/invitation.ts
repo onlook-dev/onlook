@@ -5,7 +5,7 @@ import {
     projectInvitationInsertSchema,
     projectInvitations,
     userCanvases,
-    userProjects
+    userProjects,
 } from '@onlook/db';
 import { sendInvitationEmail } from '@onlook/email';
 import { ProjectRole } from '@onlook/models';
@@ -45,13 +45,6 @@ export const invitationRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: 'UNAUTHORIZED',
                     message: 'You must be logged in to invite a user',
-                });
-            }
-
-            if (!ctx.user.email) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'You must have an email to invite a user',
                 });
             }
 
@@ -123,14 +116,6 @@ export const invitationRouter = createTRPCRouter({
                     message: 'You must be logged in to accept an invitation',
                 });
             }
-
-            if (!ctx.user.email) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'You must have an email to accept an invitation',
-                });
-            }
-
 
             const invitation = await ctx.db.query.projectInvitations.findFirst({
                 where: and(
