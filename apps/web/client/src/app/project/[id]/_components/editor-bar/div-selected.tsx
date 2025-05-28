@@ -20,6 +20,7 @@ import { FontFamilySelector } from './text-inputs/font/font-family-selector';
 import { FontSizeSelector } from './text-inputs/font/font-size';
 import { FontWeightSelector } from './text-inputs/font/font-weight';
 import { TextColor } from './text-inputs/text-color';
+import { BorderColor } from './dropdowns/border-color';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
@@ -31,7 +32,7 @@ export const DIV_SELECTED_GROUPS = [
     {
         key: 'base',
         label: 'Base',
-        components: [<ColorBackground />, <Border />, <Radius />],
+        components: [<ColorBackground />, <Border />, <BorderColor />, <Radius />],
     },
     {
         key: 'layout',

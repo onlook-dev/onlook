@@ -30,12 +30,21 @@ const usePanelMeasurements = (
     const [toolbarRight, setToolbarRight] = useState<number>(0);
     const [editorBarAvailableWidth, setEditorBarAvailableWidth] = useState<number>(0);
 
+    // Use refs to store current values to avoid effect re-initialization
+    const toolbarLeftRef = useRef<number>(0);
+    const toolbarRightRef = useRef<number>(0);
+
     const measure = useCallback(() => {
         const left = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
         const right =
             window.innerWidth -
             (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
         
+        // Update refs immediately
+        toolbarLeftRef.current = left;
+        toolbarRightRef.current = right;
+        
+        // Update state to trigger re-renders
         setToolbarLeft(left);
         setToolbarRight(right);
         setEditorBarAvailableWidth(window.innerWidth - left - right);
@@ -88,8 +97,8 @@ const usePanelMeasurements = (
             const currentLeft = leftPanelRef.current?.getBoundingClientRect().right ?? 0;
             const currentRight = window.innerWidth - (rightPanelRef.current?.getBoundingClientRect().left ?? window.innerWidth);
             
-            // Only measure if values have actually changed
-            if (Math.abs(currentLeft - toolbarLeft) > 1 || Math.abs(currentRight - toolbarRight) > 1) {
+            // Use refs for comparison to avoid dependency on state values
+            if (Math.abs(currentLeft - toolbarLeftRef.current) > 1 || Math.abs(currentRight - toolbarRightRef.current) > 1) {
                 measure();
             }
         }, 100);
@@ -127,7 +136,7 @@ const usePanelMeasurements = (
             mutationObservers.forEach(observer => observer.disconnect());
             clearInterval(pollInterval);
         };
-    }, [measure, toolbarLeft, toolbarRight]);
+    }, [measure]); // Only depend on measure callback, not the state values
 
     return { toolbarLeft, toolbarRight, editorBarAvailableWidth };
 };

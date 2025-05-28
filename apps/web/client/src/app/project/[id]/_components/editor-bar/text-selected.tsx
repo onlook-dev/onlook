@@ -21,6 +21,7 @@ import { FontSizeSelector } from './text-inputs/font/font-size';
 import { FontWeightSelector } from './text-inputs/font/font-weight';
 import { TextAlignSelector } from './text-inputs/text-align';
 import { TextColor } from './text-inputs/text-color';
+import { BorderColor } from './dropdowns/border-color';
 
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [
@@ -32,7 +33,7 @@ export const TEXT_SELECTED_GROUPS = [
     {
         key: 'text-base',
         label: 'Base',
-        components: [<ColorBackground />, <Border />, <Radius />],
+        components: [<ColorBackground />, <Border />, <BorderColor />, <Radius />],
     },
     {
         key: 'text-layout',
