@@ -1,5 +1,6 @@
 import colorNamer from 'color-namer';
 import type cssColorNames from 'css-color-names';
+import { oklch, rgb } from 'culori';
 import parseCSSColor from 'parse-css-color';
 import { isNearEqual } from './math';
 
@@ -90,6 +91,65 @@ function parseHueValue(value: string): number {
     return parseFloat(value);
 }
 
+export function parseOklchValue(value: string): Color | null {
+    let l = 0,
+        c = 0,
+        h = 0,
+        a = 1;
+
+    if (value.includes('oklch')) {
+        const oklchMatch = value.match(
+            /oklch\(\s*([^,\s]+)%?\s*[,\s]\s*([^,\s]+)\s*[,\s]\s*([^,\s]+)(?:deg)?\s*(?:[,/]\s*([^)]+))?\s*\)/,
+        );
+
+        if (oklchMatch) {
+            l = oklchMatch[1]?.trim().endsWith('%')
+                ? parseFloat(oklchMatch[1]) / 100
+                : parseFloat(oklchMatch[1] ?? '0');
+            c = parseFloat(oklchMatch[2] ?? '0');
+
+            // Parse hue with unit support
+            const hueValue = oklchMatch[3];
+            h = parseHueValue(hueValue ?? '0');
+
+            if (oklchMatch[4]) {
+                a = oklchMatch[4].endsWith('%')
+                    ? parseFloat(oklchMatch[4]) / 100
+                    : parseFloat(oklchMatch[4]);
+            }
+        } else {
+            return null;
+        }
+    } else {
+        // Parse space-separated format: "l c h / a"
+        const parts = value.split(/\s+/);
+        if (parts.length >= 3) {
+            l = parseFloat(parts[0]?.replace('%', '') ?? '0');
+            c = parseFloat(parts[1] ?? '0');
+            h = parseFloat(parts[2] ?? '0');
+
+            // Check for alpha after slash
+            const slashIndex = parts.findIndex((part) => part === '/');
+            if (slashIndex !== -1 && parts[slashIndex + 1]) {
+                const alphaPart = parts[slashIndex + 1];
+                a = alphaPart?.endsWith('%')
+                    ? parseFloat(alphaPart) / 100
+                    : parseFloat(alphaPart ?? '1');
+            }
+        } else {
+            return null;
+        }
+    }
+
+    // Normalize values
+    l = Math.max(0, Math.min(1, l));
+    c = Math.max(0, c);
+    h = ((h % 360) + 360) % 360;
+    a = Math.max(0, Math.min(1, a));
+
+    return Color.oklch({ l, c, h, a });
+}
+
 export interface Palette {
     name: string;
     colors: {
@@ -116,16 +176,48 @@ export class Color {
     }
 
     static rgb(rgb: { r: number; g: number; b: number; a?: number }): Color {
-        return new Color({ ...rgb2hsv(rgb), a: rgb.a });
+        return new Color({ ...rgb2hsv(rgb), a: rgb.a ?? 1 });
     }
     static hsl(hsl: { h: number; s: number; l: number; a?: number }): Color {
-        return new Color({ ...hsl2hsv(hsl), a: hsl.a });
+        return new Color({ ...hsl2hsv(hsl), a: hsl.a ?? 1 });
+    }
+
+    static oklch(oklchColor: { l: number; c: number; h: number; a?: number }): Color {
+        // Convert OKLCH to RGB using culori
+        const oklchInput = {
+            mode: 'oklch' as const,
+            l: oklchColor.l,
+            c: oklchColor.c,
+            h: oklchColor.h,
+            alpha: oklchColor.a ?? 1,
+        };
+
+        const rgbColor = rgb(oklchInput);
+
+        if (!rgbColor) {
+            return Color.transparent;
+        }
+
+        return Color.rgb({
+            r: rgbColor.r ?? 0,
+            g: rgbColor.g ?? 0,
+            b: rgbColor.b ?? 0,
+            a: rgbColor.alpha ?? 1,
+        });
     }
 
     static from(name: keyof typeof cssColorNames): Color;
     static from(name: string): Color;
 
     static from(str: string): Color {
+        // First try to parse as OKLCH
+        if (str.includes('oklch') || /^\s*[\d.]+\s+[\d.]+\s+[\d.]+/.test(str)) {
+            const oklchColor = parseOklchValue(str);
+            if (oklchColor) {
+                return oklchColor;
+            }
+        }
+
         const color = parseCSSColor(formatHexString(str));
         if (color) {
             if (color.type === 'rgb') {
@@ -133,14 +225,14 @@ export class Color {
                     r: (color.values[0] ?? 0) / 255,
                     g: (color.values[1] ?? 0) / 255,
                     b: (color.values[2] ?? 0) / 255,
-                    a: color.alpha,
+                    a: color.alpha ?? 1,
                 });
             } else if (color.type === 'hsl') {
                 return Color.hsl({
                     h: (color.values[0] ?? 0) / 360,
                     s: (color.values[1] ?? 0) / 100,
                     l: (color.values[2] ?? 0) / 100,
-                    a: color.alpha,
+                    a: color.alpha ?? 1,
                 });
             }
         }

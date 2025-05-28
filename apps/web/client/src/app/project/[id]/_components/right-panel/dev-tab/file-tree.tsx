@@ -15,9 +15,11 @@ import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus
 interface FileTreeProps {
     onFileSelect: (filePath: string) => void;
     files: string[];
+    isLoading?: boolean;
+    onRefresh?: () => Promise<void>;
 }
 
-export const FileTree = ({ onFileSelect, files }: FileTreeProps) => {
+export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh }: FileTreeProps) => {
     const editorEngine = useEditorEngine();
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
@@ -170,6 +172,19 @@ export const FileTree = ({ onFileSelect, files }: FileTreeProps) => {
         [filesWidth],
     );
 
+    const handleRefresh = async () => {
+        if (onRefresh) {
+            await onRefresh();
+        } else {
+            try {
+                await editorEngine.sandbox.index();
+                await editorEngine.sandbox.listAllFiles();
+            } catch (error) {
+                console.error('Error refreshing files:', error);
+            }
+        }
+    }
+
     return (
         <div
             ref={containerRef}
@@ -184,6 +199,7 @@ export const FileTree = ({ onFileSelect, files }: FileTreeProps) => {
                                 className="h-8 text-xs pr-8"
                                 placeholder="Search files"
                                 value={searchQuery}
+                                disabled={isLoading}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
                             />
@@ -202,16 +218,19 @@ export const FileTree = ({ onFileSelect, files }: FileTreeProps) => {
                                     variant={'default'}
                                     size={'icon'}
                                     className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                                    onClick={() => {
-                                        editorEngine.sandbox.index();
-                                    }}
+                                    disabled={isLoading}
+                                    onClick={handleRefresh}
                                 >
-                                    <Icons.Reload />
+                                    {isLoading ? (
+                                        <div className="animate-spin h-4 w-4 border-2 border-foreground-primary rounded-full border-t-transparent"></div>
+                                    ) : (
+                                        <Icons.Reload />
+                                    )}
                                 </Button>
                             </TooltipTrigger>
                             <TooltipPortal>
                                 <TooltipContent>
-                                    <p>Refresh files</p>
+                                    <p>{isLoading ? 'Loading files...' : 'Refresh files'}</p>
                                 </TooltipContent>
                             </TooltipPortal>
                         </Tooltip>
@@ -222,9 +241,14 @@ export const FileTree = ({ onFileSelect, files }: FileTreeProps) => {
                     className="flex-1 overflow-auto px-3 text-xs"
                     style={{ height: 'calc(100% - 56px)' }}
                 >
-                    {filteredFiles.length === 0 ? (
+                    {isLoading ? (
+                        <div className="flex flex-col justify-center items-center h-full text-sm text-foreground/50">
+                            <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
+                            <span>Loading files...</span>
+                        </div>
+                    ) : filteredFiles.length === 0 ? (
                         <div className="flex justify-center items-center h-full text-sm text-foreground/50">
-                            No files found
+                            {files.length === 0 ? 'No files found' : 'No files match your search'}
                         </div>
                     ) : (
                         <div className="h-full">

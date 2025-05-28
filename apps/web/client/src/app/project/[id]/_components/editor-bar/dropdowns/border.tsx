@@ -1,45 +1,24 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Color } from '@onlook/utility';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useBoxControl } from '../hooks/use-box-control';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
-import { InputColor } from '../inputs/input-color';
 import { InputRange } from '../inputs/input-range';
 import { SpacingInputs } from '../inputs/spacing-inputs';
 import { observer } from 'mobx-react-lite';
 
 export const Border = observer(() => {
-    const editorEngine = useEditorEngine();
-    const initialColor = editorEngine.style.selectedStyle?.styles.computed.borderColor;
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } =
         useBoxControl('border');
-    const [borderColor, setBorderColor] = useState<string>('#080808');
 
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'border-dropdown',
     });
-
-    useEffect(() => {
-        const color = editorEngine.style.selectedStyle?.styles.computed.borderColor;
-        if (color) {
-            setBorderColor(Color.from(color ?? '#080808').toHex());
-        }
-    }, [editorEngine.style.selectedStyle?.styles.computed.borderColor]);
-
-    const handleColorChange = (color: string) => {
-        setBorderColor(color);
-    };
-
-    useEffect(() => {
-        setBorderColor(Color.from(initialColor ?? '#080808').toHex());
-    }, [initialColor]);
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
@@ -56,17 +35,8 @@ export const Border = observer(() => {
                         size="toolbar"
                         className="flex items-center gap-1 text-muted-foreground hover:text-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                     >
-                        <div className="flex items-center justify-center gap-1">
-                            <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
-                            <p className="text-xs">{boxState.borderWidth.num ?? 0}</p>
-                        </div>
-                        <div className="flex flex-col gap-1 justify-center items-center">
-                            <Icons.PencilIcon className="h-4 w-4 min-h-4 min-w-4" />
-                            <div
-                                className="h-[4px] w-6 rounded-full bg-current"
-                                style={{ backgroundColor: borderColor }}
-                            />
-                        </div>
+                        <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
+                        <p className="text-xs">{boxState.borderWidth.num ?? 0}</p>
                     </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
@@ -115,20 +85,6 @@ export const Border = observer(() => {
                         }}
                         onChange={handleIndividualChange}
                     />
-                )}
-                {(activeTab === 'all'
-                    ? (boxState.borderWidth.num ?? 0) > 0
-                    : (boxState.borderTopWidth.num ?? 0) > 0 ||
-                      (boxState.borderRightWidth.num ?? 0) > 0 ||
-                      (boxState.borderBottomWidth.num ?? 0) > 0 ||
-                      (boxState.borderLeftWidth.num ?? 0) > 0) && (
-                    <div className="mt-3">
-                        <InputColor
-                            color={borderColor}
-                            elementStyleKey="borderColor"
-                            onColorChange={handleColorChange}
-                        />
-                    </div>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>

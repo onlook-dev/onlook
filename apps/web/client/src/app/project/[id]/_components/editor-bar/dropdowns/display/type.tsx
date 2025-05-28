@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { InputRadio } from '../../inputs/input-radio';
 import { layoutTypeOptions } from './index';
 
-export const TypeInput = () => {
+export const TypeInput = memo(() => {
     const editorEngine = useEditorEngine();
     const [value, setValue] = useState<string>(
         editorEngine.style.selectedStyle?.styles.computed.display ?? 'block',
@@ -27,4 +27,4 @@ export const TypeInput = () => {
             />
         </div>
     );
-};
+});

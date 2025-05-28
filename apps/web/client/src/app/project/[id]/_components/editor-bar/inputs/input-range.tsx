@@ -25,7 +25,6 @@ export const InputRange = ({
     onChange,
     onUnitChange,
 }: InputRangeProps) => {
-    const Icon = icon ? Icons[icon] : Icons.Padding;
     const [localValue, setLocalValue] = useState(String(value));
     const rangeRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -121,6 +120,11 @@ export const InputRange = ({
                         onChange={handleChange}
                         onBlur={handleBlur}
                         className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleBlur();
+                            }
+                        }}
                     />
 
                     <DropdownMenu>

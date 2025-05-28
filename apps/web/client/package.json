@@ -52,13 +52,13 @@
         "@trpc/client": "^11.0.0",
         "@trpc/react-query": "^11.0.0",
         "@trpc/server": "^11.0.0",
-        "@types/webfontloader": "^1.6.38",
         "@uiw/codemirror-extensions-basic-setup": "^4.23.10",
         "@uiw/react-codemirror": "^4.23.10",
         "@xterm/xterm": "^5.5.0",
         "ai": "^4.3.10",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "culori": "^4.0.1",
         "dayjs": "^1.11.13",
         "embla-carousel-react": "^8.6.0",
         "flexsearch": "^0.8.160",
@@ -95,6 +95,8 @@
         "zod": "^3.24.3"
     },
     "devDependencies": {
+        "@types/culori": "^4.0.0",
+        "@types/webfontloader": "^1.6.38",
         "@eslint/eslintrc": "^3.3.1",
         "@onlook/typescript": "*",
         "@tailwindcss/postcss": "^4.0.15",

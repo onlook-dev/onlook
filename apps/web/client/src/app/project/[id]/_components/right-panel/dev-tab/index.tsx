@@ -52,8 +52,20 @@ export const DevTab = observer(() => {
     const [isDirty, setIsDirty] = useState(false);
     const [isFilesVisible, setIsFilesVisible] = useState(true);
     const [files, setFiles] = useState<string[]>([]);
+    const [isFilesLoading, setIsFilesLoading] = useState(true);
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
+
+    // Helper function to check if sandbox is connected and ready
+    const isSandboxReady = (): boolean => {
+        return !!(editorEngine.sandbox.session.session && !editorEngine.sandbox.session.isConnecting);
+    };
+
+    // Helper function to handle sandbox not ready scenarios
+    const handleSandboxNotReady = (operation: string): void => {
+        const message = `Cannot ${operation}: sandbox not connected`;
+        console.error(message);
+    };
 
     const getActiveEditorView = (): EditorView | undefined => {
         if (!activeFile) {
@@ -100,6 +112,11 @@ export const DevTab = observer(() => {
 
     async function getElementCodeRange(element: any): Promise<CodeRange | null> {
         if (!activeFile || !element.oid) {
+            return null;
+        }
+
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('get element code range');
             return null;
         }
 
@@ -189,10 +206,17 @@ export const DevTab = observer(() => {
     // Subscribe to file events
     useEffect(() => {
         const handleFileEvent = async (event: FileEvent) => {
-            // Only fetch all files on initial load or when files are added/removed
-            if (event.type === 'add' || event.type === 'remove' || files.length === 0) {
-                const files = await editorEngine.sandbox.listAllFiles();
-                setFiles(files);
+            // Only fetch all files when files are added/removed
+            if (event.type === 'add' || event.type === 'remove') {
+                setIsFilesLoading(true);
+                try {
+                    const files = await editorEngine.sandbox.listAllFiles();
+                    setFiles(files);
+                } catch (error) {
+                    console.error('Error loading files:', error);
+                } finally {
+                    setIsFilesLoading(false);
+                }
             }
 
             if (event.type === 'change') {
@@ -211,7 +235,69 @@ export const DevTab = observer(() => {
         };
     }, [editorEngine.sandbox, activeFile]);
 
+    // Load files when sandbox becomes connected
+    useEffect(() => {
+        const loadInitialFiles = async () => {
+            // Only load files if sandbox is connected and not connecting
+            if (!isSandboxReady()) {
+                return;
+            }
+
+            setIsFilesLoading(true);
+            try {
+                const files = await editorEngine.sandbox.listAllFiles();
+                setFiles(files);
+            } catch (error) {
+                console.error('Error loading initial files:', error);
+            } finally {
+                setIsFilesLoading(false);
+            }
+        };
+
+        loadInitialFiles();
+    }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
+
+    // Clear files and opened files when sandbox disconnects
+    useEffect(() => {
+        if (!isSandboxReady()) {
+            // Clear all state when sandbox is disconnected
+            setFiles([]);
+            setOpenedFiles([]);
+            setActiveFile(null);
+            setHighlightRange(null);
+            setIsDirty(false);
+            setIsFilesLoading(false);
+            
+            // Clean up all editor instances
+            editorViewsRef.current.forEach((view) => view.destroy());
+            editorViewsRef.current.clear();
+        }
+    }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
+
+    const handleRefreshFiles = async () => {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('refresh files');
+            return;
+        }
+
+        setIsFilesLoading(true);
+        try {
+            await editorEngine.sandbox.index();
+            const files = await editorEngine.sandbox.listAllFiles();
+            setFiles(files);
+        } catch (error) {
+            console.error('Error refreshing files:', error);
+        } finally {
+            setIsFilesLoading(false);
+        }
+    };
+
     async function loadNewContent(filePath: string) {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('load new content');
+            return;
+        }
+
         try {
             const existedFileIndex = openedFiles.findIndex((f) => f.path === filePath);
             if (existedFileIndex === -1) {
@@ -245,6 +331,11 @@ export const DevTab = observer(() => {
     }
 
     async function loadFile(filePath: string): Promise<EditorFile | null> {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('load file');
+            return null;
+        }
+
         try {
             setIsLoading(true);
             const content = await editorEngine.sandbox.readFile(filePath);
@@ -294,6 +385,11 @@ export const DevTab = observer(() => {
     }
 
     async function getFilePathFromOid(oid: string): Promise<string | null> {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('get file path from OID');
+            return null;
+        }
+
         // Try to get the actual file path from the object ID
         try {
             const templateNode = await editorEngine.sandbox.getTemplateNode(oid);
@@ -310,6 +406,11 @@ export const DevTab = observer(() => {
     // Add saving functionality
     async function saveFile() {
         if (!activeFile) {
+            return;
+        }
+
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('save file');
             return;
         }
 
@@ -488,112 +589,129 @@ export const DevTab = observer(() => {
                 </div>
             </div>
 
-            <div className="flex flex-1 min-h-0 overflow-hidden">
-                {isFilesVisible && <FileTree onFileSelect={loadFile} files={files} />}
-
-                {/* Editor section */}
-                <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                    {/* File tabs */}
-                    <div className="flex items-center justify-between h-10 border-b-[0.5px] flex-shrink-0">
-                        <div className="flex items-center h-full overflow-x-auto">
-                            {openedFiles.map((file: EditorFile) => (
-                                <FileTab
-                                    key={file.id}
-                                    filename={file.filename}
-                                    isActive={activeFile?.id === file.id}
-                                    isDirty={file.isDirty}
-                                    onClick={() => handleFileSelect(file)}
-                                    onClose={() => closeFile(file.id)}
-                                />
-                            ))}
-                        </div>
-
-                        <div className="border-l-[0.5px] h-full flex items-center p-1">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger className="text-foreground hover:text-foreground-hover hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-3">
-                                    <Icons.DotsHorizontal className="h-4 w-4" />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="-mt-1">
-                                    <DropdownMenuItem
-                                        onClick={() => activeFile && closeFile(activeFile.id)}
-                                        disabled={!activeFile}
-                                    >
-                                        Close file
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onClick={() => closeAllFiles()}
-                                        disabled={openedFiles.length === 0}
-                                    >
-                                        Close all
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
+            {/* Show connection status when sandbox is not ready */}
+            {!isSandboxReady() && (
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
+                        <span className="text-sm text-muted-foreground">
+                            {editorEngine.sandbox.session.isConnecting 
+                                ? 'Connecting to sandbox...' 
+                                : 'Waiting for sandbox connection...'}
+                        </span>
                     </div>
+                </div>
+            )}
 
-                    {/* Code Editor Area */}
-                    <div className="flex-1 relative overflow-hidden">
-                        {isLoading && (
-                            <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
-                                <div className="flex flex-col items-center">
-                                    <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
-                                    <span className="mt-2 text-sm">Loading file...</span>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={editorContainer} className="h-full">
-                            {openedFiles.map((file) => (
-                                <div
-                                    key={file.id}
-                                    className="h-full"
-                                    style={{
-                                        display: activeFile?.id === file.id ? 'block' : 'none',
-                                    }}
-                                >
-                                    <CodeMirror
+            {/* Main content - only show when sandbox is connected */}
+            {isSandboxReady() && (
+                <div className="flex flex-1 min-h-0 overflow-hidden">
+                    {isFilesVisible && <FileTree onFileSelect={loadFile} files={files} isLoading={isFilesLoading} onRefresh={handleRefreshFiles} />}
+
+                    {/* Editor section */}
+                    <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                        {/* File tabs */}
+                        <div className="flex items-center justify-between h-10 border-b-[0.5px] flex-shrink-0">
+                            <div className="flex items-center h-full overflow-x-auto">
+                                {openedFiles.map((file: EditorFile) => (
+                                    <FileTab
                                         key={file.id}
-                                        value={file.content}
-                                        height="100%"
-                                        theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
-                                        extensions={[
-                                            ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
-                                            ...getExtensions(file.language),
-                                        ]}
-                                        onChange={(value) => {
-                                            if (highlightRange) {
-                                                setHighlightRange(null);
-                                            }
-                                            updateFileContent(file.id, value);
-                                        }}
-                                        className="h-full overflow-hidden"
-                                        onCreateEditor={(editor) => {
-                                            editorViewsRef.current.set(file.id, editor);
+                                        filename={file.filename}
+                                        isActive={activeFile?.id === file.id}
+                                        isDirty={file.isDirty}
+                                        onClick={() => handleFileSelect(file)}
+                                        onClose={() => closeFile(file.id)}
+                                    />
+                                ))}
+                            </div>
 
-                                            editor.dom.addEventListener('mousedown', () => {
+                            <div className="border-l-[0.5px] h-full flex items-center p-1">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="text-foreground hover:text-foreground-hover hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-3">
+                                        <Icons.DotsHorizontal className="h-4 w-4" />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="-mt-1">
+                                        <DropdownMenuItem
+                                            onClick={() => activeFile && closeFile(activeFile.id)}
+                                            disabled={!activeFile}
+                                        >
+                                            Close file
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => closeAllFiles()}
+                                            disabled={openedFiles.length === 0}
+                                        >
+                                            Close all
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
+
+                        {/* Code Editor Area */}
+                        <div className="flex-1 relative overflow-hidden">
+                            {isLoading && (
+                                <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+                                    <div className="flex flex-col items-center">
+                                        <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
+                                        <span className="mt-2 text-sm">Loading file...</span>
+                                    </div>
+                                </div>
+                            )}
+                            <div ref={editorContainer} className="h-full">
+                                {openedFiles.map((file) => (
+                                    <div
+                                        key={file.id}
+                                        className="h-full"
+                                        style={{
+                                            display: activeFile?.id === file.id ? 'block' : 'none',
+                                        }}
+                                    >
+                                        <CodeMirror
+                                            key={file.id}
+                                            value={file.content}
+                                            height="100%"
+                                            theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
+                                            extensions={[
+                                                ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
+                                                ...getExtensions(file.language),
+                                            ]}
+                                            onChange={(value) => {
                                                 if (highlightRange) {
                                                     setHighlightRange(null);
                                                 }
-                                            });
+                                                updateFileContent(file.id, value);
+                                            }}
+                                            className="h-full overflow-hidden"
+                                            onCreateEditor={(editor) => {
+                                                editorViewsRef.current.set(file.id, editor);
 
-                                            // If this file is the active file and we have a highlight range,
-                                            // trigger the highlight effect again
-                                            if (
-                                                activeFile &&
-                                                activeFile.id === file.id &&
-                                                highlightRange
-                                            ) {
-                                                setTimeout(() => {
-                                                    setHighlightRange({ ...highlightRange });
-                                                }, 300);
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            ))}
+                                                editor.dom.addEventListener('mousedown', () => {
+                                                    if (highlightRange) {
+                                                        setHighlightRange(null);
+                                                    }
+                                                });
+
+                                                // If this file is the active file and we have a highlight range,
+                                                // trigger the highlight effect again
+                                                if (
+                                                    activeFile &&
+                                                    activeFile.id === file.id &&
+                                                    highlightRange
+                                                ) {
+                                                    setTimeout(() => {
+                                                        setHighlightRange({ ...highlightRange });
+                                                    }, 300);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 });
