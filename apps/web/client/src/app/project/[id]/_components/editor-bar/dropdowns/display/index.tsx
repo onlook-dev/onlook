@@ -5,6 +5,7 @@ import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
+import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
 import { HorizontalAlignInput, VerticalAlignInput } from './align';
 import { DirectionInput } from './direction';
@@ -29,13 +30,17 @@ export const Display = observer(() => {
     const [layoutType, setLayoutType] = useState(
         editorEngine.style.selectedStyle?.styles.computed.display ?? 'block',
     );
+    
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'display-dropdown' 
+    });
 
     useEffect(() => {
         setLayoutType(editorEngine.style.selectedStyle?.styles.computed.display ?? 'block');
-    }, [editorEngine.style.selectedStyle]);
+    }, [editorEngine.style.selectedStyle?.styles.computed.display]);
 
     return (
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Display" side="bottom" className="mt-1" hideArrow>
                 <DropdownMenuTrigger asChild>
                     <Button

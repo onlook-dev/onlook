@@ -6,6 +6,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { DivSelected } from './div-selected';
+import { DropdownManagerProvider } from './hooks/use-dropdown-manager';
 import { ImgSelected } from './img-selected';
 import { TextSelected } from './text-selected';
 
@@ -37,25 +38,27 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
     const selectedTag = getSelectedTag(editorEngine.elements.selected);
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={cn(
-                "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden",
-                editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
-            )}
-            transition={{
-                type: 'spring',
-                bounce: 0.1,
-                duration: 0.4,
-                stiffness: 200,
-                damping: 25,
-            }}
-        >
-            {selectedTag === 'text' && <TextSelected availableWidth={availableWidth} />}
-            {selectedTag === 'div' && <DivSelected availableWidth={availableWidth} />}
-            {selectedTag === 'image' && <ImgSelected />}
-        </motion.div>
+        <DropdownManagerProvider>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className={cn(
+                    "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden",
+                    editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
+                )}
+                transition={{
+                    type: 'spring',
+                    bounce: 0.1,
+                    duration: 0.4,
+                    stiffness: 200,
+                    damping: 25,
+                }}
+            >
+                {selectedTag === 'text' && <TextSelected availableWidth={availableWidth} />}
+                {selectedTag === 'div' && <DivSelected availableWidth={availableWidth} />}
+                {selectedTag === 'image' && <ImgSelected />}
+            </motion.div>
+        </DropdownManagerProvider>
     );
 });

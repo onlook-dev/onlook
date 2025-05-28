@@ -28,11 +28,13 @@
     "license": "Apache-2.0",
     "homepage": "https://onlook.com",
     "devDependencies": {
-        "@onlook/typescript": "*"
+        "@onlook/typescript": "*",
+        "@types/culori": "^2.0.4"
     },
     "dependencies": {
         "@onlook/fonts": "*",
         "browser-image-compression": "^2.0.2",
+        "culori": "^4.0.1",
         "is-subdir": "^1.2.0",
         "normalize-url": "^8.0.1",
         "strip-ansi": "^7.1.0",

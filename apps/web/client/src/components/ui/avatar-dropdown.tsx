@@ -1,6 +1,7 @@
 'use client';
 
 import { useUserManager } from '@/components/store/user';
+import { Routes } from '@/utils/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import {
     DropdownMenu,
@@ -9,10 +10,9 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons/index';
-import { redirect, usePathname } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 export const CurrentUserAvatar = ({ className, disableDropdown = false }: { className?: string, disableDropdown?: boolean }) => {
-    const currentPath = usePathname();
     const userManager = useUserManager();
     const user = userManager.user;
     const initials = user?.name
@@ -23,7 +23,7 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
 
     const handleSignOut = async () => {
         await userManager.signOut();
-        redirect(currentPath);
+        redirect(Routes.LOGIN);
     };
 
     return (

@@ -6,6 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useDimensionControl } from '../hooks/use-dimension-control';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
 
@@ -13,8 +14,12 @@ export const Height = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('height');
 
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'height-dropdown' 
+    });
+
     return (
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow>
                 <DropdownMenuTrigger asChild>
                     <Button

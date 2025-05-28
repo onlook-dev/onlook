@@ -3,19 +3,20 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useMemo } from 'react';
 import { ColorPickerContent } from '../inputs/color-picker';
 import { useColorUpdate } from '../hooks/use-color-update';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { observer } from 'mobx-react-lite';
 
-interface ColorBackgroundProps {
-    className?: string;
-}
-
-export const ColorBackground = observer(({ className }: ColorBackgroundProps) => {
+export const ColorBackground = observer(() => {
     const editorEngine = useEditorEngine();
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.backgroundColor;
 
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'color-background-popover' 
+    });
 
     const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
         elementStyleKey: 'backgroundColor',
@@ -26,7 +27,7 @@ export const ColorBackground = observer(({ className }: ColorBackgroundProps) =>
 
     const ColorTrigger = useMemo(() => (
         <div 
-            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center rounded-md border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white"
+            className="gap-1 text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center rounded-md border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white"
             role="button"
             tabIndex={0}
             aria-label="Change background color"
@@ -46,11 +47,20 @@ export const ColorBackground = observer(({ className }: ColorBackgroundProps) =>
     ), [colorHex]);
 
     return (
-        <div className={`flex flex-col gap-2 ${className ?? ''}`}>
-            <Popover>
-                <PopoverTrigger asChild>
-                    {ColorTrigger}
-                </PopoverTrigger>
+        <div className="flex flex-col gap-2">
+            <Popover open={isOpen} onOpenChange={onOpenChange}>
+                <Tooltip>
+                    <div>
+                        <TooltipTrigger asChild>
+                            <PopoverTrigger asChild>
+                                {ColorTrigger}
+                            </PopoverTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="mt-1" hideArrow>
+                            Background Color
+                        </TooltipContent>
+                    </div>
+                </Tooltip>
                 <PopoverContent
                     className="w-[220px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
                     side="bottom"

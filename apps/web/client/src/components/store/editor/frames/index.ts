@@ -60,10 +60,6 @@ export class FramesManager {
         return canvas;
     }
 
-    private updateFramesArray(id: string, updatedFrame: FrameImpl): void {
-        this.frames = this.frames.map((f) => (f.id === id ? updatedFrame : f));
-    }
-
     private updateFrameSelection(id: string, selected: boolean): void {
         const data = this.frameIdToData.get(id);
         if (data) {
@@ -245,7 +241,12 @@ export class FramesManager {
         if (!frame) return;
 
         const updatedFrame = FrameImpl.fromJSON({ ...frame, ...newFrame });
-        this.updateFramesArray(id, updatedFrame);
+        this.frames = this.frames.map((f) => (f.id === id ? updatedFrame : f));
+
+        const data = this.frameIdToData.get(id);
+        if (data) {
+            this.frameIdToData.set(id, { ...data, frame: updatedFrame });
+        }
     }
 
     async updateAndSaveToStorage(frame: WebFrame) {
@@ -267,13 +268,7 @@ export class FramesManager {
 
             const success = await api.frame.update.mutate(frameToUpdate);
 
-            if (success) {
-                const oldFrame = this.validateFrame(frame.id, 'update');
-                if (!oldFrame) return;
-
-                const updatedFrame = FrameImpl.fromJSON({ ...oldFrame, ...frame });
-                this.updateFramesArray(frame.id, updatedFrame);
-            } else {
+            if (!success) {
                 console.error('Failed to update frame');
             }
         } catch (error) {

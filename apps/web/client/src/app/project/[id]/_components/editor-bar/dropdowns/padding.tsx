@@ -9,6 +9,7 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
+import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
@@ -17,9 +18,13 @@ import { observer } from "mobx-react-lite";
 export const Padding = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
+    
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'padding-dropdown' 
+    });
 
     return (
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Padding" side="bottom" className="mt-1" hideArrow>
                 <DropdownMenuTrigger asChild>
                     <Button

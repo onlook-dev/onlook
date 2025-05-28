@@ -3,11 +3,11 @@ import { makeAutoObservable } from 'mobx';
 
 // Stubs for now
 export class DomainsManager {
-    constructor() {}
+    constructor() { }
 }
 
 export class VersionsManager {
-    constructor(private projectManager: ProjectManager) {}
+    constructor(private projectManager: ProjectManager) { }
 }
 
 export class ProjectManager {
@@ -41,5 +41,7 @@ export class ProjectManager {
         this.project = newProject;
     }
 
-    dispose() {}
+    clear() {
+        this.project = null
+    }
 }

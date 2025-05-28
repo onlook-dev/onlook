@@ -1,5 +1,6 @@
 export interface UserMetadata {
     id: string;
-    name: string;
-    avatarUrl: string | null;
+    name?: string;
+    avatarUrl?: string | null;
+    email?: string;
 }

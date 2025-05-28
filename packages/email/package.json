@@ -1,0 +1,42 @@
+{
+    "name": "@onlook/email",
+    "description": "A library for sending emails",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "version": "0.0.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "scripts": {
+        "dev": "email dev --dir ./src/templates --port 4444",
+        "clean": "rm -rf node_modules",
+        "lint": "eslint --fix .",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "onlook",
+        "email",
+        "resend"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.com",
+    "devDependencies": {
+        "@onlook/typescript": "*"
+    },
+    "dependencies": {
+        "@react-email/components": "0.0.41",
+        "react": "19.1.0",
+        "react-dom": "19.1.0",
+        "react-email": "4.0.15",
+        "resend": "^4.5.1"
+    }
+}

@@ -4,6 +4,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useColorUpdate } from '../hooks/use-color-update';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { ColorPickerContent } from '../inputs/color-picker';
 import { useTextControl } from '../hooks/use-text-control';
 import { observer } from 'mobx-react-lite';
@@ -11,6 +12,9 @@ import { observer } from 'mobx-react-lite';
 export const TextColor = observer(
     () => {
         const { handleTextColorChange, textState } = useTextControl();
+        const { isOpen, onOpenChange } = useDropdownControl({ 
+            id: 'text-color-popover' 
+        });
 
         const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
             elementStyleKey: 'color',
@@ -19,7 +23,7 @@ export const TextColor = observer(
         });
 
         return (
-            <Popover>
+            <Popover open={isOpen} onOpenChange={onOpenChange}>
                 <Tooltip>
                     <div>
                         <TooltipTrigger asChild>
@@ -28,7 +32,7 @@ export const TextColor = observer(
                                     <Icons.TextColorSymbol className="h-3.5 w-3.5" />
                                     <div
                                         className="h-[2.5px] w-5.5 rounded-full bg-current"
-                                        style={{ backgroundColor: tempColor.toHex() || '#000000' }}
+                                        style={{ backgroundColor: textState.textColor || '#000000' }}
                                     />
                                 </div>
                             </PopoverTrigger>

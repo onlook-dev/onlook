@@ -23,4 +23,4 @@ jobs:
 
       - run: bun install
 
-      - run: bun run db:push
+      - run: bun run db:push -- --force

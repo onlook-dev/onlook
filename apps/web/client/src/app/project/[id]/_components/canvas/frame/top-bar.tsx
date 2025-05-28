@@ -38,7 +38,12 @@ export const TopBar = observer(
                 e.preventDefault();
                 e.stopPropagation();
 
-                editorEngine.frames.updateAndSaveToStorage(frame);
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                const moved = deltaX !== 0 || deltaY !== 0;
+                if (moved) {
+                    editorEngine.frames.updateAndSaveToStorage(frame);
+                }
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };
