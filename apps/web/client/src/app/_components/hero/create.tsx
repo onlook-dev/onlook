@@ -368,7 +368,7 @@ export function Create() {
                                         onClick={handleSubmit}
                                     >
                                         {isLoading ? (
-                                            <Icons.Shadow className="w-5 h-5 animate-spin text-background" />
+                                            <Icons.Shadow className="w-5 h-5 animate-pulse text-background" />
                                         ) : (
                                             <Icons.ArrowRight
                                                 className={cn(

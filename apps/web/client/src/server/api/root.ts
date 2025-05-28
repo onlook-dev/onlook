@@ -1,5 +1,5 @@
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
-import { projectRouter, userRouter } from './routers';
+import { invitationRouter, projectRouter, userRouter } from './routers';
 import { chatRouter } from './routers/chat';
 import { sandboxRouter } from './routers/sandbox';
 import { frameRouter } from './routers/frame';
@@ -14,6 +14,7 @@ import { userCanvasRouter } from './routers/user-canvas';
 export const appRouter = createTRPCRouter({
     sandbox: sandboxRouter,
     user: userRouter,
+    invitation: invitationRouter,
     project: projectRouter,
     chat: chatRouter,
     frame: frameRouter,

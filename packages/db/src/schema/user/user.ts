@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
-import { authUsers } from '../supabase/user';
+import { authUsers } from '../supabase';
 import { userSettings } from './settings';
 import { userCanvases } from './user-canvas';
 import { userProjects } from './user-project';
@@ -16,6 +16,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     userCanvases: many(userCanvases),
     userProjects: many(userProjects),
     userSettings: one(userSettings),
+    authUser: one(authUsers),
 }));
 
 export const userInsertSchema = createInsertSchema(users);

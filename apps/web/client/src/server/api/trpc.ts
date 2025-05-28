@@ -10,6 +10,8 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
+import type { User } from '@supabase/supabase-js';
+import type { SetRequiredDeep } from 'type-fest';
 
 import { createClient } from '@/utils/supabase/server';
 import { db } from '@onlook/db/src/client';
@@ -130,10 +132,18 @@ export const protectedProcedure = t.procedure.use(timingMiddleware).use(({ ctx, 
     if (!ctx.user) {
         throw new TRPCError({ code: 'UNAUTHORIZED' });
     }
+
+    if (!ctx.user.email) {
+        throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'User must have an email address to access this resource',
+        });
+    }
+
     return next({
         ctx: {
             // infers the `session` as non-nullable
-            user: ctx.user,
+            user: ctx.user as SetRequiredDeep<User, 'email'>,
             db: ctx.db,
         },
     });
