@@ -1,4 +1,3 @@
-import { DefaultSettings } from '@onlook/constants';
 import type { Canvas as DbCanvas } from '@onlook/db';
 import { v4 as uuidv4 } from 'uuid';
 

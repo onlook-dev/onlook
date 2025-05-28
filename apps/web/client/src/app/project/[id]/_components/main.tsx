@@ -37,39 +37,50 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     );
 
     useEffect(() => {
-        if (!result) {
-            return;
-        }
-        const { project, canvas, userCanvas, frames, conversation } = result;
-        projectManager.project = project;
+        const initializeProject = async () => {
+            if (!result) {
+                console.error('No result');
+                return;
+            }
+            const { project, canvas, userCanvas, frames, conversation } = result;
+            projectManager.project = project;
 
-        if (project.sandbox?.id) {
-            if (userManager.user?.id) {
-                if (!editorEngine.sandbox.session.session) {
-                    editorEngine.sandbox.session.start(project.sandbox.id, userManager.user.id);
+            if (project.sandbox?.id) {
+                if (userManager.user?.id) {
+                    if (!editorEngine.sandbox.session.session) {
+                        await editorEngine.sandbox.session.start(project.sandbox.id, userManager.user.id);
+                    }
+                } else {
+                    console.error('Initializing project: No user id');
                 }
             } else {
-                console.error('No user id');
+                console.error('Initializing project: No sandbox id');
             }
-        } else {
-            console.error('No sandbox id');
-        }
 
-        if (canvas) {
-            editorEngine.canvas.applyCanvas(userCanvas);
-        } else {
-            console.error('No canvas');
-        }
+            if (canvas) {
+                editorEngine.canvas.applyCanvas(userCanvas);
+            } else {
+                console.error('Initializing project: No canvas');
+            }
 
-        if (frames) {
-            editorEngine.frames.applyFrames(frames);
-        } else {
-            console.error('No frames');
-        }
+            if (frames) {
+                editorEngine.frames.applyFrames(frames);
+            } else {
+                console.error('Initializing project: No frames');
+            }
 
-        if (conversation) {
-            editorEngine.chat.conversation.setCurrentConversation(conversation);
-        }
+            if (conversation) {
+                editorEngine.chat.conversation.setCurrentConversation(conversation);
+            } else {
+                console.error('Initializing project: No conversation');
+            }
+        };
+
+        initializeProject().catch(error => {
+            console.error('Error initializing project:', error);
+        }).finally(() => {
+            resumeCreate();
+        });
 
         return () => {
             editorEngine.sandbox.clear();
@@ -77,23 +88,23 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     }, [result, userManager.user?.id]);
 
     useEffect(() => {
-        console.log('useEffect creationData',
-            editorEngine.chat.conversation.current,
-            createManager.pendingCreationData,
-            editorEngine.sandbox.session.session,
-            projectId
-        );
+
+    }, [
+        editorEngine.chat.conversation.current,
+        createManager.pendingCreationData,
+        editorEngine.sandbox.session.session,
+        projectId,
+    ]);
+
+    const resumeCreate = () => {
         const creationData = createManager.pendingCreationData;
         if (!creationData) return;
 
-        if (projectId !== creationData.project.id) return;
-
+        const resumeCorrectProject = projectId === creationData.project.id;
         const conversationReady = !!editorEngine.chat.conversation.current;
         const sandboxConnected = !!editorEngine.sandbox.session.session;
+        if (!conversationReady || !sandboxConnected || !resumeCorrectProject) return;
 
-        if (!conversationReady || !sandboxConnected) return;
-
-        console.log('creating creationData');
         editorEngine.chat
             .getCreateMessages(creationData.prompt, creationData.images)
             .then((messages) => {
@@ -107,13 +118,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             .catch((error) => {
                 console.error('Error getting creation messages:', error);
             });
-    }, [
-        editorEngine.chat.conversation.current,
-        createManager.pendingCreationData,
-        editorEngine.sandbox.session.session,
-        projectId,
-        sendMessages,
-    ]);
+    }
 
     if (isLoading) {
         return (

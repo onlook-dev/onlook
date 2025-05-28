@@ -10,13 +10,13 @@ import {
     userCanvases,
     userProjects,
     type Canvas,
-    type UserCanvas,
+    type UserCanvas
 } from '@onlook/db';
-import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
+import { ProjectRole, type ChatConversation } from '@onlook/models';
+import { createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { ProjectRole } from '@onlook/models';
 
 export const projectRouter = createTRPCRouter({
     getFullProject: protectedProcedure
@@ -54,14 +54,14 @@ export const projectRouter = createTRPCRouter({
             const userCanvas: UserCanvas =
                 dbUserCanvas ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
 
+            const conversation: ChatConversation = toConversation(project.conversations[0] ?? createDefaultConversation(project.id));
+
             return {
                 project: toProject(project),
                 canvas,
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
-                conversation: project.conversations[0]
-                    ? toConversation(project.conversations[0])
-                    : null,
+                conversation
             };
         }),
     create: protectedProcedure
