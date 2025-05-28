@@ -70,7 +70,7 @@ const faqSections = [
             },
             {
                 question: "Why is Onlook open-source?",
-                answer: "Developers have historically been second-rate citizens in the design process. Onlook was founded to bridge the divide between design and development, and we wanted to make developers first-class citizens alongside designers. We chose to be open-source to give developers transperancy into how we are building Onlook and how the work created through Onlook will complement the work of developers."
+                answer: "Developers have historically been second-rate citizens in the design process. Onlook was founded to bridge the divide between design and development, and we wanted to make developers first-class citizens alongside designers. We chose to be open-source to give developers transparency into how we are building Onlook and how the work created through Onlook will complement the work of developers."
             },
             {
                 question: "Where is Onlook based?",
