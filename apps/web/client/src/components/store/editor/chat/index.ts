@@ -1,7 +1,7 @@
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
-import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ChatMessageContext, type ImageMessageContext } from '@onlook/models/chat';
+import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -32,18 +32,6 @@ export class ChatManager {
 
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
-    }
-
-    async getCreateMessages(prompt: string, images: ImageMessageContext[]): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
-
-        const messages = await this.getStreamMessages(prompt, [
-            ...images,
-        ]);
-        return messages;
     }
 
     async getStreamMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {

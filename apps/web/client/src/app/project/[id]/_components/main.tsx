@@ -39,7 +39,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     useEffect(() => {
         const initializeProject = async () => {
             if (!result) {
-                console.error('No result');
                 return;
             }
             const { project, canvas, userCanvas, frames, conversation } = result;
@@ -71,6 +70,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
             if (conversation) {
                 editorEngine.chat.conversation.setCurrentConversation(conversation);
+                resumeCreate();
             } else {
                 console.error('Initializing project: No conversation');
             }
@@ -78,46 +78,31 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
         initializeProject().catch(error => {
             console.error('Error initializing project:', error);
-        }).finally(() => {
-            resumeCreate();
-        });
+        })
 
         return () => {
             editorEngine.sandbox.clear();
         };
     }, [result, userManager.user?.id]);
 
-    useEffect(() => {
-
-    }, [
-        editorEngine.chat.conversation.current,
-        createManager.pendingCreationData,
-        editorEngine.sandbox.session.session,
-        projectId,
-    ]);
-
-    const resumeCreate = () => {
+    const resumeCreate = async () => {
+        console.log('resumeCreate', createManager.pendingCreationData);
         const creationData = createManager.pendingCreationData;
         if (!creationData) return;
 
-        const resumeCorrectProject = projectId === creationData.project.id;
-        const conversationReady = !!editorEngine.chat.conversation.current;
-        const sandboxConnected = !!editorEngine.sandbox.session.session;
-        if (!conversationReady || !sandboxConnected || !resumeCorrectProject) return;
+        if (projectId !== creationData.project.id) return;
 
-        editorEngine.chat
-            .getCreateMessages(creationData.prompt, creationData.images)
-            .then((messages) => {
-                if (!messages) {
-                    console.error('Failed to get creation messages');
-                    return;
-                }
-                createManager.pendingCreationData = null;
-                sendMessages(messages, ChatType.CREATE);
-            })
-            .catch((error) => {
-                console.error('Error getting creation messages:', error);
-            });
+        console.log('sending messages 1', creationData.prompt, creationData.images);
+        const messages = await editorEngine.chat.getStreamMessages(creationData.prompt, creationData.images);
+
+        if (!messages) {
+            console.error('Failed to get creation messages');
+            return;
+        }
+        createManager.pendingCreationData = null;
+
+        console.log('sending messages', messages);
+        sendMessages(messages, ChatType.CREATE);
     }
 
     if (isLoading) {
