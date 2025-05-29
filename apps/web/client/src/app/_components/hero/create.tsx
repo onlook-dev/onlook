@@ -28,7 +28,6 @@ export function Create() {
     const router = useRouter();
     const posthog = usePostHog();
     const imageRef = useRef<HTMLInputElement>(null);
-    const [showBlurredCard, setShowBlurredCard] = useState(false);
 
     const { setIsAuthModalOpen } = useAuthContext();
     const textareaRef = useRef<HTMLTextAreaElement>(null);

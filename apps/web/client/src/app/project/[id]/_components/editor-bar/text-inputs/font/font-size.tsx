@@ -1,13 +1,13 @@
 'use client';
 
 import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState, useEffect } from 'react';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { useTextControl } from '../../hooks/use-text-control';
+import { HoverOnlyTooltip } from '../../hover-tooltip';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
@@ -18,7 +18,7 @@ export const FontSizeSelector = observer(
         const [inputValue, setInputValue] = useState(textState.fontSize.toString());
         
         const { isOpen, onOpenChange } = useDropdownControl({ 
-            id: 'font-size-popover' 
+            id: 'font-size-dropdown' 
         });
 
         // Update local input value when textState.fontSize changes externally
@@ -33,7 +33,7 @@ export const FontSizeSelector = observer(
 
         const handleInputClick = () => {
             onOpenChange(true);
-            // Use setTimeout to ensure the input is focused after the popover opens
+            // Use setTimeout to ensure the input is focused after the dropdown opens
             setTimeout(() => {
                 inputRef.current?.focus();
                 inputRef.current?.select();
@@ -81,53 +81,46 @@ export const FontSizeSelector = observer(
         };
 
         return (
-            <Popover open={isOpen} onOpenChange={onOpenChange}>
-                <Tooltip>
-                    <div>
-                        <TooltipTrigger asChild>
-                            <div className="flex items-center gap-0.5">
-                                <Button
-                                    variant="ghost"
-                                    size="toolbar"
-                                    onClick={() => adjustFontSize(-1)}
-                                    className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
-                                >
-                                    <Icons.Minus className="h-4 w-4" />
-                                </Button>
-                                <PopoverTrigger asChild>
-                                    <input
-                                        ref={inputRef}
-                                        type="number"
-                                        value={inputValue}
-                                        onChange={handleInputChange}
-                                        onKeyDown={handleInputKeyDown}
-                                        onBlur={handleInputBlur}
-                                        onClick={handleInputClick}
-                                        className="border-border/0 text-muted-foreground hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border focus:bg-background-tertiary/20 focus:ring-border h-8 max-w-[40px] min-w-[40px] [appearance:textfield] rounded-lg border px-1 text-center text-sm hover:border hover:text-white focus:ring-1 focus:outline-none data-[state=open]:border data-[state=open]:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                    />
-                                </PopoverTrigger>
-
-                                <Button
-                                    variant="ghost"
-                                    size="toolbar"
-                                    onClick={() => adjustFontSize(1)}
-                                    className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
-                                >
-                                    <Icons.Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent 
-                            side="bottom" 
-                            className="mt-1" 
-                            hideArrow
-                            style={{ display: isOpen ? 'none' : undefined }}
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+                <HoverOnlyTooltip
+                    content="Font Size"
+                    side="bottom"
+                    className="mt-1"
+                    hideArrow
+                    disabled={isOpen}
+                >
+                    <div className="flex items-center gap-0.5">
+                        <Button
+                            variant="ghost"
+                            size="toolbar"
+                            onClick={() => adjustFontSize(-1)}
+                            className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
                         >
-                            Font Size
-                        </TooltipContent>
+                            <Icons.Minus className="h-4 w-4" />
+                        </Button>
+                        <DropdownMenuTrigger asChild>
+                            <input
+                                ref={inputRef}
+                                type="number"
+                                value={inputValue}
+                                onChange={handleInputChange}
+                                onKeyDown={handleInputKeyDown}
+                                onBlur={handleInputBlur}
+                                onClick={handleInputClick}
+                                className="border-border/0 text-muted-foreground hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border focus:bg-background-tertiary/20 focus:ring-border h-8 max-w-[40px] min-w-[40px] [appearance:textfield] rounded-lg border px-1 text-center text-sm hover:border hover:text-white focus:ring-1 focus:outline-none data-[state=open]:border data-[state=open]:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            />
+                        </DropdownMenuTrigger>
+                        <Button
+                            variant="ghost"
+                            size="toolbar"
+                            onClick={() => adjustFontSize(1)}
+                            className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-8 w-8 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            <Icons.Plus className="h-4 w-4" />
+                        </Button>
                     </div>
-                </Tooltip>
-                <PopoverContent
+                </HoverOnlyTooltip>
+                <DropdownMenuContent
                     align="center"
                     className="mt-1 w-[48px] min-w-[48px] rounded-lg p-1"
                 >
@@ -145,8 +138,8 @@ export const FontSizeSelector = observer(
                             </button>
                         ))}
                     </div>
-                </PopoverContent>
-            </Popover>
+                </DropdownMenuContent>
+            </DropdownMenu>
         );
     },
 );
