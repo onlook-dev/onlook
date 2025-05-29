@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthContext } from '@/app/auth/auth-context';
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
 import { useCreateManager } from '@/components/store/create';
 import { userManager } from '@/components/store/user';
@@ -17,10 +18,9 @@ import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
-import { useRef, useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { UnicornBackground } from './unicorn-background';
-import { useAuthContext } from '@/app/auth/AuthContext';
 
 export function Create() {
     const t = useTranslations();

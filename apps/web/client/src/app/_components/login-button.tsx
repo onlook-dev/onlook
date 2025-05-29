@@ -1,9 +1,9 @@
-import { Icons } from '@onlook/ui/icons/index';
-import { Button } from '@onlook/ui/button';
 import { SignInMethod } from '@onlook/models/auth';
-import { useTranslations } from 'next-intl';
-import { useAuthContext } from '../auth/AuthContext';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
+import { useTranslations } from 'next-intl';
+import { useAuthContext } from '../auth/auth-context';
 
 export const GithubLoginButton = ({
     className,

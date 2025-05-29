@@ -8,7 +8,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
-import { AuthProvider } from './auth/AuthContext';
+import { AuthProvider } from './auth/auth-context';
 
 export const metadata: Metadata = {
     title: 'Onlook',

@@ -1,11 +1,13 @@
 'use client';
 
 import { Dunes } from '@/components/ui/dunes';
+import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
-import { AuthProvider, useAuthContext } from '../auth/AuthContext';
+import { AuthProvider, useAuthContext } from '../auth/auth-context';
 
 export default function LoginPage() {
     const isDev = process.env.NODE_ENV === 'development';
@@ -17,7 +19,9 @@ export default function LoginPage() {
             <div className="flex h-screen w-screen">
                 <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                     <div className="flex items-center space-x-2">
-                        <Icons.OnlookTextLogo viewBox="0 0 139 17" />
+                        <Link href={Routes.HOME} className="hover:opacity-80 transition-opacity">
+                            <Icons.OnlookTextLogo viewBox="0 0 139 17" />
+                        </Link>
                     </div>
                     <div className="space-y-8">
                         <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400">

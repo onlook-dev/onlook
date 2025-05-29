@@ -8,7 +8,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { useTranslations } from 'next-intl';
-import { useAuthContext } from '../auth/AuthContext';
+import { useAuthContext } from '../auth/auth-context';
 import { GithubLoginButton, GoogleLoginButton } from './login-button';
 
 export default function AuthModal() {
