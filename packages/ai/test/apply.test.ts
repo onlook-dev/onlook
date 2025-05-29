@@ -27,8 +27,21 @@ async function fetchUserData(userId: string): Promise<User> {
   // ...
 }`;
 
+        const expectedResult = `interface User {
+  id: string;
+  name: string;
+  email?: string;
+}
+
+async function fetchUserData(userId: string): Promise<User> {
+  const response = await fetch('/api/users/' + userId);
+  if (!response.ok) {
+    throw new Error('Failed to fetch user: ' + response.status);
+  }
+  return response.json();
+}`;
+
         const result = await client.applyCodeChange(originalCode, updateSnippet);
-        expect(result).toBeDefined();
-        console.log(result);
+        expect(result).toBe(expectedResult);
     });
 });
