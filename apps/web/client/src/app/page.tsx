@@ -4,20 +4,20 @@ import { Icons } from '@onlook/ui/icons/index';
 import React from 'react';
 import { ButtonLink } from './_components/button-link';
 import { Hero } from './_components/hero';
-import { ContributorSection } from './_components/landing-page/ContributorSection';
-import { Footer } from './_components/landing-page/Footer';
+import { ContributorSection } from './_components/landing-page/contributor-section';
+import { Footer } from './_components/landing-page/footer';
 import { TopBar } from './_components/top-bar';
 import { Button } from '@onlook/ui/button';;
-import { FAQDropdown } from './_components/landing-page/FAQDropdown';
-import { TestimonialCard } from './_components/landing-page/TestimonialCard';
+import { FAQDropdown } from './_components/landing-page/faq-dropdown';
+import { TestimonialCard } from './_components/landing-page/testimonial-card';
 import { cn } from '@onlook/ui/utils';
 import { NodeIcon } from './project/[id]/_components/left-panel/layers-tab/tree/node-icon';
-import { CodeOneToOneSection } from './_components/landing-page/CodeOneToOneSection';
-import { FeaturesSection } from './_components/landing-page/FeaturesSection';
-import { TestimonialsSection } from './_components/landing-page/TestimonialsSection';
-import { WhatCanOnlookDoSection } from './_components/landing-page/WhatCanOnlookDoSection';
-import { CTASection } from './_components/landing-page/CTASection';
-import { FAQSection } from './_components/landing-page/FAQSection';
+import { CodeOneToOneSection } from './_components/landing-page/code-one-to-one-section';
+import { FeaturesSection } from './_components/landing-page/features-section';
+import { TestimonialsSection } from './_components/landing-page/testimonials-section';
+import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlook-do-section';
+import { CTASection } from './_components/landing-page/cta-section';
+import { FAQSection } from './_components/landing-page/faq-section';
 
 // Mock data for layers
 const mockLayers = [

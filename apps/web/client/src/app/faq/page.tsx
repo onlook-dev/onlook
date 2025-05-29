@@ -1,7 +1,7 @@
 'use client';
 
-import { FAQDropdown } from '../_components/landing-page/FAQDropdown';
-import { Footer } from '../_components/landing-page/Footer';
+import { FAQDropdown } from '../_components/landing-page/faq-dropdown';
+import { Footer } from '../_components/landing-page/footer';
 import { TopBar } from '../_components/top-bar';
 import { useEffect, useRef, useState } from 'react';
 

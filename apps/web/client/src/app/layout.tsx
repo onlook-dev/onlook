@@ -5,7 +5,7 @@ import { TRPCReactProvider } from '@/trpc/react';
 import { type Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import { Inter } from 'next/font/google';
+import { Inter, Vujahday_Script } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
 
 export const metadata: Metadata = {
@@ -19,16 +19,16 @@ const inter = Inter({
     variable: '--font-inter',
 });
 
+export const vujahdayScript = Vujahday_Script({
+    weight: '400',
+    subsets: ['latin'],
+});
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     const locale = await getLocale();
 
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
-            <head>
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-                <link href="https://fonts.googleapis.com/css2?family=Vujahday+Script&display=swap" rel="stylesheet" />
-            </head>
             <body>
                 <ThemeProvider
                     attribute="class"

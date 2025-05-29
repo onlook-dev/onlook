@@ -49,20 +49,12 @@ export function Footer() {
             {/* Bottom Bar */}
             <div className="max-w-6xl mx-auto px-8 pb-4">
                 <div className="flex flex-col md:flex-row items-center md:items-center justify-center md:justify-between w-full gap-0 md:gap-4 border-t border-foreground-primary/10 pt-6">
-                    {/* Left: Language Selector */}
-                    <div className="flex items-center gap-2 text-small text-foreground-tertiary justify-center md:justify-start w-full md:w-auto mb-4 md:mb-0">
-                        <span className="mr-2"><svg width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2" /></svg></span>
-                        English
-                        <span className="ml-1">▼</span>
-                    </div>
-                    {/* Center: Links */}
                     <div className="flex gap-8 text-foreground-tertiary text-small justify-center w-full md:w-auto mb-4 md:mb-0">
                         <a href="#" className="hover:underline">Terms</a>
                         <a href="#" className="hover:underline">Privacy</a>
                         <a href="#" className="hover:underline">Sitemap</a>
                     </div>
-                    {/* Right: Copyright */}
-                    <div className="text-foreground-tertiary text-small w-full md:w-auto flex justify-center md:justify-end">© 2025 On Off, Inc.</div>
+                    <div className="text-foreground-tertiary text-small w-full md:w-auto flex justify-center md:justify-end">© {new Date().getFullYear()} On Off, Inc.</div>
                 </div>
             </div>
         </footer>
