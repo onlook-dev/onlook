@@ -1,9 +1,8 @@
 'use client';
 
-import { FAQDropdown } from '../_components/landing-page/FAQDropdown';
+import { useEffect, useRef, useState } from 'react';
 import { Footer } from '../_components/landing-page/Footer';
 import { TopBar } from '../_components/top-bar';
-import { useEffect, useRef, useState } from 'react';
 
 const faqSections = [
     {
@@ -147,7 +146,7 @@ export default function FAQPage() {
                                 ref={el => { sectionRefs.current[i] = el; }}
                             >
                                 <h2 className="text-foreground-secondary text-large mb-4 text-balance">{section.title}</h2>
-                                <FAQDropdown faqs={section.faqs} />
+                                {/* <FAQDropdown faqs={section.faqs} /> */}
                             </div>
                         ))}
                     </section>
@@ -161,11 +160,10 @@ export default function FAQPage() {
                                         <li key={section.anchor}>
                                             <a
                                                 href={`#${section.anchor}`}
-                                                className={`transition-colors text-regular px-2 py-1 rounded-md ${
-                                                    currentSection === section.anchor
+                                                className={`transition-colors text-regular px-2 py-1 rounded-md ${currentSection === section.anchor
                                                         ? 'text-foreground-secondary group-hover:text-foreground-primary'
                                                         : 'text-foreground-tertiary/50 hover:text-foreground-secondary group-hover:text-foreground-tertiary '
-                                                }`}
+                                                    }`}
                                                 onClick={e => {
                                                     e.preventDefault();
                                                     const el = sectionRefs.current[i];
