@@ -25,7 +25,7 @@ export const Radius = observer(() => {
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-            <HoverOnlyTooltip content="Radius" side="bottom" className="mt-1" hideArrow>
+            <HoverOnlyTooltip content="Radius" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
