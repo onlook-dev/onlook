@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthContext } from '@/app/auth/auth-context';
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
 import { useCreateManager } from '@/components/store/create';
 import { userManager } from '@/components/store/user';
@@ -17,7 +18,7 @@ import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { UnicornBackground } from './unicorn-background';
 
@@ -28,6 +29,7 @@ export function Create() {
     const posthog = usePostHog();
     const imageRef = useRef<HTMLInputElement>(null);
 
+    const { setIsAuthModalOpen } = useAuthContext();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
     const [isDragging, setIsDragging] = useState(false);
@@ -40,6 +42,28 @@ export function Create() {
     const [error, setError] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [cardKey, setCardKey] = useState(0);
+
+    // Restore draft from localStorage if exists
+    useEffect(() => {
+        const draft = localStorage.getItem('createProjectDraft');
+        if (draft && !!userManager.user?.id) {
+            try {
+                const { prompt, images, timestamp } = JSON.parse(draft);
+                // Only restore if draft is less than 1 hour old
+                if (Date.now() - timestamp < 3600000) {
+                    setInputValue(prompt);
+                    setSelectedImages(images);
+                }
+                // Clear the draft after restoring
+                localStorage.removeItem('createProjectDraft');
+                // Run the submit function
+                createProject(prompt, images);
+            } catch (error) {
+                console.error('Error restoring draft:', error);
+                localStorage.removeItem('createProjectDraft');
+            }
+        }
+    }, []);
 
     const handleSubmit = async () => {
         if (isInputInvalid) {
@@ -55,6 +79,17 @@ export function Create() {
         });
         if (!userManager.user?.id) {
             console.error('No user ID found');
+
+            // Store the current input and images in localStorage
+            localStorage.setItem('createProjectDraft', JSON.stringify({
+                prompt,
+                images,
+                timestamp: Date.now()
+            }));
+            // Store the return URL
+            localStorage.setItem('returnUrl', window.location.pathname);
+            // Open the auth modal
+            setIsAuthModalOpen(true);
             return;
         }
 

@@ -84,7 +84,9 @@
         "login": {
             "github": "Login with GitHub",
             "google": "Login with Google",
-            "lastUsed": "You used this last time"
+            "lastUsed": "You used this last time",
+            "loginToEdit": "Login to Edit",
+            "shareProjects": "Share projects, collaborate, and design more in code."
         },
         "terms": {
             "agreement": "By signing up, you agree to our",

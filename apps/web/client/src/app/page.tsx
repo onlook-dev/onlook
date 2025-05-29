@@ -3,6 +3,7 @@
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
 import { Footer } from './_components/landing-page/page-footer';
+import AuthModal from './_components/auth-modal';
 import { TopBar } from './_components/top-bar';
 
 
@@ -24,6 +25,7 @@ export default function Main() {
             {/* <FAQSection /> */}
             {/* <WhatCanOnlookDoSection /> */}
             <Footer />
+            <AuthModal />
         </div>
     );
 }
