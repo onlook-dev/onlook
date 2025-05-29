@@ -12,13 +12,16 @@ import { useEffect, useState } from 'react';
 import { useTextControl } from '../../hooks/use-text-control';
 import { FontFamily } from './font-family';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
+import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 
 export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
     const [fonts, setFonts] = useState<Font[]>([]);
     const [search, setSearch] = useState('');
-    const [open, setOpen] = useState(false);
     const { handleFontFamilyChange, textState } = useTextControl();
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'font-family-dropdown',
+    });
 
     useEffect(() => {
         (async () => {
@@ -37,7 +40,7 @@ export const FontFamilySelector = observer(() => {
     );
 
     const handleClose = () => {
-        setOpen(false);
+        onOpenChange(false);
         editorEngine.state.brandTab = null;
         if (editorEngine.state.leftPanelTab === LeftPanelTabValue.BRAND) {
             editorEngine.state.leftPanelTab = null;
@@ -46,8 +49,8 @@ export const FontFamilySelector = observer(() => {
     };
 
     return (
-        <DropdownMenu open={open} onOpenChange={(v) => {
-            setOpen(v);
+        <DropdownMenu open={isOpen} onOpenChange={(v) => {
+            onOpenChange(v);
             if (!v) editorEngine.state.brandTab = null;
         }}>
             <HoverOnlyTooltip
@@ -55,7 +58,7 @@ export const FontFamilySelector = observer(() => {
                 side="bottom"
                 className="mt-1"
                 hideArrow
-                disabled={open}
+                disabled={isOpen}
             >
                 <DropdownMenuTrigger asChild>
                     <Button
@@ -63,8 +66,6 @@ export const FontFamilySelector = observer(() => {
                         size="toolbar"
                         className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                         aria-label="Font Family Selector"
-                        tabIndex={0}
-                        onClick={handleClose}
                     >
                         <span className="truncate text-sm">
                             {toNormalCase(textState.fontFamily) || 'Sans Serif'}
@@ -127,7 +128,7 @@ export const FontFamilySelector = observer(() => {
                         onClick={() => {
                             editorEngine.state.brandTab = BrandTabValue.FONTS;
                             editorEngine.state.leftPanelTab = LeftPanelTabValue.BRAND;
-                            setOpen(false);
+                            onOpenChange(false);
                         }}
                     >
                         Manage Brand fonts
