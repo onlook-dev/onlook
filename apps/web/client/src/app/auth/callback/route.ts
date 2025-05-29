@@ -51,6 +51,10 @@ async function getOrCreateUser(userId: string): Promise<User> {
 
 function trackUserSignedIn(userId: string, properties: Record<string, any>) {
     try {
+        if (!client) {
+            console.warn('PostHog client not found, skipping user signed in tracking');
+            return;
+        }
         client.identify({
             distinctId: userId,
             properties: properties

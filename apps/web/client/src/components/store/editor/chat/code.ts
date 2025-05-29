@@ -1,3 +1,4 @@
+import { api } from '@/trpc/client';
 import { sendAnalytics } from '@/utils/analytics';
 import { CodeBlockProcessor } from '@onlook/ai';
 import type { WriteCodeAction } from '@onlook/models/actions';
@@ -41,7 +42,10 @@ export class ChatCodeManager {
             }
             let content = originalContent;
             for (const block of codeBlocks) {
-                const result = await this.processor.applyDiff(content, block.content);
+                const result = await api.code.applyDiff.mutate({
+                    originalCode: originalContent,
+                    updateSnippet: block.content,
+                });
                 if (!result.success) {
                     console.error('Failed to apply code block', block);
                     toast({
@@ -50,7 +54,7 @@ export class ChatCodeManager {
                         description: 'Please try again or prompt the AI to fix it.',
                     });
                 }
-                content = result.text;
+                content = result.result;
             }
 
             const success = await this.editorEngine.sandbox.writeFile(filePath, content);

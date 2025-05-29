@@ -1,6 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { CodeBlockProcessor } from '@onlook/ai';
-import { useMemo } from 'react';
 import { CollapsibleCodeBlock } from './collapsible-code-block';
 
 export const CodeChangeDisplay = ({
@@ -17,10 +15,6 @@ export const CodeChangeDisplay = ({
     isStream?: boolean;
 }) => {
     const editorEngine = useEditorEngine();
-    const { search: searchContent, replace: replaceContent } = useMemo(
-        () => CodeBlockProcessor.parseDiff(content)[0] ?? { search: '', replace: '' },
-        [content],
-    );
 
     const applyChange = async () => {
         await editorEngine.chat.code.applyCode(messageId);
@@ -35,8 +29,8 @@ export const CodeChangeDisplay = ({
             <CollapsibleCodeBlock
                 path={path}
                 content={content}
-                searchContent={searchContent}
-                replaceContent={replaceContent}
+                originalContent={content}
+                updatedContent={content}
                 applied={applied}
                 isStream={isStream}
                 onApply={applyChange}

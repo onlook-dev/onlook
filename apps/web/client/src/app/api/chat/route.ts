@@ -9,7 +9,6 @@ export enum ChatType {
     FIX = 'fix',
 }
 
-
 export async function POST(req: Request) {
     const { messages, maxSteps, chatType } = await req.json();
     const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4);

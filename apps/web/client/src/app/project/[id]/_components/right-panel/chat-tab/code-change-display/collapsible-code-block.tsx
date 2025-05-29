@@ -6,13 +6,12 @@ import { cn, getTruncatedFileName } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { CodeBlock } from './code-block';
-import { CodeModal } from './code-modal';
 
 interface CollapsibleCodeBlockProps {
     path: string;
     content: string;
-    searchContent: string;
-    replaceContent: string;
+    originalContent: string;
+    updatedContent: string;
     applied: boolean;
     isStream?: boolean;
     onApply: () => void;
@@ -22,8 +21,8 @@ interface CollapsibleCodeBlockProps {
 export const CollapsibleCodeBlock = ({
     path,
     content,
-    searchContent,
-    replaceContent,
+    originalContent,
+    updatedContent,
     applied,
     isStream,
     onApply,
@@ -34,7 +33,7 @@ export const CollapsibleCodeBlock = ({
     const [copied, setCopied] = useState(false);
 
     const copyToClipboard = () => {
-        navigator.clipboard.writeText(replaceContent);
+        navigator.clipboard.writeText(updatedContent);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -130,7 +129,7 @@ export const CollapsibleCodeBlock = ({
                                         {content}
                                     </code>
                                 ) : (
-                                    <CodeBlock code={replaceContent} />
+                                    <CodeBlock code={updatedContent} />
                                 )}
                                 <div className="flex justify-end gap-1.5 p-1 border-t">
                                     <Button
@@ -151,20 +150,6 @@ export const CollapsibleCodeBlock = ({
                                             </>
                                         )}
                                     </Button>
-                                    <CodeModal
-                                        fileName={path}
-                                        value={replaceContent}
-                                        original={searchContent}
-                                    >
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-7 px-2 text-foreground-secondary hover:text-foreground font-sans select-none"
-                                        >
-                                            <Icons.Code className="h-4 w-4 mr-2" />
-                                            Diffs
-                                        </Button>
-                                    </CodeModal>
                                 </div>
                             </div>
                         </motion.div>

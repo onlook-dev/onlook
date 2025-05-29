@@ -7,43 +7,35 @@ import type {
 } from '@onlook/models';
 import type { Attachment, Message, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
-import { PAGE_SYSTEM_PROMPT } from './create';
-import { EDIT_PROMPTS, SEARCH_REPLACE_EXAMPLE_CONVERSATION } from './edit';
-import { FENCE } from './format';
+import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
+import { CODE_BLOCK_RULES, SEARCH_REPLACE_EXAMPLE_CONVERSATION, SYSTEM_PROMPT } from './edit';
+import { CODE_FENCE } from './format';
 import { wrapXml } from './helpers';
+import { SHELL_PROMPT } from './shell';
 import { PLATFORM_SIGNATURE } from './signatures';
 import { SUMMARY_PROMPTS } from './summary';
-
-const shouldWrapXml = true;
 
 export function getSystemPrompt() {
     let prompt = '';
 
-    if (shouldWrapXml) {
-        prompt += wrapXml('role', EDIT_PROMPTS.system);
-        prompt += wrapXml('search-replace-rules', EDIT_PROMPTS.searchReplaceRules);
-        prompt += wrapXml(
-            'example-conversation',
-            getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
-        );
-    } else {
-        prompt += EDIT_PROMPTS.system;
-        prompt += EDIT_PROMPTS.searchReplaceRules;
-        prompt += getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
-    }
+    prompt += wrapXml('role', SYSTEM_PROMPT);
+    prompt += '\n';
+    prompt += wrapXml('code-block-rules', CODE_BLOCK_RULES);
+    prompt += '\n';
+    prompt += wrapXml('shell-prompt', SHELL_PROMPT);
+    prompt += '\n';
+    prompt += wrapXml(
+        'example-conversation',
+        getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
+    );
+
     prompt = prompt.replace(PLATFORM_SIGNATURE, 'linux');
     return prompt;
 }
 
 export function getCreatePageSystemPrompt() {
     let prompt = getSystemPrompt() + '\n\n';
-
-    if (shouldWrapXml) {
-        prompt += wrapXml('rules', PAGE_SYSTEM_PROMPT.rules);
-    } else {
-        prompt += PAGE_SYSTEM_PROMPT.rules;
-    }
-
+    prompt += wrapXml('create-system-prompt', CREATE_NEW_PAGE_SYSTEM_PROMPT);
     return prompt;
 }
 
@@ -74,9 +66,7 @@ export function getHydratedUserMessage(
     let prompt = '';
     let contextPrompt = getFilesContent(files, highlights);
     if (contextPrompt) {
-        if (shouldWrapXml) {
-            contextPrompt = wrapXml('context', contextPrompt);
-        }
+        contextPrompt = wrapXml('context', contextPrompt);
         prompt += contextPrompt;
     }
 
@@ -92,18 +82,14 @@ export function getHydratedUserMessage(
         }
     }
 
-    if (shouldWrapXml) {
-        const textContent =
-            typeof content === 'string'
-                ? content
-                : content
-                      .filter((c) => c.type === 'text')
-                      .map((c) => c.text)
-                      .join('\n');
-        prompt += wrapXml('instruction', textContent);
-    } else {
-        prompt += content;
-    }
+    const textContent =
+        typeof content === 'string'
+            ? content
+            : content
+                  .filter((c) => c.type === 'text')
+                  .map((c) => c.text)
+                  .join('\n');
+    prompt += wrapXml('instruction', textContent);
 
     const attachments: Attachment[] = images.map((i) => ({
         type: 'image',
@@ -131,14 +117,12 @@ export function getFilesContent(
     let index = 1;
     for (const file of files) {
         let filePrompt = `${file.path}\n`;
-        filePrompt += `${FENCE.code.start}${getLanguageFromFilePath(file.path)}\n`;
+        filePrompt += `${CODE_FENCE.start}${getLanguageFromFilePath(file.path)}\n`;
         filePrompt += file.content;
-        filePrompt += `\n${FENCE.code.end}\n`;
+        filePrompt += `\n${CODE_FENCE.end}\n`;
         filePrompt += getHighlightsContent(file.path, highlights);
 
-        if (shouldWrapXml) {
-            filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
-        }
+        filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
         prompt += filePrompt;
         index++;
     }
@@ -155,9 +139,7 @@ export function getErrorsContent(errors: ErrorMessageContext[]) {
         prompt += `${error.content}\n`;
     }
 
-    if (prompt.trim().length > 0 && shouldWrapXml) {
-        prompt = wrapXml('errors', prompt);
-    }
+    prompt = wrapXml('errors', prompt);
     return prompt;
 }
 
@@ -174,15 +156,13 @@ export function getHighlightsContent(filePath: string, highlights: HighlightMess
     let index = 1;
     for (const highlight of fileHighlights) {
         let highlightPrompt = `${filePath}#L${highlight.start}:L${highlight.end}\n`;
-        highlightPrompt += `${FENCE.code.start}\n`;
+        highlightPrompt += `${CODE_FENCE.start}\n`;
         highlightPrompt += highlight.content;
-        highlightPrompt += `\n${FENCE.code.end}\n`;
-        if (shouldWrapXml) {
-            highlightPrompt = wrapXml(
-                fileHighlights.length > 1 ? `highlight-${index}` : 'highlight',
-                highlightPrompt,
-            );
-        }
+        highlightPrompt += `\n${CODE_FENCE.end}\n`;
+        highlightPrompt = wrapXml(
+            fileHighlights.length > 1 ? `highlight-${index}` : 'highlight',
+            highlightPrompt,
+        );
         prompt += highlightPrompt;
         index++;
     }
@@ -192,23 +172,13 @@ export function getHighlightsContent(filePath: string, highlights: HighlightMess
 export function getSummaryPrompt() {
     let prompt = '';
 
-    if (shouldWrapXml) {
-        prompt += wrapXml('summary-rules', SUMMARY_PROMPTS.rules);
-        prompt += wrapXml('summary-guidelines', SUMMARY_PROMPTS.guidelines);
-        prompt += wrapXml('summary-format', SUMMARY_PROMPTS.format);
-        prompt += wrapXml('summary-reminder', SUMMARY_PROMPTS.reminder);
+    prompt += wrapXml('summary-rules', SUMMARY_PROMPTS.rules);
+    prompt += wrapXml('summary-guidelines', SUMMARY_PROMPTS.guidelines);
+    prompt += wrapXml('summary-format', SUMMARY_PROMPTS.format);
+    prompt += wrapXml('summary-reminder', SUMMARY_PROMPTS.reminder);
 
-        prompt += wrapXml('example-conversation', getSummaryExampleConversation());
-        prompt += wrapXml('example-summary-output', 'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary);
-    } else {
-        prompt += SUMMARY_PROMPTS.rules + '\n\n';
-        prompt += SUMMARY_PROMPTS.guidelines + '\n\n';
-        prompt += SUMMARY_PROMPTS.format + '\n\n';
-        prompt += SUMMARY_PROMPTS.reminder + '\n\n';
-        prompt += getSummaryExampleConversation();
-        prompt += 'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary + '\n\n';
-    }
-
+    prompt += wrapXml('example-conversation', getSummaryExampleConversation());
+    prompt += wrapXml('example-summary-output', 'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary);
     return prompt;
 }
 
@@ -222,8 +192,5 @@ export function getSummaryExampleConversation() {
 
 export function getProjectContext(project: ProjectMessageContext) {
     const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}`;
-    if (shouldWrapXml) {
-        return wrapXml('project-info', content);
-    }
-    return content;
+    return wrapXml('project-info', content);
 }
