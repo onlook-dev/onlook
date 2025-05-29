@@ -277,7 +277,7 @@ export function Create() {
                     web experiences with AI
                 </motion.p>
             </div>
-            <div className="flex flex-col gap-4 items-center relative z-20">
+            <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={isMounted ? { opacity: 1 } : { opacity: 0 }}
@@ -459,6 +459,9 @@ export function Create() {
                 >
                     No Credit Card Required &bull; Get a Site in Seconds
                 </motion.div>
+            </div>
+            <div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10">
+                Onlook isn’t ready for Mobile – Please open on a larger screen
             </div>
         </div>
     );
