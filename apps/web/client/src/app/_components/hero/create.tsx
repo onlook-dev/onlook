@@ -12,35 +12,21 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { compressImage } from '@onlook/utility';
+import { motion } from 'framer-motion';
 import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useRef, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { vujahdayScript } from '../../fonts';
 import { usePostHog } from 'posthog-js/react';
-
-// Add TypeScript declarations for background
-declare global {
-    interface Window {
-        UnicornStudio: {
-            isInitialized: boolean;
-            init: (config?: { scale: number; dpi: number }) => Promise<Array<{
-                element: HTMLElement;
-                destroy: () => void;
-                contains?: (element: HTMLElement | null) => boolean;
-            }>>;
-        };
-    }
-}
+import { useRef, useState } from 'react';
+import { vujahdayScript } from '../../fonts';
+import { UnicornBackground } from './unicorn-background';
 
 export function Create() {
     const t = useTranslations();
     const createManager = useCreateManager();
     const router = useRouter();
     const posthog = usePostHog();
-    const [isMounted, setIsMounted] = useState(false);
-    const [isBackgroundVisible, setIsBackgroundVisible] = useState(false);
+    const imageRef = useRef<HTMLInputElement>(null);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
@@ -51,92 +37,8 @@ export function Create() {
     const [isLoading, setIsLoading] = useState(false);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
-    const imageRef = useRef<HTMLInputElement>(null);
-    const sceneRef = useRef<{ destroy: () => void } | null>(null);
     const [error, setError] = useState<string | null>(null);
-
-    // Add useEffect for background initialization
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        const initializeScript = (callback: () => void) => {
-            const version = '1.4.25';
-
-            const existingScript = document.querySelector(
-                'script[src^="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js"]'
-            );
-
-            if (existingScript) {
-                if (window.UnicornStudio) {
-                    callback();
-                } else {
-                    existingScript.addEventListener('load', callback);
-                }
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.src = `https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v${version}/dist/unicornStudio.umd.js`;
-            script.async = true;
-
-            script.onload = () => {
-                callback();
-            };
-            script.onerror = () => setError('Failed to load UnicornStudio script');
-
-            document.body.appendChild(script);
-        };
-
-        const initializeScene = async () => {
-            const container = document.querySelector('[data-us-project="Gr1LmwbKSeJOXhpYEdit"]');
-            if (!container) return;
-
-            if (sceneRef.current?.destroy) {
-                sceneRef.current.destroy();
-            }
-
-            try {
-                const scenes = await window.UnicornStudio?.init({
-                    scale: 1,
-                    dpi: 1.5,
-                });
-
-                if (scenes) {
-                    const ourScene = scenes.find(
-                        (scene) =>
-                            scene.element === container ||
-                            scene.element.contains(container)
-                    );
-                    if (ourScene) {
-                        sceneRef.current = ourScene;
-                        setIsMounted(true);
-                        // Delay the background visibility
-                        setTimeout(() => {
-                            setIsBackgroundVisible(true);
-                        }, 1000); // 1 second delay after text animations start
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to initialize UnicornStudio scene:', err);
-                setError('Failed to initialize scene');
-                setIsMounted(true);
-                setTimeout(() => {
-                    setIsBackgroundVisible(true);
-                }, 1000);
-            }
-        };
-
-        initializeScript(() => {
-            void initializeScene();
-        });
-
-        return () => {
-            if (sceneRef.current?.destroy) {
-                sceneRef.current.destroy();
-                sceneRef.current = null;
-            }
-        };
-    }, []);
+    const [isMounted, setIsMounted] = useState(false);
 
     const handleSubmit = async () => {
         if (isInputInvalid) {
@@ -144,10 +46,6 @@ export function Create() {
             return;
         }
         createProject(inputValue, selectedImages);
-    };
-
-    const handleBlankSubmit = async () => {
-        createProject(inputValue, []);
     };
 
     const createProject = async (prompt: string, images: ImageMessageContext[]) => {
@@ -313,26 +211,14 @@ export function Create() {
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
-            <motion.div 
-                data-us-project="Gr1LmwbKSeJOXhpYEdit" 
-                className="absolute inset-0 w-full h-full z-0"
-                style={{ 
-                    pointerEvents: 'none',
-                    willChange: "opacity",
-                    transform: "translateZ(0)"
-                }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isBackgroundVisible ? 1 : 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-            />
-            {error && <div className="text-red-500 absolute top-4 left-4 z-50">{error}</div>}
+            <UnicornBackground setIsMounted={setIsMounted} />
             {/* Overlay */}
             <div
                 className="absolute left-0 bottom-0 w-full bg-background z-10"
                 style={{ height: '80px' }}
             />
             <div className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2">
-                <motion.h1 
+                <motion.h1
                     className="text-6xl font-light leading-tight text-center !leading-[0.9]"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
@@ -343,7 +229,7 @@ export function Create() {
                     <span className="font-light">designs </span>
                     <span className={`italic font-normal ${vujahdayScript.className} text-[4.75rem] ml-1 leading-[1.0]`}>real</span>
                 </motion.h1>
-                <motion.p 
+                <motion.p
                     className="text-lg text-foreground-secondary max-w-xl text-center mt-2"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
@@ -525,7 +411,7 @@ export function Create() {
                         </CardContent>
                     </Card>
                 </motion.div>
-                <motion.div 
+                <motion.div
                     className="text-center text-xs text-foreground-secondary mt-2 opacity-80"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
@@ -538,9 +424,3 @@ export function Create() {
         </div>
     );
 }
-
-export const metadata = {
-  title: 'Onlook',
-  description: 'Onlook – Cursor for Designers',
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
-};
