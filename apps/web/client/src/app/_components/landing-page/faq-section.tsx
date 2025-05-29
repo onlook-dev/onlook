@@ -1,6 +1,6 @@
 import { Icons } from '@onlook/ui/icons/index';
 import { ButtonLink } from '../button-link';
-import { FAQDropdown } from './FAQDropdown';
+import { FAQDropdown } from './faq-dropdown';
 
 const faqs = [
     {

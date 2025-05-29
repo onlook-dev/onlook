@@ -1,5 +1,5 @@
 import { Icons } from '@onlook/ui/icons/index';
-import { MockLayersTab } from './MockLayersTab';
+import { MockLayersTab } from './mock-layers-tab';
 
 export function WhatCanOnlookDoSection() {
     return (

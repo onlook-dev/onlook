@@ -10,8 +10,8 @@ export const env = createEnv({
         NODE_ENV: z.enum(['development', 'test', 'production']),
         ANTHROPIC_API_KEY: z.string(),
         CSB_API_KEY: z.string(),
-        RESEND_API_KEY: z.string(),
         SUPABASE_DATABASE_URL: z.string().url(),
+        RESEND_API_KEY: z.string().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -22,8 +22,8 @@ export const env = createEnv({
         NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
         NEXT_PUBLIC_SUPABASE_URL: z.string(),
         NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
-        NEXT_PUBLIC_POSTHOG_KEY: z.string(),
-        NEXT_PUBLIC_POSTHOG_HOST: z.string(),
+        NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
+        NEXT_PUBLIC_POSTHOG_HOST: z.string().optional(),
     },
 
     /**

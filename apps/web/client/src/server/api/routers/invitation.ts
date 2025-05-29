@@ -1,5 +1,4 @@
 import { env } from '@/env';
-import { emailClient } from '@/utils/email';
 import {
     authUsers,
     projectInvitationInsertSchema,
@@ -7,7 +6,7 @@ import {
     userCanvases,
     userProjects,
 } from '@onlook/db';
-import { sendInvitationEmail } from '@onlook/email';
+import { getResendClient, sendInvitationEmail } from '@onlook/email';
 import { ProjectRole } from '@onlook/models';
 import { createDefaultUserCanvas } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
@@ -85,6 +84,16 @@ export const invitationRouter = createTRPCRouter({
                 .then(([invitation]) => invitation);
 
             if (invitation) {
+                if (!env.RESEND_API_KEY) {
+                    throw new TRPCError({
+                        code: 'INTERNAL_SERVER_ERROR',
+                        message: 'RESEND_API_KEY is not set, cannot send email',
+                    });
+                }
+                const emailClient = getResendClient({
+                    apiKey: env.RESEND_API_KEY,
+                });
+
                 await sendInvitationEmail(
                     emailClient,
                     {

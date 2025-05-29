@@ -1,4 +1,4 @@
-import { TestimonialCard } from './TestimonialCard';
+import { TestimonialCard } from './testimonial-card';
 
 export function TestimonialsSection() {
     return (
