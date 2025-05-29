@@ -1,7 +1,7 @@
 'use client';
 
 import { TopBar } from '../_components/top-bar';
-import { Footer } from '../_components/landing-page/Footer';
+import { Footer } from '../_components/landing-page/footer';
 import { Icons } from '@onlook/ui/icons/index';
 
 export default function SitemapPage() {
