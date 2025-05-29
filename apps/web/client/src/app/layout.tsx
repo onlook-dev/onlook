@@ -1,13 +1,13 @@
 import '@/styles/globals.css';
 import '@onlook/ui/globals.css';
 
+import { PostHogProvider } from '@/components/posthog-provider';
 import { TRPCReactProvider } from '@/trpc/react';
 import { type Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import { Inter, Vujahday_Script } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
-import { PostHogProvider } from '@/components/posthog-provider';
 
 export const metadata: Metadata = {
     title: 'Onlook',
@@ -18,11 +18,6 @@ export const metadata: Metadata = {
 const inter = Inter({
     subsets: ['latin'],
     variable: '--font-inter',
-});
-
-export const vujahdayScript = Vujahday_Script({
-    weight: '400',
-    subsets: ['latin'],
 });
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

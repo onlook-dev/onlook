@@ -1,9 +1,9 @@
 'use client';
 
-import { FAQDropdown } from '../_components/landing-page/faq-dropdown';
-import { Footer } from '../_components/landing-page/footer';
-import { TopBar } from '../_components/top-bar';
 import { useEffect, useRef, useState } from 'react';
+import { FAQDropdown } from '../_components/landing-page/faq-dropdown';
+import { Footer } from '../_components/landing-page/page-footer';
+import { TopBar } from '../_components/top-bar';
 
 const faqSections = [
     {
@@ -164,11 +164,10 @@ export default function FAQPage() {
                                         <li key={section.anchor}>
                                             <a
                                                 href={`#${section.anchor}`}
-                                                className={`transition-colors text-regular px-2 py-1 rounded-md ${
-                                                    currentSection === section.anchor
-                                                        ? 'text-foreground-secondary group-hover:text-foreground-primary'
-                                                        : 'text-foreground-tertiary/50 hover:text-foreground-secondary group-hover:text-foreground-tertiary'
-                                                }`}
+                                                className={`transition-colors text-regular px-2 py-1 rounded-md ${currentSection === section.anchor
+                                                    ? 'text-foreground-secondary group-hover:text-foreground-primary'
+                                                    : 'text-foreground-tertiary/50 hover:text-foreground-secondary group-hover:text-foreground-tertiary'
+                                                    }`}
                                                 onClick={e => {
                                                     e.preventDefault();
                                                     const element = document.getElementById(section.anchor);
