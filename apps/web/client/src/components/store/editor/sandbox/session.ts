@@ -8,7 +8,7 @@ import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession }
 export class SessionManager {
     session: WebSocketSession | null = null;
     isConnecting = false;
-    terminalSessions: CLISession[] = [];
+    terminalSessions: Map<string, CLISession> = new Map();
     activeTerminalSessionId: string = 'cli';
 
     constructor(private readonly editorEngine: EditorEngine) {
@@ -28,25 +28,25 @@ export class SessionManager {
     }
 
     getTerminalSession(id: string) {
-        return this.terminalSessions.find(terminal => terminal.id === id) as TerminalSession | undefined;
+        return this.terminalSessions.get(id) as TerminalSession | undefined;
     }
 
     async createTerminalSessions(session: WebSocketSession) {
         const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
-        this.terminalSessions.push(task);
+        this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
-        this.terminalSessions.push(terminal);
+        this.terminalSessions.set(terminal.id, terminal);
         this.activeTerminalSessionId = task.id;
     }
 
     async disposeTerminal(id: string) {
-        const terminal = this.terminalSessions.find(terminal => terminal.id === id) as TerminalSession | undefined;
+        const terminal = this.terminalSessions.get(id) as TerminalSession | undefined;
         if (terminal) {
             if (terminal.type === 'terminal') {
                 await terminal.terminal?.kill();
                 terminal.xterm?.dispose();
             }
-            this.terminalSessions = this.terminalSessions.filter(terminal => terminal.id !== id);
+            this.terminalSessions.delete(id);
         }
     }
 
@@ -72,6 +72,52 @@ export class SessionManager {
                 terminal.xterm?.dispose();
             }
         });
-        this.terminalSessions = [];
+        this.terminalSessions.clear();
+    }
+
+    async runCommand(command: string, streamCallback: (output: string) => void): Promise<{
+        output: string;
+        success: boolean;
+        error: string | null;
+    }> {
+        try {
+            if (!this.session) {
+                throw new Error('No session found');
+            }
+
+            const terminalSession = this.terminalSessions.get(this.activeTerminalSessionId) as TerminalSession | undefined;
+
+            if (!terminalSession?.terminal) {
+                throw new Error('No terminal session found');
+            }
+
+            const cmd = await this.session.commands.runBackground(command, {
+                name: 'user command'
+            });
+
+            terminalSession.xterm?.write(command + '\n');
+
+            await cmd.open();
+            const disposer = cmd.onOutput((output) => {
+                streamCallback(output);
+                terminalSession.xterm?.write(output);
+            });
+
+            const finalOutput = await cmd.waitUntilComplete();
+
+            disposer.dispose();
+            return {
+                output: finalOutput,
+                success: true,
+                error: null
+            };
+        } catch (error) {
+            console.error('Error running command:', error);
+            return {
+                output: '',
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred'
+            };
+        }
     }
 }

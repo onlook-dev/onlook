@@ -85,6 +85,7 @@
         "remark-gfm": "^4.0.1",
         "server-only": "^0.0.1",
         "shiki": "^3.2.2",
+        "strip-ansi": "^7.1.0",
         "superjson": "^2.2.1",
         "tailwind-merge": "^3.2.0",
         "tw-animate-css": "^1.2.5",
