@@ -33,9 +33,7 @@ const FloatingRings = () => {
                 
                 const filteredContributors = data.filter((contributor: Contributor) => {
                     if (!contributor.avatar_url) return false;
-                    
                     if (contributor.login.includes('[bot]')) return false;
-                    
                     return true;
                 });
                 setContributors(filteredContributors);
@@ -50,10 +48,14 @@ const FloatingRings = () => {
     }, []);
 
     // Tighter radii for mobile
-    const innerRadius = isMd ? 260 * 1.5 : 280;
-    const outerRadius = isMd ? 340 * 1.5 : 380;
+    const innerRadius = isMd ? 260 * 1.4 : 260;
+    const outerRadius = isMd ? 340 * 1.4 : 380;
     const size = 840;
     const center = size / 2;
+
+    // Number of faces in each ring
+    const innerRingCount = isMd ? 24 : Math.floor(24 * 0.6);
+    const outerRingCount = isMd ? 30 : Math.floor(30 * 0.6);
 
     return (
         <div
@@ -62,8 +64,8 @@ const FloatingRings = () => {
         >
             {/* Inner ring (clockwise) */}
             <div className="absolute left-1/2 top-1/2" style={{ width: '100%', height: '100%', transform: 'translate(-50%, -50%)', animation: 'spin 280s linear infinite' }}>
-                {Array.from({ length: 24 }).map((_, i) => {
-                    const angle = (i / 24) * 2 * Math.PI;
+                {Array.from({ length: innerRingCount }).map((_, i) => {
+                    const angle = (i / innerRingCount) * 2 * Math.PI;
                     const x = center + Math.cos(angle) * innerRadius;
                     const y = center + Math.sin(angle) * innerRadius;
                     const contributor = !isLoading && contributors.length > 0 ? contributors[i % contributors.length] : null;
@@ -76,7 +78,8 @@ const FloatingRings = () => {
                                 height: 56,
                                 left: x - 28,
                                 top: y - 28,
-                                animation: 'counter-spin 280s linear infinite'
+                                animation: 'counter-spin 280s linear infinite',
+                                transformOrigin: 'center center'
                             }}
                         >
                             {contributor && (
@@ -93,11 +96,11 @@ const FloatingRings = () => {
             </div>
             {/* Outer ring (counter-clockwise) */}
             <div className="absolute left-1/2 top-1/2" style={{ width: '100%', height: '100%', transform: 'translate(-50%, -50%)', animation: 'spin-reverse 290s linear infinite' }}>
-                {Array.from({ length: 30 }).map((_, i) => {
-                    const angle = (i / 30) * 2 * Math.PI;
+                {Array.from({ length: outerRingCount }).map((_, i) => {
+                    const angle = (i / outerRingCount) * 2 * Math.PI;
                     const x = center + Math.cos(angle) * outerRadius;
                     const y = center + Math.sin(angle) * outerRadius;
-                    const contributorIndex = (i + 24) % (contributors.length || 1);
+                    const contributorIndex = (i + innerRingCount) % (contributors.length || 1);
                     const contributor = !isLoading && contributors.length > 0 ? contributors[contributorIndex] : null;
                     return (
                         <div
@@ -108,7 +111,8 @@ const FloatingRings = () => {
                                 height: 56,
                                 left: x - 28,
                                 top: y - 28,
-                                animation: 'counter-spin-reverse 290s linear infinite'
+                                animation: 'counter-spin-reverse 290s linear infinite',
+                                transformOrigin: 'center center'
                             }}
                         >
                             {contributor && (
@@ -226,4 +230,4 @@ export function ContributorSection({
             </div>
         </div>
     );
-}         
+} 

@@ -1,7 +1,7 @@
 'use client';
 
+import { Footer } from '../_components/landing-page/page-footer';
 import { TopBar } from '../_components/top-bar';
-import { Footer } from '../_components/landing-page/Footer';
 
 export default function TermsPage() {
     return (
@@ -13,7 +13,7 @@ export default function TermsPage() {
                 <div className="max-w-4xl mx-auto px-8 py-16">
                     <h1 className="text-4xl font-light text-foreground-primary mb-8">Terms of Use</h1>
                     <p className="text-foreground-secondary mb-8">Effective Date November 8, 2024</p>
-                    
+
                     <div className="prose prose-invert max-w-none">
                         <p className="text-foreground-secondary mb-8">
                             If you have any questions, please write to us at [email protected]

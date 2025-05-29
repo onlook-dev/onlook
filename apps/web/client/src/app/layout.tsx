@@ -1,13 +1,13 @@
 import '@/styles/globals.css';
 import '@onlook/ui/globals.css';
 
+import { PostHogProvider } from '@/components/posthog-provider';
 import { TRPCReactProvider } from '@/trpc/react';
 import { type Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
-import { PostHogProvider } from '@/components/posthog-provider';
 
 export const metadata: Metadata = {
     title: 'Onlook',

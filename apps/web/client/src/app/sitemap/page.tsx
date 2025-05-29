@@ -1,8 +1,8 @@
 'use client';
 
-import { TopBar } from '../_components/top-bar';
-import { Footer } from '../_components/landing-page/Footer';
 import { Icons } from '@onlook/ui/icons/index';
+import { Footer } from '../_components/landing-page/page-footer';
+import { TopBar } from '../_components/top-bar';
 
 export default function SitemapPage() {
     return (
@@ -13,7 +13,7 @@ export default function SitemapPage() {
             <main className="flex-1 pt-16">
                 <div className="max-w-4xl mx-auto px-8 py-16">
                     <h1 className="text-4xl font-light text-foreground-primary mb-8">Sitemap</h1>
-                    
+
                     <div className="prose prose-invert max-w-none">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                             {/* Company Section */}

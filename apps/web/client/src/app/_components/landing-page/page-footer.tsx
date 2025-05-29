@@ -7,20 +7,20 @@ export function Footer() {
                 {/* Left: Slogan */}
                 <div className="flex-1 flex flex-col gap-8 min-w-[250px]">
                     <Icons.OnlookTextLogo className="w-24 h-5 text-foreground-primary" />
-                    {/* <div>
+                    <div>
                         <h2 className="text-title2 text-foreground-primary mb-2">Build in seconds –<br />obsess for hours</h2>
-                    </div> */}
+                    </div>
                 </div>
                 {/* Center: Links */}
                 <div className="flex-1 flex flex-col md:flex-row gap-12 md:gap-24 justify-center">
                     <div>
                         <h4 className="text-regularPlus mb-4">Company</h4>
                         <ul className="flex flex-col gap-2 text-regular text-foreground-secondary">
-                            {/* <li><a href="#" className="hover:underline">About</a></li> */}
+                            <li><a href="#" className="hover:underline">About</a></li>
                             <li><a href="https://docs.onlook.com" target="_blank" className="hover:underline">Docs</a></li>
                             <li><a href="/faq" className="hover:underline">FAQ</a></li>
                             <li><a href="https://onlook.substack.com" target="_blank" className="hover:underline">Blog</a></li>
-                            {/*<li><a href="#" className="hover:underline">Careers</a></li> */}
+                            <li><a href="#" className="hover:underline">Careers</a></li>
                         </ul>
                     </div>
                     <div className="min-w-[200px]">
@@ -28,9 +28,9 @@ export function Footer() {
                         <ul className="flex flex-col gap-2 text-regular text-foreground-secondary">
                             <li><a href="/projects" className="hover:underline">My Projects</a></li>
                             <li><a href="https://github.com/onlook-dev/onlook" target="_blank" className="hover:underline">GitHub</a></li>
-                            {/* <li><a href="#" className="hover:underline">Visual Editor</a></li>
+                            <li><a href="#" className="hover:underline">Visual Editor</a></li>
                             <li><a href="#" className="hover:underline">ShadCN</a></li>
-                            <li><a href="#" className="hover:underline">AI for Frontend</a></li> */}
+                            <li><a href="#" className="hover:underline">AI for Frontend</a></li>
                         </ul>
                     </div>
                     <div>
@@ -56,7 +56,7 @@ export function Footer() {
                         <a href="/sitemap.xml" className="hover:underline">Sitemap</a>
                     </div>
                     {/* Right: Copyright */}
-                    <div className="text-foreground-tertiary text-small w-full md:w-auto flex justify-center md:justify-end">© 2025 On Off, Inc.</div>
+                    <div className="text-foreground-tertiary text-small w-full md:w-auto flex justify-center md:justify-end">© {new Date().getFullYear()} On Off, Inc.</div>
                 </div>
             </div>
         </footer>

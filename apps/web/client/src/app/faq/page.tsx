@@ -1,9 +1,9 @@
 'use client';
 
-import { FAQDropdown } from '../_components/landing-page/FAQDropdown';
-import { Footer } from '../_components/landing-page/Footer';
-import { TopBar } from '../_components/top-bar';
 import { useEffect, useRef, useState } from 'react';
+import { FAQDropdown } from '../_components/landing-page/faq-dropdown';
+import { Footer } from '../_components/landing-page/page-footer';
+import { TopBar } from '../_components/top-bar';
 
 const faqSections = [
     {
@@ -26,6 +26,10 @@ const faqSections = [
                 question: "Is Onlook free to use?",
                 answer: "Onlook is free for your first prompt, but you're limited by the number of messages you can send. Please see our Pricing page for more details."
             },
+            {
+                question: "What features does Onlook offer?",
+                answer: "Onlook offers a comprehensive suite of features including real-time collaboration, automated deployments, version control integration, and powerful development tools."
+            }
         ]
     },
     {
@@ -42,7 +46,7 @@ const faqSections = [
             },
             {
                 question: "What is the difference between Onlook and other design tools?",
-                answer: "Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook's interface. "
+                answer: "Onlook is a visual editor for code. It allows you to create and style your own creations with code as the source of truth. While it is best suited for creating websites, it can be used for anything visual – presentations, mockups, and more. Because Onlook uses code as the source of truth, the types of designs you can create are unconstrained by Onlook's interface."
             }
         ]
     },
@@ -75,10 +79,9 @@ const faqSections = [
             {
                 question: "Where is Onlook based?",
                 answer: "Onlook was founded in Cincinnati, Ohio, USA, and started as a remote-first company between Cincinnati and New York City. After the YC Winter 2025 batch, Onlook opened a barracks in San Francisco. Our open-source contributors are scattered across the world, bringing their unique perspectives and incredible talent to the project as we continue to push the limits of design and development."
-            },
+            }
         ]
     }
-    // Add more sections as needed
 ];
 
 export default function FAQPage() {
@@ -125,7 +128,7 @@ export default function FAQPage() {
         window.addEventListener('scroll', handleScroll, { passive: true });
         handleScroll();
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [currentSection]);
 
     return (
         <main className="min-h-screen bg-background">
@@ -161,16 +164,15 @@ export default function FAQPage() {
                                         <li key={section.anchor}>
                                             <a
                                                 href={`#${section.anchor}`}
-                                                className={`transition-colors text-regular px-2 py-1 rounded-md ${
-                                                    currentSection === section.anchor
-                                                        ? 'text-foreground-secondary group-hover:text-foreground-primary'
-                                                        : 'text-foreground-tertiary/50 hover:text-foreground-secondary group-hover:text-foreground-tertiary '
-                                                }`}
+                                                className={`transition-colors text-regular px-2 py-1 rounded-md ${currentSection === section.anchor
+                                                    ? 'text-foreground-secondary group-hover:text-foreground-primary'
+                                                    : 'text-foreground-tertiary/50 hover:text-foreground-secondary group-hover:text-foreground-tertiary'
+                                                    }`}
                                                 onClick={e => {
                                                     e.preventDefault();
-                                                    const el = sectionRefs.current[i];
-                                                    if (el) {
-                                                        el.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+                                                    const element = document.getElementById(section.anchor);
+                                                    if (element) {
+                                                        element.scrollIntoView({ behavior: 'smooth' });
                                                     }
                                                 }}
                                             >
