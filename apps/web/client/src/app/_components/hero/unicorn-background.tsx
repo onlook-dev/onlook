@@ -47,6 +47,7 @@ const useUnicornStudio = () => {
         script.src = scriptUrl;
         script.async = true;
         script.onload = () => setIsLoaded(true);
+        script.onerror = () => console.error('Failed to load UnicornStudio script');
         document.body.appendChild(script);
         scriptRef.current = script;
 
