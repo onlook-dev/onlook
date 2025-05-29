@@ -8,45 +8,43 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useTextControl, type TextAlign } from '../hooks/use-text-control';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 
 export const TextAlignSelector = observer(
     () => {
         const { handleTextAlignChange, textState } = useTextControl();
         return (
             <DropdownMenu>
-                <Tooltip>
-                    <div>
-                        <TooltipTrigger asChild>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="toolbar"
-                                    className="text-white border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                                >
-                                    {(() => {
-                                        switch (textState.textAlign) {
-                                            case 'center':
-                                                return <Icons.TextAlignCenter className="h-4 w-4" />;
-                                            case 'right':
-                                                return <Icons.TextAlignRight className="h-4 w-4" />;
-                                            case 'justify':
-                                                return <Icons.TextAlignJustified className="h-4 w-4" />;
-                                            case 'left':
-                                            default:
-                                                return <Icons.TextAlignLeft className="h-4 w-4" />;
-                                        }
-                                    })()}
-                                </Button>
-                            </DropdownMenuTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="mt-1" hideArrow>
-                            Text Align
-                        </TooltipContent>
-                    </div>
-                </Tooltip>
+                <HoverOnlyTooltip
+                    content="Text Align"
+                    side="bottom"
+                    className="mt-1"
+                    hideArrow
+                >
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="toolbar"
+                            className="text-white border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            {(() => {
+                                switch (textState.textAlign) {
+                                    case 'center':
+                                        return <Icons.TextAlignCenter className="h-4 w-4" />;
+                                    case 'right':
+                                        return <Icons.TextAlignRight className="h-4 w-4" />;
+                                    case 'justify':
+                                        return <Icons.TextAlignJustified className="h-4 w-4" />;
+                                    case 'left':
+                                    default:
+                                        return <Icons.TextAlignLeft className="h-4 w-4" />;
+                                }
+                            })()}
+                        </Button>
+                    </DropdownMenuTrigger>
+                </HoverOnlyTooltip>
                 <DropdownMenuContent
                     align="center"
                     className="mt-1 flex min-w-fit gap-1 rounded-lg p-1"

@@ -63,7 +63,7 @@ const FloatingRings = () => {
             style={{ width: 840, height: 840 }}
         >
             {/* Inner ring (clockwise) */}
-            <div className="absolute left-1/2 top-1/2" style={{ width: '100%', height: '100%', transform: 'translate(-50%, -50%)', animation: 'spin 280s linear infinite' }}>
+            <div className="absolute left-1/2 top-1/2" style={{ width: '100%', height: '100%', transform: 'translate(-50%, -50%)', animation: 'spin-normal 280s linear infinite' }}>
                 {Array.from({ length: innerRingCount }).map((_, i) => {
                     const angle = (i / innerRingCount) * 2 * Math.PI;
                     const x = center + Math.cos(angle) * innerRadius;
@@ -173,7 +173,7 @@ export function ContributorSection({
                 {/* Floating Circles: two concentric rings */}
                 <FloatingRings />
                 <style>{`
-                    @keyframes spin {
+                    @keyframes spin-normal {
                         from {
                             transform: translate(-50%, -50%) rotate(0deg);
                         }
