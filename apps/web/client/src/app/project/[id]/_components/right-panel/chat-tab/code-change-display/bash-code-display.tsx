@@ -60,13 +60,14 @@ export const BashCodeDisplay = observer(
         const [stdOut, setStdOut] = useState<string | null>(null);
         const [stdErr, setStdErr] = useState<string | null>(null);
 
+
         const runCommand = async () => {
             setRunning(true);
             setStdOut(null);
             setStdErr(null);
 
             try {
-                const result = await editorEngine.sandbox.session.runCommand(content);
+                const result = await editorEngine.sandbox.session.runCommand(content, setStdOut);
 
                 if (!result) {
                     setStdErr('Failed to execute command: No session available');
