@@ -333,21 +333,19 @@ export class SandboxManager {
         try {
             await terminalSession.terminal.run(command);
             
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            onOutputDisposer.dispose();
-            
+            await new Promise(resolve => setTimeout(resolve, 3000));
+                        
             return {
                 success: true,
                 output: output.join('')
             };
-        } catch (error) {
-            onOutputDisposer.dispose();
-            
+        } catch (error) {            
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Unknown error occurred'
             };
+        } finally {
+            onOutputDisposer.dispose();
         }
     }
 

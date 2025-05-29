@@ -5,6 +5,55 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
+const formatCommandOutput = (output: string) => {
+    const lines = output.split('\n');
+    
+    return lines.map((line, index) => {
+        // Handle ANSI color codes and special characters
+        const cleanLine = line.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+        
+        // Add appropriate styling based on line content
+        if (cleanLine.includes('installed')) {
+            return (
+                <div key={index} className="text-green-400 flex items-center gap-2">
+                    <Icons.Check className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+        
+        if (cleanLine.includes('error') || cleanLine.includes('Error')) {
+            return (
+                <div key={index} className="text-red-400 flex items-center gap-2">
+                    <Icons.CrossCircled className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+        
+        if (cleanLine.includes('warning') || cleanLine.includes('Warning')) {
+            return (
+                <div key={index} className="text-yellow-400 flex items-center gap-2">
+                    <Icons.ExclamationTriangle className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+        
+        if (cleanLine.includes('$')) {
+            return (
+                <div key={index} className="text-blue-400 flex items-center gap-2">
+                    <Icons.Terminal className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+        
+        // Default styling for other lines
+        return <div key={index} className="text-foreground-secondary">{cleanLine}</div>;
+    });
+};
+
 export const BashCodeDisplay = observer(
     ({ content, isStream }: { content: string; isStream: boolean }) => {
         const editorEngine = useEditorEngine();
@@ -48,14 +97,14 @@ export const BashCodeDisplay = observer(
                         <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
                     )}
                     {stdOut !== null && (
-                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary whitespace-pre-wrap font-mono">
-                            {stdOut}
-                        </code>
+                        <div className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary whitespace-pre-wrap font-mono space-y-1">
+                            {formatCommandOutput(stdOut)}
+                        </div>
                     )}
                     {stdErr !== null && (
-                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500 whitespace-pre-wrap font-mono">
-                            {stdErr}
-                        </code>
+                        <div className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500 whitespace-pre-wrap font-mono">
+                            {formatCommandOutput(stdErr)}
+                        </div>
                     )}
                 </div>
 
@@ -76,20 +125,20 @@ export const BashCodeDisplay = observer(
                             Run again
                         </Button>
                     ) : (
-                        <Button
-                            size={'sm'}
-                            className="group flex flex-grow rounded-none gap-2 px-1 bg-teal-400/20 text-teal-200 hover:bg-teal-400/40 hover:text-teal-100"
-                            variant={'ghost'}
-                            onClick={runCommand}
-                            disabled={running || isStream}
-                        >
-                            {running ? (
-                                <Icons.Shadow className="animate-spin" />
-                            ) : (
-                                <Icons.Play className="text-teal-300 group-hover:text-teal-100 transition-none" />
-                            )}
-                            Run command
-                        </Button>
+                    <Button
+                        size={'sm'}
+                        className="group flex flex-grow rounded-none gap-2 px-1 bg-teal-400/20 text-teal-200 hover:bg-teal-400/40 hover:text-teal-100"
+                        variant={'ghost'}
+                        onClick={runCommand}
+                        disabled={running || isStream}
+                    >
+                        {running ? (
+                            <Icons.Shadow className="animate-spin" />
+                        ) : (
+                            <Icons.Play className="text-teal-300 group-hover:text-teal-100 transition-none" />
+                        )}
+                        Run command
+                    </Button>
                     )}
                 </div>
             </div>
