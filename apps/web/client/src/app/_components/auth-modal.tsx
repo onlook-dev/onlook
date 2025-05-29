@@ -1,8 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { Button } from '@onlook/ui/button';
-import { GithubLoginButton } from './login-button';
-import { GoogleLoginButton } from './login-button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -11,8 +6,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
-import { useAuthContext } from '../auth/AuthContext';
+import { Button } from '@onlook/ui/button';
 import { useTranslations } from 'next-intl';
+import { useAuthContext } from '../auth/AuthContext';
+import { GithubLoginButton, GoogleLoginButton } from './login-button';
 
 export default function AuthModal() {
     const { setIsAuthModalOpen, isAuthModalOpen } = useAuthContext();
@@ -22,7 +19,7 @@ export default function AuthModal() {
             <AlertDialogContent className="!max-w-sm bg-black">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-center text-xl font-normal">
-                        {t('welcome.login.loginToPublish')}
+                        {t('welcome.login.loginToEdit')}
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
                         {t('welcome.login.shareProjects')}
