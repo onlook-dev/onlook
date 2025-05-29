@@ -1,13 +1,14 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useMemo } from 'react';
 import { ColorPickerContent } from '../inputs/color-picker';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 import { observer } from 'mobx-react-lite';
 
 export const ColorBackground = observer(() => {
@@ -15,7 +16,7 @@ export const ColorBackground = observer(() => {
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.backgroundColor;
 
     const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'color-background-popover' 
+        id: 'color-background-dropdown' 
     });
 
     const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
@@ -25,54 +26,42 @@ export const ColorBackground = observer(() => {
 
     const colorHex = useMemo(() => tempColor?.toHex(), [tempColor]);
 
-    const ColorTrigger = useMemo(() => (
-        <div 
-            className="gap-1 text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border active:bg-background-tertiary/20 active:border-border flex h-9 w-9 cursor-pointer flex-col items-center justify-center rounded-md border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border active:text-white"
-            role="button"
-            tabIndex={0}
-            aria-label="Change background color"
-            onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.currentTarget.click();
-                }
-            }}
-        >
-            <Icons.PaintBucket className="h-2 w-2" />
-            <div
-                className="h-[4px] w-6 rounded-full bg-current"
-                style={{ backgroundColor: colorHex }}
-            />
-        </div>
-    ), [colorHex]);
-
     return (
         <div className="flex flex-col gap-2">
-            <Popover open={isOpen} onOpenChange={onOpenChange}>
-                <Tooltip>
-                    <div>
-                        <TooltipTrigger asChild>
-                            <PopoverTrigger asChild>
-                                {ColorTrigger}
-                            </PopoverTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="mt-1" hideArrow>
-                            Background Color
-                        </TooltipContent>
-                    </div>
-                </Tooltip>
-                <PopoverContent
-                    className="w-[220px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+                <HoverOnlyTooltip
+                    content="Background Color"
                     side="bottom"
+                    className="mt-1"
+                    hideArrow
+                    disabled={isOpen}
+                >
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="toolbar"
+                            className="flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground border border-border/0 rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        >
+                            <Icons.PaintBucket className="h-2 w-2" />
+                            <div
+                                className="h-[4px] w-6 rounded-full bg-current"
+                                style={{ backgroundColor: colorHex }}
+                            />
+                        </Button>
+                    </DropdownMenuTrigger>
+                </HoverOnlyTooltip>
+                <DropdownMenuContent
                     align="start"
+                    side="bottom"
+                    className="w-[220px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
                 >
                     <ColorPickerContent
                         color={tempColor}
                         onChange={handleColorUpdate}
                         onChangeEnd={handleColorUpdateEnd}
                     />
-                </PopoverContent>
-            </Popover>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 });
