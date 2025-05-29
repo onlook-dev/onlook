@@ -85,7 +85,7 @@
             "github": "Login with GitHub",
             "google": "Login with Google",
             "lastUsed": "You used this last time",
-            "loginToPublish": "Login to Publish",
+            "loginToEdit": "Login to Edit",
             "shareProjects": "Share projects, collaborate, and design more in code."
         },
         "terms": {
