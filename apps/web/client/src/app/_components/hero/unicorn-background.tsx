@@ -1,55 +1,72 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
-// Add TypeScript declarations for background
-declare global {
-    interface Window {
-        UnicornStudio: {
-            isInitialized: boolean;
-            init: (config?: { scale: number; dpi: number }) => Promise<Array<{
-                element: HTMLElement;
-                destroy: () => void;
-                contains?: (element: HTMLElement | null) => boolean;
-            }>>;
-        };
-    }
+// Define proper types for the library
+interface UnicornStudioScene {
+    element: HTMLElement;
+    destroy: () => void;
+    contains?: (element: HTMLElement | null) => boolean;
 }
 
+interface UnicornStudioConfig {
+    scale: number;
+    dpi: number;
+}
+
+interface UnicornStudio {
+    isInitialized: boolean;
+    init: (config?: UnicornStudioConfig) => Promise<UnicornStudioScene[]>;
+}
+
+// Custom hook to handle script loading
+const useUnicornStudio = () => {
+    const [isLoaded, setIsLoaded] = useState(false);
+    const scriptRef = useRef<HTMLScriptElement | null>(null);
+
+    useEffect(() => {
+        const version = '1.4.25';
+        const scriptUrl = `https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v${version}/dist/unicornStudio.umd.js`;
+
+        // Check if script already exists
+        const existingScript = document.querySelector(
+            `script[src="${scriptUrl}"]`
+        ) as HTMLScriptElement | null;
+
+        if (existingScript) {
+            if ((window as any).UnicornStudio) {
+                setIsLoaded(true);
+            } else {
+                existingScript.addEventListener('load', () => setIsLoaded(true));
+            }
+            scriptRef.current = existingScript;
+            return;
+        }
+
+        // Create and load new script
+        const script = document.createElement('script');
+        script.src = scriptUrl;
+        script.async = true;
+        script.onload = () => setIsLoaded(true);
+        document.body.appendChild(script);
+        scriptRef.current = script;
+
+        return () => {
+            if (scriptRef.current && !existingScript) {
+                document.body.removeChild(scriptRef.current);
+            }
+        };
+    }, []);
+
+    return { isLoaded, UnicornStudio: (window as any).UnicornStudio as UnicornStudio | undefined };
+};
 
 export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: boolean) => void }) {
     const [isBackgroundVisible, setIsBackgroundVisible] = useState(false);
-    const sceneRef = useRef<{ destroy: () => void } | null>(null);
+    const sceneRef = useRef<UnicornStudioScene | null>(null);
+    const { isLoaded, UnicornStudio } = useUnicornStudio();
 
-    // Add useEffect for background initialization
     useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        const initializeScript = (callback: () => void) => {
-            const version = '1.4.25';
-
-            const existingScript = document.querySelector(
-                'script[src^="https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js"]'
-            );
-
-            if (existingScript) {
-                if (window.UnicornStudio) {
-                    callback();
-                } else {
-                    existingScript.addEventListener('load', callback);
-                }
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.src = `https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v${version}/dist/unicornStudio.umd.js`;
-            script.async = true;
-
-            script.onload = () => {
-                callback();
-            };
-
-            document.body.appendChild(script);
-        };
+        if (!isLoaded) return;
 
         const initializeScene = async () => {
             const container = document.querySelector('[data-us-project="Gr1LmwbKSeJOXhpYEdit"]');
@@ -60,7 +77,7 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
             }
 
             try {
-                const scenes = await window.UnicornStudio?.init({
+                const scenes = await UnicornStudio?.init({
                     scale: 1,
                     dpi: 1.5,
                 });
@@ -74,10 +91,9 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
                     if (ourScene) {
                         sceneRef.current = ourScene;
                         setIsMounted(true);
-                        // Delay the background visibility
                         setTimeout(() => {
                             setIsBackgroundVisible(true);
-                        }, 1000); // 1 second delay after text animations start
+                        }, 1000);
                     }
                 }
             } catch (err) {
@@ -89,9 +105,7 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
             }
         };
 
-        initializeScript(() => {
-            void initializeScene();
-        });
+        void initializeScene();
 
         return () => {
             if (sceneRef.current?.destroy) {
@@ -99,7 +113,7 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
                 sceneRef.current = null;
             }
         };
-    }, []);
+    }, [isLoaded, setIsMounted]);
 
     return (
         <motion.div
@@ -114,5 +128,5 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
             animate={{ opacity: isBackgroundVisible ? 1 : 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
         />
-    )
+    );
 }
