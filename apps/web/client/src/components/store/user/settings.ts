@@ -14,10 +14,8 @@ export class UserSettingsManager {
         this.restoreSettings();
         reaction(
             () => this.userManager.user,
-            (user) => {
-                if (user) {
-                    this.restoreSettings();
-                }
+            () => {
+                this.restoreSettings();
             }
         );
     }
@@ -25,7 +23,7 @@ export class UserSettingsManager {
     async restoreSettings() {
         const user = this.userManager.user;
         if (!user) {
-            console.error('No user found');
+            console.warn('Cannot restore settings: No user found');
             return;
         }
         const settings = await api.user.settings.get.query({ userId: user.id });
@@ -35,7 +33,7 @@ export class UserSettingsManager {
     async update(newSettings: Partial<UserSettings>) {
         const user = this.userManager.user;
         if (!user) {
-            console.error('No user found');
+            console.error('Cannot update settings: No user found');
             return;
         }
 
