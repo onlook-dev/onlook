@@ -12,6 +12,7 @@ import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
+import { CLISessionType, type TerminalSession } from './terminal';
 
 export class SandboxManager {
     readonly session: SessionManager

@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthContext } from '@/app/auth/auth-context';
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
 import { useCreateManager } from '@/components/store/create';
 import { userManager } from '@/components/store/user';
@@ -17,7 +18,7 @@ import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { UnicornBackground } from './unicorn-background';
 
@@ -28,6 +29,7 @@ export function Create() {
     const posthog = usePostHog();
     const imageRef = useRef<HTMLInputElement>(null);
 
+    const { setIsAuthModalOpen } = useAuthContext();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
     const [isDragging, setIsDragging] = useState(false);
@@ -39,6 +41,30 @@ export function Create() {
     const [isComposing, setIsComposing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [cardKey, setCardKey] = useState(0);
+    const [isHighDemand, setIsHighDemand] = useState(false);
+
+    // Restore draft from localStorage if exists
+    useEffect(() => {
+        const draft = localStorage.getItem('createProjectDraft');
+        if (draft && !!userManager.user?.id) {
+            try {
+                const { prompt, images, timestamp } = JSON.parse(draft);
+                // Only restore if draft is less than 1 hour old
+                if (Date.now() - timestamp < 3600000) {
+                    setInputValue(prompt);
+                    setSelectedImages(images);
+                }
+                // Clear the draft after restoring
+                localStorage.removeItem('createProjectDraft');
+                // Run the submit function
+                createProject(prompt, images);
+            } catch (error) {
+                console.error('Error restoring draft:', error);
+                localStorage.removeItem('createProjectDraft');
+            }
+        }
+    }, []);
 
     const handleSubmit = async () => {
         if (isInputInvalid) {
@@ -54,6 +80,17 @@ export function Create() {
         });
         if (!userManager.user?.id) {
             console.error('No user ID found');
+
+            // Store the current input and images in localStorage
+            localStorage.setItem('createProjectDraft', JSON.stringify({
+                prompt,
+                images,
+                timestamp: Date.now()
+            }));
+            // Store the return URL
+            localStorage.setItem('returnUrl', window.location.pathname);
+            // Open the auth modal
+            setIsAuthModalOpen(true);
             return;
         }
 
@@ -240,18 +277,30 @@ export function Create() {
                     that lets designers and product managers craft<br />
                     web experiences with AI
                 </motion.p>
-            </div>
-            <div className="flex flex-col gap-4 items-center relative z-20">
-                <motion.div
+                <motion.p
+                    className="max-w-xl text-center mt-2 p-2 bg-amber-900/80 rounded-xl border border-amber-300 text-sm text-amber-300 px-4"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                    transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+                    style={{ willChange: "opacity, filter", transform: "translateZ(0)", display: isHighDemand ? 'block' : 'none' }}
+                >
+                    {"We're currently experiencing high demand. Project may fail to create."}
+                </motion.p>
+            </div>
+            <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={isMounted ? { opacity: 1 } : { opacity: 0 }}
                     transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                    onAnimationComplete={() => {
+                        setCardKey(prev => prev + 1);
+                    }}
                 >
                     <Card
+                        key={cardKey}
                         className={cn(
-                            'w-[600px] backdrop-blur-md bg-background/30 overflow-hidden gap-4',
-                            isDragging && 'bg-background',
+                            'w-[600px] overflow-hidden gap-4 backdrop-blur-md bg-background/20',
+                            isDragging && 'bg-background/40',
                         )}
                     >
                         <CardHeader className="text-start">{`Let's design a...`}</CardHeader>
@@ -278,9 +327,9 @@ export function Create() {
                                         )}
                                     >
                                         <AnimatePresence mode="popLayout">
-                                            {selectedImages.map((imageContext, index) => (
+                                            {selectedImages.map((imageContext) => (
                                                 <DraftImagePill
-                                                    key={`image-${index}-${imageContext.content}`}
+                                                    key={imageContext.content}
                                                     context={imageContext}
                                                     onRemove={() => handleRemoveImage(imageContext)}
                                                 />
@@ -420,6 +469,9 @@ export function Create() {
                 >
                     No Credit Card Required &bull; Get a Site in Seconds
                 </motion.div>
+            </div>
+            <div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10">
+                Onlook isn’t ready for Mobile – Please open on a larger screen
             </div>
         </div>
     );

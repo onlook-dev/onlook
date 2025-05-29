@@ -15,7 +15,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
 
     const [terminalHidden, setTerminalHidden] = useState(true);
 
-    if (!terminalSessions.length) {
+    if (!terminalSessions.size) {
         return (
             <div className="flex items-center justify-center h-full">
                 Initializing Sandbox...
@@ -79,14 +79,14 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                 <Tabs defaultValue={'cli'} value={activeSessionId} onValueChange={(value) => editorEngine.sandbox.session.activeTerminalSessionId = value}
                     className="w-full h-full">
                     <TabsList className="w-full h-8 rounded-none border-b border-border">
-                        {terminalSessions.map((terminal) => (
-                            <TabsTrigger key={terminal.id} value={terminal.id} className="flex-1">{terminal.name}</TabsTrigger>
+                        {Array.from(terminalSessions).map(([id, terminal]) => (
+                            <TabsTrigger key={id} value={id} className="flex-1">{terminal.name}</TabsTrigger>
                         ))}
                     </TabsList>
                     <div className="w-full h-full overflow-auto">
-                        {terminalSessions.map((terminal) => (
-                            <TabsContent key={terminal.id} forceMount value={terminal.id} className="h-full" hidden={activeSessionId !== terminal.id}>
-                                <Terminal hidden={terminalHidden} terminalSessionId={terminal.id} />
+                        {Array.from(terminalSessions).map(([id]) => (
+                            <TabsContent key={id} forceMount value={id} className="h-full" hidden={activeSessionId !== id}>
+                                <Terminal hidden={terminalHidden} terminalSessionId={id} />
                             </TabsContent>
                         ))}
                     </div>

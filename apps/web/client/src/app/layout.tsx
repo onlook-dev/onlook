@@ -8,6 +8,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
+import { AuthProvider } from './auth/auth-context';
 
 export const metadata: Metadata = {
     title: 'Onlook',
@@ -34,7 +35,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         disableTransitionOnChange
                     >
                         <TRPCReactProvider>
-                            <NextIntlClientProvider>{children}</NextIntlClientProvider>
+                            <AuthProvider>
+                                <NextIntlClientProvider>{children}</NextIntlClientProvider>
+                            </AuthProvider>
                         </TRPCReactProvider>
                     </ThemeProvider>
                 </PostHogProvider>
