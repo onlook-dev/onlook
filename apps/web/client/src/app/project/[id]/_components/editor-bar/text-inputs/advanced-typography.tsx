@@ -1,14 +1,14 @@
 'use client';
 
 import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useState } from 'react';
 import { useTextControl } from '../hooks/use-text-control';
 import { InputColor } from '../inputs/input-color';
 import { InputIcon } from '../inputs/input-icon';
 import { InputRadio } from '../inputs/input-radio';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 
 export const AdvancedTypography = () => {
     const {
@@ -39,26 +39,25 @@ export const AdvancedTypography = () => {
     ];
 
     return (
-        <Popover open={open} onOpenChange={(v) => setOpen(v)}>
-            <Tooltip>
-                <div>
-                    <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="toolbar"
-                                className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                            >
-                                <Icons.AdvancedTypography className="h-4 w-4" />
-                            </Button>
-                        </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="mt-1" hideArrow>
-                        Advanced Typography
-                    </TooltipContent>
-                </div>
-            </Tooltip>
-            <PopoverContent
+        <DropdownMenu open={open} onOpenChange={setOpen}>
+            <HoverOnlyTooltip
+                content="Advanced Typography"
+                side="bottom"
+                className="mt-1"
+                hideArrow
+                disabled={open}
+            >
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="toolbar"
+                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    >
+                        <Icons.AdvancedTypography className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
+            <DropdownMenuContent
                 side="bottom"
                 align="start"
                 className="mt-1 w-[300px] rounded-xl p-0 bg-background shadow-lg border border-border"
@@ -122,7 +121,7 @@ export const AdvancedTypography = () => {
                         </div>
                     </div>
                 </div>
-            </PopoverContent>
-        </Popover>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

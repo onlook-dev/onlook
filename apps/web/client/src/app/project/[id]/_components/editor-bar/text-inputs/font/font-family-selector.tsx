@@ -4,21 +4,24 @@ import { useEditorEngine } from '@/components/store/editor';
 import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toNormalCase } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useTextControl } from '../../hooks/use-text-control';
 import { FontFamily } from './font-family';
+import { HoverOnlyTooltip } from '../../hover-tooltip';
+import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 
 export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
     const [fonts, setFonts] = useState<Font[]>([]);
     const [search, setSearch] = useState('');
-    const [open, setOpen] = useState(false);
     const { handleFontFamilyChange, textState } = useTextControl();
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'font-family-dropdown',
+    });
 
     useEffect(() => {
         (async () => {
@@ -37,7 +40,7 @@ export const FontFamilySelector = observer(() => {
     );
 
     const handleClose = () => {
-        setOpen(false);
+        onOpenChange(false);
         editorEngine.state.brandTab = null;
         if (editorEngine.state.leftPanelTab === LeftPanelTabValue.BRAND) {
             editorEngine.state.leftPanelTab = null;
@@ -46,35 +49,31 @@ export const FontFamilySelector = observer(() => {
     };
 
     return (
-        <Popover
-            open={open}
-            onOpenChange={(v) => {
-                setOpen(v);
-                if (!v) editorEngine.state.brandTab = null;
-            }}
-        >
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                            aria-label="Font Family Selector"
-                            tabIndex={0}
-                            onClick={handleClose}
-                        >
-                            <span className="truncate text-sm">
-                                {toNormalCase(textState.fontFamily) || 'Sans Serif'}
-                            </span>
-                        </Button>
-                    </PopoverTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-1" hideArrow>
-                    Font Family
-                </TooltipContent>
-            </Tooltip>
-            <PopoverContent
+        <DropdownMenu open={isOpen} onOpenChange={(v) => {
+            onOpenChange(v);
+            if (!v) editorEngine.state.brandTab = null;
+        }}>
+            <HoverOnlyTooltip
+                content="Font Family"
+                side="bottom"
+                className="mt-1"
+                hideArrow
+                disabled={isOpen}
+            >
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="toolbar"
+                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        aria-label="Font Family Selector"
+                    >
+                        <span className="truncate text-sm">
+                            {toNormalCase(textState.fontFamily) || 'Sans Serif'}
+                        </span>
+                    </Button>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
+            <DropdownMenuContent
                 side="bottom"
                 align="start"
                 className="mt-1 min-w-[300px] max-h-[400px] overflow-y-auto rounded-xl p-0 bg-background shadow-lg border border-border flex flex-col"
@@ -129,14 +128,13 @@ export const FontFamilySelector = observer(() => {
                         onClick={() => {
                             editorEngine.state.brandTab = BrandTabValue.FONTS;
                             editorEngine.state.leftPanelTab = LeftPanelTabValue.BRAND;
-
-                            setOpen(false);
+                            onOpenChange(false);
                         }}
                     >
                         Manage Brand fonts
                     </Button>
                 </div>
-            </PopoverContent>
-        </Popover>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 });
