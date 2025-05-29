@@ -3,13 +3,14 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import stripAnsi from 'strip-ansi';
 
 const formatCommandOutput = (output: string) => {
     const lines = output.split('\n');
 
     return lines.map((line, index) => {
         // Handle ANSI color codes and special characters
-        const cleanLine = line.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+        const cleanLine = stripAnsi(line);
 
         // Add appropriate styling based on line content
         if (cleanLine.includes('installed')) {
