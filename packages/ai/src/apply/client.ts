@@ -15,7 +15,7 @@ export class FastApplyClient {
 
     async applyCodeChange(originalCode: string, updateSnippet: string): Promise<string> {
         const response = await this.client.chat.completions.create({
-            model: 'morph-v0',
+            model: 'morph-v2',
             messages: [
                 {
                     role: 'user',
