@@ -41,7 +41,7 @@
 Craft websites, prototypes, and designs with AI in Next.js + TailwindCSS. Make
 edits directly in the browser DOM with a visual editor. Design in realtime with code. An open-source alternative to Bolt.new, Lovable, V0, Replit Agent, Figma Make, Webflow, etc.
 
-### 🚧 🚧 🚧 Onlook for Web is still under develoment 🚧 🚧 🚧
+### 🚧 🚧 🚧 Onlook for Web is still under development 🚧 🚧 🚧
 We're actively looking for contributors to help make Onlook for Web an incredible prompt-to-build experience. Check the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues), and join our [Discord](https://discord.gg/hERDfFZCsH) to collaborate with hundreds of other builders. 
 
 ## What you can do with Onlook:
