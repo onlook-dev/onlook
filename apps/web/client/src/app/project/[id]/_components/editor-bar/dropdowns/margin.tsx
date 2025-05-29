@@ -25,7 +25,7 @@ export const Margin = observer(() => {
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-            <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow>
+            <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"

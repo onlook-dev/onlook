@@ -20,7 +20,7 @@ export const Height = observer(() => {
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-            <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow>
+            <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
