@@ -65,7 +65,7 @@ export const FontFamilySelector = observer(() => {
                             onClick={handleClose}
                         >
                             <span className="truncate text-sm">
-                                {toNormalCase(textState.fontFamily)}
+                                {toNormalCase(textState.fontFamily) || 'Sans Serif'}
                             </span>
                         </Button>
                     </PopoverTrigger>
