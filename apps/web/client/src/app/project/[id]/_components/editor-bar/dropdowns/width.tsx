@@ -20,7 +20,7 @@ export const Width = observer(() => {
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-            <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow>
+            <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"

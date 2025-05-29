@@ -62,7 +62,7 @@ export const Opacity = observer(() => {
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-            <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow>
+            <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <div className="text-muted-foreground border-border/0 group h-8 rounded-lg hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white" onClick={handleInputAreaClick}>
                         <Input
