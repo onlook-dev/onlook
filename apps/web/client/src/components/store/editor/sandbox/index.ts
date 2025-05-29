@@ -12,6 +12,7 @@ import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
+import { CLISessionType, type TerminalSession } from './terminal';
 
 export class SandboxManager {
     readonly session: SessionManager
@@ -19,6 +20,7 @@ export class SandboxManager {
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
     readonly fileEventBus: FileEventBus = new FileEventBus();
+
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
@@ -301,6 +303,52 @@ export class SandboxManager {
 
         const codeBlock = await getContentFromTemplateNode(templateNode, content);
         return codeBlock;
+    }
+
+    async runCommand(command: string) {
+        if (!this.session.session) {
+            console.error('No session found');
+            return null;
+        }
+
+        const terminalSession = this.session.terminalSessions.find(
+            session => session.type === CLISessionType.TERMINAL
+        ) as TerminalSession | undefined;
+
+        if (!terminalSession?.terminal) {
+            console.error('No terminal session found');
+            return null;
+        }
+
+        const output: string[] = [];
+        
+        const onOutputDisposer = terminalSession.terminal.onOutput((data) => {
+            output.push(data);
+            // Also write to xterm if available
+            if (terminalSession.xterm) {
+                terminalSession.xterm.write(data);
+            }
+        });
+
+        try {
+            await terminalSession.terminal.run(command);
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            onOutputDisposer.dispose();
+            
+            return {
+                success: true,
+                output: output.join('')
+            };
+        } catch (error) {
+            onOutputDisposer.dispose();
+            
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error occurred'
+            };
+        }
     }
 
     clear() {

@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -6,32 +7,34 @@ import { useState } from 'react';
 
 export const BashCodeDisplay = observer(
     ({ content, isStream }: { content: string; isStream: boolean }) => {
-        const projectManager = useProjectManager();
-        // const projectPath = projectManager.project?.folderPath;
+        const editorEngine = useEditorEngine();
         const [running, setRunning] = useState(false);
         const [stdOut, setStdOut] = useState<string | null>(null);
         const [stdErr, setStdErr] = useState<string | null>(null);
 
         const runCommand = async () => {
-            // if (!projectPath) {
-            //     console.error('No project path found');
-            //     return;
-            // }
             setRunning(true);
-            // const res: RunBunCommandResult | null = await invokeMainChannel(
-            //     MainChannels.RUN_COMMAND,
-            //     {
-            //         cwd: projectPath,
-            //         command: content,
-            //     },
-            // );
-            // if (!res?.success) {
-            //     setStdErr(res?.error || 'Failed to run command');
-            // } else {
-            //     setStdOut(res.output || '');
-            //     setStdErr(null);
-            // }
-            setRunning(false);
+            setStdOut(null);
+            setStdErr(null);
+            
+            try {
+                const result = await editorEngine.sandbox.runCommand(content);
+                
+                if (!result) {
+                    setStdErr('Failed to execute command: No session available');
+                    return;
+                }
+                
+                if (!result.success) {
+                    setStdErr(result.error || 'Failed to execute command');
+                } else {
+                    setStdOut(result.output || '');
+                }
+            } catch (error) {
+                setStdErr(error instanceof Error ? error.message : 'An unexpected error occurred');
+            } finally {
+                setRunning(false);
+            }
         };
 
         return (
@@ -45,12 +48,12 @@ export const BashCodeDisplay = observer(
                         <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
                     )}
                     {stdOut !== null && (
-                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary">
+                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary whitespace-pre-wrap font-mono">
                             {stdOut}
                         </code>
                     )}
                     {stdErr !== null && (
-                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500">
+                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500 whitespace-pre-wrap font-mono">
                             {stdErr}
                         </code>
                     )}
