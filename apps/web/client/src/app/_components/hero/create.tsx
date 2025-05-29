@@ -15,7 +15,6 @@ import { cn } from '@onlook/ui/utils';
 import { compressImage } from '@onlook/utility';
 import { motion } from 'framer-motion';
 import { AnimatePresence } from 'motion/react';
-import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useEffect, useRef, useState } from 'react';
@@ -23,7 +22,6 @@ import { vujahdayScript } from '../../fonts';
 import { UnicornBackground } from './unicorn-background';
 
 export function Create() {
-    const t = useTranslations();
     const createManager = useCreateManager();
     const router = useRouter();
     const posthog = usePostHog();
@@ -39,9 +37,10 @@ export function Create() {
     const [isLoading, setIsLoading] = useState(false);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [cardKey, setCardKey] = useState(0);
+
+    // Will be a feature flag in the future
     const [isHighDemand, setIsHighDemand] = useState(false);
 
     // Restore draft from localStorage if exists
