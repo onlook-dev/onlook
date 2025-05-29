@@ -1,10 +1,11 @@
 'use client';
 
 import { Button } from '@onlook/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { Border } from './dropdowns/border';
+import { BorderColor } from './dropdowns/border-color';
 import { ColorBackground } from './dropdowns/color-background';
 import { Display } from './dropdowns/display';
 import { Height } from './dropdowns/height';
@@ -13,14 +14,13 @@ import { Opacity } from './dropdowns/opacity';
 import { Padding } from './dropdowns/padding';
 import { Radius } from './dropdowns/radius';
 import { Width } from './dropdowns/width';
-import { useMeasureGroup } from './hooks/use-measure-group';
 import { useDropdownControl } from './hooks/use-dropdown-manager';
+import { useMeasureGroup } from './hooks/use-measure-group';
 import { InputSeparator } from './separator';
 import { FontFamilySelector } from './text-inputs/font/font-family-selector';
 import { FontSizeSelector } from './text-inputs/font/font-size';
 import { FontWeightSelector } from './text-inputs/font/font-weight';
 import { TextColor } from './text-inputs/text-color';
-import { BorderColor } from './dropdowns/border-color';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
@@ -64,9 +64,8 @@ export const DIV_SELECTED_GROUPS = [
 
 export const DivSelected = memo(({ availableWidth = 0 }: { availableWidth?: number }) => {
     const { visibleCount } = useMeasureGroup({ availableWidth, count: DIV_SELECTED_GROUPS.length });
-    
-    const { isOpen: overflowOpen, onOpenChange: setOverflowOpen } = useDropdownControl({ 
-        id: 'div-selected-overflow-popover' 
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'div-selected-overflow-dropdown',
     });
 
     const visibleGroups = DIV_SELECTED_GROUPS.slice(0, visibleCount);
@@ -86,8 +85,8 @@ export const DivSelected = memo(({ availableWidth = 0 }: { availableWidth?: numb
             ))}
             {overflowGroups.length > 0 && visibleCount > 0 && <InputSeparator />}
             {overflowGroups.length > 0 && (
-                <Popover open={overflowOpen} onOpenChange={setOverflowOpen}>
-                    <PopoverTrigger asChild>
+                <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+                    <DropdownMenuTrigger asChild>
                         <Button
                             variant="ghost"
                             size="toolbar"
@@ -96,8 +95,8 @@ export const DivSelected = memo(({ availableWidth = 0 }: { availableWidth?: numb
                         >
                             <Icons.DotsHorizontal className="w-5 h-5" />
                         </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
                         align="end"
                         className="flex flex-row gap-1 p-1 px-1 bg-background rounded-lg shadow-xl shadow-black/20 min-w-[fit-content] items-center w-[fit-content]"
                     >
@@ -111,8 +110,8 @@ export const DivSelected = memo(({ availableWidth = 0 }: { availableWidth?: numb
                                 </div>
                             </React.Fragment>
                         ))}
-                    </PopoverContent>
-                </Popover>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             )}
         </div>
     );
