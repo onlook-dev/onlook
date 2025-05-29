@@ -20,6 +20,7 @@ import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { UnicornBackground } from './unicorn-background';
+import { useAuthContext } from '@/app/auth/AuthContext';
 
 export function Create() {
     const t = useTranslations();
@@ -29,6 +30,7 @@ export function Create() {
     const imageRef = useRef<HTMLInputElement>(null);
     const [showBlurredCard, setShowBlurredCard] = useState(false);
 
+    const { setIsAuthModalOpen } = useAuthContext();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
     const [isDragging, setIsDragging] = useState(false);
@@ -56,6 +58,7 @@ export function Create() {
         });
         if (!userManager.user?.id) {
             console.error('No user ID found');
+            setIsAuthModalOpen(true);
             return;
         }
 
