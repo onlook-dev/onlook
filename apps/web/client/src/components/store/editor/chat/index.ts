@@ -1,8 +1,7 @@
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
-import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ChatMessageContext, type ImageMessageContext } from '@onlook/models/chat';
-import type { ParsedError } from '@onlook/utility';
+import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -25,7 +24,7 @@ export class ChatManager {
         private userManager: UserManager,
     ) {
         this.context = new ChatContext(this.editorEngine, this.projectManager);
-        this.conversation = new ConversationManager(this.projectManager);
+        this.conversation = new ConversationManager(this, this.projectManager);
         this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectManager);
         makeAutoObservable(this);
@@ -33,18 +32,6 @@ export class ChatManager {
 
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
-    }
-
-    async getCreateMessages(prompt: string, images: ImageMessageContext[]): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
-
-        const messages = await this.getStreamMessages(prompt, [
-            ...images,
-        ]);
-        return messages;
     }
 
     async getStreamMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
@@ -66,7 +53,8 @@ export class ChatManager {
         return this.generateStreamMessages(content);
     }
 
-    async getFixErrorMessages(errors: ParsedError[]): Promise<Message[] | null> {
+    async getFixErrorMessages(): Promise<Message[] | null> {
+        const errors = this.editorEngine.error.errors;
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
@@ -121,16 +109,16 @@ export class ChatManager {
             console.error('No conversation found');
             return null;
         }
-        // Save current changes before sending to AI
+        this.createCommit(userPrompt);
+        return this.conversation.current.getMessagesForStream();
+    }
 
+    createCommit(userPrompt?: string) {
         // TODO: Reenable this
-        // this.projectsManager.versions?.createCommit(
-        //     userPrompt ?? "Save before chat",
+        // this.projectManager.versions?.createCommit(
+        //     "Save before chat",
         //     false,
         // );
-
-        const messages = this.conversation.current.getMessagesForStream();
-        return messages;
     }
 
     autoApplyCode(assistantMessage: AssistantChatMessage) {

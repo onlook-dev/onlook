@@ -2,23 +2,26 @@ import type { WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
+import { isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
+import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
-import { formatContent, isSubdirectory, normalizePath } from './helpers';
+import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 export class SandboxManager {
-    readonly session: SessionManager = new SessionManager();
+    readonly session: SessionManager
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
     readonly fileEventBus: FileEventBus = new FileEventBus();
 
-    constructor() {
+    constructor(private readonly editorEngine: EditorEngine) {
+        this.session = new SessionManager(this.editorEngine);
         makeAutoObservable(this);
 
         reaction(
@@ -92,6 +95,7 @@ export class SandboxManager {
         }
 
         try {
+            await this.processFileForMapping(filePath);
             await this.session.session.fs.writeTextFile(filePath, fileContent);
             return true;
         } catch (error) {

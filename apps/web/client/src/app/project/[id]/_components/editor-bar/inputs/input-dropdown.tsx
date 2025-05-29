@@ -8,8 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { debounce } from 'lodash';
-import { useEffect, useMemo, useState } from 'react';
+import { useInputControl } from '../hooks/use-input-control';
 
 const UNITS = ['PX', '%', 'EM', 'REM'];
 
@@ -19,11 +18,11 @@ const OPTION_OVERRIDES: Record<string, string | undefined> = {
 };
 
 interface InputDropdownProps {
-    value: string;
+    value: number;
     unit?: string;
     dropdownValue: string;
     dropdownOptions?: string[];
-    onChange?: (value: string) => void;
+    onChange?: (value: number) => void;
     onDropdownChange?: (value: string) => void;
     onUnitChange?: (value: string) => void;
 }
@@ -37,24 +36,7 @@ export const InputDropdown = ({
     onDropdownChange,
     onUnitChange,
 }: InputDropdownProps) => {
-    const [localValue, setLocalValue] = useState(value);
-
-    useEffect(() => {
-        setLocalValue(value);
-    }, [value]);
-
-    const debouncedOnChange = useMemo(
-        () => debounce((newValue: string) => {
-            onChange?.(newValue);
-        }, 500),
-        [onChange]
-    );
-
-    useEffect(() => {
-        return () => {
-            debouncedOnChange.cancel();
-        };
-    }, [debouncedOnChange]);
+    const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange);
 
     return (
         <div className="flex items-center">
@@ -62,12 +44,10 @@ export const InputDropdown = ({
                 <input
                     type="text"
                     value={localValue}
-                    onChange={(e) => {
-                        const newValue = e.target.value;
-                        setLocalValue(newValue);
-                        debouncedOnChange(newValue);
-                    }}
+                    onChange={(e) => handleChange(Number(e.target.value))}
+                    onKeyDown={handleKeyDown}
                     className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
+                    aria-label="Value input"
                 />
                 <DropdownMenu>
                     <DropdownMenuTrigger className="text-sm text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">
@@ -93,7 +73,9 @@ export const InputDropdown = ({
                         className="h-[36px] bg-background-tertiary/50 hover:bg-background-tertiary/70 hover:text-white rounded-l-none rounded-r-md ml-[1px] px-2.5 flex items-center justify-between w-[72px] cursor-pointer transition-colors"
                     >
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground group-hover:text-white transition-colors">{OPTION_OVERRIDES[dropdownValue] ?? dropdownValue}</span>
+                            <span className="text-sm text-muted-foreground group-hover:text-white transition-colors">
+                                {OPTION_OVERRIDES[dropdownValue] ?? dropdownValue}
+                            </span>
                         </div>
                         <Icons.ChevronDown className="h-4 w-4 min-h-4 min-w-4 text-muted-foreground group-hover:text-white transition-colors" />
                     </Button>

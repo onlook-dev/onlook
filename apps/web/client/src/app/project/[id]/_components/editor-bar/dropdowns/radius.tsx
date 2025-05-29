@@ -7,18 +7,24 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
-import { HoverOnlyTooltip } from "../HoverOnlyTooltip";
+import { useDropdownControl } from "../hooks/use-dropdown-manager";
+import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 
-export const Radius = () => {
+export const Radius = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('radius');
+    
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'radius-dropdown' 
+    });
 
     return (
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Radius" side="bottom" className="mt-1" hideArrow>
                 <DropdownMenuTrigger asChild>
                     <Button
@@ -79,4 +85,4 @@ export const Radius = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

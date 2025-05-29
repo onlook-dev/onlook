@@ -5,8 +5,7 @@ import {
     ChatMessageRole,
     type AssistantChatMessage,
     type ChatConversation,
-    type TokenUsage,
-    type UserChatMessage,
+    type UserChatMessage
 } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
@@ -24,18 +23,13 @@ export class ChatConversationImpl implements ChatConversation {
     createdAt: string;
     updatedAt: string;
 
-    public tokenUsage: TokenUsage = {
-        promptTokens: 0,
-        completionTokens: 0,
-        totalTokens: 0,
-    };
-
     private constructor(conversation: ChatConversation, fetchMessages = false) {
         this.id = conversation.id;
         this.projectId = conversation.projectId;
         this.createdAt = conversation.createdAt;
         this.updatedAt = conversation.updatedAt;
         this.displayName = conversation.displayName;
+
         if (fetchMessages) {
             this.getMessagesFromStorage().then((messages) => {
                 this.messages = messages;
@@ -59,7 +53,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     async getMessagesFromStorage(): Promise<ChatMessageImpl[]> {
-        const messages = await api.chat.getMessages.query({ conversationId: this.id });
+        const messages = await api.chat.message.get.query({ conversationId: this.id });
         const messagesImpl = messages.map((m) => {
             if (m.role === ChatMessageRole.USER) {
                 return UserChatMessageImpl.fromJSON(m as UserChatMessage);
@@ -74,9 +68,6 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.find((m) => m.id === id);
     }
 
-    updateTokenUsage(usage: TokenUsage) {
-        this.tokenUsage = usage;
-    }
 
     getMessagesForStream(): Message[] {
         return this.messages.map((m) => m.toStreamMessage());
@@ -129,7 +120,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     async saveConversationToStorage() {
-        const success = await api.chat.saveConversation.mutate({
+        const success = await api.chat.conversation.upsert.mutate({
             conversation: fromConversation(this),
         });
         if (!success) {
@@ -139,7 +130,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     async saveMessageToStorage(message: ChatMessageImpl) {
-        const success = await api.chat.saveMessage.mutate({
+        const success = await api.chat.message.upsert.mutate({
             message: fromMessage(this.id, message),
         });
         if (!success) {
@@ -148,7 +139,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     async removeMessagesFromStorage(messages: ChatMessageImpl[]) {
-        const success = await api.chat.deleteMessages.mutate({
+        const success = await api.chat.message.delete.mutate({
             messageIds: messages.map((m) => m.id),
         });
         if (!success) {

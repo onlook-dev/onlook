@@ -1,6 +1,7 @@
 'use client';
 
 import { useUserManager } from '@/components/store/user';
+import { Routes } from '@/utils/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import {
     DropdownMenu,
@@ -9,10 +10,9 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons/index';
-import { redirect, usePathname } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
-export const CurrentUserAvatar = ({ className }: { className?: string }) => {
-    const currentPath = usePathname();
+export const CurrentUserAvatar = ({ className, disableDropdown = false }: { className?: string, disableDropdown?: boolean }) => {
     const userManager = useUserManager();
     const user = userManager.user;
     const initials = user?.name
@@ -23,14 +23,14 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
 
     const handleSignOut = async () => {
         await userManager.signOut();
-        redirect(currentPath);
+        redirect(Routes.LOGIN);
     };
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild disabled={disableDropdown}>
                 <Avatar className={className}>
-                    {user?.image && <AvatarImage src={user.image} alt={initials} />}
+                    {user?.avatarUrl && <AvatarImage src={user.avatarUrl} alt={initials} />}
                     <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>

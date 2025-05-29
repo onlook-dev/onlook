@@ -30,7 +30,8 @@ export function insertElementToNode(path: NodePath<T.JSXElement>, element: CodeI
 export function createInsertedElement(insertedChild: CodeInsert): T.JSXElement {
     let element: T.JSXElement;
     if (insertedChild.codeBlock) {
-        element = getAstFromCodeblock(insertedChild.codeBlock) || createJSXElement(insertedChild);
+        element =
+            getAstFromCodeblock(insertedChild.codeBlock, true) || createJSXElement(insertedChild);
         addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, insertedChild.oid);
     } else {
         element = createJSXElement(insertedChild);
@@ -91,13 +92,14 @@ export function insertAtIndex(
 ): void {
     if (index !== -1) {
         const jsxElements = path.node.children.filter(jsxFilter);
-        const targetIndex = Math.max(0, Math.min(index, jsxElements.length - 1));
-        if (targetIndex === path.node.children.length) {
+        const targetIndex = Math.min(index, jsxElements.length);
+        if (targetIndex >= path.node.children.length) {
             path.node.children.push(newElement);
         } else {
             const targetChild = jsxElements[targetIndex];
             if (!targetChild) {
                 console.error('Target child not found');
+                path.node.children.push(newElement);
                 return;
             }
             const targetChildIndex = path.node.children.indexOf(targetChild);

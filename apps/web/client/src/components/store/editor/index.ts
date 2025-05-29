@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext } from 'react';
 import { projectManager } from '../project';
 import { userManager } from '../user';

@@ -60,7 +60,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                     break;
                 case MouseAction.MOUSE_DOWN:
                     if (el.tagName.toLocaleLowerCase() === 'body') {
-                        editorEngine.frames.select(frame);
+                        editorEngine.frames.select([frame]);
                         return;
                     }
                     // Ignore right-clicks
@@ -116,7 +116,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const handleClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
             editorEngine.frames.deselectAll();
-            editorEngine.frames.select(frame);
+            editorEngine.frames.select([frame]);
         },
         [editorEngine.frames],
     );

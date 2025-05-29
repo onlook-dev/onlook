@@ -4,13 +4,15 @@ import {
     projectInsertSchema,
     projects,
     toCanvas,
-    toConversation,
     toFrame,
     toProject,
+    userCanvases,
     userProjects,
-    type Canvas
+    type Canvas,
+    type UserCanvas
 } from '@onlook/db';
-import { createDefaultCanvas, createDefaultFrame } from '@onlook/utility';
+import { ProjectRole } from '@onlook/models';
+import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
@@ -25,6 +27,9 @@ export const projectRouter = createTRPCRouter({
                     canvas: {
                         with: {
                             frames: true,
+                            userCanvases: {
+                                where: eq(userCanvases.userId, ctx.user.id),
+                            },
                         },
                     },
                     conversations: {
@@ -37,14 +42,13 @@ export const projectRouter = createTRPCRouter({
                 console.error('project not found');
                 return null;
             }
-            const canvas: Canvas = project.canvas
-                ? project.canvas
-                : createDefaultCanvas(project.id);
+            const canvas: Canvas = project.canvas ?? createDefaultCanvas(project.id);
+            const userCanvas: UserCanvas = project.canvas?.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
+
             return {
                 project: toProject(project),
-                canvas: toCanvas(canvas),
+                userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
-                conversation: project.conversations[0] ? toConversation(project.conversations[0]) : null,
             };
         }),
     create: protectedProcedure
@@ -61,11 +65,15 @@ export const projectRouter = createTRPCRouter({
                 await tx.insert(userProjects).values({
                     userId: input.userId,
                     projectId: newProject.id,
+                    role: ProjectRole.OWNER,
                 });
 
                 // 3. Create the default canvas
                 const newCanvas = createDefaultCanvas(newProject.id);
                 await tx.insert(canvases).values(newCanvas);
+
+                const newUserCanvas = createDefaultUserCanvas(input.userId, newCanvas.id);
+                await tx.insert(userCanvases).values(newUserCanvas);
 
                 // 4. Create the default frame
                 const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
@@ -93,12 +101,10 @@ export const projectRouter = createTRPCRouter({
             });
             return projects.map((project) => toProject(project.project));
         }),
-    update: protectedProcedure
-        .input(projectInsertSchema)
-        .mutation(async ({ ctx, input }) => {
-            if (!input.id) {
-                throw new Error('Project ID is required');
-            }
-            await ctx.db.update(projects).set(input).where(eq(projects.id, input.id));
-        }),
+    update: protectedProcedure.input(projectInsertSchema).mutation(async ({ ctx, input }) => {
+        if (!input.id) {
+            throw new Error('Project ID is required');
+        }
+        await ctx.db.update(projects).set(input).where(eq(projects.id, input.id));
+    }),
 });

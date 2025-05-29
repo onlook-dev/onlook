@@ -1,3 +1,4 @@
+import { client } from '@/utils/analytics/server';
 import { createClient } from '@/utils/supabase/server';
 import type { User } from '@onlook/db';
 import { NextResponse } from 'next/server';
@@ -16,6 +17,13 @@ export async function GET(request: Request) {
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development';
             const user = await getOrCreateUser(data.user.id);
+
+            trackUserSignedIn(user.id, {
+                name: data.user.user_metadata.name,
+                email: data.user.email,
+                avatar_url: data.user.user_metadata.avatar_url,
+            });
+
             if (isLocalEnv) {
                 // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
                 return NextResponse.redirect(`${origin}${next}`);
@@ -41,4 +49,16 @@ async function getOrCreateUser(userId: string): Promise<User> {
     }
     console.log(`User ${userId} found, returning...`);
     return user;
+}
+
+function trackUserSignedIn(userId: string, properties: Record<string, any>) {
+    try {
+        client.identify({
+            distinctId: userId,
+            properties: properties
+        });
+        client.capture({ event: 'user_signed_in', distinctId: userId });
+    } catch (error) {
+        console.error('Error tracking user signed in:', error);
+    }
 }

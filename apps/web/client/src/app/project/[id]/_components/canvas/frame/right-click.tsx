@@ -1,7 +1,6 @@
 import { Hotkey } from '@/components/hotkey';
 import { IDE } from '@/components/ide';
 import { useEditorEngine } from '@/components/store/editor';
-import { useUserManager } from '@/components/store/user';
 import { DEFAULT_IDE, EditorTabValue, type DomElement } from '@onlook/models';
 import {
     ContextMenu,
@@ -32,9 +31,8 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
-    const userManager = useUserManager();
     const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
-    const ide = IDE.fromType(userManager.settings.settings?.editor?.ideType ?? DEFAULT_IDE);
+    const ide = IDE.fromType(DEFAULT_IDE);
 
     useEffect(() => {
         updateMenuItems();
@@ -127,16 +125,18 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const WINDOW_ITEMS: MenuItem[] = [
         {
             label: 'Duplicate',
-            action: () => editorEngine.window.duplicate(),
+            action: () => editorEngine.frames.duplicateSelected(),
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
+            disabled: !editorEngine.frames.canDuplicate(),
         },
         {
             label: 'Delete',
-            action: () => editorEngine.window.delete(editorEngine.frames.selected[0]?.frame.id),
+            action: () => editorEngine.frames.deleteSelected(),
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
+            disabled: !editorEngine.frames.canDelete(),
         },
     ];
 

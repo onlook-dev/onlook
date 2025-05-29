@@ -4,35 +4,34 @@ import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
+import { observer } from 'mobx-react-lite';
 import { useDimensionControl } from '../hooks/use-dimension-control';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
-import { HoverOnlyTooltip } from '../HoverOnlyTooltip';
 
-export const Height = () => {
+export const Height = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('height');
 
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'height-dropdown' 
+    });
+
     return (
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow>
                 <DropdownMenuTrigger asChild>
                     <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
-                        >
-                            <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
-                            {(dimensionState.height.unit === 'px'
-                                ? dimensionState.height.num !== undefined
-                                : (dimensionState.height.value && dimensionState.height.value !== "auto")
-                            ) && (
-                                <span className="text-small">
-                                    {dimensionState.height.unit === 'px'
-                                        ? dimensionState.height.num
-                                        : dimensionState.height.value}
-                                </span>
-                            )}
-                        </Button>
+                        variant="ghost"
+                        size="toolbar"
+                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    >
+                        <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
+                        <span className="text-small">
+                            {dimensionState.height.value}
+                        </span>
+                    </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent
@@ -43,7 +42,7 @@ export const Height = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-muted-white text-sm">Height</span>
                         <InputDropdown
-                            value={dimensionState.height.num?.toString() ?? '--'}
+                            value={dimensionState.height.num ?? 0}
                             unit={dimensionState.height.unit}
                             dropdownValue={dimensionState.height.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -55,7 +54,7 @@ export const Height = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground text-sm">Min</span>
                         <InputDropdown
-                            value={dimensionState.minHeight.num?.toString() ?? '--'}
+                            value={dimensionState.minHeight.num ?? 0}
                             unit={dimensionState.minHeight.unit}
                             dropdownValue={dimensionState.minHeight.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -67,7 +66,7 @@ export const Height = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-muted-foreground text-sm">Max</span>
                         <InputDropdown
-                            value={dimensionState.maxHeight.num?.toString() ?? '--'}
+                            value={dimensionState.maxHeight.num ?? 0}
                             unit={dimensionState.maxHeight.unit}
                             dropdownValue={dimensionState.maxHeight.dropdownValue}
                             dropdownOptions={Object.values(LayoutMode)}
@@ -80,4 +79,4 @@ export const Height = () => {
             </DropdownMenuContent>
         </DropdownMenu>
     );
-};
+});

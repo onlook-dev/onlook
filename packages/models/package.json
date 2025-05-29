@@ -30,11 +30,10 @@
     },
     "devDependencies": {
         "@onlook/typescript": "*",
-        "typescript": "^5.5.4"
+        "typescript": "^5.5.4",
+        "ai": "^4.2.6"
     },
     "dependencies": {
-        "ai": "^4.2.6",
-        "type-fest": "^4.26.1",
         "zod": "^3.23.8"
     }
 }

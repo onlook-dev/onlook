@@ -1,18 +1,32 @@
+import { ChatType } from '@/app/api/chat/route';
 import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useChatContext } from '../../../_hooks/use-chat';
 
-export const Error = observer(() => {
-    const { isWaiting } = useChatContext();
+export const ErrorSection = observer(() => {
+    const { isWaiting, sendMessages } = useChatContext();
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const errorCount = editorEngine.error.errors.length;
+
+    const sendFixError = async () => {
+        const messages = await editorEngine.chat.getFixErrorMessages();
+        if (!messages) {
+            toast({
+                title: 'Error',
+                description: 'Failed to send fix error messages. Please try again.',
+            });
+            return;
+        }
+        sendMessages(messages, ChatType.FIX);
+    }
 
     return (
         <Collapsible
@@ -20,8 +34,7 @@ export const Error = observer(() => {
             onOpenChange={setIsOpen}
             className={cn(
                 'flex flex-col m-2',
-                errorCount === 0 && 'hidden',
-                !editorEngine.error.shouldShowErrean && 'hidden',
+                (errorCount === 0 || editorEngine.error.hideErrors) && 'hidden',
             )}
         >
             <div
@@ -45,14 +58,14 @@ export const Error = observer(() => {
                                 )}
                             />
                             <div className="text-start min-w-0 flex-1">
-                                <div className="text-amber-800 dark:text-amber-200 truncate text-small pointer-events-none select-none">
+                                <p className="text-amber-800 dark:text-amber-200 truncate text-small pointer-events-none select-none">
                                     {errorCount === 1 ? 'Error' : `${errorCount} Errors`}
-                                </div>
-                                <div className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
+                                </p>
+                                <p className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
                                     {errorCount === 1
                                         ? editorEngine.error.errors[0]?.content
                                         : `You have ${errorCount} errors`}
-                                </div>
+                                </p>
                             </div>
                         </div>
                     </CollapsibleTrigger>
@@ -62,10 +75,7 @@ export const Error = observer(() => {
                             size="sm"
                             disabled={isWaiting}
                             className="h-7 px-2 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none"
-                            onClick={async (e) => {
-                                e.stopPropagation();
-                                await editorEngine.error.sendFixError();
-                            }}
+                            onClick={sendFixError}
                         >
                             <Icons.MagicWand className="h-4 w-4 mr-2" />
                             Fix

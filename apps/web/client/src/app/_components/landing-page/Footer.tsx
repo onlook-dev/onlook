@@ -26,8 +26,8 @@ export function Footer() {
                     <div className="min-w-[200px]">
                         <h4 className="text-regularPlus mb-4">Product</h4>
                         <ul className="flex flex-col gap-2 text-regular text-foreground-secondary">
-                            <li><a href="#" className="hover:underline">Get Started</a></li>
-                            <li><a href="#" className="hover:underline">GitHub</a></li>
+                            <li><a href="/projects" className="hover:underline">My Projects</a></li>
+                            <li><a href="https://github.com/onlook-dev/onlook" target="_blank" className="hover:underline">GitHub</a></li>
                             <li><a href="#" className="hover:underline">Visual Editor</a></li>
                             <li><a href="#" className="hover:underline">ShadCN</a></li>
                             <li><a href="#" className="hover:underline">AI for Frontend</a></li>
@@ -49,11 +49,13 @@ export function Footer() {
             {/* Bottom Bar */}
             <div className="max-w-6xl mx-auto px-8 pb-4">
                 <div className="flex flex-col md:flex-row items-center md:items-center justify-center md:justify-between w-full gap-0 md:gap-4 border-t border-foreground-primary/10 pt-6">
+                    {/* Center: Links */}
                     <div className="flex gap-8 text-foreground-tertiary text-small justify-center w-full md:w-auto mb-4 md:mb-0">
-                        <a href="#" className="hover:underline">Terms</a>
-                        <a href="#" className="hover:underline">Privacy</a>
-                        <a href="#" className="hover:underline">Sitemap</a>
+                        <a href="/terms-of-service" className="hover:underline">Terms of Service</a>
+                        <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
+                        <a href="/sitemap.xml" className="hover:underline">Sitemap</a>
                     </div>
+                    {/* Right: Copyright */}
                     <div className="text-foreground-tertiary text-small w-full md:w-auto flex justify-center md:justify-end">© {new Date().getFullYear()} On Off, Inc.</div>
                 </div>
             </div>

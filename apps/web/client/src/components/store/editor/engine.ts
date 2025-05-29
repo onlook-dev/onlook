@@ -23,20 +23,20 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
-import { WindowManager } from './window';
 
 export class EditorEngine {
     readonly chat: ChatManager;
-    readonly error: ErrorManager;
     readonly image: ImageManager;
     readonly theme: ThemeManager;
     readonly font: FontManager;
     readonly pages: PagesManager;
     readonly canvas: CanvasManager;
+    readonly frames: FramesManager;
 
-    readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
-    readonly sandbox: SandboxManager = new SandboxManager();
+    readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly sandbox: SandboxManager = new SandboxManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
@@ -47,11 +47,7 @@ export class EditorEngine {
     readonly ast: AstManager = new AstManager(this);
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
-    readonly frames: FramesManager = new FramesManager(this);
     readonly code: CodeManager = new CodeManager(this);
-
-    // TODO: This could be part of frames manager
-    readonly window: WindowManager = new WindowManager(this);
 
     constructor(
         private projectManager: ProjectManager,
@@ -59,11 +55,11 @@ export class EditorEngine {
     ) {
         this.chat = new ChatManager(this, this.projectManager, this.userManager);
         this.pages = new PagesManager(this, this.projectManager);
-        this.error = new ErrorManager(this, this.projectManager);
         this.image = new ImageManager(this, this.projectManager);
         this.theme = new ThemeManager(this, this.projectManager);
         this.font = new FontManager(this, this.projectManager);
         this.canvas = new CanvasManager(this.projectManager)
+        this.frames = new FramesManager(this, this.projectManager);
         makeAutoObservable(this);
     }
 
@@ -95,20 +91,6 @@ export class EditorEngine {
         this.overlay.clear();
         this.elements.clear();
         this.frames.deselectAll();
-    }
-
-    inspect() {
-        // const selected = this.elements.selected;
-        // if (selected.length === 0) {
-        //     return;
-        // }
-        // const selectedEl = selected[0];
-        // const frameId = selectedEl.frameId;
-        // const frameView = this.webviews.getWebview(frameId);
-        // if (!frameView) {
-        //     return;
-        // }
-        // frameView.openDevTools();
     }
 
     async refreshLayers() {

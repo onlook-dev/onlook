@@ -2,12 +2,14 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { WebFrame } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 
 export const TopBar = observer(
-    ({ frame, children }: { frame: WebFrame; children?: React.ReactNode }) => {
+    ({ frame }: { frame: WebFrame }) => {
         const editorEngine = useEditorEngine();
+        const isSelected = editorEngine.frames.isSelected(frame.id);
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -28,13 +30,20 @@ export const TopBar = observer(
                     x: startPositionX + deltaX,
                     y: startPositionY + deltaY,
                 };
-                editorEngine.canvas.saveFrame(frame.id, frame);
+
+                editorEngine.frames.updateLocally(frame.id, frame);
             };
 
             const endMove = (e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
 
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                const moved = deltaX !== 0 || deltaY !== 0;
+                if (moved) {
+                    editorEngine.frames.updateAndSaveToStorage(frame);
+                }
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };
@@ -52,15 +61,25 @@ export const TopBar = observer(
             editorEngine.frames.reload(frame.id);
         };
 
+        const handleClick = () => {
+            editorEngine.frames.select([frame]);
+        };
+
         return (
             <div
-                className="rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing"
+                className={
+                    cn(
+                        'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
+                        isSelected && 'text-teal-400 fill-teal-400',
+                    )
+                }
                 style={{
                     height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,
                     marginBottom: `${10 / editorEngine.canvas.scale}px`,
                 }}
                 onMouseDown={handleMouseDown}
+                onClick={handleClick}
             >
                 <div
                     className="flex flex-row items-center justify-between gap-2 w-full"
