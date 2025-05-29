@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -7,11 +6,11 @@ import { useState } from 'react';
 
 const formatCommandOutput = (output: string) => {
     const lines = output.split('\n');
-    
+
     return lines.map((line, index) => {
         // Handle ANSI color codes and special characters
         const cleanLine = line.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
-        
+
         // Add appropriate styling based on line content
         if (cleanLine.includes('installed')) {
             return (
@@ -21,7 +20,7 @@ const formatCommandOutput = (output: string) => {
                 </div>
             );
         }
-        
+
         if (cleanLine.includes('error') || cleanLine.includes('Error')) {
             return (
                 <div key={index} className="text-red-400 flex items-center gap-2">
@@ -30,7 +29,7 @@ const formatCommandOutput = (output: string) => {
                 </div>
             );
         }
-        
+
         if (cleanLine.includes('warning') || cleanLine.includes('Warning')) {
             return (
                 <div key={index} className="text-yellow-400 flex items-center gap-2">
@@ -39,7 +38,7 @@ const formatCommandOutput = (output: string) => {
                 </div>
             );
         }
-        
+
         if (cleanLine.includes('$')) {
             return (
                 <div key={index} className="text-blue-400 flex items-center gap-2">
@@ -48,7 +47,7 @@ const formatCommandOutput = (output: string) => {
                 </div>
             );
         }
-        
+
         // Default styling for other lines
         return <div key={index} className="text-foreground-secondary">{cleanLine}</div>;
     });
@@ -65,15 +64,15 @@ export const BashCodeDisplay = observer(
             setRunning(true);
             setStdOut(null);
             setStdErr(null);
-            
+
             try {
-                const result = await editorEngine.sandbox.runCommand(content);
-                
+                const result = await editorEngine.sandbox.session.runCommand(content);
+
                 if (!result) {
                     setStdErr('Failed to execute command: No session available');
                     return;
                 }
-                
+
                 if (!result.success) {
                     setStdErr(result.error || 'Failed to execute command');
                 } else {
@@ -125,20 +124,20 @@ export const BashCodeDisplay = observer(
                             Run again
                         </Button>
                     ) : (
-                    <Button
-                        size={'sm'}
-                        className="group flex flex-grow rounded-none gap-2 px-1 bg-teal-400/20 text-teal-200 hover:bg-teal-400/40 hover:text-teal-100"
-                        variant={'ghost'}
-                        onClick={runCommand}
-                        disabled={running || isStream}
-                    >
-                        {running ? (
-                            <Icons.Shadow className="animate-spin" />
-                        ) : (
-                            <Icons.Play className="text-teal-300 group-hover:text-teal-100 transition-none" />
-                        )}
-                        Run command
-                    </Button>
+                        <Button
+                            size={'sm'}
+                            className="group flex flex-grow rounded-none gap-2 px-1 bg-teal-400/20 text-teal-200 hover:bg-teal-400/40 hover:text-teal-100"
+                            variant={'ghost'}
+                            onClick={runCommand}
+                            disabled={running || isStream}
+                        >
+                            {running ? (
+                                <Icons.Shadow className="animate-spin" />
+                            ) : (
+                                <Icons.Play className="text-teal-300 group-hover:text-teal-100 transition-none" />
+                            )}
+                            Run command
+                        </Button>
                     )}
                 </div>
             </div>
