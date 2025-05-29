@@ -73,7 +73,7 @@ describe('SandboxManager', () => {
             onEvent: mock((callback: any) => {
                 mockWatcher.callback = callback;
             }),
-            dispose: mock(() => {}),
+            dispose: mock(() => { }),
             callback: null,
         };
 
@@ -101,7 +101,6 @@ describe('SandboxManager', () => {
         };
 
         sandboxManager = new SandboxManager();
-        sandboxManager.init(mockSession);
     });
 
     afterEach(() => {
