@@ -11,6 +11,10 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
     const userManager = useUserManager();
 
     useEffect(() => {
+        if (!env.NEXT_PUBLIC_POSTHOG_KEY) {
+            console.warn('PostHog key is not set, skipping initialization');
+            return;
+        }
         posthog.init(
             env.NEXT_PUBLIC_POSTHOG_KEY, {
             api_host: env.NEXT_PUBLIC_POSTHOG_HOST,
