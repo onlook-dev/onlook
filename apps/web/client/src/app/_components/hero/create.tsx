@@ -27,6 +27,7 @@ export function Create() {
     const router = useRouter();
     const posthog = usePostHog();
     const imageRef = useRef<HTMLInputElement>(null);
+    const [showBlurredCard, setShowBlurredCard] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
@@ -39,6 +40,7 @@ export function Create() {
     const [isComposing, setIsComposing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [cardKey, setCardKey] = useState(0);
 
     const handleSubmit = async () => {
         if (isInputInvalid) {
@@ -243,15 +245,18 @@ export function Create() {
             </div>
             <div className="flex flex-col gap-4 items-center relative z-20">
                 <motion.div
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                    initial={{ opacity: 0 }}
+                    animate={isMounted ? { opacity: 1 } : { opacity: 0 }}
                     transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                    onAnimationComplete={() => {
+                        setCardKey(prev => prev + 1);
+                    }}
                 >
                     <Card
+                        key={cardKey}
                         className={cn(
-                            'w-[600px] backdrop-blur-md bg-background/30 overflow-hidden gap-4',
-                            isDragging && 'bg-background',
+                            'w-[600px] overflow-hidden gap-4 backdrop-blur-md bg-background/20',
+                            isDragging && 'bg-background/40',
                         )}
                     >
                         <CardHeader className="text-start">{`Let's design a...`}</CardHeader>
@@ -278,9 +283,9 @@ export function Create() {
                                         )}
                                     >
                                         <AnimatePresence mode="popLayout">
-                                            {selectedImages.map((imageContext, index) => (
+                                            {selectedImages.map((imageContext) => (
                                                 <DraftImagePill
-                                                    key={`image-${index}-${imageContext.content}`}
+                                                    key={imageContext.content}
                                                     context={imageContext}
                                                     onRemove={() => handleRemoveImage(imageContext)}
                                                 />
