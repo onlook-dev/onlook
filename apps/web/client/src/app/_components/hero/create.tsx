@@ -42,7 +42,7 @@ export function Create() {
     const [error, setError] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [cardKey, setCardKey] = useState(0);
-    const [isHighDemand, setIsHighDemand] = useState(true);
+    const [isHighDemand, setIsHighDemand] = useState(false);
 
     // Restore draft from localStorage if exists
     useEffect(() => {
