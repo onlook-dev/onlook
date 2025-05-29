@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { vujahdayScript } from '../../fonts';
+import { usePostHog } from 'posthog-js/react';
 
 // Add TypeScript declarations for background
 declare global {
