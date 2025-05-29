@@ -1,16 +1,16 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function AuthRedirect() {
+    const router = useRouter();
+
     useEffect(() => {
-        // Get the return URL from localStorage
         const returnUrl = localStorage.getItem('returnUrl') || '/';
-        // Clear the return URL
         localStorage.removeItem('returnUrl');
-        // Redirect to the return URL
-        window.location.href = returnUrl;
-    }, []);
+        router.push(returnUrl);
+    }, [router]);
 
     return (
         <div className="flex h-screen w-screen items-center justify-center">
