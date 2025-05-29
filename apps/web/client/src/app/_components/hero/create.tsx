@@ -42,6 +42,7 @@ export function Create() {
     const [error, setError] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [cardKey, setCardKey] = useState(0);
+    const [isHighDemand, setIsHighDemand] = useState(false);
 
     // Restore draft from localStorage if exists
     useEffect(() => {
@@ -275,6 +276,15 @@ export function Create() {
                     Onlook is a next-generation visual code editor<br />
                     that lets designers and product managers craft<br />
                     web experiences with AI
+                </motion.p>
+                <motion.p
+                    className="max-w-xl text-center mt-2 p-2 bg-amber-900/80 rounded-xl border border-amber-300 text-sm text-amber-300 px-4"
+                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                    animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                    transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+                    style={{ willChange: "opacity, filter", transform: "translateZ(0)", display: isHighDemand ? 'block' : 'none' }}
+                >
+                    {"We're currently experiencing high demand. Project may fail to create."}
                 </motion.p>
             </div>
             <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
