@@ -17,7 +17,7 @@ import { AnimatePresence } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { UnicornBackground } from './unicorn-background';
 import { useAuthContext } from '@/app/auth/AuthContext';
@@ -44,6 +44,28 @@ export function Create() {
     const [isMounted, setIsMounted] = useState(false);
     const [cardKey, setCardKey] = useState(0);
 
+    // Restore draft from localStorage if exists
+    useEffect(() => {
+        const draft = localStorage.getItem('createProjectDraft');
+        if (draft && !!userManager.user?.id) {
+            try {
+                const { prompt, images, timestamp } = JSON.parse(draft);
+                // Only restore if draft is less than 1 hour old
+                if (Date.now() - timestamp < 3600000) {
+                    setInputValue(prompt);
+                    setSelectedImages(images);
+                }
+                // Clear the draft after restoring
+                localStorage.removeItem('createProjectDraft');
+                // Run the submit function
+                createProject(prompt, images);
+            } catch (error) {
+                console.error('Error restoring draft:', error);
+                localStorage.removeItem('createProjectDraft');
+            }
+        }
+    }, []);
+
     const handleSubmit = async () => {
         if (isInputInvalid) {
             console.warn('Input is too short');
@@ -58,6 +80,16 @@ export function Create() {
         });
         if (!userManager.user?.id) {
             console.error('No user ID found');
+
+            // Store the current input and images in localStorage
+            localStorage.setItem('createProjectDraft', JSON.stringify({
+                prompt,
+                images,
+                timestamp: Date.now()
+            }));
+            // Store the return URL
+            localStorage.setItem('returnUrl', window.location.pathname);
+            // Open the auth modal
             setIsAuthModalOpen(true);
             return;
         }

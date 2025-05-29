@@ -7,8 +7,6 @@ import { api } from '~/trpc/server';
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
-    // if "next" is in param, use it as the redirect URL
-    const next = searchParams.get('next') ?? '/';
 
     if (code) {
         const supabase = await createClient();
@@ -24,13 +22,13 @@ export async function GET(request: Request) {
                 avatar_url: data.user.user_metadata.avatar_url,
             });
 
+            // Redirect to the redirect page which will handle the return URL
             if (isLocalEnv) {
-                // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-                return NextResponse.redirect(`${origin}${next}`);
+                return NextResponse.redirect(`${origin}/auth/redirect`);
             } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${next}`);
+                return NextResponse.redirect(`https://${forwardedHost}/auth/redirect`);
             } else {
-                return NextResponse.redirect(`${origin}${next}`);
+                return NextResponse.redirect(`${origin}/auth/redirect`);
             }
         }
         console.error(`Error exchanging code for session: ${error}`);
