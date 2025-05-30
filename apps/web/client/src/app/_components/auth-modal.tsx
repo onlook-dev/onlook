@@ -11,7 +11,7 @@ import { useTranslations } from 'next-intl';
 import { useAuthContext } from '../auth/auth-context';
 import { GithubLoginButton, GoogleLoginButton } from './login-button';
 
-export default function AuthModal() {
+export function AuthModal() {
     const { setIsAuthModalOpen, isAuthModalOpen } = useAuthContext();
     const t = useTranslations();
     return (

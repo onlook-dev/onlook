@@ -19,7 +19,6 @@ export class Hotkey {
     static readonly REDO = new Hotkey('mod+shift+z', 'Redo');
     static readonly GROUP = new Hotkey('mod+g', 'Group');
     static readonly UNGROUP = new Hotkey('mod+shift+g', 'Ungroup');
-    static readonly REFRESH_LAYERS = new Hotkey('mod+l', 'Refresh Layers');
     static readonly OPEN_DEV_TOOL = new Hotkey('mod+shift+i', 'Open Devtool');
     static readonly ADD_AI_CHAT = new Hotkey('mod+shift+l', 'Add to AI chat');
     static readonly NEW_AI_CHAT = new Hotkey('mod+l', 'New AI Chat');
@@ -45,7 +44,7 @@ export class Hotkey {
     private constructor(
         public readonly command: string,
         public readonly description: string,
-    ) {}
+    ) { }
 
     toString() {
         return this.command;

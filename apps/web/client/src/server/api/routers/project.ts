@@ -58,7 +58,7 @@ export const projectRouter = createTRPCRouter({
                 // 1. Insert the new project
                 const [newProject] = await tx.insert(projects).values(input.project).returning();
                 if (!newProject) {
-                    throw new Error('Failed to create project');
+                    throw new Error('Failed to create project in database');
                 }
 
                 // 2. Create the association in the junction table

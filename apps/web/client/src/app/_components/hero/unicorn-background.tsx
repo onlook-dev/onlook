@@ -126,17 +126,19 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
     }, [isLoaded, setIsMounted]);
 
     return (
-        <motion.div
-            data-us-project="Gr1LmwbKSeJOXhpYEdit"
-            className="absolute inset-0 w-full h-full z-0"
-            style={{
-                pointerEvents: 'none',
-                willChange: "opacity",
-                transform: "translateZ(0)"
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isBackgroundVisible ? 1 : 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-        />
+        <div className="absolute inset-0 w-full h-screen overflow-hidden">
+            <motion.div
+                data-us-project="Gr1LmwbKSeJOXhpYEdit"
+                className="absolute inset-0 w-full h-[calc(100vh+80px)] z-0"
+                style={{
+                    pointerEvents: 'none',
+                    willChange: "opacity",
+                    transform: "translateZ(0)"
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: isBackgroundVisible ? 1 : 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+            />
+        </div>
     );
 }

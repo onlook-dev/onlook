@@ -13,29 +13,38 @@ export class CreateManager {
         images: ImageMessageContext[];
     } | null = null;
 
+    error: string | null = null;
+
     constructor() {
         makeAutoObservable(this);
     }
 
     async startCreate(userId: string, prompt: string, images: ImageMessageContext[]) {
-        if (!userId) {
-            console.error('No user ID found');
-            return;
-        }
-        const { sandboxId, previewUrl } = await this.createSandbox();
-        const project = await this.createDefaultProject(sandboxId, previewUrl);
-        const newProject = await api.project.create.mutate({
-            project,
-            userId,
-        });
+        this.error = null;
+        try {
+            if (!userId) {
+                console.error('No user ID found');
+                return;
+            }
+            const { sandboxId, previewUrl } = await this.createSandbox();
+            const project = await this.createDefaultProject(sandboxId, previewUrl);
+            const newProject = await api.project.create.mutate({
+                project,
+                userId,
+            });
 
-        this.pendingCreationData = {
-            userId,
-            project: newProject,
-            prompt,
-            images,
-        };
-        return newProject;
+            this.pendingCreationData = {
+                userId,
+                project: newProject,
+                prompt,
+                images,
+            };
+            return newProject;
+        }
+        catch (error) {
+            console.error(error);
+            this.error = error instanceof Error ? error.message : 'An unknown error occurred';
+        }
     }
 
     createDefaultProject(sandboxId: string, previewUrl: string): DbProject {
