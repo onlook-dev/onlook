@@ -6,20 +6,13 @@ as $$
 declare
   topic_project_id uuid;
 begin
-  IF TG_TABLE_NAME = 'frames' THEN
+  IF TG_TABLE_NAME = 'conversations' THEN
     SELECT c.project_id INTO topic_project_id
-    FROM "frames" f INNER JOIN "canvas" c ON f.canvas_id = c.id
-    WHERE f.id = coalesce(NEW.id, OLD.id);
-  ELSEIF TG_TABLE_NAME = 'user_canvases' THEN
+    FROM "conversations" c WHERE c.id = coalesce(NEW.id, OLD.id);
+  ELSEIF TG_TABLE_NAME = 'messages' THEN
     SELECT c.project_id INTO topic_project_id
-    FROM "user_canvases" uc INNER JOIN "canvas" c ON uc.canvas_id = c.id
-    WHERE uc.id = coalesce(NEW.id, OLD.id);
-  ELSEIF TG_TABLE_NAME = 'canvas' THEN
-    SELECT p.id INTO topic_project_id
-    FROM "canvas" c INNER JOIN "projects" p ON c.project_id = p.id
-    WHERE c.id = coalesce(NEW.id, OLD.id);
-  ELSEIF TG_TABLE_NAME = 'projects' THEN
-    topic_project_id := coalesce(NEW.id, OLD.id);
+    FROM "messages" m INNER JOIN "conversations" c ON m.conversation_id = c.id
+    WHERE m.id = coalesce(NEW.id, OLD.id);
   END IF;
 
   -- Only broadcast if we found a valid project_id (i.e., not for projects table)
@@ -38,24 +31,17 @@ begin
 end;
 $$;
 
-drop trigger if exists handle_canvas_changes on public.canvas;
-create trigger handle_canvas_changes
+drop trigger if exists handle_conversations_changes on public.conversations;
+create trigger handle_conversations_changes
 after insert or update or delete
-on public.canvas
+on public.conversations
 for each row
 execute function project_changes ();
 
-drop trigger if exists handle_frames_changes on public.frames;
-create trigger handle_frames_changes
+drop trigger if exists handle_messages_changes on public.messages;
+create trigger handle_messages_changes
 after insert or update or delete
-on public.frames
-for each row
-execute function project_changes ();
-
-drop trigger if exists handle_user_canvases_changes on public.user_canvases;
-create trigger handle_user_canvases_changes
-after insert or update or delete
-on public.user_canvases
+on public.messages
 for each row
 execute function project_changes ();
 
