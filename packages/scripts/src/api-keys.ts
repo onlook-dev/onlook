@@ -6,44 +6,54 @@ import { writeEnvFile } from './helpers';
 
 const clientEnvPath = path.join(rootDir, 'apps', 'web', 'client', '.env');
 
+interface ApiKeyConfig {
+    name: string;
+    message: string;
+    required: boolean;
+    description?: string;
+}
+
+const API_KEYS: Record<string, ApiKeyConfig> = {
+    CSB_API_KEY: {
+        name: 'CSB_API_KEY',
+        message: 'Enter your Codesandbox API key:',
+        required: true,
+        description: 'Codesandbox',
+    },
+    ANTHROPIC_API_KEY: {
+        name: 'ANTHROPIC_API_KEY',
+        message: 'Enter your Anthropic API key:',
+        required: true,
+        description: 'Anthropic',
+    },
+    MORPH_API_KEY: {
+        name: 'MORPH_API_KEY',
+        message: 'Enter your MorphLLM API key:',
+        required: true,
+        description: 'MorphLLM',
+    },
+};
+
 export const promptAndWriteApiKeys = async () => {
-    const { apis, responses } = await promptForApiKeys();
-    writeEnvFile(
-        clientEnvPath,
-        `# Codesandbox
-${apis.CSB_API_KEY.name} = ${responses.CSB_API_KEY}
+    const responses = await promptForApiKeys();
+    const envContent = generateEnvContent(responses);
+    writeEnvFile(clientEnvPath, envContent, 'web client');
+};
 
-# Anthropic
-${apis.ANTHROPIC_API_KEY.name} = ${responses.ANTHROPIC_API_KEY || ''}
-
-# MorphLLM
-${apis.MORPH_API_KEY.name} = ${responses.MORPH_API_KEY}
-`,
-        'web client',
-    );
+const generateEnvContent = (responses: Record<string, string>): string => {
+    return Object.entries(API_KEYS)
+        .map(([key, config]) => {
+            const value = responses[key] || '';
+            return config.description
+                ? `# ${config.description}\n${key} = ${value}\n`
+                : `${key} = ${value}\n`;
+        })
+        .join('\n');
 };
 
 export const promptForApiKeys = async () => {
-    const apis = {
-        CSB_API_KEY: {
-            name: 'CSB_API_KEY',
-            message: 'Enter your Codesandbox API key:',
-            required: true,
-        },
-        ANTHROPIC_API_KEY: {
-            name: 'ANTHROPIC_API_KEY',
-            message: 'Enter your Anthropic API key:',
-            required: true,
-        },
-        MORPH_API_KEY: {
-            name: 'MORPH_API_KEY',
-            message: 'Enter your MorphLLM API key:',
-            required: true,
-        },
-    };
-
     const responses = await prompts(
-        Object.values(apis).map((api) => ({
+        Object.values(API_KEYS).map((api) => ({
             type: 'password',
             name: api.name,
             message: api.message,
@@ -51,11 +61,19 @@ export const promptForApiKeys = async () => {
         })),
     );
 
-    for (const [key, value] of Object.entries(responses)) {
-        if (!value) {
+    validateResponses(responses);
+    return responses;
+};
+
+const validateResponses = (responses: Record<string, string>) => {
+    const missingKeys = Object.entries(API_KEYS)
+        .filter(([key, config]) => config.required && !responses[key])
+        .map(([key]) => key);
+
+    if (missingKeys.length > 0) {
+        missingKeys.forEach((key) => {
             console.error(chalk.red(`${key} API key is required.`));
-            process.exit(1);
-        }
+        });
+        process.exit(1);
     }
-    return { apis, responses };
 };
