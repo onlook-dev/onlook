@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { UnicornBackground } from './unicorn-background';
 
-export function Create() {
+export function Create({ cardKey }: { cardKey: number }) {
     const createManager = useCreateManager();
     const router = useRouter();
     const posthog = usePostHog();
@@ -37,11 +37,6 @@ export function Create() {
     const [isLoading, setIsLoading] = useState(false);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-    const [cardKey, setCardKey] = useState(0);
-
-    // Will be a feature flag in the future
-    const [isHighDemand, setIsHighDemand] = useState(false);
 
     // Restore draft from localStorage if exists
     useEffect(() => {
@@ -64,6 +59,7 @@ export function Create() {
             }
         }
     }, []);
+
 
     const handleSubmit = async () => {
         if (isInputInvalid) {
@@ -246,232 +242,168 @@ export function Create() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
-            <UnicornBackground setIsMounted={setIsMounted} />
-            {/* Overlay */}
-            <div
-                className="absolute left-0 bottom-0 w-full bg-background z-10"
-                style={{ height: '80px' }}
-            />
-            <div className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2">
-                <motion.h1
-                    className="text-6xl font-light leading-tight text-center !leading-[0.9]"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+        <Card
+            key={cardKey}
+            className={cn(
+                'w-[600px] overflow-hidden gap-4 backdrop-blur-md bg-background/20',
+                isDragging && 'bg-background/40',
+            )}
+        >
+            <CardHeader className="text-start">{`Let's design a...`}</CardHeader>
+            <CardContent>
+                <div
+                    className={cn(
+                        'flex flex-col gap-3 rounded p-0 transition-colors duration-200 cursor-text',
+                        'backdrop-blur-sm bg-background-secondary/80',
+                        '[&[data-dragging-image=true]]:bg-teal-500/40',
+                        isDragging && 'bg-teal-500/40 cursor-copy',
+                    )}
+                    onClick={handleContainerClick}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                 >
-                    Make your<br />
-                    <span className="font-light">designs </span>
-                    <span className={`italic font-normal ${vujahdayScript.className} text-[4.75rem] ml-1 leading-[1.0]`}>real</span>
-                </motion.h1>
-                <motion.p
-                    className="text-lg text-foreground-secondary max-w-xl text-center mt-2"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
-                    transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                >
-                    Onlook is a next-generation visual code editor<br />
-                    that lets designers and product managers craft<br />
-                    web experiences with AI
-                </motion.p>
-                <motion.p
-                    className="max-w-xl text-center mt-2 p-2 bg-amber-900/80 rounded-xl border border-amber-300 text-sm text-amber-300 px-4"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
-                    transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)", display: isHighDemand ? 'block' : 'none' }}
-                >
-                    {"We're currently experiencing high demand. Project may fail to create."}
-                </motion.p>
-            </div>
-            <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={isMounted ? { opacity: 1 } : { opacity: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                    onAnimationComplete={() => {
-                        setCardKey(prev => prev + 1);
-                    }}
-                >
-                    <Card
-                        key={cardKey}
-                        className={cn(
-                            'w-[600px] overflow-hidden gap-4 backdrop-blur-md bg-background/20',
-                            isDragging && 'bg-background/40',
-                        )}
+                    <div
+                        className={`flex flex-col w-full ${selectedImages.length > 0 ? 'p-4' : 'px-2 pt-1'}`}
                     >
-                        <CardHeader className="text-start">{`Let's design a...`}</CardHeader>
-                        <CardContent>
-                            <div
+                        <div
+                            className={cn(
+                                'flex flex-row flex-wrap w-full gap-1.5 text-micro text-foreground-secondary',
+                                selectedImages.length > 0 ? 'min-h-6' : 'h-0',
+                            )}
+                        >
+                            <AnimatePresence mode="popLayout">
+                                {selectedImages.map((imageContext) => (
+                                    <DraftImagePill
+                                        key={imageContext.content}
+                                        context={imageContext}
+                                        onRemove={() => handleRemoveImage(imageContext)}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </div>
+                        <div className="relative flex items-center w-full mt-1">
+                            <Textarea
+                                ref={textareaRef}
                                 className={cn(
-                                    'flex flex-col gap-3 rounded p-0 transition-colors duration-200 cursor-text',
-                                    'backdrop-blur-sm bg-background-secondary/80',
-                                    '[&[data-dragging-image=true]]:bg-teal-500/40',
-                                    isDragging && 'bg-teal-500/40 cursor-copy',
+                                    'overflow-auto min-h-[60px] text-small border-0 shadow-none rounded-none caret-[#FA003C]',
+                                    'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary',
+                                    'cursor-text placeholder:text-foreground-primary/50',
+                                    'transition-[height] duration-300 ease-in-out bg-transparent dark:bg-transparent focus-visible:ring-0 ',
                                 )}
-                                onClick={handleContainerClick}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                            >
-                                <div
-                                    className={`flex flex-col w-full ${selectedImages.length > 0 ? 'p-4' : 'px-2 pt-1'}`}
+                                placeholder="Paste a link, imagery, or more as inspiration"
+                                value={inputValue}
+                                onChange={(e) => {
+                                    setInputValue(e.target.value);
+                                    adjustTextareaHeight();
+                                }}
+                                onCompositionStart={() => setIsComposing(true)}
+                                onCompositionEnd={(e) => {
+                                    setIsComposing(false);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
+                                        e.preventDefault();
+                                        handleSubmit();
+                                    }
+                                }}
+                                onDragEnter={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDragStateChange(true, e);
+                                }}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDragStateChange(true, e);
+                                }}
+                                onDragLeave={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                                        handleDragStateChange(false, e);
+                                    }
+                                }}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDragStateChange(false, e);
+                                    handleDrop(e);
+                                }}
+                                rows={3}
+                                style={{ resize: 'none' }}
+                            />
+                        </div>
+                        <div className="flex flex-row w-full justify-between items-center pt-2 pb-2 px-0">
+                            <div className="flex flex-row justify-start gap-1.5">
+                                <Tooltip
+                                    open={imageTooltipOpen && !isHandlingFile}
+                                    onOpenChange={(open) =>
+                                        !isHandlingFile && setImageTooltipOpen(open)
+                                    }
                                 >
-                                    <div
-                                        className={cn(
-                                            'flex flex-row flex-wrap w-full gap-1.5 text-micro text-foreground-secondary',
-                                            selectedImages.length > 0 ? 'min-h-6' : 'h-0',
-                                        )}
-                                    >
-                                        <AnimatePresence mode="popLayout">
-                                            {selectedImages.map((imageContext) => (
-                                                <DraftImagePill
-                                                    key={imageContext.content}
-                                                    context={imageContext}
-                                                    onRemove={() => handleRemoveImage(imageContext)}
-                                                />
-                                            ))}
-                                        </AnimatePresence>
-                                    </div>
-                                    <div className="relative flex items-center w-full mt-1">
-                                        <Textarea
-                                            ref={textareaRef}
-                                            className={cn(
-                                                'overflow-auto min-h-[60px] text-small border-0 shadow-none rounded-none caret-[#FA003C]',
-                                                'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary',
-                                                'cursor-text placeholder:text-foreground-primary/50',
-                                                'transition-[height] duration-300 ease-in-out bg-transparent dark:bg-transparent focus-visible:ring-0 ',
-                                            )}
-                                            placeholder="Paste a link, imagery, or more as inspiration"
-                                            value={inputValue}
-                                            onChange={(e) => {
-                                                setInputValue(e.target.value);
-                                                adjustTextareaHeight();
-                                            }}
-                                            onCompositionStart={() => setIsComposing(true)}
-                                            onCompositionEnd={(e) => {
-                                                setIsComposing(false);
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
-                                                    e.preventDefault();
-                                                    handleSubmit();
-                                                }
-                                            }}
-                                            onDragEnter={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleDragStateChange(true, e);
-                                            }}
-                                            onDragOver={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleDragStateChange(true, e);
-                                            }}
-                                            onDragLeave={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                                                    handleDragStateChange(false, e);
-                                                }
-                                            }}
-                                            onDrop={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleDragStateChange(false, e);
-                                                handleDrop(e);
-                                            }}
-                                            rows={3}
-                                            style={{ resize: 'none' }}
-                                        />
-                                    </div>
-                                    <div className="flex flex-row w-full justify-between items-center pt-2 pb-2 px-0">
-                                        <div className="flex flex-row justify-start gap-1.5">
-                                            <Tooltip
-                                                open={imageTooltipOpen && !isHandlingFile}
-                                                onOpenChange={(open) =>
-                                                    !isHandlingFile && setImageTooltipOpen(open)
-                                                }
-                                            >
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
-                                                        onClick={() =>
-                                                            document.getElementById('image-input')?.click()
-                                                        }
-                                                    >
-                                                        <input
-                                                            id="image-input"
-                                                            type="file"
-                                                            ref={imageRef}
-                                                            accept="image/*"
-                                                            multiple
-                                                            className="hidden"
-                                                            onChange={handleFileSelect}
-                                                        />
-                                                        <Icons.Image
-                                                            className={cn(
-                                                                'w-5 h-5',
-                                                                'group-hover:text-foreground',
-                                                            )}
-                                                        />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipPortal>
-                                                    <TooltipContent side="top" sideOffset={5}>
-                                                        Upload image
-                                                    </TooltipContent>
-                                                </TooltipPortal>
-                                            </Tooltip>
-                                        </div>
+                                    <TooltipTrigger asChild>
                                         <Button
+                                            variant="ghost"
                                             size="icon"
-                                            variant="secondary"
-                                            className={cn(
-                                                'text-smallPlus w-9 h-9 cursor-pointer',
-                                                isInputInvalid
-                                                    ? 'text-foreground-primary'
-                                                    : 'bg-foreground-primary text-white hover:bg-foreground-hover',
-                                            )}
-                                            disabled={isInputInvalid || isLoading}
-                                            onClick={handleSubmit}
+                                            className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
+                                            onClick={() =>
+                                                document.getElementById('image-input')?.click()
+                                            }
                                         >
-                                            {isLoading ? (
-                                                <Icons.Shadow className="w-5 h-5 animate-pulse text-background" />
-                                            ) : (
-                                                <Icons.ArrowRight
-                                                    className={cn(
-                                                        'w-5 h-5',
-                                                        !isInputInvalid
-                                                            ? 'text-background'
-                                                            : 'text-foreground-primary',
-                                                    )}
-                                                />
-                                            )}
+                                            <input
+                                                id="image-input"
+                                                type="file"
+                                                ref={imageRef}
+                                                accept="image/*"
+                                                multiple
+                                                className="hidden"
+                                                onChange={handleFileSelect}
+                                            />
+                                            <Icons.Image
+                                                className={cn(
+                                                    'w-5 h-5',
+                                                    'group-hover:text-foreground',
+                                                )}
+                                            />
                                         </Button>
-                                    </div>
-                                </div>
+                                    </TooltipTrigger>
+                                    <TooltipPortal>
+                                        <TooltipContent side="top" sideOffset={5}>
+                                            Upload image
+                                        </TooltipContent>
+                                    </TooltipPortal>
+                                </Tooltip>
                             </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-                <motion.div
-                    className="text-center text-xs text-foreground-secondary mt-2 opacity-80"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
-                    transition={{ duration: 0.6, delay: 0.45, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                >
-                    No Credit Card Required &bull; Get a Site in Seconds
-                </motion.div>
-            </div>
-            <div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10">
-                Onlook isn’t ready for Mobile – Please open on a larger screen
-            </div>
-        </div>
+                            <Button
+                                size="icon"
+                                variant="secondary"
+                                className={cn(
+                                    'text-smallPlus w-9 h-9 cursor-pointer',
+                                    isInputInvalid
+                                        ? 'text-foreground-primary'
+                                        : 'bg-foreground-primary text-white hover:bg-foreground-hover',
+                                )}
+                                disabled={isInputInvalid || isLoading}
+                                onClick={handleSubmit}
+                            >
+                                {isLoading ? (
+                                    <Icons.Shadow className="w-5 h-5 animate-pulse text-background" />
+                                ) : (
+                                    <Icons.ArrowRight
+                                        className={cn(
+                                            'w-5 h-5',
+                                            !isInputInvalid
+                                                ? 'text-background'
+                                                : 'text-foreground-primary',
+                                        )}
+                                    />
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
