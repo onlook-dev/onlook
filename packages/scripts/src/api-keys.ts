@@ -7,53 +7,55 @@ import { writeEnvFile } from './helpers';
 const clientEnvPath = path.join(rootDir, 'apps', 'web', 'client', '.env');
 
 export const promptAndWriteApiKeys = async () => {
-    const apiKeys = await promptForApiKeys();
+    const { apis, responses } = await promptForApiKeys();
     writeEnvFile(
         clientEnvPath,
         `# Codesandbox
-CSB_API_KEY = ${apiKeys.csbApiKey}
+${apis.CSB_API_KEY.name} = ${responses.CSB_API_KEY}
 
 # Anthropic
-ANTHROPIC_API_KEY = ${apiKeys.anthropicApiKey || ''}
+${apis.ANTHROPIC_API_KEY.name} = ${responses.ANTHROPIC_API_KEY || ''}
 
 # MorphLLM
-MORPH_API_KEY = ${apiKeys.morphApiKey}
+${apis.MORPH_API_KEY.name} = ${responses.MORPH_API_KEY}
 `,
         'web client',
     );
 };
 
 export const promptForApiKeys = async () => {
-    const responses = await prompts([
-        {
-            type: 'password',
-            name: 'csbApiKey',
+    const apis = {
+        CSB_API_KEY: {
+            name: 'CSB_API_KEY',
             message: 'Enter your Codesandbox API key:',
-            validate: (v: string) => (v ? true : 'Required'),
+            required: true,
         },
-        {
-            type: 'password',
-            name: 'anthropicApiKey',
+        ANTHROPIC_API_KEY: {
+            name: 'ANTHROPIC_API_KEY',
             message: 'Enter your Anthropic API key:',
-            validate: (v: string) => (v ? true : 'Required'),
+            required: true,
         },
-        {
-            type: 'password',
-            name: 'morphApiKey',
+        MORPH_API_KEY: {
+            name: 'MORPH_API_KEY',
             message: 'Enter your MorphLLM API key:',
-            validate: (v: string) => (v ? true : 'Required'),
+            required: true,
         },
-    ]);
+    };
 
-    if (!responses.csbApiKey) {
-        console.error(chalk.red('Codesandbox API key is required.'));
-        process.exit(1);
+    const responses = await prompts(
+        Object.values(apis).map((api) => ({
+            type: 'password',
+            name: api.name,
+            message: api.message,
+            required: api.required,
+        })),
+    );
+
+    for (const [key, value] of Object.entries(responses)) {
+        if (!value) {
+            console.error(chalk.red(`${key} API key is required.`));
+            process.exit(1);
+        }
     }
-
-    if (!responses.morphApiKey) {
-        console.error(chalk.red('MorphLLM API key is required.'));
-        process.exit(1);
-    }
-
-    return responses;
+    return { apis, responses };
 };
