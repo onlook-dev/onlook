@@ -52,8 +52,12 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
-    useHotkeys(Hotkey.REFRESH_LAYERS.command, () => editorEngine.refreshLayers());
-    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => editorEngine.elements.delete());
+    useHotkeys(Hotkey.REFRESH_LAYERS.command, () => editorEngine.refreshLayers(), {
+        preventDefault: true,
+    });
+    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () =>
+        editorEngine.elements.delete(),
+    );
 
     // Group
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
@@ -63,23 +67,40 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
-    useHotkeys(Hotkey.DUPLICATE.command, () => {
-        if (editorEngine.frames.canDuplicate()) {
-            editorEngine.frames.duplicateSelected();
-        } else {
-            editorEngine.copy.duplicate();
-        }
-    });
+    useHotkeys(
+        Hotkey.DUPLICATE.command,
+        () => {
+            if (editorEngine.frames.canDuplicate() && editorEngine.elements.selected.length === 0) {
+                editorEngine.frames.duplicateSelected();
+            } else {
+                editorEngine.copy.duplicate();
+            }
+        },
+        {
+            preventDefault: true,
+        },
+    );
 
     // AI
     useHotkeys(
         Hotkey.ADD_AI_CHAT.command,
-        () => (editorEngine.state.rightPanelTab = EditorTabValue.CHAT),
+        () => {
+            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+        },
+        {
+            preventDefault: true,
+        },
     );
-    useHotkeys(Hotkey.NEW_AI_CHAT.command, () => {
-        editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-        editorEngine.chat.conversation.startNewConversation();
-    });
+    useHotkeys(
+        Hotkey.NEW_AI_CHAT.command,
+        () => {
+            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+            editorEngine.chat.conversation.startNewConversation();
+        },
+        {
+            preventDefault: true,
+        },
+    );
 
     // Move
     useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
@@ -89,9 +110,5 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         () => (editorEngine.state.hotkeysOpen = !editorEngine.state.hotkeysOpen),
     );
 
-    return (
-        <>
-            {children}
-        </>
-    );
+    return <>{children}</>;
 };
