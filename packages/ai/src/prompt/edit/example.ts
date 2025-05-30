@@ -1,4 +1,4 @@
-import { FENCE } from '../format';
+import { CODE_FENCE } from '../format';
 
 const user1 = 'Create a new TodoList component with basic functionality';
 const projectPath = '/path/to/your/project';
@@ -11,9 +11,7 @@ export const assistant1 = `Let's create a new TodoList component with basic func
 Here's the updated code:
 
 ${projectPath}/components/TodoList.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
-${FENCE.searchReplace.middle}
+${CODE_FENCE.start}tsx
 import { useState } from 'react';
 
 interface Todo {
@@ -50,10 +48,7 @@ export function TodoList() {
       ))}
     </ul>
   );
-}
-${FENCE.searchReplace.end}
-${FENCE.code.end}
-`;
+}`;
 
 const user2 = 'Refactor the TodoList by extracting the TodoItem into its own component';
 
@@ -65,9 +60,7 @@ export const assistant2 = `Let's refactor the TodoList by extracting the TodoIte
 Here's the updated code:
 
 ${projectPath}/components/TodoItem.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
-${FENCE.searchReplace.middle}
+${CODE_FENCE.start}tsx
 interface TodoItemProps {
   id: number;
   text: string;
@@ -89,40 +82,16 @@ export function TodoItem({ id, text, completed, onToggle }: TodoItemProps) {
     </li>
   );
 }
-${FENCE.searchReplace.end}
-${FENCE.code.end}
+${CODE_FENCE.end}
 
 ${projectPath}/components/TodoList.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
-import { useState } from 'react';
-${FENCE.searchReplace.middle}
+${CODE_FENCE.start}tsx
 import { useState } from 'react';
 import { TodoItem } from './TodoItem';
-${FENCE.searchReplace.end}
-${FENCE.code.end}
 
 ${projectPath}/components/TodoList.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
-  return (
-    <ul>
-      {todos.map(todo => (
-        <li key={todo.id} className="flex items-center gap-2 p-2">
-          <input
-            type="checkbox"
-            checked={todo.completed}
-            onChange={() => toggleTodo(todo.id)}
-          />
-          <span className={todo.completed ? 'line-through' : ''}>
-            {todo.text}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-${FENCE.searchReplace.middle}
+${CODE_FENCE.start}tsx
+// ... existing code ...
   return (
     <ul>
       {todos.map(todo => (
@@ -135,8 +104,7 @@ ${FENCE.searchReplace.middle}
     </ul>
   );
 }
-${FENCE.searchReplace.end}
-${FENCE.code.end}`;
+${CODE_FENCE.end}`;
 
 export const SEARCH_REPLACE_EXAMPLE_CONVERSATION = [
     {

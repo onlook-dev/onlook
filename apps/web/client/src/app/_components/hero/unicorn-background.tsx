@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 
@@ -24,6 +26,8 @@ const useUnicornStudio = () => {
     const scriptRef = useRef<HTMLScriptElement | null>(null);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         const version = '1.4.25';
         const scriptUrl = `https://cdn.jsdelivr.net/gh/hiunicornstudio/unicornstudio.js@v${version}/dist/unicornStudio.umd.js`;
 
@@ -58,7 +62,12 @@ const useUnicornStudio = () => {
         };
     }, []);
 
-    return { isLoaded, UnicornStudio: (window as any).UnicornStudio as UnicornStudio | undefined };
+    // Only access window if it's defined
+    const unicornStudio = typeof window !== 'undefined'
+        ? (window as any).UnicornStudio as UnicornStudio | undefined
+        : undefined;
+
+    return { isLoaded, UnicornStudio: unicornStudio };
 };
 
 export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: boolean) => void }) {

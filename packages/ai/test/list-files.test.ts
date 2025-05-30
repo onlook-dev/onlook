@@ -54,7 +54,7 @@ describe('getAllFiles', () => {
             ignore: ['node_modules/**'],
         });
         expect(files?.length).toBe(1);
-        expect(files?.[0].endsWith('file2.js')).toBe(true);
+        expect(files?.[0]?.endsWith('file2.js')).toBe(true);
     });
 
     test('should exclude specific subdirectory', async () => {
@@ -75,6 +75,6 @@ describe('getAllFiles', () => {
             ignore: ['subdir/**', 'file1.txt', 'node_modules/**'],
         });
         expect(files?.length).toBe(1);
-        expect(files?.[0].endsWith('file2.js')).toBe(true);
+        expect(files?.[0]?.endsWith('file2.js')).toBe(true);
     });
 });

@@ -1,17 +1,4 @@
-const searchReplace = {
-    start: '<<<<<<< SEARCH',
-    middle: '=======',
-    end: '>>>>>>> REPLACE',
-};
-
-const code = {
+export const CODE_FENCE = {
     start: '```',
     end: '```',
 };
-
-const FENCE = {
-    searchReplace,
-    code,
-};
-
-export { FENCE };

@@ -15,13 +15,16 @@ import {
 const __dirname = import.meta.dir;
 
 describe('Prompt', () => {
-    const SHOULD_WRITE_SYSTEM = false;
-    const SHOULD_WRITE_EXAMPLES = false;
-    const SHOULD_WRITE_USER_MESSAGE = false;
-    const SHOULD_WRITE_FILE_CONTENT = false;
-    const SHOULD_WRITE_HIGHLIGHTS = false;
-    const SHOULD_WRITE_SUMMARY = false;
-    const SHOULD_WRITE_CREATE_PAGE_SYSTEM = false;
+    // Set to true to update the data files
+    const SHOULD_UPDATE_DATA = false;
+
+    const SHOULD_WRITE_SYSTEM = SHOULD_UPDATE_DATA;
+    const SHOULD_WRITE_EXAMPLES = SHOULD_UPDATE_DATA;
+    const SHOULD_WRITE_USER_MESSAGE = SHOULD_UPDATE_DATA;
+    const SHOULD_WRITE_FILE_CONTENT = SHOULD_UPDATE_DATA;
+    const SHOULD_WRITE_HIGHLIGHTS = SHOULD_UPDATE_DATA;
+    const SHOULD_WRITE_SUMMARY = SHOULD_UPDATE_DATA;
+    const SHOULD_WRITE_CREATE_PAGE_SYSTEM = SHOULD_UPDATE_DATA;
 
     test('System prompt should be the same', async () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
