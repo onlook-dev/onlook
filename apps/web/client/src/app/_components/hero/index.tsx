@@ -4,12 +4,13 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
+import { CreateError } from './create-error';
+import { HighDemand } from './high-demand';
 import { UnicornBackground } from './unicorn-background';
 
 export function Hero() {
     const [isMounted, setIsMounted] = useState(false);
     const [cardKey, setCardKey] = useState(0);
-    const [isHighDemand, setIsHighDemand] = useState(false);
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
@@ -37,15 +38,8 @@ export function Hero() {
                     that lets designers and product managers craft<br />
                     web experiences with AI
                 </motion.p>
-                <motion.p
-                    className="max-w-xl text-center mt-2 p-2 bg-amber-900/80 rounded-xl border border-amber-300 text-sm text-amber-300 px-4"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={isMounted ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
-                    transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)", display: isHighDemand ? 'block' : 'none' }}
-                >
-                    {"We're currently experiencing high demand. Project may fail to create."}
-                </motion.p>
+                <HighDemand isMounted={isMounted} />
+                <CreateError error={"Something went wrong. Please try again."} />
             </div>
             <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
                 <motion.div
