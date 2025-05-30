@@ -57,7 +57,12 @@ function trackUserSignedIn(userId: string, properties: Record<string, any>) {
         }
         client.identify({
             distinctId: userId,
-            properties: properties
+            properties: {
+                ...properties,
+                $set_once: {
+                    signup_date: new Date().toISOString(),
+                }
+            }
         });
         client.capture({ event: 'user_signed_in', distinctId: userId });
     } catch (error) {
