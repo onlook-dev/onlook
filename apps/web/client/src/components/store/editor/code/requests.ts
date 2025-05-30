@@ -2,7 +2,6 @@ import type {
     CodeDiff,
     CodeDiffRequest,
     CodeGroup,
-    CodeInsertImage,
     CodeMove,
     CodeRemove,
     CodeRemoveImage,
@@ -17,7 +16,7 @@ import type {
     RemoveImageAction,
     UngroupElementsAction,
     UpdateStyleAction,
-    WriteCodeAction,
+    WriteCodeAction
 } from '@onlook/models';
 import { CodeActionType } from '@onlook/models';
 import { getAstFromContent, getContentFromAst, transformAst } from '@onlook/parser';
@@ -188,12 +187,6 @@ export async function getUngroupRequests(
 export async function getWriteCodeRequests(action: WriteCodeAction): Promise<CodeDiffRequest[]> {
     // TODO: Implement
     return [];
-    const res = await this.editorEngine.sandbox?.writeCodeDiffs(action.diffs);
-    if (!res) {
-        console.error('Failed to write code');
-        return [];
-    }
-    return [];
 }
 
 export async function getInsertImageRequests(
@@ -201,30 +194,6 @@ export async function getInsertImageRequests(
 ): Promise<CodeDiffRequest[]> {
     // TODO: Implement
     return [];
-    const oidToCodeChange = new Map<string, CodeDiffRequest>();
-    const projectFolder = this.projectManager.project?.folderPath;
-
-    if (!projectFolder) {
-        console.error('Failed to write image, projectFolder not found');
-        return [];
-    }
-
-    const insertImage: CodeInsertImage = {
-        ...action,
-        folderPath: projectFolder,
-        type: CodeActionType.INSERT_IMAGE,
-    };
-
-    for (const target of action.targets) {
-        if (!target.oid) {
-            console.error('No oid found for inserted image');
-            continue;
-        }
-        const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
-        request.structureChanges.push(insertImage);
-    }
-
-    return Array.from(oidToCodeChange.values());
 }
 
 export async function getRemoveImageRequests(

@@ -84,7 +84,9 @@
         "login": {
             "github": "使用 GitHub 登录",
             "google": "使用 Google 登录",
-            "lastUsed": "上次使用了此方式"
+            "lastUsed": "上次使用了此方式",
+            "loginToEdit": "登入後即可編輯",
+            "shareProjects": "分享项目，协作，并在代码中设计更多。"
         },
         "terms": {
             "agreement": "注册即表示您同意我们的",

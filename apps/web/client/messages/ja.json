@@ -279,7 +279,9 @@
         "login": {
             "github": "GitHubでログイン",
             "google": "Googleでログイン",
-            "lastUsed": "最後に使用したアカウント"
+            "lastUsed": "最後に使用したアカウント",
+            "loginToEdit": "編集するにはログインしてください",
+            "shareProjects": "プロジェクトを共有し、コラボレーションし、コードでより多くのデザインを。"
         },
         "terms": {
             "agreement": "サインアップすることで、以下に同意したとみなされます",

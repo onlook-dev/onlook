@@ -1,37 +1,90 @@
-import { useProjectManager } from '@/components/store/project';
+import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import stripAnsi from 'strip-ansi';
+
+const formatCommandOutput = (output: string) => {
+    const lines = output.split('\n');
+
+    return lines.map((line, index) => {
+        // Handle ANSI color codes and special characters
+        const cleanLine = stripAnsi(line);
+
+        // Add appropriate styling based on line content
+        if (cleanLine.includes('installed')) {
+            return (
+                <div key={index} className="text-green-400 flex items-center gap-2">
+                    <Icons.Check className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+
+        if (cleanLine.includes('error') || cleanLine.includes('Error')) {
+            return (
+                <div key={index} className="text-red-400 flex items-center gap-2">
+                    <Icons.CrossCircled className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+
+        if (cleanLine.includes('warning') || cleanLine.includes('Warning')) {
+            return (
+                <div key={index} className="text-yellow-400 flex items-center gap-2">
+                    <Icons.ExclamationTriangle className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+
+        if (cleanLine.includes('$')) {
+            return (
+                <div key={index} className="text-blue-400 flex items-center gap-2">
+                    <Icons.Terminal className="h-4 w-4" />
+                    <span>{cleanLine}</span>
+                </div>
+            );
+        }
+
+        // Default styling for other lines
+        return <div key={index} className="text-foreground-secondary">{cleanLine}</div>;
+    });
+};
 
 export const BashCodeDisplay = observer(
     ({ content, isStream }: { content: string; isStream: boolean }) => {
-        const projectManager = useProjectManager();
-        // const projectPath = projectManager.project?.folderPath;
+        const editorEngine = useEditorEngine();
         const [running, setRunning] = useState(false);
         const [stdOut, setStdOut] = useState<string | null>(null);
         const [stdErr, setStdErr] = useState<string | null>(null);
 
+
         const runCommand = async () => {
-            // if (!projectPath) {
-            //     console.error('No project path found');
-            //     return;
-            // }
             setRunning(true);
-            // const res: RunBunCommandResult | null = await invokeMainChannel(
-            //     MainChannels.RUN_COMMAND,
-            //     {
-            //         cwd: projectPath,
-            //         command: content,
-            //     },
-            // );
-            // if (!res?.success) {
-            //     setStdErr(res?.error || 'Failed to run command');
-            // } else {
-            //     setStdOut(res.output || '');
-            //     setStdErr(null);
-            // }
-            setRunning(false);
+            setStdOut(null);
+            setStdErr(null);
+
+            try {
+                const result = await editorEngine.sandbox.session.runCommand(content, setStdOut);
+
+                if (!result) {
+                    setStdErr('Failed to execute command: No session available');
+                    return;
+                }
+
+                if (!result.success) {
+                    setStdErr(result.error || 'Failed to execute command');
+                } else {
+                    setStdOut(result.output || '');
+                }
+            } catch (error) {
+                setStdErr(error instanceof Error ? error.message : 'An unexpected error occurred');
+            } finally {
+                setRunning(false);
+            }
         };
 
         return (
@@ -45,14 +98,14 @@ export const BashCodeDisplay = observer(
                         <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
                     )}
                     {stdOut !== null && (
-                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary">
-                            {stdOut}
-                        </code>
+                        <div className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary whitespace-pre-wrap font-mono space-y-1">
+                            {formatCommandOutput(stdOut)}
+                        </div>
                     )}
                     {stdErr !== null && (
-                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500">
-                            {stdErr}
-                        </code>
+                        <div className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500 whitespace-pre-wrap font-mono">
+                            {formatCommandOutput(stdErr)}
+                        </div>
                     )}
                 </div>
 

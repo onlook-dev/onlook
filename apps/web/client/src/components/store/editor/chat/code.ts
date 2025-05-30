@@ -1,3 +1,4 @@
+import { api } from '@/trpc/client';
 import { sendAnalytics } from '@/utils/analytics';
 import { CodeBlockProcessor } from '@onlook/ai';
 import type { WriteCodeAction } from '@onlook/models/actions';
@@ -9,6 +10,7 @@ import type { ChatManager } from '.';
 import type { EditorEngine } from '../engine';
 
 export class ChatCodeManager {
+    isApplying = false;
     processor: CodeBlockProcessor;
 
     constructor(
@@ -20,6 +22,7 @@ export class ChatCodeManager {
     }
 
     async applyCode(messageId: string) {
+        this.isApplying = true;
         const message = this.chat.conversation.current?.getMessageById(messageId);
         if (!message) {
             console.error('No message found with id', messageId);
@@ -41,7 +44,10 @@ export class ChatCodeManager {
             }
             let content = originalContent;
             for (const block of codeBlocks) {
-                const result = await this.processor.applyDiff(content, block.content);
+                const result = await api.code.applyDiff.mutate({
+                    originalCode: content,
+                    updateSnippet: block.content,
+                });
                 if (!result.success) {
                     console.error('Failed to apply code block', block);
                     toast({
@@ -50,7 +56,7 @@ export class ChatCodeManager {
                         description: 'Please try again or prompt the AI to fix it.',
                     });
                 }
-                content = result.text;
+                content = result.result;
             }
 
             const success = await this.editorEngine.sandbox.writeFile(filePath, content);
@@ -74,6 +80,7 @@ export class ChatCodeManager {
         }
 
         this.chat.suggestions.shouldHide = false;
+        this.isApplying = false;
 
         setTimeout(() => {
             this.editorEngine.frames.reloadAll();
