@@ -74,4 +74,3 @@ export function Hero() {
         </div>
     );
 }
-''
