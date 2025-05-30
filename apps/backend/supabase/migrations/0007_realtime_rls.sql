@@ -9,7 +9,7 @@ begin
   IF TG_TABLE_NAME = 'conversations' THEN
     SELECT c.project_id INTO topic_project_id
     FROM "conversations" c WHERE c.id = coalesce(NEW.id, OLD.id);
-  ELSEIF TG_TABLE_NAME = 'messages' THEN
+  ELSIF TG_TABLE_NAME = 'messages' THEN
     SELECT c.project_id INTO topic_project_id
     FROM "messages" m INNER JOIN "conversations" c ON m.conversation_id = c.id
     WHERE m.id = coalesce(NEW.id, OLD.id);
