@@ -1,23 +1,23 @@
-create or replace function public.project_changes()
-returns trigger
-security definer
-language plpgsql
-as $$
-declare
+CREATE OR REPLACE FUNCTION public.project_changes()
+RETURNS TRIGGER
+SECURITY DEFINER
+LANGUAGE plpgsql
+AS $$
+DECLARE
   topic_project_id uuid;
-begin
+BEGIN
   IF TG_TABLE_NAME = 'conversations' THEN
     SELECT c.project_id INTO topic_project_id
-    FROM "conversations" c WHERE c.id = coalesce(NEW.id, OLD.id);
+    FROM "conversations" c WHERE c.id = COALESCE(NEW.id, OLD.id);
   ELSEIF TG_TABLE_NAME = 'messages' THEN
     SELECT c.project_id INTO topic_project_id
     FROM "messages" m INNER JOIN "conversations" c ON m.conversation_id = c.id
-    WHERE m.id = coalesce(NEW.id, OLD.id);
+    WHERE m.id = COALESCE(NEW.id, OLD.id);
   END IF;
 
   -- Only broadcast if we found a valid project_id (i.e., not for projects table)
   IF topic_project_id IS NOT NULL THEN
-    perform realtime.broadcast_changes(
+    PERFORM realtime.broadcast_changes(
       'topic:' || topic_project_id::text, -- topic - the topic to which we're broadcasting
       TG_OP,                                             -- event - the event that triggered the function
       TG_OP,                                             -- operation - the operation that triggered the function
@@ -27,27 +27,27 @@ begin
       OLD                                                -- old record - the record before the change
     );
   END IF;
-  return null;
-end;
+  RETURN NULL;
+END;
 $$;
 
-drop trigger if exists handle_conversations_changes on public.conversations;
-create trigger handle_conversations_changes
-after insert or update or delete
-on public.conversations
-for each row
-execute function project_changes ();
+DROP TRIGGER IF EXISTS handle_conversations_changes ON public.conversations;
+CREATE TRIGGER handle_conversations_changes
+AFTER INSERT OR UPDATE OR DELETE
+ON public.conversations
+FOR EACH ROW
+EXECUTE FUNCTION project_changes ();
 
-drop trigger if exists handle_messages_changes on public.messages;
-create trigger handle_messages_changes
-after insert or update or delete
-on public.messages
-for each row
-execute function project_changes ();
+DROP TRIGGER IF EXISTS handle_messages_changes ON public.messages;
+CREATE TRIGGER handle_messages_changes
+AFTER INSERT OR UPDATE OR DELETE
+ON public.messages
+FOR EACH ROW
+EXECUTE FUNCTION project_changes ();
 
-drop policy if exists "Authenticated users can receive broadcasts" on "realtime"."messages";
-create policy "Authenticated users can receive broadcasts"
-on "realtime"."messages"
-for select
-to authenticated
-using ( true );
+DROP POLICY IF EXISTS "Authenticated users can receive broadcasts" ON "realtime"."messages";
+CREATE POLICY "Authenticated users can receive broadcasts"
+ON "realtime"."messages"
+FOR SELECT
+TO authenticated
+USING ( TRUE );

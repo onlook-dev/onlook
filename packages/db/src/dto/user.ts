@@ -1,14 +1,18 @@
-import { DefaultSettings } from "@onlook/constants";
-import type { UserSettings } from "@onlook/models";
-import { type UserSettings as DbUserSettings } from "../schema/user";
+import { DefaultSettings } from '@onlook/constants';
+import type { UserMetadata, UserSettings } from '@onlook/models';
+import { type UserSettings as DbUserSettings } from '../schema/user';
+import type { AuthUser } from '@/schema';
+import { get } from 'lodash';
 
 export const toUserSettings = (settings: DbUserSettings): UserSettings => {
     return {
         id: settings.id,
         chat: {
             autoApplyCode: settings.autoApplyCode ?? DefaultSettings.CHAT_SETTINGS.autoApplyCode,
-            expandCodeBlocks: settings.expandCodeBlocks ?? DefaultSettings.CHAT_SETTINGS.expandCodeBlocks,
-            showSuggestions: settings.showSuggestions ?? DefaultSettings.CHAT_SETTINGS.showSuggestions,
+            expandCodeBlocks:
+                settings.expandCodeBlocks ?? DefaultSettings.CHAT_SETTINGS.expandCodeBlocks,
+            showSuggestions:
+                settings.showSuggestions ?? DefaultSettings.CHAT_SETTINGS.showSuggestions,
             showMiniChat: settings.showMiniChat ?? DefaultSettings.CHAT_SETTINGS.showMiniChat,
         },
     };
@@ -22,5 +26,14 @@ export const fromUserSettings = (userId: string, settings: UserSettings): DbUser
         expandCodeBlocks: settings.chat.expandCodeBlocks,
         showSuggestions: settings.chat.showSuggestions,
         showMiniChat: settings.chat.showMiniChat,
+    };
+};
+
+export const fromAuthUser = (authUser: AuthUser): UserMetadata => {
+    return {
+        id: authUser.id,
+        name: get(authUser.rawUserMetaData, 'full_name'),
+        email: authUser.email,
+        avatarUrl: get(authUser.rawUserMetaData, 'avatar_url'),
     };
 };

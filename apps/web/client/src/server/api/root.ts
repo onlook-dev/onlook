@@ -4,6 +4,7 @@ import { canvasRouter } from './routers/canvas';
 import { chatRouter } from './routers/chat';
 import { codeRouter } from './routers/code';
 import { frameRouter } from './routers/frame';
+import { memberRouter } from './routers/member';
 import { sandboxRouter } from './routers/sandbox';
 import { userCanvasRouter } from './routers/user-canvas';
 
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
     canvas: canvasRouter,
     userCanvas: userCanvasRouter,
     code: codeRouter,
+    member: memberRouter,
 });
 
 // export type definition of API
