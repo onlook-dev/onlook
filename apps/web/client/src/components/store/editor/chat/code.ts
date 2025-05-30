@@ -10,6 +10,7 @@ import type { ChatManager } from '.';
 import type { EditorEngine } from '../engine';
 
 export class ChatCodeManager {
+    isApplying = false;
     processor: CodeBlockProcessor;
 
     constructor(
@@ -21,6 +22,7 @@ export class ChatCodeManager {
     }
 
     async applyCode(messageId: string) {
+        this.isApplying = true;
         const message = this.chat.conversation.current?.getMessageById(messageId);
         if (!message) {
             console.error('No message found with id', messageId);
@@ -43,7 +45,7 @@ export class ChatCodeManager {
             let content = originalContent;
             for (const block of codeBlocks) {
                 const result = await api.code.applyDiff.mutate({
-                    originalCode: originalContent,
+                    originalCode: content,
                     updateSnippet: block.content,
                 });
                 if (!result.success) {
@@ -78,6 +80,7 @@ export class ChatCodeManager {
         }
 
         this.chat.suggestions.shouldHide = false;
+        this.isApplying = false;
 
         setTimeout(() => {
             this.editorEngine.frames.reloadAll();

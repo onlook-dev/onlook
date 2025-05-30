@@ -1,8 +1,8 @@
 import { cn } from '@onlook/ui/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { CodeChangeDisplay } from '../code-change-display';
 import { BashCodeDisplay } from '../code-change-display/bash-code-display';
+import { CollapsibleCodeBlock } from '../code-change-display/collapsible-code-block';
 
 export const MarkdownRenderer = ({
     messageId,
@@ -51,12 +51,14 @@ export const MarkdownRenderer = ({
 
                         if (match && filePath) {
                             return (
-                                <CodeChangeDisplay
+                                <CollapsibleCodeBlock
                                     path={filePath}
                                     content={codeContent}
                                     messageId={messageId}
                                     applied={applied}
                                     isStream={isStream}
+                                    originalContent={codeContent}
+                                    updatedContent={codeContent}
                                 />
                             );
                         }

@@ -14,29 +14,16 @@ export const CodeChangeDisplay = ({
     applied: boolean;
     isStream?: boolean;
 }) => {
-    const editorEngine = useEditorEngine();
-
-    const applyChange = async () => {
-        await editorEngine.chat.code.applyCode(messageId);
-    };
-
-    const rejectChange = async () => {
-        await editorEngine.chat.code.revertCode(messageId);
-    };
 
     return (
-        <div className="group relative">
-            <CollapsibleCodeBlock
-                path={path}
-                content={content}
-                originalContent={content}
-                updatedContent={content}
-                applied={applied}
-                isStream={isStream}
-                onApply={applyChange}
-                onRevert={rejectChange}
-            />
-        </div>
+        <CollapsibleCodeBlock
+            path={path}
+            content={content}
+            originalContent={content}
+            updatedContent={content}
+            applied={applied}
+            isStream={isStream}
+        />
     );
 };
 
