@@ -39,7 +39,7 @@ export function Hero() {
                     web experiences with AI
                 </motion.p>
                 <HighDemand isMounted={isMounted} />
-                <CreateError error={"Something went wrong. Please try again."} />
+                <CreateError />
             </div>
             <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
                 <motion.div

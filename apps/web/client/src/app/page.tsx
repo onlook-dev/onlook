@@ -1,6 +1,6 @@
 'use client';
 
-import AuthModal from './_components/auth-modal';
+import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
 import { Footer } from './_components/landing-page/page-footer';
