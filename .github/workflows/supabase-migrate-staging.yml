@@ -1,4 +1,4 @@
-name: Deploy Supabase Migration to Branch
+name: Deploy Supabase Migration to Staging Environment
 
 on:
     workflow_dispatch:
@@ -7,7 +7,7 @@ jobs:
     migrate:
         runs-on: ubuntu-latest
         env:
-            SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+            SUPABASE_DATABASE_URL: ${{ secrets.STAGING_SUPABASE_DATABASE_URL }}
 
         steps:
             - uses: actions/checkout@v4
