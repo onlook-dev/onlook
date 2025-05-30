@@ -1,10 +1,7 @@
 import chalk from 'chalk';
 import path from 'node:path';
 import prompts from 'prompts';
-import { rootDir } from '.';
 import { writeEnvFile } from './helpers';
-
-const clientEnvPath = path.join(rootDir, 'apps', 'web', 'client', '.env');
 
 interface ApiKeyConfig {
     name: string;
@@ -34,7 +31,7 @@ const API_KEYS: Record<string, ApiKeyConfig> = {
     },
 };
 
-export const promptAndWriteApiKeys = async () => {
+export const promptAndWriteApiKeys = async (clientEnvPath: string) => {
     const responses = await promptForApiKeys();
     const envContent = generateEnvContent(responses);
     writeEnvFile(clientEnvPath, envContent, 'web client');
@@ -51,7 +48,7 @@ const generateEnvContent = (responses: Record<string, string>): string => {
         .join('\n');
 };
 
-export const promptForApiKeys = async () => {
+const promptForApiKeys = async () => {
     const responses = await prompts(
         Object.values(API_KEYS).map((api) => ({
             type: 'password',

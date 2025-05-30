@@ -10,6 +10,8 @@ const program = new Command();
 const cwd = process.cwd();
 const isInPackagesScripts = cwd.includes('packages/scripts');
 export const rootDir = path.resolve(cwd, isInPackagesScripts ? '../..' : '.');
+const clientEnvPath = path.join(rootDir, 'apps', 'web', 'client', '.env');
+const dbEnvPath = path.join(rootDir, 'packages', 'db', '.env');
 
 program
     .name('setup:env')
@@ -22,8 +24,8 @@ program
             ),
         );
         try {
-            await promptAndWriteApiKeys();
-            await promptAndWriteBackendKeys();
+            await promptAndWriteBackendKeys(clientEnvPath, dbEnvPath);
+            await promptAndWriteApiKeys(clientEnvPath);
 
             console.log(chalk.green('✅ Environment files created successfully!'));
             console.log(chalk.cyan('Next steps: https://docs.onlook.com'));
