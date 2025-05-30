@@ -1,6 +1,7 @@
 import { env } from '@/env';
 import {
     authUsers,
+    fromAuthUser,
     projectInvitationInsertSchema,
     projectInvitations,
     userCanvases,
@@ -24,7 +25,21 @@ export const invitationRouter = createTRPCRouter({
             where: eq(projectInvitations.id, input.id),
         });
 
-        return invitation;
+        if (!invitation) {
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Invitation not found',
+            });
+        }
+
+        const inviter = await ctx.db.query.authUsers.findFirst({
+            where: eq(authUsers.id, invitation.inviterId),
+        });
+
+        return {
+            ...invitation,
+            inviter: fromAuthUser(inviter),
+        };
     }),
     list: protectedProcedure
         .input(
