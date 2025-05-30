@@ -10,6 +10,9 @@ export const codeRouter = createTRPCRouter({
             try {
                 const applyDiffClient = new FastApplyClient(env.MORPH_API_KEY);
                 const result = await applyDiffClient.applyCodeChange(input.originalCode, input.updateSnippet);
+                if (!result) {
+                    throw new Error('Failed to apply code change. Please try again.');
+                }
                 return {
                     success: true,
                     result,

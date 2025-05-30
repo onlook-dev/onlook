@@ -13,7 +13,7 @@ export class FastApplyClient {
         });
     }
 
-    async applyCodeChange(originalCode: string, updateSnippet: string): Promise<string> {
+    async applyCodeChange(originalCode: string, updateSnippet: string): Promise<string | null> {
         const response = await this.client.chat.completions.create({
             model: 'morph-v2',
             messages: [
@@ -23,6 +23,6 @@ export class FastApplyClient {
                 },
             ],
         });
-        return response.choices[0]?.message.content || '';
+        return response.choices[0]?.message.content || null;
     }
 }
