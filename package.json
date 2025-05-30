@@ -26,6 +26,7 @@
         "db:gen": "bun --filter @onlook/db db:gen",
         "db:push": "bun --filter @onlook/db db:push",
         "db:seed": "bun --filter @onlook/db db:seed",
+        "db:migrate": "bun --filter @onlook/db db:migrate",
         "format": "bun --filter '*' format",
         "lint": "bun --filter @onlook/web-client lint",
         "typecheck": "bun --filter '*' typecheck",
