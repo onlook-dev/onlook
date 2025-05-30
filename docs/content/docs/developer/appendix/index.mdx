@@ -11,18 +11,32 @@ Create a copy of the `.env.example` file under the `apps/web/client` directory a
 It should look like this:
 
 ```properties
-# Supabase
+# ------------- Required Keys -------------
+
+# Supabase - Enables our backend such as database and auth
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<Fill in from content after running supabase start>
+NEXT_PUBLIC_SUPABASE_ANON_KEY="<Fill in from content after running supabase start>"
 
-# Codesandbox
-CSB_API_KEY=<Your api key from https://codesandbox.io/api >
-
-# Drizzle
+# Drizzle - Our ORM for accessing the database
 SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
-# Anthropic
-ANTHROPIC_API_KEY=<Your api key from https://console.anthropic.com/settings/keys >
+# Anthropic - Enables AI chat. Other providers may be supported in the future.
+ANTHROPIC_API_KEY="<Your api key from https://console.anthropic.com/settings/keys>"
+
+# Codesandbox - Used to host user apps. Other providers may be supported in the future. May be optional in the future.
+CSB_API_KEY="<Your api key from https://codesandbox.io/api>"
+
+# MorphLLM - Fast apply model to reliably resolve code changes
+MORPH_API_KEY="<Your api key from https://morphllm.com/dashboard>"
+
+# ------------- Optional Keys -------------
+
+# PostHog - Enables analytics for the app
+NEXT_PUBLIC_POSTHOG_KEY="<Your PostHog API key from https://posthog.com/docs/libraries/next-js>"
+NEXT_PUBLIC_POSTHOG_HOST="<Your PostHog region https://us.i.posthog.com>"
+
+# Resend - Enables inviting other users to the project using emails
+RESEND_API_KEY="<Your api key from https://resend.com/api-keys>"
 ```
 
 ##### 2. In `packages/db`
