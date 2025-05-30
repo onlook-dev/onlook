@@ -50,6 +50,13 @@
       "when": 1748548078866,
       "tag": "0006_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748618860222,
+      "tag": "0007_realtime_rls",
+      "breakpoints": true
     }
   ]
 }
