@@ -35,7 +35,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             value: LeftPanelTabValue.PAGES,
             icon: <Icons.File className="w-5 h-5" />,
             label: 'editor.panels.layers.tabs.pages',
-            disabled: true,
         },
         {
             value: LeftPanelTabValue.IMAGES,
