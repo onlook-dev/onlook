@@ -8,3 +8,5 @@ export const authUsers = authSchema.table('users', {
     emailConfirmedAt: timestamp('email_confirmed_at'),
     rawUserMetaData: jsonb('raw_user_meta_data'),
 });
+
+export type AuthUser = typeof authUsers.$inferSelect;

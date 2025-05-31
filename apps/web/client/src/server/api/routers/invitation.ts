@@ -1,6 +1,7 @@
 import { env } from '@/env';
 import {
     authUsers,
+    fromAuthUser,
     projectInvitationInsertSchema,
     projectInvitations,
     userCanvases,
@@ -11,13 +12,35 @@ import { ProjectRole } from '@onlook/models';
 import { createDefaultUserCanvas } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import dayjs from 'dayjs';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull, ilike } from 'drizzle-orm';
 import urlJoin from 'url-join';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
+import { isFreeEmail } from '@onlook/utility';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const invitationRouter = createTRPCRouter({
+    get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+        const invitation = await ctx.db.query.projectInvitations.findFirst({
+            where: eq(projectInvitations.id, input.id),
+        });
+
+        if (!invitation) {
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Invitation not found',
+            });
+        }
+
+        const inviter = await ctx.db.query.authUsers.findFirst({
+            where: eq(authUsers.id, invitation.inviterId),
+        });
+
+        return {
+            ...invitation,
+            inviter: fromAuthUser(inviter),
+        };
+    }),
     list: protectedProcedure
         .input(
             z.object({
@@ -110,11 +133,15 @@ export const invitationRouter = createTRPCRouter({
                     },
                 );
             }
+
+            return invitation;
         }),
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
         .mutation(async ({ ctx, input }) => {
             await ctx.db.delete(projectInvitations).where(eq(projectInvitations.id, input.id));
+
+            return true;
         }),
     accept: protectedProcedure
         .input(z.object({ token: z.string(), id: z.string() }))
@@ -171,5 +198,41 @@ export const invitationRouter = createTRPCRouter({
                     .values(createDefaultUserCanvas(ctx.user.id, invitation.project.canvas.id))
                     .onConflictDoNothing();
             });
+        }),
+    suggested: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            if (isFreeEmail(ctx.user.email)) {
+                return [];
+            }
+            const domain = ctx.user.email.split('@').at(-1);
+
+            const suggestedUsers = await ctx.db
+                .select()
+                .from(authUsers)
+                .leftJoin(
+                    userProjects,
+                    and(
+                        eq(userProjects.userId, authUsers.id),
+                        eq(userProjects.projectId, input.projectId),
+                    ),
+                )
+                .leftJoin(
+                    projectInvitations,
+                    and(
+                        eq(projectInvitations.inviteeEmail, authUsers.email),
+                        eq(projectInvitations.projectId, input.projectId),
+                    ),
+                )
+                .where(
+                    and(
+                        ilike(authUsers.email, `%@${domain}`),
+                        isNull(userProjects.userId), // Not in the project
+                        isNull(projectInvitations.id), // Not invited
+                    ),
+                )
+                .limit(5);
+
+            return suggestedUsers.map((user) => user.users.email);
         }),
 });

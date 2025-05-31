@@ -33,7 +33,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
-        rightPanelRef
+        rightPanelRef,
     );
 
     useEffect(() => {
@@ -47,7 +47,10 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             if (project.sandbox?.id) {
                 if (userManager.user?.id) {
                     if (!editorEngine.sandbox.session.session) {
-                        await editorEngine.sandbox.session.start(project.sandbox.id, userManager.user.id);
+                        await editorEngine.sandbox.session.start(
+                            project.sandbox.id,
+                            userManager.user.id,
+                        );
                     }
                 } else {
                     console.error('Initializing project: No user id');
@@ -62,9 +65,9 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             resumeCreate();
         };
 
-        initializeProject().catch(error => {
+        initializeProject().catch((error) => {
             console.error('Error initializing project:', error);
-        })
+        });
 
         return () => {
             editorEngine.sandbox.clear();
@@ -77,7 +80,10 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
         if (projectId !== creationData.project.id) return;
 
-        const messages = await editorEngine.chat.getStreamMessages(creationData.prompt, creationData.images);
+        const messages = await editorEngine.chat.getStreamMessages(
+            creationData.prompt,
+            creationData.images,
+        );
 
         if (!messages) {
             console.error('Failed to get creation messages');
@@ -85,7 +91,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         }
         createManager.pendingCreationData = null;
         sendMessages(messages, ChatType.CREATE);
-    }
+    };
 
     if (isLoading) {
         return (
@@ -122,7 +128,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 <Canvas />
 
                 <div className="absolute top-0 w-full">
-                    <TopBar />
+                    <TopBar projectId={projectId} />
                 </div>
 
                 {/* Left Panel */}

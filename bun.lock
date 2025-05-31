@@ -458,6 +458,7 @@
         "@onlook/fonts": "*",
         "browser-image-compression": "^2.0.2",
         "culori": "^4.0.1",
+        "free-email-domains": "^1.2.16",
         "is-subdir": "^1.2.0",
         "normalize-url": "^8.0.1",
         "strip-ansi": "^7.1.0",
@@ -2228,6 +2229,8 @@
     "forwarded-parse": ["forwarded-parse@2.1.2", "", {}, "sha512-alTFZZQDKMporBH77856pXgzhEzaUVmLCDk+egLgIgHst3Tpndzz8MnKe+GzRJRfvVdn69HhpW7cmXzvtLvJAw=="],
 
     "framer-motion": ["framer-motion@11.18.2", "", { "dependencies": { "motion-dom": "^11.18.1", "motion-utils": "^11.18.1", "tslib": "^2.4.0" }, "peerDependencies": { "@emotion/is-prop-valid": "*", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@emotion/is-prop-valid", "react", "react-dom"] }, "sha512-5F5Och7wrvtLVElIpclDT0CBzMVg3dL22B64aZwHtsIY8RB4mXICLrkajK4G9R+ieSAGcgrLeae2SeUTg2pr6w=="],
+
+    "free-email-domains": ["free-email-domains@1.2.16", "", { "dependencies": { "simple-get": "~4.0.1" } }, "sha512-W8tRBUw2hOi1Ybz19XKH5MpBMKTSLLtGYumIwlCHSYfGh8v+yICbOScGqFi4O4IEhS23SqPoYgow8R3oQR/hdQ=="],
 
     "fresh": ["fresh@2.0.0", "", {}, "sha512-Rx/WycZ60HOaqLKAi6cHRKKI7zxWbJ31MhntmtwMoaTeF7XFH9hhBp8vITaMidfljRQ6eYWCKkaTK+ykVJHP2A=="],
 

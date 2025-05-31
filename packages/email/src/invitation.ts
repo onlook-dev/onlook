@@ -1,13 +1,12 @@
-import type { CreateEmailResponse, Resend } from 'resend';
-import { type InviteUserEmailProps, InviteUserEmail } from './templates';
 import { render } from '@react-email/components';
+import { type InviteUserEmailProps, InviteUserEmail } from './templates';
 import type { SendEmailParams } from './types/send-email';
 
 export const sendInvitationEmail = async (...params: SendEmailParams<InviteUserEmailProps>) => {
     const [client, { invitedByEmail, inviteLink }, { dryRun = false } = {}] = params;
 
     if (dryRun) {
-        const rendered = render(InviteUserEmail({ invitedByEmail, inviteLink }));
+        const rendered = await render(InviteUserEmail({ invitedByEmail, inviteLink }));
         console.log(rendered);
         return;
     }

@@ -116,6 +116,7 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
+import { MailXIcon } from 'lucide-react';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -1363,6 +1364,8 @@ export const Icons = {
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
     SketchLogo: SketchLogoIcon,
+
+    MailX: MailXIcon,
 
     Text: TextIcon,
     TextAlignCenter: TextAlignCenterIcon,
