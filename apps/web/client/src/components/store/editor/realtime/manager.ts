@@ -32,7 +32,7 @@ export class RealtimeManager {
         this._channel = this.supabase.channel(this.projectManager.project.id);
         this._channel
             .on('broadcast', { event: '*' }, (payload) => {
-                console.log('payload', payload);
+                //console.log('payload', payload);
             })
             .subscribe((status) => {
                 if (status === 'SUBSCRIBED') {
