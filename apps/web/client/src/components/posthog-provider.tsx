@@ -31,6 +31,8 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
                     name: userManager.user.name,
                     email: userManager.user.email,
                     avatar_url: userManager.user.avatarUrl,
+                }, {
+                    signup_date: new Date().toISOString(),
                 })
             } catch (error) {
                 console.error('Error identifying user:', error);
