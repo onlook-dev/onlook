@@ -1,6 +1,5 @@
-import type { CreateEmailResponse, Resend } from 'resend';
-import { type InviteUserEmailProps, InviteUserEmail } from './templates';
 import { render } from '@react-email/components';
+import { type InviteUserEmailProps, InviteUserEmail } from './templates';
 import type { SendEmailParams } from './types/send-email';
 
 export const sendInvitationEmail = async (...params: SendEmailParams<InviteUserEmailProps>) => {
