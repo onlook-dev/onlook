@@ -4,15 +4,21 @@ import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Skeleton } from '@onlook/ui/skeleton';
+import { Routes } from '@/utils/constants';
 
 export function Main({ invitationId }: { invitationId: string }) {
+    const router = useRouter();
     const token = useSearchParams().get('token');
     const { data: invitation, isLoading: loadingInvitation } = api.invitation.get.useQuery({
         id: invitationId,
     });
-    const acceptInvitationMutation = api.invitation.accept.useMutation();
+    const acceptInvitationMutation = api.invitation.accept.useMutation({
+        onSuccess: () => {
+            router.push(Routes.PROJECTS);
+        },
+    });
 
     if (loadingInvitation) {
         return (
