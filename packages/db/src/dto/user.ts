@@ -1,8 +1,7 @@
 import { DefaultSettings } from '@onlook/constants';
 import type { UserMetadata, UserSettings } from '@onlook/models';
-import { type UserSettings as DbUserSettings } from '../schema/user';
-import type { AuthUser } from '@/schema';
 import { get } from 'lodash';
+import type { AuthUser, UserSettings as DbUserSettings } from '../schema';
 
 export const toUserSettings = (settings: DbUserSettings): UserSettings => {
     return {

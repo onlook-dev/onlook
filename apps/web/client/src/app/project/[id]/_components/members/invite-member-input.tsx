@@ -2,8 +2,7 @@ import { api } from '@/trpc/react';
 import { ProjectRole } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { useState } from 'react';
 
 export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
@@ -17,10 +16,8 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
             apiUtils.invitation.suggested.invalidate();
         },
         onError: (error) => {
-            toast({
-                title: 'Error',
-                description: error.message,
-                variant: 'destructive',
+            toast.error('Failed to invite member', {
+                description: error instanceof Error ? error.message : String(error),
             });
         },
     });

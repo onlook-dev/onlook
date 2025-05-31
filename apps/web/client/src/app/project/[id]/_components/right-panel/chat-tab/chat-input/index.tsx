@@ -6,9 +6,9 @@ import { EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { compressImage } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -123,10 +123,7 @@ export const ChatInput = observer(() => {
         }
         const streamMessages = await editorEngine.chat.getStreamMessages(inputValue);
         if (!streamMessages) {
-            toast({
-                title: 'Error',
-                description: 'Failed to send message. Please try again.',
-            });
+            toast.error('Failed to send message. Please try again.');
             return;
         }
 

@@ -9,7 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
@@ -267,7 +267,7 @@ export const DevTab = observer(() => {
             setHighlightRange(null);
             setIsDirty(false);
             setIsFilesLoading(false);
-            
+
             // Clean up all editor instances
             editorViewsRef.current.forEach((view) => view.destroy());
             editorViewsRef.current.clear();
@@ -437,16 +437,11 @@ export const DevTab = observer(() => {
             setActiveFile({ ...activeFile, isDirty: false });
             setIsDirty(false);
 
-            toast({
-                title: 'File saved',
-                description: `${activeFile.filename} has been saved successfully.`,
-            });
+            toast('File saved!');
         } catch (error) {
             console.error('Error saving file:', error);
-            toast({
-                title: 'Save failed',
-                description: 'Could not save the file.',
-                variant: 'destructive',
+            toast.error('Failed to save file', {
+                description: error instanceof Error ? error.message : String(error),
             });
         } finally {
             setIsLoading(false);
@@ -595,8 +590,8 @@ export const DevTab = observer(() => {
                     <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
                         <span className="text-sm text-muted-foreground">
-                            {editorEngine.sandbox.session.isConnecting 
-                                ? 'Connecting to sandbox...' 
+                            {editorEngine.sandbox.session.isConnecting
+                                ? 'Connecting to sandbox...'
                                 : 'Waiting for sandbox connection...'}
                         </span>
                     </div>

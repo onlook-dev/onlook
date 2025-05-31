@@ -1,6 +1,6 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { adaptRectToCanvas } from '../overlay/utils';
@@ -24,13 +24,11 @@ export class TextEditingManager {
                 | boolean
                 | null;
             if (isEditable !== true) {
-                toast({
-                    title:
-                        isEditable === null
-                            ? "Can't determine if text is editable"
-                            : "Can't edit text because it's not plain text. Edit in code or use AI.",
-                    variant: 'destructive',
-                });
+                toast.error(
+                    isEditable === null
+                        ? "Can't determine if text is editable"
+                        : "Can't edit text because it's not plain text. Edit in code or use AI.",
+                );
                 return;
             }
 

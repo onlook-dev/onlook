@@ -4,7 +4,7 @@ import { CodeBlockProcessor } from '@onlook/ai';
 import type { WriteCodeAction } from '@onlook/models/actions';
 import { ChatMessageRole, type AssistantChatMessage, type CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
 import type { EditorEngine } from '../engine';
@@ -48,13 +48,12 @@ export class ChatCodeManager {
                     originalCode: content,
                     updateSnippet: block.content,
                 });
-                if (!result.success) {
+                if (result.error || !result.result) {
                     console.error('Failed to apply code block', block);
-                    toast({
-                        title: 'Failed to apply code block',
-                        variant: 'destructive',
+                    toast.error('Failed to apply code block', {
                         description: 'Please try again or prompt the AI to fix it.',
                     });
+                    continue;
                 }
                 content = result.result;
             }

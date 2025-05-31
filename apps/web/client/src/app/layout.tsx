@@ -2,14 +2,15 @@ import '@/styles/globals.css';
 import '@onlook/ui/globals.css';
 
 import { PostHogProvider } from '@/components/posthog-provider';
+import { FeatureFlagsProvider } from '@/hooks/use-feature-flags';
 import { TRPCReactProvider } from '@/trpc/react';
+import { Toaster } from '@onlook/ui/sonner';
 import { type Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
-import { FeatureFlagsProvider } from '@/hooks/use-feature-flags';
 
 export const metadata: Metadata = {
     title: 'Onlook',
@@ -38,7 +39,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                         >
                             <TRPCReactProvider>
                                 <AuthProvider>
-                                    <NextIntlClientProvider>{children}</NextIntlClientProvider>
+                                    <NextIntlClientProvider>
+                                        {children}
+                                        <Toaster />
+                                    </NextIntlClientProvider>
                                 </AuthProvider>
                             </TRPCReactProvider>
                         </ThemeProvider>

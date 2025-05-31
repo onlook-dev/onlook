@@ -7,7 +7,7 @@ import {
     ContextMenuTrigger,
 } from '@onlook/ui/context-menu';
 import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
@@ -70,10 +70,8 @@ export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style
             );
         } catch (error) {
             console.error('Failed to delete page:', error);
-            toast({
-                title: 'Failed to delete page',
+            toast.error('Failed to delete page', {
                 description: error instanceof Error ? error.message : String(error),
-                variant: 'destructive',
             });
         }
     };
@@ -82,17 +80,11 @@ export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style
         try {
             await editorEngine.pages.duplicatePage(node.data.path, node.data.path);
 
-            toast({
-                title: 'Page duplicated',
-                description: 'Page has been successfully duplicated.',
-                variant: 'default',
-            });
+            toast('Page duplicated!');
         } catch (error) {
             console.error('Failed to duplicate page:', error);
-            toast({
-                title: 'Failed to duplicate page',
+            toast.error('Failed to duplicate page', {
                 description: error instanceof Error ? error.message : String(error),
-                variant: 'destructive',
             });
         }
     };

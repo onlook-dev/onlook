@@ -3,7 +3,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
@@ -19,10 +19,7 @@ export const ErrorSection = observer(() => {
     const sendFixError = async () => {
         const messages = await editorEngine.chat.getFixErrorMessages();
         if (!messages) {
-            toast({
-                title: 'Error',
-                description: 'Failed to send fix error messages. Please try again.',
-            });
+            toast.error('Failed to send fix error messages. Please try again.');
             return;
         }
         sendMessages(messages, ChatType.FIX);
