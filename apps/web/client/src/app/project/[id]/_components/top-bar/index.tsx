@@ -14,11 +14,13 @@ import { useChatContext } from '../../_hooks/use-chat';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { Members } from '../members';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const { isWaiting } = useChatContext();
+    const { isEnabled } = useFeatureFlags();
 
     const UNDO_REDO_BUTTONS = [
         {
@@ -43,7 +45,9 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2">
                 <div className="flex flex-row items-center layout gap-4">
-                    <Members projectId={projectId} />
+                    {isEnabled('NEXT_PUBLIC_FEATURE_COLLABORATION') && (
+                        <Members projectId={projectId} />
+                    )}
                     <motion.div
                         className="space-x-0 hidden lg:block"
                         layout

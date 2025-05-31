@@ -9,6 +9,7 @@ import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
+import { FeatureFlagsProvider } from '@/hooks/use-feature-flags';
 
 export const metadata: Metadata = {
     title: 'Onlook',
@@ -27,20 +28,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
             <body>
-                <PostHogProvider>
-                    <ThemeProvider
-                        attribute="class"
-                        defaultTheme="dark"
-                        enableSystem
-                        disableTransitionOnChange
-                    >
-                        <TRPCReactProvider>
-                            <AuthProvider>
-                                <NextIntlClientProvider>{children}</NextIntlClientProvider>
-                            </AuthProvider>
-                        </TRPCReactProvider>
-                    </ThemeProvider>
-                </PostHogProvider>
+                <FeatureFlagsProvider>
+                    <PostHogProvider>
+                        <ThemeProvider
+                            attribute="class"
+                            defaultTheme="dark"
+                            enableSystem
+                            disableTransitionOnChange
+                        >
+                            <TRPCReactProvider>
+                                <AuthProvider>
+                                    <NextIntlClientProvider>{children}</NextIntlClientProvider>
+                                </AuthProvider>
+                            </TRPCReactProvider>
+                        </ThemeProvider>
+                    </PostHogProvider>
+                </FeatureFlagsProvider>
             </body>
         </html>
     );
