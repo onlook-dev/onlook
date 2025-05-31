@@ -3,7 +3,6 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { env } from '../env';
 
-// Extract client env keys from the env object
 type ClientEnvKeys = keyof typeof env;
 
 type FeatureFlags = Record<ClientEnvKeys, boolean>;
