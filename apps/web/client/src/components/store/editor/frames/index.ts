@@ -2,7 +2,7 @@ import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/w
 import { api } from '@/trpc/client';
 import { sendAnalytics } from '@/utils/analytics';
 import { fromFrame } from '@onlook/db';
-import { FrameType, type Frame, type WebFrame } from '@onlook/models';
+import { FrameType, RealtimeEventType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { ProjectManager } from '../../project/manager';
@@ -185,6 +185,10 @@ export class FramesManager {
             this.disposeFrame(data.frame.id);
             this.frames = this.frames.filter((f) => f.id !== id);
             this.trackFrameAction('deleted');
+            this.editorEngine.realtime.send({
+                event: RealtimeEventType.FRAME_DELETED,
+                payload: data.frame,
+            });
         } else {
             console.error('Failed to delete frame');
         }
@@ -200,6 +204,10 @@ export class FramesManager {
 
         if (success) {
             this.frames.push(FrameImpl.fromJSON(frame));
+            this.editorEngine.realtime.send({
+                event: RealtimeEventType.FRAME_CREATED,
+                payload: frame,
+            });
             this.trackFrameAction('created');
         } else {
             console.error('Failed to create frame');
@@ -242,6 +250,10 @@ export class FramesManager {
         const data = this.frameIdToData.get(id);
         if (data) {
             this.frameIdToData.set(id, { ...data, frame: updatedFrame });
+            this.editorEngine.realtime.send({
+                event: RealtimeEventType.FRAME_UPDATED,
+                payload: updatedFrame,
+            });
         }
     }
 
@@ -267,6 +279,11 @@ export class FramesManager {
             if (!success) {
                 console.error('Failed to update frame');
             }
+
+            this.editorEngine.realtime.send({
+                event: RealtimeEventType.FRAME_UPDATED,
+                payload: frame,
+            });
         } catch (error) {
             console.error('Failed to update frame', error);
         }
