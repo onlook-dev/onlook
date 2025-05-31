@@ -11,7 +11,7 @@ export class MoveManager {
     MIN_DRAG_DISTANCE = 5;
     isDragInProgress = false;
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     get isDragging() {
         return !!this.dragOrigin;
@@ -147,9 +147,9 @@ export class MoveManager {
     async endAllDrag() {
         const promises: Promise<unknown>[] = [];
 
-        this.editorEngine.frames.webviews.forEach((frameView) => {
+        this.editorEngine.frames.getAll().forEach((frameData) => {
             try {
-                const promise = frameView.view.endAllDrag() as Promise<unknown>;
+                const promise = frameData.view.endAllDrag() as Promise<unknown>;
                 promises.push(promise);
             } catch (error) {
                 console.error('Error in endAllDrag:', error);

@@ -84,10 +84,6 @@ export class FramesManager {
         this._frames = frames;
     }
 
-    get webviews() {
-        return this.frameIdToData;
-    }
-
     get selected(): FrameData[] {
         return Array.from(this.frameIdToData.values()).filter((w) => w.selected);
     }
