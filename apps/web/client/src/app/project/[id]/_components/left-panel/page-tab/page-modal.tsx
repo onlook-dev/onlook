@@ -14,7 +14,7 @@ import {
     DialogTitle,
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -83,18 +83,10 @@ export function PageModal({
 
             if (mode === 'create') {
                 await editorEngine.pages.createPage(baseRoute, pageName);
-                toast({
-                    title: 'Page created',
-                    description: 'Page has been successfully created.',
-                    variant: 'default',
-                });
+                toast('Page created!');
             } else {
                 await editorEngine.pages.renamePage(baseRoute, pageName);
-                toast({
-                    title: 'Page renamed',
-                    description: 'Page has been successfully renamed.',
-                    variant: 'default',
-                });
+                toast('Page renamed!');
             }
 
             setPageName('');

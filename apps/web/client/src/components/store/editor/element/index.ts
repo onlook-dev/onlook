@@ -1,6 +1,6 @@
 import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { RemoveElementAction } from '@onlook/models/actions';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
@@ -92,11 +92,7 @@ export class ElementsManager {
 
     emitError(error: string) {
         console.error(error);
-        toast({
-            title: 'Cannot delete element',
-            description: error,
-            variant: 'destructive',
-        });
+        toast.error('Cannot delete element', { description: error });
     }
 
     async delete() {

@@ -8,18 +8,15 @@ import { MessageContextType, type ImageMessageContext } from '@onlook/models/cha
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { compressImage } from '@onlook/utility';
-import { motion } from 'framer-motion';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useEffect, useRef, useState } from 'react';
-import { vujahdayScript } from '../../fonts';
-import { UnicornBackground } from './unicorn-background';
 
 export function Create({ cardKey }: { cardKey: number }) {
     const createManager = useCreateManager();
@@ -93,21 +90,13 @@ export function Create({ cardKey }: { cardKey: number }) {
         try {
             const project = await createManager.startCreate(userManager.user?.id, prompt, images);
             if (!project) {
-                console.error('Failed to create project');
-                toast({
-                    title: 'Failed to create project',
-                    description: 'Please try again',
-                    variant: 'destructive',
-                });
-                return;
+                throw new Error('Failed to create project: No project returned');
             }
             router.push(`/project/${project.id}`);
         } catch (error) {
             console.error('Error creating project:', error);
-            toast({
-                title: 'Failed to create project',
-                description: 'Please try again',
-                variant: 'destructive',
+            toast.error('Failed to create project', {
+                description: error instanceof Error ? error.message : String(error),
             });
         } finally {
             setIsLoading(false);
