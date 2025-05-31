@@ -7,7 +7,7 @@ export const sendInvitationEmail = async (...params: SendEmailParams<InviteUserE
     const [client, { invitedByEmail, inviteLink }, { dryRun = false } = {}] = params;
 
     if (dryRun) {
-        const rendered = render(InviteUserEmail({ invitedByEmail, inviteLink }));
+        const rendered = await render(InviteUserEmail({ invitedByEmail, inviteLink }));
         console.log(rendered);
         return;
     }
