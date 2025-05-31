@@ -147,9 +147,9 @@ export class MoveManager {
     async endAllDrag() {
         const promises: Promise<unknown>[] = [];
 
-        this.editorEngine.frames.getAll().forEach((frame) => {
+        this.editorEngine.frames.getAll().forEach((frameData) => {
             try {
-                const promise = frame.view.endAllDrag() as Promise<unknown>;
+                const promise = frameData.view.endAllDrag() as Promise<unknown>;
                 promises.push(promise);
             } catch (error) {
                 console.error('Error in endAllDrag:', error);
