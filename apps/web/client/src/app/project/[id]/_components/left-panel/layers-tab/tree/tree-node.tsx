@@ -101,7 +101,7 @@ export const TreeNode = memo(
                     node: LayerNode,
                     action: MouseAction,
                 ) => {
-                    const frameView = editorEngine.frames.getFrameData(node.frameId);
+                    const frameView = editorEngine.frames.get(node.frameId);
                     if (!frameView) {
                         console.error('Failed to get frameView');
                         return;

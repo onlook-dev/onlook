@@ -84,7 +84,7 @@ export class TextEditingManager {
         }
 
         try {
-            const frameData = this.editorEngine.frames.getFrameData(this.targetDomEl.frameId);
+            const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
             if (!frameData) {
                 console.error('No frameView found for text editing');
                 return;
@@ -113,7 +113,7 @@ export class TextEditingManager {
         }
 
         try {
-            const frameData = this.editorEngine.frames.getFrameData(this.targetDomEl.frameId);
+            const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
             if (!frameData) {
                 console.error('No frameView found for end text editing');
                 return;
@@ -188,7 +188,7 @@ export class TextEditingManager {
                 return;
             }
 
-            const frameData = this.editorEngine.frames.getFrameData(selectedEl.frameId);
+            const frameData = this.editorEngine.frames.get(selectedEl.frameId);
             if (!frameData) {
                 return;
             }

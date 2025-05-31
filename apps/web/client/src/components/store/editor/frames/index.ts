@@ -88,11 +88,11 @@ export class FramesManager {
         return Array.from(this.frameIdToData.values()).filter((w) => w.selected);
     }
 
-    getAllFrameData(): FrameData[] {
+    getAll(): FrameData[] {
         return Array.from(this.frameIdToData.values());
     }
 
-    getFrameData(id: string): FrameData | undefined {
+    get(id: string): FrameData | undefined {
         return this.frameIdToData.get(id);
     }
 
@@ -273,7 +273,7 @@ export class FramesManager {
     }
 
     canDelete() {
-        return this.getAllFrameData().length > 1;
+        return this.getAll().length > 1;
     }
 
     canDuplicate() {

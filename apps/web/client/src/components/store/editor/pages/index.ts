@@ -42,7 +42,7 @@ export class PagesManager {
         if (!this.editorEngine?.frames) {
             return undefined;
         }
-        return this.editorEngine.frames.selected[0] ?? this.editorEngine.frames.getAllFrameData()[0];
+        return this.editorEngine.frames.selected[0] ?? this.editorEngine.frames.getAll()[0];
     }
 
     public isNodeActive(node: PageNode): boolean {
@@ -345,7 +345,7 @@ export class PagesManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.getFrameData(frameId);
+        const frameView = this.editorEngine.frames.get(frameId);
         if (!frameView) {
             return;
         }

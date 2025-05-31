@@ -84,7 +84,7 @@ export class AstManager {
             return;
         }
 
-        const frame = this.editorEngine.frames.getFrameData(frameId);
+        const frame = this.editorEngine.frames.get(frameId);
         if (!frame) {
             console.warn('Failed: Frame not found');
             return;
@@ -182,7 +182,7 @@ export class AstManager {
     }
 
     updateElementInstance(frameId: string, domId: string, instanceId: string, component: string) {
-        const frame = this.editorEngine.frames.getFrameData(frameId);
+        const frame = this.editorEngine.frames.get(frameId);
         if (!frame) {
             console.warn('Failed to updateElementInstanceId: Frame not found');
             return;

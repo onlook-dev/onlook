@@ -27,7 +27,7 @@ export class ElementsManager {
     }
 
     mouseover(domEl: DomElement) {
-        const frameData = this.editorEngine.frames.getFrameData(domEl.frameId);
+        const frameData = this.editorEngine.frames.get(domEl.frameId);
         if (!frameData) {
             console.error('Frame data not found');
             return;
@@ -64,7 +64,7 @@ export class ElementsManager {
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
-            const frameData = this.editorEngine.frames.getFrameData(domEl.frameId);
+            const frameData = this.editorEngine.frames.get(domEl.frameId);
             if (!frameData) {
                 console.error('Frame data not found');
                 continue;
@@ -107,7 +107,7 @@ export class ElementsManager {
 
         for (const selectedEl of selected) {
             const frameId = selectedEl.frameId;
-            const frameData = this.editorEngine.frames.getFrameData(frameId);
+            const frameData = this.editorEngine.frames.get(frameId);
             if (!frameData) {
                 console.error('Frame data not found');
                 return;

@@ -94,7 +94,7 @@ export class EditorEngine {
     }
 
     async refreshLayers() {
-        for (const frame of this.frames.getAllFrameData()) {
+        for (const frame of this.frames.getAll()) {
             await frame.view.processDom();
         }
     }

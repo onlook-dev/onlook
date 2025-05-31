@@ -14,7 +14,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const isResizing = false;
 
     const getFrameData: () => FrameData | undefined = useCallback(() => {
-        return editorEngine.frames.getFrameData(frame.id);
+        return editorEngine.frames.get(frame.id);
     }, [editorEngine.frames, frame.id]);
 
     const getRelativeMousePosition = useCallback(
