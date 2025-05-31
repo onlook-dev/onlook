@@ -83,7 +83,7 @@ export function adaptValueToCanvas(value: number, inverse = false): number {
 /**
  * Get the relative mouse position a frameView element inside the canvas container.
  */
-export function getRelativeMousePositionToWebview(
+export function getRelativeMousePositionToFrameView(
     e: React.MouseEvent<HTMLDivElement>,
     frameView: WebFrameView,
     inverse: boolean = false,
