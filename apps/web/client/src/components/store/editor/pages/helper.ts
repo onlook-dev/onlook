@@ -17,7 +17,7 @@ export const validateNextJsRoute = (route: string): { valid: boolean; error?: st
     // Checks if it's a dynamic route
     const hasMatchingBrackets = /\[[^\]]*\]/.test(route);
     if (hasMatchingBrackets) {
-        const dynamicRegex = /^\[([a-z0-9-]+)\]$/;
+    const dynamicRegex = /^\[([a-z0-9-]+)\]$/;
         if (!dynamicRegex.test(route)) {
             return {
                 valid: false,
@@ -61,13 +61,13 @@ export const doesRouteExist = (nodes: PageNode[], route: string): boolean => {
     return checkNode(nodes);
 };
 
-// Constants from desktop implementation
 const IGNORED_DIRECTORIES = ['api', 'components', 'lib', 'utils', 'node_modules'];
 const APP_ROUTER_PATHS = ['src/app', 'app'];
 const PAGES_ROUTER_PATHS = ['src/pages', 'pages'];
 const ALLOWED_EXTENSIONS = ['.tsx', '.ts', '.jsx', '.js'];
 const ROOT_PAGE_NAME = 'Home';
 const ROOT_PATH_IDENTIFIERS = ['', '/', '.'];
+const ROOT_PAGE_COPY_NAME = 'landing-page-copy';
 
 const DEFAULT_PAGE_CONTENT = `export default function Page() {
     return (
@@ -108,7 +108,6 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
         const traverse = (await import('@babel/traverse')).default;
         const t = await import('@babel/types');
 
-        // Parse the file content using Babel
         const ast = parse(content, {
             sourceType: 'module',
             plugins: ['typescript', 'jsx'],
@@ -187,7 +186,6 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
     }
 };
 
-// Adapted from desktop scan.ts - App Router scanning
 const scanAppDirectory = async (
     session: any,
     dir: string,
@@ -306,7 +304,6 @@ const scanAppDirectory = async (
     return nodes;
 };
 
-// Adapted from desktop scan.ts - Pages Router scanning
 const scanPagesDirectory = async (
     session: any,
     dir: string,
@@ -457,45 +454,306 @@ export const scanPagesFromSandbox = async (session: any): Promise<PageNode[]> =>
     }
 };
 
-export const createPageInSandbox = async (session: any, pagePath: string): Promise<void> => {
-    // Validate the path
-    const normalizedPagePath = pagePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
-    if (!/^[a-zA-Z0-9\-_[\]()/]+$/.test(normalizedPagePath)) {
-        throw new Error('Page path contains invalid characters');
+const detectRouterTypeInSandbox = async (session: any): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
+    // Check for App Router
+    for (const appPath of APP_ROUTER_PATHS) {
+        try {
+            const entries = await session.fs.readdir(appPath);
+            if (entries && entries.length > 0) {
+                // Check for layout file (required for App Router)
+                const hasLayout = entries.some((entry: any) => 
+                    entry.type === 'file' && 
+                    entry.name.startsWith('layout.') && 
+                    ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
+                );
+                
+                if (hasLayout) {
+                    console.log(`Found App Router at: ${appPath}`);
+                    return { type: 'app', basePath: appPath };
+                }
+            }
+        } catch (error) {
+            // Directory doesn't exist, continue checking
+        }
     }
 
-    // TODO: Implement page creation using sandbox session
-    console.log(`Creating page at path: ${normalizedPagePath}`);
-    throw new Error('Page creation not yet implemented for sandbox');
+    // Check for Pages Router if App Router not found
+    for (const pagesPath of PAGES_ROUTER_PATHS) {
+        try {
+            const entries = await session.fs.readdir(pagesPath);
+            if (entries && entries.length > 0) {
+                // Check for index file (common in Pages Router)
+                const hasIndex = entries.some((entry: any) => 
+                    entry.type === 'file' && 
+                    entry.name.startsWith('index.') && 
+                    ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
+                );
+                
+                if (hasIndex) {
+                    console.log(`Found Pages Router at: ${pagesPath}`);
+                    return { type: 'pages', basePath: pagesPath };
+                }
+            }
+        } catch (error) {
+            // Directory doesn't exist, continue checking
+        }
+    }
+
+    return null;
+};
+
+// checks if file/directory exists
+const pathExists = async (session: any, filePath: string): Promise<boolean> => {
+    try {
+        await session.fs.readdir(getDirName(filePath));
+        const dirEntries = await session.fs.readdir(getDirName(filePath));
+        const fileName = getBaseName(filePath);
+        return dirEntries.some((entry: any) => entry.name === fileName);
+    } catch (error) {
+        return false;
+    }
+};
+
+const cleanupEmptyFolders = async (session: any, folderPath: string): Promise<void> => {
+    while (folderPath && folderPath !== getDirName(folderPath)) {
+        try {
+            const entries = await session.fs.readdir(folderPath);
+            if (entries.length === 0) {
+                // Delete empty directory using remove method
+                await session.fs.remove(folderPath);
+                folderPath = getDirName(folderPath);
+            } else {
+                break;
+            }
+        } catch (error) {
+            // Directory doesn't exist or can't be accessed
+            break;
+        }
+    }
+};
+
+const getUniqueDir = async (session: any, basePath: string, dirName: string): Promise<string> => {
+    let uniquePath = dirName;
+    let counter = 1;
+
+    const baseName = dirName.replace(/-copy(-\d+)?$/, '');
+
+    while (true) {
+        const fullPath = joinPath(basePath, uniquePath);
+        if (!(await pathExists(session, fullPath))) {
+            return uniquePath;
+        }
+        uniquePath = `${baseName}-copy-${counter}`;
+        counter++;
+    }
+};
+
+const createDirectory = async (session: any, dirPath: string): Promise<void> => {
+    // Creates a temporary file to ensure directory structure exists, then remove it
+    const tempFile = joinPath(dirPath, '.temp');
+    await session.fs.writeTextFile(tempFile, '');
+    await session.fs.remove(tempFile);
+};
+
+const copyDirectoryRecursive = async (session: any, sourcePath: string, targetPath: string): Promise<void> => {
+    try {
+        const entries = await session.fs.readdir(sourcePath);
+        
+        // Creates target directory by creating a temp file
+        await createDirectory(session, targetPath);
+        
+        for (const entry of entries) {
+            const sourceEntryPath = joinPath(sourcePath, entry.name);
+            const targetEntryPath = joinPath(targetPath, entry.name);
+            
+            if (entry.type === 'directory') {
+                await copyDirectoryRecursive(session, sourceEntryPath, targetEntryPath);
+            } else if (entry.type === 'file') {
+                const content = await session.fs.readTextFile(sourceEntryPath);
+                await session.fs.writeTextFile(targetEntryPath, content);
+            }
+        }
+    } catch (error) {
+        console.error(`Error copying directory from ${sourcePath} to ${targetPath}:`, error);
+        throw error;
+    }
+};
+
+
+export const createPageInSandbox = async (session: any, pagePath: string): Promise<void> => {
+    try {
+        const routerConfig = await detectRouterTypeInSandbox(session);
+
+        if (!routerConfig) {
+            throw new Error('Could not detect Next.js router type');
+        }
+
+        if (routerConfig.type !== 'app') {
+            throw new Error('Page creation is only supported for App Router projects.');
+        }
+
+        // Validate and normalize the path
+        const normalizedPagePath = pagePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+        if (!/^[a-zA-Z0-9\-_[\]()/]+$/.test(normalizedPagePath)) {
+            throw new Error('Page path contains invalid characters');
+        }
+
+        const fullPath = joinPath(routerConfig.basePath, normalizedPagePath);
+        const pageFilePath = joinPath(fullPath, 'page.tsx');
+
+        if (await pathExists(session, pageFilePath)) {
+            throw new Error('Page already exists at this path');
+        }
+
+        await session.fs.writeTextFile(pageFilePath, DEFAULT_PAGE_CONTENT);
+        
+        console.log(`Created page at: ${pageFilePath}`);
+    } catch (error) {
+        console.error('Error creating page:', error);
+        throw error;
+    }
 };
 
 export const deletePageInSandbox = async (session: any, pagePath: string, isDir: boolean): Promise<void> => {
-    const normalizedPath = pagePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
-    if (normalizedPath === '' || normalizedPath === '/') {
-        throw new Error('Cannot delete root page');
-    }
+    try {
+        const routerConfig = await detectRouterTypeInSandbox(session);
 
-    // TODO: Implement page deletion using sandbox session
-    console.log(`Deleting page at path: ${normalizedPath}`);
-    throw new Error('Page deletion not yet implemented for sandbox');
+        if (!routerConfig) {
+            throw new Error('Could not detect Next.js router type');
+        }
+
+        if (routerConfig.type !== 'app') {
+            throw new Error('Page deletion is only supported for App Router projects.');
+        }
+
+        const normalizedPath = pagePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+        if (normalizedPath === '' || normalizedPath === '/') {
+            throw new Error('Cannot delete root page');
+        }
+
+        const fullPath = joinPath(routerConfig.basePath, normalizedPath);
+
+        if (!(await pathExists(session, fullPath))) {
+            throw new Error('Selected page not found');
+        }
+
+        if (isDir) {
+            // Delete entire directory
+            await session.fs.remove(fullPath);
+        } else {
+            // Delete just the page.tsx file
+            const pageFilePath = joinPath(fullPath, 'page.tsx');
+            await session.fs.remove(pageFilePath);
+            
+            // Clean up empty parent directories
+            await cleanupEmptyFolders(session, fullPath);
+        }
+
+        console.log(`Deleted: ${fullPath}`);
+    } catch (error) {
+        console.error('Error deleting page:', error);
+        throw error;
+    }
 };
 
 export const renamePageInSandbox = async (session: any, oldPath: string, newName: string): Promise<void> => {
-    // Validate new name
-    if (!/^[a-zA-Z0-9\-_[\]()]+$/.test(newName)) {
-        throw new Error('Page name contains invalid characters');
-    }
+    try {
+        const routerConfig = await detectRouterTypeInSandbox(session);
+        
+        if (!routerConfig || routerConfig.type !== 'app') {
+            throw new Error('Page renaming is only supported for App Router projects.');
+        }
 
-    // TODO: Implement page renaming using sandbox session
-    console.log(`Renaming page from ${oldPath} to ${newName}`);
-    throw new Error('Page renaming not yet implemented for sandbox');
+        if (ROOT_PATH_IDENTIFIERS.includes(oldPath)) {
+            throw new Error('Cannot rename root page');
+        }
+
+        // Validate new name
+        if (!/^[a-zA-Z0-9\-_[\]()]+$/.test(newName)) {
+            throw new Error('Page name contains invalid characters');
+        }
+
+        const normalizedOldPath = oldPath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+        const oldFullPath = joinPath(routerConfig.basePath, normalizedOldPath);
+        const parentDir = getDirName(oldFullPath);
+        const newFullPath = joinPath(parentDir, newName);
+
+        if (!(await pathExists(session, oldFullPath))) {
+            throw new Error(`Source page not found: ${oldFullPath}`);
+        }
+
+        if (await pathExists(session, newFullPath)) {
+            throw new Error(`Target path already exists: ${newFullPath}`);
+        }
+
+        await session.fs.rename(oldFullPath, newFullPath);
+        
+        console.log(`Renamed page from ${oldFullPath} to ${newFullPath}`);
+    } catch (error) {
+        console.error('Error renaming page:', error);
+        throw error;
+    }
 };
 
 export const duplicatePageInSandbox = async (session: any, sourcePath: string, targetPath: string): Promise<void> => {
-    // TODO: Implement page duplication using sandbox session
-    console.log(`Duplicating page from ${sourcePath} to ${targetPath}`);
-    throw new Error('Page duplication not yet implemented for sandbox');
+    try {
+        const routerConfig = await detectRouterTypeInSandbox(session);
+        
+        if (!routerConfig || routerConfig.type !== 'app') {
+            throw new Error('Page duplication is only supported for App Router projects.');
+        }
+
+        // Handle root path case
+        const isRootPath = ROOT_PATH_IDENTIFIERS.includes(sourcePath);
+
+        if (isRootPath) {
+            const sourcePageFile = joinPath(routerConfig.basePath, 'page.tsx');
+            const targetDir = await getUniqueDir(session, routerConfig.basePath, ROOT_PAGE_COPY_NAME);
+            const targetDirPath = joinPath(routerConfig.basePath, targetDir);
+            const targetPageFile = joinPath(targetDirPath, 'page.tsx');
+
+            if (await pathExists(session, targetDirPath)) {
+                throw new Error('Target path already exists');
+            }
+
+            await session.fs.copy(sourcePageFile, targetPageFile);
+            
+            console.log(`Duplicated root page to: ${targetPageFile}`);
+            return;
+        }
+
+        // Handle non-root pages
+        const normalizedSourcePath = sourcePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
+        const normalizedTargetPath = await getUniqueDir(session, routerConfig.basePath, targetPath);
+
+        const sourceFull = joinPath(routerConfig.basePath, normalizedSourcePath);
+        const targetFull = joinPath(routerConfig.basePath, normalizedTargetPath);
+
+        if (await pathExists(session, targetFull)) {
+            throw new Error('Target path already exists');
+        }
+
+        // Check if source is a directory or file
+        const sourceEntries = await session.fs.readdir(getDirName(sourceFull));
+        const sourceEntry = sourceEntries.find((entry: any) => entry.name === getBaseName(sourceFull));
+        
+        if (!sourceEntry) {
+            throw new Error('Source page not found');
+        }
+
+        if (sourceEntry.type === 'directory') {
+            await copyDirectoryRecursive(session, sourceFull, targetFull);
+        } else {
+            await session.fs.copy(sourceFull, targetFull);
+        }
+        
+        console.log(`Duplicated page from ${sourceFull} to ${targetFull}`);
+    } catch (error) {
+        console.error('Error duplicating page:', error);
+        throw error;
+    }
 };
+
 
 export const updatePageMetadataInSandbox = async (session: any, pagePath: string, metadata: PageMetadata): Promise<void> => {
     // TODO: Implement metadata update using sandbox session
