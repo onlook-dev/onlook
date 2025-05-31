@@ -1,4 +1,5 @@
-// hooks/useFeatureFlags.ts
+'use client';
+
 import { createContext, useContext, type ReactNode } from 'react';
 import { env } from '../env';
 

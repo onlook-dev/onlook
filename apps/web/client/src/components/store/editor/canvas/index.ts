@@ -1,10 +1,12 @@
 import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
 import { fromCanvas } from '@onlook/db';
-import type { Canvas, Frame, RectPosition } from '@onlook/models';
+import { RealtimeEventType, type Canvas, type Frame, type RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectManager } from '../../project/manager';
+import type { EditorEngine } from '../engine';
+import type { UserManager } from '../../user/manager';
 
 type SettingsObserver = (settings: Frame) => void;
 
@@ -14,7 +16,11 @@ export class CanvasManager {
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
-    constructor(private projects: ProjectManager) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projects: ProjectManager,
+        private userManager: UserManager,
+    ) {
         this._position = this.getDefaultPanPosition();
         makeAutoObservable(this);
     }
@@ -23,6 +29,19 @@ export class CanvasManager {
         this.id = canvas.id;
         this.scale = canvas.scale ?? DefaultSettings.SCALE;
         this.position = canvas.position ?? this.getDefaultPanPosition();
+
+        if (this.userManager.user) {
+            this.editorEngine.realtime.send({
+                event: RealtimeEventType.USER_UPDATED,
+                payload: {
+                    ...this.userManager.user,
+                    position: {
+                        x: this.position.x,
+                        y: this.position.y,
+                    },
+                },
+            });
+        }
     }
 
     getDefaultPanPosition(): RectPosition {
@@ -67,6 +86,19 @@ export class CanvasManager {
         const success = await api.userCanvas.update.mutate(fromCanvas(canvas));
         if (!success) {
             console.error('Failed to update canvas');
+        }
+
+        if (this.userManager.user) {
+            this.editorEngine.realtime.send({
+                event: RealtimeEventType.USER_UPDATED,
+                payload: {
+                    ...this.userManager.user,
+                    position: {
+                        x: this.position.x,
+                        y: this.position.y,
+                    },
+                },
+            });
         }
     }
 

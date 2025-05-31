@@ -23,6 +23,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
+import { RealtimeManager } from './realtime/manager';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -52,13 +53,14 @@ export class EditorEngine {
     constructor(
         private projectManager: ProjectManager,
         private userManager: UserManager,
+        readonly realtime: RealtimeManager,
     ) {
         this.chat = new ChatManager(this, this.projectManager, this.userManager);
         this.pages = new PagesManager(this, this.projectManager);
         this.image = new ImageManager(this, this.projectManager);
         this.theme = new ThemeManager(this, this.projectManager);
         this.font = new FontManager(this, this.projectManager);
-        this.canvas = new CanvasManager(this.projectManager)
+        this.canvas = new CanvasManager(this, this.projectManager, this.userManager);
         this.frames = new FramesManager(this, this.projectManager);
         makeAutoObservable(this);
     }

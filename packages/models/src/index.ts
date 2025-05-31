@@ -8,6 +8,7 @@ export * from './editor/';
 export * from './element/';
 export * from './ide/';
 export * from './llm/';
+export * from './realtime/';
 export * from './pages/';
 export * from './project/';
 export * from './run/';
