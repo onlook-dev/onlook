@@ -4,21 +4,21 @@ import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
-import { 
-    doesRouteExist, 
-    normalizeRoute, 
-    validateNextJsRoute,
-    scanPagesFromSandbox,
+import {
     createPageInSandbox,
     deletePageInSandbox,
-    renamePageInSandbox,
+    doesRouteExist,
     duplicatePageInSandbox,
-    updatePageMetadataInSandbox
+    normalizeRoute,
+    renamePageInSandbox,
+    scanPagesFromSandbox,
+    updatePageMetadataInSandbox,
+    validateNextJsRoute
 } from './helper';
 
 export class PagesManager {
     private pages: PageNode[] = [];
-    private activeRoutesByWebviewId: Record<string, string> = {};
+    private activeRoutesByFrameId: Record<string, string> = {};
     private currentPath = '';
     private groupedRoutes = '';
 
@@ -34,19 +34,19 @@ export class PagesManager {
     }
 
     get activeRoute(): string | undefined {
-        const frameView = this.getActiveWebview();
-        return frameView ? this.activeRoutesByWebviewId[frameView.frame.id] : undefined;
+        const frame = this.getActiveFrame();
+        return frame ? this.activeRoutesByFrameId[frame.frame.id] : undefined;
     }
 
-    private getActiveWebview(): FrameData | undefined {
+    private getActiveFrame(): FrameData | undefined {
         if (!this.editorEngine?.frames) {
             return undefined;
         }
-        return this.editorEngine.frames.selected[0] ?? this.editorEngine.frames.getAll()[0];
+        return this.editorEngine.frames.selected[0] ?? this.editorEngine.frames.getAllFrameData()[0];
     }
 
     public isNodeActive(node: PageNode): boolean {
-        const frameView = this.getActiveWebview();
+        const frameView = this.getActiveFrame();
         if (!frameView) {
             return false;
         }
@@ -97,8 +97,8 @@ export class PagesManager {
     }
 
     public setActivePath(frameId: string, path: string) {
-        this.activeRoutesByWebviewId[frameId] = path;
-        if (frameId === this.getActiveWebview()?.frame.id) {
+        this.activeRoutesByFrameId[frameId] = path;
+        if (frameId === this.getActiveFrame()?.frame.id) {
             this.currentPath = path;
         }
         this.updateActiveStates(this.pages, path);
@@ -293,7 +293,7 @@ export class PagesManager {
     }
 
     async navigateTo(path: string) {
-        const frameView = this.getActiveWebview();
+        const frameView = this.getActiveFrame();
 
         if (!frameView) {
             console.warn('No frameView available');
@@ -340,12 +340,12 @@ export class PagesManager {
         this.currentPath = path;
     }
 
-    public handleWebviewUrlChange(frameId: string) {
+    public handleFrameUrlChange(frameId: string) {
         if (!this.editorEngine?.frames) {
             return;
         }
-        
-        const frameView = this.editorEngine.frames.get(frameId);
+
+        const frameView = this.editorEngine.frames.getFrameData(frameId);
         if (!frameView) {
             return;
         }
@@ -368,6 +368,5 @@ export class PagesManager {
     clear() {
         this.pages = [];
         this.currentPath = '';
-        // this.editorEngine = null as any;
     }
 }

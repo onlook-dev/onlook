@@ -31,7 +31,7 @@ export class CopyManager {
             return;
         }
         const frameId = selectedEl.frameId;
-        const frameData = this.editorEngine.frames.get(frameId);
+        const frameData = this.editorEngine.frames.getFrameData(frameId);
         if (!frameData) {
             console.error('Failed to get frameView');
             return;
@@ -156,7 +156,7 @@ export class CopyManager {
 
     async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
         const frameId = selectedEl.frameId;
-        const frameData = this.editorEngine.frames.get(frameId);
+        const frameData = this.editorEngine.frames.getFrameData(frameId);
         if (!frameData) {
             console.error('Failed to get frameView');
             return;

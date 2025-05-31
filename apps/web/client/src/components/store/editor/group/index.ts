@@ -111,7 +111,7 @@ export class GroupManager {
         parentDomId: string,
         selectedEls: DomElement[],
     ): Promise<GroupElementsAction | null> {
-        const frame = this.editorEngine.frames.get(frameId);
+        const frame = this.editorEngine.frames.getFrameData(frameId);
         if (!frame) {
             console.error('Failed to get frame');
             return null;
@@ -152,7 +152,7 @@ export class GroupManager {
     }
 
     async getUngroupAction(selectedEl: DomElement): Promise<UngroupElementsAction | null> {
-        const frame = this.editorEngine.frames.get(selectedEl.frameId);
+        const frame = this.editorEngine.frames.getFrameData(selectedEl.frameId);
         if (!frame) {
             console.error('Failed to get frame');
             return null;

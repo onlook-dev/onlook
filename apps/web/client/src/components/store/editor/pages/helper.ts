@@ -1,4 +1,5 @@
-import type { PageNode, PageMetadata } from '@onlook/models';
+import type { PageMetadata, PageNode } from '@onlook/models';
+import { parse, types as t, traverse } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 
 export const normalizeRoute = (route: string): string => {
@@ -17,7 +18,7 @@ export const validateNextJsRoute = (route: string): { valid: boolean; error?: st
     // Checks if it's a dynamic route
     const hasMatchingBrackets = /\[[^\]]*\]/.test(route);
     if (hasMatchingBrackets) {
-    const dynamicRegex = /^\[([a-z0-9-]+)\]$/;
+        const dynamicRegex = /^\[([a-z0-9-]+)\]$/;
         if (!dynamicRegex.test(route)) {
             return {
                 valid: false,
@@ -104,10 +105,6 @@ const joinPath = (...parts: string[]): string => {
 // Helper function to extract metadata from file content
 const extractMetadata = async (content: string): Promise<PageMetadata | undefined> => {
     try {
-        const { parse } = await import('@babel/parser');
-        const traverse = (await import('@babel/traverse')).default;
-        const t = await import('@babel/types');
-
         const ast = parse(content, {
             sourceType: 'module',
             plugins: ['typescript', 'jsx'],
@@ -193,7 +190,7 @@ const scanAppDirectory = async (
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
     let entries;
-    
+
     try {
         entries = await session.fs.readdir(dir);
     } catch (error) {
@@ -264,8 +261,8 @@ const scanAppDirectory = async (
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                  ? getBaseName(parentPath)
-                  : ROOT_PAGE_NAME,
+                    ? getBaseName(parentPath)
+                    : ROOT_PAGE_NAME,
             path: cleanPath,
             children: [],
             isActive: false,
@@ -311,7 +308,7 @@ const scanPagesDirectory = async (
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
     let entries;
-    
+
     try {
         entries = await session.fs.readdir(dir);
     } catch (error) {
@@ -461,12 +458,12 @@ const detectRouterTypeInSandbox = async (session: any): Promise<{ type: 'app' | 
             const entries = await session.fs.readdir(appPath);
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
-                const hasLayout = entries.some((entry: any) => 
-                    entry.type === 'file' && 
-                    entry.name.startsWith('layout.') && 
+                const hasLayout = entries.some((entry: any) =>
+                    entry.type === 'file' &&
+                    entry.name.startsWith('layout.') &&
                     ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
                 );
-                
+
                 if (hasLayout) {
                     console.log(`Found App Router at: ${appPath}`);
                     return { type: 'app', basePath: appPath };
@@ -483,12 +480,12 @@ const detectRouterTypeInSandbox = async (session: any): Promise<{ type: 'app' | 
             const entries = await session.fs.readdir(pagesPath);
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
-                const hasIndex = entries.some((entry: any) => 
-                    entry.type === 'file' && 
-                    entry.name.startsWith('index.') && 
+                const hasIndex = entries.some((entry: any) =>
+                    entry.type === 'file' &&
+                    entry.name.startsWith('index.') &&
                     ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
                 );
-                
+
                 if (hasIndex) {
                     console.log(`Found Pages Router at: ${pagesPath}`);
                     return { type: 'pages', basePath: pagesPath };
@@ -558,14 +555,14 @@ const createDirectory = async (session: any, dirPath: string): Promise<void> => 
 const copyDirectoryRecursive = async (session: any, sourcePath: string, targetPath: string): Promise<void> => {
     try {
         const entries = await session.fs.readdir(sourcePath);
-        
+
         // Creates target directory by creating a temp file
         await createDirectory(session, targetPath);
-        
+
         for (const entry of entries) {
             const sourceEntryPath = joinPath(sourcePath, entry.name);
             const targetEntryPath = joinPath(targetPath, entry.name);
-            
+
             if (entry.type === 'directory') {
                 await copyDirectoryRecursive(session, sourceEntryPath, targetEntryPath);
             } else if (entry.type === 'file') {
@@ -606,7 +603,7 @@ export const createPageInSandbox = async (session: any, pagePath: string): Promi
         }
 
         await session.fs.writeTextFile(pageFilePath, DEFAULT_PAGE_CONTENT);
-        
+
         console.log(`Created page at: ${pageFilePath}`);
     } catch (error) {
         console.error('Error creating page:', error);
@@ -644,7 +641,7 @@ export const deletePageInSandbox = async (session: any, pagePath: string, isDir:
             // Delete just the page.tsx file
             const pageFilePath = joinPath(fullPath, 'page.tsx');
             await session.fs.remove(pageFilePath);
-            
+
             // Clean up empty parent directories
             await cleanupEmptyFolders(session, fullPath);
         }
@@ -659,7 +656,7 @@ export const deletePageInSandbox = async (session: any, pagePath: string, isDir:
 export const renamePageInSandbox = async (session: any, oldPath: string, newName: string): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
-        
+
         if (!routerConfig || routerConfig.type !== 'app') {
             throw new Error('Page renaming is only supported for App Router projects.');
         }
@@ -687,7 +684,7 @@ export const renamePageInSandbox = async (session: any, oldPath: string, newName
         }
 
         await session.fs.rename(oldFullPath, newFullPath);
-        
+
         console.log(`Renamed page from ${oldFullPath} to ${newFullPath}`);
     } catch (error) {
         console.error('Error renaming page:', error);
@@ -698,7 +695,7 @@ export const renamePageInSandbox = async (session: any, oldPath: string, newName
 export const duplicatePageInSandbox = async (session: any, sourcePath: string, targetPath: string): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
-        
+
         if (!routerConfig || routerConfig.type !== 'app') {
             throw new Error('Page duplication is only supported for App Router projects.');
         }
@@ -717,7 +714,7 @@ export const duplicatePageInSandbox = async (session: any, sourcePath: string, t
             }
 
             await session.fs.copy(sourcePageFile, targetPageFile);
-            
+
             console.log(`Duplicated root page to: ${targetPageFile}`);
             return;
         }
@@ -736,7 +733,7 @@ export const duplicatePageInSandbox = async (session: any, sourcePath: string, t
         // Check if source is a directory or file
         const sourceEntries = await session.fs.readdir(getDirName(sourceFull));
         const sourceEntry = sourceEntries.find((entry: any) => entry.name === getBaseName(sourceFull));
-        
+
         if (!sourceEntry) {
             throw new Error('Source page not found');
         }
@@ -746,7 +743,7 @@ export const duplicatePageInSandbox = async (session: any, sourcePath: string, t
         } else {
             await session.fs.copy(sourceFull, targetFull);
         }
-        
+
         console.log(`Duplicated page from ${sourceFull} to ${targetFull}`);
     } catch (error) {
         console.error('Error duplicating page:', error);

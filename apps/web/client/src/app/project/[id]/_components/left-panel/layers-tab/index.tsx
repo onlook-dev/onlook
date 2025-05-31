@@ -53,7 +53,7 @@ export const LayersTab = observer(() => {
                 console.error('No drag node found');
                 return;
             }
-            const frameData = editorEngine.frames.get(dragNode.data.frameId);
+            const frameData = editorEngine.frames.getFrameData(dragNode.data.frameId);
             if (!frameData) {
                 console.error('No frame data found');
                 return;

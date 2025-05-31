@@ -28,7 +28,7 @@ export class OverlayManager {
         // Refresh click rects
         const newClickRects: { rect: RectDimensions; styles: DomElementStyles | null }[] = [];
         for (const selectedElement of this.editorEngine.elements.selected) {
-            const frameData = this.editorEngine.frames.get(selectedElement.frameId);
+            const frameData = this.editorEngine.frames.getFrameData(selectedElement.frameId);
             if (!frameData) {
                 console.error('Frame data not found');
                 continue;
@@ -64,7 +64,7 @@ export class OverlayManager {
 
         const hoverEl = this.editorEngine.elements.hovered;
         const frameId = selectedEl.frameId;
-        const frameData = this.editorEngine.frames.get(frameId);
+        const frameData = this.editorEngine.frames.getFrameData(frameId);
         if (!frameData) {
             return;
         }

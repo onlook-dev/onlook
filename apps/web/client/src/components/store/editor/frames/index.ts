@@ -84,19 +84,15 @@ export class FramesManager {
         this._frames = frames;
     }
 
-    get webviews() {
-        return this.frameIdToData;
-    }
-
     get selected(): FrameData[] {
         return Array.from(this.frameIdToData.values()).filter((w) => w.selected);
     }
 
-    getAll(): FrameData[] {
+    getAllFrameData(): FrameData[] {
         return Array.from(this.frameIdToData.values());
     }
 
-    get(id: string): FrameData | undefined {
+    getFrameData(id: string): FrameData | undefined {
         return this.frameIdToData.get(id);
     }
 
@@ -277,7 +273,7 @@ export class FramesManager {
     }
 
     canDelete() {
-        return this.getAll().length > 1;
+        return this.getAllFrameData().length > 1;
     }
 
     canDuplicate() {

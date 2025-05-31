@@ -11,7 +11,7 @@ export class MoveManager {
     MIN_DRAG_DISTANCE = 5;
     isDragInProgress = false;
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     get isDragging() {
         return !!this.dragOrigin;
@@ -52,7 +52,7 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
+        const frameView = this.editorEngine.frames.getFrameData(this.dragTarget.frameId);
         if (!frameView) {
             console.error('No frameView found for drag');
             return;
@@ -84,7 +84,7 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
+        const frameView = this.editorEngine.frames.getFrameData(this.dragTarget.frameId);
         if (!frameView) {
             console.error('No frameView found for drag end');
             await this.endAllDrag();
@@ -147,9 +147,9 @@ export class MoveManager {
     async endAllDrag() {
         const promises: Promise<unknown>[] = [];
 
-        this.editorEngine.frames.webviews.forEach((frameView) => {
+        this.editorEngine.frames.getAllFrameData().forEach((frame) => {
             try {
-                const promise = frameView.view.endAllDrag() as Promise<unknown>;
+                const promise = frame.view.endAllDrag() as Promise<unknown>;
                 promises.push(promise);
             } catch (error) {
                 console.error('Error in endAllDrag:', error);
@@ -173,7 +173,7 @@ export class MoveManager {
     }
 
     async shiftElement(element: DomElement, direction: 'up' | 'down'): Promise<void> {
-        const frameView = this.editorEngine.frames.get(element.frameId);
+        const frameView = this.editorEngine.frames.getFrameData(element.frameId);
         if (!frameView) {
             return;
         }

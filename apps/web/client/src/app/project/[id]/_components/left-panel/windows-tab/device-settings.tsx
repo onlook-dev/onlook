@@ -27,7 +27,7 @@ export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
     // }, []);
 
     async function changeTheme(theme: SystemTheme) {
-        const frameView = editorEngine.frames.get(frame.id)?.view;
+        const frameView = editorEngine.frames.getFrameData(frame.id)?.view;
         if (!frameView) {
             return;
         }

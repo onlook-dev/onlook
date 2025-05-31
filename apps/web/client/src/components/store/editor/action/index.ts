@@ -86,7 +86,7 @@ export class ActionManager {
     async updateStyle({ targets }: UpdateStyleAction) {
         const domEls: DomElement[] = [];
         for (const target of targets) {
-            const frameData = this.editorEngine.frames.get(target.frameId);
+            const frameData = this.editorEngine.frames.getFrameData(target.frameId);
             if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
@@ -129,7 +129,7 @@ export class ActionManager {
 
     private async insertElement({ targets, element, editText, location }: InsertElementAction) {
         for (const elementMetadata of targets) {
-            const frameView = this.editorEngine.frames.get(elementMetadata.frameId);
+            const frameView = this.editorEngine.frames.getFrameData(elementMetadata.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -151,7 +151,7 @@ export class ActionManager {
 
     private async removeElement({ targets, location }: RemoveElementAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.editorEngine.frames.getFrameData(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -172,7 +172,7 @@ export class ActionManager {
 
     private async moveElement({ targets, location }: MoveElementAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.editorEngine.frames.getFrameData(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -188,7 +188,7 @@ export class ActionManager {
 
     private async editText({ targets, newContent }: EditTextAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.editorEngine.frames.getFrameData(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -204,7 +204,7 @@ export class ActionManager {
     }
 
     private async groupElements({ parent, container, children }: GroupElementsAction) {
-        const frameView = this.editorEngine.frames.get(parent.frameId);
+        const frameView = this.editorEngine.frames.getFrameData(parent.frameId);
         if (!frameView) {
             console.error('Failed to get frameView');
             return;
@@ -225,7 +225,7 @@ export class ActionManager {
     }
 
     private async ungroupElements({ parent, container }: UngroupElementsAction) {
-        const frameView = this.editorEngine.frames.get(parent.frameId);
+        const frameView = this.editorEngine.frames.getFrameData(parent.frameId);
         if (!frameView) {
             console.error('Failed to get frameView');
             return;
@@ -243,7 +243,7 @@ export class ActionManager {
 
     private insertImage({ targets, image }: InsertImageAction) {
         targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.editorEngine.frames.getFrameData(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -257,7 +257,7 @@ export class ActionManager {
 
     private removeImage({ targets }: RemoveImageAction) {
         targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.editorEngine.frames.getFrameData(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
