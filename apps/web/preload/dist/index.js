@@ -17101,12 +17101,11 @@ function setTheme(theme) {
     if (theme === "dark" /* DARK */) {
       document.documentElement.classList.add("dark");
       window?.localStorage.setItem("theme", "dark" /* DARK */);
-      return true;
     } else {
       document.documentElement.classList.remove("dark");
       window?.localStorage.setItem("theme", "light" /* LIGHT */);
-      return false;
     }
+    return true;
   } catch (error) {
     console.warn("Failed to set theme", error);
     return false;
@@ -17202,5 +17201,5 @@ export {
   penpalParent
 };
 
-//# debugId=4CD4957A43BF04C164756E2164756E21
+//# debugId=F7AC9F0517670CA164756E2164756E21
 //# sourceMappingURL=index.js.map
