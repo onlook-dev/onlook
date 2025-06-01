@@ -49,9 +49,9 @@ export const WindowsTab = observer(() => {
                 </Button>
             </div>
 
-            <FrameDimensions frame={frameData.frame} />
+            <FrameDimensions frameId={frameData.frame.id} />
             <Separator />
-            <DeviceSettings frameData={frameData} />
+            <DeviceSettings frameId={frameData.frame.id} />
         </div>
     );
 });

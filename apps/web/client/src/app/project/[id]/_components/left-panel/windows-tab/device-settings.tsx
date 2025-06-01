@@ -1,25 +1,37 @@
-import type { FrameData } from '@/components/store/editor/frames';
+import { useEditorEngine } from '@/components/store/editor';
 import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
 
-export const DeviceSettings = ({ frameData }: { frameData: FrameData }) => {
+export const DeviceSettings = ({ frameId }: { frameId: string }) => {
+    const editorEngine = useEditorEngine();
+    const frameData = editorEngine.frames.get(frameId);
     const [theme, setTheme] = useState<SystemTheme>(SystemTheme.SYSTEM);
 
     useEffect(() => {
-        frameData.view.getTheme().then((theme) => {
-            setTheme(theme);
-        });
+        if (frameData) {
+            frameData.view.getTheme().then((theme) => {
+                setTheme(theme);
+            });
+        }
     }, [frameData]);
 
-    async function changeTheme(theme: SystemTheme) {
-        const success = await frameData.view.setTheme(theme);
-        if (success) {
-            setTheme(theme);
-        } else {
+    if (!frameData) {
+        return (
+            <p className="text-sm text-foreground-primary">Frame not found</p>
+        );
+    }
+
+    async function changeTheme(newTheme: SystemTheme) {
+        const previousTheme = theme;
+        setTheme(newTheme);
+
+        const success = await frameData?.view.setTheme(newTheme);
+        if (!success) {
             toast.error('Failed to change theme');
+            setTheme(previousTheme);
         }
     }
 
