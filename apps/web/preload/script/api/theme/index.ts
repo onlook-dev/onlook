@@ -14,12 +14,11 @@ export function setTheme(theme: SystemTheme) {
         if (theme === SystemTheme.DARK) {
             document.documentElement.classList.add('dark');
             window?.localStorage.setItem('theme', SystemTheme.DARK);
-            return true;
         } else {
             document.documentElement.classList.remove('dark');
             window?.localStorage.setItem('theme', SystemTheme.LIGHT);
-            return false;
         }
+        return true;
     } catch (error) {
         console.warn('Failed to set theme', error);
         return false;

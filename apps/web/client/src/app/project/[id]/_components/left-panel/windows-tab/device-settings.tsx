@@ -1,43 +1,38 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { FrameImpl } from '@/components/store/editor/frames/frame';
-import type { Theme } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
+import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
 
-export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
+export const DeviceSettings = ({ frameId }: { frameId: string }) => {
     const editorEngine = useEditorEngine();
-    const [deviceTheme, setDeviceTheme] = useState(frame.theme);
+    const frameData = editorEngine.frames.get(frameId);
+    const [theme, setTheme] = useState<SystemTheme>(SystemTheme.SYSTEM);
 
     useEffect(() => {
-        setDeviceTheme(frame.theme);
-    }, [frame.id]);
-
-    // useEffect(() => {
-    //     const observer = (newSettings: Frame) => {
-    //         if (newSettings.theme !== deviceTheme) {
-    //             setDeviceTheme(newSettings.theme);
-    //         }
-    //     };
-
-    //     editorEngine.canvas.observeSettings(settings.id, observer);
-
-    //     return editorEngine.canvas.unobserveSettings(settings.id, observer);
-    // }, []);
-
-    async function changeTheme(theme: SystemTheme) {
-        const frameView = editorEngine.frames.get(frame.id)?.view;
-        if (!frameView) {
-            return;
+        if (frameData) {
+            frameData.view.getTheme().then((theme) => {
+                setTheme(theme);
+            });
         }
+    }, [frameData]);
 
-        frameView.setTheme(theme);
-        setDeviceTheme(theme as Theme);
+    if (!frameData) {
+        return (
+            <p className="text-sm text-foreground-primary">Frame not found</p>
+        );
+    }
 
-        // editorEngine.canvas.saveFrame(settings.id, {
-        //     theme,
-        // });
+    async function changeTheme(newTheme: SystemTheme) {
+        const previousTheme = theme;
+        setTheme(newTheme);
+
+        const success = await frameData?.view.setTheme(newTheme);
+        if (!success) {
+            toast.error('Failed to change theme');
+            setTheme(previousTheme);
+        }
     }
 
     return (
@@ -48,7 +43,7 @@ export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
                 <div className="flex flex-row p-0.5 w-3/5 bg-background-secondary rounded">
                     <Button
                         size={'icon'}
-                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.SYSTEM
+                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${theme === SystemTheme.SYSTEM
                             ? 'bg-background-tertiary hover:bg-background-tertiary'
                             : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                             }`}
@@ -59,7 +54,7 @@ export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
                     </Button>
                     <Button
                         size={'icon'}
-                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.DARK
+                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${theme === SystemTheme.DARK
                             ? 'bg-background-tertiary hover:bg-background-tertiary'
                             : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                             }`}
@@ -70,7 +65,7 @@ export const DeviceSettings = ({ frame }: { frame: FrameImpl }) => {
                     </Button>
                     <Button
                         size={'icon'}
-                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${deviceTheme === SystemTheme.LIGHT
+                        className={`flex-1 h-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${theme === SystemTheme.LIGHT
                             ? 'bg-background-tertiary hover:bg-background-tertiary'
                             : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                             }`}
