@@ -236,13 +236,11 @@ export class FramesManager {
         const frame = this.validateFrame(id, 'save');
         if (!frame) return;
 
-        const updatedFrame = FrameImpl.fromJSON({ ...frame, ...newFrame });
-        this.frames = this.frames.map((f) => (f.id === id ? updatedFrame : f));
 
-        const data = this.frameIdToData.get(id);
-        if (data) {
-            this.frameIdToData.set(id, { ...data, frame: updatedFrame });
-        }
+        const frameImpl = this.validateFrame(id, 'update');
+        if (!frameImpl) return;
+
+        frameImpl.update(newFrame);
     }
 
     async updateAndSaveToStorage(frame: WebFrame) {

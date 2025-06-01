@@ -1,12 +1,13 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { DefaultSettings, Orientation } from '@onlook/constants';
+import { DefaultSettings, DEVICE_OPTIONS, Orientation } from '@onlook/constants';
 import type { WindowMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { computeWindowMetadata } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
 
@@ -19,6 +20,9 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
         );
     }
 
+    console.log('FrameDimensions', frameData.frame.dimension.width.toString(),
+        frameData.frame.dimension.height.toString());
+
     const [metadata, setMetadata] = useState<WindowMetadata>(() =>
         computeWindowMetadata(
             frameData.frame.dimension.width.toString(),
@@ -26,11 +30,23 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
         )
     );
 
+    const [device, setDevice] = useState(() => {
+        for (const category in DEVICE_OPTIONS) {
+            for (const deviceName in DEVICE_OPTIONS[category]) {
+                const res = DEVICE_OPTIONS[category][deviceName];
+                if (res === `${metadata.width}x${metadata.height}`) {
+                    return `${category}:${deviceName}`;
+                }
+            }
+        }
+        return 'Custom:Custom';
+    });
+
     const updateFrame = (width: number, height: number) => {
         const newMetadata = computeWindowMetadata(width.toString(), height.toString());
         setMetadata(newMetadata);
-        // Here you would typically call your frame update function
-        console.log('Updating frame:', { width, height });
+        const newFrame = { ...frameData.frame, dimension: { width, height } };
+        editorEngine.frames.updateLocally(frameId, newFrame);
     };
 
     const handleDimensionInput = (
@@ -56,9 +72,65 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
         }
     };
 
+    const handleDeviceChange = (value: string) => {
+        setDevice(value);
+        const [category, deviceName] = value.split(':');
+        if (
+            category &&
+            deviceName &&
+            DEVICE_OPTIONS[category] &&
+            DEVICE_OPTIONS[category][deviceName] &&
+            deviceName !== 'Custom'
+        ) {
+            const [w, h] = DEVICE_OPTIONS[category][deviceName].split('x').map(Number);
+            if (typeof w === 'number' && !isNaN(w) && typeof h === 'number' && !isNaN(h)) {
+                updateFrame(w, h);
+            }
+        }
+    };
+
     return (
         <div className="flex flex-col gap-2">
             <p className="text-sm text-foreground-primary">Frame Dimensions</p>
+            <div className="flex flex-row justify-between items-center">
+                <span className="text-xs text-foreground-secondary">Device</span>
+                <Select value={device} onValueChange={handleDeviceChange}>
+                    <SelectTrigger className="w-3/5 bg-background-secondary border-background-secondary py-1.5 px-2 h-fit text-xs rounded focus:outline-none focus:ring-0">
+                        <SelectValue placeholder="Select device" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-md bg-background-secondary">
+                        {Object.entries(DEVICE_OPTIONS).map(([category, devices], index) =>
+                            category !== 'Custom' ? (
+                                <React.Fragment key={index}>
+                                    <SelectGroup key={index}>
+                                        <SelectLabel>{category}</SelectLabel>
+                                        {Object.entries(devices).map(([deviceName], idx) => (
+                                            <SelectItem
+                                                key={idx}
+                                                value={category + ':' + deviceName}
+                                                className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
+                                            >
+                                                {deviceName}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                    {index < Object.entries(DEVICE_OPTIONS).length - 1 && (
+                                        <SelectSeparator className="text-white" />
+                                    )}
+                                </React.Fragment>
+                            ) : (
+                                <SelectItem
+                                    key={'Custom'}
+                                    value={'Custom:Custom'}
+                                    className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
+                                >
+                                    {'Custom'}
+                                </SelectItem>
+                            ),
+                        )}
+                    </SelectContent>
+                </Select>
+            </div>
 
             <div className="flex flex-row justify-between items-center">
                 <span className="text-xs text-foreground-secondary">Orientation</span>
@@ -117,6 +189,7 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
                     </p>
                 </div>
             </div>
+
         </div>
     );
 });

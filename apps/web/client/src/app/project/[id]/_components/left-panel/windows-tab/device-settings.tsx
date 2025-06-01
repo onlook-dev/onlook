@@ -3,9 +3,10 @@ import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { toast } from '@onlook/ui/sonner';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
-export const DeviceSettings = ({ frameId }: { frameId: string }) => {
+export const DeviceSettings = observer(({ frameId }: { frameId: string }) => {
     const editorEngine = useEditorEngine();
     const frameData = editorEngine.frames.get(frameId);
     const [theme, setTheme] = useState<SystemTheme>(SystemTheme.SYSTEM);
@@ -78,4 +79,4 @@ export const DeviceSettings = ({ frameId }: { frameId: string }) => {
             </div>
         </div>
     );
-};
+});

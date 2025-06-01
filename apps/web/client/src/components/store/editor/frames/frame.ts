@@ -12,12 +12,19 @@ export class FrameImpl implements Frame {
         this.position = frame.position;
         this.dimension = frame.dimension;
         this.type = frame.type;
+
         makeObservable(this, {
             id: observable,
             position: observable,
             dimension: observable,
             type: observable,
         });
+    }
+
+    update(newFrame: Partial<Frame>) {
+        this.position = { ...this.position, ...newFrame.position };
+        this.dimension = { ...this.dimension, ...newFrame.dimension };
+        this.type = newFrame.type ?? this.type;
     }
 
     static fromJSON(frame: Frame): FrameImpl {
