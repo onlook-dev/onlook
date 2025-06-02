@@ -30,7 +30,7 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         let identifier = '';
         if (modKey) identifier += 'mod+';
         if (e.shiftKey) identifier += 'shift+';
-        if (e.altKey) identifier += 'alt+';
+        if (e.altKey && e.key !== 'Alt') identifier += 'alt+';;
         
         // Handle special keys
         switch (e.key) {
