@@ -149,6 +149,7 @@ For a full walkthrough, check out our
 - [TailwindCSS](https://tailwindcss.com/)
 - [Bun](https://bun.sh/)
 - [tRPC](https://trpc.io/)
+- [Morph Fast Apply](https://morphllm.com)
 
 ## Contributing
 
