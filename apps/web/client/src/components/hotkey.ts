@@ -21,7 +21,7 @@ export class Hotkey {
     static readonly UNGROUP = new Hotkey('mod+shift+g', 'Ungroup');
     static readonly OPEN_DEV_TOOL = new Hotkey('mod+shift+i', 'Open Devtool');
     static readonly ADD_AI_CHAT = new Hotkey('mod+shift+l', 'Add to AI chat');
-    static readonly NEW_AI_CHAT = new Hotkey('mod+l', 'New AI Chat'); // TODO: Refactor
+    static readonly NEW_AI_CHAT = new Hotkey('mod+l', 'New AI Chat'); // TODO: Refactor to work with Arc
     static readonly MOVE_LAYER_UP = new Hotkey('shift+arrowup', 'Move Layer Up');
     static readonly MOVE_LAYER_DOWN = new Hotkey('shift+arrowdown', 'Move Layer Down');
     static readonly SHOW_HOTKEYS = new Hotkey('mod+k', 'Show Shortcuts');
@@ -34,7 +34,7 @@ export class Hotkey {
     static readonly COPY = new Hotkey('mod+c', 'Copy');
     static readonly PASTE = new Hotkey('mod+v', 'Paste');
     static readonly CUT = new Hotkey('mod+x', 'Cut');
-    static readonly DUPLICATE = new Hotkey('mod+d', 'Duplicate'); // TODO: Refactor
+    static readonly DUPLICATE = new Hotkey('mod+d', 'Duplicate'); // TODO: Refactor to work with Arc
 
     // Delete
     static readonly BACKSPACE = new Hotkey('backspace', 'Delete');

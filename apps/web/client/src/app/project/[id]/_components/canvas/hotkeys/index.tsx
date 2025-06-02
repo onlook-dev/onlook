@@ -28,9 +28,11 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         const modKey = isMac ? e.metaKey : e.ctrlKey;
         
         let identifier = '';
-        if (modKey) identifier += 'mod+';
-        if (e.shiftKey) identifier += 'shift+';
-        if (e.altKey && e.key !== 'Alt') identifier += 'alt+';;
+        
+        // Only add modifier prefixes if not pressing the modifier key itself
+        if (modKey && e.key !== 'Meta' && e.key !== 'Control') identifier += 'mod+';
+        if (e.shiftKey && e.key !== 'Shift') identifier += 'shift+';
+        if (e.altKey && e.key !== 'Alt') identifier += 'alt+';
         
         // Handle special keys
         switch (e.key) {
@@ -43,6 +45,10 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
             case '=': identifier += 'equal'; break;
             case '-': identifier += 'minus'; break;
             case ' ': identifier += 'space'; break;
+            case 'Alt': identifier += 'alt'; break;
+            case 'Shift': identifier += 'shift'; break;
+            case 'Control':
+            case 'Meta': identifier += isMac ? 'meta' : 'control'; break;
             default: identifier += e.key.toLowerCase(); break;
         }
         
@@ -189,6 +195,6 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
             document.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('keyup', handleKeyUp);
         };
-    }, []);
+    }, [editorEngine]);
     return <>{children}</>;
 };
