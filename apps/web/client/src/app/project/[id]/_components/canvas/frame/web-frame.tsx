@@ -175,6 +175,7 @@ export const WebFrameComponent = observer(
                 removeImage: promisifyMethod(penpalChild?.removeImage),
                 isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
                 handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
+                captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
             };
 
             // Register the iframe with the editor engine

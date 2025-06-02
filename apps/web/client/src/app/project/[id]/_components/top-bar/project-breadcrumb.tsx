@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
@@ -16,6 +17,7 @@ import { redirect, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = observer(() => {
+    const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
     const project = projectManager.project;
     const t = useTranslations();
@@ -28,17 +30,53 @@ export const ProjectBreadcrumb = observer(() => {
     async function handleNavigateToProjects(route?: 'create' | 'import') {
         try {
             setIsClosingProject(true);
-            // await takeScreenshotWithTimeout();
-            // await projectsManager.runner?.stop();
+
+            // Capture screenshots of all frames
+            const frames = editorEngine.frames.getAll();
+            const screenshots = await captureFrameScreenshots(frames);
+            
+            // Update project metadata with screenshots
+            if (screenshots.length > 0 && project?.metadata) {
+                project.metadata.previewImg = screenshots[0]?.screenshot ?? null;
+            }
 
             // TODO: Close project
         } catch (error) {
-            console.error('Failed to take screenshot:', error);
+            console.error('Failed to take screenshots:', error);
         }
+
         setTimeout(() => {
             setIsClosingProject(false);
             redirect('/projects');
         }, 100);
+    }
+
+    // Helper function to capture screenshots of frames
+    async function captureFrameScreenshots(frames: any[]) {
+        return Promise.all(
+            frames.map(async (frameData) => {
+                try {
+                    const frameView = frameData.view;
+                    console.log(frameView);
+                    if (!frameView) {
+                        console.warn(`Frame view not found for frame ${frameData.frame.id}`);
+                        return null;
+                    }
+
+                    const screenshot = await frameView.captureScreenshot();                    
+                    console.log(screenshot);
+                    return {
+                        frameId: frameData.frame.id,
+                        screenshot
+                    };
+                } catch (error) {
+                    console.error(`Failed to capture screenshot for frame ${frameData.frame.id}:`, error);
+                    return null;
+                }
+            })
+        ).then(screenshots => 
+            screenshots.filter((s): s is { frameId: string; screenshot: string } => s !== null)
+        );
     }
 
     const handleOpenProjectFolder = () => {

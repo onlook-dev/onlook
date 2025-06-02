@@ -22,6 +22,7 @@ import { getElementIndex, moveElement } from './elements/move';
 import { drag, dragAbsolute, endAllDrag, endDrag, endDragAbsolute, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, isChildTextEditable, startEditingText, stopEditingText } from './elements/text';
+import { captureScreenshot } from './events/dom';
 import { handleBodyReady } from './ready';
 import { setFrameId } from './state';
 import { updateStyle } from './style';
@@ -78,7 +79,10 @@ export const preloadMethods = {
     ungroupElements,
     insertImage,
     removeImage,
-    handleBodyReady
+    handleBodyReady,
+
+    // Screenshot
+    captureScreenshot,
 }
 
 export type PenpalChildMethods = typeof preloadMethods;
