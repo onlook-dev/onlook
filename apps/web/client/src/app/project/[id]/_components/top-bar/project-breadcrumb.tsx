@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { Routes } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,6 +12,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { getScreenshotPath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
@@ -31,62 +33,61 @@ export const ProjectBreadcrumb = observer(() => {
         try {
             setIsClosingProject(true);
 
-            // Capture screenshots of all frames
-            const frames = editorEngine.frames.getAll();
-            const screenshots = await captureFrameScreenshots(frames);
-
-            // TODO: Upload screenshots to S3 or firebase storage
-            
-            // Update project metadata with screenshots
-            if (screenshots.length > 0 && project?.metadata) {
-                project.metadata.previewImg = screenshots[0]?.screenshot ?? null;
-            }
-
-            // TODO: Close project
+            await captureProjectScreenshot();
         } catch (error) {
             console.error('Failed to take screenshots:', error);
+        } finally {
+            setTimeout(() => {
+                setIsClosingProject(false);
+                redirect('/projects');
+            }, 100);
+        }
+    }
+
+    async function captureProjectScreenshot() {
+        const frameView = editorEngine.frames.getAll().find(f => !!f.view)?.view;
+        if (!frameView) {
+            console.warn('No frames found');
+            return null;
+        }
+        const screenshot = await frameView.captureScreenshot();
+        const data = await uploadScreenshot(screenshot);
+
+        if (!data) {
+            console.error('No data returned from uploadScreenshot');
+            return;
         }
 
-        setTimeout(() => {
-            setIsClosingProject(false);
-            redirect('/projects');
-        }, 100);
-    }
-
-    // Helper function to capture screenshots of frames
-    async function captureFrameScreenshots(frames: any[]) {
-        return Promise.all(
-            frames.map(async (frameData) => {
-                try {
-                    const frameView = frameData.view;
-                    console.log(frameView);
-                    if (!frameView) {
-                        console.warn(`Frame view not found for frame ${frameData.frame.id}`);
-                        return null;
+        // Update project metadata
+        if (project?.metadata) {
+            projectManager.updatePartialProject({
+                metadata: {
+                    ...project.metadata,
+                    previewImg: {
+                        fullPath: data?.fullPath,
+                        id: data?.id,
+                        path: data?.path
                     }
-
-                    const screenshot = await frameView.captureScreenshot();                    
-
-                    return {
-                        frameId: frameData.frame.id,
-                        screenshot
-                    };
-                } catch (error) {
-                    console.error(`Failed to capture screenshot for frame ${frameData.frame.id}:`, error);
-                    return null;
                 }
-            })
-        ).then(screenshots => 
-            screenshots.filter((s): s is { frameId: string; screenshot: string } => s !== null)
-        );
+            });
+        }
     }
 
-    const handleOpenProjectFolder = () => {
-        // const project = projectsManager.project;
-        // if (project && project.folderPath) {
-        //     invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
-        // }
-    };
+    async function uploadScreenshot(screenshot: string) {
+        if (!project?.id) {
+            console.warn('No project id found');
+            return;
+        }
+        const supabase = await createClient();
+        const { data, error } = await supabase.storage.from('preview_images').upload(getScreenshotPath(project.id), screenshot, {
+            upsert: true
+        });
+        if (error) {
+            console.error(error);
+        }
+        console.log(data);
+        return data;
+    }
 
     return (
         <div className="mx-2 flex flex-row items-center text-small gap-2">

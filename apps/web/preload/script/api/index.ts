@@ -1,4 +1,4 @@
-import { captureScreenshot, processDom } from './dom';
+import { processDom } from './dom';
 import {
     getChildrenCount,
     getElementAtLoc,
@@ -23,6 +23,7 @@ import { drag, dragAbsolute, endAllDrag, endDrag, endDragAbsolute, startDrag } f
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, isChildTextEditable, startEditingText, stopEditingText } from './elements/text';
 import { handleBodyReady } from './ready';
+import { captureScreenshot } from './screenshot';
 import { setFrameId } from './state';
 import { updateStyle } from './style';
 import { getTheme, setTheme } from './theme';
@@ -34,6 +35,7 @@ export const preloadMethods = {
     getComputedStyleByDomId,
     updateElementInstance,
     getFirstOnlookElement,
+    captureScreenshot,
 
     // Elements
     getElementAtLoc,
@@ -79,9 +81,6 @@ export const preloadMethods = {
     insertImage,
     removeImage,
     handleBodyReady,
-
-    // Screenshot
-    captureScreenshot,
 }
 
 export type PenpalChildMethods = typeof preloadMethods;

@@ -4,7 +4,11 @@ export interface Project {
     metadata: {
         createdAt: string;
         updatedAt: string;
-        previewImg: string | null;
+        previewImg: {
+            fullPath: string;
+            id: string;
+            path: string;
+        } | null;
         description: string | null;
     };
     sandbox: {
