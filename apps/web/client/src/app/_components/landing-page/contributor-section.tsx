@@ -1,7 +1,6 @@
 'use client';
 
 import { Icons } from '@onlook/ui/icons/index';
-import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 
 interface Contributor {
@@ -84,7 +83,7 @@ const FloatingRings = () => {
                             }}
                         >
                             {contributor && (
-                                <Image
+                                <img
                                     src={contributor.avatar_url}
                                     alt={`${contributor.login}'s avatar`}
                                     className="w-full h-full object-cover"
@@ -117,7 +116,7 @@ const FloatingRings = () => {
                             }}
                         >
                             {contributor && (
-                                <Image
+                                <img
                                     src={contributor.avatar_url}
                                     alt={`${contributor.login}'s avatar`}
                                     className="w-full h-full object-cover"
