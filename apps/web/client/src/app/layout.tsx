@@ -56,7 +56,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     <PostHogProvider>
                         <ThemeProvider
                             attribute="class"
-                            defaultTheme="dark"
+                            forcedTheme="dark"
                             enableSystem
                             disableTransitionOnChange
                         >
