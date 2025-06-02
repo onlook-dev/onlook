@@ -1,17 +1,14 @@
+import { getFileUrlFromStorage } from '@/utils/supabase/client';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import type { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, type Variants } from 'motion/react';
+import Image from 'next/image';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EditAppButton } from './edit-app';
-
-const getPreviewImage = async (previewImg: string) => {
-    const response = await fetch(previewImg);
-    const blob = await response.blob();
-    return URL.createObjectURL(blob);
-};
 
 interface CarouselProps {
     slides: Project[];
@@ -112,7 +109,7 @@ export const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => 
             const images: { [key: string]: string } = {};
             for (const slide of slides) {
                 if (slide.metadata.previewImg) {
-                    const img = await getPreviewImage(slide.metadata.previewImg);
+                    const img = await getFileUrlFromStorage(STORAGE_BUCKETS.PREVIEW_IMAGES, slide.metadata.previewImg.storagePath?.path ?? '');
                     if (img) {
                         images[slide.id] = img;
                     } else {
@@ -265,8 +262,8 @@ export const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => 
                         >
                             <div className="relative bg-background">
                                 {previewImages[slide.id] ? (
-                                    <img
-                                        src={previewImages[slide.id]}
+                                    <Image
+                                        src={previewImages[slide.id] ?? ''}
                                         alt={slide.name}
                                         className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
                                     />

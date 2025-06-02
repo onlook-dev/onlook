@@ -4,15 +4,20 @@ export interface Project {
     metadata: {
         createdAt: string;
         updatedAt: string;
-        previewImg: {
-            fullPath: string;
-            id: string;
-            path: string;
-        } | null;
+        previewImg: PreviewImg | null;
         description: string | null;
     };
     sandbox: {
         id: string;
         url: string;
     };
+}
+
+export interface PreviewImg {
+    type: 'storage' | 'url';
+    storagePath?: {
+        bucket: string;
+        path: string;
+    };
+    url?: string;
 }

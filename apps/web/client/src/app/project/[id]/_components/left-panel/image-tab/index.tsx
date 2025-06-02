@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import imageData from './data.json';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
+import Image from 'next/image';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -335,7 +336,7 @@ export const ImagesTab = observer(() => {
                                 }
                             >
                                 <div className="w-full aspect-square flex flex-col justify-center rounded-lg overflow-hidden items-center cursor-move border-[0.5px] border-border">
-                                    <img
+                                    <Image
                                         className="w-full h-full object-cover"
                                         src={image.content}
                                         alt={image.fileName}

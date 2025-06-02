@@ -1,13 +1,18 @@
+import { getFileUrlFromStorage } from '@/utils/supabase/client';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { EditAppButton } from './edit-app';
 import { Settings } from './settings';
 
 export const ProjectInfo = observer(
     ({ project, direction }: { project: Project; direction: number }) => {
+        const [previewImg, setPreviewImg] = useState<string | null>(null);
         const t = useTranslations();
         const variants = {
             enter: (direction: number) => ({
@@ -24,13 +29,25 @@ export const ProjectInfo = observer(
             }),
         };
 
+        useEffect(() => {
+            loadPreviewImg();
+        }, [project.metadata.previewImg]);
+
+        const loadPreviewImg = async () => {
+            if (project.metadata.previewImg) {
+                const img = await getFileUrlFromStorage(STORAGE_BUCKETS.PREVIEW_IMAGES, project.metadata.previewImg.path);
+                setPreviewImg(img);
+                return img;
+            }
+        }
+
         return (
             project && (
                 <div className="flex flex-col gap-4 max-w-[480px] w-full">
                     <div className="flex items-center gap-3 mb-1">
                         {project.metadata.previewImg && (
-                            <img
-                                src={project.metadata.previewImg}
+                            <Image
+                                src={previewImg ?? ''}
                                 alt="Preview"
                                 className="w-8 h-8 rounded-lg bg-white object-cover border border-border"
                             />

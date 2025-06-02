@@ -1,6 +1,7 @@
 import { type ChatMessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons/index';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import React from 'react';
 import { getTruncatedName } from './helpers';
 
@@ -35,7 +36,7 @@ export const DraftImagePill = React.forwardRef<
         >
             {/* Left side: Image thumbnail */}
             <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
-                <img
+                <Image
                     src={context.content}
                     alt={context.displayName}
                     className="w-full h-full object-cover rounded-l-md"

@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -64,9 +65,11 @@ export const ProjectBreadcrumb = observer(() => {
                 metadata: {
                     ...project.metadata,
                     previewImg: {
-                        fullPath: data?.fullPath,
-                        id: data?.id,
-                        path: data?.path
+                        type: 'storage',
+                        storagePath: {
+                            bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
+                            path: data?.path,
+                        },
                     }
                 }
             });
