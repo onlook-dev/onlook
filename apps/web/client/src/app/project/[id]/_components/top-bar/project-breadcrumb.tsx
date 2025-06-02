@@ -34,6 +34,8 @@ export const ProjectBreadcrumb = observer(() => {
             // Capture screenshots of all frames
             const frames = editorEngine.frames.getAll();
             const screenshots = await captureFrameScreenshots(frames);
+
+            // TODO: Upload screenshots to S3 or firebase storage
             
             // Update project metadata with screenshots
             if (screenshots.length > 0 && project?.metadata) {
@@ -64,7 +66,7 @@ export const ProjectBreadcrumb = observer(() => {
                     }
 
                     const screenshot = await frameView.captureScreenshot();                    
-                    console.log(screenshot);
+
                     return {
                         frameId: frameData.frame.id,
                         screenshot
