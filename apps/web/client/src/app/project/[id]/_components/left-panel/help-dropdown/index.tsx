@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
 import { Links } from '@onlook/constants';
 import {
@@ -20,7 +21,8 @@ import { useState } from 'react';
 export const HelpDropdown = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
-
+    const projectManager = useProjectManager();
+    
     const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const t = useTranslations();
@@ -138,6 +140,10 @@ export const HelpDropdown = observer(() => {
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}>
+                    <Icons.ExclamationTriangle className="w-4 h-4 mr-2" />
+                    {t('help.menu.reportIssue')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => projectManager.publish()}>
                     <Icons.ExclamationTriangle className="w-4 h-4 mr-2" />
                     {t('help.menu.reportIssue')}
                 </DropdownMenuItem>

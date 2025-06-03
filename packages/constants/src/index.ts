@@ -7,3 +7,5 @@ export * from './freestyle';
 export * from './language';
 export * from './links';
 export * from './storage';
+export * from './frame';
+export * from './api';

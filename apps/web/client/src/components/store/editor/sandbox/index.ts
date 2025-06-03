@@ -15,7 +15,7 @@ import { SessionManager } from './session';
 import { CLISessionType, type TerminalSession } from './terminal';
 
 export class SandboxManager {
-    readonly session: SessionManager
+    readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
@@ -153,7 +153,11 @@ export class SandboxManager {
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
         const formattedContent = await formatContent(normalizedPath, content);
-        return this.fileSync.write(normalizedPath, formattedContent, this.writeRemoteFile.bind(this));
+        return this.fileSync.write(
+            normalizedPath,
+            formattedContent,
+            this.writeRemoteFile.bind(this),
+        );
     }
 
     listAllFiles() {
@@ -235,7 +239,7 @@ export class SandboxManager {
                 await this.handleFileChange(event);
             },
             excludePatterns,
-            fileEventBus: this.fileEventBus
+            fileEventBus: this.fileEventBus,
         });
 
         await this.fileWatcher.start();
@@ -264,7 +268,7 @@ export class SandboxManager {
             this.fileEventBus.publish({
                 type: eventType,
                 paths: [normalizedPath],
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
         }
     }
@@ -304,6 +308,161 @@ export class SandboxManager {
         return codeBlock;
     }
 
+    async fileExists(path: string): Promise<boolean> {
+        const normalizedPath = normalizePath(path);
+        console.log(this.session);
+        
+        if (!this.session.session) {
+            console.error('No session found for file existence check');
+            return false;
+        }
+
+        try {
+            const dirPath = getDirName(normalizedPath);
+            const fileName = getBaseName(normalizedPath);
+            const dirEntries = await this.session.session.fs.readdir(dirPath);
+            return dirEntries.some((entry: any) => entry.name === fileName);
+        } catch (error) {
+            console.error(`Error checking file existence ${normalizedPath}:`, error);
+            return false;
+        }
+    }
+
+    async copyDir(path: string, targetPath: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for copy dir');
+            return false;
+        }
+
+        try {
+            const normalizedSourcePath = normalizePath(path);
+            const normalizedTargetPath = normalizePath(targetPath);
+
+            // Check if source directory exists
+            const sourceExists = await this.fileExists(normalizedSourcePath);
+            if (!sourceExists) {
+                console.error(`Source directory ${normalizedSourcePath} does not exist`);
+                return false;
+            }
+
+            // Create target directory if it doesn't exist
+            try {
+                await this.session.session.fs.mkdir(normalizedTargetPath);
+            } catch (error) {
+                // Directory might already exist, continue
+            }
+
+            // Get all entries in source directory
+            const entries = await this.session.session.fs.readdir(normalizedSourcePath);
+
+            for (const entry of entries) {
+                const sourcePath = `${normalizedSourcePath}/${entry.name}`;
+                const targetEntryPath = `${normalizedTargetPath}/${entry.name}`;
+
+                if (entry.type === 'directory') {
+                    // Recursively copy subdirectory
+                    const success = await this.copyDir(sourcePath, targetEntryPath);
+                    if (!success) {
+                        console.error(`Failed to copy directory ${sourcePath}`);
+                        return false;
+                    }
+                } else if (entry.type === 'file') {
+                    // Copy file
+                    const success = await this.copyFile(sourcePath, targetEntryPath);
+                    if (!success) {
+                        console.error(`Failed to copy file ${sourcePath}`);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error(`Error copying directory ${path} to ${targetPath}:`, error);
+            return false;
+        }
+    }
+
+    async copyFile(path: string, targetPath: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for copy file');
+            return false;
+        }
+
+        try {
+            const normalizedSourcePath = normalizePath(path);
+            const normalizedTargetPath = normalizePath(targetPath);
+
+            // Check if source file exists
+            const sourceExists = await this.fileExists(normalizedSourcePath);
+            if (!sourceExists) {
+                console.error(`Source file ${normalizedSourcePath} does not exist`);
+                return false;
+            }
+
+            // Create target directory if it doesn't exist
+            const targetDir = getDirName(normalizedTargetPath);
+            try {
+                await this.session.session.fs.mkdir(targetDir);
+            } catch (error) {
+                // Directory might already exist, continue
+            }
+
+            // Determine if file is binary based on extension
+            const fileName = getBaseName(normalizedSourcePath);
+            const isBinary = this.isBinaryFile(fileName);
+
+            if (isBinary) {
+                // Handle binary file
+                const binaryContent = await this.readRemoteBinaryFile(normalizedSourcePath);
+                if (binaryContent === null) {
+                    console.error(`Failed to read binary file ${normalizedSourcePath}`);
+                    return false;
+                }
+
+                const success = await this.writeRemoteBinaryFile(normalizedTargetPath, binaryContent);
+                if (!success) {
+                    console.error(`Failed to write binary file ${normalizedTargetPath}`);
+                    return false;
+                }
+            } else {
+                // Handle text file
+                const textContent = await this.readRemoteFile(normalizedSourcePath);
+                if (textContent === null) {
+                    console.error(`Failed to read text file ${normalizedSourcePath}`);
+                    return false;
+                }
+
+                const success = await this.writeRemoteFile(normalizedTargetPath, textContent);
+                if (!success) {
+                    console.error(`Failed to write text file ${normalizedTargetPath}`);
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error(`Error copying file ${path} to ${targetPath}:`, error);
+            return false;
+        }
+    }
+
+    /**
+     * Check if a file is binary based on its extension
+     */
+    private isBinaryFile(filename: string): boolean {
+        const binaryExtensions = [
+            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.ico', '.webp',
+            '.pdf', '.zip', '.tar', '.gz', '.rar', '.7z',
+            '.mp3', '.mp4', '.wav', '.avi', '.mov', '.wmv',
+            '.exe', '.bin', '.dll', '.so', '.dylib',
+            '.woff', '.woff2', '.ttf', '.eot', '.otf'
+        ];
+
+        const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+        return binaryExtensions.includes(ext);
+    }
+
     clear() {
         this.fileWatcher?.dispose();
         this.fileWatcher = null;
@@ -311,3 +470,15 @@ export class SandboxManager {
         this.templateNodeMap.clear();
     }
 }
+
+// Helper functions for path manipulation
+const getDirName = (filePath: string): string => {
+    const parts = filePath.split('/');
+    if (parts.length <= 1) return '.';
+    return parts.slice(0, -1).join('/') || '.';
+};
+
+const getBaseName = (filePath: string): string => {
+    const parts = filePath.split('/');
+    return parts[parts.length - 1] || '';
+};
