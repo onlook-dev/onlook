@@ -57,6 +57,9 @@ export async function applyCodeChangeWithRelace(
         headers,
         body: JSON.stringify(data),
     });
+    if (!response.ok) {
+        throw new Error('Failed to apply code change');
+    }
     const result = await response.json();
     return result.mergedCode;
 }
