@@ -21,11 +21,3 @@ create policy "preview_images_insert_policy"
 on storage.objects for insert to public using (
     bucket_id = 'preview_images'
 );
-
--- Allow any users to update preview_images files
-drop policy if exists "preview_images_update_policy" on storage.objects;
-
-create policy "preview_images_update_policy"
-on storage.objects for update to  public using (
-    bucket_id = 'preview_images'
-);
