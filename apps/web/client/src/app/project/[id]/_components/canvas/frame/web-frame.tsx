@@ -175,7 +175,9 @@ export const WebFrameComponent = observer(
                 removeImage: promisifyMethod(penpalChild?.removeImage),
                 isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
                 handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
-                captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
+                captureScreenshot: promisifyMethod(async () => {
+                    return await editorEngine.frames.screenshot(frame.id);
+                }),
             };
 
             // Register the iframe with the editor engine

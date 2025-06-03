@@ -2,7 +2,9 @@ import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/w
 import { api } from '@/trpc/client';
 import { sendAnalytics } from '@/utils/analytics';
 import { fromFrame } from '@onlook/db';
+import { EditorAttributes } from '@onlook/constants';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
+import { compressImage } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { ProjectManager } from '../../project/manager';
@@ -161,11 +163,13 @@ export class FramesManager {
         frameData.view.reload();
     }
 
-    screenshot(id: string) {
+    async screenshot(id: string): Promise<{ mimeType: string; data: string }> {
         const frameData = this.validateFrameData(id, 'screenshot');
-        if (!frameData) return;
+        if (!frameData) {
+            throw new Error('Frame not found');
+        }
 
-        // frameData.view.screenshot();
+        return await this.captureAndCropScreenshot(frameData);
     }
 
     async delete(id: string) {
@@ -307,5 +311,118 @@ export class FramesManager {
                 height: Math.round(frame.dimension.height),
             },
         };
+    }
+
+    private async captureAndCropScreenshot(frameData: FrameData): Promise<{ mimeType: string; data: string }> {
+        try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                } as MediaTrackConstraints
+            });
+
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.muted = true;
+
+            return new Promise((resolve, reject) => {
+                video.onloadedmetadata = () => {
+                    video.play();
+                    video.oncanplay = async () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            if (!context) {
+                                throw new Error('Failed to get canvas context');
+                            }
+
+                            canvas.width = window.innerWidth;
+                            canvas.height = window.innerHeight;
+                            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                            stream.getTracks().forEach(track => track.stop());
+
+                            const croppedCanvas = await this.cropCanvasToFrame(canvas, frameData);
+                            
+                            const base64 = await this.compressCanvasImage(croppedCanvas);
+                            resolve({
+                                mimeType: 'image/jpeg',
+                                data: base64,
+                            });
+                        } catch (error) {
+                            stream.getTracks().forEach(track => track.stop());
+                            reject(error);
+                        }
+                    };
+                };
+                video.onerror = () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    reject(new Error('Video loading failed'));
+                };
+            });
+        } catch (error) {
+            console.error('Failed to capture page screenshot:', error);
+            throw error;
+        }
+    }
+
+    private async cropCanvasToFrame(sourceCanvas: HTMLCanvasElement, frameData: FrameData): Promise<HTMLCanvasElement> {
+        const frame = frameData.frame;
+        const scale = this.editorEngine.canvas.scale;
+        
+        const canvasElement = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID) as HTMLElement;
+        const canvasRect = canvasElement?.getBoundingClientRect() || { left: 0, top: 0 };
+        
+        const cropX = canvasRect.left + (frame.position.x * scale);
+        const cropY = canvasRect.top + (frame.position.y * scale);
+        const cropWidth = frame.dimension.width * scale;
+        const cropHeight = frame.dimension.height * scale;
+        
+        const actualCropX = Math.max(0, Math.min(cropX, sourceCanvas.width));
+        const actualCropY = Math.max(0, Math.min(cropY, sourceCanvas.height));
+        const actualCropWidth = Math.min(cropWidth, sourceCanvas.width - actualCropX);
+        const actualCropHeight = Math.min(cropHeight, sourceCanvas.height - actualCropY);
+        
+        const croppedCanvas = document.createElement('canvas');
+        const croppedContext = croppedCanvas.getContext('2d');
+        if (!croppedContext) {
+            throw new Error('Failed to get cropped canvas context');
+        }
+        
+        croppedCanvas.width = actualCropWidth;
+        croppedCanvas.height = actualCropHeight;
+        
+        croppedContext.drawImage(
+            sourceCanvas,
+            actualCropX, actualCropY, actualCropWidth, actualCropHeight,
+            0, 0, actualCropWidth, actualCropHeight
+        );
+        
+        return croppedCanvas;
+    }
+
+    private async compressCanvasImage(canvas: HTMLCanvasElement): Promise<string> {
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    reject(new Error('Failed to create blob from canvas'));
+                    return;
+                }
+                
+                try {
+                    const file = new File([blob], 'screenshot.jpeg', { type: 'image/jpeg' });
+                    const compressedBase64 = await compressImage(file);
+                    if (compressedBase64) {
+                        resolve(compressedBase64);
+                    } else {
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    }
+                } catch (error) {
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                }
+            }, 'image/jpeg', 0.9);
+        });
     }
 }
