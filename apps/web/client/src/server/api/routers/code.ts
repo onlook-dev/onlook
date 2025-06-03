@@ -1,5 +1,4 @@
-import { env } from '@/env';
-import { FastApplyClient } from '@onlook/ai';
+import { applyCodeChange } from '@onlook/ai';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -8,8 +7,7 @@ export const codeRouter = createTRPCRouter({
         .input(z.object({ originalCode: z.string(), updateSnippet: z.string() }))
         .mutation(async ({ ctx, input }): Promise<{ result: string | null, error: string | null }> => {
             try {
-                const applyDiffClient = new FastApplyClient(env.MORPH_API_KEY);
-                const result = await applyDiffClient.applyCodeChange(input.originalCode, input.updateSnippet);
+                const result = await applyCodeChange(input.originalCode, input.updateSnippet);
                 if (!result) {
                     throw new Error('Failed to apply code change. Please try again.');
                 }

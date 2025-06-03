@@ -12,7 +12,8 @@ export const env = createEnv({
         CSB_API_KEY: z.string(),
         SUPABASE_DATABASE_URL: z.string().url(),
         RESEND_API_KEY: z.string().optional(),
-        MORPH_API_KEY: z.string(),
+        MORPH_API_KEY: z.string().optional(),
+        RELACE_API_KEY: z.string().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -44,6 +45,7 @@ export const env = createEnv({
         NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
         NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
         MORPH_API_KEY: process.env.MORPH_API_KEY,
+        RELACE_API_KEY: process.env.RELACE_API_KEY,
         NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
     },
     /**

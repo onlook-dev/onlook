@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import path from 'node:path';
 import prompts from 'prompts';
 import { writeEnvFile } from './helpers';
 
@@ -25,9 +24,15 @@ const API_KEYS: Record<string, ApiKeyConfig> = {
     },
     MORPH_API_KEY: {
         name: 'MORPH_API_KEY',
-        message: 'Enter your MorphLLM API key:',
-        required: true,
+        message: 'Enter your MorphLLM API key (optional, leave blank if you are using Relace):',
+        required: false,
         description: 'MorphLLM',
+    },
+    RELACE_API_KEY: {
+        name: 'RELACE_API_KEY',
+        message: 'Enter your Relace API key (optional, leave blank if you are using MorphLLM):',
+        required: false,
+        description: 'Relace',
     },
 };
 
@@ -42,8 +47,8 @@ const generateEnvContent = (responses: Record<string, string>): string => {
         .map(([key, config]) => {
             const value = responses[key] || '';
             return config.description
-                ? `# ${config.description}\n${key} = ${value}\n`
-                : `${key} = ${value}\n`;
+                ? `# ${config.description}\n${key}=${value}\n`
+                : `${key}=${value}\n`;
         })
         .join('\n');
 };
