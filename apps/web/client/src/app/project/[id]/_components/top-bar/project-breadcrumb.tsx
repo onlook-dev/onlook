@@ -90,7 +90,7 @@ export const ProjectBreadcrumb = observer(() => {
             contentType: mimeType,
         });
         if (!data) {
-            console.error('No data returned from uploadFileToStorage');
+            console.error('No data returned from upload to storage');
             return;
         }
         return data;
