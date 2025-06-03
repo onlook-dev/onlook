@@ -12,7 +12,8 @@
         "db:push": "drizzle-kit push",
         "db:studio": "drizzle-kit studio",
         "db:migrate": "drizzle-kit migrate",
-        "db:seed": "bun src/seed/seed.ts"
+        "db:seed": "bun src/seed/seed.ts",
+        "db:drop": "drizzle-kit drop"
     },
     "dependencies": {
         "dotenv": "^16.5.0",
