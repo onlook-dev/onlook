@@ -35,50 +35,63 @@
 
 </div>
 
-
 # The Cursor for Designers – an Open-Source, Visual-First Code Editor
 
 Craft websites, prototypes, and designs with AI in Next.js + TailwindCSS. Make
-edits directly in the browser DOM with a visual editor. Design in realtime with code. An open-source alternative to Bolt.new, Lovable, V0, Replit Agent, Figma Make, Webflow, etc.
+edits directly in the browser DOM with a visual editor. Design in realtime with
+code. An open-source alternative to Bolt.new, Lovable, V0, Replit Agent, Figma
+Make, Webflow, etc.
 
 ### 🚧 🚧 🚧 Onlook for Web is still under development 🚧 🚧 🚧
-We're actively looking for contributors to help make Onlook for Web an incredible prompt-to-build experience. Check the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues), and join our [Discord](https://discord.gg/hERDfFZCsH) to collaborate with hundreds of other builders. 
+
+We're actively looking for contributors to help make Onlook for Web an
+incredible prompt-to-build experience. Check the
+[open issues](https://github.com/onlook-dev/onlook/issues) for a full list of
+proposed features (and known issues), and join our
+[Discord](https://discord.gg/hERDfFZCsH) to collaborate with hundreds of other
+builders.
 
 ## What you can do with Onlook:
 
 - [x] Create Next.js app in seconds
-    - [x] Start from text or image
-    - [ ] Use prebuilt templates
-    - [ ] Import from Figma
-    - [ ] Start from GitHub repo
+  - [x] Start from text or image
+  - [ ] Use prebuilt templates
+  - [ ] Import from Figma
+  - [ ] Start from GitHub repo
 - [x] Visually edit your app
-    - [x] Use Figma-like UI
-    - [x] Preview your app in real-time
-    - [x] Manage brand assets and tokens
-    - [x] Create and navigate to Pages
-    - [ ] Browse layers – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
-    - [ ] Detect and use Components – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
-    - [ ] Manage project Images – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
+  - [x] Use Figma-like UI
+  - [x] Preview your app in real-time
+  - [x] Manage brand assets and tokens
+  - [x] Create and navigate to Pages
+  - [ ] Browse layers – _Previously in
+        [Onlook Desktop](https://github.com/onlook-dev/desktop)_
+  - [ ] Detect and use Components – _Previously in
+        [Onlook Desktop](https://github.com/onlook-dev/desktop)_
+  - [ ] Manage project Images – _Previously in
+        [Onlook Desktop](https://github.com/onlook-dev/desktop)_
 - [x] Development Tools
-    - [x] Real-time code editor
-    - [x] Save and restore from checkpoints
-    - [x] Run commands via CLI
-    - [x] Connect with app marketplace
-    - [ ] Edit code locally – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
+  - [x] Real-time code editor
+  - [x] Save and restore from checkpoints
+  - [x] Run commands via CLI
+  - [x] Connect with app marketplace
+  - [ ] Edit code locally – _Previously in
+        [Onlook Desktop](https://github.com/onlook-dev/desktop)_
 - [ ] Deploy your app in seconds
-    - [ ] Generate sharable links
-    - [ ] Link your custom domain
+  - [ ] Generate sharable links
+  - [ ] Link your custom domain
 - [ ] Collaborate with your team
-    - [ ] Real-time editing
-    - [ ] Leave comments
+  - [ ] Real-time editing
+  - [ ] Leave comments
 
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 
 ### Onlook for Desktop (aka Onlook Alpha)
 
-We're in early preview for Onlook Web. If you're looking for the downloadable desktop electron app, it's moved to [Onlook Desktop](https://github.com/onlook-dev/desktop).
+We're in early preview for Onlook Web. If you're looking for the downloadable
+desktop electron app, it's moved to
+[Onlook Desktop](https://github.com/onlook-dev/desktop).
 
-Why are we moving to the web? Read about our decision: 
+Why are we moving to the web? Read about our decision:
 [Migrating from Electron to Web](https://docs.onlook.com/docs/developer/electron-to-web-migration)
 
 ## Getting Started
@@ -91,15 +104,16 @@ Available soon with a [hosted app](https://onlook.com) or
 Onlook will run on any Next.js + TailwindCSS project, import your project
 through into Onlook or start from scratch within the editor.
 
-Use the AI chat to create or edit a project you're working on. At any time, you can
-always right-click an element to open up the exact location of the element in
-code.
+Use the AI chat to create or edit a project you're working on. At any time, you
+can always right-click an element to open up the exact location of the element
+in code.
 
 <img width="600" alt="image" src="https://github.com/user-attachments/assets/4ad9f411-b172-4430-81ef-650f4f314666" />
 
 <br>
 
-Draw-in new divs and re-arrange them within their parent containers by dragging-and-dropping.
+Draw-in new divs and re-arrange them within their parent containers by
+dragging-and-dropping.
 
 <img width="600" alt="image" src="assets/insert-div.png">
 
@@ -111,17 +125,18 @@ Preview the code side-by-side with your site design.
 
 <br>
 
-Use Onlook's editor toolbar to adjust Tailwind styles, directly manipulate objects, and experiment with layouts.
+Use Onlook's editor toolbar to adjust Tailwind styles, directly manipulate
+objects, and experiment with layouts.
 
 <img width="600" alt="image" src="assets/text-styling.png" />
-
 
 ## Documentation
 
 For full documentation, visit [docs.onlook.com](https://docs.onlook.com)
 
 To see how to Contribute, visit
-[Contributing to Onlook](https://docs.onlook.com/docs/developer/contributing) in our docs.
+[Contributing to Onlook](https://docs.onlook.com/docs/developer/contributing) in
+our docs.
 
 ## How it works
 
@@ -136,20 +151,41 @@ To see how to Contribute, visit
 7. Our AI chat also has code access and tools to understand and edit the code
 
 This architecture can theoretically scale to any language or framework that
-displays DOM elements declaratively (e.g. jsx/tsx/html). We are focused on making it work well with Next.js and TailwindCSS for now.
+displays DOM elements declaratively (e.g. jsx/tsx/html). We are focused on
+making it work well with Next.js and TailwindCSS for now.
 
 For a full walkthrough, check out our
 [Architecture Docs](https://docs.onlook.com/docs/developer/architecture).
 
-### Built With
+### Our Tech Stack
 
-- [Next.js](https://nextjs.org/)
-- [Supabase](https://supabase.com/)
-- [Drizzle](https://orm.drizzle.team/)
-- [TailwindCSS](https://tailwindcss.com/)
-- [Bun](https://bun.sh/)
-- [tRPC](https://trpc.io/)
-- [Morph Fast Apply](https://morphllm.com)
+#### Front-end
+
+- [Next.js](https://nextjs.org/) - Full stack
+- [TailwindCSS](https://tailwindcss.com/) - Styling
+- [tRPC](https://trpc.io/) - Server interface
+
+#### Database
+
+- [Supabase](https://supabase.com/) - Auth, Database, Storage
+- [Drizzle](https://orm.drizzle.team/) - ORM
+
+#### AI
+
+- [AI SDK](https://ai-sdk.dev/) - LLM client
+- [Anthropic](https://ai-sdk.dev/) - LLM model provider
+- [Morph Fast Apply](https://morphllm.com) - Fast apply model provider
+- [Relace](https://relace.ai) - Fast apply model provider
+
+#### Sandbox and hosting
+
+- [CodeSandboxSDK](https://codesandbox.io/docs/sdk) - Dev sandbox
+- [Freestyle](https://www.freestyle.sh/) - Hosting
+
+#### Runtime
+
+- [Bun](https://bun.sh/) - Monorepo, runtime, bundler
+- [Docker](https://www.docker.com/) - Container management
 
 ## Contributing
 
