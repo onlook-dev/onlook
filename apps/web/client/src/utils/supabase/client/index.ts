@@ -16,3 +16,34 @@ export const getFileUrlFromStorage = (bucket: string, path: string) => {
 
     return data.publicUrl;
 };
+
+export const uploadFileToStorage = async (bucket: string, path: string, file: File) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(path, file);
+
+    if (error) {
+        console.error('Error uploading file:', error);
+        return null;
+    }
+
+    return data;
+};
+
+export const uploadBlobToStorage = async (bucket: string, path: string, file: Blob, options: {
+    upsert?: boolean;
+    contentType?: string;
+}) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(path, file, options);
+
+    if (error) {
+        console.error('Error uploading file:', error);
+        return null;
+    }
+
+    return data;
+};

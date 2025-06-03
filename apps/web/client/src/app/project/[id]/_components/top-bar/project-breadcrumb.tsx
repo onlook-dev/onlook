@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { Routes } from '@/utils/constants';
-import { createClient } from '@/utils/supabase/client';
+import { uploadBlobToStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
@@ -13,7 +13,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { getScreenshotPath } from '@onlook/utility';
+import { base64ToBlob, getScreenshotPath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
@@ -84,20 +84,16 @@ export const ProjectBreadcrumb = observer(() => {
             console.warn('No project id found');
             return;
         }
-        const supabase = await createClient();
-        const { data: uploadData, error } = await supabase.storage.from('preview_images').upload(
-            getScreenshotPath(project.id, mimeType),
-            screenshotData,
-            {
-                upsert: true,
-                contentType: mimeType,
-            }
-        );
-        if (error) {
-            console.error(error);
+        const file = base64ToBlob(screenshotData, mimeType);
+        const data = await uploadBlobToStorage(STORAGE_BUCKETS.PREVIEW_IMAGES, getScreenshotPath(project.id, mimeType), file, {
+            upsert: true,
+            contentType: mimeType,
+        });
+        if (!data) {
+            console.error('No data returned from uploadFileToStorage');
+            return;
         }
-        console.log(uploadData);
-        return uploadData;
+        return data;
     }
 
     return (
