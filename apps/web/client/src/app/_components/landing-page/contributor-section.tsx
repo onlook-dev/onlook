@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import { Icons } from '@onlook/ui/icons/index';
+import React, { useEffect, useState } from 'react';
 
 interface Contributor {
     login: string;
@@ -30,7 +30,7 @@ const FloatingRings = () => {
             try {
                 const response = await fetch('https://api.github.com/repos/onlook-dev/onlook/contributors?per_page=100');
                 const data = await response.json();
-                
+
                 const filteredContributors = data.filter((contributor: Contributor) => {
                     if (!contributor.avatar_url) return false;
                     if (contributor.login.includes('[bot]')) return false;
@@ -83,9 +83,9 @@ const FloatingRings = () => {
                             }}
                         >
                             {contributor && (
-                                <img 
-                                    src={contributor.avatar_url} 
-                                    alt={`${contributor.login}'s avatar`} 
+                                <img
+                                    src={contributor.avatar_url}
+                                    alt={`${contributor.login}'s avatar`}
                                     className="w-full h-full object-cover"
                                     loading="lazy"
                                 />
@@ -116,9 +116,9 @@ const FloatingRings = () => {
                             }}
                         >
                             {contributor && (
-                                <img 
-                                    src={contributor.avatar_url} 
-                                    alt={`${contributor.login}'s avatar`} 
+                                <img
+                                    src={contributor.avatar_url}
+                                    alt={`${contributor.login}'s avatar`}
                                     className="w-full h-full object-cover"
                                     loading="lazy"
                                 />
@@ -212,14 +212,14 @@ export function ContributorSection({
                 </h2>
                 <p className="text-foreground-secondary text-regular text-center mb-8 max-w-xl">Join our mission and be a part of changing<br />the way people craft software</p>
                 <div className="flex gap-4 flex-col md:flex-row w-full justify-center items-center">
-                    <button 
+                    <button
                         onClick={() => window.open(githubLink, '_blank')}
                         className="bg-foreground-primary text-background-primary text-regularPlus rounded-lg px-6 py-3 flex items-center gap-2 shadow hover:bg-foreground-primary/80 transition cursor-pointer"
                     >
                         Contribute to Onlook
                         <Icons.GitHubLogo className="w-4.5 h-4.5" />
                     </button>
-                    <button 
+                    <button
                         onClick={() => window.open(discordLink, '_blank')}
                         className="border border-foreground-primary/50 text-foreground-primary text-regularPlus rounded-lg px-6 py-3 flex items-center gap-2 hover:bg-foreground-primary/10 transition cursor-pointer"
                     >

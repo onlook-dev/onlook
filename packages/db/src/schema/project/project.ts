@@ -8,13 +8,21 @@ import { projectInvitations } from './invitation';
 
 export const projects = pgTable('projects', {
     id: uuid('id').primaryKey().defaultRandom(),
+
+    // metadata
     name: varchar('name').notNull(),
-    sandboxId: varchar('sandbox_id').notNull(),
-    sandboxUrl: varchar('sandbox_url').notNull(),
+    description: text('description'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-    previewImg: varchar('preview_img'),
-    description: text('description'),
+
+    // preview image
+    previewImgUrl: varchar('preview_img_url'),
+    previewImgPath: varchar('preview_img_path'),
+    previewImgBucket: varchar('preview_img_bucket'),
+
+    // sandbox
+    sandboxId: varchar('sandbox_id').notNull(),
+    sandboxUrl: varchar('sandbox_url').notNull(),
 }).enableRLS();
 
 export const projectInsertSchema = createInsertSchema(projects);

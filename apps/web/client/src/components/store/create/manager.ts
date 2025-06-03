@@ -55,7 +55,9 @@ export class CreateManager {
             sandboxUrl: previewUrl,
             createdAt: new Date(),
             updatedAt: new Date(),
-            previewImg: null,
+            previewImgUrl: null,
+            previewImgPath: null,
+            previewImgBucket: null,
             description: 'Your new project',
         } satisfies DbProject;
         return newProject;

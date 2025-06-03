@@ -31,8 +31,9 @@ const project0 = {
     name: 'Test Project',
     sandboxId: '3f5rf6',
     sandboxUrl: 'http://localhost:8084',
-    previewImg:
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    previewImgUrl: null,
+    previewImgPath: null,
+    previewImgBucket: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     description: 'Test Project Description',
@@ -43,11 +44,12 @@ const project1 = {
     name: 'Test Project 1',
     sandboxId: '3f5rf6',
     sandboxUrl: 'https://3f5rf6-8084.csb.app',
-    previewImg:
-        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    previewImgUrl: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     description: 'Test Project 1 Description',
+    previewImgPath: null,
+    previewImgBucket: null,
 } satisfies Project;
 
 const canvas0 = createDefaultCanvas(project0.id);

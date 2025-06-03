@@ -1,3 +1,5 @@
+import { api } from '@/trpc/client';
+import { fromProject } from '@onlook/db';
 import type { Project } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 
@@ -35,10 +37,21 @@ export class ProjectManager {
             return;
         }
         this.project = { ...this.project, ...newProject };
+        this.saveProjectToStorage();
     }
 
     updateProject(newProject: Project) {
         this.project = newProject;
+        this.saveProjectToStorage();
+    }
+
+    async saveProjectToStorage() {
+        if (!this.project) {
+            console.error('Project not found');
+            return;
+        }
+
+        return api.project.update.mutate(fromProject(this.project));
     }
 
     clear() {

@@ -1,5 +1,8 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { Routes } from '@/utils/constants';
+import { uploadBlobToStorage } from '@/utils/supabase/client';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -10,12 +13,14 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { base64ToBlob, getScreenshotPath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = observer(() => {
+    const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
     const project = projectManager.project;
     const t = useTranslations();
@@ -28,25 +33,68 @@ export const ProjectBreadcrumb = observer(() => {
     async function handleNavigateToProjects(route?: 'create' | 'import') {
         try {
             setIsClosingProject(true);
-            // await takeScreenshotWithTimeout();
-            // await projectsManager.runner?.stop();
 
-            // TODO: Close project
+            await captureProjectScreenshot();
         } catch (error) {
-            console.error('Failed to take screenshot:', error);
+            console.error('Failed to take screenshots:', error);
+        } finally {
+            setTimeout(() => {
+                setIsClosingProject(false);
+                redirect('/projects');
+            }, 100);
         }
-        setTimeout(() => {
-            setIsClosingProject(false);
-            redirect('/projects');
-        }, 100);
     }
 
-    const handleOpenProjectFolder = () => {
-        // const project = projectsManager.project;
-        // if (project && project.folderPath) {
-        //     invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
-        // }
-    };
+    async function captureProjectScreenshot() {
+        const frameView = editorEngine.frames.getAll().find(f => !!f.view)?.view;
+        if (!frameView) {
+            console.warn('No frames found');
+            return null;
+        }
+        const {
+            mimeType,
+            data: screenshotData
+        } = await frameView.captureScreenshot();
+        const data = await uploadScreenshot(mimeType, screenshotData);
+
+        if (!data) {
+            console.error('No data returned from uploadScreenshot');
+            return;
+        }
+
+        // Update project metadata
+        if (project?.metadata) {
+            projectManager.updatePartialProject({
+                metadata: {
+                    ...project.metadata,
+                    previewImg: {
+                        type: 'storage',
+                        storagePath: {
+                            bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
+                            path: data?.path,
+                        },
+                    }
+                }
+            });
+        }
+    }
+
+    async function uploadScreenshot(mimeType: string, screenshotData: string) {
+        if (!project?.id) {
+            console.warn('No project id found');
+            return;
+        }
+        const file = base64ToBlob(screenshotData, mimeType);
+        const data = await uploadBlobToStorage(STORAGE_BUCKETS.PREVIEW_IMAGES, getScreenshotPath(project.id, mimeType), file, {
+            upsert: true,
+            contentType: mimeType,
+        });
+        if (!data) {
+            console.error('No data returned from upload to storage');
+            return;
+        }
+        return data;
+    }
 
     return (
         <div className="mx-2 flex flex-row items-center text-small gap-2">

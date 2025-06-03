@@ -57,6 +57,20 @@
       "when": 1748618860222,
       "tag": "0007_realtime_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1748969281653,
+      "tag": "0008_preview-img-storage",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1748969954773,
+      "tag": "0009_project_img_path",
+      "breakpoints": true
     }
   ]
 }
