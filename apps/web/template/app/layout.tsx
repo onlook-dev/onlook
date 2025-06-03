@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const useLocalPreload = true;
 const preloadSrc = useLocalPreload
     ? `http://localhost:8083/?${Math.random()}`
-    : 'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js';
+    : 'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js';
 const isProd = process.env.NODE_ENV === 'production';
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     return (

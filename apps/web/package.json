@@ -13,7 +13,8 @@
         "docker:up": "docker compose up",
         "docker:build": "docker compose build",
         "docker:down": "docker compose down",
-        "docker:restart": "docker compose down && docker compose up"
+        "docker:restart": "docker compose down && docker compose up",
+        "csb:build": "bunx @codesandbox/sdk build ./template --ports 8084"
     },
     "devDependencies": {
         "@types/bun": "latest"
