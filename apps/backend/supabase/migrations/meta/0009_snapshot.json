@@ -1,6 +1,6 @@
 {
-  "id": "fffa1a99-2cd5-4838-8aec-de33d2e2f551",
-  "prevId": "8a207f07-c0d4-47ec-8a50-348f5f89de1d",
+  "id": "b234e1b4-c30a-471f-b431-233cb4947039",
+  "prevId": "190b8f91-9fa5-44da-a7db-e38b9154da04",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -27,15 +27,15 @@
         "canvas_project_id_projects_id_fk": {
           "name": "canvas_project_id_projects_id_fk",
           "tableFrom": "canvas",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -103,15 +103,15 @@
         "frames_canvas_id_canvas_id_fk": {
           "name": "frames_canvas_id_canvas_id_fk",
           "tableFrom": "frames",
-          "tableTo": "canvas",
           "columnsFrom": [
             "canvas_id"
           ],
+          "tableTo": "canvas",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -163,15 +163,15 @@
         "conversations_project_id_projects_id_fk": {
           "name": "conversations_project_id_projects_id_fk",
           "tableFrom": "conversations",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -250,15 +250,15 @@
         "messages_conversation_id_conversations_id_fk": {
           "name": "messages_conversation_id_conversations_id_fk",
           "tableFrom": "messages",
-          "tableTo": "conversations",
           "columnsFrom": [
             "conversation_id"
           ],
+          "tableTo": "conversations",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -334,46 +334,46 @@
         "project_invitations_project_id_projects_id_fk": {
           "name": "project_invitations_project_id_projects_id_fk",
           "tableFrom": "project_invitations",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "project_invitations_inviter_id_users_id_fk": {
           "name": "project_invitations_inviter_id_users_id_fk",
           "tableFrom": "project_invitations",
-          "tableTo": "users",
           "columnsFrom": [
             "inviter_id"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "project_invitations_token_unique": {
           "name": "project_invitations_token_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "token"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "project_invitations_invitee_email_project_id_unique": {
           "name": "project_invitations_invitee_email_project_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "invitee_email",
             "project_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -397,11 +397,17 @@
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
-          "type": "text",
+        "sandbox_id": {
+          "name": "sandbox_id",
+          "type": "varchar",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "sandbox_url": {
+          "name": "sandbox_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -417,35 +423,17 @@
           "notNull": true,
           "default": "now()"
         },
-        "preview_img_url": {
-          "name": "preview_img_url",
+        "preview_img": {
+          "name": "preview_img",
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
-        "preview_img_path": {
-          "name": "preview_img_path",
-          "type": "varchar",
+        "description": {
+          "name": "description",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "preview_img_bucket": {
-          "name": "preview_img_bucket",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sandbox_id": {
-          "name": "sandbox_id",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sandbox_url": {
-          "name": "sandbox_url",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},
@@ -543,25 +531,25 @@
         "user_settings_user_id_users_id_fk": {
           "name": "user_settings_user_id_users_id_fk",
           "tableFrom": "user_settings",
-          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "user_settings_user_id_unique": {
           "name": "user_settings_user_id_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "user_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -584,16 +572,16 @@
         "users_id_users_id_fk": {
           "name": "users_id_users_id_fk",
           "tableFrom": "users",
-          "tableTo": "users",
-          "schemaTo": "auth",
           "columnsFrom": [
             "id"
           ],
+          "tableTo": "users",
+          "schemaTo": "auth",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -642,28 +630,28 @@
         "user_canvases_user_id_users_id_fk": {
           "name": "user_canvases_user_id_users_id_fk",
           "tableFrom": "user_canvases",
-          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "user_canvases_canvas_id_canvas_id_fk": {
           "name": "user_canvases_canvas_id_canvas_id_fk",
           "tableFrom": "user_canvases",
-          "tableTo": "canvas",
           "columnsFrom": [
             "canvas_id"
           ],
+          "tableTo": "canvas",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -715,28 +703,28 @@
         "user_projects_user_id_users_id_fk": {
           "name": "user_projects_user_id_users_id_fk",
           "tableFrom": "user_projects",
-          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "users",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         },
         "user_projects_project_id_projects_id_fk": {
           "name": "user_projects_project_id_projects_id_fk",
           "tableFrom": "user_projects",
-          "tableTo": "projects",
           "columnsFrom": [
             "project_id"
           ],
+          "tableTo": "projects",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
+          "onUpdate": "cascade",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -781,10 +769,10 @@
     }
   },
   "schemas": {},
+  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
