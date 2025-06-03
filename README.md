@@ -55,9 +55,9 @@ We're actively looking for contributors to help make Onlook for Web an incredibl
     - [x] Use Figma-like UI
     - [x] Preview your app in real-time
     - [x] Manage brand assets and tokens
+    - [x] Create and navigate to Pages
     - [ ] Browse layers – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
     - [ ] Detect and use Components – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
-    - [ ] Create and navigate to Pages – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
     - [ ] Manage project Images – *Previously in [Onlook Desktop](https://github.com/onlook-dev/desktop)*
 - [x] Development Tools
     - [x] Real-time code editor
