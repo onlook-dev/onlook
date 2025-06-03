@@ -34,8 +34,8 @@ export async function applyCodeChangeWithMorph(
 }
 
 export async function applyCodeChangeWithRelace(
-    initialCode: string,
-    editSnippet: string,
+    originalCode: string,
+    updateSnippet: string,
 ): Promise<string | null> {
     const apiKey = process.env.RELACE_API_KEY;
     if (!apiKey) {
@@ -48,8 +48,8 @@ export async function applyCodeChangeWithRelace(
     };
 
     const data = {
-        initialCode,
-        editSnippet,
+        initialCode: originalCode,
+        editSnippet: updateSnippet,
     };
 
     const response = await fetch(url, {
