@@ -6,10 +6,26 @@ insert into storage.buckets
 values
   ('preview_images', 'preview_images', true);
 
--- Allow any users to upsert into preview_images bucket
-drop policy if exists "preview_images_upsert_policy" on storage.objects;
+-- Allow any users to select from preview_images files
+drop policy if exists "preview_images_select_policy" on storage.objects;
 
-create policy "preview_images_upsert_policy"
-on storage.objects for all to public using (
+create policy "preview_images_select_policy"
+on storage.objects for select to public using (
+    bucket_id = 'preview_images'
+);
+
+-- Allow any users to insert into preview_images files
+drop policy if exists "preview_images_insert_policy" on storage.objects;
+
+create policy "preview_images_insert_policy"
+on storage.objects for insert to public using (
+    bucket_id = 'preview_images'
+);
+
+-- Allow any users to update preview_images files
+drop policy if exists "preview_images_update_policy" on storage.objects;
+
+create policy "preview_images_update_policy"
+on storage.objects for update to  public using (
     bucket_id = 'preview_images'
 );
