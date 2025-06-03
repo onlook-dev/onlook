@@ -8,16 +8,11 @@ export function createClient() {
     );
 }
 
-export const getFileUrlFromStorage = async (bucket: string, path: string) => {
-    const supabase = await createClient();
-    const { data, error } = await supabase.storage
+export const getFileUrlFromStorage = (bucket: string, path: string) => {
+    const supabase = createClient();
+    const { data } = supabase.storage
         .from(bucket)
-        .download(path);
+        .getPublicUrl(path);
 
-    if (error) {
-        console.error('Error downloading file:', error);
-        return null;
-    }
-
-    return URL.createObjectURL(data);
+    return data.publicUrl;
 };

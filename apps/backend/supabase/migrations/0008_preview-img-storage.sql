@@ -3,8 +3,9 @@ insert into storage.buckets
 values
   ('preview_images', 'preview_images', true);
 
-drop policy if exists "Allow authenticated upsert" on storage.objects;
-create policy "Allow authenticated upsert"
-on storage.objects for insert, update, select, delete to authenticated with check (
+drop policy if exists "preview_images_upsert_policy" on storage.objects;
+
+create policy "preview_images_upsert_policy"
+on storage.objects for all to authenticated using (
     bucket_id = 'preview_images'
 );

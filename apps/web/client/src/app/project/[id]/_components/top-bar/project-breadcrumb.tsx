@@ -89,7 +89,8 @@ export const ProjectBreadcrumb = observer(() => {
             getScreenshotPath(project.id, mimeType),
             screenshotData,
             {
-                upsert: false,
+                upsert: true,
+                contentType: mimeType,
             }
         );
         if (error) {

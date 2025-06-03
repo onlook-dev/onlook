@@ -5,7 +5,6 @@ import { Icons } from '@onlook/ui/icons';
 import type { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, type Variants } from 'motion/react';
-import Image from 'next/image';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EditAppButton } from './edit-app';
@@ -262,7 +261,7 @@ export const Carousel: React.FC<CarouselProps> = ({ slides, onSlideChange }) => 
                         >
                             <div className="relative bg-background">
                                 {previewImages[slide.id] ? (
-                                    <Image
+                                    <img
                                         src={previewImages[slide.id] ?? ''}
                                         alt={slide.name}
                                         className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
