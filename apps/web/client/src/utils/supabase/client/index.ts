@@ -20,6 +20,7 @@ export const getFileUrlFromStorage = (bucket: string, path: string) => {
 export const uploadBlobToStorage = async (bucket: string, path: string, file: Blob, options: {
     upsert?: boolean;
     contentType?: string;
+    cacheControl?: string;
 }) => {
     const supabase = createClient();
     const { data, error } = await supabase.storage

@@ -86,7 +86,6 @@ export const ProjectBreadcrumb = observer(() => {
         }
         const file = base64ToBlob(screenshotData, mimeType);
         const data = await uploadBlobToStorage(STORAGE_BUCKETS.PREVIEW_IMAGES, getScreenshotPath(project.id, mimeType), file, {
-            upsert: true,
             contentType: mimeType,
         });
         if (!data) {
