@@ -36,6 +36,8 @@ export const ProjectInfo = observer(
                 const img = await getFileUrlFromStorage(project.metadata.previewImg.storagePath.bucket, project.metadata.previewImg.storagePath?.path ?? '');
                 setPreviewImg(img);
                 return img;
+            } else {
+                setPreviewImg(null);
             }
         }
 
