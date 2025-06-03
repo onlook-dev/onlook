@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { FastApplyClient } from '../src/apply';
+import { applyCodeChange } from '../src/apply';
 
 describe('applyCodeChange', () => {
     it('should apply code change', async () => {
-        const client = new FastApplyClient(process.env.MORPH_API_KEY || '');
         const originalCode = `interface User {
   id: string;
   name: string;
@@ -41,7 +40,7 @@ async function fetchUserData(userId: string): Promise<User> {
   return response.json();
 }`;
 
-        const result = await client.applyCodeChange(originalCode, updateSnippet);
+        const result = await applyCodeChange(originalCode, updateSnippet);
         expect(result).toBe(expectedResult);
     });
 });
