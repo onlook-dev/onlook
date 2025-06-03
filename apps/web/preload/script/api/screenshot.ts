@@ -1,4 +1,7 @@
-export async function captureScreenshot() {
+export async function captureScreenshot(): Promise<{
+    mimeType: string;
+    data: string;
+}> {
     try {
         // Use viewport dimensions to reduce size
         const viewportWidth = window.innerWidth;
@@ -44,7 +47,10 @@ export async function captureScreenshot() {
                 // Convert canvas to base64 string with compression
                 const base64 = await compressImage(canvas);
                 console.log(`Screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`);
-                return base64;
+                return {
+                    mimeType: 'image/jpeg',
+                    data: base64,
+                };
             } catch (displayError) {
                 console.log('getDisplayMedia failed, falling back to DOM rendering:', displayError);
             }
@@ -56,7 +62,10 @@ export async function captureScreenshot() {
         // Convert canvas to base64 string with compression
         const base64 = await compressImage(canvas);
         console.log(`DOM screenshot captured - Size: ~${Math.round((base64.length * 0.75) / 1024)} KB`);
-        return base64;
+        return {
+            mimeType: 'image/jpeg',
+            data: base64,
+        };
     } catch (error) {
         console.error('Failed to capture screenshot:', error);
 
@@ -77,7 +86,10 @@ export async function captureScreenshot() {
             context.textAlign = 'center';
             context.fillText('Screenshot unavailable', 200, 150);
 
-            return canvas.toDataURL('image/jpeg', 0.8);
+            return {
+                mimeType: 'image/jpeg',
+                data: canvas.toDataURL('image/jpeg', 0.8),
+            };
         }
 
         throw error;

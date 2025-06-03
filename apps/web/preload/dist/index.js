@@ -13090,7 +13090,10 @@ async function captureScreenshot() {
         });
         const base642 = await compressImage(canvas);
         console.log(`Screenshot captured - Size: ~${Math.round(base642.length * 0.75 / 1024)} KB`);
-        return base642;
+        return {
+          mimeType: "image/jpeg",
+          data: base642
+        };
       } catch (displayError) {
         console.log("getDisplayMedia failed, falling back to DOM rendering:", displayError);
       }
@@ -13098,7 +13101,10 @@ async function captureScreenshot() {
     await renderDomToCanvas(context, viewportWidth, viewportHeight);
     const base64 = await compressImage(canvas);
     console.log(`DOM screenshot captured - Size: ~${Math.round(base64.length * 0.75 / 1024)} KB`);
-    return base64;
+    return {
+      mimeType: "image/jpeg",
+      data: base64
+    };
   } catch (error) {
     console.error("Failed to capture screenshot:", error);
     const canvas = document.createElement("canvas");
@@ -13112,7 +13118,10 @@ async function captureScreenshot() {
       context.font = "14px Arial, sans-serif";
       context.textAlign = "center";
       context.fillText("Screenshot unavailable", 200, 150);
-      return canvas.toDataURL("image/jpeg", 0.8);
+      return {
+        mimeType: "image/jpeg",
+        data: canvas.toDataURL("image/jpeg", 0.8)
+      };
     }
     throw error;
   }
@@ -17388,5 +17397,5 @@ export {
   penpalParent
 };
 
-//# debugId=B9935E6D07D4A59B64756E2164756E21
+//# debugId=350C2359206B9A8964756E2164756E21
 //# sourceMappingURL=index.js.map

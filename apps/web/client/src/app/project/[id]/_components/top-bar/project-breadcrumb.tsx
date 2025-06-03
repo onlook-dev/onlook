@@ -51,8 +51,11 @@ export const ProjectBreadcrumb = observer(() => {
             console.warn('No frames found');
             return null;
         }
-        const screenshot = await frameView.captureScreenshot();
-        const data = await uploadScreenshot(screenshot);
+        const {
+            mimeType,
+            data: screenshotData
+        } = await frameView.captureScreenshot();
+        const data = await uploadScreenshot(mimeType, screenshotData);
 
         if (!data) {
             console.error('No data returned from uploadScreenshot');
@@ -76,20 +79,24 @@ export const ProjectBreadcrumb = observer(() => {
         }
     }
 
-    async function uploadScreenshot(screenshot: string) {
+    async function uploadScreenshot(mimeType: string, screenshotData: string) {
         if (!project?.id) {
             console.warn('No project id found');
             return;
         }
         const supabase = await createClient();
-        const { data, error } = await supabase.storage.from('preview_images').upload(getScreenshotPath(project.id), screenshot, {
-            upsert: true
-        });
+        const { data: uploadData, error } = await supabase.storage.from('preview_images').upload(
+            getScreenshotPath(project.id, mimeType),
+            screenshotData,
+            {
+                upsert: false,
+            }
+        );
         if (error) {
             console.error(error);
         }
-        console.log(data);
-        return data;
+        console.log(uploadData);
+        return uploadData;
     }
 
     return (
