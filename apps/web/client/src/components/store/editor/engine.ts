@@ -23,6 +23,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
+import { DevManager } from './dev';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -48,6 +49,7 @@ export class EditorEngine {
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
     readonly code: CodeManager = new CodeManager(this);
+    readonly dev: DevManager = new DevManager(this);
 
     constructor(
         private projectManager: ProjectManager,
@@ -83,6 +85,7 @@ export class EditorEngine {
         this.pages.clear();
         this.chat.clear();
         this.code.clear();
+        this.dev.clear();
         this.error.clear();
         this.sandbox.clear();
     }
