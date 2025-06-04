@@ -2,6 +2,7 @@
     "extends": "@onlook/typescript/next-react.json",
     "compilerOptions": {
         "baseUrl": ".",
+        "allowArbitraryExtensions": true,
         "paths": {
             "@/*": [
                 "./src/*"

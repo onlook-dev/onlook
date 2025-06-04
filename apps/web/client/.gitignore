@@ -44,3 +44,6 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# next-intl generated type files
+messages/*.d.json.ts
