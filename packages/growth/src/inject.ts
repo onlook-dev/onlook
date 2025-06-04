@@ -1,16 +1,7 @@
 import { types as t } from '@onlook/parser';
 import { generate, parse, traverse } from '@onlook/parser';
+import { type FileOperations } from '@onlook/utility';
 import { builtWithScript } from './script';
-
-/**
- * File operation interface for abstracted file operations
- */
-export interface FileOperations {
-    readFile: (filePath: string) => Promise<string | null>;
-    writeFile: (filePath: string, content: string) => Promise<boolean>;
-    fileExists: (filePath: string) => Promise<boolean>;
-    mkdir?: (dirPath: string) => Promise<boolean>;
-}
 
 /**
  * Injects the Built with Onlook script into a Next.js layout file

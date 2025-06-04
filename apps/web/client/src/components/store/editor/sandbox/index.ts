@@ -448,6 +448,43 @@ export class SandboxManager {
         }
     }
 
+    async deleteFile(path: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for delete file');
+            return false;
+        }
+
+        try {
+            const normalizedPath = normalizePath(path);
+            
+            // Check if file exists before attempting to delete
+            const exists = await this.fileExists(normalizedPath);
+            if (!exists) {
+                console.error(`File ${normalizedPath} does not exist`);
+                return false;
+            }
+
+            // Delete the file using the filesystem API
+            await this.session.session.fs.remove(normalizedPath);
+            
+            // Clean up the file sync cache
+            await this.fileSync.delete(normalizedPath);
+            
+            // Publish file deletion event
+            this.fileEventBus.publish({
+                type: 'remove',
+                paths: [normalizedPath],
+                timestamp: Date.now(),
+            });
+
+            console.log(`Successfully deleted file: ${normalizedPath}`);
+            return true;
+        } catch (error) {
+            console.error(`Error deleting file ${path}:`, error);
+            return false;
+        }
+    }
+
     clear() {
         this.fileWatcher?.dispose();
         this.fileWatcher = null;

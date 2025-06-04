@@ -6,7 +6,7 @@ import {
     type PublishResponse,
     type PublishState,
 } from '@onlook/models';
-import { isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, verifyDomainOwnership } from '@onlook/utility';
+import { isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, verifyDomainOwnership, type FileOperations } from '@onlook/utility';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, HOSTING_DOMAIN } from '@onlook/constants';
 import {
     FreestyleSandboxes,
@@ -41,13 +41,14 @@ export class HostingManager {
         this.state = { ...this.state, ...partialState };
     }
 
-    private get fileOps() {
+    private get fileOps(): FileOperations {
         return {
             readFile: (path: string) => this.editorEngine.sandbox.readFile(path),
             writeFile: (path: string, content: string) => this.editorEngine.sandbox.writeFile(path, content),
             fileExists: (path: string) => this.editorEngine.sandbox.fileExists(path),
             copyDir: (source: string, destination: string) => this.editorEngine.sandbox.copyDir(source, destination),
             copyFile: (source: string, destination: string) => this.editorEngine.sandbox.copyFile(source, destination),
+            deleteFile: async (path: string) => this.editorEngine.sandbox.deleteFile(path),
         };
     }
 
@@ -209,13 +210,13 @@ export class HostingManager {
     }
 
     async addBadge(folderPath: string) {
-        await injectBuiltWithScript(folderPath);
-        await addBuiltWithScript(folderPath);
+        await injectBuiltWithScript(folderPath, this.fileOps);
+        await addBuiltWithScript(folderPath, this.fileOps);
     }
 
     async removeBadge(folderPath: string) {
-        await removeBuiltWithScriptFromLayout(folderPath);
-        await removeBuiltWithScript(folderPath);
+        await removeBuiltWithScriptFromLayout(folderPath, this.fileOps);
+        await removeBuiltWithScript(folderPath, this.fileOps);
     }
 
 
@@ -330,20 +331,34 @@ export class HostingManager {
             };
         }
 
-        this.fileOps.copyDir(`/public`, `/${CUSTOM_OUTPUT_DIR}/standalone/public`);
-        this.fileOps.copyDir(
-            `/${CUSTOM_OUTPUT_DIR}/static`,
-            `/${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
-        );
+        // Check if copyDir method is available before using it
+        if (this.fileOps.copyDir) {
+            this.fileOps.copyDir(`/public`, `/${CUSTOM_OUTPUT_DIR}/standalone/public`);
+            this.fileOps.copyDir(
+                `/${CUSTOM_OUTPUT_DIR}/static`,
+                `/${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
+            );
+        } else {
+            console.warn('copyDir method not available in file operations');
+        }
 
         for (const lockFile of SUPPORTED_LOCK_FILES) { 
             const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
             if (lockFileExists) {
-                this.fileOps.copyFile(
-                    `./${lockFile}`,
-                    `/${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
-                );
-                return { success: true };
+                // Check if copyFile method is available before using it
+                if (this.fileOps.copyFile) {
+                    this.fileOps.copyFile(
+                        `./${lockFile}`,
+                        `/${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
+                    );
+                    return { success: true };
+                } else {
+                    console.warn('copyFile method not available in file operations');
+                    return {
+                        success: false,
+                        error: 'Copy operations not supported by file operations interface',
+                    };
+                }
             }
         }
 

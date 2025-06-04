@@ -20,6 +20,7 @@ import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
+import { type FileOperations } from '@onlook/utility';
 
 import {
     checkVariableDeclarationExist,
@@ -30,15 +31,6 @@ import {
 
 import { CONFIG_BASE_NAME, ONLOOK_PLUGIN } from '../constants';
 import { CUSTOM_OUTPUT_DIR } from '@onlook/constants';
-
-// File operation types
-type FileOperations = {
-    readFile: (filePath: string) => Promise<string | null>;
-    writeFile: (filePath: string, content: string) => Promise<boolean>;
-    fileExists: (filePath: string) => Promise<boolean>;
-    copyDir: (source: string, destination: string) => Promise<boolean>;
-    copyFile: (source: string, destination: string) => Promise<boolean>;
-};
 
 export const modifyNextConfig = async (
     configFileExtension: string,

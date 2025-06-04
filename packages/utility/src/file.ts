@@ -48,6 +48,9 @@ export interface FileOperations {
     readFile: (filePath: string) => Promise<string | null>;
     writeFile: (filePath: string, content: string) => Promise<boolean>;
     fileExists: (filePath: string) => Promise<boolean>;
+    deleteFile: (filePath: string) => Promise<boolean>;
+    copyDir: (source: string, destination: string) => Promise<boolean>;
+    copyFile: (source: string, destination: string) => Promise<boolean>;
 }
 
 /**

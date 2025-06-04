@@ -1,22 +1,31 @@
 import { generate, parse, traverse, type t as T, types as t } from '@onlook/parser';
-import * as fs from 'fs';
-import * as path from 'path';
+import { type FileOperations } from '@onlook/utility';
 
 /**
  * Removes the Built with Onlook script from a Next.js layout file
  * @param projectPath Path to the project root
+ * @param fileOps File operations interface
  */
-export async function removeBuiltWithScriptFromLayout(projectPath: string): Promise<boolean> {
+export async function removeBuiltWithScriptFromLayout(
+    projectPath: string,
+    fileOps: FileOperations,
+): Promise<boolean> {
     try {
         // Find the layout file
-        const layoutPath = path.join(projectPath, 'app', 'layout.tsx');
-        if (!fs.existsSync(layoutPath)) {
+        const layoutPath = `${projectPath}/app/layout.tsx`;
+        const layoutExists = await fileOps.fileExists(layoutPath);
+
+        if (!layoutExists) {
             console.error('Layout file not found at', layoutPath);
             return false;
         }
 
         // Read the layout file
-        const layoutContent = fs.readFileSync(layoutPath, 'utf8');
+        const layoutContent = await fileOps.readFile(layoutPath);
+        if (!layoutContent) {
+            console.error('Failed to read layout file');
+            return false;
+        }
 
         // Parse the layout file
         const ast = parse(layoutContent, {
@@ -113,9 +122,14 @@ export async function removeBuiltWithScriptFromLayout(projectPath: string): Prom
             const output = generate(ast, {}, layoutContent);
 
             // Write the modified code back to the file
-            fs.writeFileSync(layoutPath, output.code, 'utf8');
-            console.log('Successfully removed Script from layout.tsx');
-            return true;
+            const writeSuccess = await fileOps.writeFile(layoutPath, output.code);
+            if (writeSuccess) {
+                console.log('Successfully removed Script from layout.tsx');
+                return true;
+            } else {
+                console.error('Failed to write modified layout.tsx');
+                return false;
+            }
         } else {
             console.log('No Script for builtwith.js found in layout.tsx');
             return false;
@@ -129,18 +143,28 @@ export async function removeBuiltWithScriptFromLayout(projectPath: string): Prom
 /**
  * Removes the builtwith.js script from the project's public folder
  * @param projectPath Path to the project root
+ * @param fileOps File operations interface
  */
-export async function removeBuiltWithScript(projectPath: string): Promise<boolean> {
+export async function removeBuiltWithScript(
+    projectPath: string,
+    fileOps: FileOperations,
+): Promise<boolean> {
     try {
         // Path to the builtwith.js script in the project's public folder
-        const scriptPath = path.join(projectPath, 'public', 'builtwith.js');
+        const scriptPath = `${projectPath}/public/builtwith.js`;
 
         // Check if the file exists
-        if (fs.existsSync(scriptPath)) {
-            // Remove the file
-            fs.unlinkSync(scriptPath);
-            console.log('Successfully removed builtwith.js from public folder');
-            return true;
+        const fileExists = await fileOps.fileExists(scriptPath);
+
+        if (fileExists) {
+            const deleteSuccess = await fileOps.deleteFile(scriptPath);
+            if (deleteSuccess) {
+                console.log('Successfully removed builtwith.js from public folder');
+                return true;
+            } else {
+                console.error('Failed to delete builtwith.js from public folder');
+                return false;
+            }
         } else {
             console.log('builtwith.js not found in public folder');
             return false;
