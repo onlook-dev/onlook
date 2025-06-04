@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useState } from 'react';
 
 interface DropdownManagerContextType {
     openDropdownId: string | null;
@@ -88,10 +88,10 @@ export const useDropdownManager = () => {
 interface UseDropdownControlProps {
     id: string;
     onOpenChange?: (open: boolean) => void;
-    isOverFlow?: boolean;
+    isOverflow?: boolean;
 }
 
-export const useDropdownControl = ({ id, onOpenChange, isOverFlow = false }: UseDropdownControlProps) => {
+export const useDropdownControl = ({ id, onOpenChange, isOverflow = false }: UseDropdownControlProps) => {
     const { openDropdownId, registerDropdown, unregisterDropdown, openDropdown, closeDropdown } = useDropdownManager();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -107,10 +107,10 @@ export const useDropdownControl = ({ id, onOpenChange, isOverFlow = false }: Use
     }, [id, openDropdown, closeDropdown, onOpenChange]);
 
     const handleClose = useCallback(() => {
-        if (isOverFlow) return;
+        if (isOverflow) return;
         setIsOpen(false);
         onOpenChange?.(false);
-    }, [onOpenChange]);
+    }, [onOpenChange, isOverflow]);
 
     // Register/unregister the dropdown
     React.useEffect(() => {
@@ -121,7 +121,7 @@ export const useDropdownControl = ({ id, onOpenChange, isOverFlow = false }: Use
     // Sync with global state
     React.useEffect(() => {
         const shouldBeOpen = openDropdownId === id;
-        if (!isOverFlow && isOpen !== shouldBeOpen) {
+        if (!isOverflow && isOpen !== shouldBeOpen) {
             setIsOpen(shouldBeOpen);
             onOpenChange?.(shouldBeOpen);
         }
