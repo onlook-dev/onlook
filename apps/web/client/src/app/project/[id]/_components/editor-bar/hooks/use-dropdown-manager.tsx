@@ -88,9 +88,10 @@ export const useDropdownManager = () => {
 interface UseDropdownControlProps {
     id: string;
     onOpenChange?: (open: boolean) => void;
+    isOverFlow?: boolean;
 }
 
-export const useDropdownControl = ({ id, onOpenChange }: UseDropdownControlProps) => {
+export const useDropdownControl = ({ id, onOpenChange, isOverFlow = false }: UseDropdownControlProps) => {
     const { openDropdownId, registerDropdown, unregisterDropdown, openDropdown, closeDropdown } = useDropdownManager();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -106,6 +107,7 @@ export const useDropdownControl = ({ id, onOpenChange }: UseDropdownControlProps
     }, [id, openDropdown, closeDropdown, onOpenChange]);
 
     const handleClose = useCallback(() => {
+        if (isOverFlow) return;
         setIsOpen(false);
         onOpenChange?.(false);
     }, [onOpenChange]);
@@ -119,7 +121,7 @@ export const useDropdownControl = ({ id, onOpenChange }: UseDropdownControlProps
     // Sync with global state
     React.useEffect(() => {
         const shouldBeOpen = openDropdownId === id;
-        if (isOpen !== shouldBeOpen) {
+        if (!isOverFlow && isOpen !== shouldBeOpen) {
             setIsOpen(shouldBeOpen);
             onOpenChange?.(shouldBeOpen);
         }
