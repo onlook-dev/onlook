@@ -1,18 +1,27 @@
 import { DEVICE_OPTIONS, Orientation, Theme } from '@onlook/constants';
 import type { WindowMetadata } from '@onlook/models';
 
-export const computeWindowMetadata = (width: string, height: string): WindowMetadata => {
+export const computeWindowMetadata = (
+    width: string,
+    height: string,
+): WindowMetadata => {
+    const numericWidth = Number(width);
+    const numericHeight = Number(height);
+
     return {
-        orientation: width > height ? Orientation.Landscape : Orientation.Portrait,
+        orientation:
+            numericWidth > numericHeight
+                ? Orientation.Landscape
+                : Orientation.Portrait,
         aspectRatioLocked: true,
-        device: computeDevice(width, height),
+        device: computeDevice(numericWidth, numericHeight),
         theme: Theme.System,
-        width: Number(width),
-        height: Number(height),
+        width: numericWidth,
+        height: numericHeight,
     };
 };
 
-const computeDevice = (width: string, height: string): string => {
+const computeDevice = (width: number, height: number): string => {
     let matchedDevice = 'Custom';
 
     for (const category in DEVICE_OPTIONS) {
@@ -22,7 +31,7 @@ const computeDevice = (width: string, height: string): string => {
             const resolution = devices[deviceName];
             if (typeof resolution === 'string') {
                 const [w, h] = resolution.split('x').map(Number);
-                if (w === Number(width) && h === Number(height)) {
+                if (w === width && h === height) {
                     matchedDevice = deviceName;
                     break;
                 }
