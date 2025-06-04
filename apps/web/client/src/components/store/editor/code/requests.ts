@@ -31,7 +31,7 @@ export async function processGroupedRequests(groupedRequests: FileToRequests): P
         const ast = getAstFromContent(content);
 
         if (!ast) {
-            continue;
+            throw new Error('No ast found for file');
         }
 
         const original = await getContentFromAst(ast);
@@ -47,8 +47,7 @@ export async function getStyleRequests({ targets }: UpdateStyleAction): Promise<
 
     for (const target of targets) {
         if (!target.oid) {
-            console.error('No oid found for style change');
-            continue;
+            throw new Error('No oid found for style change');
         }
 
         const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
@@ -68,8 +67,7 @@ export async function getInsertRequests({
     const insertedEl = getInsertedElement(element, location, pasteParams, codeBlock);
 
     if (!insertedEl.location.targetOid) {
-        console.error('No oid found for inserted element');
-        return [];
+        throw new Error('No oid found for inserted element');
     }
 
     const request = await getOrCreateCodeDiffRequest(
@@ -104,8 +102,7 @@ export async function getEditTextRequests({
 
     for (const target of targets) {
         if (!target.oid) {
-            console.error('No oid found for text edit');
-            continue;
+            throw new Error('No oid found for text edit');
         }
         const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
         request.textContent = newContent;
@@ -122,13 +119,11 @@ export async function getMoveRequests({
 
     for (const target of targets) {
         if (!target.oid) {
-            console.error('No oid found for move');
-            continue;
+            throw new Error('No oid found for move');
         }
 
         if (!location.targetOid) {
-            console.error('No target oid found for moved element');
-            continue;
+            throw new Error('No target oid found for moved element');
         }
 
         const movedEl: CodeMove = {
@@ -146,8 +141,7 @@ export async function getMoveRequests({
 
 export async function getGroupRequests(action: GroupElementsAction): Promise<CodeDiffRequest[]> {
     if (!action.parent.oid) {
-        console.error('No parent oid found for group');
-        return [];
+        throw new Error('No parent oid found for group');
     }
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
     const groupEl: CodeGroup = {
@@ -167,8 +161,7 @@ export async function getUngroupRequests(
     action: UngroupElementsAction,
 ): Promise<CodeDiffRequest[]> {
     if (!action.parent.oid) {
-        console.error('No parent oid found for ungroup');
-        return [];
+        throw new Error('No parent oid found for ungroup');
     }
     const oidToCodeChange = new Map<string, CodeDiffRequest>();
     const ungroupEl: CodeUngroup = {
@@ -185,15 +178,13 @@ export async function getUngroupRequests(
 }
 
 export async function getWriteCodeRequests(action: WriteCodeAction): Promise<CodeDiffRequest[]> {
-    // TODO: Implement
-    return [];
+    throw new Error('Not implemented');
 }
 
 export async function getInsertImageRequests(
     action: InsertImageAction,
 ): Promise<CodeDiffRequest[]> {
-    // TODO: Implement
-    return [];
+    throw new Error('Not implemented');
 }
 
 export async function getRemoveImageRequests(
@@ -207,8 +198,7 @@ export async function getRemoveImageRequests(
 
     for (const target of action.targets) {
         if (!target.oid) {
-            console.error('No oid found for removed image');
-            continue;
+            throw new Error('No oid found for removed image');
         }
         const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
         request.structureChanges.push(removeImage);
