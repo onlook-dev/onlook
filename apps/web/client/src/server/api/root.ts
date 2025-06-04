@@ -7,6 +7,7 @@ import { frameRouter } from './routers/frame';
 import { memberRouter } from './routers/member';
 import { sandboxRouter } from './routers/sandbox';
 import { userCanvasRouter } from './routers/user-canvas';
+import { domainRouter } from './routers/domain';
 
 /**
  * This is the primary router for your server.
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
     userCanvas: userCanvasRouter,
     code: codeRouter,
     member: memberRouter,
+    domain: domainRouter,
 });
 
 // export type definition of API

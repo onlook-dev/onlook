@@ -18,6 +18,7 @@ import type { EditorEngine } from '../editor/engine';
 import { createClient } from '@/utils/supabase/client';
 import { injectBuiltWithScript, addBuiltWithScript, removeBuiltWithScriptFromLayout, removeBuiltWithScript } from '@onlook/growth';
 import { addNextBuildConfig } from '@onlook/parser';
+import { api } from '@/trpc/client';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -224,50 +225,23 @@ export class HostingManager {
         urls: string[],
         envVars?: Record<string, string>,
     ): Promise<string> {
-        const config: FreestyleDeployWebConfiguration = {
-            domains: urls,
-            entrypoint: 'server.js',
-            envVars,
-        };
-
         // Verify domain ownership
         const ownedDomains = await this.getOwnedDomains();
         const domainOwnership = verifyDomainOwnership(urls, ownedDomains, HOSTING_DOMAIN);
         if (!domainOwnership) {
             throw new Error('Failed to verify domain ownership');
         }
-        // Refactor: TRPC call 
-        const apiKey = process.env.FREESTYLE_API_KEY;
-        if (!apiKey) {
-            console.error('Freestyle API key not found.');
-            throw new Error('Freestyle API key not found.');
-        }
-    
-        const api = new FreestyleSandboxes({
-            apiKey: apiKey,
+
+        const deploymentId = await api.domain.publish.mutate({
+            files: files,
+            config: {
+                domains: urls,
+                entrypoint: 'server.js',
+                envVars,
+            },
         });
-    
-        const res = await api.deployWeb(
-            { files, kind: 'files' },
-            config
-        );
 
-        const freestyleResponse = (await res) as {
-            message?: string;
-            error?: {
-                message: string;
-            };
-            data?: FreestyleDeployWebSuccessResponseV2;
-        };
-
-        if (!res) {
-            console.log(JSON.stringify(freestyleResponse));
-            throw new Error(
-                `${freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error'}`,
-            );
-        }
-
-        return freestyleResponse.data?.deploymentId ?? '';
+        return deploymentId;
     }
 
     async runPrepareStep() {
