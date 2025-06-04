@@ -18,6 +18,6 @@ on storage.objects for select to public using (
 drop policy if exists "preview_images_insert_policy" on storage.objects;
 
 create policy "preview_images_insert_policy"
-on storage.objects for insert to public using (
+on storage.objects for insert to public with check (
     bucket_id = 'preview_images'
 );
