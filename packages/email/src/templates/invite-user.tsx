@@ -53,7 +53,7 @@ export const InviteUserEmail = ({ invitedByEmail, inviteLink }: InviteUserEmailP
                             >
                                 {invitedByEmail}
                             </Link>
-                            ) has invited you to the their project on <strong>Onlook</strong>.
+                            ) has invited you to their project on <strong>Onlook</strong>.
                         </Text>
                         <Section className="mt-[32px] mb-[32px] text-center">
                             <Button
