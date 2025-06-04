@@ -6,7 +6,7 @@ import {
     type PublishResponse,
     type PublishState,
 } from '@onlook/models';
-import { isEmptyString, isNullOrUndefined } from '@onlook/utility';
+import { isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, verifyDomainOwnership } from '@onlook/utility';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, HOSTING_DOMAIN } from '@onlook/constants';
 import {
     FreestyleSandboxes,
@@ -18,6 +18,7 @@ import { FUNCTIONS_ROUTE, BASE_API_ROUTE, ApiRoutes, HostingRoutes } from '@onlo
 import type { EditorEngine } from '../editor/engine';
 import { createClient } from '@/utils/supabase/client';
 import { addNextBuildConfig } from '@onlook/foundation';
+import { injectBuiltWithScript, addBuiltWithScript, removeBuiltWithScriptFromLayout, removeBuiltWithScript } from '@onlook/growth';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -48,47 +49,6 @@ export class HostingManager {
             copyDir: (source: string, destination: string) => this.editorEngine.sandbox.copyDir(source, destination),
             copyFile: (source: string, destination: string) => this.editorEngine.sandbox.copyFile(source, destination),
         };
-    }
-
-    /**
-     * Check if a file is binary based on its extension
-     */
-    private isBinaryFile(filename: string): boolean {
-        const binaryExtensions = [
-            '.jpg',
-            '.jpeg',
-            '.png',
-            '.gif',
-            '.bmp',
-            '.svg',
-            '.ico',
-            '.webp',
-            '.pdf',
-            '.zip',
-            '.tar',
-            '.gz',
-            '.rar',
-            '.7z',
-            '.mp3',
-            '.mp4',
-            '.wav',
-            '.avi',
-            '.mov',
-            '.wmv',
-            '.exe',
-            '.bin',
-            '.dll',
-            '.so',
-            '.dylib',
-            '.woff',
-            '.woff2',
-            '.ttf',
-            '.eot',
-            '.otf',
-        ];
-
-        const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
-        return binaryExtensions.includes(ext);
     }
 
     /**
@@ -128,7 +88,7 @@ export class HostingManager {
                 } else if (entry.type === 'file') {
                     const filePath = `${basePath}${entry.name}`;
 
-                    if (this.isBinaryFile(entry.name)) {
+                    if (isBinaryFile(entry.name)) {
                         // Read binary file and encode as base64
                         const binaryContent =
                             await this.editorEngine.sandbox.readBinaryFile(entryPath);
@@ -175,18 +135,14 @@ export class HostingManager {
 
             if (!options?.skipBadge) {
                 this.emitState(PublishStatus.LOADING, 'Adding badge...');
-                // await this.addBadge();
+                await this.addBadge(CUSTOM_OUTPUT_DIR);
                 timer.log('"Built with Onlook" badge added');
             }
-
-            console.log('runBuildStep');
 
             // Run the build script
             await this.runBuildStep(buildScript, options);
             timer.log('Build completed');
             this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
-
-            console.log('postprocessNextBuild');
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } =
@@ -211,7 +167,7 @@ export class HostingManager {
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
             if (!options?.skipBadge) {
-                // await this.removeBadge(folderPath);
+                await this.removeBadge(CUSTOM_OUTPUT_DIR);
                 timer.log('"Built with Onlook" badge removed');
             }
 
@@ -232,6 +188,37 @@ export class HostingManager {
         }
     }
 
+    async unpublish(urls: string[]): Promise<PublishResponse> {
+        try {
+            const id = await this.sendHostingPostRequest({}, urls);
+            this.emitState(PublishStatus.UNPUBLISHED, 'Deployment deleted with ID: ' + id);
+
+            return {
+                success: true,
+                message: 'Deployment deleted with ID: ' + id,
+            };
+        } catch (error) {
+            console.error('Failed to delete deployment', error);
+            this.emitState(PublishStatus.ERROR, 'Failed to delete deployment');
+
+            return {
+                success: false,
+                message: 'Failed to delete deployment. ' + error,
+            };
+        }
+    }
+
+    async addBadge(folderPath: string) {
+        await injectBuiltWithScript(folderPath);
+        await addBuiltWithScript(folderPath);
+    }
+
+    async removeBadge(folderPath: string) {
+        await removeBuiltWithScriptFromLayout(folderPath);
+        await removeBuiltWithScript(folderPath);
+    }
+
+
     async sendHostingPostRequest(
         files: Record<string, FreestyleFile>,
         urls: string[],
@@ -245,7 +232,7 @@ export class HostingManager {
 
         // Verify domain ownership
         const ownedDomains = await this.getOwnedDomains();
-        const domainOwnership = await this.verifyDomainOwnership(urls, ownedDomains);
+        const domainOwnership = verifyDomainOwnership(urls, ownedDomains, HOSTING_DOMAIN);
         if (!domainOwnership) {
             throw new Error('Failed to verify domain ownership');
         }
@@ -292,7 +279,7 @@ export class HostingManager {
         }
 
         // Update .gitignore to ignore the custom output directory
-        const gitignoreSuccess = await this.updateGitignore(CUSTOM_OUTPUT_DIR);
+        const gitignoreSuccess = await updateGitignore(CUSTOM_OUTPUT_DIR, this.fileOps);
         if (!gitignoreSuccess) {
             console.warn('Failed to update .gitignore');
         }
@@ -366,65 +353,6 @@ export class HostingManager {
                 'Failed to find lock file. Supported lock files: ' +
                 SUPPORTED_LOCK_FILES.join(', '),
         };
-    }
-    async updateGitignore(target: string): Promise<boolean> {
-        const gitignorePath = `/.gitignore`;
-
-        try {
-            // Check if .gitignore exists
-            const gitignoreExists = await this.fileOps.fileExists(gitignorePath);
-
-            if (!gitignoreExists) {
-                // Create .gitignore with the target
-                await this.fileOps.writeFile(gitignorePath, target + '\n');
-                return true;
-            }
-
-            // Read existing .gitignore content
-            const gitignoreContent = await this.fileOps.readFile(gitignorePath);
-            if (gitignoreContent === null) {
-                return false;
-            }
-
-            const lines = gitignoreContent.split(/\r?\n/);
-
-            // Look for exact match of target
-            if (!lines.some((line: string) => line.trim() === target)) {
-                // Ensure there's a newline before adding if the file doesn't end with one
-                const separator = gitignoreContent.endsWith('\n') ? '' : '\n';
-                await this.fileOps.writeFile(
-                    gitignorePath,
-                    gitignoreContent + `${separator}${target}\n`,
-                );
-            }
-
-            return true;
-        } catch (error) {
-            console.error(`Failed to update .gitignore: ${error}`);
-            return false;
-        }
-    }
-
-    async verifyDomainOwnership(requestDomains: string[], ownedDomains: string[]) {
-        return requestDomains.every(requestDomain => {
-            // Check if domain is directly owned
-            if (ownedDomains.includes(requestDomain)) {
-                return true;
-            }
-    
-            // Check if www version of owned domain
-            const withoutWww = requestDomain.replace(/^www\./, '');
-            if (ownedDomains.includes(withoutWww)) {
-                return true;
-            }
-    
-            // Check if subdomain of HOSTING_DOMAIN
-            if (requestDomain.endsWith(`.${HOSTING_DOMAIN}`)) {
-                return true;
-            }
-    
-            return false;
-        });
     }
 
     async getOwnedDomains(): Promise<string[]> {

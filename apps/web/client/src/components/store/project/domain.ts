@@ -1,6 +1,6 @@
 import { get, makeAutoObservable } from "mobx";
 import type { ProjectManager } from "./manager";
-import { PublishStatus, type Project, type PublishState, type PublishOptions, type PublishRequest, type DomainSettings, DomainType } from "@onlook/models";
+import { PublishStatus, type Project, type PublishState, type PublishOptions, type PublishRequest, type DomainSettings, DomainType, type PublishResponse } from "@onlook/models";
 import { HostingManager } from "./hosting";
 import { sendAnalytics } from "@/utils/analytics";
 import { DefaultSettings } from "@onlook/constants";
@@ -53,6 +53,16 @@ export class DomainsManager {
         });
     }
 
+    private removeDomain() {
+        this.projectManager.updatePartialProject({
+            domains: {
+                base: null,
+                custom: null,
+
+            },
+        });
+    }
+
 
     async publish(options: PublishOptions): Promise<boolean> {
         sendAnalytics('project.publish', {
@@ -99,5 +109,30 @@ export class DomainsManager {
         return true;
     }
 
-    
+    async unpublish(): Promise<boolean> {
+        this.updateState({ status: PublishStatus.LOADING, message: 'Deleting deployment...' });
+        sendAnalytics('hosting unpublish');
+
+        const urls = getPublishUrls(this.project.domains?.custom?.url || '');
+
+        const res: PublishResponse = await this.custom?.unpublish(urls) || { success: false, message: 'Failed to unpublish' };
+
+        if (!res.success) {
+            const error = `Failed to unpublish hosting environment: ${res?.message || 'client error'}`;
+            console.error(error);
+            this.updateState({
+                status: PublishStatus.ERROR,
+                message: error,
+            });
+            sendAnalytics('Failed to unpublish', {
+                message: error,
+            });
+            return false;
+        }
+
+        this.removeDomain();
+        this.updateState({ status: PublishStatus.UNPUBLISHED, message: null });
+        sendAnalytics('hosting unpublish success');
+        return true;
+    }
 }
