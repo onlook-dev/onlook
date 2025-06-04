@@ -16,8 +16,8 @@ import {
 } from 'freestyle-sandboxes';
 import type { EditorEngine } from '../editor/engine';
 import { createClient } from '@/utils/supabase/client';
-import { addNextBuildConfig } from '@onlook/foundation';
 import { injectBuiltWithScript, addBuiltWithScript, removeBuiltWithScriptFromLayout, removeBuiltWithScript } from '@onlook/growth';
+import { addNextBuildConfig } from '@onlook/parser';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,

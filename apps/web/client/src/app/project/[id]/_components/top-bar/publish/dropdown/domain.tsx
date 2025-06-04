@@ -10,7 +10,7 @@ import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { DefaultSettings } from '@onlook/constants';
-import { UrlSection } from './Url';
+import { UrlSection } from './url';
 
 export const DomainSection = observer(
     ({

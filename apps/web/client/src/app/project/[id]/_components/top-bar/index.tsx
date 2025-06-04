@@ -16,6 +16,7 @@ import { ProjectBreadcrumb } from './project-breadcrumb';
 import { Members } from '../members';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useProjectManager } from '@/components/store/project';
+import { Publish } from './publish';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
@@ -60,17 +61,6 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                             delay: 0,
                         }}
                     >
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8"
-                            onClick={() => {
-                                projectManager.publish();
-                            }}
-                        >
-                            <Icons.ExclamationTriangle className="w-4 h-4" />
-                        </Button>
-
                         {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                             <Tooltip key={hotkey.description}>
                                 <TooltipTrigger asChild>
@@ -113,6 +103,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                     </Tooltip> */}
                     <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
                 </div>
+                <Publish />
             </div>
         </div>
     );

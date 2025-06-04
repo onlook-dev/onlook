@@ -1,23 +1,24 @@
-import { useEditorEngine, useUserManager } from '@/components/Context';
+import { useEditorEngine } from '@/components/store/editor';
+import { useUserManager } from '@/components/store/user';
 import { DropdownMenu, DropdownMenuContent } from '@onlook/ui/dropdown-menu';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { PublishDropdown } from './Dropdown';
-import { PublishButton } from './TriggerButton';
+import { PublishDropdown } from './publish/dropdown';
+import { PublishButton } from './publish/trigger-button';
 
-const Publish = observer(() => {
+export const Publish = observer(() => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
         userManager.subscription.getPlanFromServer();
-    }, [editorEngine.isPublishOpen]);
+    }, [editorEngine.state.publishOpen]);
 
     return (
         <DropdownMenu
-            open={editorEngine.isPublishOpen}
+            open={editorEngine.state.publishOpen}
             onOpenChange={(open: boolean) => {
-                editorEngine.isPublishOpen = open;
+                editorEngine.state.publishOpen = open;
             }}
         >
             <PublishButton />
@@ -27,5 +28,3 @@ const Publish = observer(() => {
         </DropdownMenu>
     );
 });
-
-export default Publish;

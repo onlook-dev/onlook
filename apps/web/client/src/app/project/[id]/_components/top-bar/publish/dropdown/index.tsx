@@ -3,8 +3,8 @@ import { PublishStatus } from '@onlook/models/hosting';
 import { DomainType } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { DomainSection } from './Domain';
 import { AdvancedSettingsSection } from './advanced-settings';
+import { DomainSection } from './domain';
 
 export const PublishDropdown = observer(() => {
     const domainsManager = useDomainsManager();
