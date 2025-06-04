@@ -7,10 +7,12 @@ import {
     type PublishState,
 } from '@onlook/models';
 import { isEmptyString, isNullOrUndefined } from '@onlook/utility';
-import { CUSTOM_OUTPUT_DIR, DefaultSettings } from '@onlook/constants';
+import { CUSTOM_OUTPUT_DIR, DefaultSettings, HOSTING_DOMAIN } from '@onlook/constants';
 import {
+    FreestyleSandboxes,
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponseV2,
+    type FreestyleFile,
 } from 'freestyle-sandboxes';
 import { FUNCTIONS_ROUTE, BASE_API_ROUTE, ApiRoutes, HostingRoutes } from '@onlook/constants';
 import type { EditorEngine } from '../editor/engine';
@@ -40,11 +42,11 @@ export class HostingManager {
 
     private get fileOps() {
         return {
-            readFile: this.editorEngine.sandbox.readFile,
-            writeFile: this.editorEngine.sandbox.writeFile,
-            fileExists: this.editorEngine.sandbox.fileExists,
-            copyDir: this.editorEngine.sandbox.copyDir,
-            copyFile: this.editorEngine.sandbox.copyFile,
+            readFile: (path: string) => this.editorEngine.sandbox.readFile(path),
+            writeFile: (path: string, content: string) => this.editorEngine.sandbox.writeFile(path, content),
+            fileExists: (path: string) => this.editorEngine.sandbox.fileExists(path),
+            copyDir: (source: string, destination: string) => this.editorEngine.sandbox.copyDir(source, destination),
+            copyFile: (source: string, destination: string) => this.editorEngine.sandbox.copyFile(source, destination),
         };
     }
 
@@ -98,8 +100,8 @@ export class HostingManager {
     private async serializeFiles(
         currentDir: string,
         basePath: string = '',
-    ): Promise<Record<string, string>> {
-        const files: Record<string, string> = {};
+    ): Promise<Record<string, FreestyleFile>> {
+        const files: Record<string, FreestyleFile> = {};
 
         if (!this.editorEngine.sandbox.session.session) {
             throw new Error('No sandbox session available');
@@ -107,6 +109,7 @@ export class HostingManager {
 
         try {
             const entries = await this.editorEngine.sandbox.session.session.fs.readdir(currentDir);
+            console.log(entries);
 
             for (const entry of entries) {
                 const entryPath = `${currentDir}/${entry.name}`;
@@ -137,13 +140,19 @@ export class HostingManager {
                                     .map((byte: number) => String.fromCharCode(byte))
                                     .join(''),
                             );
-                            files[filePath] = base64String;
+                            files[filePath] = {
+                                content: base64String,
+                                encoding: 'base64',
+                            };
                         }
                     } else {
                         // Read text file
                         const textContent = await this.editorEngine.sandbox.readFile(entryPath);
                         if (textContent !== null) {
-                            files[filePath] = textContent;
+                            files[filePath] = {
+                                content: textContent,
+                                encoding: 'utf-8',
+                            };
                         }
                     }
                 }
@@ -161,6 +170,8 @@ export class HostingManager {
             // const timer = new LogTimer('Deployment');
             // this.emitState(PublishStatus.LOADING, 'Preparing project...');
             console.log('runPrepareStep');
+            console.log(this.fileOps.readFile(`/package-lock.json`));
+            
 
             await this.runPrepareStep();
             // this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
@@ -193,7 +204,7 @@ export class HostingManager {
             }
 
             // Serialize the files for deployment
-            const NEXT_BUILD_OUTPUT_PATH = `/${CUSTOM_OUTPUT_DIR}/standalone`;
+            const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
 
             // this.emitState(PublishStatus.LOADING, 'Deploying project...');
@@ -227,37 +238,44 @@ export class HostingManager {
     }
 
     async sendHostingPostRequest(
-        files: Record<string, string>,
+        files: Record<string, FreestyleFile>,
         urls: string[],
         envVars?: Record<string, string>,
     ): Promise<string> {
-        const {
-            data: { session },
-        } = await this.supabase.auth.getSession();
-
         const config: FreestyleDeployWebConfiguration = {
             domains: urls,
             entrypoint: 'server.js',
             envVars,
         };
 
-        const res: Response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING_V2}${HostingRoutes.DEPLOY_WEB}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${session?.access_token}`,
-                },
-                body: JSON.stringify({
-                    files,
-                    config,
-                }),
-            },
+        console.log(urls);
+        console.log(envVars);
+        console.log(Object.keys(files).length);
+        console.log(config);
+
+        // Verify domain ownership
+        const ownedDomains = await this.getOwnedDomains();
+        const domainOwnership = await this.verifyDomainOwnership(urls, ownedDomains);
+        if (!domainOwnership) {
+            throw new Error('Failed to verify domain ownership');
+        }
+        // Refactor: TRPC call 
+        const apiKey = process.env.FREESTYLE_API_KEY;
+        if (!apiKey) {
+            console.error('Freestyle API key not found.');
+            throw new Error('Freestyle API key not found.');
+        }
+    
+        const api = new FreestyleSandboxes({
+            apiKey: apiKey,
+        });
+    
+        const res = await api.deployWeb(
+            { files, kind: 'files' },
+            config
         );
 
-        const freestyleResponse = (await res.json()) as {
-            success: boolean;
+        const freestyleResponse = (await res) as {
             message?: string;
             error?: {
                 message: string;
@@ -265,7 +283,7 @@ export class HostingManager {
             data?: FreestyleDeployWebSuccessResponseV2;
         };
 
-        if (!res.ok || !freestyleResponse.success) {
+        if (!res) {
             console.log(JSON.stringify(freestyleResponse));
             throw new Error(
                 `${freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error'}`,
@@ -341,11 +359,11 @@ export class HostingManager {
             `/${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
         );
 
-        for (const lockFile of SUPPORTED_LOCK_FILES) {
-            const lockFileExists = await this.fileOps.fileExists(`/${lockFile}`);
+        for (const lockFile of SUPPORTED_LOCK_FILES) { 
+            const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
             if (lockFileExists) {
                 this.fileOps.copyFile(
-                    `/${lockFile}`,
+                    `./${lockFile}`,
                     `/${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
                 );
                 return { success: true };
@@ -395,5 +413,36 @@ export class HostingManager {
             console.error(`Failed to update .gitignore: ${error}`);
             return false;
         }
+    }
+
+    async verifyDomainOwnership(requestDomains: string[], ownedDomains: string[]) {
+        return requestDomains.every(requestDomain => {
+            // Check if domain is directly owned
+            if (ownedDomains.includes(requestDomain)) {
+                return true;
+            }
+    
+            // Check if www version of owned domain
+            const withoutWww = requestDomain.replace(/^www\./, '');
+            if (ownedDomains.includes(withoutWww)) {
+                return true;
+            }
+    
+            // Check if subdomain of HOSTING_DOMAIN
+            if (requestDomain.endsWith(`.${HOSTING_DOMAIN}`)) {
+                return true;
+            }
+    
+            return false;
+        });
+    }
+
+    async getOwnedDomains(): Promise<string[]> {
+        const { data, error } = await this.supabase.from('domains').select('domain');
+        if (error) {
+            console.error(`Failed to get owned domains: ${error}`);
+            return [];
+        }
+        return data.map((domain: { domain: string }) => domain.domain);
     }
 }

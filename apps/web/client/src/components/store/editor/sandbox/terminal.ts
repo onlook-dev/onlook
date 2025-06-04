@@ -16,6 +16,7 @@ export interface CLISession {
     // Task is readonly
     task: Task | null;
     xterm: XTerm;
+    waitForInitialization(): Promise<void>;
 }
 
 export interface TaskSession extends CLISession {
@@ -33,6 +34,7 @@ export class CLISessionImpl implements CLISession {
     terminal: Terminal | null;
     task: Task | null;
     xterm: XTerm;
+    private initializationPromise: Promise<void>;
 
     constructor(
         public readonly name: string,
@@ -46,10 +48,16 @@ export class CLISessionImpl implements CLISession {
         this.task = null;
 
         if (type === CLISessionType.TERMINAL) {
-            this.initTerminal();
+            this.initializationPromise = this.initTerminal();
         } else if (type === CLISessionType.TASK) {
-            this.initTask();
+            this.initializationPromise = this.initTask();
+        } else {
+            this.initializationPromise = Promise.resolve();
         }
+    }
+
+    async waitForInitialization(): Promise<void> {
+        return this.initializationPromise;
     }
 
     async initTerminal() {

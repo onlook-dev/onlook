@@ -35,8 +35,12 @@ export class SessionManager {
         const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
+        
+        // Wait for terminal initialization to complete
+        await terminal.waitForInitialization();
+        
         this.terminalSessions.set(terminal.id, terminal);
-        this.activeTerminalSessionId = task.id;
+        this.activeTerminalSessionId = terminal.id;
     }
 
     async disposeTerminal(id: string) {
@@ -85,10 +89,29 @@ export class SessionManager {
                 throw new Error('No session found');
             }
 
-            const terminalSession = this.terminalSessions.get(this.activeTerminalSessionId) as TerminalSession | undefined;
+            // Try to get the active terminal session first
+            let terminalSession = this.terminalSessions.get(this.activeTerminalSessionId);
 
-            if (!terminalSession?.terminal) {
-                throw new Error('No terminal session found');
+            // If active session doesn't have terminal, find any terminal session
+            if (!terminalSession || terminalSession.type !== CLISessionType.TERMINAL || !terminalSession.terminal) {
+                console.warn(`Active terminal session ${this.activeTerminalSessionId} not found or invalid, searching for alternative`);
+                
+                terminalSession = undefined;
+                for (const [id, session] of this.terminalSessions.entries()) {
+                    if (session.type === CLISessionType.TERMINAL && session.terminal) {
+                        terminalSession = session;
+                        this.activeTerminalSessionId = id; // Update active session
+                        console.log(`Switched to terminal session: ${id}`);
+                        break;
+                    }
+                }
+            }
+
+            if (!terminalSession || terminalSession?.type !== CLISessionType.TERMINAL || !terminalSession.terminal) {
+                throw new Error('No terminal session found. Available sessions: ' + 
+                    Array.from(this.terminalSessions.entries())
+                        .map(([id, session]) => `${id}(${session.type}, hasTerminal: ${!!session.terminal})`)
+                        .join(', '));
             }
 
             const cmd = await this.session.commands.runBackground(command, {
@@ -100,7 +123,7 @@ export class SessionManager {
             await cmd.open();
             const disposer = cmd.onOutput((output) => {
                 streamCallback(output);
-                terminalSession.xterm?.write(output);
+                terminalSession!.xterm?.write(output);
             });
 
             const finalOutput = await cmd.waitUntilComplete();

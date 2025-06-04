@@ -310,7 +310,6 @@ export class SandboxManager {
 
     async fileExists(path: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        console.log(this.session);
         
         if (!this.session.session) {
             console.error('No session found for file existence check');
@@ -321,6 +320,9 @@ export class SandboxManager {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
             const dirEntries = await this.session.session.fs.readdir(dirPath);
+            console.log(dirEntries);
+            console.log(fileName);
+            
             return dirEntries.some((entry: any) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);

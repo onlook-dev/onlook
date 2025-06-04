@@ -15,9 +15,11 @@ import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { Members } from '../members';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useProjectManager } from '@/components/store/project';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
+    const projectManager = useProjectManager();
     const t = useTranslations();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
@@ -58,6 +60,17 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                             delay: 0,
                         }}
                     >
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8"
+                            onClick={() => {
+                                projectManager.publish();
+                            }}
+                        >
+                            <Icons.ExclamationTriangle className="w-4 h-4" />
+                        </Button>
+
                         {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                             <Tooltip key={hotkey.description}>
                                 <TooltipTrigger asChild>
