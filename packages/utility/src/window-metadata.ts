@@ -1,18 +1,12 @@
 import { DEVICE_OPTIONS, Orientation, Theme } from '@onlook/constants';
 import type { WindowMetadata } from '@onlook/models';
 
-export const computeWindowMetadata = (
-    width: string,
-    height: string,
-): WindowMetadata => {
+export const computeWindowMetadata = (width: string, height: string): WindowMetadata => {
     const numericWidth = Number(width);
     const numericHeight = Number(height);
 
     return {
-        orientation:
-            numericWidth > numericHeight
-                ? Orientation.Landscape
-                : Orientation.Portrait,
+        orientation: numericWidth > numericHeight ? Orientation.Landscape : Orientation.Portrait,
         aspectRatioLocked: true,
         device: computeDevice(numericWidth, numericHeight),
         theme: Theme.System,
