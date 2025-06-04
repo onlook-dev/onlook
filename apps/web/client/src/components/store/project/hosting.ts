@@ -14,7 +14,6 @@ import {
     type FreestyleDeployWebSuccessResponseV2,
     type FreestyleFile,
 } from 'freestyle-sandboxes';
-import { FUNCTIONS_ROUTE, BASE_API_ROUTE, ApiRoutes, HostingRoutes } from '@onlook/constants';
 import type { EditorEngine } from '../editor/engine';
 import { createClient } from '@/utils/supabase/client';
 import { addNextBuildConfig } from '@onlook/foundation';

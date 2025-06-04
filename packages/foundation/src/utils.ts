@@ -1,7 +1,8 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import * as path from 'path';
-import { FILE_EXTENSION, LOCK_FILE_NAME, PACKAGE_JSON, PACKAGE_MANAGER } from './constants';
+import { FILE_EXTENSION, LOCK_FILE_NAME, PACKAGE_MANAGER } from './constants';
+import fg from 'fast-glob';
 
 export const exists = async (filePattern: string): Promise<boolean> => {
     try {
@@ -42,7 +43,7 @@ export const getFileExtensionByPattern = async (
     const files = await getFileNamesByPattern(fullDirPattern);
 
     if (files.length > 0) {
-        return path.extname(files[0]);
+        return path.extname(files[0] || '');
     }
 
     return null;

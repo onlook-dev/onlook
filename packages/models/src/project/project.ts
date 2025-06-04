@@ -18,6 +18,7 @@ export interface Project {
         custom: DomainSettings | null;
     } | null;
     commands: ProjectCommands | null;
+    env: Record<string, string> | null;
 }
 
 export interface ProjectCommands {

@@ -21,3 +21,9 @@ export const SUPPORTED_LOCK_FILES = [
     'yarn.lock',
     'pnpm-lock.yaml',
 ];
+
+export enum FILE_EXTENSION {
+    JS = '.js',
+    MJS = '.mjs',
+    TS = '.ts',
+}

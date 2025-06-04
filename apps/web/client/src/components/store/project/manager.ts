@@ -2,9 +2,6 @@ import { api } from '@/trpc/client';
 import { fromProject } from '@onlook/db';
 import type { Project } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import { DomainsManager } from './domain';
-import { HostingManager } from './hosting';
-import { DefaultSettings } from '@onlook/constants';
 import type { EditorEngine } from '../editor/engine';
 
 export class VersionsManager {
@@ -13,7 +10,6 @@ export class VersionsManager {
 
 export class ProjectManager {
     private _project: Project | null = null;
-    private _domains: DomainsManager | null = null;
     readonly versions: VersionsManager | null = null;
     private _editorEngine: EditorEngine | null = null;
 
@@ -24,41 +20,18 @@ export class ProjectManager {
 
     setEditorEngine(editorEngine: EditorEngine) {
         this._editorEngine = editorEngine;
-        this.updateDomainsManager();
-    }
-
-    private updateDomainsManager() {
-        if (this._project && this._editorEngine) {
-            this._domains = new DomainsManager(this, this._project, this._editorEngine);
-        } else {
-            this._domains = null;
-        }
     }
 
     get project() {
         return this._project;
     }
 
-    get domains() {
-        return this._domains;
+    get editorEngine() {
+        return this._editorEngine;
     }
 
     set project(project: Project | null) {
         this._project = project;
-        this.updateDomainsManager();
-    }
-
-    public publish() {
-        console.log('publish', this.project);
-        if (!this.project) {
-            console.error('Project not found');
-            return;
-        }
-        console.log('publish', this.domains);
-        this.domains?.publish({
-            buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags
-            // envVars: {},
-        });
     }
 
     updatePartialProject(newProject: Partial<Project>) {
