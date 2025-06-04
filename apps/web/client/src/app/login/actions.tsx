@@ -56,7 +56,6 @@ export async function devLogin() {
 
     if (error) {
         console.error('Error signing in with password:', error);
-        throw new Error('Error signing in with password');
     }
 
     redirect(Routes.HOME);
