@@ -109,7 +109,6 @@ export class HostingManager {
 
         try {
             const entries = await this.editorEngine.sandbox.session.session.fs.readdir(currentDir);
-            console.log(entries);
 
             for (const entry of entries) {
                 const entryPath = `${currentDir}/${entry.name}`;
@@ -167,35 +166,32 @@ export class HostingManager {
 
     async publish({ buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
         try {
-            // const timer = new LogTimer('Deployment');
-            // this.emitState(PublishStatus.LOADING, 'Preparing project...');
-            console.log('runPrepareStep');
-            console.log(this.fileOps.readFile(`/package-lock.json`));
-            
+            const timer = new LogTimer('Deployment');
+            this.emitState(PublishStatus.LOADING, 'Preparing project...');
 
             await this.runPrepareStep();
-            // this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
-            // timer.log('Prepare completed');
+            timer.log('Prepare completed');
+            this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
 
             if (!options?.skipBadge) {
-                // this.emitState(PublishStatus.LOADING, 'Adding badge...');
+                this.emitState(PublishStatus.LOADING, 'Adding badge...');
                 // await this.addBadge();
-                // timer.log('"Built with Onlook" badge added');
+                timer.log('"Built with Onlook" badge added');
             }
 
             console.log('runBuildStep');
 
             // Run the build script
             await this.runBuildStep(buildScript, options);
-            // this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
-            // timer.log('Build completed');
+            timer.log('Build completed');
+            this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
 
             console.log('postprocessNextBuild');
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } =
                 await this.postprocessNextBuild();
-            // timer.log('Project preparation completed');
+            timer.log('Postprocess completed');
 
             if (!postprocessSuccess) {
                 throw new Error(
@@ -206,18 +202,17 @@ export class HostingManager {
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-
-            // this.emitState(PublishStatus.LOADING, 'Deploying project...');
-            // timer.log('Files serialized, sending to Freestyle...');
+            this.emitState(PublishStatus.LOADING, 'Deploying project...');
+            timer.log('Files serialized, sending to Freestyle...');
 
             const id = await this.sendHostingPostRequest(files, urls, options?.envVars);
-            // timer.log('Deployment completed');
+            timer.log('Deployment completed');  
 
-            // this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
+            this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
             if (!options?.skipBadge) {
                 // await this.removeBadge(folderPath);
-                // timer.log('"Built with Onlook" badge removed');
+                timer.log('"Built with Onlook" badge removed');
             }
 
             return {
@@ -226,7 +221,7 @@ export class HostingManager {
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            // this.emitState(PublishStatus.ERROR, 'Deployment failed with error: ' + error);
+            this.emitState(PublishStatus.ERROR, 'Deployment failed with error: ' + error);
             // analytics.trackError('Failed to deploy to preview environment', {
             //     error,
             // });
@@ -247,11 +242,6 @@ export class HostingManager {
             entrypoint: 'server.js',
             envVars,
         };
-
-        console.log(urls);
-        console.log(envVars);
-        console.log(Object.keys(files).length);
-        console.log(config);
 
         // Verify domain ownership
         const ownedDomains = await this.getOwnedDomains();
@@ -332,7 +322,7 @@ export class HostingManager {
         });
 
         if (!buildSuccess) {
-            // this.emitState(PublishStatus.ERROR, `Build failed with error: ${buildError}`);
+            this.emitState(PublishStatus.ERROR, `Build failed with error: ${buildError}`);
             throw new Error(`Build failed with error: ${buildError}`);
         } else {
             console.log('Build succeeded with output: ', buildOutput);
@@ -444,5 +434,28 @@ export class HostingManager {
             return [];
         }
         return data.map((domain: { domain: string }) => domain.domain);
+    }
+
+    emitState(status: PublishStatus, message: string) {
+        console.log(`Deployment state: ${status} - ${message}`);
+        this.updateState({
+            status,
+            message,
+        });
+    }
+}
+
+class LogTimer {
+    private startTime: number;
+    private name: string;
+
+    constructor(name: string) {
+        this.startTime = Date.now();
+        this.name = name;
+    }
+
+    log(step: string) {
+        const elapsed = Date.now() - this.startTime;
+        console.log(`[${this.name}] ${step}: ${elapsed}ms`);
     }
 }

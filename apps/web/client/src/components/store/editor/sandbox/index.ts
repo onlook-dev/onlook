@@ -2,7 +2,7 @@ import type { WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
-import { isSubdirectory } from '@onlook/utility';
+import { isSubdirectory, isBinaryFile } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -412,7 +412,7 @@ export class SandboxManager {
 
             // Determine if file is binary based on extension
             const fileName = getBaseName(normalizedSourcePath);
-            const isBinary = this.isBinaryFile(fileName);
+            const isBinary = isBinaryFile(fileName);
 
             if (isBinary) {
                 // Handle binary file
@@ -447,22 +447,6 @@ export class SandboxManager {
             console.error(`Error copying file ${path} to ${targetPath}:`, error);
             return false;
         }
-    }
-
-    /**
-     * Check if a file is binary based on its extension
-     */
-    private isBinaryFile(filename: string): boolean {
-        const binaryExtensions = [
-            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg', '.ico', '.webp',
-            '.pdf', '.zip', '.tar', '.gz', '.rar', '.7z',
-            '.mp3', '.mp4', '.wav', '.avi', '.mov', '.wmv',
-            '.exe', '.bin', '.dll', '.so', '.dylib',
-            '.woff', '.woff2', '.ttf', '.eot', '.otf'
-        ];
-
-        const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
-        return binaryExtensions.includes(ext);
     }
 
     clear() {

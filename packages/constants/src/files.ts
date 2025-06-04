@@ -14,3 +14,10 @@ export const IGNORED_DIRECTORIES = [
 export const JSX_FILE_EXTENSIONS = ['jsx', 'tsx'];
 
 export const JS_FILE_EXTENSIONS = ['js', 'ts'];
+
+export const SUPPORTED_LOCK_FILES = [
+    'bun.lock',
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+];

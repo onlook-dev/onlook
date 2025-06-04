@@ -1,6 +1,6 @@
 import { get, makeAutoObservable } from "mobx";
 import type { ProjectManager } from "./manager";
-import { PublishStatus, type Project, type PublishState, type PublishOptions, type PublishRequest, type DomainSettings } from "@onlook/models";
+import { PublishStatus, type Project, type PublishState, type PublishOptions, type PublishRequest, type DomainSettings, DomainType } from "@onlook/models";
 import { HostingManager } from "./hosting";
 import { sendAnalytics } from "@/utils/analytics";
 import { DefaultSettings } from "@onlook/constants";
@@ -40,21 +40,32 @@ export class DomainsManager {
         this.state = { ...this.state, ...partialState };
     }
 
+    private updateDomain(partialState: Partial<DomainSettings>) {
+        this.projectManager.updatePartialProject({
+            domains: {
+                base: null,
+                custom: {
+                    url: partialState.url || '',
+                    type: DomainType.CUSTOM,
+                    publishedAt: partialState.publishedAt || '',
+                },
+            },
+        });
+    }
+
 
     async publish(options: PublishOptions): Promise<boolean> {
-        console.log('publish', this.project);
         sendAnalytics('project.publish', {
             projectId: this.project.id,
             domain: this.project.domains?.custom?.url || '',
         });
-        console.log('publish', this.project.domains?.custom?.url);
 
         this.updateState({ status: PublishStatus.LOADING, message: 'Creating deployment...' });
 
         const request: PublishRequest = {
             buildScript: this.project.commands?.build || DefaultSettings.COMMANDS.build,
             urls:
-                getPublishUrls(this.project.domains?.custom?.url || 'https://nextjs-boilerplate-three-sable-50.vercel.app'),
+                getPublishUrls(this.project.domains?.custom?.url || ''),
             options,
         };
 
@@ -80,7 +91,7 @@ export class DomainsManager {
         }
 
         this.updateState({ status: PublishStatus.PUBLISHED, message: res.message });
-        // this.updateDomain({ ...this.domain, publishedAt: new Date().toISOString() });
+        this.updateDomain({ url: this.project.domains?.custom?.url || '', type: DomainType.CUSTOM, publishedAt: new Date().toISOString() });
 
         sendAnalytics('hosting publish success', {
             urls: request.urls,
