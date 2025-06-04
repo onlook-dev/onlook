@@ -39,7 +39,7 @@
         "@codemirror/lang-javascript": "^6.2.3",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.1.7",
-        "@codesandbox/sdk": "^1.1.6",
+        "@codesandbox/sdk": "^1.1.2",
         "@onlook/constants": "*",
         "@onlook/db": "*",
         "@onlook/email": "*",
@@ -614,7 +614,7 @@
 
     "@codemirror/view": ["@codemirror/view@6.36.8", "", { "dependencies": { "@codemirror/state": "^6.5.0", "style-mod": "^4.1.0", "w3c-keyname": "^2.2.4" } }, "sha512-yoRo4f+FdnD01fFt4XpfpMCcCAo9QvZOtbrXExn4SqzH32YC6LgzqxfLZw/r6Ge65xyY03mK/UfUqrVw1gFiFg=="],
 
-    "@codesandbox/sdk": ["@codesandbox/sdk@1.1.6", "", { "dependencies": { "ora": "^8.2.0", "readline": "^1.3.0" }, "bin": { "csb": "dist/bin/codesandbox.cjs" } }, "sha512-65k6TZSr1c0u8xYjBsz32xhMEq1TwHbqRONJ8h6e3re01qylZ5BDtAU6Nnxr9GQmmhOA0wl+3c4h4zY3/HdHHg=="],
+    "@codesandbox/sdk": ["@codesandbox/sdk@1.1.2", "", { "dependencies": { "ora": "^8.2.0", "readline": "^1.3.0" }, "bin": { "csb": "dist/bin/codesandbox.cjs" } }, "sha512-fvXuNyiIHSM3vyxIqaZ0RgtbmzZlSQqKio1VXcoicmg6k3GSeOMBb/boSWfPCn6lUDer6jMPaX15i37DeDayTQ=="],
 
     "@drizzle-team/brocli": ["@drizzle-team/brocli@0.10.2", "", {}, "sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w=="],
 
