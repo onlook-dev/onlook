@@ -368,5 +368,7 @@ export class PagesManager {
     clear() {
         this.pages = [];
         this.currentPath = '';
+        this.activeRoutesByFrameId = {};
+        this.groupedRoutes = '';
     }
 }
