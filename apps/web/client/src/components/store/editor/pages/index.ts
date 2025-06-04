@@ -117,7 +117,9 @@ export class PagesManager {
     private setPages(pages: PageNode[]) {
         this.pages = pages;
         if (this.editorEngine?.frames) {
-            this.updateActiveStates(this.pages, this.currentPath);
+            // If no pages, clear active states by using empty path
+            const pathToUse = pages.length === 0 ? '' : this.currentPath;
+            this.updateActiveStates(this.pages, pathToUse);
         }
     }
 

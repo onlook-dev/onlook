@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useProjectManager } from '@/components/store/project';
 import type { PageNode } from '@onlook/models/pages';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -14,6 +15,7 @@ import { PageModal } from './page-modal';
 
 export const PagesTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const projectManager = useProjectManager();
     const { ref, width, height } = useResizeObserver();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +25,7 @@ export const PagesTab = observer(() => {
 
     useEffect(() => {
         editorEngine.pages.scanPages();
-    }, []);
+    }, [projectManager.project?.id]);
 
     const filteredPages = useMemo(() => {
         if (!searchQuery.trim()) {
