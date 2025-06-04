@@ -53,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
             <body>
                 <FeatureFlagsProvider>
-                    {/* <PostHogProvider> */}
+                    <PostHogProvider>
                         <ThemeProvider
                             attribute="class"
                             forcedTheme="dark"
@@ -69,7 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                                 </AuthProvider>
                             </TRPCReactProvider>
                         </ThemeProvider>
-                    {/* </PostHogProvider> */}
+                    </PostHogProvider>
                 </FeatureFlagsProvider>
             </body>
         </html>
