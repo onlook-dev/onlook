@@ -1,0 +1,316 @@
+{
+  "projects": {
+    "create": {
+      "settings": {
+        "title": "Configuración",
+        "tooltip": "Configurar ajustes del nuevo proyecto"
+      },
+      "success": "Proyecto creado exitosamente.",
+      "steps": {
+        "count": "{current} de {total}",
+        "error": "Faltan datos del proyecto."
+      },
+      "methods": {
+        "new": "Crear Nuevo Proyecto",
+        "load": "Cargar Proyecto Existente"
+      },
+      "loading": {
+        "title": "Configurando su nueva aplicación Onlook...",
+        "description": "Esto puede tomar unos segundos",
+        "cancel": "Cancelar"
+      },
+      "error": {
+        "title": "Error al crear su aplicación Onlook",
+        "backToPrompt": "Volver al Prompt"
+      }
+    },
+    "select": {
+      "empty": "No se encontraron proyectos",
+      "sort": {
+        "recent": "Recientemente Actualizado",
+        "name": "Nombre del Proyecto"
+      },
+      "lastEdited": "Última edición hace {time}"
+    },
+    "actions": {
+      "import": "Importar",
+      "close": "Cerrar",
+      "about": "Acerca de Onlook",
+      "signOut": "Cerrar sesión",
+      "editApp": "Editar Aplicación",
+      "projectSettings": "Configuración del proyecto",
+      "showInExplorer": "Mostrar en Explorador",
+      "renameProject": "Renombrar Proyecto",
+      "deleteProject": "Eliminar Proyecto",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "rename": "Renombrar",
+      "goToAllProjects": "Ir a todos los Proyectos",
+      "newProject": "Nuevo Proyecto",
+      "startFromScratch": "Empezar desde cero",
+      "importProject": "Importar un proyecto",
+      "subscriptions": "Suscripciones",
+      "settings": "Configuración"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "¿Está seguro de que desea eliminar este proyecto?",
+        "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente su proyecto y todos los datos asociados.",
+        "moveToTrash": "También mover carpeta a la papelera"
+      },
+      "rename": {
+        "title": "Renombrar Proyecto",
+        "label": "Nombre del Proyecto",
+        "error": "El nombre del proyecto no puede estar vacío"
+      }
+    },
+    "prompt": {
+      "title": "¿Qué tipo de sitio web desea crear?",
+      "description": "Cuéntenos un poco sobre su proyecto. Sea lo más detallado posible.",
+      "input": {
+        "placeholder": "Pegue una captura de pantalla de referencia, escriba una novela, sea creativo...",
+        "imageUpload": "Subir Imagen de Referencia",
+        "fileReference": "Referencia de Archivo",
+        "submit": "Comenzar a construir su sitio"
+      },
+      "blankStart": "Empezar desde una página en blanco"
+    }
+  },
+  "welcome": {
+    "title": "Bienvenido a Onlook",
+    "titleReturn": "Bienvenido de vuelta a Onlook",
+    "description": "Onlook es un editor visual de código abierto para aplicaciones React. Diseñe directamente en su producto en vivo.",
+    "alpha": "Alpha",
+    "login": {
+      "github": "Iniciar sesión con GitHub",
+      "google": "Iniciar sesión con Google",
+      "lastUsed": "Usó esto la última vez",
+      "loginToEdit": "Iniciar sesión para Editar",
+      "shareProjects": "Comparta proyectos, colabore y diseñe más en código."
+    },
+    "terms": {
+      "agreement": "Al registrarse, acepta nuestra",
+      "privacy": "Política de Privacidad",
+      "and": "y",
+      "tos": "Términos de Servicio"
+    },
+    "version": "Versión {version}"
+  },
+  "pricing": {
+    "plans": {
+      "basic": {
+        "name": "Onlook Básico",
+        "price": "$0/mes",
+        "description": "Prototipe y experimente en código con facilidad.",
+        "features": [
+          "Acceso al editor visual de código",
+          "Proyectos ilimitados",
+          "{dailyMessages} mensajes de chat IA por día",
+          "{monthlyMessages} mensajes IA por mes",
+          "Limitado a 1 captura de pantalla por chat"
+        ]
+      },
+      "pro": {
+        "name": "Onlook Pro",
+        "price": "$20/mes",
+        "description": "Creatividad sin restricciones. Construya sitios impresionantes con IA.",
+        "features": [
+          "Acceso al editor visual de código",
+          "Proyectos ilimitados",
+          "Mensajes de chat IA ilimitados por día",
+          "Chats mensuales ilimitados",
+          "Remover marca de agua 'construido con Onlook'",
+          "1 dominio personalizado gratuito alojado con Onlook",
+          "Soporte prioritario"
+        ]
+      }
+    },
+    "titles": {
+      "choosePlan": "Elija su plan",
+      "proMember": "¡Gracias por ser miembro Pro!"
+    },
+    "buttons": {
+      "currentPlan": "Plan Actual",
+      "getPro": "Obtener Pro",
+      "manageSubscription": "Gestionar Suscripción"
+    },
+    "loading": {
+      "checkingPayment": "Verificando pago..."
+    },
+    "toasts": {
+      "checkingOut": {
+        "title": "Procesando pago",
+        "description": "Ahora será redirigido a Stripe para completar el pago."
+      },
+      "redirectingToStripe": {
+        "title": "Redirigiendo a Stripe",
+        "description": "Ahora será redirigido a Stripe para gestionar su suscripción."
+      },
+      "error": {
+        "title": "Error",
+        "description": "No se pudo iniciar el proceso de pago. Por favor, inténtelo de nuevo."
+      }
+    },
+    "footer": {
+      "unusedMessages": "Los mensajes de chat no utilizados no se transfieren al siguiente mes"
+    }
+  },
+  "editor": {
+    "modes": {
+      "design": {
+        "name": "Diseño",
+        "description": "Edite y modifique el diseño de su sitio web",
+        "tooltip": "Cambiar al modo diseño"
+      },
+      "preview": {
+        "name": "Vista Previa",
+        "description": "Previsualice y pruebe la funcionalidad de su sitio web",
+        "tooltip": "Cambiar al modo Vista Previa"
+      }
+    },
+    "toolbar": {
+      "tools": {
+        "select": {
+          "name": "Seleccionar",
+          "tooltip": "Seleccionar y modificar elementos"
+        },
+        "pan": {
+          "name": "Desplazar",
+          "tooltip": "Desplazar y moverse por el lienzo"
+        },
+        "insertDiv": {
+          "name": "Insertar Contenedor",
+          "tooltip": "Agregar un nuevo elemento contenedor"
+        },
+        "insertText": {
+          "name": "Insertar Texto",
+          "tooltip": "Agregar un nuevo elemento de texto"
+        }
+      },
+      "versionHistory": "Historial de Versiones"
+    },
+    "panels": {
+      "edit": {
+        "tabs": {
+          "chat": {
+            "name": "Chat",
+            "emptyState": "Seleccione un elemento para chatear con IA",
+            "emptyStateStart": "Inicie el proyecto para chatear",
+            "input": {
+              "placeholder": "Escriba su mensaje...",
+              "tooltip": "Chatee con IA sobre el elemento seleccionado"
+            },
+            "controls": {
+              "newChat": "Nuevo Chat",
+              "history": "Historial de Chat"
+            },
+            "settings": {
+              "showSuggestions": "Mostrar sugerencias",
+              "expandCodeBlocks": "Mostrar código durante la renderización"
+            },
+            "miniChat": {
+              "button": "Chatear con IA"
+            }
+          },
+          "styles": {
+            "name": "Estilos",
+            "emptyState": "Seleccione un elemento para editar sus propiedades de estilo",
+            "groups": {
+              "position": "Posición y Dimensiones",
+              "layout": "Flexbox y Diseño",
+              "style": "Estilos",
+              "text": "Texto"
+            },
+            "tailwind": {
+              "title": "Clases Tailwind",
+              "placeholder": "Agregar clases tailwind aquí",
+              "componentClasses": {
+                "title": "Clases del Componente Principal",
+                "tooltip": "Los cambios se aplican al código del componente. Este es el predeterminado."
+              },
+              "instanceClasses": {
+                "title": "Clases de Instancia",
+                "tooltip": "Los cambios se aplican al código de instancia."
+              }
+            }
+          }
+        }
+      },
+      "layers": {
+        "name": "Capas",
+        "tabs": {
+          "layers": "Capas",
+          "pages": "Páginas",
+          "components": "Elementos",
+          "images": "Imágenes",
+          "windows": {
+            "name": "Ventanas",
+            "emptyState": "Seleccione una ventana para editar su configuración"
+          },
+          "brand": "Marca",
+          "apps": "Aplicaciones"
+        }
+      }
+    },
+    "settings": {
+      "preferences": {
+        "language": "Idioma",
+        "theme": "Tema",
+        "deleteWarning": "Advertencia de Eliminación",
+        "analytics": "Análisis",
+        "editor": {
+          "ide": "Editor",
+          "shouldWarnDelete": "Advertir al eliminar elementos",
+          "enableAnalytics": "Habilitar análisis"
+        },
+        "shortcuts": "Atajos"
+      }
+    },
+    "frame": {
+      "startDesigning": {
+        "prefix": "Presione ",
+        "action": "Reproducir",
+        "suffix": " para comenzar a diseñar su Aplicación"
+      },
+      "playButton": "Reproducir",
+      "waitingForApp": "Esperando que la Aplicación inicie..."
+    },
+    "runButton": {
+      "portInUse": "Puerto en Uso",
+      "loading": "Cargando",
+      "play": "Reproducir",
+      "retry": "Reintentar",
+      "stop": "Detener"
+    },
+    "zoom": {
+      "level": "Nivel de Zoom",
+      "in": "Acercar",
+      "out": "Alejar",
+      "fit": "Ajustar Zoom",
+      "reset": "Zoom 100%",
+      "double": "Zoom 200%"
+    }
+  },
+  "help": {
+    "menu": {
+      "reloadOnlook": "Recargar Onlook",
+      "theme": {
+        "title": "Tema",
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Sistema"
+      },
+      "language": "Idioma",
+      "openSettings": "Abrir Configuración",
+      "contactUs": {
+        "title": "Contáctenos",
+        "website": "Sitio Web",
+        "discord": "Discord",
+        "github": "GitHub",
+        "email": "Correo Electrónico"
+      },
+      "reportIssue": "Reportar Problema",
+      "shortcuts": "Atajos"
+    }
+  }
+}
