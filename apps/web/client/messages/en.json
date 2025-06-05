@@ -50,7 +50,11 @@
             "startFromScratch": "Start from scratch",
             "importProject": "Import a project",
             "subscriptions": "Subscriptions",
-            "settings": "Settings"
+            "settings": "Settings",
+            "downloadCode": "Download Code",
+            "downloadingCode": "Preparing download...",
+            "downloadSuccess": "Download started successfully",
+            "downloadError": "Failed to prepare download"
         },
         "dialogs": {
             "delete": {
