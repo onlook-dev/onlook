@@ -213,6 +213,24 @@ export class SandboxManager {
         return results;
     }
 
+    // Download the code as a zip
+    async downloadFiles(projectName?:string): Promise<{ downloadUrl:string; fileName: string }| null>{
+        if (!this.session.session){
+            console.error('No sandbox session found')
+            return null;
+        }
+        try{
+            const {downloadUrl} = await this.session.session.fs.download("./")
+            return {
+                downloadUrl,
+                fileName: `${projectName || 'onlook-project'}-${Date.now()}.zip`
+            }
+        } catch (error){
+            console.error('Error generating download URL:', error)
+            return null;
+        }
+    }
+
     async watchFiles() {
         if (!this.session.session) {
             console.error('No session found');
