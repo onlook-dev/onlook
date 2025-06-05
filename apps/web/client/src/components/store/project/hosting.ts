@@ -131,11 +131,11 @@ export class HostingManager {
             timer.log('Prepare completed');
             this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
 
-            if (!options?.skipBadge) {
-                this.emitState(PublishStatus.LOADING, 'Adding badge...');
-                await this.addBadge(CUSTOM_OUTPUT_DIR);
-                timer.log('"Built with Onlook" badge added');
-            }
+            // if (!options?.skipBadge) {
+            //     this.emitState(PublishStatus.LOADING, 'Adding badge...');
+            //     await this.addBadge(CUSTOM_OUTPUT_DIR);
+            //     timer.log('"Built with Onlook" badge added');
+            // }
 
             // Run the build script
             await this.runBuildStep(buildScript, options);
@@ -164,10 +164,10 @@ export class HostingManager {
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
-            if (!options?.skipBadge) {
-                await this.removeBadge(CUSTOM_OUTPUT_DIR);
-                timer.log('"Built with Onlook" badge removed');
-            }
+            // if (!options?.skipBadge) {
+            //     await this.removeBadge(CUSTOM_OUTPUT_DIR);
+            //     timer.log('"Built with Onlook" badge removed');
+            // }
 
             return {
                 success: true,
@@ -303,10 +303,10 @@ export class HostingManager {
 
         // Check if copyDir method is available before using it
         if (this.fileOps.copyDir) {
-            this.fileOps.copyDir(`/public`, `/${CUSTOM_OUTPUT_DIR}/standalone/public`);
+            this.fileOps.copyDir(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`);
             this.fileOps.copyDir(
-                `/${CUSTOM_OUTPUT_DIR}/static`,
-                `/${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
+                `${CUSTOM_OUTPUT_DIR}/static`,
+                `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
             );
         } else {
             console.warn('copyDir method not available in file operations');
@@ -319,7 +319,7 @@ export class HostingManager {
                 if (this.fileOps.copyFile) {
                     this.fileOps.copyFile(
                         `./${lockFile}`,
-                        `/${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
+                        `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
                     );
                     return { success: true };
                 } else {

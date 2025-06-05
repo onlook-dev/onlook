@@ -20,8 +20,6 @@ import { Publish } from './publish';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const t = useTranslations();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
 

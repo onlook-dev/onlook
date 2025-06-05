@@ -13,7 +13,7 @@ export const IGNORED_DIRECTORIES = [
 
 export const JSX_FILE_EXTENSIONS = ['jsx', 'tsx'];
 
-export const JS_FILE_EXTENSIONS = ['js', 'ts'];
+export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs'];
 
 export const SUPPORTED_LOCK_FILES = [
     'bun.lock',
@@ -21,9 +21,3 @@ export const SUPPORTED_LOCK_FILES = [
     'yarn.lock',
     'pnpm-lock.yaml',
 ];
-
-export enum FILE_EXTENSION {
-    JS = '.js',
-    MJS = '.mjs',
-    TS = '.ts',
-}

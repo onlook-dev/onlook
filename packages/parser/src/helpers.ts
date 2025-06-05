@@ -1,4 +1,4 @@
-import { FILE_EXTENSION } from '@onlook/constants';
+import { JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { type t as T, types as t, type NodePath } from './packages';
 
 export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
@@ -38,14 +38,14 @@ export const genImportDeclaration = (
     dependency: string,
 ): T.VariableDeclaration | T.ImportDeclaration | null => {
     switch (fileExtension) {
-        case FILE_EXTENSION.JS:
+        case JS_FILE_EXTENSIONS[0]: // js
             return t.variableDeclaration('const', [
                 t.variableDeclarator(
                     t.identifier(dependency),
                     t.callExpression(t.identifier('require'), [t.stringLiteral(dependency)]),
                 ),
             ]);
-        case FILE_EXTENSION.MJS:
+        case JS_FILE_EXTENSIONS[2]: // mjs
             return t.importDeclaration(
                 [t.importDefaultSpecifier(t.identifier(dependency))],
                 t.stringLiteral(dependency),
@@ -68,15 +68,11 @@ export const checkVariableDeclarationExist = (
 };
 
 export const isSupportFileExtension = (fileExtension: string): boolean => {
-    return (
-        [FILE_EXTENSION.JS, FILE_EXTENSION.MJS, FILE_EXTENSION.TS].indexOf(
-            fileExtension as FILE_EXTENSION,
-        ) !== -1
-    );
+    return JS_FILE_EXTENSIONS.indexOf(fileExtension as (typeof JS_FILE_EXTENSIONS)[number]) !== -1;
 };
 
 export const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {
-    return [FILE_EXTENSION.JS, FILE_EXTENSION.TS].indexOf(fileExtension as FILE_EXTENSION) !== -1;
+    return JS_FILE_EXTENSIONS.indexOf(fileExtension as (typeof JS_FILE_EXTENSIONS)[number]) !== -1;
 };
 
 export const genASTParserOptionsByFileExtension = (
@@ -84,16 +80,16 @@ export const genASTParserOptionsByFileExtension = (
     sourceType: string = 'module',
 ): object => {
     switch (fileExtension) {
-        case FILE_EXTENSION.JS:
+        case JS_FILE_EXTENSIONS[0]: // js
             return {
                 sourceType: sourceType,
             };
-        case FILE_EXTENSION.MJS:
+        case JS_FILE_EXTENSIONS[2]: // mjs
             return {
                 sourceType: sourceType,
                 plugins: ['jsx'],
             };
-        case FILE_EXTENSION.TS:
+        case JS_FILE_EXTENSIONS[1]: // ts
             return {
                 sourceType: sourceType,
                 plugins: ['typescript'],

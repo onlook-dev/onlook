@@ -9,13 +9,14 @@ import { SubscriptionManager } from './subscription';
 export class UserManager {
     readonly supabase = createClient();
     readonly settings: UserSettingsManager;
-    readonly subscription = new SubscriptionManager();
+    readonly subscription: SubscriptionManager;
     readonly language = new LanguageManager();
     user: UserMetadata | null = null;
 
     constructor() {
         makeAutoObservable(this);
         this.settings = new UserSettingsManager(this);
+        this.subscription = new SubscriptionManager(this);
         this.fetchUser();
     }
 

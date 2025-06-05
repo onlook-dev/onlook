@@ -207,7 +207,7 @@ export class SandboxManager {
             } else {
                 if (
                     extensions.length > 0 &&
-                    !extensions.includes(entry.name.split('.').pop() ?? '')
+                    !extensions.some(extension => entry.name.endsWith(extension))
                 ) {
                     continue;
                 }
@@ -319,8 +319,6 @@ export class SandboxManager {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
             const dirEntries = await this.session.session.fs.readdir(dirPath);
-            console.log(dirEntries);
-            console.log(fileName);
             
             return dirEntries.some((entry: any) => entry.name === fileName);
         } catch (error) {

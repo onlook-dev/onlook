@@ -1,18 +1,11 @@
 import { DropdownMenu, DropdownMenuContent } from '@onlook/ui/dropdown-menu';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
 import { PublishDropdown } from './dropdown';
 import { PublishButton } from './trigger-button';
-import { useUserManager } from '@/components/store/user';
 import { useEditorEngine } from '@/components/store/editor';
 
 export const Publish = observer(() => {
-    const userManager = useUserManager();
     const editorEngine = useEditorEngine();
-
-    useEffect(() => {
-        userManager.subscription.getPlanFromServer();
-    }, [editorEngine.state.publishOpen]);
 
     return (
         <DropdownMenu
