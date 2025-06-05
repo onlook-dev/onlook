@@ -636,7 +636,7 @@ export const deletePageInSandbox = async (session: any, pagePath: string, isDir:
 
         if (isDir) {
             // Delete entire directory
-            await session.fs.remove(fullPath);
+            await session.fs.remove(fullPath, true);
         } else {
             // Delete just the page.tsx file
             const pageFilePath = joinPath(fullPath, 'page.tsx');
