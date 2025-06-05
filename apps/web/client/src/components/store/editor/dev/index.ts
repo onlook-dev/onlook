@@ -216,6 +216,25 @@ export class IDEManager {
         return null;
     }
 
+    async discardFileChanges(id: string) {
+        if (!this.activeFile) {
+            console.error('No active file');
+            return;
+        }
+        try {
+            const originalContent = await this.editorEngine.sandbox.readFile(this.activeFile.path);
+            const file = this.openedFiles.find((f) => f.id === id);
+            if (file) file.isDirty = false;
+            this.activeFile = {
+                ...this.activeFile,
+                isDirty: false,
+                content: originalContent || '',
+            };
+        } catch (error) {
+            console.error('Error discarding file:', error);
+        }
+    }
+
     setHighlightRange(range: CodeRange | null) {
         this.highlightRange = range;
     }
