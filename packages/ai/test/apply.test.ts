@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { applyCodeChange } from '../src/apply';
 
-const hasFastApplyEnv =
-    Boolean(process.env.MORPH_API_KEY) || Boolean(process.env.RELACE_API_KEY);
+const hasFastApplyEnv = Boolean(process.env.MORPH_API_KEY) || Boolean(process.env.RELACE_API_KEY);
 
 describe('applyCodeChange', () => {
     const run = hasFastApplyEnv ? it : it.skip;
