@@ -13,6 +13,7 @@ import {
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { base64ToBlob, getScreenshotPath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -100,13 +101,13 @@ export const ProjectBreadcrumb = observer(() => {
                     method: 'codesandbox_download_url'
                 });
 
-                console.log(t('projects.actions.downloadSuccess'));
+                toast.success(t('projects.actions.downloadSuccess'));
             } else {
                 throw new Error('Failed to generate download URL');
             }
         } catch (error) {
             console.error('Download failed:', error);
-            console.error(t('projects.actions.downloadError'));
+            toast.error(t('projects.actions.downloadError'));
 
             sendAnalytics('download project code failed', {
                 projectId: project.id,
