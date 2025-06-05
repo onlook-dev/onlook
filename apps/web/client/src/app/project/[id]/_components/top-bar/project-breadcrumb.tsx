@@ -175,7 +175,6 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)}>
                         <div className="flex row center items-center group">
                             <Icons.Plus className="mr-2 group-hover:rotate-12 transition-transform" />
