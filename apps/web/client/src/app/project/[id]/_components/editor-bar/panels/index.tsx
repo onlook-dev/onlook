@@ -20,7 +20,7 @@ export const Panels = ({ selectedElement }: { selectedElement: string }) => {
             }}
         >
             <div className="p-4 pl-0 overflow-y-auto">
-                <LayoutPosition className="" />
+                <LayoutPosition className="" classList={selectedElement} />
                 <Typography className="hidden" />
             </div>
         </motion.div>

@@ -9,16 +9,68 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { InputDropdown } from '../inputs/input-dropdown';
 import { InputIcon } from '../inputs/input-icon';
 import { InputRadio } from '../inputs/input-radio';
 
 interface LayoutPositionProps {
     className?: string;
+    classList?: string;
 }
 
-export function LayoutPosition({ className }: LayoutPositionProps) {
+export function LayoutPosition({ className, classList }: LayoutPositionProps) {
+    // Helper to parse classList for Tailwind classes
+    function parseTailwindLayout(classList: string | undefined) {
+        if (!classList) return {};
+        const classes = classList.split(/\s+/);
+        let layoutType: 'None' | 'Flex' | 'Grid' = 'None';
+        let direction: 'vertical' | 'horizontal' = 'horizontal';
+        let verticalAlign: 'top' | 'center' | 'bottom' | 'space-between' = 'center';
+        let horizontalAlign: 'left' | 'center' | 'right' | 'space-between' = 'center';
+
+        if (classes.includes('flex')) layoutType = 'Flex';
+        else if (classes.includes('grid')) layoutType = 'Grid';
+        else layoutType = 'None';
+
+        // Direction
+        if (classes.includes('flex-col') || classes.includes('flex-col-reverse')) direction = 'vertical';
+        else if (classes.includes('flex-row') || classes.includes('flex-row-reverse')) direction = 'horizontal';
+
+        // Vertical alignment (for flex-row)
+        if (direction === 'horizontal') {
+            if (classes.includes('items-start')) verticalAlign = 'top';
+            else if (classes.includes('items-center')) verticalAlign = 'center';
+            else if (classes.includes('items-end')) verticalAlign = 'bottom';
+            else if (classes.includes('items-baseline')) verticalAlign = 'top';
+            else if (classes.includes('items-stretch')) verticalAlign = 'center';
+            if (classes.includes('items-between') || classes.includes('items-space-between')) verticalAlign = 'space-between';
+        }
+        // Horizontal alignment (for flex-row)
+        if (direction === 'horizontal') {
+            if (classes.includes('justify-start')) horizontalAlign = 'left';
+            else if (classes.includes('justify-center')) horizontalAlign = 'center';
+            else if (classes.includes('justify-end')) horizontalAlign = 'right';
+            else if (classes.includes('justify-between') || classes.includes('justify-space-between')) horizontalAlign = 'space-between';
+        }
+        // For flex-col, swap meanings
+        if (direction === 'vertical') {
+            if (classes.includes('items-start')) horizontalAlign = 'left';
+            else if (classes.includes('items-center')) horizontalAlign = 'center';
+            else if (classes.includes('items-end')) horizontalAlign = 'right';
+            else if (classes.includes('items-baseline')) horizontalAlign = 'left';
+            else if (classes.includes('items-stretch')) horizontalAlign = 'center';
+            if (classes.includes('items-between') || classes.includes('items-space-between')) horizontalAlign = 'space-between';
+
+            if (classes.includes('justify-start')) verticalAlign = 'top';
+            else if (classes.includes('justify-center')) verticalAlign = 'center';
+            else if (classes.includes('justify-end')) verticalAlign = 'bottom';
+            else if (classes.includes('justify-between') || classes.includes('justify-space-between')) verticalAlign = 'space-between';
+        }
+        return { layoutType, direction, verticalAlign, horizontalAlign };
+    }
+
+    // State
     const [layoutType, setLayoutType] = useState<'None' | 'Flex' | 'Grid'>('Flex');
     const [direction, setDirection] = useState<'vertical' | 'horizontal'>('horizontal');
     const [verticalAlign, setVerticalAlign] = useState<
@@ -64,6 +116,16 @@ export function LayoutPosition({ className }: LayoutPositionProps) {
         { value: 'right', icon: <Icons.AlignRight className="h-4 w-4" /> },
         { value: 'space-between', icon: <Icons.SpaceBetweenHorizontally className="h-4 w-4" /> },
     ];
+
+    // Sync state with classList
+    useEffect(() => {
+        if (!classList) return;
+        const parsed = parseTailwindLayout(classList);
+        if (parsed.layoutType) setLayoutType(parsed.layoutType);
+        if (parsed.direction) setDirection(parsed.direction);
+        if (parsed.verticalAlign) setVerticalAlign(parsed.verticalAlign);
+        if (parsed.horizontalAlign) setHorizontalAlign(parsed.horizontalAlign);
+    }, [classList]);
 
     return (
         <div className={cn('space-y-1', className)}>
