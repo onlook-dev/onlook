@@ -9,9 +9,6 @@ import {
 import { isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, verifyDomainOwnership, type FileOperations } from '@onlook/utility';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, HOSTING_DOMAIN } from '@onlook/constants';
 import {
-    FreestyleSandboxes,
-    type FreestyleDeployWebConfiguration,
-    type FreestyleDeployWebSuccessResponseV2,
     type FreestyleFile,
 } from 'freestyle-sandboxes';
 import type { EditorEngine } from '../editor/engine';
@@ -226,16 +223,16 @@ export class HostingManager {
         envVars?: Record<string, string>,
     ): Promise<string> {
         // Verify domain ownership
-        const ownedDomains = await this.getOwnedDomains();
-        const domainOwnership = verifyDomainOwnership(urls, ownedDomains, HOSTING_DOMAIN);
-        if (!domainOwnership) {
-            throw new Error('Failed to verify domain ownership');
-        }
+        // const ownedDomains = await this.getOwnedDomains();
+        // const domainOwnership = verifyDomainOwnership(urls, ownedDomains, HOSTING_DOMAIN);
+        // if (!domainOwnership) {
+        //     throw new Error('Failed to verify domain ownership');
+        // }
 
         const deploymentId = await api.domain.publish.mutate({
             files: files,
             config: {
-                domains: urls,
+                domains: ['vunguyen.space'],
                 entrypoint: 'server.js',
                 envVars,
             },

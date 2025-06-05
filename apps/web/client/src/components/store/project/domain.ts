@@ -1,10 +1,19 @@
-import { makeAutoObservable, reaction } from "mobx";
-import type { ProjectManager } from "./manager";
-import { PublishStatus, type Project, type PublishState, type PublishOptions, type PublishRequest, type DomainSettings, DomainType, type PublishResponse } from "@onlook/models";
-import { HostingManager } from "./hosting";
-import { sendAnalytics } from "@/utils/analytics";
-import { DefaultSettings } from "@onlook/constants";
-import { getPublishUrls } from "@onlook/utility";
+import { makeAutoObservable, reaction } from 'mobx';
+import type { ProjectManager } from './manager';
+import {
+    PublishStatus,
+    type Project,
+    type PublishState,
+    type PublishOptions,
+    type PublishRequest,
+    type DomainSettings,
+    DomainType,
+    type PublishResponse,
+} from '@onlook/models';
+import { HostingManager } from './hosting';
+import { sendAnalytics } from '@/utils/analytics';
+import { DefaultSettings } from '@onlook/constants';
+import { getPublishUrls } from '@onlook/utility';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -12,15 +21,13 @@ const DEFAULT_STATE: PublishState = {
 };
 
 export class DomainsManager {
-    private _customHosting: HostingManager | null = null;
+    private _hosting: HostingManager | null = null;
     state: PublishState = DEFAULT_STATE;
     private _project: Project | null = null;
     private _currentProjectId: string | null = null;
     private _isInitialized = false;
 
-    constructor(
-        private projectManager: ProjectManager,
-    ) {
+    constructor(private projectManager: ProjectManager) {
         makeAutoObservable(this);
         this.setupProjectReaction();
     }
@@ -32,7 +39,7 @@ export class DomainsManager {
             (project) => {
                 this.handleProjectChange(project);
             },
-            { fireImmediately: true }
+            { fireImmediately: true },
         );
     }
 
@@ -58,10 +65,10 @@ export class DomainsManager {
             console.error('Editor engine not found');
             return;
         }
-        
+
         // Initialize hosting manager if not already done
-        if (!this._customHosting) {
-            this._customHosting = new HostingManager(this.projectManager.editorEngine);
+        if (!this._hosting) {
+            this._hosting = new HostingManager(this.projectManager.editorEngine);
         }
     }
 
@@ -81,10 +88,6 @@ export class DomainsManager {
 
     get isInitialized() {
         return this._isInitialized;
-    }
-
-    get custom() {
-        return this._customHosting;
     }
 
     get domains() {
@@ -133,24 +136,27 @@ export class DomainsManager {
 
         const request: PublishRequest = {
             buildScript: this._project.commands?.build || DefaultSettings.COMMANDS.build,
-            urls: getPublishUrls(this._project.domains?.custom?.url || ''),
+            urls:
+                this._project.domains?.custom?.type === DomainType.CUSTOM
+                    ? getPublishUrls(this._project.domains?.custom?.url || '')
+                    : [this._project.domains?.custom?.url || ''],
             options,
         };
 
-        if (!this.custom) {
-            console.error('Custom hosting not found');
+        if (!this._hosting) {
+            console.error('Hosting not found');
             this.updateState({
                 status: PublishStatus.ERROR,
-                message: 'Custom hosting not initialized',
+                message: 'Hosting not initialized',
             });
             return false;
         }
 
-        const res = await this.custom.publish(request);
+        const res = await this._hosting.publish(request);
 
         if (!res || !res.success) {
             const error = `Failed to publish hosting environment: ${res?.message || 'client error'}`;
-            console.error(error);
+
             this.updateState({
                 status: PublishStatus.ERROR,
                 message: error,
@@ -162,10 +168,10 @@ export class DomainsManager {
         }
 
         this.updateState({ status: PublishStatus.PUBLISHED, message: res.message });
-        this.updateDomain({ 
-            url: this._project.domains?.custom?.url || '', 
-            type: DomainType.CUSTOM, 
-            publishedAt: new Date().toISOString() 
+        this.updateDomain({
+            url: this._project.domains?.custom?.url || '',
+            type: DomainType.CUSTOM,
+            publishedAt: new Date().toISOString(),
         });
 
         sendAnalytics('hosting publish success', {
@@ -185,18 +191,18 @@ export class DomainsManager {
 
         const urls = getPublishUrls(this._project.domains?.custom?.url || '');
 
-        if (!this.custom) {
-            console.error('Custom hosting not found');
+        if (!this._hosting) {
+            console.error('Hosting not found');
             this.updateState({
                 status: PublishStatus.ERROR,
-                message: 'Custom hosting not initialized',
+                message: 'Hosting not initialized',
             });
             return false;
         }
 
-        const res: PublishResponse = await this.custom.unpublish(urls) || { 
-            success: false, 
-            message: 'Failed to unpublish' 
+        const res: PublishResponse = await this._hosting.unpublish(urls) || {
+            success: false,
+            message: 'Failed to unpublish',
         };
 
         if (!res.success) {
@@ -221,9 +227,9 @@ export class DomainsManager {
     refresh() {
         this.updateState(DEFAULT_STATE);
     }
-    
+
     dispose() {
         this.clearProject();
-        this._customHosting = null;
+        this._hosting = null;
     }
 }
