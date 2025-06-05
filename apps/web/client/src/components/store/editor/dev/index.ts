@@ -1,6 +1,6 @@
+import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
 import type { EditorEngine } from '../engine';
 
 export interface EditorFile {
@@ -19,7 +19,7 @@ export interface CodeRange {
     endColumn: number;
 }
 
-export class DevManager {
+export class IDEManager {
     openedFiles: EditorFile[] = [];
     activeFile: EditorFile | null = null;
     files: string[] = [];
