@@ -18,6 +18,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
+import { sendAnalytics } from '@/utils/analytics';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -29,6 +30,10 @@ export const ProjectBreadcrumb = observer(() => {
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
+
+    const [isDownloading, setIsDownloading] = useState(false);  //------> added
+
+    
 
     async function handleNavigateToProjects(route?: 'create' | 'import') {
         try {
@@ -78,6 +83,44 @@ export const ProjectBreadcrumb = observer(() => {
             });
         }
     }
+
+async function handleDownloadCode() {
+    if (!project?.sandbox?.id) {
+        console.error('No sandbox ID found');
+        return;
+    }
+
+    try {
+        setIsDownloading(true);
+ 
+        const result = await editorEngine.sandbox.downloadFiles(project.name);
+        
+        if (result) {
+            window.open(result.downloadUrl, '_blank');
+            
+            sendAnalytics('download project code', { 
+                projectId: project.id,
+                projectName: project.name,
+                method: 'codesandbox_download_url'
+            });
+            
+            console.log(t('projects.actions.downloadSuccess'));
+        } else {
+            throw new Error('Failed to generate download URL');
+        }
+    } catch (error) {
+        console.error('Download failed:', error);
+        console.error(t('projects.actions.downloadError'));
+        
+        sendAnalytics('download project code failed', { 
+            projectId: project.id,
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
+    } finally {
+        setIsDownloading(false);
+    }
+}
+
 
     async function uploadScreenshot(mimeType: string, screenshotData: string) {
         if (!project?.id) {
@@ -136,6 +179,16 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                        onClick={handleDownloadCode}
+                        disabled={isDownloading}
+                    >
+                        <div className="flex row center items-center group">
+                            <Icons.Download className="mr-2 group-hover:scale-110 transition-transform"/>
+                            {isDownloading ? t('projects.actions.downloadingCode'): t('projects.actions.downloadCode')}
+                        </div>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)}>
                         <div className="flex row center items-center group">
                             <Icons.Plus className="mr-2 group-hover:rotate-12 transition-transform" />
