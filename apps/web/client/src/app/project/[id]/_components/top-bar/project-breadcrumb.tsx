@@ -27,11 +27,9 @@ export const ProjectBreadcrumb = observer(() => {
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const router = useRouter();
-
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
-
-    const [isDownloading, setIsDownloading] = useState(false);  //------> added
+    const [isDownloading, setIsDownloading] = useState(false); 
 
     
 
