@@ -107,7 +107,7 @@ export const ProjectBreadcrumb = observer(() => {
             }
         } catch (error) {
             console.error('Download failed:', error);
-            toast.error(t('projects.actions.downloadError'));
+            toast.error(t('projects.actions.downloadError', { error: error instanceof Error ? error.message : 'Unknown error' }));
 
             sendAnalytics('download project code failed', {
                 projectId: project.id,
