@@ -193,8 +193,8 @@ const isColor = (str: string, joinLinearGradient = false) => {
 };
 
 const isUnit = (str: string) => {
-    if (str.length > 0) {
-        return true;
+    if (str.length === 0) {
+        return false;
     }
     return (
         [
