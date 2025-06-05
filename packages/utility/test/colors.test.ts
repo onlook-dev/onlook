@@ -57,4 +57,11 @@ describe('ColorUtil', () => {
             expect(palette).toEqual(expectPalette);
         });
     });
+
+    describe('Unknown Colors', () => {
+        it('should return transparent color for invalid input', () => {
+            expect(Color.from('not-a-color')).toEqual(Color.transparent);
+            expect(Color.from('not-a-color').toHex8()).toEqual('#00000000');
+        });
+    });
 });

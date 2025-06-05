@@ -85,7 +85,7 @@
             "github": "GitHub으로 로그인",
             "google": "Google로 로그인",
             "lastUsed": "마지막으로 로그인한 계정",
-            "loginToPublish": "편집하려면 로그인하세요",
+            "loginToEdit": "편집하려면 로그인하세요",
             "shareProjects": "프로젝트를 공유하고, 협업하고, 코드로 더 많은 디자인을 해보세요."
         },
         "terms": {

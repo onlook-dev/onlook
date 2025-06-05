@@ -68,10 +68,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         initializeProject().catch((error) => {
             console.error('Error initializing project:', error);
         });
-
-        return () => {
-            editorEngine.sandbox.clear();
-        };
     }, [result, userManager.user?.id]);
 
     const resumeCreate = async () => {
