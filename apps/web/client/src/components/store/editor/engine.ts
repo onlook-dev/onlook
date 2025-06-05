@@ -7,6 +7,7 @@ import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { CopyManager } from './copy';
+import { IDEManager } from './dev';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
@@ -48,6 +49,7 @@ export class EditorEngine {
     readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
     readonly code: CodeManager = new CodeManager(this);
+    readonly ide: IDEManager = new IDEManager(this);
 
     constructor(
         private projectManager: ProjectManager,
@@ -83,6 +85,7 @@ export class EditorEngine {
         this.pages.clear();
         this.chat.clear();
         this.code.clear();
+        this.ide.clear();
         this.error.clear();
         this.sandbox.clear();
     }
