@@ -13,7 +13,7 @@ import {
 import { HostingManager } from './hosting';
 import { sendAnalytics } from '@/utils/analytics';
 import { DefaultSettings } from '@onlook/constants';
-import { getPublishUrls } from '@onlook/utility';
+import { getPublishUrls, getValidSubdomain } from '@onlook/utility';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -222,6 +222,47 @@ export class DomainsManager {
         this.updateState({ status: PublishStatus.UNPUBLISHED, message: null });
         sendAnalytics('hosting unpublish success');
         return true;
+    }
+
+    
+    addBaseDomainToProject(buildFlags?: string) {
+        const domains = {
+            base: null,
+            custom: null,
+            ...this._project?.domains,
+        };
+        const url = `${getValidSubdomain(this._project?.id || '')}.${process.env.NEXT_PUBLIC_HOSTING_DOMAIN}`;
+        domains.base = {
+            type: DomainType.BASE,
+            url,
+        };
+        this.projectManager.updatePartialProject({ ...this._project, domains });
+
+        setTimeout(() => {
+            this._hosting?.publish({ buildScript: this._project?.commands?.build || DefaultSettings.COMMANDS.build, urls: [url], options: { buildFlags } });
+        }, 100);
+    }
+
+    async addCustomDomainToProject(url: string) {
+        const domains = {
+            base: null,
+            custom: null,
+            ...this._project?.domains,
+        };
+        domains.custom = {
+            type: DomainType.CUSTOM,
+            url,
+        };
+        this.projectManager.updatePartialProject({ ...this._project, domains });
+    }
+
+    async removeCustomDomainFromProject() {
+        const domains = {
+            base: null,
+            ...this._project?.domains,
+            custom: null,
+        };
+        this.projectManager.updatePartialProject({ ...this._project, domains });
     }
 
     refresh() {

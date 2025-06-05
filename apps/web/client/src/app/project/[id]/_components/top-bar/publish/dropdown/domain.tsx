@@ -64,11 +64,9 @@ export const DomainSection = observer(
                 console.error('No domains manager found');
                 return;
             }
-            domainsManager.publish({
-                skipBadge: type === DomainType.CUSTOM,
-                buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                envVars: domainsManager.project?.env || {},
-            }); 
+            domainsManager.addBaseDomainToProject(
+                DefaultSettings.EDITOR_SETTINGS.buildFlags,
+            );
         };
 
         const publish = () => {

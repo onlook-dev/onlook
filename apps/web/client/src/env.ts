@@ -28,6 +28,7 @@ export const env = createEnv({
         NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
         NEXT_PUBLIC_POSTHOG_HOST: z.string().optional(),
         NEXT_PUBLIC_FEATURE_COLLABORATION: z.boolean().default(false),
+        NEXT_PUBLIC_HOSTING_DOMAIN: z.string().default('onlook.space'),
     },
 
     /**
@@ -49,6 +50,7 @@ export const env = createEnv({
         RELACE_API_KEY: process.env.RELACE_API_KEY,
         NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
         FREESTYLE_API_KEY: process.env.FREESTYLE_API_KEY,
+        NEXT_PUBLIC_HOSTING_DOMAIN: process.env.NEXT_PUBLIC_HOSTING_DOMAIN,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

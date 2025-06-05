@@ -6,7 +6,7 @@ import {
     type PublishResponse,
     type PublishState,
 } from '@onlook/models';
-import { isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, verifyDomainOwnership, type FileOperations } from '@onlook/utility';
+import { getValidSubdomain, isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, verifyDomainOwnership, type FileOperations } from '@onlook/utility';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, HOSTING_DOMAIN } from '@onlook/constants';
 import {
     type FreestyleFile,
