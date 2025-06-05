@@ -99,7 +99,10 @@ export class IDEManager {
     }
 
     async saveActiveFile() {
-        if (!this.activeFile) return;
+        if (!this.activeFile) {
+            console.error('No active file');
+            return;
+        }
         if (!this.isSandboxReady()) {
             console.error('Sandbox not connected');
             return;
@@ -146,12 +149,25 @@ export class IDEManager {
     }
 
     async loadNewContent(path: string) {
-        if (!this.isSandboxReady()) return;
+        if (!this.isSandboxReady()) {
+            console.error('Sandbox not connected');
+            return;
+        }
         const index = this.openedFiles.findIndex((f) => f.path === path);
-        if (index === -1) return;
+        if (index === -1) {
+            console.error('File not found');
+            return;
+        }
         const content = await this.editorEngine.sandbox.readFile(path);
-        if (content == null) return;
+        if (content == null) {
+            console.error('Content is null');
+            return;
+        }
         const file = this.openedFiles[index];
+        if (!file) {
+            console.error('File not found');
+            return;
+        }
         const updated: EditorFile = { ...file, content };
         this.openedFiles.splice(index, 1, updated);
         if (this.activeFile && this.activeFile.id === file.id) {
@@ -160,7 +176,10 @@ export class IDEManager {
     }
 
     async getFilePathFromOid(oid: string): Promise<string | null> {
-        if (!this.isSandboxReady()) return null;
+        if (!this.isSandboxReady()) {
+            console.error('Sandbox not connected');
+            return null;
+        }
         try {
             const templateNode = await this.editorEngine.sandbox.getTemplateNode(oid);
             if (templateNode?.path) {
@@ -173,8 +192,14 @@ export class IDEManager {
     }
 
     async getElementCodeRange(element: any): Promise<CodeRange | null> {
-        if (!this.activeFile || !element.oid) return null;
-        if (!this.isSandboxReady()) return null;
+        if (!this.activeFile || !element.oid) {
+            console.error('No active file or OID');
+            return null;
+        }
+        if (!this.isSandboxReady()) {
+            console.error('Sandbox not connected');
+            return null;
+        }
         try {
             const templateNode = await this.editorEngine.sandbox.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
