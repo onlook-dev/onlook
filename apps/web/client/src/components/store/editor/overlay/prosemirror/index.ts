@@ -1,11 +1,12 @@
 import { isColorEmpty } from '@onlook/utility';
-import { baseKeymap } from 'prosemirror-commands';
+import { baseKeymap, splitBlock } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
 import { Schema } from 'prosemirror-model';
 import { Plugin } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { adaptValueToCanvas } from '../utils';
+
 
 export const schema = new Schema({
     nodes: {
@@ -81,12 +82,20 @@ export const createEditorPlugins = (onEscape?: () => void, onEnter?: () => void)
             }
             return false;
         },
-        Enter: () => {
-            if (onEnter) {
-                onEnter();
-                return true;
+        Enter: (state, dispatch, view) => {
+            if (view?.state && dispatch) {
+                const { $from } = state.selection;
+                const atEnd = $from.parentOffset === $from.parent.content.size;
+                const isEmpty = $from.parent.content.size === 0;
+                
+                if (isEmpty || (atEnd && $from.parent.textContent.trim() === '')) {
+                    if (onEnter) {
+                        onEnter();
+                        return true;
+                    }
+                }
             }
-            return false;
+            return splitBlock(state, dispatch);
         },
     }),
     keymap(baseKeymap),
