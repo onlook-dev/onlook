@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -128,7 +129,7 @@ export const ZoomControls = observer(() => {
                     </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipPortal>
-                    <TooltipContent side="right">{t('editor.zoom.level')}</TooltipContent>
+                    <TooltipContent side="right">{t(transKeys.editor.zoom.level)}</TooltipContent>
                 </TooltipPortal>
             </Tooltip>
             <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
@@ -174,13 +175,13 @@ export const ZoomControls = observer(() => {
                     onClick={() => (editorEngine.canvas.scale = 1)}
                     className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
                 >
-                    <span className="flex-grow text-mini">{t('editor.zoom.reset')}</span>
+                    <span className="flex-grow text-mini">{t(transKeys.editor.zoom.reset)}</span>
                 </button>
                 <button
                     onClick={() => (editorEngine.canvas.scale = 2)}
                     className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
                 >
-                    <span className="flex-grow text-mini">{t('editor.zoom.double')}</span>
+                    <span className="flex-grow text-mini">{t(transKeys.editor.zoom.double)}</span>
                 </button>
             </PopoverContent>
         </Popover>

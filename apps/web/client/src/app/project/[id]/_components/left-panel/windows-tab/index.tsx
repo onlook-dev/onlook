@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
@@ -17,7 +18,7 @@ export const WindowsTab = observer(() => {
         <p
             className={`${WIDTH} h-full flex items-center justify-center p-2 text-center text-sm text-foreground-secondary`}
         >
-            {t('editor.panels.layers.tabs.windows.emptyState')}
+            {t(transKeys.editor.panels.layers.tabs.windows.emptyState)}
         </p>
     );
 

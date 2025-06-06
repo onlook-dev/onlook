@@ -1,4 +1,5 @@
 import { useProjectsManager } from '@/components/store/projects';
+import { transKeys } from '@/i18n/keys';
 import type { Project } from '@onlook/models';
 import {
     AlertDialog,
@@ -59,14 +60,14 @@ export function Settings({ project }: { project: Project }) {
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
                         <Icons.Pencil className="w-4 h-4" />
-                        {t('projects.actions.renameProject')}
+                        {t(transKeys.projects.actions.renameProject)}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
                         className="gap-2 text-red-400 hover:!bg-red-200/80 hover:!text-red-700 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
                     >
                         <Icons.Trash className="w-4 h-4" />
-                        {t('projects.actions.deleteProject')}
+                        {t(transKeys.projects.actions.deleteProject)}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -74,21 +75,21 @@ export function Settings({ project }: { project: Project }) {
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{t('projects.dialogs.delete.title')}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(transKeys.projects.dialogs.delete.title)}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {t('projects.dialogs.delete.description')}
+                            {t(transKeys.projects.dialogs.delete.description)}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <Button variant={'ghost'} onClick={() => setShowDeleteDialog(false)}>
-                            {t('projects.actions.cancel')}
+                            {t(transKeys.projects.actions.cancel)}
                         </Button>
                         <Button
                             variant={'destructive'}
                             className="rounded-md text-sm"
                             onClick={handleDeleteProject}
                         >
-                            {t('projects.actions.delete')}
+                            {t(transKeys.projects.actions.delete)}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -96,10 +97,10 @@ export function Settings({ project }: { project: Project }) {
             <AlertDialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>{t('projects.dialogs.rename.title')}</AlertDialogTitle>
+                        <AlertDialogTitle>{t(transKeys.projects.dialogs.rename.title)}</AlertDialogTitle>
                     </AlertDialogHeader>
                     <div className="flex flex-col w-full gap-2">
-                        <Label htmlFor="text">{t('projects.dialogs.rename.label')}</Label>
+                        <Label htmlFor="text">{t(transKeys.projects.dialogs.rename.label)}</Label>
                         <Input
                             minLength={0}
                             type="text"
@@ -112,19 +113,19 @@ export function Settings({ project }: { project: Project }) {
                                 isProjectNameEmpty ? 'opacity-100' : 'opacity-0',
                             )}
                         >
-                            {t('projects.dialogs.rename.error')}
+                            {t(transKeys.projects.dialogs.rename.error)}
                         </p>
                     </div>
                     <AlertDialogFooter>
                         <Button variant={'ghost'} onClick={() => setShowRenameDialog(false)}>
-                            {t('projects.actions.cancel')}
+                            {t(transKeys.projects.actions.cancel)}
                         </Button>
                         <Button
                             disabled={isProjectNameEmpty}
                             className="rounded-md text-sm"
                             onClick={handleRenameProject}
                         >
-                            {t('projects.actions.rename')}
+                            {t(transKeys.projects.actions.rename)}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
