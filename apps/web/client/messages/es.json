@@ -123,6 +123,29 @@
           "1 dominio personalizado gratuito alojado con Onlook",
           "Soporte prioritario"
         ]
+      },
+      "launch": {
+        "name": "Launch",
+        "price": "$50/mes",
+        "description": "Perfecto para startups y equipos en crecimiento",
+        "features": [
+          "Mensajes diarios ilimitados",
+          "Soporte prioritario",
+          "Integraciones avanzadas",
+          "Funciones de colaboración en equipo"
+        ]
+      },
+      "scale": {
+        "name": "Scale",
+        "price": "$100/mes",
+        "description": "Funciones de nivel empresarial para equipos grandes",
+        "features": [
+          "Todo en el plan Launch",
+          "Gerente de cuenta dedicado",
+          "Integraciones personalizadas",
+          "Analíticas avanzadas",
+          "Soporte premium 24/7"
+        ]
       }
     },
     "titles": {

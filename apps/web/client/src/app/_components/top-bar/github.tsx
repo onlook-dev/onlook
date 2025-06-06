@@ -4,7 +4,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-const DEFAULT_STAR_COUNT = '10.0k';
+const DEFAULT_STAR_COUNT = '17k';
 
 const formatStarCount = (count: number): string => {
     if (count >= 1000) {
@@ -34,7 +34,7 @@ export function GitHubButton() {
     return (
         <Link href="https://github.com/onlook-dev/onlook" className="flex items-center gap-1.5 text-small hover:opacity-80">
             <Icons.GitHubLogo className="h-5 w-5" />
-            <span>{starCount}</span>
+            <span className="transition-all duration-300">{starCount}</span>
         </Link>
     );
 }
