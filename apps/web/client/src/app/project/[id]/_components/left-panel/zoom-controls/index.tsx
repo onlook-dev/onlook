@@ -44,22 +44,51 @@ export const ZoomControls = observer(() => {
 
     const handleZoomToFit = () => {
         const container = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
-        const content = container?.firstElementChild as HTMLElement;
-        if (container && content) {
-            const contentRect = content.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const scaleX = containerRect.width / contentRect.width;
-            const scaleY = containerRect.height / contentRect.height;
-            const newScale = Math.min(scaleX, scaleY) * DefaultSettings.SCALE;
-            editorEngine.canvas.scale = newScale;
-            //Position fit
-            const newPosition = {
-                x: DefaultSettings.PAN_POSITION.x,
-                y: DefaultSettings.PAN_POSITION.y,
-            };
-            editorEngine.canvas.position = newPosition;
+        if (!container) return;
+    
+        const viewport = container.parentElement;
+        if (!viewport) return;
+    
+        const iframe = container.querySelector('iframe');
+        if (!iframe) return;
+    
+        const iframeStyle = window.getComputedStyle(iframe);
+        const contentWidth = parseInt(iframeStyle.width, 10) || iframe.offsetWidth;
+        const contentHeight = parseInt(iframeStyle.height, 10) || iframe.offsetHeight;
+    
+        const viewportRect = viewport.getBoundingClientRect();
+        const availableWidth = viewportRect.width;
+        const availableHeight = viewportRect.height;
+    
+        if (
+            contentWidth <= 0 ||
+            contentHeight <= 0 ||
+            availableWidth <= 0 ||
+            availableHeight <= 0
+        ) {
+            return;
         }
+    
+        const scaleX = availableWidth / contentWidth;
+        const scaleY = availableHeight / contentHeight;
+        const newScale = Math.min(scaleX, scaleY) * 0.9;
+    
+        if (!isFinite(newScale) || newScale <= 0) return;
+    
+        editorEngine.canvas.scale = newScale;
+    
+        const scaledWidth = contentWidth * newScale;
+        const scaledHeight = contentHeight * newScale;
+    
+        const newPosition = {
+            x: (availableWidth - scaledWidth) / 2,
+            y: (availableHeight - scaledHeight) / 2,
+        };
+    
+        editorEngine.canvas.position = newPosition;
     };
+    
+
 
     const handleCustomZoom = (value: string) => {
         value = value.trim();
