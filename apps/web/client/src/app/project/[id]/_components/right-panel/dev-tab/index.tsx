@@ -348,7 +348,7 @@ export const DevTab = observer(() => {
     };
 
     function closeFile(fileId: string) {
-        if (ide.activeFile?.isDirty) {
+        if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
             setShowUnsavedDialog(true);
             return;
         }
