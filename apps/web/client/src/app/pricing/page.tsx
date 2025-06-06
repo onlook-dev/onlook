@@ -32,7 +32,7 @@ export default function PricingPage() {
             </div>
             <main className="flex-1 pt-28 w-full max-w-6xl mx-auto px-8 flex flex-col items-center">
                 <h1 className="text-foreground-primary text-4xl font-light mb-10">
-                    {t('pricing.titles.choosePlan')}
+                    {t(transKeys.pricing.titles.choosePlan)}
                 </h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
                     {data.map((plan) => (
@@ -42,7 +42,7 @@ export default function PricingPage() {
                             price={plan.price}
                             description={plan.description}
                             features={plan.features}
-                            buttonText={plan.key === 'basic' ? t('pricing.buttons.currentPlan') : `Get ${t(`pricing.plans.${plan.key}.name`)}`}
+                            buttonText={plan.key === 'basic' ? t(transKeys.pricing.buttons.currentPlan) : `Get ${t(transKeys.pricing.plans[plan.key].name)}`}
                         />
                     ))}
                 </div>

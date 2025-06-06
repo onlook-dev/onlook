@@ -102,7 +102,7 @@ export const ProjectBreadcrumb = observer(() => {
                     method: 'codesandbox_download_url'
                 });
 
-                toast.success(t('projects.actions.downloadSuccess'));
+                toast.success(t(transKeys.projects.actions.downloadSuccess));
             } else {
                 throw new Error('Failed to generate download URL');
             }
@@ -175,14 +175,14 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuItem onClick={() => handleNavigateToProjects()}>
                         <div className="flex row center items-center group">
                             <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
-                            {t('projects.actions.goToAllProjects')}
+                            {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)}>
                         <div className="flex row center items-center group">
                             <Icons.Plus className="mr-2 group-hover:rotate-12 transition-transform" />
-                            {t('projects.actions.newProject')}
+                            {t(transKeys.projects.actions.newProject)}
                         </div>
                     </DropdownMenuItem>
 
@@ -192,7 +192,7 @@ export const ProjectBreadcrumb = observer(() => {
                     >
                         <div className="flex row center items-center group">
                             <Icons.Download className="mr-2 group-hover:scale-110 transition-transform" />
-                            {isDownloading ? t('projects.actions.downloadingCode') : t('projects.actions.downloadCode')}
+                            {isDownloading ? t(transKeys.projects.actions.downloadingCode) : t(transKeys.projects.actions.downloadCode)}
                         </div>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
