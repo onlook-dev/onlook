@@ -1,4 +1,6 @@
-{
+import type { Messages } from './en';
+
+const messages: Messages = {
     "pricing": {
         "plans": {
             "basic": {
@@ -313,4 +315,6 @@
             "shortcuts": "ショートカット"
         }
     }
-}
+} as const;
+
+export default messages;

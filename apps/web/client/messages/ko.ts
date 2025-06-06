@@ -1,4 +1,6 @@
-{
+import type { Messages } from './en';
+
+const messages: Messages = {
     "projects": {
         "create": {
             "settings": {
@@ -313,4 +315,6 @@
             "shortcuts": "단축키"
         }
     }
-}
+} as const;
+
+export default messages;

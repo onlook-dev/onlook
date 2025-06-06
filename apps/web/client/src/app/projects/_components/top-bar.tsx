@@ -3,6 +3,7 @@ import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
+import { keys } from '@/i18n/keys';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -24,7 +25,7 @@ export const TopBar = () => {
                     }}
                 >
                     <Icons.Plus className="w-5 h-5 mr-2" />
-                    {t('projects.actions.newProject')}
+                    {t(keys.projects.actions.newProject)}
                 </Button>
                 <CurrentUserAvatar className="w-8 h-8" />
             </div>

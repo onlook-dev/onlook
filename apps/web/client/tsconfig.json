@@ -17,6 +17,7 @@
     "include": [
         "src",
         "tests",
+        "messages",
         ".next/types/**/*.ts"
     ],
     "exclude": [
