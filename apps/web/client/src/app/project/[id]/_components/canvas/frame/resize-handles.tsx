@@ -3,7 +3,7 @@ import type { FrameImpl } from '@/components/store/editor/frames/frame';
 import { DefaultSettings } from '@onlook/constants';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { type MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 
 enum HandleType {
     Right = 'right',
@@ -12,6 +12,7 @@ enum HandleType {
 
 export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
     const editorEngine = useEditorEngine();
+    // TODO implement aspect ratio lock
     const aspectRatioLocked = false;
     const lockedPreset = false;
 
@@ -27,48 +28,44 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
 
         const resize = (e: MouseEvent) => {
             const scale = editorEngine.canvas.scale;
-            let heightDelta = types.includes(HandleType.Bottom) ? (e.clientY - startY) / scale : 0;
             let widthDelta = types.includes(HandleType.Right) ? (e.clientX - startX) / scale : 0;
+            let heightDelta = types.includes(HandleType.Bottom) ? (e.clientY - startY) / scale : 0;
 
-            let currentWidth = startWidth + widthDelta;
-            let currentHeight = startHeight + heightDelta;
+            let newWidth = startWidth + widthDelta;
+            let newHeight = startHeight + heightDelta;
+
+            const minWidth = parseInt(DefaultSettings.MIN_DIMENSIONS.width);
+            const minHeight = parseInt(DefaultSettings.MIN_DIMENSIONS.height);
 
             if (aspectRatioLocked) {
                 if (types.includes(HandleType.Right) && !types.includes(HandleType.Bottom)) {
-                    heightDelta = widthDelta / aspectRatio;
+                    newHeight = newWidth / aspectRatio;
                 } else if (!types.includes(HandleType.Right) && types.includes(HandleType.Bottom)) {
-                    widthDelta = heightDelta * aspectRatio;
+                    newWidth = newHeight * aspectRatio;
                 } else {
                     if (Math.abs(widthDelta) > Math.abs(heightDelta)) {
-                        heightDelta = widthDelta / aspectRatio;
+                        newHeight = newWidth / aspectRatio;
                     } else {
-                        widthDelta = heightDelta * aspectRatio;
+                        newWidth = newHeight * aspectRatio;
                     }
                 }
 
-                currentWidth = startWidth + widthDelta;
-                currentHeight = startHeight + heightDelta;
-
-                if (currentWidth < parseInt(DefaultSettings.MIN_DIMENSIONS.width)) {
-                    currentWidth = parseInt(DefaultSettings.MIN_DIMENSIONS.width);
-                    currentHeight = currentWidth / aspectRatio;
+                if (newWidth < minWidth) {
+                    newWidth = minWidth;
+                    newHeight = newWidth / aspectRatio;
                 }
-                if (currentHeight < parseInt(DefaultSettings.MIN_DIMENSIONS.height)) {
-                    currentHeight = parseInt(DefaultSettings.MIN_DIMENSIONS.height);
-                    currentWidth = currentHeight * aspectRatio;
+                if (newHeight < minHeight) {
+                    newHeight = minHeight;
+                    newWidth = newHeight * aspectRatio;
                 }
             } else {
-                if (currentWidth < parseInt(DefaultSettings.MIN_DIMENSIONS.width)) {
-                    currentWidth = parseInt(DefaultSettings.MIN_DIMENSIONS.width);
-                }
-                if (currentHeight < parseInt(DefaultSettings.MIN_DIMENSIONS.height)) {
-                    currentHeight = parseInt(DefaultSettings.MIN_DIMENSIONS.height);
-                }
+                newWidth = Math.max(newWidth, minWidth);
+                newHeight = Math.max(newHeight, minHeight);
             }
 
             frame.dimension = {
-                width: Math.floor(currentWidth),
-                height: Math.floor(currentHeight),
+                width: Math.round(newWidth),
+                height: Math.round(newHeight),
             };
         };
 
