@@ -3,6 +3,7 @@ import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
 import { SystemTheme } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,7 +19,6 @@ import { useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
-import { Button } from '@onlook/ui/button';
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -300,7 +300,6 @@ export const DevTab = observer(() => {
         return ide.getFilePathFromOid(oid);
     }
 
-    // Add saving functionality
     async function saveFile() {
         if (!ide.activeFile) {
             return;
@@ -319,13 +318,14 @@ export const DevTab = observer(() => {
             }
 
             const remainingDirty = ide.openedFiles.filter((f) => f.isDirty);
-            if (remainingDirty.length === 0) {
-                ide.closeAllFiles();
-                setPendingCloseAll(false);
-                setShowUnsavedDialog(false);
-            } else {
+            if (remainingDirty.length !== 0) {
                 setShowUnsavedDialog(true);
+                return;
             }
+
+            ide.closeAllFiles();
+            setPendingCloseAll(false);
+            setShowUnsavedDialog(false);
 
             return;
         }
@@ -611,7 +611,10 @@ export const DevTab = observer(() => {
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
-                                                        onClick={() => setShowUnsavedDialog(false)}
+                                                        onClick={() => {
+                                                            setShowUnsavedDialog(false);
+                                                            setPendingCloseAll(false);
+                                                        }}
                                                     >
                                                         Cancel
                                                     </Button>
