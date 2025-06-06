@@ -112,64 +112,64 @@ export class AstManager {
         node: LayerNode,
         templateNode: TemplateNode,
     ) {
-        if (node.tagName.toLocaleLowerCase() === 'body') {
-            return;
-        }
-        if (!node.parent) {
-            console.warn('Failed to findNodeInstance: Parent id not found');
-            return;
-        }
+        // if (node.tagName.toLocaleLowerCase() === 'body') {
+        //     return;
+        // }
+        // if (!node.parent) {
+        //     console.warn('Failed to findNodeInstance: Parent id not found');
+        //     return;
+        // }
 
-        const parent = this.mappings.getLayerNode(frameId, node.parent);
-        if (!parent) {
-            console.warn('Failed to findNodeInstance: Parent not found in layer map');
-            return;
-        }
+        // const parent = this.mappings.getLayerNode(frameId, node.parent);
+        // if (!parent) {
+        //     console.warn('Failed to findNodeInstance: Parent not found in layer map');
+        //     return;
+        // }
 
-        if (!parent.oid) {
-            console.warn('Failed to findNodeInstance: Parent has no oid');
-            return;
-        }
-        const parentTemplateNode = await this.editorEngine.sandbox.getTemplateNode(parent.oid);
-        if (!parentTemplateNode) {
-            console.warn('Failed to findNodeInstance: Parent template node not found');
-            return;
-        }
+        // if (!parent.oid) {
+        //     console.warn('Failed to findNodeInstance: Parent has no oid');
+        //     return;
+        // }
+        // const parentTemplateNode = await this.editorEngine.sandbox.getTemplateNode(parent.oid);
+        // if (!parentTemplateNode) {
+        //     console.warn('Failed to findNodeInstance: Parent template node not found');
+        //     return;
+        // }
 
-        if (parentTemplateNode.component !== templateNode.component) {
-            const htmlParent = this.getHtmlElement(parent.domId, frameId);
-            if (!htmlParent) {
-                console.warn('Failed to findNodeInstance: Parent node not found');
-                return;
-            }
-            const children = htmlParent.querySelectorAll(
-                `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
-            );
-            const htmlOriginalNode = this.getHtmlElement(originalNode.domId, frameId);
-            if (!htmlOriginalNode) {
-                console.warn('Failed to findNodeInstance: Original node not found');
-                return;
-            }
-            const index = Array.from(children).indexOf(htmlOriginalNode);
-            const res: { instanceId: string; component: string } | undefined =
-                await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE_CHILD, {
-                    parent: parentTemplateNode,
-                    child: templateNode,
-                    index,
-                });
-            if (res) {
-                originalNode.instanceId = res.instanceId;
-                originalNode.component = res.component;
-                this.updateElementInstance(
-                    frameId,
-                    originalNode.domId,
-                    res.instanceId,
-                    res.component,
-                );
-            } else {
-                await this.findNodeInstance(frameId, originalNode, parent, templateNode);
-            }
-        }
+        // if (parentTemplateNode.component !== templateNode.component) {
+        //     const htmlParent = this.getHtmlElement(parent.domId, frameId);
+        //     if (!htmlParent) {
+        //         console.warn('Failed to findNodeInstance: Parent node not found');
+        //         return;
+        //     }
+        //     const children = htmlParent.querySelectorAll(
+        //         `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
+        //     );
+        //     const htmlOriginalNode = this.getHtmlElement(originalNode.domId, frameId);
+        //     if (!htmlOriginalNode) {
+        //         console.warn('Failed to findNodeInstance: Original node not found');
+        //         return;
+        //     }
+        //     const index = Array.from(children).indexOf(htmlOriginalNode);
+        //     const res: { instanceId: string; component: string } | undefined =
+        //         await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE_CHILD, {
+        //             parent: parentTemplateNode,
+        //             child: templateNode,
+        //             index,
+        //         });
+        //     if (res) {
+        //         originalNode.instanceId = res.instanceId;
+        //         originalNode.component = res.component;
+        //         this.updateElementInstance(
+        //             frameId,
+        //             originalNode.domId,
+        //             res.instanceId,
+        //             res.component,
+        //         );
+        //     } else {
+        //         await this.findNodeInstance(frameId, originalNode, parent, templateNode);
+        //     }
+        // }
     }
 
     getHtmlElement(domId: string, frameId: string): HTMLElement | null {
@@ -195,14 +195,14 @@ export class AstManager {
     }
 
     async refreshAstDoc(frame: WebFrameView) {
-        const root = await this.getBodyFromFrameView(frame);
-        this.mappings.updateDocument(frame.id, root.ownerDocument);
+        // const root = await this.getBodyFromFrameView(frame);
+        // this.mappings.updateDocument(frame.id, root.ownerDocument);
     }
 
     async getBodyFromFrameView(view: WebFrameView) {
-        const htmlString = await view.executeJavaScript('document.documentElement.outerHTML');
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlString, 'text/html');
-        return doc.body;
+        // const htmlString = await view.executeJavaScript('document.documentElement.outerHTML');
+        // const parser = new DOMParser();
+        // const doc = parser.parseFromString(htmlString, 'text/html');
+        // return doc.body;
     }
 }
