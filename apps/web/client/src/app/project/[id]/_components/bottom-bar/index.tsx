@@ -12,7 +12,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { TerminalArea } from './terminal-area';
 
-const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
+const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
     {
         mode: EditorMode.DESIGN,
         icon: Icons.CursorArrow,
@@ -85,14 +85,14 @@ export const BottomBar = observer(() => {
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
                                     <TooltipTrigger asChild>
-                                            <ToggleGroupItem
-                                                value={item.mode}
-                                                aria-label={item.hotkey.description}
-                                                disabled={item.disabled}
-                                                className="hover:text-foreground-hover text-foreground-tertiary"
-                                            >
-                                                <item.icon />
-                                            </ToggleGroupItem>
+                                        <ToggleGroupItem
+                                            value={item.mode}
+                                            aria-label={item.hotkey.description}
+                                            disabled={item.disabled}
+                                            className="hover:text-foreground-hover text-foreground-tertiary"
+                                        >
+                                            <item.icon />
+                                        </ToggleGroupItem>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <HotkeyLabel hotkey={item.hotkey} />
