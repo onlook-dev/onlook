@@ -101,8 +101,6 @@ export const ZoomControls = observer(() => {
         editorEngine.canvas.position = newPosition;
     };
 
-
-
     const handleCustomZoom = (value: string) => {
         value = value.trim();
         const isZoom = /^[0-9]+%?$/.test(value);
