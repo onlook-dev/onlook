@@ -80,7 +80,10 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
 
         const initializeScene = async () => {
             const container = document.querySelector('[data-us-project="Gr1LmwbKSeJOXhpYEdit"]');
-            if (!container) return;
+            if (!container) {
+                console.warn('No container found');
+                return;
+            }
 
             if (sceneRef.current?.destroy) {
                 sceneRef.current.destroy();

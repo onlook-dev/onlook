@@ -74,28 +74,19 @@ export const TextEditor: React.FC<TextEditorProps> = ({
             view.focus();
         }
 
-        return () => {
-            view.destroy();
-        };
-    }, [content, styles, isComponent, isDisabled]);
-
-    // Handle blur events
-    useEffect(() => {
+        // Attach blur handler directly to ProseMirror's contenteditable
         const handleBlur = (event: FocusEvent) => {
-            const editorElement = editorRef.current;
-            if (editorElement && !editorElement.contains(event.relatedTarget as Node)) {
-                onStop?.();
+            if (onStop && !editorRef.current?.contains(event.relatedTarget as Node)) {
+                onStop();
             }
         };
+        view.dom.addEventListener('blur', handleBlur, true);
 
-        const editorElement = editorRef.current;
-        if (editorElement) {
-            editorElement.addEventListener('blur', handleBlur, true);
-            return () => {
-                editorElement.removeEventListener('blur', handleBlur, true);
-            };
-        }
-    }, [onStop]);
+        return () => {
+            view.dom.removeEventListener('blur', handleBlur, true);
+            view.destroy();
+        };
+    }, [content, styles, isComponent, isDisabled, onChange, onStop]);
 
     // Update editor state when disabled state changes
     useEffect(() => {

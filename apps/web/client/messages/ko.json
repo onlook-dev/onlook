@@ -50,7 +50,11 @@
             "startFromScratch": "처음부터 시작하기",
             "importProject": "프로젝트 가져오기",
             "subscriptions": "구독하기",
-            "settings": "설정"
+            "settings": "설정",
+            "downloadCode": "코드 다운로드",
+            "downloadingCode": "다운로드 준비 중...",
+            "downloadSuccess": "다운로드가 성공적으로 시작되었습니다.",
+            "downloadError": "다운로드 준비에 실패했습니다."
         },
         "dialogs": {
             "delete": {
@@ -85,7 +89,7 @@
             "github": "GitHub으로 로그인",
             "google": "Google로 로그인",
             "lastUsed": "마지막으로 로그인한 계정",
-            "loginToPublish": "편집하려면 로그인하세요",
+            "loginToEdit": "편집하려면 로그인하세요",
             "shareProjects": "프로젝트를 공유하고, 협업하고, 코드로 더 많은 디자인을 해보세요."
         },
         "terms": {
@@ -122,6 +126,29 @@
                     "Onlook 워터마크 제거",
                     "Onlook에서 호스팅되는 1개의 무료 사용자 지정 도메인",
                     "우선 지원 서비스"
+                ]
+            },
+            "launch": {
+                "name": "Launch",
+                "price": "$50/월",
+                "description": "스타트업과 성장 중인 팀에 적합",
+                "features": [
+                    "무제한 일일 메시지",
+                    "우선 지원",
+                    "고급 통합",
+                    "팀 협업 기능"
+                ]
+            },
+            "scale": {
+                "name": "Scale",
+                "price": "$100/월",
+                "description": "대규모 팀을 위한 엔터프라이즈급 기능",
+                "features": [
+                    "Launch 플랜의 모든 기능",
+                    "전담 계정 관리자",
+                    "맞춤형 통합",
+                    "고급 분석",
+                    "24/7 프리미엄 지원"
                 ]
             }
         },

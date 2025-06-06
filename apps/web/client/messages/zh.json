@@ -50,7 +50,11 @@
             "startFromScratch": "从零开始",
             "importProject": "导入项目",
             "subscriptions": "订阅",
-            "settings": "设置"
+            "settings": "设置",
+            "downloadCode": "下载代码",
+            "downloadingCode": "准备下载...",
+            "downloadSuccess": "下载成功",
+            "downloadError": "下载失败"
         },
         "dialogs": {
             "delete": {
@@ -99,7 +103,7 @@
     "pricing": {
         "plans": {
             "basic": {
-                "name": "Onlook Basic",
+                "name": "Basic",
                 "price": "$0/月",
                 "description": "轻松在代码中进行原型设计和实验。",
                 "features": [
@@ -111,7 +115,7 @@
                 ]
             },
             "pro": {
-                "name": "Onlook Pro",
+                "name": "Pro",
                 "price": "$20/月",
                 "description": "释放创意，不受限制。使用 AI 构建惊艳网站。",
                 "features": [
@@ -122,6 +126,29 @@
                     "移除 Onlook 水印",
                     "1 个免费使用 Onlook 托管的自定义域名",
                     "优先支持"
+                ]
+            },
+            "launch": {
+                "name": "Launch",
+                "price": "$50/月",
+                "description": "适用于初创公司和成长型团队",
+                "features": [
+                    "无限制的每日消息",
+                    "优先支持",
+                    "高级集成",
+                    "团队协作功能"
+                ]
+            },
+            "scale": {
+                "name": "Scale",
+                "price": "$100/月",
+                "description": "面向大型团队的企业级功能",
+                "features": [
+                    "包含 Launch 计划的所有内容",
+                    "专属客户经理",
+                    "自定义集成",
+                    "高级分析",
+                    "24/7 高级支持"
                 ]
             }
         },

@@ -1,5 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
+import { transKeys } from '@/i18n/keys';
+import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import { uploadBlobToStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
@@ -12,6 +14,7 @@ import {
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { base64ToBlob, getScreenshotPath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -26,9 +29,9 @@ export const ProjectBreadcrumb = observer(() => {
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const router = useRouter();
-
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isClosingProject, setIsClosingProject] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     async function handleNavigateToProjects(route?: 'create' | 'import') {
         try {
@@ -78,6 +81,46 @@ export const ProjectBreadcrumb = observer(() => {
             });
         }
     }
+
+    async function handleDownloadCode() {
+        if (!project?.sandbox?.id) {
+            console.error('No sandbox ID found');
+            return;
+        }
+
+        try {
+            setIsDownloading(true);
+
+            const result = await editorEngine.sandbox.downloadFiles(project.name);
+
+            if (result) {
+                window.open(result.downloadUrl, '_blank');
+
+                sendAnalytics('download project code', {
+                    projectId: project.id,
+                    projectName: project.name,
+                    method: 'codesandbox_download_url'
+                });
+
+                toast.success(t(transKeys.projects.actions.downloadSuccess));
+            } else {
+                throw new Error('Failed to generate download URL');
+            }
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.error(t(transKeys.projects.actions.downloadError), {
+                description: error instanceof Error ? error.message : 'Unknown error'
+            });
+
+            sendAnalytics('download project code failed', {
+                projectId: project.id,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
+        } finally {
+            setIsDownloading(false);
+        }
+    }
+
 
     async function uploadScreenshot(mimeType: string, screenshotData: string) {
         if (!project?.id) {
@@ -132,14 +175,24 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuItem onClick={() => handleNavigateToProjects()}>
                         <div className="flex row center items-center group">
                             <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
-                            {t('projects.actions.goToAllProjects')}
+                            {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)}>
                         <div className="flex row center items-center group">
                             <Icons.Plus className="mr-2 group-hover:rotate-12 transition-transform" />
-                            {t('projects.actions.newProject')}
+                            {t(transKeys.projects.actions.newProject)}
+                        </div>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                        onClick={handleDownloadCode}
+                        disabled={isDownloading}
+                    >
+                        <div className="flex row center items-center group">
+                            <Icons.Download className="mr-2 group-hover:scale-110 transition-transform" />
+                            {isDownloading ? t(transKeys.projects.actions.downloadingCode) : t(transKeys.projects.actions.downloadCode)}
                         </div>
                     </DropdownMenuItem>
                 </DropdownMenuContent>

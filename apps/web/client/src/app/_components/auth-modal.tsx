@@ -1,3 +1,4 @@
+import { transKeys } from '@/i18n/keys';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -19,10 +20,10 @@ export function AuthModal() {
             <AlertDialogContent className="!max-w-sm bg-black">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-center text-xl font-normal">
-                        {t('welcome.login.loginToEdit')}
+                        {t(transKeys.welcome.login.loginToEdit)}
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-center">
-                        {t('welcome.login.shareProjects')}
+                        {t(transKeys.welcome.login.shareProjects)}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 flex flex-col">
@@ -31,7 +32,7 @@ export function AuthModal() {
                 </div>
                 <AlertDialogFooter className="flex !justify-center w-full">
                     <Button variant={'ghost'} onClick={() => setIsAuthModalOpen(false)}>
-                        {t('projects.actions.close')}
+                        {t(transKeys.projects.actions.close)}
                     </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>

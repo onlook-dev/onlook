@@ -2,6 +2,7 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { EditorMode } from '@onlook/models';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
@@ -12,15 +13,15 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { TerminalArea } from './terminal-area';
 
-const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
+const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
     {
         mode: EditorMode.DESIGN,
         icon: Icons.CursorArrow,
         hotkey: Hotkey.SELECT,
         disabled: false,
         draggable: false,
-        label: t('editor.toolbar.tools.select.name'),
-        tooltip: t('editor.toolbar.tools.select.tooltip'),
+        label: t(transKeys.editor.toolbar.tools.select.name),
+        tooltip: t(transKeys.editor.toolbar.tools.select.tooltip),
     },
     {
         mode: EditorMode.PAN,
@@ -28,8 +29,8 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
         hotkey: Hotkey.PAN,
         disabled: false,
         draggable: false,
-        label: t('editor.toolbar.tools.pan.name'),
-        tooltip: t('editor.toolbar.tools.pan.tooltip'),
+        label: t(transKeys.editor.toolbar.tools.pan.name),
+        tooltip: t(transKeys.editor.toolbar.tools.pan.tooltip),
     },
     {
         mode: EditorMode.INSERT_DIV,
@@ -37,8 +38,8 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
         hotkey: Hotkey.INSERT_DIV,
         disabled: false,
         draggable: true,
-        label: t('editor.toolbar.tools.insertDiv.name'),
-        tooltip: t('editor.toolbar.tools.insertDiv.tooltip'),
+        label: t(transKeys.editor.toolbar.tools.insertDiv.name),
+        tooltip: t(transKeys.editor.toolbar.tools.insertDiv.tooltip),
     },
     {
         mode: EditorMode.INSERT_TEXT,
@@ -46,8 +47,8 @@ const TOOLBAR_ITEMS = ({ t }: { t: (key: string) => string }) => [
         hotkey: Hotkey.INSERT_TEXT,
         disabled: false,
         draggable: true,
-        label: t('editor.toolbar.tools.insertText.name'),
-        tooltip: t('editor.toolbar.tools.insertText.tooltip'),
+        label: t(transKeys.editor.toolbar.tools.insertText.name),
+        tooltip: t(transKeys.editor.toolbar.tools.insertText.tooltip),
     },
 ];
 
@@ -85,14 +86,14 @@ export const BottomBar = observer(() => {
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
                                     <TooltipTrigger asChild>
-                                            <ToggleGroupItem
-                                                value={item.mode}
-                                                aria-label={item.hotkey.description}
-                                                disabled={item.disabled}
-                                                className="hover:text-foreground-hover text-foreground-tertiary"
-                                            >
-                                                <item.icon />
-                                            </ToggleGroupItem>
+                                        <ToggleGroupItem
+                                            value={item.mode}
+                                            aria-label={item.hotkey.description}
+                                            disabled={item.disabled}
+                                            className="hover:text-foreground-hover text-foreground-tertiary"
+                                        >
+                                            <item.icon />
+                                        </ToggleGroupItem>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <HotkeyLabel hotkey={item.hotkey} />

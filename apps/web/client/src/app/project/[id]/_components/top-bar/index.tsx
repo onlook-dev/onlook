@@ -3,6 +3,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
+import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
@@ -96,7 +97,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                            {t('editor.toolbar.versionHistory')}
+                            {t(transKeys.editor.toolbar.versionHistory)}
                         </TooltipContent>
                     </Tooltip> */}
                     <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
