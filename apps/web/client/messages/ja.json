@@ -2,7 +2,7 @@
     "pricing": {
         "plans": {
             "basic": {
-                "name": "Onlook Basic",
+                "name": "Basic",
                 "price": "$0/月",
                 "description": "コードで簡単にプロトタイピングと実験を。",
                 "features": [
@@ -14,7 +14,7 @@
                 ]
             },
             "pro": {
-                "name": "Onlook Pro",
+                "name": "Pro",
                 "price": "$20/月",
                 "description": "創造性を解き放とう。AIで美しいサイトを構築。",
                 "features": [

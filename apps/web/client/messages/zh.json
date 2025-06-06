@@ -99,7 +99,7 @@
     "pricing": {
         "plans": {
             "basic": {
-                "name": "Onlook Basic",
+                "name": "Basic",
                 "price": "$0/月",
                 "description": "轻松在代码中进行原型设计和实验。",
                 "features": [
@@ -111,7 +111,7 @@
                 ]
             },
             "pro": {
-                "name": "Onlook Pro",
+                "name": "Pro",
                 "price": "$20/月",
                 "description": "释放创意，不受限制。使用 AI 构建惊艳网站。",
                 "features": [

@@ -7,14 +7,14 @@ import { PricingCard } from './pricing-card';
 
 export default function PricingPage() {
     const t = useTranslations();
-    const plans = ['basic', 'launch', 'pro', 'scale'];
+    const plans = ['basic', 'pro', 'launch', 'scale'];
 
     const data = plans.map((key) => ({
         key,
         plan: t(`pricing.plans.${key}.name`),
         price: t(`pricing.plans.${key}.price`),
         description: t(`pricing.plans.${key}.description`),
-        features: t(`pricing.plans.${key}.features`, { returnObjects: true }) as string[],
+        features: t.raw(`pricing.plans.${key}.features`),
     }));
 
     return (
