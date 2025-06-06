@@ -363,6 +363,5 @@ export class InsertManager {
     clear() {
         // Clear drawing state
         this.isDrawing = false;
-        this.drawOrigin = undefined;
     }
 }
