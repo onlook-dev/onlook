@@ -45,23 +45,23 @@ export default function LoginPage() {
                         </Button>
                     )}
                     <p className="text-small text-foreground-onlook">
-                        {t('welcome.terms.agreement')}{' '}
+                        {t(transKeys.welcome.terms.agreement)}{' '}
                         <button
                             onClick={() =>
                                 window.open('https://onlook.com/privacy-policy', '_blank')
                             }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
-                            {t('welcome.terms.privacy')}
+                            {t(transKeys.welcome.terms.privacy)}
                         </button>{' '}
-                        {t('welcome.terms.and')}{' '}
+                        {t(transKeys.welcome.terms.and)}{' '}
                         <button
                             onClick={() =>
                                 window.open('https://onlook.com/terms-of-service', '_blank')
                             }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
-                            {t('welcome.terms.tos')}
+                            {t(transKeys.welcome.terms.tos)}
                         </button>
                     </p>
                 </div>

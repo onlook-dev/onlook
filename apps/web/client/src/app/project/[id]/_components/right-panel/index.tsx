@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { EditorMode, EditorTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { ResizablePanel } from '@onlook/ui/resizable';
@@ -54,7 +55,7 @@ export const RightPanel = observer(() => {
                                     value={EditorTabValue.CHAT}
                                 >
                                     <Icons.Sparkles className="mr-0.5 mb-0.5 h-4 w-4" />
-                                    {t('editor.panels.edit.tabs.chat.name')}
+                                    {t(transKeys.editor.panels.edit.tabs.chat.name)}
                                     <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground" />
                                 </TabsTrigger>
                             </ChatPanelDropdown>
