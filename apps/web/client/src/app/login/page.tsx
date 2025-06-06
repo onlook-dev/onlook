@@ -1,6 +1,7 @@
 'use client';
 
 import { Dunes } from '@/components/ui/dunes';
+import { transKeys } from '@/i18n/keys';
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -28,10 +29,10 @@ export default function LoginPage() {
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-title1 leading-tight">
-                            {t('welcome.title')}
+                            {t(transKeys.welcome.title)}
                         </h1>
                         <p className="text-foreground-onlook text-regular">
-                            {t('welcome.description')}
+                            {t(transKeys.welcome.description)}
                         </p>
                     </div>
                     <div className="space-x-2 flex flex-row">
@@ -65,7 +66,7 @@ export default function LoginPage() {
                     </p>
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-600">
-                    <p>{t('welcome.version', { version: '1.0.0' })}</p>
+                    <p>{t(transKeys.welcome.version, { version: '1.0.0' })}</p>
                 </div>
             </div>
             <Dunes />

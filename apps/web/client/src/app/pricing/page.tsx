@@ -1,20 +1,28 @@
 'use client';
 
+import { transKeys } from '@/i18n/keys';
 import { useTranslations } from 'next-intl';
 import { Footer } from '../_components/landing-page/page-footer';
 import { TopBar } from '../_components/top-bar';
 import { PricingCard } from './pricing-card';
 
+enum PlanKey {
+    BASIC = 'basic',
+    PRO = 'pro',
+    LAUNCH = 'launch',
+    SCALE = 'scale',
+}
+
 export default function PricingPage() {
     const t = useTranslations();
-    const plans = ['basic', 'pro', 'launch', 'scale'];
+    const plans = [PlanKey.BASIC, PlanKey.PRO, PlanKey.LAUNCH, PlanKey.SCALE];
 
-    const data = plans.map((key) => ({
+    const data = plans.map((key: PlanKey) => ({
         key,
-        plan: t(`pricing.plans.${key}.name`),
-        price: t(`pricing.plans.${key}.price`),
-        description: t(`pricing.plans.${key}.description`),
-        features: t.raw(`pricing.plans.${key}.features`),
+        plan: t(transKeys.pricing.plans[key].name),
+        price: t(transKeys.pricing.plans[key].price),
+        description: t(transKeys.pricing.plans[key].description),
+        features: t.raw(transKeys.pricing.plans[key].features as any),
     }));
 
     return (

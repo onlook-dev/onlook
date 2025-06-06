@@ -222,7 +222,12 @@ export class IDEManager {
             return;
         }
         try {
-            const originalContent = await this.editorEngine.sandbox.readFile((this.openedFiles.find((f) => f.id === id))?.path);
+            const path = (this.openedFiles.find((f) => f.id === id))?.path;
+            if (!path) {
+                console.error('No path found');
+                return;
+            }
+            const originalContent = await this.editorEngine.sandbox.readFile(path);
             const file = this.openedFiles.find((f) => f.id === id);
             if (file) file.isDirty = false;
             this.activeFile = {

@@ -50,7 +50,11 @@
             "startFromScratch": "처음부터 시작하기",
             "importProject": "프로젝트 가져오기",
             "subscriptions": "구독하기",
-            "settings": "설정"
+            "settings": "설정",
+            "downloadCode": "코드 다운로드",
+            "downloadingCode": "다운로드 준비 중...",
+            "downloadSuccess": "다운로드가 성공적으로 시작되었습니다.",
+            "downloadError": "다운로드 준비에 실패했습니다."
         },
         "dialogs": {
             "delete": {
