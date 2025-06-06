@@ -18,11 +18,11 @@ export default function PricingPage() {
     }));
 
     return (
-        <div className="flex flex-col min-h-screen items-center">
+        <div className="flex flex-col min-h-screen justify-center items-center">
             <div className="fixed top-0 left-0 w-full h-12 bg-background/80 backdrop-blur-sm z-50">
                 <TopBar />
             </div>
-            <main className="flex-1 pt-16 w-full max-w-6xl mx-auto px-8 flex flex-col items-center">
+            <main className="flex-1 pt-28 w-full max-w-6xl mx-auto px-8 flex flex-col items-center">
                 <h1 className="text-foreground-primary text-4xl font-light mb-10">
                     {t('pricing.titles.choosePlan')}
                 </h1>
