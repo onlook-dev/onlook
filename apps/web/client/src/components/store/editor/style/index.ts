@@ -90,6 +90,12 @@ export class StyleManager {
         domIds: string[] = [],
         type: StyleChangeType = StyleChangeType.Value,
     ): UpdateStyleAction {
+        if (!this.editorEngine) {
+            return {
+                type: 'update-style',
+                targets: [],
+            };
+        }
         const selected = this.editorEngine.elements.selected;
         const filteredSelected =
             domIds.length > 0 ? selected.filter((el) => domIds.includes(el.domId)) : selected;
@@ -197,8 +203,5 @@ export class StyleManager {
         this.domIdToStyle = new Map();
         this.prevSelected = '';
         this.mode = StyleMode.Root;
-
-        // Clear references
-        this.editorEngine = null as unknown as EditorEngine;
     }
 }
