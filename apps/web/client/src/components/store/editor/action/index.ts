@@ -15,7 +15,8 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
-import { debounce } from 'lodash';
+import { debounce, cloneDeep } from 'lodash';
+import { toJS } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ActionManager {
@@ -103,13 +104,12 @@ export class ActionManager {
                     return [key, value];
                 }),
             );
-
             const change = {
-                ...target.change,
+                original:target.change.original,
                 updated: convertedChange,
             };
-
-            const domEl = await frameData.view.updateStyle(target.domId, change);
+            // cloneDeep is used to avoid the issue of observable values can not pass through the webview
+            const domEl = await frameData.view.updateStyle(target.domId, cloneDeep(change));
             if (!domEl) {
                 console.error('Failed to update style');
                 continue;

@@ -22,6 +22,9 @@ export const TopBar = observer(() => {
                 <Link href="https://docs.onlook.com" target="_blank" className="text-regular hover:opacity-80">
                     Docs
                 </Link>
+                {/* <Link href={Routes.PRICING} className="text-regular hover:opacity-80">
+                    Pricing
+                </Link> */}
                 <GitHubButton />
             </div>
             <div className="flex items-center gap-3">

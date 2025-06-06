@@ -1,7 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
+import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
 import { SystemTheme } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,47 +14,20 @@ import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
-import { getBasicSetup, getExtensions, getLanguageFromFileName } from './code-mirror-config';
+import { getBasicSetup, getExtensions } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
-
-enum TabValue {
-    CONSOLE = 'console',
-    NETWORK = 'network',
-    ELEMENTS = 'elements',
-}
-
-interface EditorFile {
-    id: string;
-    filename: string;
-    path: string;
-    content: string;
-    language: string;
-    isDirty: boolean;
-}
-
-interface CodeRange {
-    startLineNumber: number;
-    startColumn: number;
-    endLineNumber: number;
-    endColumn: number;
-}
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { theme } = useTheme();
-
-    const [openedFiles, setOpenedFiles] = useState<EditorFile[]>([]);
-    const [activeFile, setActiveFile] = useState<EditorFile | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [highlightRange, setHighlightRange] = useState<CodeRange | null>(null);
-    const [isDirty, setIsDirty] = useState(false);
+    const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
-    const [files, setFiles] = useState<string[]>([]);
-    const [isFilesLoading, setIsFilesLoading] = useState(true);
+    const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+    const [pendingCloseAll, setPendingCloseAll] = useState(false);
+    const isDirty = ide.activeFile?.isDirty ?? false;
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
 
@@ -68,10 +43,10 @@ export const DevTab = observer(() => {
     };
 
     const getActiveEditorView = (): EditorView | undefined => {
-        if (!activeFile) {
+        if (!ide.activeFile) {
             return undefined;
         }
-        return editorViewsRef.current.get(activeFile.id);
+        return editorViewsRef.current.get(ide.activeFile.id);
     };
 
     useEffect(() => {
@@ -82,7 +57,7 @@ export const DevTab = observer(() => {
             }
 
             const element = selectedElements[0];
-            setIsLoading(true);
+            ide.isLoading = true;
 
             try {
                 const filePath = await getFilePathFromOid(element?.oid || '');
@@ -96,14 +71,14 @@ export const DevTab = observer(() => {
                         const range = await getElementCodeRange(element);
 
                         if (range) {
-                            setHighlightRange(range);
+                            ide.setHighlightRange(range);
                         }
                     }
                 }
             } catch (error) {
                 console.error('Error loading file for selected element:', error);
             } finally {
-                setIsLoading(false);
+                ide.isLoading = false;
             }
         };
 
@@ -111,7 +86,7 @@ export const DevTab = observer(() => {
     }, [editorEngine.elements.selected]);
 
     async function getElementCodeRange(element: any): Promise<CodeRange | null> {
-        if (!activeFile || !element.oid) {
+        if (!ide.activeFile || !element.oid) {
             return null;
         }
 
@@ -137,7 +112,7 @@ export const DevTab = observer(() => {
     }
 
     useEffect(() => {
-        if (!activeFile || !highlightRange) {
+        if (!ide.activeFile || !ide.highlightRange) {
             return;
         }
 
@@ -148,41 +123,41 @@ export const DevTab = observer(() => {
 
         try {
             // Calculate positions for scrolling
-            const lines = activeFile.content.split('\n');
+            const lines = ide.activeFile!.content.split('\n');
 
             // Safety check - validate line numbers are within bounds
             if (
-                highlightRange.startLineNumber > lines.length ||
-                highlightRange.endLineNumber > lines.length ||
-                highlightRange.startLineNumber < 1 ||
-                highlightRange.endLineNumber < 1
+                ide.highlightRange.startLineNumber > lines.length ||
+                ide.highlightRange.endLineNumber > lines.length ||
+                ide.highlightRange.startLineNumber < 1 ||
+                ide.highlightRange.endLineNumber < 1
             ) {
                 console.warn('Highlight range out of bounds, clearing selection');
-                setHighlightRange(null);
+                ide.setHighlightRange(null);
                 return;
             }
 
             // Calculate start position
             let startPos = 0;
-            for (let i = 0; i < highlightRange.startLineNumber - 1; i++) {
+            for (let i = 0; i < ide.highlightRange.startLineNumber - 1; i++) {
                 startPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
-            startPos += highlightRange.startColumn;
+            startPos += ide.highlightRange.startColumn;
 
             // Calculate end position
             let endPos = 0;
-            for (let i = 0; i < highlightRange.endLineNumber - 1; i++) {
+            for (let i = 0; i < ide.highlightRange.endLineNumber - 1; i++) {
                 endPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
-            endPos += highlightRange.endColumn;
+            endPos += ide.highlightRange.endColumn;
             if (
-                startPos >= activeFile.content.length ||
-                endPos > activeFile.content.length ||
+                startPos >= ide.activeFile!.content.length ||
+                endPos > ide.activeFile!.content.length ||
                 startPos < 0 ||
                 endPos < 0
             ) {
                 console.warn('Highlight position out of bounds, clearing selection');
-                setHighlightRange(null);
+                ide.setHighlightRange(null);
                 return;
             }
 
@@ -199,30 +174,27 @@ export const DevTab = observer(() => {
             });
         } catch (error) {
             console.error('Error applying highlight:', error);
-            setHighlightRange(null);
+            ide.setHighlightRange(null);
         }
-    }, [highlightRange, activeFile]);
+    }, [ide.highlightRange, ide.activeFile]);
 
     // Subscribe to file events
     useEffect(() => {
         const handleFileEvent = async (event: FileEvent) => {
             // Only fetch all files when files are added/removed
             if (event.type === 'add' || event.type === 'remove') {
-                setIsFilesLoading(true);
+                ide.isFilesLoading = true;
                 try {
-                    const files = await editorEngine.sandbox.listAllFiles();
-                    setFiles(files);
+                    await ide.refreshFiles();
                 } catch (error) {
                     console.error('Error loading files:', error);
-                } finally {
-                    setIsFilesLoading(false);
                 }
             }
 
             if (event.type === 'change') {
-                if (activeFile) {
-                    if (event.paths.includes(activeFile.path)) {
-                        await loadNewContent(activeFile.path);
+                if (ide.activeFile) {
+                    if (event.paths.includes(ide.activeFile.path)) {
+                        await loadNewContent(ide.activeFile.path);
                     }
                 }
             }
@@ -233,7 +205,7 @@ export const DevTab = observer(() => {
         return () => {
             unsubscribe();
         };
-    }, [editorEngine.sandbox, activeFile]);
+    }, [editorEngine.sandbox, ide.activeFile]);
 
     // Load files when sandbox becomes connected
     useEffect(() => {
@@ -243,14 +215,11 @@ export const DevTab = observer(() => {
                 return;
             }
 
-            setIsFilesLoading(true);
+            ide.isFilesLoading = true;
             try {
-                const files = await editorEngine.sandbox.listAllFiles();
-                setFiles(files);
+                await ide.refreshFiles();
             } catch (error) {
                 console.error('Error loading initial files:', error);
-            } finally {
-                setIsFilesLoading(false);
             }
         };
 
@@ -260,14 +229,7 @@ export const DevTab = observer(() => {
     // Clear files and opened files when sandbox disconnects
     useEffect(() => {
         if (!isSandboxReady()) {
-            // Clear all state when sandbox is disconnected
-            setFiles([]);
-            setOpenedFiles([]);
-            setActiveFile(null);
-            setHighlightRange(null);
-            setIsDirty(false);
-            setIsFilesLoading(false);
-
+            ide.clear();
             // Clean up all editor instances
             editorViewsRef.current.forEach((view) => view.destroy());
             editorViewsRef.current.clear();
@@ -280,15 +242,12 @@ export const DevTab = observer(() => {
             return;
         }
 
-        setIsFilesLoading(true);
+        ide.isFilesLoading = true;
         try {
             await editorEngine.sandbox.index();
-            const files = await editorEngine.sandbox.listAllFiles();
-            setFiles(files);
+            await ide.refreshFiles();
         } catch (error) {
             console.error('Error refreshing files:', error);
-        } finally {
-            setIsFilesLoading(false);
         }
     };
 
@@ -299,32 +258,7 @@ export const DevTab = observer(() => {
         }
 
         try {
-            const existedFileIndex = openedFiles.findIndex((f) => f.path === filePath);
-            if (existedFileIndex === -1) {
-                console.error('File not found:', filePath);
-                return;
-            }
-
-            const content = await editorEngine.sandbox.readFile(filePath);
-            if (content) {
-                const existingFile = openedFiles[existedFileIndex];
-                if (!existingFile) {
-                    console.error('File not found:', filePath);
-                    return;
-                }
-
-                const newFile: EditorFile = {
-                    id: existingFile.id,
-                    filename: existingFile.filename,
-                    path: existingFile.path,
-                    language: existingFile.language,
-                    isDirty: existingFile.isDirty,
-                    content: content,
-                };
-                const updatedFiles = [...openedFiles];
-                updatedFiles.splice(existedFileIndex, 1, newFile);
-                setOpenedFiles(updatedFiles);
-            }
+            await ide.loadNewContent(filePath);
         } catch (error) {
             console.error('Error loading new content:', error);
         }
@@ -337,51 +271,24 @@ export const DevTab = observer(() => {
         }
 
         try {
-            setIsLoading(true);
-            const content = await editorEngine.sandbox.readFile(filePath);
-            const fileName = filePath.split('/').pop() || '';
-            const fileLanguage = getLanguageFromFileName(fileName);
-
-            // Check if file is already open
-            const existingFile = openedFiles.find((f) => f.path === filePath);
-            if (existingFile) {
-                setActiveFile(existingFile);
-                return existingFile;
-            }
-
-            const newFile = {
-                id: nanoid(),
-                filename: fileName,
-                path: filePath,
-                content: content || '',
-                language: fileLanguage,
-                isDirty: false,
-            };
-
-            setOpenedFiles([...openedFiles, newFile]);
-            setActiveFile(newFile);
-            setIsDirty(false);
-            return newFile;
+            return await ide.openFile(filePath);
         } catch (error) {
             console.error('Error loading file:', error);
             return null;
-        } finally {
-            setIsLoading(false);
         }
     }
 
     function handleFileSelect(file: EditorFile) {
-        setHighlightRange(null);
-        setActiveFile(file);
-        setIsDirty(file.isDirty);
+        ide.setHighlightRange(null);
+        ide.activeFile = file;
     }
 
     function handleJumpToElement() {
-        if (!activeFile) {
+        if (!ide.activeFile) {
             return;
         }
 
-        console.log(`Jump to element in ${activeFile.path}`);
+        console.log(`Jump to element in ${ide.activeFile.path}`);
     }
 
     async function getFilePathFromOid(oid: string): Promise<string | null> {
@@ -390,22 +297,11 @@ export const DevTab = observer(() => {
             return null;
         }
 
-        // Try to get the actual file path from the object ID
-        try {
-            const templateNode = await editorEngine.sandbox.getTemplateNode(oid);
-            if (templateNode?.path) {
-                return templateNode.path;
-            }
-        } catch (error) {
-            console.error('Error getting file path from OID:', error);
-        }
-
-        return null;
+        return ide.getFilePathFromOid(oid);
     }
 
-    // Add saving functionality
     async function saveFile() {
-        if (!activeFile) {
+        if (!ide.activeFile) {
             return;
         }
 
@@ -414,123 +310,102 @@ export const DevTab = observer(() => {
             return;
         }
 
-        setIsLoading(true);
-        try {
-            const originalContent = await editorEngine.sandbox.readFile(activeFile.path);
-            editorEngine.action.run({
-                type: 'write-code',
-                diffs: [
-                    {
-                        path: activeFile.path,
-                        original: originalContent || '',
-                        generated: activeFile.content,
-                    },
-                ],
-            });
+        if (pendingCloseAll) {
+            const file = ide.openedFiles.find((f) => f.id === ide.activeFile?.id);
+            if (file) {
+                await ide.saveActiveFile();
+                closeFile(file.id);
+            }
 
-            // Mark the file as no longer dirty
-            const updatedFiles = openedFiles.map((file: EditorFile) =>
-                file.id === activeFile.id ? { ...file, isDirty: false } : file,
-            );
+            const remainingDirty = ide.openedFiles.filter((f) => f.isDirty);
+            if (remainingDirty.length !== 0) {
+                setShowUnsavedDialog(true);
+                return;
+            }
 
-            setOpenedFiles(updatedFiles);
-            setActiveFile({ ...activeFile, isDirty: false });
-            setIsDirty(false);
+            ide.closeAllFiles();
+            setPendingCloseAll(false);
+            setShowUnsavedDialog(false);
 
-            toast('File saved!');
-        } catch (error) {
-            console.error('Error saving file:', error);
-            toast.error('Failed to save file', {
-                description: error instanceof Error ? error.message : String(error),
-            });
-        } finally {
-            setIsLoading(false);
+            return;
         }
+
+        await ide.saveActiveFile();
+
+        if (showUnsavedDialog) {
+            setShowUnsavedDialog(false);
+            closeFile(ide.activeFile.id);
+        }
+
+        toast('File saved!');
     }
 
     const handleFileTreeSelect = async (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
             await loadFile(nodes[0].data.path);
-            setHighlightRange(null);
+            ide.setHighlightRange(null);
         }
     };
 
     function closeFile(fileId: string) {
-        const fileIndex = openedFiles.findIndex((f) => f.id === fileId);
-        if (fileIndex === -1) {
+        if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
+            setShowUnsavedDialog(true);
             return;
         }
 
-        // Clean up the editor instance for this file
         const editorView = editorViewsRef.current.get(fileId);
         if (editorView) {
             editorView.destroy();
             editorViewsRef.current.delete(fileId);
         }
-
-        const newOpenedFiles = [...openedFiles];
-        newOpenedFiles.splice(fileIndex, 1);
-        setOpenedFiles(newOpenedFiles);
-
-        // If we're closing the active file, set a new active file
-        if (activeFile?.id === fileId) {
-            if (newOpenedFiles.length > 0) {
-                // Tries to select the file at the same index, or the previous one
-                const newIndex = Math.min(fileIndex, newOpenedFiles.length - 1);
-                setActiveFile(newOpenedFiles[newIndex] ?? null);
-                setIsDirty(newOpenedFiles[newIndex]?.isDirty ?? false);
-            } else {
-                setActiveFile(null);
-                setIsDirty(false);
-            }
-        }
-
-        // Clears highlight range when closing a file
-        setHighlightRange(null);
+        ide.closeFile(fileId);
     }
 
     function closeAllFiles() {
-        // Clean up all editor instances
-        editorViewsRef.current.forEach((view) => view.destroy());
-        editorViewsRef.current.clear();
-
-        setOpenedFiles([]);
-        setActiveFile(null);
-        setHighlightRange(null);
-        setIsDirty(false);
-    }
-
-    const updateFileContent = (fileId: string, content: string) => {
-        const file = openedFiles.find((f) => f.id === fileId);
-        if (!file) {
+        const dirtyFiles = ide.openedFiles.filter((file) => file.isDirty);
+        if (dirtyFiles.length > 0) {
+            setShowUnsavedDialog(true);
+            setPendingCloseAll(true);
             return;
         }
 
-        // Check if content has actually changed
-        const hasChanged = content !== file.content;
+        editorViewsRef.current.forEach((view) => view.destroy());
+        editorViewsRef.current.clear();
+        ide.closeAllFiles();
+    }
 
-        const updatedFiles = openedFiles.map((file) =>
-            file.id === fileId
-                ? {
-                    ...file,
-                    content: content,
-                    isDirty: hasChanged,
-                }
-                : file,
-        );
-
-        setOpenedFiles(updatedFiles);
-
-        // If this is the active file, update the dirty state
-        if (activeFile && activeFile.id === fileId) {
-            setActiveFile({
-                ...activeFile,
-                content: content,
-                isDirty: hasChanged,
-            });
-            setIsDirty(hasChanged);
-        }
+    const updateFileContent = (fileId: string, content: string) => {
+        ide.updateFileContent(fileId, content);
     };
+
+    async function discardChanges(fileId: string) {
+        if (pendingCloseAll) {
+            const file = ide.openedFiles.find((e) => e.id === fileId);
+            if (file) {
+                await ide.discardFileChanges(file.id);
+                closeFile(fileId);
+                setShowUnsavedDialog(true);
+                const isDirty = ide.openedFiles.filter((val) => val.isDirty);
+                if (isDirty.length === 0) {
+                    ide.closeAllFiles();
+                    setPendingCloseAll(false);
+                    setShowUnsavedDialog(false);
+                }
+                return;
+            }
+
+            setPendingCloseAll(false);
+            return;
+        }
+
+        if (!ide.activeFile) {
+            return;
+        }
+
+        await ide.discardFileChanges(fileId);
+        closeFile(fileId);
+        setShowUnsavedDialog(false);
+    }
 
     // Cleanup editor instances when component unmounts
     useEffect(() => {
@@ -601,18 +476,25 @@ export const DevTab = observer(() => {
             {/* Main content - only show when sandbox is connected */}
             {isSandboxReady() && (
                 <div className="flex flex-1 min-h-0 overflow-hidden">
-                    {isFilesVisible && <FileTree onFileSelect={loadFile} files={files} isLoading={isFilesLoading} onRefresh={handleRefreshFiles} />}
+                    {isFilesVisible && (
+                        <FileTree
+                            onFileSelect={loadFile}
+                            files={ide.files}
+                            isLoading={ide.isFilesLoading}
+                            onRefresh={handleRefreshFiles}
+                        />
+                    )}
 
                     {/* Editor section */}
                     <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                         {/* File tabs */}
                         <div className="flex items-center justify-between h-10 border-b-[0.5px] flex-shrink-0">
                             <div className="flex items-center h-full overflow-x-auto">
-                                {openedFiles.map((file: EditorFile) => (
+                                {ide.openedFiles.map((file: EditorFile) => (
                                     <FileTab
                                         key={file.id}
                                         filename={file.filename}
-                                        isActive={activeFile?.id === file.id}
+                                        isActive={ide.activeFile?.id === file.id}
                                         isDirty={file.isDirty}
                                         onClick={() => handleFileSelect(file)}
                                         onClose={() => closeFile(file.id)}
@@ -627,14 +509,14 @@ export const DevTab = observer(() => {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="-mt-1">
                                         <DropdownMenuItem
-                                            onClick={() => activeFile && closeFile(activeFile.id)}
-                                            disabled={!activeFile}
+                                            onClick={() => ide.activeFile && closeFile(ide.activeFile.id)}
+                                            disabled={!ide.activeFile}
                                         >
                                             Close file
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => closeAllFiles()}
-                                            disabled={openedFiles.length === 0}
+                                            disabled={ide.openedFiles.length === 0}
                                         >
                                             Close all
                                         </DropdownMenuItem>
@@ -645,7 +527,7 @@ export const DevTab = observer(() => {
 
                         {/* Code Editor Area */}
                         <div className="flex-1 relative overflow-hidden">
-                            {isLoading && (
+                            {ide.isLoading && (
                                 <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
                                     <div className="flex flex-col items-center">
                                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
@@ -654,12 +536,12 @@ export const DevTab = observer(() => {
                                 </div>
                             )}
                             <div ref={editorContainer} className="h-full">
-                                {openedFiles.map((file) => (
+                                {ide.openedFiles.map((file) => (
                                     <div
                                         key={file.id}
                                         className="h-full"
                                         style={{
-                                            display: activeFile?.id === file.id ? 'block' : 'none',
+                                            display: ide.activeFile?.id === file.id ? 'block' : 'none',
                                         }}
                                     >
                                         <CodeMirror
@@ -672,8 +554,8 @@ export const DevTab = observer(() => {
                                                 ...getExtensions(file.language),
                                             ]}
                                             onChange={(value) => {
-                                                if (highlightRange) {
-                                                    setHighlightRange(null);
+                                                if (ide.highlightRange) {
+                                                    ide.setHighlightRange(null);
                                                 }
                                                 updateFileContent(file.id, value);
                                             }}
@@ -682,24 +564,63 @@ export const DevTab = observer(() => {
                                                 editorViewsRef.current.set(file.id, editor);
 
                                                 editor.dom.addEventListener('mousedown', () => {
-                                                    if (highlightRange) {
-                                                        setHighlightRange(null);
+                                                    if (ide.highlightRange) {
+                                                        ide.setHighlightRange(null);
                                                     }
                                                 });
 
                                                 // If this file is the active file and we have a highlight range,
                                                 // trigger the highlight effect again
                                                 if (
-                                                    activeFile &&
-                                                    activeFile.id === file.id &&
-                                                    highlightRange
+                                                    ide.activeFile &&
+                                                    ide.activeFile.id === file.id &&
+                                                    ide.highlightRange
                                                 ) {
                                                     setTimeout(() => {
-                                                        setHighlightRange({ ...highlightRange });
+                                                        if (ide.highlightRange) {
+                                                            ide.setHighlightRange(ide.highlightRange);
+                                                        }
                                                     }, 300);
                                                 }
                                             }}
                                         />
+                                        {ide.activeFile?.isDirty && showUnsavedDialog && (
+                                            <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
+                                                <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
+                                                    You have unsaved changes. Are you sure you want
+                                                    to close this file?
+                                                </div>
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        onClick={async () => {
+                                                            await discardChanges(file.id);
+                                                        }}
+                                                        variant="ghost"
+                                                        className="text-red hover:text-red"
+                                                    >
+                                                        Discard
+                                                    </Button>
+                                                    <Button
+                                                        onClick={async () => {
+                                                            await saveFile();
+                                                        }}
+                                                        variant="ghost"
+                                                        className="text-sm text-blue-500 hover:text-blue-500"
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => {
+                                                            setShowUnsavedDialog(false);
+                                                            setPendingCloseAll(false);
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
