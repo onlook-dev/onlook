@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'development') {
 
 const withNextIntl = createNextIntlPlugin({
     experimental: {
-        createMessagesDeclaration: './src/i18n/messages/en.json'
+        createMessagesDeclaration: './messages/en.json'
     }
 });
 export default withNextIntl(nextConfig);
