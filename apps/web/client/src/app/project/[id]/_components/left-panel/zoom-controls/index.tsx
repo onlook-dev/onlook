@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
 import { Hotkey } from '@/components/hotkey';
-import { DefaultSettings, EditorAttributes } from '@onlook/constants';
+import { EditorAttributes } from '@onlook/constants';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { useTranslations } from 'next-intl';
 
@@ -44,21 +44,61 @@ export const ZoomControls = observer(() => {
 
     const handleZoomToFit = () => {
         const container = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
-        const content = container?.firstElementChild as HTMLElement;
-        if (container && content) {
-            const contentRect = content.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const scaleX = containerRect.width / contentRect.width;
-            const scaleY = containerRect.height / contentRect.height;
-            const newScale = Math.min(scaleX, scaleY) * DefaultSettings.SCALE;
-            editorEngine.canvas.scale = newScale;
-            //Position fit
-            const newPosition = {
-                x: DefaultSettings.PAN_POSITION.x,
-                y: DefaultSettings.PAN_POSITION.y,
-            };
-            editorEngine.canvas.position = newPosition;
+        if (!container) {
+            console.warn('No container found');
+            return;
         }
+
+        const viewport = container.parentElement;
+        if (!viewport) {
+            console.warn('No viewport found');
+            return;
+        }
+
+        const iframe = container.querySelector('iframe');
+        if (!iframe) {
+            console.warn('No iframe found');
+            return;
+        }
+
+        const iframeStyle = window.getComputedStyle(iframe);
+        const contentWidth = parseInt(iframeStyle.width, 10) || iframe.offsetWidth;
+        const contentHeight = parseInt(iframeStyle.height, 10) || iframe.offsetHeight;
+
+        const viewportRect = viewport.getBoundingClientRect();
+        const availableWidth = viewportRect.width;
+        const availableHeight = viewportRect.height;
+
+        if (
+            contentWidth <= 0 ||
+            contentHeight <= 0 ||
+            availableWidth <= 0 ||
+            availableHeight <= 0
+        ) {
+            console.warn('Invalid dimensions');
+            return;
+        }
+
+        const scaleX = availableWidth / contentWidth;
+        const scaleY = availableHeight / contentHeight;
+        const newScale = Math.min(scaleX, scaleY) * 0.9;
+
+        if (!isFinite(newScale) || newScale <= 0) {
+            console.warn('Invalid scale');
+            return;
+        }
+
+        editorEngine.canvas.scale = newScale;
+
+        const scaledWidth = contentWidth * newScale;
+        const scaledHeight = contentHeight * newScale;
+
+        const newPosition = {
+            x: (availableWidth - scaledWidth) / 2,
+            y: (availableHeight - scaledHeight) / 2,
+        };
+
+        editorEngine.canvas.position = newPosition;
     };
 
     const handleCustomZoom = (value: string) => {
