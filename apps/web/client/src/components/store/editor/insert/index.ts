@@ -364,8 +364,5 @@ export class InsertManager {
         // Clear drawing state
         this.isDrawing = false;
         this.drawOrigin = undefined;
-
-        // Clear references
-        this.editorEngine = null as any;
     }
 }
