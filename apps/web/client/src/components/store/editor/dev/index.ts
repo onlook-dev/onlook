@@ -222,7 +222,7 @@ export class IDEManager {
             return;
         }
         try {
-            const originalContent = await this.editorEngine.sandbox.readFile(this.activeFile.path);
+            const originalContent = await this.editorEngine.sandbox.readFile((this.openedFiles.find((f) => f.id === id))?.path);
             const file = this.openedFiles.find((f) => f.id === id);
             if (file) file.isDirty = false;
             this.activeFile = {
