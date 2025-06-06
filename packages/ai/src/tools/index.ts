@@ -30,8 +30,15 @@ export const onlookInstructionsTool = tool({
     parameters: z.object({}),
 });
 
+export const READ_STYLE_GUIDE_TOOL_NAME = 'read_style_guide';
+export const readStyleGuideTool = tool({
+    description: 'Read the Tailwind config and global CSS file if available for the style guide',
+    parameters: z.object({}),
+});
+
 export const chatToolSet: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
     [READ_FILES_TOOL_NAME]: readFilesTool,
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
+    [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
 };
