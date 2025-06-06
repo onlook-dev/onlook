@@ -34,7 +34,7 @@ export default function PricingPage() {
                             price={plan.price}
                             description={plan.description}
                             features={plan.features}
-                            buttonText={plan.key === 'basic' ? t('pricing.buttons.currentPlan') : t('pricing.buttons.getPlan', { plan: plan.plan })}
+                            buttonText={plan.key === 'basic' ? t('pricing.buttons.currentPlan') : `Get ${t(`pricing.plans.${plan.key}.name`)}`}
                         />
                     ))}
                 </div>
