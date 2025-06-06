@@ -16,12 +16,12 @@ enum TAG_CATEGORIES {
     VIDEO = 'video',
 }
 
-const TAG_TYPES: Record<string, string[]> = {
+const TAG_TYPES: Record<TAG_CATEGORIES, string[]> = {
     [TAG_CATEGORIES.TEXT]: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'a', 'strong', 'b', 'em', 'i', 'mark', 'code', 'small', 'blockquote', 'pre', 'time', 'sub', 'sup', 'del', 'ins', 'u', 'abbr', 'cite', 'q'],
     [TAG_CATEGORIES.DIV]: ['div'],
     // TODO: Add img and video tag support
-    // [TAG_CATEGORIES.IMG]: ['img'],
-    // [TAG_CATEGORIES.VIDEO]: ['video'],
+    [TAG_CATEGORIES.IMG]: [],
+    [TAG_CATEGORIES.VIDEO]: [],
 } as const;
 
 const getSelectedTag = (selected: DomElement[]): TAG_CATEGORIES => {
