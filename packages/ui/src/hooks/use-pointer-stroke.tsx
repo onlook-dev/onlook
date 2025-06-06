@@ -71,7 +71,19 @@ export function usePointerStroke<T extends Element = Element, InitData = void>(
         const { initX, initY, lastX, lastY } = stateRef.current;
 
         if (e.buttons === 0) {
-            // TODO: Looks like onPointerUp is not called accidentally
+            // In some cases `onPointerUp` will not fire. Finish the stroke here
+            // and forward the last movement so state remains consistent.
+            const deltaX = x - lastX;
+            const deltaY = y - lastY;
+            stateRef.current.lastX = x;
+            stateRef.current.lastY = y;
+            onMove(e, {
+                totalDeltaX: x - initX,
+                totalDeltaY: y - initY,
+                deltaX,
+                deltaY,
+                initData: stateRef.current.initData,
+            });
             e.currentTarget.releasePointerCapture(e.pointerId);
             onEnd?.(e, {
                 totalDeltaX: x - initX,

@@ -3,7 +3,7 @@ import { readdir } from 'fs/promises';
 import path from 'path';
 
 // Path to locales directory
-const LOCALES_DIR = path.join(import.meta.dir, '../messages');
+const LOCALES_DIR = path.join(import.meta.dir, '../src/i18n/messages');
 
 // Helper function to get all translation files
 async function getTranslationFiles() {

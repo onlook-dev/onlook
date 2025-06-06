@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
+import { transKeys } from '@/i18n/keys';
 import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import { uploadBlobToStorage } from '@/utils/supabase/client';
@@ -107,7 +108,9 @@ export const ProjectBreadcrumb = observer(() => {
             }
         } catch (error) {
             console.error('Download failed:', error);
-            toast.error(t('projects.actions.downloadError', { error: error instanceof Error ? error.message : 'Unknown error' }));
+            toast.error(t(transKeys.projects.actions.downloadError), {
+                description: error instanceof Error ? error.message : 'Unknown error'
+            });
 
             sendAnalytics('download project code failed', {
                 projectId: project.id,

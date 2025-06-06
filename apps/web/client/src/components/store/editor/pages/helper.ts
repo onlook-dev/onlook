@@ -529,13 +529,18 @@ const cleanupEmptyFolders = async (session: any, folderPath: string): Promise<vo
     }
 };
 
-const getUniqueDir = async (session: any, basePath: string, dirName: string): Promise<string> => {
+const getUniqueDir = async (
+    session: any,
+    basePath: string,
+    dirName: string,
+    maxAttempts = 100,
+): Promise<string> => {
     let uniquePath = dirName;
     let counter = 1;
 
     const baseName = dirName.replace(/-copy(-\d+)?$/, '');
 
-    while (true) {
+    while (counter <= maxAttempts) {
         const fullPath = joinPath(basePath, uniquePath);
         if (!(await pathExists(session, fullPath))) {
             return uniquePath;
@@ -543,6 +548,8 @@ const getUniqueDir = async (session: any, basePath: string, dirName: string): Pr
         uniquePath = `${baseName}-copy-${counter}`;
         counter++;
     }
+
+    throw new Error(`Unable to find available directory name for ${dirName}`);
 };
 
 const createDirectory = async (session: any, dirPath: string): Promise<void> => {
