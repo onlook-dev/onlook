@@ -1,6 +1,6 @@
 import { api } from '@/trpc/client';
 import { createClient } from '@/utils/supabase/client';
-import { CUSTOM_OUTPUT_DIR, DefaultSettings } from '@onlook/constants';
+import { CUSTOM_OUTPUT_DIR, DefaultSettings, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
 import {
     PublishStatus,
@@ -21,8 +21,6 @@ const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
     message: null,
 };
-
-const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
 
 export class HostingManager {
     state: PublishState = DEFAULT_STATE;
@@ -159,7 +157,7 @@ export class HostingManager {
             this.emitState(PublishStatus.LOADING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const id = await this.sendHostingPostRequest(files, urls, options?.envVars);
+            const id = await this.deployWeb(files, urls, options?.envVars);
             timer.log('Deployment completed');
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
@@ -188,7 +186,7 @@ export class HostingManager {
 
     async unpublish(urls: string[]): Promise<PublishResponse> {
         try {
-            const id = await this.sendHostingPostRequest({}, urls);
+            const id = await this.deployWeb({}, urls);
             this.emitState(PublishStatus.UNPUBLISHED, 'Deployment deleted with ID: ' + id);
 
             return {
@@ -217,7 +215,7 @@ export class HostingManager {
     }
 
 
-    async sendHostingPostRequest(
+    async deployWeb(
         files: Record<string, FreestyleFile>,
         urls: string[],
         envVars?: Record<string, string>,
