@@ -419,6 +419,9 @@ export const DevTab = observer(() => {
         if (lowerCasedFileName.endsWith('.png')) return 'image/png';
         if (lowerCasedFileName.endsWith('.jpg') || lowerCasedFileName.endsWith('.jpeg')) return 'image/jpeg';
         if (lowerCasedFileName.endsWith('.svg')) return 'image/svg+xml';
+        if (lowerCasedFileName.endsWith('.gif')) return 'image/gif';
+        if (lowerCasedFileName.endsWith('.webp')) return 'image/webp';
+        if (lowerCasedFileName.endsWith('.bmp')) return 'image/bmp';
         return 'application/octet-stream';
     }
 
