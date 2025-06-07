@@ -273,12 +273,12 @@ export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh }: 
                                         isHighlighted={
                                             highlightedIndex !== null &&
                                             treeRef.current?.visibleNodes[highlightedIndex]?.id ===
-                                                props.node.id
+                                            props.node.id
                                         }
                                     />
                                 )}
                             >
-                                {(props) => <FileTreeNode {...props} />}
+                                {(props) => <FileTreeNode {...props} files={files} />}
                             </Tree>
                         </div>
                     )}
