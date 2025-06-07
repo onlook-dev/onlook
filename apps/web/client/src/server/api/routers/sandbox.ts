@@ -1,9 +1,10 @@
+import { env } from '@/env';
 import { CodeSandbox } from '@codesandbox/sdk';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-const sdk = new CodeSandbox(process.env.CSB_API_KEY!);
+const sdk = new CodeSandbox(env.CSB_API_KEY);
 
 export const sandboxRouter = createTRPCRouter({
     start: protectedProcedure.input(z.object({

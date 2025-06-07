@@ -2,8 +2,6 @@ import { HOSTING_DOMAIN } from '@onlook/constants';
 import { createEnv } from '@t3-oss/env-nextjs';
 import { z } from 'zod';
 
-export const isProduction = process.env.NODE_ENV === 'production';
-
 export const env = createEnv({
     /**
      * Specify your server-side environment variables schema here. This way you can ensure the app

@@ -1,4 +1,4 @@
-import { env, isProduction } from '@/env';
+import { env } from '@/env';
 import {
     authUsers,
     fromAuthUser,
@@ -135,7 +135,7 @@ export const invitationRouter = createTRPCRouter({
                         ),
                     },
                     {
-                        dryRun: !isProduction,
+                        dryRun: process.env.NODE_ENV !== 'production',
                     },
                 );
             }
