@@ -21,3 +21,5 @@ export const SUPPORTED_LOCK_FILES = [
     'yarn.lock',
     'pnpm-lock.yaml',
 ];
+
+export const BINARY_EXTENSIONS = ['ico', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'];
