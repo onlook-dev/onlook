@@ -1,5 +1,3 @@
-import path from 'path';
-
 // System reserved names (Windows compatibility)
 export const RESERVED_NAMES = [
     'CON', 'PRN', 'AUX', 'NUL', 
@@ -29,7 +27,7 @@ export const validateFileName = (fileName: string): { valid: boolean; error?: st
     }
 
     // Check for reserved names
-    if (FILE_CONSTRAINTS.RESERVED_NAMES.includes(fileName.toUpperCase() as any)) {
+    if (FILE_CONSTRAINTS.RESERVED_NAMES.includes(fileName.toUpperCase() as (typeof FILE_CONSTRAINTS.RESERVED_NAMES)[number])) {
         return { valid: false, error: 'File name is reserved' };
     }
 
