@@ -31,7 +31,6 @@ export interface VerifyDomainResponse {
 }
 
 export interface PublishRequest {
-    folderPath: string;
     buildScript: string;
     urls: string[];
     options?: PublishOptions;

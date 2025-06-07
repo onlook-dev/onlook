@@ -52,6 +52,7 @@ export class CLISessionImpl implements CLISession {
         }
     }
 
+
     async initTerminal() {
         const terminal = await this.session?.terminals.create();
         if (!terminal) {

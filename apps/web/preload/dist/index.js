@@ -1745,9 +1745,9 @@ var DefaultSettings = {
   ORIENTATION: "Portrait" /* Portrait */,
   MIN_DIMENSIONS: { width: "280px", height: "360px" },
   COMMANDS: {
-    run: "npm run dev",
-    build: "npm run build",
-    install: "npm install"
+    run: "bun run dev",
+    build: "bun run build",
+    install: "bun install"
   },
   IMAGE_FOLDER: "public/images",
   IMAGE_DIMENSION: { width: "100px", height: "100px" },
@@ -17397,5 +17397,5 @@ export {
   penpalParent
 };
 
-//# debugId=350C2359206B9A8964756E2164756E21
+//# debugId=18E567E7F5F1CBC564756E2164756E21
 //# sourceMappingURL=index.js.map

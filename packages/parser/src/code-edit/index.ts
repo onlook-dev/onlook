@@ -1,3 +1,4 @@
+export * from './config';
 export * from './group';
 export * from './image';
 export * from './insert';

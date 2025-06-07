@@ -15,7 +15,7 @@ export function normalizePath(p: string): string {
 export async function formatContent(filePath: string, content: string): Promise<string> {
     try {
         // Only format if the file is a .ts or .tsx file
-        const extension = path.extname(filePath).slice(1);
+        const extension = path.extname(filePath);
         if (!JSX_FILE_EXTENSIONS.includes(extension) && !JS_FILE_EXTENSIONS.includes(extension)) {
             console.log('Skipping formatting for non-TS/TSX file:', filePath);
             return content;

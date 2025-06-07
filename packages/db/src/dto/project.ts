@@ -17,6 +17,9 @@ export const toProject = (
             previewImg: getPreviewImgFromDb(dbProject),
             description: dbProject.description,
         },
+        domains: null,
+        commands: null,
+        env: null,
     };
 };
 

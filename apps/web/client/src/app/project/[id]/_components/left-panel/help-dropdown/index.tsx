@@ -21,7 +21,7 @@ import { useState } from 'react';
 export const HelpDropdown = observer(() => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
-
+    
     const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const t = useTranslations();
