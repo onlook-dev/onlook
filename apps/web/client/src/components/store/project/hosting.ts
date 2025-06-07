@@ -162,10 +162,10 @@ export class HostingManager {
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
-            // if (!options?.skipBadge) {
-            //     await this.removeBadge(CUSTOM_OUTPUT_DIR);
-            //     timer.log('"Built with Onlook" badge removed');
-            // }
+            if (!options?.skipBadge) {
+                await this.removeBadge('./');
+                timer.log('"Built with Onlook" badge removed');
+            }
 
             return {
                 success: true,
@@ -174,9 +174,6 @@ export class HostingManager {
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
             this.emitState(PublishStatus.ERROR, 'Deployment failed with error: ' + error);
-            // analytics.trackError('Failed to deploy to preview environment', {
-            //     error,
-            // });
             return {
                 success: false,
                 message: error instanceof Error ? error.message : 'Unknown error',
@@ -220,7 +217,7 @@ export class HostingManager {
         urls: string[],
         envVars?: Record<string, string>,
     ): Promise<string> {
-        // Verify domain ownership
+        // TODO: Verify domain ownership
         // const ownedDomains = await this.getOwnedDomains();
         // const domainOwnership = verifyDomainOwnership(urls, ownedDomains, HOSTING_DOMAIN);
         // if (!domainOwnership) {
