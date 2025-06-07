@@ -1,12 +1,20 @@
 import path from 'path';
 
+
+function generatePascalCaseName(fileName: string, extension: string): string {
+    const baseName = path.basename(fileName, extension)
+        .split(/[-_]/)
+        .filter(word => word.length > 0) // Filter out empty words
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join('');
+    
+    return baseName || 'Component';
+}
+
 export const FILE_TEMPLATES = {
     // React TypeScript Component
     '.tsx': (fileName: string) => {
-        const componentName = path.basename(fileName, '.tsx')
-            .split(/[-_]/)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join('');
+        const componentName = generatePascalCaseName(fileName, '.tsx');
         
         return `// Created by Onlook: ${new Date().toLocaleDateString()}
 import React from 'react';
@@ -33,10 +41,7 @@ export default ${componentName};
     },
     // TypeScript Module
     '.ts': (fileName: string) => {
-        const functionName = path.basename(fileName, '.ts')
-            .split(/[-_]/)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join('');
+        const functionName = generatePascalCaseName(fileName, '.ts');
         
         return `/**
  * ${functionName} function
@@ -56,10 +61,7 @@ export default ${functionName};
     },
     // JavaScript Function
     '.js': (fileName: string) => {
-        const functionName = path.basename(fileName, '.js')
-            .split(/[-_]/)
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join('');
+        const functionName = generatePascalCaseName(fileName, '.js');
         
         return `/**
  * ${functionName} function

@@ -24,8 +24,7 @@ export const validateFileName = (fileName: string): { valid: boolean; error?: st
     }
 
     // Check for invalid characters
-    const invalidChars = /[<>:"|?*\\/]/;
-    if (invalidChars.test(fileName)) {
+    if (INVALID_CHARS_REGEX.test(fileName)) {
         return { valid: false, error: 'File name contains invalid characters' };
     }
 
@@ -48,8 +47,7 @@ export const validateFolderName = (folderName: string): { valid: boolean; error?
     }
 
     // Check for invalid characters
-    const invalidChars = /[<>:"|?*\\/]/;
-    if (invalidChars.test(folderName)) {
+    if (INVALID_CHARS_REGEX.test(folderName)) {
         return { valid: false, error: 'Folder name contains invalid characters' };
     }
 
@@ -73,11 +71,13 @@ export const doesFileExist = (files: string[], filePath: string): boolean => {
 
 export const doesFolderExist = (files: string[], folderPath: string): boolean => {
     const normalizedFolderPath = folderPath.replace(/\\/g, '/');
-    // Check if any file starts with the folder path (indicating the folder exists)
+    
+    const cleanFolderPath = normalizedFolderPath.replace(/\/$/, '');
+    
     return files.some(file => {
         const normalizedFile = file.replace(/\\/g, '/');
-        return normalizedFile.startsWith(normalizedFolderPath + '/') || 
-               normalizedFile === normalizedFolderPath + '/.gitkeep';
+
+        return normalizedFile.startsWith(cleanFolderPath + '/');
     });
 };
 
