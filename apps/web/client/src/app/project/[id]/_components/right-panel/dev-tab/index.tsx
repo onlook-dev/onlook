@@ -8,6 +8,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
@@ -19,12 +20,15 @@ import { useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
+import { FileModal } from './file-modal';
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { theme } = useTheme();
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
+    const [fileModalOpen, setFileModalOpen] = useState(false);
+    const [folderModalOpen, setFolderModalOpen] = useState(false);
     const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
     const [pendingCloseAll, setPendingCloseAll] = useState(false);
     const isDirty = ide.activeFile?.isDirty ?? false;
@@ -422,10 +426,24 @@ export const DevTab = observer(() => {
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full">
                             <Icons.Sparkles className="mr-1.5 h-4 w-4" />
-                            <span className="mr-1">Code actions</span>
+                            <span className="mr-1">Actions</span>
                             <Icons.ChevronDown className="h-3 w-3" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="-mt-1">
+                            <DropdownMenuItem onClick={() => setFileModalOpen(true)}>
+                                <Icons.File className="mr-2 h-4 w-4" />
+                                New File
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setFolderModalOpen(true)}>
+                                <Icons.Directory className="mr-2 h-4 w-4" />
+                                New Folder
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => setIsFilesVisible(!isFilesVisible)}>
+                                <Icons.Directory className="mr-2 h-4 w-4" />
+                                {isFilesVisible ? 'Hide files panel' : 'Show files panel'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleJumpToElement}>
                                 <Icons.Check className="mr-2 h-4 w-4" />
                                 Jump to code from canvas
@@ -439,23 +457,6 @@ export const DevTab = observer(() => {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-
-                    <button
-                        className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full"
-                        onClick={() => setIsFilesVisible(!isFilesVisible)}
-                    >
-                        <Icons.Directory className="mr-1.5 h-4 w-4" />
-                        {isFilesVisible ? (
-                            <span className="mr-1">Hide files tab</span>
-                        ) : (
-                            <span className="mr-1">Show files tab</span>
-                        )}
-                        {isFilesVisible ? (
-                            <Icons.ChevronDown className="h-3 w-3" />
-                        ) : (
-                            <Icons.ChevronRight className="h-3 w-3" />
-                        )}
-                    </button>
                 </div>
             </div>
 
@@ -628,6 +629,30 @@ export const DevTab = observer(() => {
                     </div>
                 </div>
             )}
+
+            <FileModal
+                open={fileModalOpen}
+                onOpenChange={setFileModalOpen}
+                mode="file"
+                basePath=""
+                files={ide.files}
+                onSuccess={() => {
+                    // Refresh file list after successful creation
+                    handleRefreshFiles();
+                }}
+            />
+
+            <FileModal
+                open={folderModalOpen}
+                onOpenChange={setFolderModalOpen}
+                mode="folder"
+                basePath=""
+                files={ide.files}
+                onSuccess={() => {
+                    // Refresh file list after successful creation
+                    handleRefreshFiles();
+                }}
+            />
         </div>
     );
 });
