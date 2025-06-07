@@ -408,15 +408,17 @@ export const DevTab = observer(() => {
     }
 
     const getFileUrl = (file: EditorFile) => {
-        const mime = getMimeType(file.filename);
+        const mime = getMimeType(file.filename.toLowerCase());
         return `data:${mime};base64,${file.content}`;
     };
 
     function getMimeType(fileName: string): string {
-        if (fileName.endsWith('.ico')) return 'image/x-icon';
-        if (fileName.endsWith('.png')) return 'image/png';
-        if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) return 'image/jpeg';
-        if (fileName.endsWith('.svg')) return 'image/svg+xml';
+        const lowerCasedFileName = fileName.toLowerCase();
+
+        if (lowerCasedFileName.endsWith('.ico')) return 'image/x-icon';
+        if (lowerCasedFileName.endsWith('.png')) return 'image/png';
+        if (lowerCasedFileName.endsWith('.jpg') || lowerCasedFileName.endsWith('.jpeg')) return 'image/jpeg';
+        if (lowerCasedFileName.endsWith('.svg')) return 'image/svg+xml';
         return 'application/octet-stream';
     }
 
