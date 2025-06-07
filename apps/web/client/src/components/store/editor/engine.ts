@@ -24,6 +24,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
+import type { FileEvent } from './sandbox/file-event-bus';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -63,6 +64,35 @@ export class EditorEngine {
         this.canvas = new CanvasManager(this.projectManager)
         this.frames = new FramesManager(this, this.projectManager);
         makeAutoObservable(this);
+        this.sandbox.fileEventBus.subscribe('change', async (event) => {
+            await this.handleFileChange(event);
+        });
+    }
+
+    private async handleFileChange(event: FileEvent) {
+        if (!event || !event.paths || !Array.isArray(event.paths)) {
+            console.error('Invalid file event received:', event);
+            return;
+        }
+
+        try {
+            const changedFilePaths = event.paths;
+            const affectedFrames = this.frames.getAll().filter(frame => {
+                return changedFilePaths.some(path => frame.view.src.includes(path));
+            });
+
+            if (affectedFrames.length > 0) {
+                for (const frame of affectedFrames) {
+                    try {
+                        await this.ast.refreshAstDoc(frame.view);
+                    } catch (error) {
+                        console.error(`Failed to refresh AST for frame:`, error);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error updating frame code:', error);
+        }
     }
 
     clear() {

@@ -46,6 +46,10 @@
         "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
     },
-    "dependencies": {},
+    "dependencies": {
+        "@supabase/supabase-js": "^2.50.0",
+        "esbuild": "^0.25.5",
+        "mobx": "^6.13.7"
+    },
     "packageManager": "bun@1.2.13"
 }
