@@ -160,6 +160,10 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
+    async updateFileCache(filePath: string, content: string): Promise<void> {
+        await this.fileSync.updateCache(filePath, content);
+    }
+
     async listFiles(dir: string) {
         return this.session.session?.fs.readdir(dir);
     }

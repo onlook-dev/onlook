@@ -71,31 +71,47 @@ export const doesFileExist = (files: string[], filePath: string): boolean => {
     return files.some(file => file.replace(/\\/g, '/') === normalizedPath);
 };
 
-export const createFileInSandbox = async (session: any, filePath: string, content: string = ''): Promise<void> => {
+export const doesFolderExist = (files: string[], folderPath: string): boolean => {
+    const normalizedFolderPath = folderPath.replace(/\\/g, '/');
+    // Check if any file starts with the folder path (indicating the folder exists)
+    return files.some(file => {
+        const normalizedFile = file.replace(/\\/g, '/');
+        return normalizedFile.startsWith(normalizedFolderPath + '/') || 
+               normalizedFile === normalizedFolderPath + '/.gitkeep';
+    });
+};
+
+export const createFileInSandbox = async (session: any, filePath: string, content: string = '', editorEngine?: any): Promise<void> => {
     try {
         if (!session) {
             throw new Error('No sandbox session available');
         }
 
         await session.fs.writeTextFile(filePath, content);
-        console.log(`Created file: ${filePath}`);
+
+        // update cache to include the new file
+        await editorEngine.sandbox.updateFileCache(filePath, content);
     } catch (error) {
         console.error('Error creating file:', error);
         throw error;
     }
 };
 
-export const createFolderInSandbox = async (session: any, folderPath: string): Promise<void> => {
+export const createFolderInSandbox = async (session: any, folderPath: string, editorEngine?: any): Promise<void> => {
     try {
         if (!session) {
             throw new Error('No sandbox session available');
         }
 
-        // Create a temporary file to ensure directory structure exists, then remove it
-        const tempFile = path.join(folderPath, '.temp').replace(/\\/g, '/');
-        await session.fs.writeTextFile(tempFile, '');
-        await session.fs.remove(tempFile);
-        console.log(`Created folder: ${folderPath}`);
+        // Creates folder by creating a .gitkeep file inside it
+        // This automatically creates the directory structure and ensures
+        // the empty directory is discoverable and tracked by Git
+        const gitkeepPath = `${folderPath}/.gitkeep`.replace(/\\/g, '/');
+        const gitkeepContent = '# This folder was created by Onlook\n';
+        await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
+
+        // update cache to include the new folder
+        await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
     } catch (error) {
         console.error('Error creating folder:', error);
         throw error;

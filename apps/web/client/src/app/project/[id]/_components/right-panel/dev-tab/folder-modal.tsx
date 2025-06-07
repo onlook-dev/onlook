@@ -13,14 +13,13 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useMemo, useState } from 'react';
 import {
-    createFileInSandbox,
-    doesFileExist,
-    validateFileName,
+    createFolderInSandbox,
+    doesFolderExist,
+    validateFolderName,
 } from './file-operations';
-import { getFileTemplate } from './file-templates';
 import path from 'path';
 
-interface FileModalProps {
+interface FolderModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     basePath: string;
@@ -28,13 +27,13 @@ interface FileModalProps {
     onSuccess?: () => void;
 }
 
-export function FileModal({
+export function FolderModal({
     open,
     onOpenChange,
     basePath,
     files,
     onSuccess,
-}: FileModalProps) {
+}: FolderModalProps) {
     const editorEngine = useEditorEngine();
     const [name, setName] = useState('');
     const [warning, setWarning] = useState('');
@@ -45,11 +44,6 @@ export function FileModal({
         if (!name) return '';
         return path.join(basePath, name).replace(/\\/g, '/');
     }, [basePath, name]);
-
-    const title = 'Create New File';
-    const buttonText = 'Create File';
-    const loadingText = 'Creating file...';
-    const placeholder = 'component.tsx';
 
     // Reset name when modal opens
     useEffect(() => {
@@ -65,15 +59,15 @@ export function FileModal({
             return;
         }
 
-        const { valid, error } = validateFileName(name);
+        const { valid, error } = validateFolderName(name);
 
         if (!valid) {
-            setWarning(error ?? 'Invalid file name');
+            setWarning(error ?? 'Invalid folder name');
             return;
         }
 
-        if (doesFileExist(files, fullPath)) {
-            setWarning('This file already exists');
+        if (doesFolderExist(files, fullPath)) {
+            setWarning('This folder already exists');
             return;
         }
 
@@ -91,16 +85,15 @@ export function FileModal({
                 throw new Error('No sandbox session available');
             }
 
-            const content = getFileTemplate(name);
-            await createFileInSandbox(session, fullPath, content, editorEngine);
-            toast(`File "${name}" created successfully!`);
+            await createFolderInSandbox(session, fullPath, editorEngine);
+            toast(`Folder "${name}" created successfully!`);
 
             setName('');
             onOpenChange(false);
             onSuccess?.();
         } catch (error) {
-            console.error('Failed to create file:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to create file';
+            console.error('Failed to create folder:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create folder';
             setWarning(errorMessage);
         } finally {
             setIsLoading(false);
@@ -113,9 +106,9 @@ export function FileModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
+                    <DialogTitle>Create New Folder</DialogTitle>
                     <DialogDescription>
-                        Create a new file in{' '}
+                        Create a new folder in{' '}
                         <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">
                             {displayPath}
                         </code>
@@ -131,7 +124,7 @@ export function FileModal({
                             className={cn(
                                 warning && 'border-yellow-300 focus-visible:ring-yellow-300',
                             )}
-                            placeholder={placeholder}
+                            placeholder="components"
                             disabled={isLoading}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !isComposing && !warning && name) {
@@ -167,7 +160,7 @@ export function FileModal({
                         onClick={handleSubmit}
                         disabled={isLoading || !!warning || !name}
                     >
-                        {isLoading ? loadingText : buttonText}
+                        {isLoading ? 'Creating folder...' : 'Create Folder'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -14,6 +14,7 @@ import { motion } from 'motion/react';
 import type { NodeApi } from 'react-arborist';
 import { useState } from 'react';
 import { FileModal } from './file-modal';
+import { FolderModal } from './folder-modal';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileNode>;
@@ -165,23 +166,15 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
             <FileModal
                 open={fileModalOpen}
                 onOpenChange={setFileModalOpen}
-                mode="file"
                 basePath={basePath}
                 files={files}
-                onSuccess={() => {
-                    // Optionally handle success
-                }}
             />
 
-            <FileModal
+            <FolderModal
                 open={folderModalOpen}
                 onOpenChange={setFolderModalOpen}
-                mode="folder"
                 basePath={basePath}
                 files={files}
-                onSuccess={() => {
-                    // Optionally handle success
-                }}
             />
         </>
     );

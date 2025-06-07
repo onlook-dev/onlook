@@ -1,36 +1,5 @@
 import path from 'path';
 
-export const FILE_CATEGORIES = {
-    REACT: ['.tsx', '.jsx'],
-    TYPESCRIPT: ['.ts'],
-    JAVASCRIPT: ['.js'],
-    STYLES: ['.css', '.scss', '.sass', '.less'],
-    DATA: ['.json', '.yaml', '.yml'],
-    MARKUP: ['.html', '.xml'],
-    DOCUMENTATION: ['.md', '.mdx', '.txt'],
-    CONFIG: ['.env', '.gitignore', '.eslintrc', '.prettierrc'],
-} as const;
-
-export const FILE_EXTENSIONS = {
-    '.tsx': 'typescript-react',
-    '.ts': 'typescript',
-    '.jsx': 'javascript-react', 
-    '.js': 'javascript',
-    '.css': 'css',
-    '.scss': 'scss',
-    '.sass': 'sass',
-    '.less': 'less',
-    '.json': 'json',
-    '.html': 'html',
-    '.xml': 'xml',
-    '.md': 'markdown',
-    '.mdx': 'markdown',
-    '.yaml': 'yaml',
-    '.yml': 'yaml',
-    '.txt': 'text',
-} as const;
-
-// File templates with proper formatting and best practices
 export const FILE_TEMPLATES = {
     // React TypeScript Component
     '.tsx': (fileName: string) => {
@@ -39,7 +8,8 @@ export const FILE_TEMPLATES = {
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join('');
         
-        return `import React from 'react';
+        return `// Created by Onlook: ${new Date().toLocaleDateString()}
+import React from 'react';
 
 interface ${componentName}Props {
     className?: string;
@@ -63,57 +33,44 @@ export default ${componentName};
     },
     // TypeScript Module
     '.ts': (fileName: string) => {
-        const moduleName = path.basename(fileName, '.ts')
+        const functionName = path.basename(fileName, '.ts')
             .split(/[-_]/)
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join('');
         
         return `/**
- * ${moduleName} module
- * Created: ${new Date().toLocaleDateString()}
+ * ${functionName} function
+ * Created by Onlook: ${new Date().toLocaleDateString()}
  */
 
-export interface ${moduleName}Config {
+export interface ${functionName}Options {
     // Add your interface properties here
 }
 
-export class ${moduleName} {
-    constructor(private config: ${moduleName}Config) {}
-
-    // Add your methods here
-    public initialize(): void {
-        console.log('${moduleName} initialized');
-    }
+export function ${functionName}(options?: ${functionName}Options): void {
+    // Add your logic here
 }
 
-export default ${moduleName};
+export default ${functionName};
 `;
     },
-
-    // JavaScript Module
+    // JavaScript Function
     '.js': (fileName: string) => {
-        const moduleName = path.basename(fileName, '.js')
+        const functionName = path.basename(fileName, '.js')
             .split(/[-_]/)
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join('');
         
         return `/**
- * ${moduleName} module
- * Created: ${new Date().toLocaleDateString()}
+ * ${functionName} function
+ * Created by Onlook: ${new Date().toLocaleDateString()}
  */
 
-export class ${moduleName} {
-    constructor(config = {}) {
-        this.config = config;
-    }
-
-    // Add your methods here
-    initialize() {
-        console.log('${moduleName} initialized');
-    }
+export function ${functionName}() {
+    // Add your logic here
 }
 
-export default ${moduleName};
+export default ${functionName};
 `;
     },
 
@@ -122,7 +79,7 @@ export default ${moduleName};
         const className = path.basename(fileName, '.css').toLowerCase().replace(/[^a-z0-9]/g, '-');
         
         return `/* ${fileName} */
-/* Created: ${new Date().toLocaleDateString()} */
+/* Created by Onlook: ${new Date().toLocaleDateString()} */
 
 .${className} {
     /* Add your styles here */
@@ -143,7 +100,7 @@ export default ${moduleName};
         const className = path.basename(fileName, '.scss').toLowerCase().replace(/[^a-z0-9]/g, '-');
         
         return `// ${fileName}
-// Created: ${new Date().toLocaleDateString()}
+// Created by Onlook: ${new Date().toLocaleDateString()}
 
 .${className} {
     // Add your styles here
@@ -165,11 +122,7 @@ export default ${moduleName};
 
     // JSON Data
     '.json': () => `{
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "type": "object",
-    "properties": {
-        
-    }
+    "properties": {}
 }
 `,
 
@@ -182,7 +135,7 @@ export default ${moduleName};
         
         return `# ${title}
 
-> Created: ${new Date().toLocaleDateString()}
+> Created by Onlook: ${new Date().toLocaleDateString()}
 
 ## Overview
 
@@ -216,6 +169,7 @@ console.log('Hello, ${title}!');
             .join(' ');
         
         return `<!DOCTYPE html>
+<!-- Created by Onlook: ${new Date().toLocaleDateString()} -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -249,7 +203,7 @@ console.log('Hello, ${title}!');
 
     // Environment Configuration
     '.env': () => `# Environment Configuration
-# Created: ${new Date().toLocaleDateString()}
+# Created by Onlook: ${new Date().toLocaleDateString()}
 
 # Database
 DATABASE_URL=
@@ -262,52 +216,6 @@ NODE_ENV=development
 PORT=3000
 
 # Add your environment variables here
-`,
-
-    // TypeScript Configuration
-    'tsconfig.json': () => `{
-    "compilerOptions": {
-        "target": "ES2020",
-        "lib": ["DOM", "DOM.Iterable", "ES6"],
-        "allowJs": true,
-        "skipLibCheck": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noEmit": true,
-        "jsx": "react-jsx"
-    },
-    "include": [
-        "src/**/*"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
-}
-`,
-
-    // Package.json template
-    'package.json': () => `{
-    "name": "new-project",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-        "start": "node index.js",
-        "dev": "nodemon index.js",
-        "test": "jest",
-        "build": "webpack --mode production"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "MIT",
-    "dependencies": {},
-    "devDependencies": {}
-}
 `,
 } as const;
 
@@ -338,34 +246,3 @@ export function getFileTemplate(fileName: string): string {
     // Return default template
     return DEFAULT_TEMPLATE(fileName);
 }
-
-/**
- * Get file language based on extension
- */
-export function getFileLanguage(fileName: string): string {
-    const ext = path.extname(fileName).toLowerCase();
-    return FILE_EXTENSIONS[ext as keyof typeof FILE_EXTENSIONS] || 'text';
-}
-
-/**
- * Check if file extension is supported
- */
-export function isSupportedFileType(fileName: string): boolean {
-    const ext = path.extname(fileName).toLowerCase();
-    return ext in FILE_EXTENSIONS || path.basename(fileName).toLowerCase() in FILE_TEMPLATES;
-}
-
-/**
- * Get file category based on extension
- */
-export function getFileCategory(fileName: string): string | null {
-    const ext = path.extname(fileName).toLowerCase();
-    
-    for (const [category, extensions] of Object.entries(FILE_CATEGORIES)) {
-        if ((extensions as readonly string[]).includes(ext)) {
-            return category;
-        }
-    }
-    
-    return null;
-} 

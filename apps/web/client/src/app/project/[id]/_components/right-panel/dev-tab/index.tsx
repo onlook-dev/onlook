@@ -21,6 +21,7 @@ import { getBasicSetup, getExtensions } from './code-mirror-config';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
 import { FileModal } from './file-modal';
+import { FolderModal } from './folder-modal';
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -630,29 +631,23 @@ export const DevTab = observer(() => {
                 </div>
             )}
 
-            <FileModal
-                open={fileModalOpen}
-                onOpenChange={setFileModalOpen}
-                mode="file"
-                basePath=""
-                files={ide.files}
-                onSuccess={() => {
-                    // Refresh file list after successful creation
-                    handleRefreshFiles();
-                }}
-            />
+            {fileModalOpen && (
+                <FileModal
+                    open={fileModalOpen}
+                    onOpenChange={setFileModalOpen}
+                    basePath=""
+                    files={ide.files}
+                />
+            )}
 
-            <FileModal
-                open={folderModalOpen}
-                onOpenChange={setFolderModalOpen}
-                mode="folder"
-                basePath=""
-                files={ide.files}
-                onSuccess={() => {
-                    // Refresh file list after successful creation
-                    handleRefreshFiles();
-                }}
-            />
+            {folderModalOpen && (
+                <FolderModal
+                    open={folderModalOpen}
+                    onOpenChange={setFolderModalOpen}
+                    basePath=""
+                    files={ide.files}
+                />
+            )}
         </div>
     );
 });
