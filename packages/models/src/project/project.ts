@@ -13,18 +13,19 @@ export interface Project {
         id: string;
         url: string;
     };
-    domains: {
-        base: DomainSettings | null;
-        custom: DomainSettings | null;
-    } | null;
+    domains: ProjectDomains | null;
     commands: ProjectCommands | null;
     env: Record<string, string> | null;
 }
 
+export interface ProjectDomains {
+    base: DomainSettings | null;
+    custom: DomainSettings | null;
+}
 export interface ProjectCommands {
-    build?: string;
-    run?: string;
-    install?: string;
+    build: string | null;
+    run: string | null;
+    install: string | null;
 }
 
 export interface PreviewImg {

@@ -96,3 +96,14 @@ export const updateGitignore = async (
         return false;
     }
 };
+
+export const getDirName = (filePath: string): string => {
+    const parts = filePath.split('/');
+    if (parts.length <= 1) return '.';
+    return parts.slice(0, -1).join('/') || '.';
+};
+
+export const getBaseName = (filePath: string): string => {
+    const parts = filePath.split('/');
+    return parts[parts.length - 1] || '';
+};

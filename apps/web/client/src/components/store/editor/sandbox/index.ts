@@ -2,7 +2,7 @@ import type { WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
-import { isBinaryFile, isSubdirectory } from '@onlook/utility';
+import { getBaseName, getDirName, isBinaryFile, isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
@@ -507,15 +507,3 @@ export class SandboxManager {
         this.session.disconnect();
     }
 }
-
-// Helper functions for path manipulation
-const getDirName = (filePath: string): string => {
-    const parts = filePath.split('/');
-    if (parts.length <= 1) return '.';
-    return parts.slice(0, -1).join('/') || '.';
-};
-
-const getBaseName = (filePath: string): string => {
-    const parts = filePath.split('/');
-    return parts[parts.length - 1] || '';
-};
