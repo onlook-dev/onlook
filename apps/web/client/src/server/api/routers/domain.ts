@@ -3,9 +3,14 @@ import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponseV2 } from 'fr
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-const sdk = new FreestyleSandboxes({
-    apiKey: env.FREESTYLE_API_KEY
-});
+const createFreestyleSdk = () => {
+    if (!env.FREESTYLE_API_KEY) {
+        throw new Error('FREESTYLE_API_KEY environment variable is not set');
+    }
+    return new FreestyleSandboxes({
+        apiKey: env.FREESTYLE_API_KEY
+    });
+};
 
 export const domainRouter = createTRPCRouter({
     publish: protectedProcedure
@@ -23,6 +28,7 @@ export const domainRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
+            const sdk = createFreestyleSdk();
             const res = await sdk.deployWeb(
                 {
                     files: input.files,
