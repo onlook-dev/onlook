@@ -1,4 +1,7 @@
-import { makeAutoObservable } from 'mobx';
+import { api } from '@/trpc/client';
+import { createClient } from '@/utils/supabase/client';
+import { CUSTOM_OUTPUT_DIR, DefaultSettings } from '@onlook/constants';
+import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
 import {
     PublishStatus,
     type PublishOptions,
@@ -6,16 +9,13 @@ import {
     type PublishResponse,
     type PublishState,
 } from '@onlook/models';
-import { getValidSubdomain, isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, verifyDomainOwnership, type FileOperations } from '@onlook/utility';
-import { CUSTOM_OUTPUT_DIR, DefaultSettings, HOSTING_DOMAIN } from '@onlook/constants';
+import { addNextBuildConfig } from '@onlook/parser';
+import { isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, type FileOperations } from '@onlook/utility';
 import {
     type FreestyleFile,
 } from 'freestyle-sandboxes';
+import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../editor/engine';
-import { createClient } from '@/utils/supabase/client';
-import { injectBuiltWithScript, addBuiltWithScript, removeBuiltWithScriptFromLayout, removeBuiltWithScript } from '@onlook/growth';
-import { addNextBuildConfig } from '@onlook/parser';
-import { api } from '@/trpc/client';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -131,11 +131,11 @@ export class HostingManager {
             timer.log('Prepare completed');
             this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
 
-            // if (!options?.skipBadge) {
-            //     this.emitState(PublishStatus.LOADING, 'Adding badge...');
-            //     await this.addBadge(CUSTOM_OUTPUT_DIR);
-            //     timer.log('"Built with Onlook" badge added');
-            // }
+            if (!options?.skipBadge) {
+                this.emitState(PublishStatus.LOADING, 'Adding badge...');
+                await this.addBadge('./');
+                timer.log('"Built with Onlook" badge added');
+            }
 
             // Run the build script
             await this.runBuildStep(buildScript, options);
@@ -160,7 +160,7 @@ export class HostingManager {
             timer.log('Files serialized, sending to Freestyle...');
 
             const id = await this.sendHostingPostRequest(files, urls, options?.envVars);
-            timer.log('Deployment completed');  
+            timer.log('Deployment completed');
 
             this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
@@ -232,7 +232,7 @@ export class HostingManager {
         const deploymentId = await api.domain.publish.mutate({
             files: files,
             config: {
-                domains: ['vunguyen.space'],
+                domains: urls,
                 entrypoint: 'server.js',
                 envVars,
             },
@@ -312,7 +312,7 @@ export class HostingManager {
             console.warn('copyDir method not available in file operations');
         }
 
-        for (const lockFile of SUPPORTED_LOCK_FILES) { 
+        for (const lockFile of SUPPORTED_LOCK_FILES) {
             const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
             if (lockFileExists) {
                 // Check if copyFile method is available before using it

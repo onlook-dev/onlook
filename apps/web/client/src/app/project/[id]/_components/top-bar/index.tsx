@@ -14,7 +14,6 @@ import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
-import { Publish } from './publish';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
@@ -99,7 +98,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                     </Tooltip> */}
                     <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
                 </div>
-                <Publish />
+                {/* <PublishDropdown /> */}
             </div>
         </div>
     );

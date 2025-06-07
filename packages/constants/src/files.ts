@@ -13,7 +13,7 @@ export const IGNORED_DIRECTORIES = [
 
 export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
-export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs'];
+export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
 
 export const SUPPORTED_LOCK_FILES = [
     'bun.lock',

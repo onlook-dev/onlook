@@ -1,10 +1,10 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { DropdownMenu, DropdownMenuContent } from '@onlook/ui/dropdown-menu';
 import { observer } from 'mobx-react-lite';
 import { PublishDropdown } from './dropdown';
 import { PublishButton } from './trigger-button';
-import { useEditorEngine } from '@/components/store/editor';
 
-export const Publish = observer(() => {
+export const PublishDropdown = observer(() => {
     const editorEngine = useEditorEngine();
 
     return (

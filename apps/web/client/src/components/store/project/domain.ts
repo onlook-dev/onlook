@@ -1,19 +1,19 @@
-import { makeAutoObservable, reaction } from 'mobx';
-import type { ProjectManager } from './manager';
-import {
-    PublishStatus,
-    type Project,
-    type PublishState,
-    type PublishOptions,
-    type PublishRequest,
-    type DomainSettings,
-    DomainType,
-    type PublishResponse,
-} from '@onlook/models';
-import { HostingManager } from './hosting';
 import { sendAnalytics } from '@/utils/analytics';
 import { DefaultSettings } from '@onlook/constants';
+import {
+    DomainType,
+    PublishStatus,
+    type DomainSettings,
+    type Project,
+    type PublishOptions,
+    type PublishRequest,
+    type PublishResponse,
+    type PublishState,
+} from '@onlook/models';
 import { getPublishUrls, getValidSubdomain } from '@onlook/utility';
+import { makeAutoObservable, reaction } from 'mobx';
+import { HostingManager } from './hosting';
+import type { ProjectManager } from './manager';
 
 const DEFAULT_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -224,7 +224,6 @@ export class DomainsManager {
         return true;
     }
 
-    
     addBaseDomainToProject(buildFlags?: string) {
         const domains = {
             base: null,

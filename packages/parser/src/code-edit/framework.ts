@@ -275,12 +275,11 @@ const addDistDirConfig = (ast: T.File): boolean => {
 
 export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boolean> => {
     // Find any config file
-    const possibleExtensions = ['.js', '.ts', '.mjs', '.cjs'];
     let configPath: string | null = null;
     let configFileExtension: string | null = null;
 
     // Try each possible extension
-    for (const ext of possibleExtensions) {
+    for (const ext of JS_FILE_EXTENSIONS) {
         const fileName = `${CONFIG_BASE_NAME.NEXTJS}${ext}`;
         const testPath = fileName;
         if (await fileOps.fileExists(testPath)) {

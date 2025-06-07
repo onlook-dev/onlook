@@ -1,4 +1,3 @@
-import { JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { types as t, type NodePath, type t as T } from './packages';
 
 export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
@@ -74,21 +73,17 @@ export const genASTParserOptionsByFileExtension = (
     sourceType: string = 'module',
 ): object => {
     switch (fileExtension) {
-        case JS_FILE_EXTENSIONS[0]: // js
-            return {
-                sourceType: sourceType,
-            };
-        case JS_FILE_EXTENSIONS[2]: // mjs
-            return {
-                sourceType: sourceType,
-                plugins: ['jsx'],
-            };
-        case JS_FILE_EXTENSIONS[1]: // ts
+        case '.ts':
             return {
                 sourceType: sourceType,
                 plugins: ['typescript'],
             };
+        case '.js':
+        case '.mjs':
+        case '.cjs':
         default:
-            return {};
+            return {
+                sourceType: sourceType,
+            };
     }
 };
