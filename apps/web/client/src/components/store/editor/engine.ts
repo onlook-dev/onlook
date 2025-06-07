@@ -63,10 +63,10 @@ export class EditorEngine {
         this.font = new FontManager(this, this.projectManager);
         this.canvas = new CanvasManager(this.projectManager)
         this.frames = new FramesManager(this, this.projectManager);
-        makeAutoObservable(this);
         this.sandbox.fileEventBus.subscribe('change', async (event) => {
             await this.handleFileChange(event);
         });
+        makeAutoObservable(this);
     }
 
     private async handleFileChange(event: FileEvent) {
