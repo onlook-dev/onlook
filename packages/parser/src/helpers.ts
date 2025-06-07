@@ -1,4 +1,4 @@
-import { types as t, type NodePath, type t as T } from './packages';
+import { types as t, type t as T } from './packages';
 
 export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
     const name = openingElement.name;
@@ -31,42 +31,6 @@ export function isColorsObjectProperty(path: any): boolean {
 export function isObjectExpression(node: any): node is T.ObjectExpression {
     return node.type === 'ObjectExpression';
 }
-
-export const genImportDeclaration = (
-    fileExtension: string,
-    dependency: string,
-): T.VariableDeclaration | T.ImportDeclaration | null => {
-    switch (fileExtension) {
-        case '.js':
-        case '.ts':
-            return t.variableDeclaration('const', [
-                t.variableDeclarator(
-                    t.identifier(dependency),
-                    t.callExpression(t.identifier('require'), [t.stringLiteral(dependency)]),
-                ),
-            ]);
-        case '.mjs':
-            return t.importDeclaration(
-                [t.importDefaultSpecifier(t.identifier(dependency))],
-                t.stringLiteral(dependency),
-            );
-        default:
-            console.log('Skipping import declaration for file extension', fileExtension);
-            return null;
-    }
-};
-
-export const checkVariableDeclarationExist = (
-    path: NodePath<T.VariableDeclarator>,
-    dependency: string,
-): boolean => {
-    return (
-        t.isIdentifier(path.node.id, { name: dependency }) &&
-        t.isCallExpression(path.node.init) &&
-        (path.node.init.callee as T.V8IntrinsicIdentifier).name === 'require' &&
-        (path.node.init.arguments[0] as any).value === dependency
-    );
-};
 
 export const genASTParserOptionsByFileExtension = (
     fileExtension: string,
