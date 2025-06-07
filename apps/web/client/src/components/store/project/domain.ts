@@ -235,6 +235,10 @@ export class DomainsManager {
             console.error('No project found');
             return;
         }
+        if (!env.NEXT_PUBLIC_HOSTING_DOMAIN) {
+            console.error('NEXT_PUBLIC_HOSTING_DOMAIN is not set');
+            return;
+        }
         const url = `${getValidSubdomain(this._project.id)}.${env.NEXT_PUBLIC_HOSTING_DOMAIN}`;
         domains.base = {
             type: DomainType.BASE,
