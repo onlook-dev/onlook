@@ -1,9 +1,10 @@
+import { env } from '@/env';
+import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 
 const sdk = new FreestyleSandboxes({
-    apiKey: process.env.FREESTYLE_API_KEY,
+    apiKey: env.FREESTYLE_API_KEY
 });
 
 export const domainRouter = createTRPCRouter({

@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import { sendAnalytics } from '@/utils/analytics';
 import { DefaultSettings } from '@onlook/constants';
 import {
@@ -230,7 +231,11 @@ export class DomainsManager {
             custom: null,
             ...this._project?.domains,
         };
-        const url = `${getValidSubdomain(this._project?.id || '')}.${process.env.NEXT_PUBLIC_HOSTING_DOMAIN}`;
+        if (!this._project) {
+            console.error('No project found');
+            return;
+        }
+        const url = `${getValidSubdomain(this._project.id)}.${env.NEXT_PUBLIC_HOSTING_DOMAIN}`;
         domains.base = {
             type: DomainType.BASE,
             url,
