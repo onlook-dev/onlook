@@ -1,5 +1,5 @@
 import { JS_FILE_EXTENSIONS } from '@onlook/constants';
-import { type t as T, types as t, type NodePath } from './packages';
+import { types as t, type NodePath, type t as T } from './packages';
 
 export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
     const name = openingElement.name;
@@ -38,19 +38,21 @@ export const genImportDeclaration = (
     dependency: string,
 ): T.VariableDeclaration | T.ImportDeclaration | null => {
     switch (fileExtension) {
-        case JS_FILE_EXTENSIONS[0]: // js
+        case '.js':
+        case '.ts':
             return t.variableDeclaration('const', [
                 t.variableDeclarator(
                     t.identifier(dependency),
                     t.callExpression(t.identifier('require'), [t.stringLiteral(dependency)]),
                 ),
             ]);
-        case JS_FILE_EXTENSIONS[2]: // mjs
+        case '.mjs':
             return t.importDeclaration(
                 [t.importDefaultSpecifier(t.identifier(dependency))],
                 t.stringLiteral(dependency),
             );
         default:
+            console.log('Skipping import declaration for file extension', fileExtension);
             return null;
     }
 };
@@ -65,14 +67,6 @@ export const checkVariableDeclarationExist = (
         (path.node.init.callee as T.V8IntrinsicIdentifier).name === 'require' &&
         (path.node.init.arguments[0] as any).value === dependency
     );
-};
-
-export const isSupportFileExtension = (fileExtension: string): boolean => {
-    return JS_FILE_EXTENSIONS.indexOf(fileExtension as (typeof JS_FILE_EXTENSIONS)[number]) !== -1;
-};
-
-export const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {
-    return JS_FILE_EXTENSIONS.indexOf(fileExtension as (typeof JS_FILE_EXTENSIONS)[number]) !== -1;
 };
 
 export const genASTParserOptionsByFileExtension = (

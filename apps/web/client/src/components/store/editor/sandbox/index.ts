@@ -1,10 +1,11 @@
 import type { WatchEvent } from '@codesandbox/sdk';
-import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
-import { isSubdirectory, isBinaryFile } from '@onlook/utility';
+import { isBinaryFile, isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
+import path from 'path';
 import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
@@ -41,11 +42,7 @@ export class SandboxManager {
             return;
         }
 
-        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [
-            ...JSX_FILE_EXTENSIONS,
-            ...JS_FILE_EXTENSIONS,
-            'css',
-        ]);
+        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES);
         for (const file of files) {
             const normalizedPath = normalizePath(file);
             const content = await this.readFile(normalizedPath);
@@ -180,8 +177,8 @@ export class SandboxManager {
 
     async listFilesRecursively(
         dir: string,
-        ignore: string[] = [],
-        extensions: string[] = [],
+        ignoreDirs: string[] = [],
+        ignoreExtensions: string[] = [],
     ): Promise<string[]> {
         if (!this.session.session) {
             console.error('No session found');
@@ -195,19 +192,20 @@ export class SandboxManager {
             const fullPath = `${dir}/${entry.name}`;
             const normalizedPath = normalizePath(fullPath);
             if (entry.type === 'directory') {
-                if (ignore.includes(entry.name)) {
+                if (ignoreDirs.includes(entry.name)) {
                     continue;
                 }
                 const subFiles = await this.listFilesRecursively(
                     normalizedPath,
-                    ignore,
-                    extensions,
+                    ignoreDirs,
+                    ignoreExtensions,
                 );
                 results.push(...subFiles);
             } else {
+                const extension = path.extname(entry.name);
                 if (
-                    extensions.length > 0 &&
-                    !extensions.some(extension => entry.name.endsWith(extension))
+                    ignoreExtensions.length > 0 &&
+                    !ignoreExtensions.includes(extension)
                 ) {
                     continue;
                 }
@@ -218,18 +216,18 @@ export class SandboxManager {
     }
 
     // Download the code as a zip
-    async downloadFiles(projectName?:string): Promise<{ downloadUrl:string; fileName: string }| null>{
-        if (!this.session.session){
+    async downloadFiles(projectName?: string): Promise<{ downloadUrl: string; fileName: string } | null> {
+        if (!this.session.session) {
             console.error('No sandbox session found')
             return null;
         }
-        try{
-            const {downloadUrl} = await this.session.session.fs.download("./")
+        try {
+            const { downloadUrl } = await this.session.session.fs.download("./")
             return {
                 downloadUrl,
                 fileName: `${projectName || 'onlook-project'}-${Date.now()}.zip`
             }
-        } catch (error){
+        } catch (error) {
             console.error('Error generating download URL:', error)
             return null;
         }
@@ -291,7 +289,7 @@ export class SandboxManager {
     }
 
     async processFileForMapping(file: string) {
-        const extension = file.split('.').pop();
+        const extension = path.extname(file);
         if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
             return;
         }
@@ -327,7 +325,7 @@ export class SandboxManager {
 
     async fileExists(path: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        
+
         if (!this.session.session) {
             console.error('No session found for file existence check');
             return false;
@@ -337,7 +335,7 @@ export class SandboxManager {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
             const dirEntries = await this.session.session.fs.readdir(dirPath);
-            
+
             return dirEntries.some((entry: any) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
@@ -472,7 +470,7 @@ export class SandboxManager {
 
         try {
             const normalizedPath = normalizePath(path);
-            
+
             // Check if file exists before attempting to delete
             const exists = await this.fileExists(normalizedPath);
             if (!exists) {
@@ -482,10 +480,10 @@ export class SandboxManager {
 
             // Delete the file using the filesystem API
             await this.session.session.fs.remove(normalizedPath);
-            
+
             // Clean up the file sync cache
             await this.fileSync.delete(normalizedPath);
-            
+
             // Publish file deletion event
             this.fileEventBus.publish({
                 type: 'remove',

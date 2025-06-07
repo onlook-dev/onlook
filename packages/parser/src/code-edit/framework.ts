@@ -4,11 +4,10 @@ import {
     checkVariableDeclarationExist,
     genASTParserOptionsByFileExtension,
     genImportDeclaration,
-    isSupportFileExtension,
 } from '../helpers';
 
-import { CUSTOM_OUTPUT_DIR } from '@onlook/constants';
-import { type t as T, types as t, parse, traverse, generate } from '../packages';
+import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS } from '@onlook/constants';
+import { generate, parse, type t as T, types as t, traverse } from '../packages';
 
 enum CONFIG_BASE_NAME {
     NEXTJS = 'next.config',
@@ -26,7 +25,7 @@ export const modifyNextConfig = async (
     configFileExtension: string,
     fileOps: FileOperations,
 ): Promise<void> => {
-    if (!isSupportFileExtension(configFileExtension)) {
+    if (!JS_FILE_EXTENSIONS.includes(configFileExtension)) {
         console.error('Unsupported file extension');
         return;
     }
