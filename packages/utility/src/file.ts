@@ -1,44 +1,13 @@
+import { BINARY_EXTENSIONS } from '@onlook/constants';
+
 /**
  * Check if a file is binary based on its extension
  * @param filename - The filename to check
  * @returns True if the file is binary, false otherwise
  */
 export const isBinaryFile = (filename: string): boolean => {
-    const binaryExtensions = [
-        '.jpg',
-        '.jpeg',
-        '.png',
-        '.gif',
-        '.bmp',
-        '.svg',
-        '.ico',
-        '.webp',
-        '.pdf',
-        '.zip',
-        '.tar',
-        '.gz',
-        '.rar',
-        '.7z',
-        '.mp3',
-        '.mp4',
-        '.wav',
-        '.avi',
-        '.mov',
-        '.wmv',
-        '.exe',
-        '.bin',
-        '.dll',
-        '.so',
-        '.dylib',
-        '.woff',
-        '.woff2',
-        '.ttf',
-        '.eot',
-        '.otf',
-    ];
-
     const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
-    return binaryExtensions.includes(ext);
+    return BINARY_EXTENSIONS.includes(ext);
 };
 
 /**

@@ -1,8 +1,9 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
+import { BINARY_EXTENSIONS } from '@onlook/constants';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
+import path from 'path';
 import type { EditorEngine } from '../engine';
-import { BINARY_EXTENSIONS } from '@onlook/constants';
 
 export interface EditorFile {
     id: string;
@@ -55,19 +56,20 @@ export class IDEManager {
         }
     }
 
-    async openFile(path: string): Promise<EditorFile | null> {
+    async openFile(filePath: string): Promise<EditorFile | null> {
         if (!this.isSandboxReady()) {
             console.error('Sandbox not connected');
             return null;
         }
         this.isLoading = true;
         try {
-            const ext = path.split(".").pop()?.toLocaleLowerCase();
+
+            const ext = path.extname(filePath).toLocaleLowerCase();
             let content = "";
             let isBinary = false;
 
-            if (BINARY_EXTENSIONS.includes(ext || '')) {
-                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(path);
+            if (BINARY_EXTENSIONS.includes(ext)) {
+                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(filePath);
                 if (binaryContent) {
                     const base64String = btoa(
                         Array.from(binaryContent)
@@ -78,15 +80,15 @@ export class IDEManager {
                     isBinary = true;
                 }
             } else {
-                const readFileContent = await this.editorEngine.sandbox.readFile(path);
-                if(readFileContent){
+                const readFileContent = await this.editorEngine.sandbox.readFile(filePath);
+                if (readFileContent) {
                     content = readFileContent;
                 }
             }
 
-            const fileName = path.split('/').pop() || '';
+            const fileName = filePath.split('/').pop() || '';
             const language = getLanguageFromFileName(fileName);
-            const existing = this.openedFiles.find((f) => f.path === path);
+            const existing = this.openedFiles.find((f) => f.path === filePath);
             if (existing) {
                 this.activeFile = existing;
                 return existing;
@@ -94,7 +96,7 @@ export class IDEManager {
             const file: EditorFile = {
                 id: nanoid(),
                 filename: fileName,
-                path,
+                path: filePath,
                 content: content || '',
                 language,
                 isDirty: false,
