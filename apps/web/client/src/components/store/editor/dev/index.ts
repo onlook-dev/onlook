@@ -2,6 +2,7 @@ import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-pa
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '../engine';
+import { BINARY_EXTENSIONS } from '@onlook/constants';
 
 export interface EditorFile {
     id: string;
@@ -10,6 +11,7 @@ export interface EditorFile {
     content: string;
     language: string;
     isDirty: boolean;
+    isBinary: boolean;
 }
 
 export interface CodeRange {
@@ -60,7 +62,28 @@ export class IDEManager {
         }
         this.isLoading = true;
         try {
-            const content = await this.editorEngine.sandbox.readFile(path);
+            const ext = path.split(".").pop()?.toLocaleLowerCase();
+            let content = "";
+            let isBinary = false;
+
+            if (BINARY_EXTENSIONS.includes(ext || '')) {
+                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(path);
+                if (binaryContent) {
+                    const base64String = btoa(
+                        Array.from(binaryContent)
+                            .map((byte: number) => String.fromCharCode(byte))
+                            .join(''),
+                    );
+                    content = base64String;
+                    isBinary = true;
+                }
+            } else {
+                const readFileContent = await this.editorEngine.sandbox.readFile(path);
+                if(readFileContent){
+                    content = readFileContent;
+                }
+            }
+
             const fileName = path.split('/').pop() || '';
             const language = getLanguageFromFileName(fileName);
             const existing = this.openedFiles.find((f) => f.path === path);
@@ -75,6 +98,7 @@ export class IDEManager {
                 content: content || '',
                 language,
                 isDirty: false,
+                isBinary
             };
             this.openedFiles.push(file);
             this.activeFile = file;

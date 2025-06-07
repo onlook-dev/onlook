@@ -407,6 +407,24 @@ export const DevTab = observer(() => {
         setShowUnsavedDialog(false);
     }
 
+    const getFileUrl = (file: EditorFile) => {
+        const mime = getMimeType(file.filename.toLowerCase());
+        return `data:${mime};base64,${file.content}`;
+    };
+
+    function getMimeType(fileName: string): string {
+        const lowerCasedFileName = fileName.toLowerCase();
+
+        if (lowerCasedFileName.endsWith('.ico')) return 'image/x-icon';
+        if (lowerCasedFileName.endsWith('.png')) return 'image/png';
+        if (lowerCasedFileName.endsWith('.jpg') || lowerCasedFileName.endsWith('.jpeg')) return 'image/jpeg';
+        if (lowerCasedFileName.endsWith('.svg')) return 'image/svg+xml';
+        if (lowerCasedFileName.endsWith('.gif')) return 'image/gif';
+        if (lowerCasedFileName.endsWith('.webp')) return 'image/webp';
+        if (lowerCasedFileName.endsWith('.bmp')) return 'image/bmp';
+        return 'application/octet-stream';
+    }
+
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -544,46 +562,54 @@ export const DevTab = observer(() => {
                                             display: ide.activeFile?.id === file.id ? 'block' : 'none',
                                         }}
                                     >
-                                        <CodeMirror
-                                            key={file.id}
-                                            value={file.content}
-                                            height="100%"
-                                            theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
-                                            extensions={[
-                                                ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
-                                                ...getExtensions(file.language),
-                                            ]}
-                                            onChange={(value) => {
-                                                if (ide.highlightRange) {
-                                                    ide.setHighlightRange(null);
-                                                }
-                                                updateFileContent(file.id, value);
-                                            }}
-                                            className="h-full overflow-hidden"
-                                            onCreateEditor={(editor) => {
-                                                editorViewsRef.current.set(file.id, editor);
-
-                                                editor.dom.addEventListener('mousedown', () => {
+                                        {file.isBinary ? (
+                                            <img
+                                                src={getFileUrl(file)} 
+                                                alt={file.filename}
+                                                className="w-full h-full object-contain p-5"
+                                            />
+                                        ) : (                                    
+                                            <CodeMirror
+                                                key={file.id}
+                                                value={file.content}
+                                                height="100%"
+                                                theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
+                                                extensions={[
+                                                    ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
+                                                    ...getExtensions(file.language),
+                                                ]}
+                                                onChange={(value) => {
                                                     if (ide.highlightRange) {
                                                         ide.setHighlightRange(null);
                                                     }
-                                                });
+                                                    updateFileContent(file.id, value);
+                                                }}
+                                                className="h-full overflow-hidden"
+                                                onCreateEditor={(editor) => {
+                                                    editorViewsRef.current.set(file.id, editor);
 
-                                                // If this file is the active file and we have a highlight range,
-                                                // trigger the highlight effect again
-                                                if (
-                                                    ide.activeFile &&
-                                                    ide.activeFile.id === file.id &&
-                                                    ide.highlightRange
-                                                ) {
-                                                    setTimeout(() => {
+                                                    editor.dom.addEventListener('mousedown', () => {
                                                         if (ide.highlightRange) {
-                                                            ide.setHighlightRange(ide.highlightRange);
+                                                            ide.setHighlightRange(null);
                                                         }
-                                                    }, 300);
-                                                }
-                                            }}
-                                        />
+                                                    });
+
+                                                    // If this file is the active file and we have a highlight range,
+                                                    // trigger the highlight effect again
+                                                    if (
+                                                        ide.activeFile &&
+                                                        ide.activeFile.id === file.id &&
+                                                        ide.highlightRange
+                                                    ) {
+                                                        setTimeout(() => {
+                                                            if (ide.highlightRange) {
+                                                                ide.setHighlightRange(ide.highlightRange);
+                                                            }
+                                                        }, 300);
+                                                    }
+                                                }}
+                                            />
+                                        )}
                                         {ide.activeFile?.isDirty && showUnsavedDialog && (
                                             <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
                                                 <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
