@@ -7,7 +7,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
-export const PublishButton = observer(() => {
+export const TriggerButton = observer(() => {
     const editorEngine = useEditorEngine();
     const domainsManager = useDomainsManager();
     const baseStatus = domainsManager.state?.status;

@@ -2,9 +2,9 @@ import { useEditorEngine } from '@/components/store/editor';
 import { DropdownMenu, DropdownMenuContent } from '@onlook/ui/dropdown-menu';
 import { observer } from 'mobx-react-lite';
 import { PublishDropdown } from './dropdown';
-import { PublishButton } from './trigger-button';
+import { TriggerButton } from './trigger-button';
 
-export const PublishDropdown = observer(() => {
+export const PublishButton = observer(() => {
     const editorEngine = useEditorEngine();
 
     return (
@@ -14,7 +14,7 @@ export const PublishDropdown = observer(() => {
                 editorEngine.state.publishOpen = open;
             }}
         >
-            <PublishButton />
+            <TriggerButton />
             <DropdownMenuContent align="end" className="w-96 p-0 text-sm">
                 <PublishDropdown />
             </DropdownMenuContent>
