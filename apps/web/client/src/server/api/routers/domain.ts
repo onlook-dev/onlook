@@ -2,10 +2,14 @@ import { env } from '@/env';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { TRPCError } from '@trpc/server';
 
 const createFreestyleSdk = () => {
     if (!env.FREESTYLE_API_KEY) {
-        throw new Error('FREESTYLE_API_KEY environment variable is not set');
+        throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: 'FREESTYLE_API_KEY environment variable is not set. Please configure it to use domain publishing features.',
+        });
     }
     return new FreestyleSandboxes({
         apiKey: env.FREESTYLE_API_KEY
