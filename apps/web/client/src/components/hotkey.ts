@@ -8,6 +8,7 @@ export class Hotkey {
     static readonly PREVIEW = new Hotkey('p', 'Preview');
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
     static readonly RELOAD_APP = new Hotkey('mod+r', 'Reload App');
+    static readonly ADD_WINDOW = new Hotkey('w', 'Add Window');
 
     // Zoom
     static readonly ZOOM_FIT = new Hotkey('mod+0', 'Zoom Fit');
@@ -44,7 +45,7 @@ export class Hotkey {
     private constructor(
         public readonly command: string,
         public readonly description: string,
-    ) { }
+    ) {}
 
     toString() {
         return this.command;

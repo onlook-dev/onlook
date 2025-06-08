@@ -2,7 +2,7 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, LeftPanelTabValue } from '@onlook/models';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
@@ -56,6 +56,24 @@ export const BottomBar = observer(() => {
     const editorEngine = useEditorEngine();
     const toolbarItems = TOOLBAR_ITEMS({ t });
 
+    const addWindowItem = {
+        icon: Icons.Desktop,
+        hotkey: Hotkey.ADD_WINDOW,
+        label: t('editor.toolbar.tools.addWindow.name'),
+        tooltip: t('editor.toolbar.tools.addWindow.tooltip'),
+    };
+    const selected = editorEngine.frames.selected;
+
+    const addWindowFunc = async () => {
+        if (selected.length > 0) {
+            const frameId = selected[0]?.frame.id;
+            if (frameId) {
+                editorEngine.frames.duplicate(frameId);
+            }
+        }
+        editorEngine.state.leftPanelTab = LeftPanelTabValue.WINDOWS;
+    };
+
     return (
         <AnimatePresence mode="wait">
             {editorEngine.state.editorMode !== EditorMode.PREVIEW && (
@@ -85,14 +103,14 @@ export const BottomBar = observer(() => {
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
                                     <TooltipTrigger asChild>
-                                            <ToggleGroupItem
-                                                value={item.mode}
-                                                aria-label={item.hotkey.description}
-                                                disabled={item.disabled}
-                                                className="hover:text-foreground-hover text-foreground-tertiary"
-                                            >
-                                                <item.icon />
-                                            </ToggleGroupItem>
+                                        <ToggleGroupItem
+                                            value={item.mode}
+                                            aria-label={item.hotkey.description}
+                                            disabled={item.disabled}
+                                            className="hover:text-foreground-hover text-foreground-tertiary"
+                                        >
+                                            <item.icon />
+                                        </ToggleGroupItem>
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <HotkeyLabel hotkey={item.hotkey} />
@@ -100,6 +118,22 @@ export const BottomBar = observer(() => {
                                 </Tooltip>
                             ))}
                         </ToggleGroup>
+
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    aria-label={addWindowItem.hotkey.description}
+                                    disabled={selected.length === 0 || !selected[0]}
+                                    className="hover:text-foreground-hover text-foreground-tertiary p-1"
+                                    onClick={addWindowFunc}
+                                >
+                                    <addWindowItem.icon />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <HotkeyLabel hotkey={addWindowItem.hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
                     </TerminalArea>
                 </motion.div>
             )}
