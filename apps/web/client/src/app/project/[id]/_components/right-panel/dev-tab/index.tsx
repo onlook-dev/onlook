@@ -8,20 +8,20 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
+import { FileModal } from './file-modal';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
-import { FileModal } from './file-modal';
 import { FolderModal } from './folder-modal';
 
 export const DevTab = observer(() => {
@@ -289,14 +289,6 @@ export const DevTab = observer(() => {
         ide.activeFile = file;
     }
 
-    function handleJumpToElement() {
-        if (!ide.activeFile) {
-            return;
-        }
-
-        console.log(`Jump to element in ${ide.activeFile.path}`);
-    }
-
     async function getFilePathFromOid(oid: string): Promise<string | null> {
         if (!isSandboxReady()) {
             handleSandboxNotReady('get file path from OID');
@@ -427,43 +419,49 @@ export const DevTab = observer(() => {
     }, []);
 
     return (
-        <div className="h-full flex flex-col w-full">
+        <div className="size-full flex flex-col">
             <div className="flex items-center justify-between h-11 pl-4 pr-2 border-b-[0.5px]">
-                <div className="flex items-center space-x-5 h-full">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full">
-                            <Icons.Sparkles className="mr-1.5 h-4 w-4" />
-                            <span className="mr-1">Actions</span>
-                            <Icons.ChevronDown className="h-3 w-3" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="-mt-1">
-                            <DropdownMenuItem onClick={() => setFileModalOpen(true)}>
-                                <Icons.File className="mr-2 h-4 w-4" />
-                                New File
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setFolderModalOpen(true)}>
-                                <Icons.Directory className="mr-2 h-4 w-4" />
-                                New Folder
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setIsFilesVisible(!isFilesVisible)}>
-                                <Icons.Directory className="mr-2 h-4 w-4" />
-                                {isFilesVisible ? 'Hide files panel' : 'Show files panel'}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleJumpToElement}>
-                                <Icons.Check className="mr-2 h-4 w-4" />
-                                Jump to code from canvas
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={saveFile} disabled={!isDirty}>
-                                <Icons.File className="mr-2 h-4 w-4" />
-                                Save changes
-                                <span className="ml-auto text-xs text-muted-foreground">
-                                    {navigator.platform.includes('Mac') ? '⌘S' : 'Ctrl+S'}
-                                </span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="flex gap-1 items-center h-full">
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={() => setIsFilesVisible(!isFilesVisible)}>
+                                <Icons.CollapseSidebar />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={() => setFileModalOpen(true)}>
+                                <Icons.FilePlus />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            New File
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={() => setFolderModalOpen(true)}>
+                                <Icons.DirectoryPlus />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            New Folder
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={saveFile} disabled={!isDirty}>
+                                <Icons.FloppyDisk />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            Save changes
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
 
