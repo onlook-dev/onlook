@@ -15,27 +15,20 @@ export const FILE_TEMPLATES = {
     '.tsx': (fileName: string) => {
         const componentName = generatePascalCaseName(fileName, '.tsx');
 
-        return `// Created by Onlook: ${new Date().toLocaleDateString()}
-import React from 'react';
+        return `import { type ReactNode } from 'react'
 
-interface ${componentName}Props {
-    className?: string;
-    children?: React.ReactNode;
+type ${componentName}Props = {
+    className?: string
+    children?: ReactNode
 }
 
-export const ${componentName}: React.FC<${componentName}Props> = ({ 
-    className,
-    children,
-    ...props 
-}) => {
+export default function ${componentName}({ className, children }: ${componentName}Props) {
     return (
-        <div className={className} {...props}>
+        <div className={className}>
             {children || <h1>Hello from ${componentName}</h1>}
         </div>
-    );
-};
-
-export default ${componentName};
+    )
+}
 `;
     },
     // TypeScript Module
