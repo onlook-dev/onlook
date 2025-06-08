@@ -72,6 +72,7 @@ export const BottomBar = observer(() => {
                 editorEngine.frames.duplicate(frameId);
             }
         }
+        editorEngine.frames.deselectAll();
         editorEngine.state.leftPanelTab = LeftPanelTabValue.WINDOWS;
     };
 
