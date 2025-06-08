@@ -11,8 +11,8 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import type { NodeApi } from 'react-arborist';
 import { useState } from 'react';
+import type { NodeApi } from 'react-arborist';
 import { FileModal } from './file-modal';
 import { FolderModal } from './folder-modal';
 
@@ -115,6 +115,14 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             separator: false,
         },
+        {
+            label: 'Delete',
+            action: () => {
+                editorEngine.sandbox.deleteFile(node.data.path);
+            },
+            icon: <Icons.Trash className="mr-2 h-4 w-4" />,
+            separator: false,
+        }
     ];
 
     return (

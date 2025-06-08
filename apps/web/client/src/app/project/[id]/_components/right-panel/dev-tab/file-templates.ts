@@ -1,13 +1,12 @@
 import path from 'path';
 
-
 function generatePascalCaseName(fileName: string, extension: string): string {
     const baseName = path.basename(fileName, extension)
         .split(/[-_]/)
         .filter(word => word.length > 0) // Filter out empty words
         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
         .join('');
-    
+
     return baseName || 'Component';
 }
 
@@ -15,7 +14,7 @@ export const FILE_TEMPLATES = {
     // React TypeScript Component
     '.tsx': (fileName: string) => {
         const componentName = generatePascalCaseName(fileName, '.tsx');
-        
+
         return `// Created by Onlook: ${new Date().toLocaleDateString()}
 import React from 'react';
 
@@ -42,7 +41,7 @@ export default ${componentName};
     // TypeScript Module
     '.ts': (fileName: string) => {
         const functionName = generatePascalCaseName(fileName, '.ts');
-        
+
         return `/**
  * ${functionName} function
  * Created by Onlook: ${new Date().toLocaleDateString()}
@@ -62,7 +61,7 @@ export default ${functionName};
     // JavaScript Function
     '.js': (fileName: string) => {
         const functionName = generatePascalCaseName(fileName, '.js');
-        
+
         return `/**
  * ${functionName} function
  * Created by Onlook: ${new Date().toLocaleDateString()}
@@ -79,7 +78,7 @@ export default ${functionName};
     // CSS Stylesheet
     '.css': (fileName: string) => {
         const className = path.basename(fileName, '.css').toLowerCase().replace(/[^a-z0-9]/g, '-');
-        
+
         return `/* ${fileName} */
 /* Created by Onlook: ${new Date().toLocaleDateString()} */
 
@@ -100,7 +99,7 @@ export default ${functionName};
     // SCSS Stylesheet
     '.scss': (fileName: string) => {
         const className = path.basename(fileName, '.scss').toLowerCase().replace(/[^a-z0-9]/g, '-');
-        
+
         return `// ${fileName}
 // Created by Onlook: ${new Date().toLocaleDateString()}
 
@@ -134,7 +133,7 @@ export default ${functionName};
             .split(/[-_]/)
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
-        
+
         return `# ${title}
 
 > Created by Onlook: ${new Date().toLocaleDateString()}
@@ -169,7 +168,7 @@ console.log('Hello, ${title}!');
             .split(/[-_]/)
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
-        
+
         return `<!DOCTYPE html>
 <!-- Created by Onlook: ${new Date().toLocaleDateString()} -->
 <html lang="en">
@@ -234,17 +233,17 @@ export const DEFAULT_TEMPLATE = (fileName: string) => `// ${fileName}
 export function getFileTemplate(fileName: string): string {
     const ext = path.extname(fileName).toLowerCase();
     const baseName = path.basename(fileName).toLowerCase();
-    
+
     // Check for specific filenames first
     if (baseName in FILE_TEMPLATES) {
         return FILE_TEMPLATES[baseName as keyof typeof FILE_TEMPLATES](fileName);
     }
-    
+
     // Check by extension
     if (ext in FILE_TEMPLATES) {
         return FILE_TEMPLATES[ext as keyof typeof FILE_TEMPLATES](fileName);
     }
-    
+
     // Return default template
     return DEFAULT_TEMPLATE(fileName);
 }
