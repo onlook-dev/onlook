@@ -1,3 +1,4 @@
+import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { parse, types as t, traverse } from '@onlook/parser';
 import { nanoid } from 'nanoid';
@@ -184,7 +185,7 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
 };
 
 const scanAppDirectory = async (
-    session: any,
+    session: WebSocketSession,
     dir: string,
     parentPath: string = ''
 ): Promise<PageNode[]> => {
@@ -302,12 +303,12 @@ const scanAppDirectory = async (
 };
 
 const scanPagesDirectory = async (
-    session: any,
+    session: WebSocketSession,
     dir: string,
     parentPath: string = ''
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
-    let entries;
+    let entries: ReaddirEntry[];
 
     try {
         entries = await session.fs.readdir(dir);
@@ -318,12 +319,18 @@ const scanPagesDirectory = async (
 
     // Process files first
     for (const entry of entries) {
+        const fileName = entry.name?.split('.')[0];
+
+        if (!fileName) {
+            console.error(`Error reading file ${entry.name}`);
+            continue;
+        }
+
         if (
             entry.type === 'file' &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)) &&
-            !IGNORED_DIRECTORIES.includes(entry.name.split('.')[0])
+            !IGNORED_DIRECTORIES.includes(fileName)
         ) {
-            const fileName = entry.name.split('.')[0];
             const isDynamicRoute = fileName.startsWith('[') && fileName.endsWith(']');
 
             let cleanPath;
@@ -401,7 +408,7 @@ const scanPagesDirectory = async (
     return nodes;
 };
 
-export const scanPagesFromSandbox = async (session: any): Promise<PageNode[]> => {
+export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<PageNode[]> => {
     if (!session) {
         throw new Error('No sandbox session available');
     }
@@ -451,7 +458,7 @@ export const scanPagesFromSandbox = async (session: any): Promise<PageNode[]> =>
     }
 };
 
-const detectRouterTypeInSandbox = async (session: any): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
+const detectRouterTypeInSandbox = async (session: WebSocketSession): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
@@ -500,7 +507,7 @@ const detectRouterTypeInSandbox = async (session: any): Promise<{ type: 'app' | 
 };
 
 // checks if file/directory exists
-const pathExists = async (session: any, filePath: string): Promise<boolean> => {
+const pathExists = async (session: WebSocketSession, filePath: string): Promise<boolean> => {
     try {
         await session.fs.readdir(getDirName(filePath));
         const dirEntries = await session.fs.readdir(getDirName(filePath));
@@ -511,7 +518,7 @@ const pathExists = async (session: any, filePath: string): Promise<boolean> => {
     }
 };
 
-const cleanupEmptyFolders = async (session: any, folderPath: string): Promise<void> => {
+const cleanupEmptyFolders = async (session: WebSocketSession, folderPath: string): Promise<void> => {
     while (folderPath && folderPath !== getDirName(folderPath)) {
         try {
             const entries = await session.fs.readdir(folderPath);
@@ -529,13 +536,18 @@ const cleanupEmptyFolders = async (session: any, folderPath: string): Promise<vo
     }
 };
 
-const getUniqueDir = async (session: any, basePath: string, dirName: string): Promise<string> => {
+const getUniqueDir = async (
+    session: WebSocketSession,
+    basePath: string,
+    dirName: string,
+    maxAttempts = 100,
+): Promise<string> => {
     let uniquePath = dirName;
     let counter = 1;
 
     const baseName = dirName.replace(/-copy(-\d+)?$/, '');
 
-    while (true) {
+    while (counter <= maxAttempts) {
         const fullPath = joinPath(basePath, uniquePath);
         if (!(await pathExists(session, fullPath))) {
             return uniquePath;
@@ -543,16 +555,18 @@ const getUniqueDir = async (session: any, basePath: string, dirName: string): Pr
         uniquePath = `${baseName}-copy-${counter}`;
         counter++;
     }
+
+    throw new Error(`Unable to find available directory name for ${dirName}`);
 };
 
-const createDirectory = async (session: any, dirPath: string): Promise<void> => {
+const createDirectory = async (session: WebSocketSession, dirPath: string): Promise<void> => {
     // Creates a temporary file to ensure directory structure exists, then remove it
     const tempFile = joinPath(dirPath, '.temp');
     await session.fs.writeTextFile(tempFile, '');
     await session.fs.remove(tempFile);
 };
 
-const copyDirectoryRecursive = async (session: any, sourcePath: string, targetPath: string): Promise<void> => {
+const copyDirectoryRecursive = async (session: WebSocketSession, sourcePath: string, targetPath: string): Promise<void> => {
     try {
         const entries = await session.fs.readdir(sourcePath);
 
@@ -577,7 +591,7 @@ const copyDirectoryRecursive = async (session: any, sourcePath: string, targetPa
 };
 
 
-export const createPageInSandbox = async (session: any, pagePath: string): Promise<void> => {
+export const createPageInSandbox = async (session: WebSocketSession, pagePath: string): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -611,7 +625,7 @@ export const createPageInSandbox = async (session: any, pagePath: string): Promi
     }
 };
 
-export const deletePageInSandbox = async (session: any, pagePath: string, isDir: boolean): Promise<void> => {
+export const deletePageInSandbox = async (session: WebSocketSession, pagePath: string, isDir: boolean): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -636,7 +650,7 @@ export const deletePageInSandbox = async (session: any, pagePath: string, isDir:
 
         if (isDir) {
             // Delete entire directory
-            await session.fs.remove(fullPath);
+            await session.fs.remove(fullPath, true);
         } else {
             // Delete just the page.tsx file
             const pageFilePath = joinPath(fullPath, 'page.tsx');
@@ -653,7 +667,7 @@ export const deletePageInSandbox = async (session: any, pagePath: string, isDir:
     }
 };
 
-export const renamePageInSandbox = async (session: any, oldPath: string, newName: string): Promise<void> => {
+export const renamePageInSandbox = async (session: WebSocketSession, oldPath: string, newName: string): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -692,7 +706,7 @@ export const renamePageInSandbox = async (session: any, oldPath: string, newName
     }
 };
 
-export const duplicatePageInSandbox = async (session: any, sourcePath: string, targetPath: string): Promise<void> => {
+export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePath: string, targetPath: string): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -752,7 +766,7 @@ export const duplicatePageInSandbox = async (session: any, sourcePath: string, t
 };
 
 
-export const updatePageMetadataInSandbox = async (session: any, pagePath: string, metadata: PageMetadata): Promise<void> => {
+export const updatePageMetadataInSandbox = async (session: WebSocketSession, pagePath: string, metadata: PageMetadata): Promise<void> => {
     // TODO: Implement metadata update using sandbox session
     console.log(`Updating metadata for page ${pagePath}`);
     throw new Error('Metadata update not yet implemented for sandbox');

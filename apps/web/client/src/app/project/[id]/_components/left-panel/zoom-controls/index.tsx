@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -6,7 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
 import { Hotkey } from '@/components/hotkey';
-import { DefaultSettings, EditorAttributes } from '@onlook/constants';
+import { EditorAttributes } from '@onlook/constants';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { useTranslations } from 'next-intl';
 
@@ -44,21 +45,61 @@ export const ZoomControls = observer(() => {
 
     const handleZoomToFit = () => {
         const container = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
-        const content = container?.firstElementChild as HTMLElement;
-        if (container && content) {
-            const contentRect = content.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
-            const scaleX = containerRect.width / contentRect.width;
-            const scaleY = containerRect.height / contentRect.height;
-            const newScale = Math.min(scaleX, scaleY) * DefaultSettings.SCALE;
-            editorEngine.canvas.scale = newScale;
-            //Position fit
-            const newPosition = {
-                x: DefaultSettings.PAN_POSITION.x,
-                y: DefaultSettings.PAN_POSITION.y,
-            };
-            editorEngine.canvas.position = newPosition;
+        if (!container) {
+            console.warn('No container found');
+            return;
         }
+
+        const viewport = container.parentElement;
+        if (!viewport) {
+            console.warn('No viewport found');
+            return;
+        }
+
+        const iframe = container.querySelector('iframe');
+        if (!iframe) {
+            console.warn('No iframe found');
+            return;
+        }
+
+        const iframeStyle = window.getComputedStyle(iframe);
+        const contentWidth = parseInt(iframeStyle.width, 10) || iframe.offsetWidth;
+        const contentHeight = parseInt(iframeStyle.height, 10) || iframe.offsetHeight;
+
+        const viewportRect = viewport.getBoundingClientRect();
+        const availableWidth = viewportRect.width;
+        const availableHeight = viewportRect.height;
+
+        if (
+            contentWidth <= 0 ||
+            contentHeight <= 0 ||
+            availableWidth <= 0 ||
+            availableHeight <= 0
+        ) {
+            console.warn('Invalid dimensions');
+            return;
+        }
+
+        const scaleX = availableWidth / contentWidth;
+        const scaleY = availableHeight / contentHeight;
+        const newScale = Math.min(scaleX, scaleY) * 0.9;
+
+        if (!isFinite(newScale) || newScale <= 0) {
+            console.warn('Invalid scale');
+            return;
+        }
+
+        editorEngine.canvas.scale = newScale;
+
+        const scaledWidth = contentWidth * newScale;
+        const scaledHeight = contentHeight * newScale;
+
+        const newPosition = {
+            x: (availableWidth - scaledWidth) / 2,
+            y: (availableHeight - scaledHeight) / 2,
+        };
+
+        editorEngine.canvas.position = newPosition;
     };
 
     const handleCustomZoom = (value: string) => {
@@ -88,7 +129,7 @@ export const ZoomControls = observer(() => {
                     </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipPortal>
-                    <TooltipContent side="right">{t('editor.zoom.level')}</TooltipContent>
+                    <TooltipContent side="right">{t(transKeys.editor.zoom.level)}</TooltipContent>
                 </TooltipPortal>
             </Tooltip>
             <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42 ml-5">
@@ -134,13 +175,13 @@ export const ZoomControls = observer(() => {
                     onClick={() => (editorEngine.canvas.scale = 1)}
                     className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
                 >
-                    <span className="flex-grow text-mini">{t('editor.zoom.reset')}</span>
+                    <span className="flex-grow text-mini">{t(transKeys.editor.zoom.reset)}</span>
                 </button>
                 <button
                     onClick={() => (editorEngine.canvas.scale = 2)}
                     className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
                 >
-                    <span className="flex-grow text-mini">{t('editor.zoom.double')}</span>
+                    <span className="flex-grow text-mini">{t(transKeys.editor.zoom.double)}</span>
                 </button>
             </PopoverContent>
         </Popover>

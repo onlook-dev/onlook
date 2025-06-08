@@ -14,6 +14,7 @@ export const env = createEnv({
         RESEND_API_KEY: z.string().optional(),
         MORPH_API_KEY: z.string().optional(),
         RELACE_API_KEY: z.string().optional(),
+        FREESTYLE_API_KEY: z.string().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -27,6 +28,7 @@ export const env = createEnv({
         NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
         NEXT_PUBLIC_POSTHOG_HOST: z.string().optional(),
         NEXT_PUBLIC_FEATURE_COLLABORATION: z.boolean().default(false),
+        NEXT_PUBLIC_HOSTING_DOMAIN: z.string().optional(),
     },
 
     /**
@@ -47,6 +49,8 @@ export const env = createEnv({
         MORPH_API_KEY: process.env.MORPH_API_KEY,
         RELACE_API_KEY: process.env.RELACE_API_KEY,
         NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
+        FREESTYLE_API_KEY: process.env.FREESTYLE_API_KEY,
+        NEXT_PUBLIC_HOSTING_DOMAIN: process.env.NEXT_PUBLIC_HOSTING_DOMAIN,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

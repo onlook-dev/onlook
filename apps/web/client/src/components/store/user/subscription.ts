@@ -1,13 +1,21 @@
 import { UsagePlanType } from '@onlook/models/usage';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
+import type { UserManager } from './manager';
 
 export class SubscriptionManager {
     plan: UsagePlanType = UsagePlanType.BASIC;
 
-    constructor() {
-        this.restoreCachedPlan();
-        this.getPlanFromServer();
+    constructor(private userManager: UserManager) {
         makeAutoObservable(this);
+        this.restoreCachedPlan();
+        reaction(
+            () => this.userManager.user,
+            (user) => {
+                if (user) {
+                    this.getPlanFromServer();
+                }
+            }
+        );
     }
 
     private restoreCachedPlan() {

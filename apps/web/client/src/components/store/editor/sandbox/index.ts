@@ -1,10 +1,11 @@
 import type { WatchEvent } from '@codesandbox/sdk';
-import { IGNORED_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
-import { isSubdirectory } from '@onlook/utility';
+import { getBaseName, getDirName, isBinaryFile, isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
+import path from 'path';
 import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
@@ -14,7 +15,7 @@ import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 export class SandboxManager {
-    readonly session: SessionManager
+    readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
@@ -41,11 +42,7 @@ export class SandboxManager {
             return;
         }
 
-        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES, [
-            ...JSX_FILE_EXTENSIONS,
-            ...JS_FILE_EXTENSIONS,
-            'css',
-        ]);
+        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES);
         for (const file of files) {
             const normalizedPath = normalizePath(file);
             const content = await this.readFile(normalizedPath);
@@ -152,7 +149,11 @@ export class SandboxManager {
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
         const formattedContent = await formatContent(normalizedPath, content);
-        return this.fileSync.write(normalizedPath, formattedContent, this.writeRemoteFile.bind(this));
+        return this.fileSync.write(
+            normalizedPath,
+            formattedContent,
+            this.writeRemoteFile.bind(this),
+        );
     }
 
     listAllFiles() {
@@ -176,8 +177,8 @@ export class SandboxManager {
 
     async listFilesRecursively(
         dir: string,
-        ignore: string[] = [],
-        extensions: string[] = [],
+        ignoreDirs: string[] = [],
+        ignoreExtensions: string[] = [],
     ): Promise<string[]> {
         if (!this.session.session) {
             console.error('No session found');
@@ -191,19 +192,20 @@ export class SandboxManager {
             const fullPath = `${dir}/${entry.name}`;
             const normalizedPath = normalizePath(fullPath);
             if (entry.type === 'directory') {
-                if (ignore.includes(entry.name)) {
+                if (ignoreDirs.includes(entry.name)) {
                     continue;
                 }
                 const subFiles = await this.listFilesRecursively(
                     normalizedPath,
-                    ignore,
-                    extensions,
+                    ignoreDirs,
+                    ignoreExtensions,
                 );
                 results.push(...subFiles);
             } else {
+                const extension = path.extname(entry.name);
                 if (
-                    extensions.length > 0 &&
-                    !extensions.includes(entry.name.split('.').pop() ?? '')
+                    ignoreExtensions.length > 0 &&
+                    !ignoreExtensions.includes(extension)
                 ) {
                     continue;
                 }
@@ -211,6 +213,24 @@ export class SandboxManager {
             }
         }
         return results;
+    }
+
+    // Download the code as a zip
+    async downloadFiles(projectName?: string): Promise<{ downloadUrl: string; fileName: string } | null> {
+        if (!this.session.session) {
+            console.error('No sandbox session found')
+            return null;
+        }
+        try {
+            const { downloadUrl } = await this.session.session.fs.download("./")
+            return {
+                downloadUrl,
+                fileName: `${projectName || 'onlook-project'}-${Date.now()}.zip`
+            }
+        } catch (error) {
+            console.error('Error generating download URL:', error)
+            return null;
+        }
     }
 
     async watchFiles() {
@@ -234,7 +254,7 @@ export class SandboxManager {
                 await this.handleFileChange(event);
             },
             excludePatterns,
-            fileEventBus: this.fileEventBus
+            fileEventBus: this.fileEventBus,
         });
 
         await this.fileWatcher.start();
@@ -263,13 +283,13 @@ export class SandboxManager {
             this.fileEventBus.publish({
                 type: eventType,
                 paths: [normalizedPath],
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
         }
     }
 
     async processFileForMapping(file: string) {
-        const extension = file.split('.').pop();
+        const extension = path.extname(file);
         if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
             return;
         }
@@ -301,6 +321,182 @@ export class SandboxManager {
 
         const codeBlock = await getContentFromTemplateNode(templateNode, content);
         return codeBlock;
+    }
+
+    async fileExists(path: string): Promise<boolean> {
+        const normalizedPath = normalizePath(path);
+
+        if (!this.session.session) {
+            console.error('No session found for file existence check');
+            return false;
+        }
+
+        try {
+            const dirPath = getDirName(normalizedPath);
+            const fileName = getBaseName(normalizedPath);
+            const dirEntries = await this.session.session.fs.readdir(dirPath);
+
+            return dirEntries.some((entry: any) => entry.name === fileName);
+        } catch (error) {
+            console.error(`Error checking file existence ${normalizedPath}:`, error);
+            return false;
+        }
+    }
+
+    async copyDir(path: string, targetPath: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for copy dir');
+            return false;
+        }
+
+        try {
+            const normalizedSourcePath = normalizePath(path);
+            const normalizedTargetPath = normalizePath(targetPath);
+
+            // Check if source directory exists
+            const sourceExists = await this.fileExists(normalizedSourcePath);
+            if (!sourceExists) {
+                console.error(`Source directory ${normalizedSourcePath} does not exist`);
+                return false;
+            }
+
+            // Create target directory if it doesn't exist
+            try {
+                await this.session.session.fs.mkdir(normalizedTargetPath);
+            } catch (error) {
+                // Directory might already exist, continue
+            }
+
+            // Get all entries in source directory
+            const entries = await this.session.session.fs.readdir(normalizedSourcePath);
+
+            for (const entry of entries) {
+                const sourcePath = `${normalizedSourcePath}/${entry.name}`;
+                const targetEntryPath = `${normalizedTargetPath}/${entry.name}`;
+
+                if (entry.type === 'directory') {
+                    // Recursively copy subdirectory
+                    const success = await this.copyDir(sourcePath, targetEntryPath);
+                    if (!success) {
+                        console.error(`Failed to copy directory ${sourcePath}`);
+                        return false;
+                    }
+                } else if (entry.type === 'file') {
+                    // Copy file
+                    const success = await this.copyFile(sourcePath, targetEntryPath);
+                    if (!success) {
+                        console.error(`Failed to copy file ${sourcePath}`);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error(`Error copying directory ${path} to ${targetPath}:`, error);
+            return false;
+        }
+    }
+
+    async copyFile(path: string, targetPath: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for copy file');
+            return false;
+        }
+
+        try {
+            const normalizedSourcePath = normalizePath(path);
+            const normalizedTargetPath = normalizePath(targetPath);
+
+            // Check if source file exists
+            const sourceExists = await this.fileExists(normalizedSourcePath);
+            if (!sourceExists) {
+                console.error(`Source file ${normalizedSourcePath} does not exist`);
+                return false;
+            }
+
+            // Create target directory if it doesn't exist
+            const targetDir = getDirName(normalizedTargetPath);
+            try {
+                await this.session.session.fs.mkdir(targetDir);
+            } catch (error) {
+                // Directory might already exist, continue
+            }
+
+            // Determine if file is binary based on extension
+            const fileName = getBaseName(normalizedSourcePath);
+            const isBinary = isBinaryFile(fileName);
+
+            if (isBinary) {
+                // Handle binary file
+                const binaryContent = await this.readRemoteBinaryFile(normalizedSourcePath);
+                if (binaryContent === null) {
+                    console.error(`Failed to read binary file ${normalizedSourcePath}`);
+                    return false;
+                }
+
+                const success = await this.writeRemoteBinaryFile(normalizedTargetPath, binaryContent);
+                if (!success) {
+                    console.error(`Failed to write binary file ${normalizedTargetPath}`);
+                    return false;
+                }
+            } else {
+                // Handle text file
+                const textContent = await this.readRemoteFile(normalizedSourcePath);
+                if (textContent === null) {
+                    console.error(`Failed to read text file ${normalizedSourcePath}`);
+                    return false;
+                }
+
+                const success = await this.writeRemoteFile(normalizedTargetPath, textContent);
+                if (!success) {
+                    console.error(`Failed to write text file ${normalizedTargetPath}`);
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error(`Error copying file ${path} to ${targetPath}:`, error);
+            return false;
+        }
+    }
+
+    async deleteFile(path: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for delete file');
+            return false;
+        }
+
+        try {
+            const normalizedPath = normalizePath(path);
+
+            // Check if file exists before attempting to delete
+            const exists = await this.fileExists(normalizedPath);
+            if (!exists) {
+                console.error(`File ${normalizedPath} does not exist`);
+                return false;
+            }
+
+            // Delete the file using the filesystem API
+            await this.session.session.fs.remove(normalizedPath);
+
+            // Clean up the file sync cache
+            await this.fileSync.delete(normalizedPath);
+
+            // Publish file deletion event
+            this.fileEventBus.publish({
+                type: 'remove',
+                paths: [normalizedPath],
+                timestamp: Date.now(),
+            });
+
+            console.log(`Successfully deleted file: ${normalizedPath}`);
+            return true;
+        } catch (error) {
+            console.error(`Error deleting file ${path}:`, error);
+            return false;
+        }
     }
 
     clear() {

@@ -1,24 +1,33 @@
 import { types as t } from '@onlook/parser';
 import { generate, parse, traverse } from '@onlook/parser';
-import * as fs from 'fs';
-import * as path from 'path';
+import { type FileOperations } from '@onlook/utility';
 import { builtWithScript } from './script';
 
 /**
  * Injects the Built with Onlook script into a Next.js layout file
  * @param projectPath Path to the project root
+ * @param fileOps File operations interface
  */
-export async function injectBuiltWithScript(projectPath: string): Promise<boolean> {
+export async function injectBuiltWithScript(
+    projectPath: string,
+    fileOps: FileOperations,
+): Promise<boolean> {
     try {
         // Find the layout file
-        const layoutPath = path.join(projectPath, 'app', 'layout.tsx');
-        if (!fs.existsSync(layoutPath)) {
+        const layoutPath = `${projectPath}/app/layout.tsx`;
+        const layoutExists = await fileOps.fileExists(layoutPath);
+
+        if (!layoutExists) {
             console.error('Layout file not found at', layoutPath);
             return false;
         }
 
         // Read the layout file
-        const layoutContent = fs.readFileSync(layoutPath, 'utf8');
+        const layoutContent = await fileOps.readFile(layoutPath);
+        if (!layoutContent) {
+            console.error('Failed to read layout file');
+            return false;
+        }
 
         // Parse the layout file
         const ast = parse(layoutContent, {
@@ -121,9 +130,14 @@ export async function injectBuiltWithScript(projectPath: string): Promise<boolea
             const output = generate(ast, {}, layoutContent);
 
             // Write the modified code back to the file
-            fs.writeFileSync(layoutPath, output.code, 'utf8');
-            console.log('Successfully added Script to layout.tsx');
-            return true;
+            const writeSuccess = await fileOps.writeFile(layoutPath, output.code);
+            if (writeSuccess) {
+                console.log('Successfully added Script to layout.tsx');
+                return true;
+            } else {
+                console.error('Failed to write modified layout.tsx');
+                return false;
+            }
         } else {
             console.log('Script already exists in layout.tsx or body tag not found');
             return false;
@@ -137,22 +151,26 @@ export async function injectBuiltWithScript(projectPath: string): Promise<boolea
 /**
  * Copies the builtwith.js script to the project's public folder
  * @param projectPath Path to the project root
+ * @param fileOps File operations interface
  */
-export async function addBuiltWithScript(projectPath: string): Promise<boolean> {
+export async function addBuiltWithScript(
+    projectPath: string,
+    fileOps: FileOperations,
+): Promise<boolean> {
     try {
-        // Ensure the public directory exists
-        const publicDir = path.join(projectPath, 'public');
-        if (!fs.existsSync(publicDir)) {
-            fs.mkdirSync(publicDir, { recursive: true });
-        }
-
         // Path to the destination in the project's public folder
-        const destPath = path.join(publicDir, 'builtwith.js');
+        const destPath = `${projectPath}/public/builtwith.js`;
 
-        // Read the content and write it directly
-        fs.writeFileSync(destPath, builtWithScript, 'utf8');
-        console.log('Successfully added builtwith.js to public folder');
-        return true;
+        // Write the script content directly
+        const writeSuccess = await fileOps.writeFile(destPath, builtWithScript);
+
+        if (writeSuccess) {
+            console.log('Successfully added builtwith.js to public folder');
+            return true;
+        } else {
+            console.error('Failed to write builtwith.js to public folder');
+            return false;
+        }
     } catch (error) {
         console.error('Error adding builtwith.js to public folder:', error);
         return false;

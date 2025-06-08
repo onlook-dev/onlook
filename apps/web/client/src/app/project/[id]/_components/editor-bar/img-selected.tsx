@@ -11,7 +11,6 @@ import { Width } from './dropdowns/width';
 import { useDropdownControl } from './hooks/use-dropdown-manager';
 import { useMeasureGroup } from './hooks/use-measure-group';
 import { OverflowMenu } from './overflow-menu';
-import { ViewButtons } from './panels/panel-bar/bar';
 import { InputSeparator } from './separator';
 
 // Group definitions for the img-selected toolbar
@@ -70,7 +69,6 @@ export const ImgSelected = memo(({ availableWidth = 0 }: { availableWidth?: numb
                 overflowGroups={overflowGroups}
                 visibleCount={visibleCount}
             />
-            <ViewButtons />
         </div>
     );
 });

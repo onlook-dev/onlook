@@ -6,6 +6,8 @@ export * from './defaults';
 export * from './defaults/canvas';
 export * from './email';
 export * from './errors';
+export * from './domain';
+export * from './file';
 export * from './font';
 export * from './id';
 export * from './image';

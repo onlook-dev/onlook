@@ -1,3 +1,5 @@
+import type { DomainSettings } from './domain';
+
 export interface Project {
     id: string;
     name: string;
@@ -11,6 +13,19 @@ export interface Project {
         id: string;
         url: string;
     };
+    domains: ProjectDomains | null;
+    commands: ProjectCommands | null;
+    env: Record<string, string> | null;
+}
+
+export interface ProjectDomains {
+    base: DomainSettings | null;
+    custom: DomainSettings | null;
+}
+export interface ProjectCommands {
+    build: string | null;
+    run: string | null;
+    install: string | null;
 }
 
 export interface PreviewImg {

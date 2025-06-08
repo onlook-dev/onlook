@@ -52,6 +52,7 @@ export class CLISessionImpl implements CLISession {
         }
     }
 
+
     async initTerminal() {
         const terminal = await this.session?.terminals.create();
         if (!terminal) {
@@ -99,7 +100,7 @@ export class CLISessionImpl implements CLISession {
     }
 
     async createDevTaskTerminal() {
-        const task = this.session?.tasks.getTask('dev');
+        const task = this.session?.tasks.get('dev');
         if (!task) {
             console.error('No dev task found');
             return;

@@ -1,4 +1,4 @@
-import { type t as T, types as t } from './packages';
+import { types as t, type t as T } from './packages';
 
 export function isReactFragment(openingElement: T.JSXOpeningElement): boolean {
     const name = openingElement.name;
@@ -31,3 +31,23 @@ export function isColorsObjectProperty(path: any): boolean {
 export function isObjectExpression(node: any): node is T.ObjectExpression {
     return node.type === 'ObjectExpression';
 }
+
+export const genASTParserOptionsByFileExtension = (
+    fileExtension: string,
+    sourceType: string = 'module',
+): object => {
+    switch (fileExtension) {
+        case '.ts':
+            return {
+                sourceType: sourceType,
+                plugins: ['typescript'],
+            };
+        case '.js':
+        case '.mjs':
+        case '.cjs':
+        default:
+            return {
+                sourceType: sourceType,
+            };
+    }
+};

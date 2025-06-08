@@ -35,6 +35,7 @@ export class SessionManager {
         const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
+
         this.terminalSessions.set(terminal.id, terminal);
         this.activeTerminalSessionId = task.id;
     }
@@ -85,7 +86,8 @@ export class SessionManager {
                 throw new Error('No session found');
             }
 
-            const terminalSession = this.terminalSessions.get(this.activeTerminalSessionId) as TerminalSession | undefined;
+
+            const terminalSession = Array.from(this.terminalSessions.values()).find(session => session.type === CLISessionType.TERMINAL) as TerminalSession | undefined;
 
             if (!terminalSession?.terminal) {
                 throw new Error('No terminal session found');

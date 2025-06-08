@@ -9,6 +9,7 @@ import {
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     READ_FILES_TOOL_NAME,
     READ_FILES_TOOL_PARAMETERS,
+    READ_STYLE_GUIDE_TOOL_NAME,
 } from '@onlook/ai';
 import type { Message, ToolCall } from 'ai';
 import { createContext, useContext } from 'react';
@@ -68,6 +69,9 @@ async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine:
                 editorEngine,
             );
             return result;
+        } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
+            const result = await handleReadStyleGuideTool(editorEngine);
+            return result;
         } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
             const result = ONLOOK_INSTRUCTIONS;
             return result;
@@ -98,6 +102,14 @@ async function handleReadFilesTool(
     const result = await editorEngine.sandbox.readFiles(args.paths);
     if (!result) {
         throw new Error('Error reading files');
+    }
+    return result;
+}
+
+async function handleReadStyleGuideTool(editorEngine: EditorEngine) {
+    const result = await editorEngine.theme.initializeTailwindColorContent();
+    if (!result) {
+        throw new Error('Style guide files not found');
     }
     return result;
 }

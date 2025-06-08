@@ -11,6 +11,46 @@ export const IGNORED_DIRECTORIES = [
     CUSTOM_OUTPUT_DIR,
 ];
 
-export const JSX_FILE_EXTENSIONS = ['jsx', 'tsx'];
+export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
-export const JS_FILE_EXTENSIONS = ['js', 'ts'];
+export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
+
+export const SUPPORTED_LOCK_FILES = [
+    'bun.lock',
+    'package-lock.json',
+    'yarn.lock',
+    'pnpm-lock.yaml',
+];
+
+export const BINARY_EXTENSIONS = [
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.bmp',
+    '.svg',
+    '.ico',
+    '.webp',
+    '.pdf',
+    '.zip',
+    '.tar',
+    '.gz',
+    '.rar',
+    '.7z',
+    '.mp3',
+    '.mp4',
+    '.wav',
+    '.avi',
+    '.mov',
+    '.wmv',
+    '.exe',
+    '.bin',
+    '.dll',
+    '.so',
+    '.dylib',
+    '.woff',
+    '.woff2',
+    '.ttf',
+    '.eot',
+    '.otf',
+];

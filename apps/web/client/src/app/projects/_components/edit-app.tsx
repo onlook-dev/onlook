@@ -1,3 +1,4 @@
+import { transKeys } from '@/i18n/keys';
 import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import type { Project } from '@onlook/models';
@@ -32,7 +33,7 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
             {...props}
         >
             <Icons.PencilPaper />
-            <p>{t('projects.actions.editApp')}</p>
+            <p>{t(transKeys.projects.actions.editApp)}</p>
         </ButtonMotion>
     );
 });

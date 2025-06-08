@@ -3,6 +3,7 @@ import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
 import { SystemTheme } from '@onlook/models';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,6 +12,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
+import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
@@ -24,6 +26,8 @@ export const DevTab = observer(() => {
     const { theme } = useTheme();
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
+    const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+    const [pendingCloseAll, setPendingCloseAll] = useState(false);
     const isDirty = ide.activeFile?.isDirty ?? false;
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
@@ -297,7 +301,6 @@ export const DevTab = observer(() => {
         return ide.getFilePathFromOid(oid);
     }
 
-    // Add saving functionality
     async function saveFile() {
         if (!ide.activeFile) {
             return;
@@ -308,7 +311,33 @@ export const DevTab = observer(() => {
             return;
         }
 
+        if (pendingCloseAll) {
+            const file = ide.openedFiles.find((f) => f.id === ide.activeFile?.id);
+            if (file) {
+                await ide.saveActiveFile();
+                closeFile(file.id);
+            }
+
+            const remainingDirty = ide.openedFiles.filter((f) => f.isDirty);
+            if (remainingDirty.length !== 0) {
+                setShowUnsavedDialog(true);
+                return;
+            }
+
+            ide.closeAllFiles();
+            setPendingCloseAll(false);
+            setShowUnsavedDialog(false);
+
+            return;
+        }
+
         await ide.saveActiveFile();
+
+        if (showUnsavedDialog) {
+            setShowUnsavedDialog(false);
+            closeFile(ide.activeFile.id);
+        }
+
         toast('File saved!');
     }
 
@@ -320,6 +349,11 @@ export const DevTab = observer(() => {
     };
 
     function closeFile(fileId: string) {
+        if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
+            setShowUnsavedDialog(true);
+            return;
+        }
+
         const editorView = editorViewsRef.current.get(fileId);
         if (editorView) {
             editorView.destroy();
@@ -329,6 +363,13 @@ export const DevTab = observer(() => {
     }
 
     function closeAllFiles() {
+        const dirtyFiles = ide.openedFiles.filter((file) => file.isDirty);
+        if (dirtyFiles.length > 0) {
+            setShowUnsavedDialog(true);
+            setPendingCloseAll(true);
+            return;
+        }
+
         editorViewsRef.current.forEach((view) => view.destroy());
         editorViewsRef.current.clear();
         ide.closeAllFiles();
@@ -336,6 +377,40 @@ export const DevTab = observer(() => {
 
     const updateFileContent = (fileId: string, content: string) => {
         ide.updateFileContent(fileId, content);
+    };
+
+    async function discardChanges(fileId: string) {
+        if (pendingCloseAll) {
+            const file = ide.openedFiles.find((e) => e.id === fileId);
+            if (file) {
+                await ide.discardFileChanges(file.id);
+                closeFile(fileId);
+                setShowUnsavedDialog(true);
+                const isDirty = ide.openedFiles.filter((val) => val.isDirty);
+                if (isDirty.length === 0) {
+                    ide.closeAllFiles();
+                    setPendingCloseAll(false);
+                    setShowUnsavedDialog(false);
+                }
+                return;
+            }
+
+            setPendingCloseAll(false);
+            return;
+        }
+
+        if (!ide.activeFile) {
+            return;
+        }
+
+        await ide.discardFileChanges(fileId);
+        closeFile(fileId);
+        setShowUnsavedDialog(false);
+    }
+
+    const getFileUrl = (file: EditorFile) => {
+        const mime = getMimeType(file.filename.toLowerCase());
+        return `data:${mime};base64,${file.content}`;
     };
 
     // Cleanup editor instances when component unmounts
@@ -475,46 +550,91 @@ export const DevTab = observer(() => {
                                             display: ide.activeFile?.id === file.id ? 'block' : 'none',
                                         }}
                                     >
-                                        <CodeMirror
-                                            key={file.id}
-                                            value={file.content}
-                                            height="100%"
-                                            theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
-                                            extensions={[
-                                                ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
-                                                ...getExtensions(file.language),
-                                            ]}
-                                            onChange={(value) => {
-                                                if (ide.highlightRange) {
-                                                    ide.setHighlightRange(null);
-                                                }
-                                                updateFileContent(file.id, value);
-                                            }}
-                                            className="h-full overflow-hidden"
-                                            onCreateEditor={(editor) => {
-                                                editorViewsRef.current.set(file.id, editor);
-
-                                                editor.dom.addEventListener('mousedown', () => {
+                                        {file.isBinary ? (
+                                            <img
+                                                src={getFileUrl(file)}
+                                                alt={file.filename}
+                                                className="w-full h-full object-contain p-5"
+                                            />
+                                        ) : (
+                                            <CodeMirror
+                                                key={file.id}
+                                                value={file.content}
+                                                height="100%"
+                                                theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
+                                                extensions={[
+                                                    ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
+                                                    ...getExtensions(file.language),
+                                                ]}
+                                                onChange={(value) => {
                                                     if (ide.highlightRange) {
                                                         ide.setHighlightRange(null);
                                                     }
-                                                });
+                                                    updateFileContent(file.id, value);
+                                                }}
+                                                className="h-full overflow-hidden"
+                                                onCreateEditor={(editor) => {
+                                                    editorViewsRef.current.set(file.id, editor);
 
-                                                // If this file is the active file and we have a highlight range,
-                                                // trigger the highlight effect again
-                                                if (
-                                                    ide.activeFile &&
-                                                    ide.activeFile.id === file.id &&
-                                                    ide.highlightRange
-                                                ) {
-                                                    setTimeout(() => {
+                                                    editor.dom.addEventListener('mousedown', () => {
                                                         if (ide.highlightRange) {
-                                                            ide.setHighlightRange(ide.highlightRange);
+                                                            ide.setHighlightRange(null);
                                                         }
-                                                    }, 300);
-                                                }
-                                            }}
-                                        />
+                                                    });
+
+                                                    // If this file is the active file and we have a highlight range,
+                                                    // trigger the highlight effect again
+                                                    if (
+                                                        ide.activeFile &&
+                                                        ide.activeFile.id === file.id &&
+                                                        ide.highlightRange
+                                                    ) {
+                                                        setTimeout(() => {
+                                                            if (ide.highlightRange) {
+                                                                ide.setHighlightRange(ide.highlightRange);
+                                                            }
+                                                        }, 300);
+                                                    }
+                                                }}
+                                            />
+                                        )}
+                                        {ide.activeFile?.isDirty && showUnsavedDialog && (
+                                            <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
+                                                <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
+                                                    You have unsaved changes. Are you sure you want
+                                                    to close this file?
+                                                </div>
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        onClick={async () => {
+                                                            await discardChanges(file.id);
+                                                        }}
+                                                        variant="ghost"
+                                                        className="text-red hover:text-red"
+                                                    >
+                                                        Discard
+                                                    </Button>
+                                                    <Button
+                                                        onClick={async () => {
+                                                            await saveFile();
+                                                        }}
+                                                        variant="ghost"
+                                                        className="text-sm text-blue-500 hover:text-blue-500"
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => {
+                                                            setShowUnsavedDialog(false);
+                                                            setPendingCloseAll(false);
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

@@ -3,22 +3,20 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useTranslations } from 'next-intl';
 import { useChatContext } from '../../_hooks/use-chat';
+import { Members } from '../members';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
-import { Members } from '../members';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
-    const t = useTranslations();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
 
@@ -95,11 +93,12 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                            {t('editor.toolbar.versionHistory')}
+                            {t(transKeys.editor.toolbar.versionHistory)}
                         </TooltipContent>
                     </Tooltip> */}
                     <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
                 </div>
+                {/* <PublishDropdown /> */}
             </div>
         </div>
     );
