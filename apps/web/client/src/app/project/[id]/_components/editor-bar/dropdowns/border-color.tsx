@@ -10,9 +10,11 @@ import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { observer } from 'mobx-react-lite';
+import { useBoxControl, hasBorderWidth } from '../hooks/use-box-control';
 
 export const BorderColor = observer(() => {
     const editorEngine = useEditorEngine();
+    const { boxState } = useBoxControl('border');
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.borderColor;
 
     const { isOpen, onOpenChange } = useDropdownControl({
@@ -25,6 +27,11 @@ export const BorderColor = observer(() => {
     });
 
     const colorHex = useMemo(() => tempColor?.toHex(), [tempColor]);
+
+    // Don't render if no border is defined
+    if (!hasBorderWidth(boxState.borderWidth)) {
+        return null;
+    }
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>

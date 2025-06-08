@@ -94,6 +94,14 @@ const createDefaultState = (type: BoxType): BoxStateMap => {
     return state;
 };
 
+//Checks for border
+export const hasBorderWidth = (borderState: BoxState): boolean => {
+    if (borderState.unit === 'px') {
+        return typeof borderState.num === 'number' && borderState.num > 0;
+    }
+    return borderState.value !== '--' && borderState.value !== '' && borderState.value !== '0px';
+};
+
 export const useBoxControl = (type: BoxType) => {
     const editorEngine = useEditorEngine();
 
