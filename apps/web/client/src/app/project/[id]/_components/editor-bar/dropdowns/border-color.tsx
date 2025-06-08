@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
-import { hasBorderWidth, useBoxControl } from '../hooks/use-box-control';
+import { useBoxControl } from '../hooks/use-box-control';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
@@ -14,7 +14,7 @@ import { ColorPickerContent } from '../inputs/color-picker';
 
 export const BorderColor = observer(() => {
     const editorEngine = useEditorEngine();
-    const { boxState } = useBoxControl('border');
+    const { borderExists } = useBoxControl('border');
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.borderColor;
 
     const { isOpen, onOpenChange } = useDropdownControl({
@@ -28,8 +28,7 @@ export const BorderColor = observer(() => {
 
     const colorHex = useMemo(() => tempColor?.toHex(), [tempColor]);
 
-    // Don't render if no border is defined
-    if (!hasBorderWidth(boxState.borderWidth)) {
+    if (!borderExists) {
         return null;
     }
 

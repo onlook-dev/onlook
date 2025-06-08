@@ -1,14 +1,14 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { capitalizeFirstLetter, stringToParsedValue } from '@onlook/utility';
 import type { CSSProperties } from 'react';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export type BoxType = 'margin' | 'padding' | 'border' | 'radius';
 export type BoxSide = 'Top' | 'Right' | 'Bottom' | 'Left';
 export type RadiusCorner = `${BoxSide}${BoxSide}Radius`;
-export type BoxProperty = 
-    | BoxType 
-    | `${BoxType}${BoxSide}` 
+export type BoxProperty =
+    | BoxType
+    | `${BoxType}${BoxSide}`
     | `border${RadiusCorner}`
     | `border${BoxSide}Width`
     | 'borderColor'
@@ -94,8 +94,9 @@ const createDefaultState = (type: BoxType): BoxStateMap => {
     return state;
 };
 
-//Checks for border
-export const hasBorderWidth = (borderState: BoxState): boolean => {
+const hasBorderWidth = (borderState: BoxState | undefined): boolean => {
+    if (!borderState) return false;
+
     if (borderState.unit === 'px') {
         return typeof borderState.num === 'number' && borderState.num > 0;
     }
@@ -161,6 +162,11 @@ export const useBoxControl = (type: BoxType) => {
     }, [editorEngine.style.selectedStyle, type]);
 
     const [boxState, setBoxState] = useState<BoxStateMap>(getInitialState);
+    const [borderExists, setBorderExists] = useState(false);
+
+    useEffect(() => {
+        setBorderExists(hasBorderWidth(boxState.borderWidth));
+    }, [boxState.borderWidth]);
 
     useEffect(() => {
         setBoxState(getInitialState);
@@ -176,7 +182,7 @@ export const useBoxControl = (type: BoxType) => {
         const updates = new Map<CSSBoxProperty, string>();
 
         updates.set(property, cssValue);
-    
+
         if (type === 'radius' && property === 'borderRadius') {
             CORNERS_RADIUS.forEach((corner) => {
                 updates.set(`border${corner}` as CSSBoxProperty, cssValue);
@@ -192,7 +198,6 @@ export const useBoxControl = (type: BoxType) => {
         }
 
         editorEngine.style.updateMultiple(Object.fromEntries(updates));
-        
     }, [boxState, editorEngine.style, type]);
 
     const handleUnitChange = useCallback((property: CSSBoxProperty, unit: string) => {
@@ -209,21 +214,22 @@ export const useBoxControl = (type: BoxType) => {
         const property = type === 'radius'
             ? (`border${capitalizeFirstLetter(side)}Radius` as CSSBoxProperty)
             : type === 'border'
-            ? (`border${capitalizeFirstLetter(side)}Width` as CSSBoxProperty)
-            : (`${type}${capitalizeFirstLetter(side)}` as CSSBoxProperty);
+                ? (`border${capitalizeFirstLetter(side)}Width` as CSSBoxProperty)
+                : (`${type}${capitalizeFirstLetter(side)}` as CSSBoxProperty);
 
         const currentState = boxState[property];
         if (!currentState) return;
 
         const newValue = `${value}${currentState.unit}`;
-        
+
         // Update CSS
         editorEngine.style.update(property, newValue);
-        
+
     }, [boxState, editorEngine.style, type]);
 
     return {
         boxState,
+        borderExists,
         handleBoxChange,
         handleUnitChange,
         handleIndividualChange,
