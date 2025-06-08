@@ -35,36 +35,22 @@ export default function ${componentName}({ className, children }: ${componentNam
     '.ts': (fileName: string) => {
         const functionName = generatePascalCaseName(fileName, '.ts');
 
-        return `/**
- * ${functionName} function
- * Created by Onlook: ${new Date().toLocaleDateString()}
- */
-
-export interface ${functionName}Options {
+        return `export interface ${functionName}Options {
     // Add your interface properties here
 }
 
-export function ${functionName}(options?: ${functionName}Options): void {
+export defaultfunction ${functionName}(options?: ${functionName}Options): void {
     // Add your logic here
 }
-
-export default ${functionName};
 `;
     },
     // JavaScript Function
     '.js': (fileName: string) => {
         const functionName = generatePascalCaseName(fileName, '.js');
 
-        return `/**
- * ${functionName} function
- * Created by Onlook: ${new Date().toLocaleDateString()}
- */
-
-export function ${functionName}() {
+        return `export default function ${functionName}() {
     // Add your logic here
 }
-
-export default ${functionName};
 `;
     },
 
@@ -72,9 +58,7 @@ export default ${functionName};
     '.css': (fileName: string) => {
         const className = path.basename(fileName, '.css').toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-        return `/* ${fileName} */
-/* Created by Onlook: ${new Date().toLocaleDateString()} */
-
+        return `
 .${className} {
     /* Add your styles here */
 }
@@ -93,10 +77,7 @@ export default ${functionName};
     '.scss': (fileName: string) => {
         const className = path.basename(fileName, '.scss').toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-        return `// ${fileName}
-// Created by Onlook: ${new Date().toLocaleDateString()}
-
-.${className} {
+        return `.${className} {
     // Add your styles here
     
     &__element {
@@ -128,8 +109,6 @@ export default ${functionName};
             .join(' ');
 
         return `# ${title}
-
-> Created by Onlook: ${new Date().toLocaleDateString()}
 
 ## Overview
 
@@ -163,7 +142,6 @@ console.log('Hello, ${title}!');
             .join(' ');
 
         return `<!DOCTYPE html>
-<!-- Created by Onlook: ${new Date().toLocaleDateString()} -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -197,7 +175,6 @@ console.log('Hello, ${title}!');
 
     // Environment Configuration
     '.env': () => `# Environment Configuration
-# Created by Onlook: ${new Date().toLocaleDateString()}
 
 # Database
 DATABASE_URL=
@@ -214,9 +191,7 @@ PORT=3000
 } as const;
 
 // Default fallback for unknown extensions
-export const DEFAULT_TEMPLATE = (fileName: string) => `// ${fileName}
-// Created by Onlook: ${new Date().toLocaleDateString()}
-
+export const DEFAULT_TEMPLATE = (fileName: string) => `
 // Add your content here
 `;
 
