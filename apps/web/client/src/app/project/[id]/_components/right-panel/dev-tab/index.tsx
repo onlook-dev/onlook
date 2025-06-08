@@ -12,6 +12,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
+import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
@@ -412,19 +413,6 @@ export const DevTab = observer(() => {
         return `data:${mime};base64,${file.content}`;
     };
 
-    function getMimeType(fileName: string): string {
-        const lowerCasedFileName = fileName.toLowerCase();
-
-        if (lowerCasedFileName.endsWith('.ico')) return 'image/x-icon';
-        if (lowerCasedFileName.endsWith('.png')) return 'image/png';
-        if (lowerCasedFileName.endsWith('.jpg') || lowerCasedFileName.endsWith('.jpeg')) return 'image/jpeg';
-        if (lowerCasedFileName.endsWith('.svg')) return 'image/svg+xml';
-        if (lowerCasedFileName.endsWith('.gif')) return 'image/gif';
-        if (lowerCasedFileName.endsWith('.webp')) return 'image/webp';
-        if (lowerCasedFileName.endsWith('.bmp')) return 'image/bmp';
-        return 'application/octet-stream';
-    }
-
     // Cleanup editor instances when component unmounts
     useEffect(() => {
         return () => {
@@ -564,11 +552,11 @@ export const DevTab = observer(() => {
                                     >
                                         {file.isBinary ? (
                                             <img
-                                                src={getFileUrl(file)} 
+                                                src={getFileUrl(file)}
                                                 alt={file.filename}
                                                 className="w-full h-full object-contain p-5"
                                             />
-                                        ) : (                                    
+                                        ) : (
                                             <CodeMirror
                                                 key={file.id}
                                                 value={file.content}
