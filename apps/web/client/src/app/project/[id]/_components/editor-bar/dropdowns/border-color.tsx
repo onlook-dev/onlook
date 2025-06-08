@@ -4,13 +4,13 @@ import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
-import { ColorPickerContent } from '../inputs/color-picker';
+import { hasBorderWidth, useBoxControl } from '../hooks/use-box-control';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
-import { observer } from 'mobx-react-lite';
-import { useBoxControl, hasBorderWidth } from '../hooks/use-box-control';
+import { ColorPickerContent } from '../inputs/color-picker';
 
 export const BorderColor = observer(() => {
     const editorEngine = useEditorEngine();
