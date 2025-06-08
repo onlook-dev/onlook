@@ -4,7 +4,6 @@ import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import path from 'path';
 import type { EditorEngine } from '../engine';
-import type { TemplateNode } from '@onlook/models';
 
 export interface EditorFile {
     id: string;
@@ -152,8 +151,7 @@ export class IDEManager {
             const file = this.openedFiles.find((f) => f.id === this.activeFile!.id);
             if (file) file.isDirty = false;
             this.activeFile = { ...this.activeFile, isDirty: false };
-            
-            // Refresh preview after successful save
+
             this.refreshPreviewAfterSave();
         } catch (error) {
             console.error('Error saving file:', error);
@@ -167,9 +165,7 @@ export class IDEManager {
             return;
         }
 
-        // Check if the saved file affects the preview
         if (this.shouldRefreshPreview(this.activeFile.path)) {
-            // Add a small delay to ensure file write is complete
             setTimeout(() => {
                 this.editorEngine.frames.reloadAll();
             }, 100);
