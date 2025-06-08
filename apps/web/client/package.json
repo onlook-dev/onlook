@@ -67,7 +67,6 @@
         "freestyle-sandboxes": "^0.0.77",
         "localforage": "^1.10.0",
         "lucide-react": "^0.486.0",
-        "mime-lite": "^1.0.3",
         "mobx-react-lite": "^4.1.0",
         "motion": "^12.6.3",
         "next": "^15.2.3",

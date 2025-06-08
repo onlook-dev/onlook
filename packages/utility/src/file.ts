@@ -1,44 +1,14 @@
+import { BINARY_EXTENSIONS } from '@onlook/constants';
+import mime from 'mime-lite';
+
 /**
  * Check if a file is binary based on its extension
  * @param filename - The filename to check
  * @returns True if the file is binary, false otherwise
  */
 export const isBinaryFile = (filename: string): boolean => {
-    const binaryExtensions = [
-        '.jpg',
-        '.jpeg',
-        '.png',
-        '.gif',
-        '.bmp',
-        '.svg',
-        '.ico',
-        '.webp',
-        '.pdf',
-        '.zip',
-        '.tar',
-        '.gz',
-        '.rar',
-        '.7z',
-        '.mp3',
-        '.mp4',
-        '.wav',
-        '.avi',
-        '.mov',
-        '.wmv',
-        '.exe',
-        '.bin',
-        '.dll',
-        '.so',
-        '.dylib',
-        '.woff',
-        '.woff2',
-        '.ttf',
-        '.eot',
-        '.otf',
-    ];
-
     const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
-    return binaryExtensions.includes(ext);
+    return BINARY_EXTENSIONS.includes(ext);
 };
 
 /**
@@ -106,4 +76,20 @@ export const getDirName = (filePath: string): string => {
 export const getBaseName = (filePath: string): string => {
     const parts = filePath.split('/');
     return parts[parts.length - 1] || '';
+};
+
+export const getMimeType = (fileName: string): string => {
+    const lowerCasedFileName = fileName.toLowerCase();
+
+    if (lowerCasedFileName.endsWith('.ico')) return 'image/x-icon';
+    if (lowerCasedFileName.endsWith('.png')) return 'image/png';
+    if (lowerCasedFileName.endsWith('.jpg') || lowerCasedFileName.endsWith('.jpeg'))
+        return 'image/jpeg';
+    if (lowerCasedFileName.endsWith('.svg')) return 'image/svg+xml';
+    if (lowerCasedFileName.endsWith('.gif')) return 'image/gif';
+    if (lowerCasedFileName.endsWith('.webp')) return 'image/webp';
+    if (lowerCasedFileName.endsWith('.bmp')) return 'image/bmp';
+    const res = mime.getType(fileName);
+    if (res) return res;
+    return 'application/octet-stream';
 };
