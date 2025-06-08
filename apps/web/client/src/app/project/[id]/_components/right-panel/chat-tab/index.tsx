@@ -4,7 +4,7 @@ import { ErrorSection } from './error';
 
 export const ChatTab = () => {
     return (
-        <div className="flex flex-col h-full justify-end gap-2">
+        <div className="flex flex-col h-full justify-end gap-2 pt-2">
             <div className="h-full flex-1 overflow-y-auto">
                 <ChatMessages />
             </div>

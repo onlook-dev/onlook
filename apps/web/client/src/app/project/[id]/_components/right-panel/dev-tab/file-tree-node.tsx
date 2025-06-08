@@ -4,22 +4,29 @@ import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
+    ContextMenuSeparator,
     ContextMenuTrigger,
 } from '@onlook/ui/context-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
+import { useState } from 'react';
 import type { NodeApi } from 'react-arborist';
+import { FileModal } from './file-modal';
+import { FolderModal } from './folder-modal';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileNode>;
     style: React.CSSProperties;
+    files?: string[];
 }
 
-export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style }) => {
+export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style, files = [] }) => {
     const editorEngine = useEditorEngine();
     const isDirectory = node.data.isDirectory;
+    const [fileModalOpen, setFileModalOpen] = useState(false);
+    const [folderModalOpen, setFolderModalOpen] = useState(false);
 
     const handleClick = async (e: React.MouseEvent) => {
         if (isDirectory) {
@@ -76,12 +83,29 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
         }
     };
 
+    const basePath = node.data.path;
+
     const menuItems = [
+        ...(isDirectory ? [
+            {
+                label: 'New File',
+                action: () => setFileModalOpen(true),
+                icon: <Icons.File className="mr-2 h-4 w-4" />,
+                separator: false,
+            },
+            {
+                label: 'New Folder',
+                action: () => setFolderModalOpen(true),
+                icon: <Icons.Directory className="mr-2 h-4 w-4" />,
+                separator: true,
+            },
+        ] : []),
         {
             label: 'Open File',
             action: handleClick,
             icon: <Icons.File className="mr-2 h-4 w-4" />,
             disabled: isDirectory,
+            separator: false,
         },
         {
             label: 'Copy Path',
@@ -89,50 +113,77 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
                 navigator.clipboard.writeText(node.data.path);
             },
             icon: <Icons.Copy className="mr-2 h-4 w-4" />,
+            separator: false,
         },
+        {
+            label: 'Delete',
+            action: () => {
+                editorEngine.sandbox.deleteFile(node.data.path);
+            },
+            icon: <Icons.Trash className="mr-2 h-4 w-4" />,
+            separator: false,
+        }
     ];
 
     return (
-        <ContextMenu>
-            <ContextMenuTrigger>
-                <div
-                    style={style}
-                    className={cn(
-                        'flex items-center h-6 cursor-pointer hover:bg-background-hover rounded',
-                    )}
-                    onClick={handleClick}
-                >
-                    <span className="w-4 h-4 flex-none relative">
-                        {isDirectory && (
-                            <div className="w-4 h-4 flex items-center justify-center absolute z-50">
-                                <motion.div
-                                    initial={false}
-                                    animate={{ rotate: node.isOpen ? 90 : 0 }}
-                                >
-                                    <Icons.ChevronRight className="h-2.5 w-2.5" />
-                                </motion.div>
-                            </div>
+        <>
+            <ContextMenu>
+                <ContextMenuTrigger>
+                    <div
+                        style={style}
+                        className={cn(
+                            'flex items-center h-6 cursor-pointer hover:bg-background-hover rounded',
                         )}
-                    </span>
-                    {getFileIcon()}
-                    <span className="truncate">{node.data.name}</span>
-                </div>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-                {menuItems.map((item) => (
-                    <ContextMenuItem
-                        key={item.label}
-                        onClick={item.action}
-                        className="cursor-pointer"
-                        disabled={item.disabled}
+                        onClick={handleClick}
                     >
-                        <span className={cn('flex w-full items-center gap-1')}>
-                            {item.icon}
-                            {item.label}
+                        <span className="w-4 h-4 flex-none relative">
+                            {isDirectory && (
+                                <div className="w-4 h-4 flex items-center justify-center absolute z-50">
+                                    <motion.div
+                                        initial={false}
+                                        animate={{ rotate: node.isOpen ? 90 : 0 }}
+                                    >
+                                        <Icons.ChevronRight className="h-2.5 w-2.5" />
+                                    </motion.div>
+                                </div>
+                            )}
                         </span>
-                    </ContextMenuItem>
-                ))}
-            </ContextMenuContent>
-        </ContextMenu>
+                        {getFileIcon()}
+                        <span className="truncate">{node.data.name}</span>
+                    </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    {menuItems.map((item, index) => (
+                        <div key={item.label}>
+                            <ContextMenuItem
+                                onClick={item.action}
+                                className="cursor-pointer"
+                                disabled={item.disabled}
+                            >
+                                <span className={cn('flex w-full items-center gap-1')}>
+                                    {item.icon}
+                                    {item.label}
+                                </span>
+                            </ContextMenuItem>
+                            {item.separator && <ContextMenuSeparator />}
+                        </div>
+                    ))}
+                </ContextMenuContent>
+            </ContextMenu>
+
+            <FileModal
+                open={fileModalOpen}
+                onOpenChange={setFileModalOpen}
+                basePath={basePath}
+                files={files}
+            />
+
+            <FolderModal
+                open={folderModalOpen}
+                onOpenChange={setFolderModalOpen}
+                basePath={basePath}
+                files={files}
+            />
+        </>
     );
 });

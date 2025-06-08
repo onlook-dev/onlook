@@ -8,24 +8,29 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
 import { useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
+import { FileModal } from './file-modal';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
+import { FolderModal } from './folder-modal';
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { theme } = useTheme();
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
+    const [fileModalOpen, setFileModalOpen] = useState(false);
+    const [folderModalOpen, setFolderModalOpen] = useState(false);
     const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
     const [pendingCloseAll, setPendingCloseAll] = useState(false);
     const isDirty = ide.activeFile?.isDirty ?? false;
@@ -284,14 +289,6 @@ export const DevTab = observer(() => {
         ide.activeFile = file;
     }
 
-    function handleJumpToElement() {
-        if (!ide.activeFile) {
-            return;
-        }
-
-        console.log(`Jump to element in ${ide.activeFile.path}`);
-    }
-
     async function getFilePathFromOid(oid: string): Promise<string | null> {
         if (!isSandboxReady()) {
             handleSandboxNotReady('get file path from OID');
@@ -422,46 +419,49 @@ export const DevTab = observer(() => {
     }, []);
 
     return (
-        <div className="h-full flex flex-col w-full">
+        <div className="size-full flex flex-col">
             <div className="flex items-center justify-between h-11 pl-4 pr-2 border-b-[0.5px]">
-                <div className="flex items-center space-x-5 h-full">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full">
-                            <Icons.Sparkles className="mr-1.5 h-4 w-4" />
-                            <span className="mr-1">Code actions</span>
-                            <Icons.ChevronDown className="h-3 w-3" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="-mt-1">
-                            <DropdownMenuItem onClick={handleJumpToElement}>
-                                <Icons.Check className="mr-2 h-4 w-4" />
-                                Jump to code from canvas
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={saveFile} disabled={!isDirty}>
-                                <Icons.File className="mr-2 h-4 w-4" />
-                                Save changes
-                                <span className="ml-auto text-xs text-muted-foreground">
-                                    {navigator.platform.includes('Mac') ? '⌘S' : 'Ctrl+S'}
-                                </span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <button
-                        className="flex items-center text-foreground text-sm hover:text-foreground-hover h-full"
-                        onClick={() => setIsFilesVisible(!isFilesVisible)}
-                    >
-                        <Icons.Directory className="mr-1.5 h-4 w-4" />
-                        {isFilesVisible ? (
-                            <span className="mr-1">Hide files tab</span>
-                        ) : (
-                            <span className="mr-1">Show files tab</span>
-                        )}
-                        {isFilesVisible ? (
-                            <Icons.ChevronDown className="h-3 w-3" />
-                        ) : (
-                            <Icons.ChevronRight className="h-3 w-3" />
-                        )}
-                    </button>
+                <div className="flex gap-1 items-center h-full">
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={() => setIsFilesVisible(!isFilesVisible)}>
+                                <Icons.CollapseSidebar />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={() => setFileModalOpen(true)}>
+                                <Icons.FilePlus />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            New File
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={() => setFolderModalOpen(true)}>
+                                <Icons.DirectoryPlus />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            New Folder
+                        </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger>
+                            <Button variant="ghost" size="icon" onClick={saveFile} disabled={!isDirty}>
+                                <Icons.FloppyDisk />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            Save changes
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
 
@@ -641,6 +641,24 @@ export const DevTab = observer(() => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {fileModalOpen && (
+                <FileModal
+                    open={fileModalOpen}
+                    onOpenChange={setFileModalOpen}
+                    basePath=""
+                    files={ide.files}
+                />
+            )}
+
+            {folderModalOpen && (
+                <FolderModal
+                    open={folderModalOpen}
+                    onOpenChange={setFolderModalOpen}
+                    basePath=""
+                    files={ide.files}
+                />
             )}
         </div>
     );

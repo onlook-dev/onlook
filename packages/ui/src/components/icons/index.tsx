@@ -2015,4 +2015,57 @@ export const Icons = {
             />
         </svg>
     ),
+    CollapseSidebar: ({ className, ...props }: IconProps) => (
+        <svg
+            width="14"
+            height="14"
+            viewBox="0 0 64 64"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={cn(className)}
+            {...props}
+        >
+            <path
+                d="M49.984,56l-35.989,0c-3.309,0 -5.995,-2.686 -5.995,-5.995l0,-36.011c0,-3.308 2.686,-5.995 5.995,-5.995l35.989,0c3.309,0 5.995,2.687 5.995,5.995l0,36.011c0,3.309 -2.686,5.995 -5.995,5.995Zm-25.984,-4.001l0,-39.999l-9.012,0c-1.65,0 -2.989,1.339 -2.989,2.989l0,34.021c0,1.65 1.339,2.989 2.989,2.989l9.012,0Zm24.991,-39.999l-20.991,0l0,39.999l20.991,0c1.65,0 2.989,-1.339 2.989,-2.989l0,-34.021c0,-1.65 -1.339,-2.989 -2.989,-2.989Z"
+                fill="currentColor"
+            />
+            <path
+                d="M19.999,38.774l-6.828,-6.828l6.828,-6.829l2.829,2.829l-4,4l4,4l-2.829,2.828Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
+    FloppyDisk: ({ className, ...props }: IconProps) => (
+        <svg
+            viewBox="0 0 16 16"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.3"
+            className={cn(className)}
+            {...props}
+        >
+            <polygon points="2.75 2.75,2.75 13.25,13.25 13.25,13.25 5.75,10.25 2.75" />
+            <polyline points="5.75 13.25,5.75 9.75,10.25 9.75,10.25 13.25" />
+        </svg>
+    ),
+    DirectoryPlus: ({ className, ...props }: IconProps) => (
+        <svg
+            viewBox="0 0 23 23"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.3"
+            className={cn(className)}
+            {...props}
+        >
+            <path d="M3 5a2 2 0 012-2h5.5a2 2 0 011.5 1.5l1.5 1.5a2 2 0 001.5.5H19a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
+            <path d="M12 10v4" />
+            <path d="M10 12h4" />
+        </svg>
+    ),
 } satisfies { [key: string]: React.FC<IconProps> };
