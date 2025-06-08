@@ -488,6 +488,7 @@ export const DevTab = observer(() => {
                             files={ide.files}
                             isLoading={ide.isFilesLoading}
                             onRefresh={handleRefreshFiles}
+                            activeFilePath={ide.activeFile?.path || null}
                         />
                     )}
 

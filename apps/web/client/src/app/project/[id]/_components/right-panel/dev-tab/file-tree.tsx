@@ -17,9 +17,10 @@ interface FileTreeProps {
     files: string[];
     isLoading?: boolean;
     onRefresh?: () => Promise<void>;
+    activeFilePath?: string | null;
 }
 
-export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh }: FileTreeProps) => {
+export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }: FileTreeProps) => {
     const editorEngine = useEditorEngine();
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
@@ -83,6 +84,37 @@ export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh }: 
     useEffect(() => {
         setTreeData(buildFileTree(files));
     }, [files, buildFileTree]);
+
+    // Helper function to find tree node by file path
+    const findNodeByPath = (nodes: FileNode[], targetPath: string): FileNode | null => {
+        for (const node of nodes) {
+            if (node.path === targetPath && !node.isDirectory) {
+                return node;
+            }
+            if (node.children) {
+                const found = findNodeByPath(node.children, targetPath);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    // Sync tree selection with active file
+    useEffect(() => {
+        if (!activeFilePath || !treeRef.current || !treeData.length) {
+            return;
+        }
+        // Find the exact node that matches the file 
+        const targetNode = findNodeByPath(treeData, activeFilePath);
+        if (targetNode) {
+            setTimeout(() => {
+                if (treeRef.current) {
+                    treeRef.current.select(targetNode.id);
+                    treeRef.current.scrollTo(targetNode.id);
+                }
+            }, 0);
+        }
+    }, [activeFilePath, treeData]);
 
     // Filter files based on search
     const filteredFiles = useMemo(() => {
