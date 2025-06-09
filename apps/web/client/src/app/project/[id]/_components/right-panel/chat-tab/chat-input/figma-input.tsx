@@ -11,6 +11,20 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
+interface FigmaNode {
+    id: string;
+    name: string;
+    type: string;
+    visible: boolean;
+}
+
+interface FigmaDesignData {
+    node: FigmaNode;
+    code: string | null;
+    variables_defs: string | null;
+    image: string | null;
+}
+
 export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
     const [figmaUrl, setFigmaUrl] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +33,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
 
     const utils = api.useUtils();
 
-    const buildDesignContent = (designData: any, figmaUrl?: string, isSelection = false) => {
+    const buildDesignContent = (designData: FigmaDesignData, figmaUrl?: string, isSelection = false) => {
         const displayName = designData.node.name || (isSelection ? 'Figma Selection' : 'Figma Design');
 
         // Creates rich content with available data
