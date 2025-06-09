@@ -25,10 +25,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         api: '/api/chat',
         maxSteps: 10,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
-        onFinish: (message, config) => {
-            if (config.finishReason === 'stop') {
-                editorEngine.chat.conversation.addAssistantMessage(message);
-            }
+        onFinish: (message) => {
+            editorEngine.chat.conversation.addAssistantMessage(message);
         },
         onError: (error) => {
             console.error('Error in chat', error);
