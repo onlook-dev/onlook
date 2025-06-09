@@ -10,9 +10,11 @@ export class UserChatMessageImpl implements UserChatMessage {
     content: string;
     context: ChatMessageContext[] = [];
     parts: TextPart[] = [];
+    aiSdkId: string | undefined;
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = uuidv4();
+        this.aiSdkId = undefined;
         this.content = content;
         this.parts = [{ type: 'text', text: content }];
         this.context = context;
