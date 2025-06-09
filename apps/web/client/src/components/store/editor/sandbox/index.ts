@@ -13,6 +13,7 @@ import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
+import { copyDirectoryRecursive } from '../pages/helper';
 
 export class SandboxManager {
     readonly session: SessionManager;
@@ -207,10 +208,7 @@ export class SandboxManager {
                 results.push(...subFiles);
             } else {
                 const extension = path.extname(entry.name);
-                if (
-                    ignoreExtensions.length > 0 &&
-                    !ignoreExtensions.includes(extension)
-                ) {
+                if (ignoreExtensions.length > 0 && !ignoreExtensions.includes(extension)) {
                     continue;
                 }
                 results.push(normalizedPath);
@@ -220,19 +218,21 @@ export class SandboxManager {
     }
 
     // Download the code as a zip
-    async downloadFiles(projectName?: string): Promise<{ downloadUrl: string; fileName: string } | null> {
+    async downloadFiles(
+        projectName?: string,
+    ): Promise<{ downloadUrl: string; fileName: string } | null> {
         if (!this.session.session) {
-            console.error('No sandbox session found')
+            console.error('No sandbox session found');
             return null;
         }
         try {
-            const { downloadUrl } = await this.session.session.fs.download("./")
+            const { downloadUrl } = await this.session.session.fs.download('./');
             return {
                 downloadUrl,
-                fileName: `${projectName || 'onlook-project'}-${Date.now()}.zip`
-            }
+                fileName: `${projectName || 'onlook-project'}-${Date.now()}.zip`,
+            };
         } catch (error) {
-            console.error('Error generating download URL:', error)
+            console.error('Error generating download URL:', error);
             return null;
         }
     }
@@ -347,9 +347,9 @@ export class SandboxManager {
         }
     }
 
-    async copyDir(path: string, targetPath: string): Promise<boolean> {
+    async copy(path: string, targetPath: string): Promise<boolean> {
         if (!this.session.session) {
-            console.error('No session found for copy dir');
+            console.error('No session found for copy');
             return false;
         }
 
@@ -357,111 +357,31 @@ export class SandboxManager {
             const normalizedSourcePath = normalizePath(path);
             const normalizedTargetPath = normalizePath(targetPath);
 
-            // Check if source directory exists
+            // Check if source exists
             const sourceExists = await this.fileExists(normalizedSourcePath);
             if (!sourceExists) {
-                console.error(`Source directory ${normalizedSourcePath} does not exist`);
+                console.error(`Source ${normalizedSourcePath} does not exist`);
                 return false;
             }
 
-            // Create target directory if it doesn't exist
-            try {
-                await this.session.session.fs.mkdir(normalizedTargetPath);
-            } catch (error) {
-                // Directory might already exist, continue
-            }
-
-            // Get all entries in source directory
-            const entries = await this.session.session.fs.readdir(normalizedSourcePath);
-
-            for (const entry of entries) {
-                const sourcePath = `${normalizedSourcePath}/${entry.name}`;
-                const targetEntryPath = `${normalizedTargetPath}/${entry.name}`;
-
-                if (entry.type === 'directory') {
-                    // Recursively copy subdirectory
-                    const success = await this.copyDir(sourcePath, targetEntryPath);
-                    if (!success) {
-                        console.error(`Failed to copy directory ${sourcePath}`);
-                        return false;
-                    }
-                } else if (entry.type === 'file') {
-                    // Copy file
-                    const success = await this.copyFile(sourcePath, targetEntryPath);
-                    if (!success) {
-                        console.error(`Failed to copy file ${sourcePath}`);
-                        return false;
-                    }
+            // Check if we are copying a directory
+            const stat = await this.session.session.fs.stat(normalizedSourcePath);
+            if (stat.type === 'directory') {
+                // Create target directory if it doesn't exist
+                try {
+                    await this.session.session.fs.mkdir(normalizedTargetPath);
+                } catch (error) {
+                    // Directory might already exist, continue
                 }
-            }
-
-            return true;
-        } catch (error) {
-            console.error(`Error copying directory ${path} to ${targetPath}:`, error);
-            return false;
-        }
-    }
-
-    async copyFile(path: string, targetPath: string): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for copy file');
-            return false;
-        }
-
-        try {
-            const normalizedSourcePath = normalizePath(path);
-            const normalizedTargetPath = normalizePath(targetPath);
-
-            // Check if source file exists
-            const sourceExists = await this.fileExists(normalizedSourcePath);
-            if (!sourceExists) {
-                console.error(`Source file ${normalizedSourcePath} does not exist`);
-                return false;
-            }
-
-            // Create target directory if it doesn't exist
-            const targetDir = getDirName(normalizedTargetPath);
-            try {
-                await this.session.session.fs.mkdir(targetDir);
-            } catch (error) {
-                // Directory might already exist, continue
-            }
-
-            // Determine if file is binary based on extension
-            const fileName = getBaseName(normalizedSourcePath);
-            const isBinary = isBinaryFile(fileName);
-
-            if (isBinary) {
-                // Handle binary file
-                const binaryContent = await this.readRemoteBinaryFile(normalizedSourcePath);
-                if (binaryContent === null) {
-                    console.error(`Failed to read binary file ${normalizedSourcePath}`);
-                    return false;
-                }
-
-                const success = await this.writeRemoteBinaryFile(normalizedTargetPath, binaryContent);
-                if (!success) {
-                    console.error(`Failed to write binary file ${normalizedTargetPath}`);
-                    return false;
-                }
+                await copyDirectoryRecursive(this.session.session, normalizedSourcePath, normalizedTargetPath);
             } else {
-                // Handle text file
-                const textContent = await this.readRemoteFile(normalizedSourcePath);
-                if (textContent === null) {
-                    console.error(`Failed to read text file ${normalizedSourcePath}`);
-                    return false;
-                }
-
-                const success = await this.writeRemoteFile(normalizedTargetPath, textContent);
-                if (!success) {
-                    console.error(`Failed to write text file ${normalizedTargetPath}`);
-                    return false;
-                }
+                // Copy file
+                await this.session.session.fs.copy(normalizedSourcePath, normalizedTargetPath);
             }
 
             return true;
         } catch (error) {
-            console.error(`Error copying file ${path} to ${targetPath}:`, error);
+            console.error(`Error copying ${path} to ${targetPath}:`, error);
             return false;
         }
     }

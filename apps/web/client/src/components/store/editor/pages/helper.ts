@@ -566,7 +566,7 @@ const createDirectory = async (session: WebSocketSession, dirPath: string): Prom
     await session.fs.remove(tempFile);
 };
 
-const copyDirectoryRecursive = async (session: WebSocketSession, sourcePath: string, targetPath: string): Promise<void> => {
+export const copyDirectoryRecursive = async (session: WebSocketSession, sourcePath: string, targetPath: string): Promise<void> => {
     try {
         const entries = await session.fs.readdir(sourcePath);
 

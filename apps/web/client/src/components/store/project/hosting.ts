@@ -3,11 +3,9 @@ import { createClient } from '@/utils/supabase/client';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
 import {
-    PublishStatus,
     type PublishOptions,
     type PublishRequest,
     type PublishResponse,
-    type PublishState,
 } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
 import { isBinaryFile, isEmptyString, isNullOrUndefined, updateGitignore, type FileOperations } from '@onlook/utility';
@@ -17,13 +15,7 @@ import {
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../editor/engine';
 
-const DEFAULT_STATE: PublishState = {
-    status: PublishStatus.UNPUBLISHED,
-    message: null,
-};
-
 export class HostingManager {
-    state: PublishState = DEFAULT_STATE;
     readonly supabase = createClient();
     private editorEngine: EditorEngine;
 
@@ -32,17 +24,13 @@ export class HostingManager {
         makeAutoObservable(this);
     }
 
-    private updateState(partialState: Partial<PublishState>) {
-        this.state = { ...this.state, ...partialState };
-    }
 
     private get fileOps(): FileOperations {
         return {
             readFile: (path: string) => this.editorEngine.sandbox.readFile(path),
             writeFile: (path: string, content: string) => this.editorEngine.sandbox.writeFile(path, content),
             fileExists: (path: string) => this.editorEngine.sandbox.fileExists(path),
-            copyDir: (source: string, destination: string) => this.editorEngine.sandbox.copyDir(source, destination),
-            copyFile: (source: string, destination: string) => this.editorEngine.sandbox.copyFile(source, destination),
+            copy: (source: string, destination: string) => this.editorEngine.sandbox.copy(source, destination),
             deleteFile: async (path: string) => this.editorEngine.sandbox.deleteFile(path),
         };
     }
@@ -123,14 +111,11 @@ export class HostingManager {
     async publish({ buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
         try {
             const timer = new LogTimer('Deployment');
-            this.emitState(PublishStatus.LOADING, 'Preparing project...');
 
             await this.runPrepareStep();
             timer.log('Prepare completed');
-            this.emitState(PublishStatus.LOADING, 'Creating optimized build...');
 
             if (!options?.skipBadge) {
-                this.emitState(PublishStatus.LOADING, 'Adding badge...');
                 await this.addBadge('./');
                 timer.log('"Built with Onlook" badge added');
             }
@@ -138,7 +123,6 @@ export class HostingManager {
             // Run the build script
             await this.runBuildStep(buildScript, options);
             timer.log('Build completed');
-            this.emitState(PublishStatus.LOADING, 'Preparing project for deployment...');
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } =
@@ -154,13 +138,11 @@ export class HostingManager {
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-            this.emitState(PublishStatus.LOADING, 'Deploying project...');
+
             timer.log('Files serialized, sending to Freestyle...');
 
             const id = await this.deployWeb(files, urls, options?.envVars);
             timer.log('Deployment completed');
-
-            this.emitState(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
             if (!options?.skipBadge) {
                 await this.removeBadge('./');
@@ -173,7 +155,6 @@ export class HostingManager {
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            this.emitState(PublishStatus.ERROR, 'Deployment failed with error: ' + error);
             return {
                 success: false,
                 message: error instanceof Error ? error.message : 'Unknown error',
@@ -184,16 +165,12 @@ export class HostingManager {
     async unpublish(urls: string[]): Promise<PublishResponse> {
         try {
             const id = await this.deployWeb({}, urls);
-            this.emitState(PublishStatus.UNPUBLISHED, 'Deployment deleted with ID: ' + id);
-
             return {
                 success: true,
                 message: 'Deployment deleted with ID: ' + id,
             };
         } catch (error) {
             console.error('Failed to delete deployment', error);
-            this.emitState(PublishStatus.ERROR, 'Failed to delete deployment');
-
             return {
                 success: false,
                 message: 'Failed to delete deployment. ' + error,
@@ -275,7 +252,6 @@ export class HostingManager {
         });
 
         if (!buildSuccess) {
-            this.emitState(PublishStatus.ERROR, `Build failed with error: ${buildError}`);
             throw new Error(`Build failed with error: ${buildError}`);
         } else {
             console.log('Build succeeded with output: ', buildOutput);
@@ -296,29 +272,29 @@ export class HostingManager {
             };
         }
 
-        // Check if copyDir method is available before using it
-        if (this.fileOps.copyDir) {
-            this.fileOps.copyDir(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`);
-            this.fileOps.copyDir(
+        // Check if copy method is available before using it
+        if (this.fileOps.copy) {
+            this.fileOps.copy(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`);
+            this.fileOps.copy(
                 `${CUSTOM_OUTPUT_DIR}/static`,
                 `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
             );
         } else {
-            console.warn('copyDir method not available in file operations');
+            console.warn('copy method not available in file operations');
         }
 
         for (const lockFile of SUPPORTED_LOCK_FILES) {
             const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
             if (lockFileExists) {
-                // Check if copyFile method is available before using it
-                if (this.fileOps.copyFile) {
-                    this.fileOps.copyFile(
+                // Check if copy method is available before using it
+                if (this.fileOps.copy) {
+                    this.fileOps.copy(
                         `./${lockFile}`,
                         `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
                     );
                     return { success: true };
                 } else {
-                    console.warn('copyFile method not available in file operations');
+                    console.warn('copy method not available in file operations');
                     return {
                         success: false,
                         error: 'Copy operations not supported by file operations interface',
@@ -342,14 +318,6 @@ export class HostingManager {
             return [];
         }
         return data.map((domain: { domain: string }) => domain.domain);
-    }
-
-    emitState(status: PublishStatus, message: string) {
-        console.log(`Deployment state: ${status} - ${message}`);
-        this.updateState({
-            status,
-            message,
-        });
     }
 }
 
