@@ -164,7 +164,7 @@ export class DomainsManager {
             return false;
         }
 
-        const res = await this._hosting.publish(request);
+        const res = await this._hosting.publish(request, (status, message) => this.updateState({ status, message }));
 
         if (!res || !res.success) {
             const error = `Failed to publish hosting environment: ${res?.message || 'client error'}`;
@@ -201,7 +201,7 @@ export class DomainsManager {
         this.updateState({ status: PublishStatus.LOADING, message: 'Deleting deployment...' });
         sendAnalytics('hosting unpublish');
 
-        const urls = getPublishUrls(domainType === DomainType.CUSTOM ? this._project.domains?.custom?.url || '' : this._project.domains?.base   ?.url || '');
+        const urls = getPublishUrls(domainType === DomainType.CUSTOM ? this._project.domains?.custom?.url || '' : this._project.domains?.base?.url || '');
 
         if (!this._hosting) {
             console.error('Hosting not found');

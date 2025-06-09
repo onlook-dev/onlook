@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/client';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
 import {
+    PublishStatus,
     type PublishOptions,
     type PublishRequest,
     type PublishResponse,
@@ -23,7 +24,6 @@ export class HostingManager {
         this.editorEngine = editorEngine;
         makeAutoObservable(this);
     }
-
 
     private get fileOps(): FileOperations {
         return {
@@ -108,9 +108,11 @@ export class HostingManager {
         return files;
     }
 
-    async publish({ buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
+    async publish({ buildScript, urls, options }: PublishRequest, statusCallback: (status: PublishStatus, message: string) => void): Promise<PublishResponse> {
         try {
             const timer = new LogTimer('Deployment');
+
+            statusCallback(PublishStatus.LOADING, 'Preparing project...');
 
             await this.runPrepareStep();
             timer.log('Prepare completed');
@@ -118,11 +120,14 @@ export class HostingManager {
             if (!options?.skipBadge) {
                 await this.addBadge('./');
                 timer.log('"Built with Onlook" badge added');
+                statusCallback(PublishStatus.LOADING, 'Adding badge...');
             }
 
+            statusCallback(PublishStatus.LOADING, 'Creating optimized build...');
             // Run the build script
             await this.runBuildStep(buildScript, options);
             timer.log('Build completed');
+            statusCallback(PublishStatus.LOADING, 'Preparing project for deployment...');
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } =
@@ -138,15 +143,18 @@ export class HostingManager {
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
+            statusCallback(PublishStatus.LOADING, 'Deploying project...');
 
             timer.log('Files serialized, sending to Freestyle...');
 
             const id = await this.deployWeb(files, urls, options?.envVars);
             timer.log('Deployment completed');
+            statusCallback(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
 
             if (!options?.skipBadge) {
                 await this.removeBadge('./');
                 timer.log('"Built with Onlook" badge removed');
+                statusCallback(PublishStatus.LOADING, 'Cleaning up...');
             }
 
             return {
@@ -283,8 +291,7 @@ export class HostingManager {
         for (const lockFile of SUPPORTED_LOCK_FILES) {
             const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
             if (lockFileExists) {
-                // Check if copy method is available before using it
-                this.fileOps.copy(
+                await this.fileOps.copy(
                     `./${lockFile}`,
                     `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
                     true,
