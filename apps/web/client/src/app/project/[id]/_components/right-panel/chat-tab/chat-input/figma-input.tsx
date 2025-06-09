@@ -19,6 +19,49 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
 
     const utils = api.useUtils();
 
+    const buildDesignContent = (designData: any, figmaUrl?: string, isSelection = false) => {
+        const displayName = designData.node.name || (isSelection ? 'Figma Selection' : 'Figma Design');
+
+        // Create rich content with available data
+        let content = `${isSelection ? 'Figma Selection' : 'Figma Design'}: ${displayName}\n`;
+        content += `Type: ${designData.node.type}\n`;
+        if (figmaUrl) {
+            content += `URL: ${figmaUrl}\n`;
+        }
+        content += '\n';
+
+        let successfulFeatures: string[] = [];
+
+        // Add code if available
+        if (designData.code) {
+            content += `Code (React/Tailwind):\n\`\`\`tsx\n${designData.code}\n\`\`\`\n\n`;
+            successfulFeatures.push('✅ React/Tailwind code');
+        } else {
+            successfulFeatures.push('Code (no data fetched)');
+        }
+
+        // Add variables if available
+        if (designData.variables_defs) {
+            const varsData = typeof designData.variables_defs === 'string'
+                ? designData.variables_defs
+                : JSON.stringify(designData.variables_defs, null, 2);
+            content += `Design Variables:\n\`\`\`json\n${varsData}\n\`\`\`\n\n`;
+            successfulFeatures.push('✅ Design variables');
+        } else {
+            successfulFeatures.push('Variables (no data fetched)');
+        }
+
+        // Add image info if available
+        if (designData.image) {
+            content += `Design Image: Available\n`;
+            successfulFeatures.push('✅ Design screenshot');
+        } else {
+            successfulFeatures.push('Screenshot (no data fetched)');
+        }
+
+        return { content, successfulFeatures, displayName };
+    };
+
     const handleAddFigmaUrl = async () => {
         if (!figmaUrl.trim()) {
             toast.error('Please enter a Figma URL');
@@ -32,41 +75,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
 
             if (result.success && result.data) {
                 const designData = result.data;
-                const displayName = designData.node.name || 'Figma Design';
-
-                // Create rich content with available data
-                let content = `Figma Design: ${displayName}\n`;
-                content += `Type: ${designData.node.type}\n`;
-                content += `URL: ${figmaUrl}\n\n`;
-
-                let successfulFeatures: string[] = [];
-
-                // Add code if available
-                if (designData.code) {
-                    content += `Code (React/Tailwind):\n\`\`\`tsx\n${designData.code}\n\`\`\`\n\n`;
-                    successfulFeatures.push('✅ React/Tailwind code');
-                } else {
-                    successfulFeatures.push('Code (no data fetched)');
-                }
-
-                // Add variables if available
-                if (designData.variables_defs) {
-                    const varsData = typeof designData.variables_defs === 'string'
-                        ? designData.variables_defs
-                        : JSON.stringify(designData.variables_defs, null, 2);
-                    content += `Design Variables:\n\`\`\`json\n${varsData}\n\`\`\`\n\n`;
-                    successfulFeatures.push('✅ Design variables');
-                } else {
-                    successfulFeatures.push('Variables (no data fetched)');
-                }
-
-                // Add image info if available
-                if (designData.image) {
-                    content += `Design Image: Available\n`;
-                    successfulFeatures.push('✅ Design screenshot');
-                } else {
-                    successfulFeatures.push('Screenshot (no data fetched)');
-                }
+                const { content, displayName } = buildDesignContent(designData, figmaUrl.trim(), false);
 
                 // Add to context
                 editorEngine.chat.context.addFigmaContext(
@@ -98,40 +107,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
 
             if (result.success && result.data) {
                 const designData = result.data;
-                const displayName = designData.node.name || 'Figma Selection';
-
-                // Create rich content with available data
-                let content = `Figma Selection: ${displayName}\n`;
-                content += `Type: ${designData.node.type}\n\n`;
-
-                let successfulFeatures: string[] = [];
-
-                // Add code if available
-                if (designData.code) {
-                    content += `Code (React/Tailwind):\n\`\`\`tsx\n${designData.code}\n\`\`\`\n\n`;
-                    successfulFeatures.push('✅ React/Tailwind code');
-                } else {
-                    successfulFeatures.push('Code (no data fetched)');
-                }
-
-                // Add variables if available
-                if (designData.variables_defs) {
-                    const varsData = typeof designData.variables_defs === 'string'
-                        ? designData.variables_defs
-                        : JSON.stringify(designData.variables_defs, null, 2);
-                    content += `Design Variables:\n\`\`\`json\n${varsData}\n\`\`\`\n\n`;
-                    successfulFeatures.push('✅ Design variables');
-                } else {
-                    successfulFeatures.push('Variables (no data fetched)');
-                }
-
-                // Add image info if available
-                if (designData.image) {
-                    content += `Design Image: Available\n`;
-                    successfulFeatures.push('✅ Design screenshot');
-                } else {
-                    successfulFeatures.push('Screenshot (no data fetched)');
-                }
+                const { content, displayName } = buildDesignContent(designData, undefined, true);
 
                 // Add to context (using node ID as URL since we don't have the actual URL)
                 editorEngine.chat.context.addFigmaContext(
@@ -156,6 +132,11 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
 
     const handlePasteFromClipboard = async () => {
         try {
+            if (!navigator.clipboard) {
+                toast.error('Clipboard access not available');
+                return;
+            }
+
             const text = await navigator.clipboard.readText();
             if (text && text.includes('figma.com')) {
                 setFigmaUrl(text);
@@ -164,7 +145,11 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                 toast.error('No valid Figma URL found in clipboard');
             }
         } catch (error) {
-            toast.error('Failed to read clipboard');
+            if (error instanceof Error && error.name === 'NotAllowedError') {
+                toast.error('Clipboard access denied. Please grant permission.');
+            } else {
+                toast.error('Failed to read clipboard');
+            }
         }
     };
 

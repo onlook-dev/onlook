@@ -20,6 +20,7 @@ interface MCPResponse {
 }
 
 class ServerSideFigmaMCP {
+    private readonly MCP_BASE_URL = process.env.MCP_SERVER_URL || 'http://127.0.0.1:3845';
     private requestId = 0;
     private sessionId: string | null = null;
     private messageEndpoint: string | null = null;
@@ -41,7 +42,7 @@ class ServerSideFigmaMCP {
         try {
     
             // First, get the session ID by connecting to SSE endpoint
-            const response = await fetch('http://127.0.0.1:3845/sse', {
+            const response = await fetch(`${this.MCP_BASE_URL}/sse`, {
                 headers: {
                     'Accept': 'text/event-stream',
                     'Cache-Control': 'no-cache'
@@ -126,8 +127,8 @@ class ServerSideFigmaMCP {
         };
 
         const endpoint = this.messageEndpoint 
-            ? `http://127.0.0.1:3845${this.messageEndpoint}`
-            : `http://127.0.0.1:3845/messages?sessionId=${this.sessionId}`;
+            ? `${this.MCP_BASE_URL}${this.messageEndpoint}`
+            : `${this.MCP_BASE_URL}/messages?sessionId=${this.sessionId}`;
 
         try {
             // Send the MCP request
@@ -148,38 +149,42 @@ class ServerSideFigmaMCP {
             // Listens for the actual response on the SSE endpoint
             return await this.waitForMCPResponse(id);
         } catch (error) {
-            throw error;
+            throw new Error(`Failed to send MCP request (method: ${method}): ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
     async waitForMCPResponse(requestId: number): Promise<any> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const sseResponse = await fetch('http://127.0.0.1:3845/sse', {
-                    headers: {
-                        'Accept': 'text/event-stream',
-                        'Cache-Control': 'no-cache'
-                    }
-                });
+        const sseResponse = await fetch(`${this.MCP_BASE_URL}/sse`, {
+            headers: {
+                'Accept': 'text/event-stream',
+                'Cache-Control': 'no-cache'
+            }
+        });
 
-                if (!sseResponse.ok) {
-                    reject(new Error(`SSE response failed: ${sseResponse.status}`));
-                    return;
-                }
+        if (!sseResponse.ok) {
+            throw new Error(`SSE response failed: ${sseResponse.status}`);
+        }
 
-                const reader = sseResponse.body?.getReader();
-                if (!reader) {
-                    reject(new Error('Failed to read SSE stream'));
-                    return;
-                }
+        const reader = sseResponse.body?.getReader();
+        if (!reader) {
+            throw new Error('Failed to read SSE stream');
+        }
 
-                const decoder = new TextDecoder();
-                let buffer = '';
-                const timeout = setTimeout(() => {
-                    reader.cancel();
-                    reject(new Error(`Timeout waiting for MCP response ${requestId}`));
-                }, 15000); 
+        return new Promise((resolve, reject) => {
+            const decoder = new TextDecoder();
+            let buffer = '';
+            
+            const timeout = setTimeout(() => {
+                reader.cancel();
+                reject(new Error(`Timeout waiting for MCP response ${requestId}`));
+            }, 15000);
 
+            const cleanup = () => {
+                clearTimeout(timeout);
+                reader.cancel();
+            };
+
+            const processStream = async () => {
                 try {
                     while (true) {
                         const { done, value } = await reader.read();
@@ -198,13 +203,11 @@ class ServerSideFigmaMCP {
                                     continue;
                                 }
                                 
-                                
                                 try {
                                     const mcpResponse = JSON.parse(eventData) as MCPResponse;
                                     
                                     if (mcpResponse.id === requestId) {
-                                        clearTimeout(timeout);
-                                        reader.cancel();
+                                        cleanup();
                                         
                                         if (mcpResponse.error) {
                                             reject(new Error(`MCP error: ${mcpResponse.error.message}`));
@@ -221,16 +224,16 @@ class ServerSideFigmaMCP {
                         }
                     }
 
-                    clearTimeout(timeout);
-                    reader.cancel();
+                    cleanup();
                     reject(new Error(`No matching response found for request ${requestId}`));
-                } finally {
-                    clearTimeout(timeout);
-                    reader.cancel();
+                } catch (error) {
+                    cleanup();
+                    reject(error);
                 }
-            } catch (error) {
-                reject(error);
-            }
+            };
+
+            // Start processing the stream
+            processStream();
         });
     }
 
@@ -278,6 +281,28 @@ class ServerSideFigmaMCP {
         }
     }
 
+    public getSessionInfo() {
+        return {
+            isValid: this.isSessionValid(),
+            sessionId: this.sessionId,
+            lastConnectionTime: this.lastConnectionTime
+        };
+    }
+
+    public extractContent(data: any): string | null {
+        if (!data) return null;
+        
+        // Handle different response formats
+        if (data.content && Array.isArray(data.content)) {
+            return data.content.map((item: any) => item.text || item.data || item).join('\n');
+        }
+        
+        if (typeof data === 'string') return data;
+        if (data.text) return data.text;
+        if (data.data) return data.data;
+        
+        return JSON.stringify(data, null, 2);
+    }
 
     async safeRequest<T>(requestFn: () => Promise<T>, requestName: string): Promise<T | null> {
         try {
@@ -314,22 +339,6 @@ export const figmaRouter = createTRPCRouter({
                 const imageResult = imageData.status === 'fulfilled' ? imageData.value : null;
                 const variablesResult = variablesData.status === 'fulfilled' ? variablesData.value : null;
 
-                // Extract actual content from MCP response format
-                const extractContent = (data: any) => {
-                    if (!data) return null;
-                    
-                    // Handle different response formats
-                    if (data.content && Array.isArray(data.content)) {
-                        return data.content.map((item: any) => item.text || item.data || item).join('\n');
-                    }
-                    
-                    if (typeof data === 'string') return data;
-                    if (data.text) return data.text;
-                    if (data.data) return data.data;
-                    
-                    return JSON.stringify(data, null, 2);
-                };
-
                 const designData = {
                     node: {
                         id: nodeId,
@@ -337,9 +346,9 @@ export const figmaRouter = createTRPCRouter({
                         type: 'FRAME',
                         visible: true
                     },
-                    code: extractContent(codeData),
-                    image: extractContent(imageResult), 
-                    variables_defs: extractContent(variablesResult)
+                    code: figmaMCP.extractContent(codeData),
+                    image: figmaMCP.extractContent(imageResult), 
+                    variables_defs: figmaMCP.extractContent(variablesResult)
                 };
 
                 return {
@@ -374,22 +383,6 @@ export const figmaRouter = createTRPCRouter({
                 const imageResult = imageData.status === 'fulfilled' ? imageData.value : null;
                 const variablesResult = variablesData.status === 'fulfilled' ? variablesData.value : null;
 
-                // Extract actual content from MCP response format
-                const extractContent = (data: any) => {
-                    if (!data) return null;
-                    
-                    // Handle different response formats
-                    if (data.content && Array.isArray(data.content)) {
-                        return data.content.map((item: any) => item.text || item.data || item).join('\n');
-                    }
-                    
-                    if (typeof data === 'string') return data;
-                    if (data.text) return data.text;
-                    if (data.data) return data.data;
-                    
-                    return JSON.stringify(data, null, 2);
-                };
-
                 const designData = {
                     node: {
                         id: 'current-selection',
@@ -397,9 +390,9 @@ export const figmaRouter = createTRPCRouter({
                         type: 'FRAME',
                         visible: true
                     },
-                    code: extractContent(codeData),
-                    image: extractContent(imageResult),
-                    variables_defs: extractContent(variablesResult)
+                    code: figmaMCP.extractContent(codeData),
+                    image: figmaMCP.extractContent(imageResult),
+                    variables_defs: figmaMCP.extractContent(variablesResult)
                 };
 
                 return {
@@ -448,12 +441,10 @@ export const figmaRouter = createTRPCRouter({
     getHealthStatus: protectedProcedure
         .query(async () => {
             try {
-                const isSessionValid = (figmaMCP as any).isSessionValid();
-                const sessionId = (figmaMCP as any).sessionId;
-                const lastConnectionTime = (figmaMCP as any).lastConnectionTime;
+                const { isValid, sessionId, lastConnectionTime } = figmaMCP.getSessionInfo();
                 
                 return {
-                    sessionValid: isSessionValid,
+                    sessionValid: isValid,
                     sessionId: sessionId ? sessionId.substring(0, 8) + '...' : null,
                     lastConnection: lastConnectionTime ? new Date(lastConnectionTime).toISOString() : null,
                 };
