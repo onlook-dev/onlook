@@ -12460,8 +12460,7 @@ function createElement(element) {
     newEl.setAttribute(key, value);
   }
   if (element.textContent !== null && element.textContent !== undefined) {
-    const htmlContent = element.textContent.replace(/\n/g, "<br>");
-    newEl.innerHTML = htmlContent;
+    newEl.textContent = element.textContent;
   }
   for (const [key, value] of Object.entries(element.styles)) {
     newEl.style.setProperty(cssManager.jsToCssProperty(key), value);
@@ -17365,5 +17364,5 @@ export {
   penpalParent
 };
 
-//# debugId=DDC523D775E2971564756E2164756E21
+//# debugId=BAE95CC59FFB231064756E2164756E21
 //# sourceMappingURL=index.js.map

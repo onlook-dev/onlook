@@ -129,9 +129,7 @@ export function createElement(element: ActionElement) {
     }
 
     if (element.textContent !== null && element.textContent !== undefined) {
-        // Convert newlines to <br> tags for consistent handling
-        const htmlContent = element.textContent.replace(/\n/g, '<br>');
-        newEl.innerHTML = htmlContent;
+        newEl.textContent = element.textContent;
     }
 
     for (const [key, value] of Object.entries(element.styles)) {

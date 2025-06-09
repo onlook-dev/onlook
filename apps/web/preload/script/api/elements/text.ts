@@ -82,7 +82,6 @@ function updateTextContent(el: HTMLElement, content: string): void {
 }
 
 function extractTextContent(el: HTMLElement): string {
-    // Convert <br> tags back to newlines for the editor
     return el.innerHTML.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
 }
 
