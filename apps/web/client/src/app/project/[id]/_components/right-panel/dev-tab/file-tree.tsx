@@ -1,5 +1,5 @@
 import { type FileNode } from '@onlook/models';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
@@ -20,7 +20,7 @@ interface FileTreeProps {
     activeFilePath?: string | null;
 }
 
-export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }: FileTreeProps) => {
+export const FileTree = memo(function FileTree({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }: FileTreeProps) {
     const editorEngine = useEditorEngine();
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
@@ -318,4 +318,4 @@ export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh, ac
             </div>
         </div>
     );
-}; 
+});
