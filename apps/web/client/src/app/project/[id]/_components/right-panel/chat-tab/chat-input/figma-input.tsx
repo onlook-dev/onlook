@@ -22,7 +22,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
     const buildDesignContent = (designData: any, figmaUrl?: string, isSelection = false) => {
         const displayName = designData.node.name || (isSelection ? 'Figma Selection' : 'Figma Design');
 
-        // Create rich content with available data
+        // Creates rich content with available data
         let content = `${isSelection ? 'Figma Selection' : 'Figma Design'}: ${displayName}\n`;
         content += `Type: ${designData.node.type}\n`;
         if (figmaUrl) {
@@ -35,7 +35,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
         // Add code if available
         if (designData.code) {
             content += `Code (React/Tailwind):\n\`\`\`tsx\n${designData.code}\n\`\`\`\n\n`;
-            successfulFeatures.push('✅ React/Tailwind code');
+            successfulFeatures.push('React/Tailwind code');
         } else {
             successfulFeatures.push('Code (no data fetched)');
         }
@@ -46,7 +46,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                 ? designData.variables_defs
                 : JSON.stringify(designData.variables_defs, null, 2);
             content += `Design Variables:\n\`\`\`json\n${varsData}\n\`\`\`\n\n`;
-            successfulFeatures.push('✅ Design variables');
+            successfulFeatures.push('Design variables');
         } else {
             successfulFeatures.push('Variables (no data fetched)');
         }
@@ -54,7 +54,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
         // Add image info if available
         if (designData.image) {
             content += `Design Image: Available\n`;
-            successfulFeatures.push('✅ Design screenshot');
+            successfulFeatures.push('Design screenshot');
         } else {
             successfulFeatures.push('Screenshot (no data fetched)');
         }
