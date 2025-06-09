@@ -11,25 +11,25 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { DefaultSettings } from '@onlook/constants';
 import { UrlSection } from './url';
+import { toJS } from 'mobx';
 
 export const DomainSection = observer(
     ({
         domain,
-        type,
-        state,
+        type
     }: {
         domain: DomainSettings | null;
         type: DomainType;
-        state: PublishState;
-    }) => {
+        }) => {
         const editorEngine = useEditorEngine();
         const domainsManager = useDomainsManager();
         const userManager = useUserManager();
 
         const [progress, setProgress] = useState(0);
         const plan = userManager.subscription.plan;
+        const state = domainsManager.state;
         const isAnyDomainLoading =
-            domainsManager.state.status === PublishStatus.LOADING;
+            state.status === PublishStatus.LOADING;
 
         useEffect(() => {
             let progressInterval: Timer | null = null;
@@ -82,7 +82,7 @@ export const DomainSection = observer(
                 skipBadge: type === DomainType.CUSTOM,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 envVars: domainsManager.project?.env || {},
-            });
+            }, type);
         };
 
         const retry = () => {
@@ -101,11 +101,11 @@ export const DomainSection = observer(
             return (
                 <>
                     <div className="flex items-center w-full">
-                        <h3 className="">Base Domain</h3>
+                        <h3 className="">Publish</h3>
                     </div>
 
                     <Button onClick={createBaseDomain} className="w-full rounded-md p-3">
-                        Publish preview site
+                        Publish my site
                     </Button>
                 </>
             );
@@ -123,7 +123,7 @@ export const DomainSection = observer(
 
                     <Button
                         onClick={openCustomDomain}
-                        className="w-full rounded-md p-3 bg-blue-400 hover:bg-blue-500 text-white"
+                        className="w-full rounded-md p-3 bg-blue-600 border-blue border hover:bg-blue-700 text-white"
                     >
                         Link a Custom Domain
                     </Button>
@@ -143,11 +143,14 @@ export const DomainSection = observer(
                 }
             }
 
+
             return (
                 <>
                     <div className="flex items-center w-full">
                         <h3 className="">
-                            {type === DomainType.BASE ? 'Base Domain' : 'Custom Domain'}
+                            {type === DomainType.BASE ?
+                                (domain.url ? 'Base Domain' : 'Publish')
+                                : 'Custom Domain'}
                         </h3>
                         {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
                             <div className="ml-auto flex items-center gap-2">
@@ -179,7 +182,7 @@ export const DomainSection = observer(
 
             return (
                 <div className="w-full flex flex-col gap-2">
-                    <UrlSection url={domain.url} />
+                    <UrlSection url={domain.url} isCopyable={domain.type === DomainType.BASE} />
                     {(state.status === PublishStatus.PUBLISHED ||
                         state.status === PublishStatus.UNPUBLISHED) && (
                         <Button
@@ -222,7 +225,7 @@ export const DomainSection = observer(
 
         return (
             <div className="p-4 flex flex-col items-center gap-2">
-                {domain
+                {domain?.url
                     ? renderDomain()
                     : type === DomainType.BASE
                       ? renderNoDomainBase()
