@@ -4,6 +4,7 @@ import { createInsertSchema } from 'drizzle-zod';
 import { userProjects } from '../user';
 import { canvases } from './canvas';
 import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from './chat/conversation';
+import { PUBLISHED_DOMAIN_PROJECT_RELATION_NAME, publishedDomains } from './domain';
 import { projectInvitations } from './invitation';
 
 export const projects = pgTable('projects', {
@@ -37,6 +38,9 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
         relationName: PROJECT_CONVERSATION_RELATION_NAME,
     }),
     projectInvitations: many(projectInvitations),
+    publishedDomains: many(publishedDomains, {
+        relationName: PUBLISHED_DOMAIN_PROJECT_RELATION_NAME,
+    }),
 }));
 
 export type Project = typeof projects.$inferSelect;
