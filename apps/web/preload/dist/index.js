@@ -12460,7 +12460,8 @@ function createElement(element) {
     newEl.setAttribute(key, value);
   }
   if (element.textContent !== null && element.textContent !== undefined) {
-    newEl.textContent = element.textContent;
+    const htmlContent = element.textContent.replace(/\n/g, "<br>");
+    newEl.innerHTML = htmlContent;
   }
   for (const [key, value] of Object.entries(element.styles)) {
     newEl.style.setProperty(cssManager.jsToCssProperty(key), value);
@@ -12898,7 +12899,7 @@ function startEditingText(domId) {
     console.warn("Start editing text failed. No target element found for selector:", domId);
     return null;
   }
-  const originalContent = el.textContent || "";
+  const originalContent = extractTextContent(el);
   prepareElementForEditing(targetEl);
   return { originalContent };
 }
@@ -12920,7 +12921,7 @@ function stopEditingText(domId) {
   }
   cleanUpElementAfterEditing(el);
   publishEditText(getDomElement(el, true));
-  return { newContent: el.textContent || "", domEl: getDomElement(el, true) };
+  return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 function prepareElementForEditing(el) {
   el.setAttribute("data-onlook-editing-text" /* DATA_ONLOOK_EDITING_TEXT */, "true");
@@ -12933,7 +12934,12 @@ function removeEditingAttributes(el) {
   el.removeAttribute("data-onlook-editing-text" /* DATA_ONLOOK_EDITING_TEXT */);
 }
 function updateTextContent(el, content) {
-  el.textContent = content;
+  const htmlContent = content.replace(/\n/g, "<br>");
+  el.innerHTML = htmlContent;
+}
+function extractTextContent(el) {
+  return el.innerHTML.replace(/<br\s*\/?>/gi, `
+`).replace(/<[^>]*>/g, "");
 }
 function isChildTextEditable(oid) {
   return true;
@@ -17359,5 +17365,5 @@ export {
   penpalParent
 };
 
-//# debugId=7C5F5140D528C77364756E2164756E21
+//# debugId=DDC523D775E2971564756E2164756E21
 //# sourceMappingURL=index.js.map

@@ -34,7 +34,7 @@ export function startEditingText(domId: string): EditTextResult | null {
         console.warn('Start editing text failed. No target element found for selector:', domId);
         return null;
     }
-    const originalContent = el.textContent || '';
+    const originalContent = extractTextContent(el);
     prepareElementForEditing(targetEl);
 
     return { originalContent };
@@ -59,7 +59,7 @@ export function stopEditingText(domId: string): { newContent: string; domEl: Dom
     }
     cleanUpElementAfterEditing(el);
     publishEditText(getDomElement(el, true));
-    return { newContent: el.textContent || '', domEl: getDomElement(el, true) };
+    return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 
 function prepareElementForEditing(el: HTMLElement) {
@@ -76,7 +76,14 @@ function removeEditingAttributes(el: HTMLElement) {
 }
 
 function updateTextContent(el: HTMLElement, content: string): void {
-    el.textContent = content;
+    // Convert newlines to <br> tags in the DOM
+    const htmlContent = content.replace(/\n/g, '<br>');
+    el.innerHTML = htmlContent;
+}
+
+function extractTextContent(el: HTMLElement): string {
+    // Convert <br> tags back to newlines for the editor
+    return el.innerHTML.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
 }
 
 export function isChildTextEditable(oid: string): boolean | null {
