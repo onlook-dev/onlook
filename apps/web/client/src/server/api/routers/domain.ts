@@ -2,10 +2,20 @@ import { env } from '@/env';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { TRPCError } from '@trpc/server';
 
-const sdk = new FreestyleSandboxes({
-    apiKey: env.FREESTYLE_API_KEY
-});
+// Check if FREESTYLE_API_KEY is available before initializing SDK
+const initializeSdk = () => {
+    if (!env.FREESTYLE_API_KEY) {
+        throw new TRPCError({
+            code: 'PRECONDITION_FAILED',
+            message: 'FREESTYLE_API_KEY is not configured. Please set the environment variable to use domain publishing features.',
+        });
+    }
+    return new FreestyleSandboxes({
+        apiKey: env.FREESTYLE_API_KEY
+    });
+};
 
 export const domainRouter = createTRPCRouter({
     publish: protectedProcedure
@@ -23,6 +33,8 @@ export const domainRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
+            const sdk = initializeSdk();
+            
             const res = await sdk.deployWeb(
                 {
                     files: input.files,

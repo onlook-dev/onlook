@@ -111,7 +111,7 @@ Available soon with a [hosted app](https://onlook.com) or
 ### Usage
 
 Onlook will run on any Next.js + TailwindCSS project, import your project
-through into Onlook or start from scratch within the editor.
+into Onlook or start from scratch within the editor.
 
 Use the AI chat to create or edit a project you're working on. At any time, you
 can always right-click an element to open up the exact location of the element

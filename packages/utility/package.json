@@ -37,6 +37,7 @@
         "culori": "^4.0.1",
         "free-email-domains": "^1.2.16",
         "is-subdir": "^1.2.0",
+        "mime-lite": "^1.0.3",
         "normalize-url": "^8.0.1",
         "strip-ansi": "^7.1.0",
         "tldts": "^6.1.82",

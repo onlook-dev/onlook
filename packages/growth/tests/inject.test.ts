@@ -1,3 +1,4 @@
+import { FileOperations } from '@onlook/utility';
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
@@ -7,6 +8,27 @@ import {
     removeBuiltWithScript,
     removeBuiltWithScriptFromLayout,
 } from '../src';
+
+const fileOps: FileOperations = {
+    readFile: async (filePath: string) => {
+        return fs.readFileSync(filePath, 'utf8');
+    },
+    writeFile: async (filePath: string, content: string) => {
+        fs.writeFileSync(filePath, content, 'utf8');
+        return true;
+    },
+    fileExists: async (filePath: string) => {
+        return fs.existsSync(filePath);
+    },
+    delete: async (filePath: string) => {
+        fs.unlinkSync(filePath);
+        return true;
+    },
+    copy: async (source: string, destination: string) => {
+        fs.copyFileSync(source, destination);
+        return true;
+    },
+};
 
 describe('Built with Onlook Script', () => {
     const tempDir = path.join(process.cwd(), 'temp-test-project');
@@ -45,7 +67,7 @@ describe('Built with Onlook Script', () => {
 
     test('injectBuiltWithScript adds Script component to layout.tsx', async () => {
         // Inject the script
-        const result = await injectBuiltWithScript(tempDir);
+        const result = await injectBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Read the modified layout file
@@ -62,7 +84,7 @@ describe('Built with Onlook Script', () => {
 
     test('addBuiltWithScript copies script to public folder', async () => {
         // Add the script
-        const result = await addBuiltWithScript(tempDir);
+        const result = await addBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Verify the script file exists
@@ -75,10 +97,10 @@ describe('Built with Onlook Script', () => {
 
     test('removeBuiltWithScriptFromLayout removes Script component from layout.tsx', async () => {
         // First inject the script
-        await injectBuiltWithScript(tempDir);
+        await injectBuiltWithScript(tempDir, fileOps);
 
         // Then remove it
-        const result = await removeBuiltWithScriptFromLayout(tempDir);
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Read the modified layout file
@@ -95,10 +117,10 @@ describe('Built with Onlook Script', () => {
 
     test('removeBuiltWithScript removes script from public folder', async () => {
         // First add the script
-        await addBuiltWithScript(tempDir);
+        await addBuiltWithScript(tempDir, fileOps);
 
         // Then remove it
-        const result = await removeBuiltWithScript(tempDir);
+        const result = await removeBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Verify the script file no longer exists
@@ -110,13 +132,13 @@ describe('Built with Onlook Script', () => {
         fs.unlinkSync(layoutPath);
 
         // Try to inject the script
-        const result = await injectBuiltWithScript(tempDir);
+        const result = await injectBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(false);
     });
 
     test('removeBuiltWithScript handles missing script file', async () => {
         // Try to remove a non-existent script
-        const result = await removeBuiltWithScript(tempDir);
+        const result = await removeBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(false);
     });
 
@@ -125,17 +147,17 @@ describe('Built with Onlook Script', () => {
         fs.unlinkSync(layoutPath);
 
         // Try to remove the script from layout
-        const result = await removeBuiltWithScriptFromLayout(tempDir);
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
         expect(result).toBe(false);
     });
 
     test('full workflow: inject, add, remove from layout, remove script', async () => {
         // Inject the script into layout
-        const injectResult = await injectBuiltWithScript(tempDir);
+        const injectResult = await injectBuiltWithScript(tempDir, fileOps);
         expect(injectResult).toBe(true);
 
         // Add the script to public folder
-        const addResult = await addBuiltWithScript(tempDir);
+        const addResult = await addBuiltWithScript(tempDir, fileOps);
         expect(addResult).toBe(true);
 
         // Verify both operations were successful
@@ -146,11 +168,11 @@ describe('Built with Onlook Script', () => {
         );
 
         // Remove the script from layout
-        const removeLayoutResult = await removeBuiltWithScriptFromLayout(tempDir);
+        const removeLayoutResult = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
         expect(removeLayoutResult).toBe(true);
 
         // Remove the script from public folder
-        const removeScriptResult = await removeBuiltWithScript(tempDir);
+        const removeScriptResult = await removeBuiltWithScript(tempDir, fileOps);
         expect(removeScriptResult).toBe(true);
 
         // Verify both removal operations were successful
@@ -159,5 +181,138 @@ describe('Built with Onlook Script', () => {
         expect(layoutContent).not.toContain(
             '<Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />',
         );
+    });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if other Script elements exist', async () => {
+        // Write a layout file with two Script elements: one for builtwith.js and one for something else
+        const layoutContent = `import Script from "next/script";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (<html lang="en">
+        <body className={inter.className}>
+            <Script src="/builtwith.js" strategy="afterInteractive" />
+            <Script src="/analytics.js" strategy="afterInteractive" />
+            {children}
+        </body>
+    </html>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+
+        // Remove the builtwith.js script
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+
+        // Read the modified layout file
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+
+        // The builtwith.js Script should be removed
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        // The analytics.js Script should remain
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        // The Script import should still be present
+        expect(modifiedContent).toContain('import Script from "next/script";');
+    });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if Script is in head', async () => {
+        const layoutContent = `import Script from "next/script";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (<html lang="en">
+        <head>
+            <Script src=\"/analytics.js\" strategy=\"afterInteractive\" />
+        </head>
+        <body className={inter.className}>
+            <Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />
+            {children}
+        </body>
+    </html>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain('import Script from "next/script";');
+    });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if Script is a sibling to html', async () => {
+        const layoutContent = `import Script from \"next/script\";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <>
+            <Script src=\"/analytics.js\" strategy=\"afterInteractive\" />
+            <html lang=\"en\">
+                <body className={inter.className}>
+                    <Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />
+                    {children}
+                </body>
+            </html>
+        </>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain('import Script from "next/script";');
+    });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if Script is in a fragment', async () => {
+        const layoutContent = `import Script from \"next/script\";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <>
+            <html lang=\"en\">
+                <body className={inter.className}>
+                    <Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />
+                    {children}
+                </body>
+            </html>
+            <Script src=\"/analytics.js\" strategy=\"afterInteractive\" />
+        </>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain('import Script from "next/script";');
     });
 });

@@ -101,16 +101,27 @@ export class DomainsManager {
     }
 
     private updateDomain(partialState: Partial<DomainSettings>) {
-        this.projectManager.updatePartialProject({
-            domains: {
-                base: null,
-                custom: {
-                    url: partialState.url || '',
-                    type: DomainType.CUSTOM,
-                    publishedAt: partialState.publishedAt || '',
+        if (partialState.type === DomainType.CUSTOM) {
+            this.projectManager.updatePartialProject({
+                domains: {
+                    base: this._project?.domains?.base || null,
+                    custom: {
+                        ...this._project?.domains?.custom,
+                        ...partialState,
+                    } as DomainSettings,
                 },
-            },
-        });
+            });
+        } else {
+            this.projectManager.updatePartialProject({
+                domains: {
+                    custom: this._project?.domains?.custom || null,
+                    base: {
+                        ...this._project?.domains?.base,
+                        ...partialState,
+                    } as DomainSettings,
+                },
+            });
+        }
     }
 
     private removeDomain() {
@@ -122,7 +133,7 @@ export class DomainsManager {
         });
     }
 
-    async publish(options: PublishOptions): Promise<boolean> {
+    async publish(options: PublishOptions, domainType: DomainType): Promise<boolean> {
         if (!this._project || !this._isInitialized) {
             console.warn('Cannot publish: no project initialized');
             return false;
@@ -138,9 +149,9 @@ export class DomainsManager {
         const request: PublishRequest = {
             buildScript: this._project.commands?.build || DefaultSettings.COMMANDS.build,
             urls:
-                this._project.domains?.custom?.type === DomainType.CUSTOM
+                domainType === DomainType.CUSTOM
                     ? getPublishUrls(this._project.domains?.custom?.url || '')
-                    : [this._project.domains?.custom?.url || ''],
+                    : [this._project.domains?.base?.url || ''],
             options,
         };
 
@@ -153,7 +164,7 @@ export class DomainsManager {
             return false;
         }
 
-        const res = await this._hosting.publish(request);
+        const res = await this._hosting.publish(request, (status, message) => this.updateState({ status, message }));
 
         if (!res || !res.success) {
             const error = `Failed to publish hosting environment: ${res?.message || 'client error'}`;
@@ -170,8 +181,8 @@ export class DomainsManager {
 
         this.updateState({ status: PublishStatus.PUBLISHED, message: res.message });
         this.updateDomain({
-            url: this._project.domains?.custom?.url || '',
-            type: DomainType.CUSTOM,
+            url: domainType === DomainType.CUSTOM ? this._project.domains?.custom?.url || '' : this._project.domains?.base?.url || '',
+            type: domainType,
             publishedAt: new Date().toISOString(),
         });
 
@@ -181,7 +192,7 @@ export class DomainsManager {
         return true;
     }
 
-    async unpublish(): Promise<boolean> {
+    async unpublish(domainType: DomainType): Promise<boolean> {
         if (!this._project || !this._isInitialized) {
             console.warn('Cannot unpublish: no project initialized');
             return false;
@@ -190,7 +201,7 @@ export class DomainsManager {
         this.updateState({ status: PublishStatus.LOADING, message: 'Deleting deployment...' });
         sendAnalytics('hosting unpublish');
 
-        const urls = getPublishUrls(this._project.domains?.custom?.url || '');
+        const urls = getPublishUrls(domainType === DomainType.CUSTOM ? this._project.domains?.custom?.url || '' : this._project.domains?.base?.url || '');
 
         if (!this._hosting) {
             console.error('Hosting not found');
@@ -247,11 +258,11 @@ export class DomainsManager {
         this.projectManager.updatePartialProject({ ...this._project, domains });
 
         setTimeout(() => {
-            this._hosting?.publish({ buildScript: this._project?.commands?.build || DefaultSettings.COMMANDS.build, urls: [url], options: { buildFlags } });
+            this.publish({ buildFlags }, DomainType.BASE);
         }, 100);
     }
 
-    async addCustomDomainToProject(url: string) {
+    async addCustomDomainToProject(url: string, buildFlags?: string) {
         const domains = {
             base: null,
             custom: null,
@@ -262,6 +273,9 @@ export class DomainsManager {
             url,
         };
         this.projectManager.updatePartialProject({ ...this._project, domains });
+        setTimeout(() => {
+            this.publish({ buildFlags }, DomainType.CUSTOM);
+        }, 100);
     }
 
     async removeCustomDomainFromProject() {

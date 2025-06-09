@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import type { TailwindColor } from '@onlook/models/style';
 import { Color } from '@onlook/utility';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ColorUpdateOptions {
     elementStyleKey: string;
@@ -17,6 +17,10 @@ export const useColorUpdate = ({
 }: ColorUpdateOptions) => {
     const editorEngine = useEditorEngine();
     const [tempColor, setTempColor] = useState<Color>(Color.from(initialColor ?? '#000000'));
+
+    useEffect(() => {
+        setTempColor(Color.from(initialColor ?? '#000000'));
+    }, [initialColor]);
 
     const handleColorUpdateEnd = useCallback(
         (newValue: Color | TailwindColor) => {

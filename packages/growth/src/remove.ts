@@ -1,4 +1,4 @@
-import { generate, parse, traverse, type t as T, types as t } from '@onlook/parser';
+import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { type FileOperations } from '@onlook/utility';
 
 /**
@@ -48,7 +48,8 @@ export async function removeBuiltWithScriptFromLayout(
                 ) {
                     // Find and remove the Script element for builtwith.js
                     const children = path.node.children;
-                    for (let i = 0; i < children.length; i++) {
+                    // Remove all <Script src="/builtwith.js" ... /> elements
+                    for (let i = 0; i < children.length; ) {
                         const child = children[i];
                         if (
                             t.isJSXElement(child) &&
@@ -87,12 +88,25 @@ export async function removeBuiltWithScriptFromLayout(
                                 }
 
                                 scriptElementRemoved = true;
-                            } else {
-                                // There's another Script element
-                                hasOtherScriptElements = true;
+                                continue; // Don't increment i, as we just removed an element
                             }
                         }
+                        i++;
                     }
+                }
+            },
+        });
+
+        // After removal, check if any <Script> elements remain in the entire AST
+        hasOtherScriptElements = false;
+        traverse(ast, {
+            JSXElement(path) {
+                if (
+                    t.isJSXIdentifier(path.node.openingElement.name) &&
+                    path.node.openingElement.name.name === 'Script'
+                ) {
+                    hasOtherScriptElements = true;
+                    path.stop();
                 }
             },
         });
@@ -157,7 +171,7 @@ export async function removeBuiltWithScript(
         const fileExists = await fileOps.fileExists(scriptPath);
 
         if (fileExists) {
-            const deleteSuccess = await fileOps.deleteFile(scriptPath);
+            const deleteSuccess = await fileOps.delete(scriptPath, true);
             if (deleteSuccess) {
                 console.log('Successfully removed builtwith.js from public folder');
                 return true;

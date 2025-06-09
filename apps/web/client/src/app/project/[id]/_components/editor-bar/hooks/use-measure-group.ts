@@ -35,7 +35,7 @@ export const useMeasureGroup = ({ availableWidth = 0, count = 0 }: { availableWi
 
         for (let i = 0; i < groupKeys.length; i++) {
             const width = GROUP_WIDTHS[groupKeys[i] as keyof typeof GROUP_WIDTHS];
-            
+
             // Add separator width if this isn't the first group
             const totalWidth = width + (count > 0 ? SEPARATOR_WIDTH : 0);
 
