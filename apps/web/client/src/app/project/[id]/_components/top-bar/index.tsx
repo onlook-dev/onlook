@@ -99,7 +99,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                     </Tooltip> */}
                     <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
                 </div>
-                {/* <PublishButton /> */}
+                <PublishButton />
             </div>
         </div>
     );

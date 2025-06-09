@@ -2,7 +2,7 @@ import type { WatchEvent } from '@codesandbox/sdk';
 import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
-import { getBaseName, getDirName, isBinaryFile, isSubdirectory } from '@onlook/utility';
+import { getBaseName, getDirName, isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
@@ -13,7 +13,6 @@ import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
-import { copyDirectoryRecursive } from '../pages/helper';
 
 export class SandboxManager {
     readonly session: SessionManager;
@@ -364,20 +363,7 @@ export class SandboxManager {
                 return false;
             }
 
-            // Check if we are copying a directory
-            const stat = await this.session.session.fs.stat(normalizedSourcePath);
-            if (stat.type === 'directory') {
-                // Create target directory if it doesn't exist
-                try {
-                    await this.session.session.fs.mkdir(normalizedTargetPath);
-                } catch (error) {
-                    // Directory might already exist, continue
-                }
-                await copyDirectoryRecursive(this.session.session, normalizedSourcePath, normalizedTargetPath);
-            } else {
-                // Copy file
-                await this.session.session.fs.copy(normalizedSourcePath, normalizedTargetPath);
-            }
+            await this.session.session.fs.copy(normalizedSourcePath, normalizedTargetPath, true);
 
             return true;
         } catch (error) {

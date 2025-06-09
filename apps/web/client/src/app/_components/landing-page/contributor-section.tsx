@@ -74,8 +74,8 @@ const FloatingRings = () => {
                             key={`inner-${i}`}
                             className="absolute rounded-full bg-white/20 border border-foreground-primary/40 border-[0.5px] shadow-lg overflow-hidden"
                             style={{
-                                width: 56,
-                                height: 56,
+                                width: '56',
+                                height: '56',
                                 left: x - 28,
                                 top: y - 28,
                                 animation: 'counter-spin 280s linear infinite',
@@ -107,10 +107,10 @@ const FloatingRings = () => {
                             key={`outer-${i}`}
                             className="absolute rounded-full bg-white/20 border border-foreground-primary/40 border-[0.5px] shadow-lg overflow-hidden"
                             style={{
-                                width: 56,
-                                height: 56,
-                                left: x - 28,
-                                top: y - 28,
+                                width: '56',
+                                height: '56',
+                                left: (x - 28).toString(),
+                                top: (y - 28).toString(),
                                 animation: 'counter-spin-reverse 290s linear infinite',
                                 transformOrigin: 'center center'
                             }}

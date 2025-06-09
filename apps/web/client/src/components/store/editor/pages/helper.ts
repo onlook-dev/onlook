@@ -566,31 +566,6 @@ const createDirectory = async (session: WebSocketSession, dirPath: string): Prom
     await session.fs.remove(tempFile);
 };
 
-export const copyDirectoryRecursive = async (session: WebSocketSession, sourcePath: string, targetPath: string): Promise<void> => {
-    try {
-        const entries = await session.fs.readdir(sourcePath);
-
-        // Creates target directory by creating a temp file
-        await createDirectory(session, targetPath);
-
-        for (const entry of entries) {
-            const sourceEntryPath = joinPath(sourcePath, entry.name);
-            const targetEntryPath = joinPath(targetPath, entry.name);
-
-            if (entry.type === 'directory') {
-                await copyDirectoryRecursive(session, sourceEntryPath, targetEntryPath);
-            } else if (entry.type === 'file') {
-                const content = await session.fs.readTextFile(sourceEntryPath);
-                await session.fs.writeTextFile(targetEntryPath, content);
-            }
-        }
-    } catch (error) {
-        console.error(`Error copying directory from ${sourcePath} to ${targetPath}:`, error);
-        throw error;
-    }
-};
-
-
 export const createPageInSandbox = async (session: WebSocketSession, pagePath: string): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
@@ -752,11 +727,7 @@ export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePa
             throw new Error('Source page not found');
         }
 
-        if (sourceEntry.type === 'directory') {
-            await copyDirectoryRecursive(session, sourceFull, targetFull);
-        } else {
-            await session.fs.copy(sourceFull, targetFull);
-        }
+        await session.fs.copy(sourceFull, targetFull, true);
 
         console.log(`Duplicated page from ${sourceFull} to ${targetFull}`);
     } catch (error) {
