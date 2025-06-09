@@ -182,4 +182,42 @@ describe('Built with Onlook Script', () => {
             '<Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />',
         );
     });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if other Script elements exist', async () => {
+        // Write a layout file with two Script elements: one for builtwith.js and one for something else
+        const layoutContent = `import Script from "next/script";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (<html lang="en">
+        <body className={inter.className}>
+            <Script src="/builtwith.js" strategy="afterInteractive" />
+            <Script src="/analytics.js" strategy="afterInteractive" />
+            {children}
+        </body>
+    </html>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+
+        // Remove the builtwith.js script
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+
+        // Read the modified layout file
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+
+        // The builtwith.js Script should be removed
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        // The analytics.js Script should remain
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        // The Script import should still be present
+        expect(modifiedContent).toContain('import Script from "next/script";');
+    });
 });

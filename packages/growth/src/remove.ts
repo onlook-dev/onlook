@@ -48,7 +48,8 @@ export async function removeBuiltWithScriptFromLayout(
                 ) {
                     // Find and remove the Script element for builtwith.js
                     const children = path.node.children;
-                    for (let i = 0; i < children.length; i++) {
+                    // Remove all <Script src="/builtwith.js" ... /> elements
+                    for (let i = 0; i < children.length; ) {
                         const child = children[i];
                         if (
                             t.isJSXElement(child) &&
@@ -87,10 +88,32 @@ export async function removeBuiltWithScriptFromLayout(
                                 }
 
                                 scriptElementRemoved = true;
-                            } else {
-                                // There's another Script element
-                                hasOtherScriptElements = true;
+                                continue; // Don't increment i, as we just removed an element
                             }
+                        }
+                        i++;
+                    }
+                }
+            },
+        });
+
+        // After removal, check if any <Script> elements remain in the body
+        traverse(ast, {
+            JSXElement(path) {
+                const openingElement = path.node.openingElement;
+                if (
+                    t.isJSXIdentifier(openingElement.name) &&
+                    openingElement.name.name.toLowerCase() === 'body'
+                ) {
+                    const children = path.node.children;
+                    for (const child of children) {
+                        if (
+                            t.isJSXElement(child) &&
+                            t.isJSXIdentifier(child.openingElement.name) &&
+                            child.openingElement.name.name === 'Script'
+                        ) {
+                            hasOtherScriptElements = true;
+                            break;
                         }
                     }
                 }
