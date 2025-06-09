@@ -39,14 +39,19 @@ class ServerSideFigmaMCP {
             return true;
         }
 
+        const abortController = new AbortController();
+        const connectionTimeout = setTimeout(() => {
+            abortController.abort();
+        }, 10000);
+
         try {
-    
             // First, get the session ID by connecting to SSE endpoint
             const response = await fetch(`${this.MCP_BASE_URL}/sse`, {
                 headers: {
                     'Accept': 'text/event-stream',
                     'Cache-Control': 'no-cache'
-                }
+                },
+                signal: abortController.signal
             });
 
             if (!response.ok) {
@@ -61,9 +66,6 @@ class ServerSideFigmaMCP {
 
             const decoder = new TextDecoder();
             let buffer = '';
-            let connectionTimeout = setTimeout(() => {
-                reader.cancel();
-            }, 10000); // 10 second connection timeout
 
             try {
                 while (true) {
@@ -106,6 +108,11 @@ class ServerSideFigmaMCP {
         } catch (error) {
             this.sessionId = null;
             this.messageEndpoint = null;
+            clearTimeout(connectionTimeout);
+            
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw new Error('Connection timeout: Failed to establish session within 10 seconds');
+            }
             return false;
         }
     }
@@ -130,6 +137,11 @@ class ServerSideFigmaMCP {
             ? `${this.MCP_BASE_URL}${this.messageEndpoint}`
             : `${this.MCP_BASE_URL}/messages?sessionId=${this.sessionId}`;
 
+        const abortController = new AbortController();
+        const requestTimeout = setTimeout(() => {
+            abortController.abort();
+        }, 10000); 
+
         try {
             // Send the MCP request
             const response = await fetch(endpoint, {
@@ -137,8 +149,11 @@ class ServerSideFigmaMCP {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(request)
+                body: JSON.stringify(request),
+                signal: abortController.signal
             });
+
+            clearTimeout(requestTimeout);
 
             if (!response.ok) {
                 throw new Error(`MCP request failed: ${response.status} ${response.statusText}`);
@@ -149,92 +164,109 @@ class ServerSideFigmaMCP {
             // Listens for the actual response on the SSE endpoint
             return await this.waitForMCPResponse(id);
         } catch (error) {
+            clearTimeout(requestTimeout);
+            
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw new Error(`Request timeout: MCP request (method: ${method}) timed out after 10 seconds`);
+            }
+            
             throw new Error(`Failed to send MCP request (method: ${method}): ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
     async waitForMCPResponse(requestId: number): Promise<any> {
-        const sseResponse = await fetch(`${this.MCP_BASE_URL}/sse`, {
-            headers: {
-                'Accept': 'text/event-stream',
-                'Cache-Control': 'no-cache'
+        const abortController = new AbortController();
+        const responseTimeout = setTimeout(() => {
+            abortController.abort();
+        }, 15000);
+
+        try {
+            const sseResponse = await fetch(`${this.MCP_BASE_URL}/sse`, {
+                headers: {
+                    'Accept': 'text/event-stream',
+                    'Cache-Control': 'no-cache'
+                },
+                signal: abortController.signal
+            });
+
+            if (!sseResponse.ok) {
+                throw new Error(`SSE response failed: ${sseResponse.status}`);
             }
-        });
 
-        if (!sseResponse.ok) {
-            throw new Error(`SSE response failed: ${sseResponse.status}`);
-        }
+            const reader = sseResponse.body?.getReader();
+            if (!reader) {
+                throw new Error('Failed to read SSE stream');
+            }
 
-        const reader = sseResponse.body?.getReader();
-        if (!reader) {
-            throw new Error('Failed to read SSE stream');
-        }
+            return new Promise((resolve, reject) => {
+                const decoder = new TextDecoder();
+                let buffer = '';
 
-        return new Promise((resolve, reject) => {
-            const decoder = new TextDecoder();
-            let buffer = '';
-            
-            const timeout = setTimeout(() => {
-                reader.cancel();
-                reject(new Error(`Timeout waiting for MCP response ${requestId}`));
-            }, 15000);
+                const cleanup = () => {
+                    clearTimeout(responseTimeout);
+                    reader.cancel();
+                };
 
-            const cleanup = () => {
-                clearTimeout(timeout);
-                reader.cancel();
-            };
+                const processStream = async () => {
+                    try {
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
 
-            const processStream = async () => {
-                try {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
+                            buffer += decoder.decode(value, { stream: true });
+                            const lines = buffer.split('\n');
+                            buffer = lines.pop() || '';
 
-                        buffer += decoder.decode(value, { stream: true });
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop() || '';
-
-                        for (const line of lines) {
-                            if (line.startsWith('data: ')) {
-                                const eventData = line.substring(6);
-                                
-                                // Skips endpoint info
-                                if (eventData.startsWith('/messages')) {
-                                    continue;
-                                }
-                                
-                                try {
-                                    const mcpResponse = JSON.parse(eventData) as MCPResponse;
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    const eventData = line.substring(6);
                                     
-                                    if (mcpResponse.id === requestId) {
-                                        cleanup();
+                                    // Skips endpoint info
+                                    if (eventData.startsWith('/messages')) {
+                                        continue;
+                                    }
+                                    
+                                    try {
+                                        const mcpResponse = JSON.parse(eventData) as MCPResponse;
                                         
-                                        if (mcpResponse.error) {
-                                            reject(new Error(`MCP error: ${mcpResponse.error.message}`));
+                                        if (mcpResponse.id === requestId) {
+                                            cleanup();
+                                            
+                                            if (mcpResponse.error) {
+                                                reject(new Error(`MCP error: ${mcpResponse.error.message}`));
+                                                return;
+                                            }
+                                            
+                                            resolve(mcpResponse.result);
                                             return;
                                         }
-                                        
-                                        resolve(mcpResponse.result);
-                                        return;
+                                    } catch (parseError) {
+                                        // Continue, this might not be our response
                                     }
-                                } catch (parseError) {
-                                    // Continue, this might not be our response
                                 }
                             }
                         }
+
+                        cleanup();
+                        reject(new Error(`No matching response found for request ${requestId}`));
+                    } catch (error) {
+                        cleanup();
+                        reject(error);
                     }
+                };
 
-                    cleanup();
-                    reject(new Error(`No matching response found for request ${requestId}`));
-                } catch (error) {
-                    cleanup();
-                    reject(error);
-                }
-            };
-
-            // Start processing the stream
-            processStream();
-        });
+                // Start processing the stream
+                processStream();
+            });
+        } catch (error) {
+            clearTimeout(responseTimeout);
+            
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw new Error(`Timeout waiting for MCP response ${requestId} after 15 seconds`);
+            }
+            
+            throw error;
+        }
     }
 
     async getCode(nodeId?: string): Promise<any> {
