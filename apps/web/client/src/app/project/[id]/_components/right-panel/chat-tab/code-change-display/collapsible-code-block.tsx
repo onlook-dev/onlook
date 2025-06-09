@@ -138,7 +138,8 @@ export const CollapsibleCodeBlock = observer(({
                         </div>
                     </div>
 
-                    <CollapsibleContent forceMount>
+                    {/* Removing forceMount prevents expensive DOM updates when the collapsible is closed by unmounting its content. */}
+                    <CollapsibleContent>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key="content"
