@@ -4,6 +4,7 @@ export enum MessageContextType {
     IMAGE = 'image',
     ERROR = 'error',
     PROJECT = 'project',
+    FIGMA = 'figma',
 }
 
 type BaseMessageContext = {
@@ -38,9 +39,17 @@ export type ProjectMessageContext = BaseMessageContext & {
     path: string;
 };
 
+export type FigmaMessageContext = BaseMessageContext & {
+    type: MessageContextType.FIGMA;
+    figmaUrl: string;
+    nodeId: string;
+    fileName?: string;
+};
+
 export type ChatMessageContext =
     | FileMessageContext
     | HighlightMessageContext
     | ImageMessageContext
     | ErrorMessageContext
-    | ProjectMessageContext;
+    | ProjectMessageContext
+    | FigmaMessageContext;

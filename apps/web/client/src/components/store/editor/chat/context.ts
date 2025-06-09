@@ -5,6 +5,7 @@ import {
     type ChatMessageContext,
     type ErrorMessageContext,
     type FileMessageContext,
+    type FigmaMessageContext,
     type HighlightMessageContext,
     type ImageMessageContext,
     type ProjectMessageContext,
@@ -36,8 +37,9 @@ export class ChatContext {
         }
         const fileContext = await this.getFileContext(fileNames);
         const imageContext = await this.getImageContext();
+        const figmaContext = await this.getFigmaContext();
         const projectContext = await this.getProjectContext();
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
+        const context = [...fileContext, ...highlightedContext, ...imageContext, ...figmaContext, ...projectContext];
         return context;
     }
 
@@ -46,6 +48,13 @@ export class ChatContext {
             (context) => context.type === MessageContextType.IMAGE,
         );
         return imageContext;
+    }
+
+    private async getFigmaContext(): Promise<FigmaMessageContext[]> {
+        const figmaContext = this.context.filter(
+            (context) => context.type === MessageContextType.FIGMA,
+        );
+        return figmaContext;
     }
 
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
@@ -134,5 +143,34 @@ export class ChatContext {
 
     async clearAttachments() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
+    }
+
+    addFigmaContext(figmaUrl: string, nodeId: string, displayName: string, content: string, fileName?: string) {
+        const figmaContext: FigmaMessageContext = {
+            type: MessageContextType.FIGMA,
+            displayName,
+            content,
+            figmaUrl,
+            nodeId,
+            fileName,
+        };
+
+        // Removes any existing Figma context with the same nodeId to avoid duplicates
+        this.context = this.context.filter(
+            (context) => 
+                context.type !== MessageContextType.FIGMA || 
+                (context.type === MessageContextType.FIGMA && context.nodeId !== nodeId)
+        );
+
+        // Adds the new Figma context
+        this.context.push(figmaContext);
+    }
+
+    removeFigmaContext(nodeId: string) {
+        this.context = this.context.filter(
+            (context) => 
+                context.type !== MessageContextType.FIGMA || 
+                (context.type === MessageContextType.FIGMA && context.nodeId !== nodeId)
+        );
     }
 }

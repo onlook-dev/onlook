@@ -2,6 +2,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
+import { FigmaInput } from './figma-input';
 
 export const ActionButtons = ({
     disabled,
@@ -57,6 +58,9 @@ export const ActionButtons = ({
                     </TooltipContent>
                 </TooltipPortal>
             </Tooltip>
+
+            <FigmaInput disabled={disabled} />
+
             <Tooltip>
                 <TooltipPortal>
                     <TooltipContent side="top" sideOffset={5}>
