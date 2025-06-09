@@ -1,16 +1,15 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { type FileNode } from '@onlook/models';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Tree, type TreeApi } from 'react-arborist';
-import { FileTreeNode } from './file-tree-node';
-import { FileTreeRow } from './file-tree-row';
-import { Input } from '@onlook/ui/input';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { nanoid } from 'nanoid';
 import path from 'path';
-import { useEditorEngine } from '@/components/store/editor';
-import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { Tree, type TreeApi } from 'react-arborist';
+import { FileTreeNode } from './file-tree-node';
+import { FileTreeRow } from './file-tree-row';
 
 interface FileTreeProps {
     onFileSelect: (filePath: string) => void;
@@ -20,7 +19,7 @@ interface FileTreeProps {
     activeFilePath?: string | null;
 }
 
-export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }: FileTreeProps) => {
+function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }: FileTreeProps) {
     const editorEngine = useEditorEngine();
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
@@ -318,4 +317,6 @@ export const FileTree = ({ onFileSelect, files, isLoading = false, onRefresh, ac
             </div>
         </div>
     );
-}; 
+}
+
+export const FileTree = memo(UnmemoizedFileTree);
