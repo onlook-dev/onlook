@@ -97,25 +97,16 @@ export async function removeBuiltWithScriptFromLayout(
             },
         });
 
-        // After removal, check if any <Script> elements remain in the body
+        // After removal, check if any <Script> elements remain in the entire AST
+        hasOtherScriptElements = false;
         traverse(ast, {
             JSXElement(path) {
-                const openingElement = path.node.openingElement;
                 if (
-                    t.isJSXIdentifier(openingElement.name) &&
-                    openingElement.name.name.toLowerCase() === 'body'
+                    t.isJSXIdentifier(path.node.openingElement.name) &&
+                    path.node.openingElement.name.name === 'Script'
                 ) {
-                    const children = path.node.children;
-                    for (const child of children) {
-                        if (
-                            t.isJSXElement(child) &&
-                            t.isJSXIdentifier(child.openingElement.name) &&
-                            child.openingElement.name.name === 'Script'
-                        ) {
-                            hasOtherScriptElements = true;
-                            break;
-                        }
-                    }
+                    hasOtherScriptElements = true;
+                    path.stop();
                 }
             },
         });

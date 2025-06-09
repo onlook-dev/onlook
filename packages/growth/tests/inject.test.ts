@@ -220,4 +220,99 @@ export default function RootLayout({
         // The Script import should still be present
         expect(modifiedContent).toContain('import Script from "next/script";');
     });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if Script is in head', async () => {
+        const layoutContent = `import Script from "next/script";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (<html lang="en">
+        <head>
+            <Script src=\"/analytics.js\" strategy=\"afterInteractive\" />
+        </head>
+        <body className={inter.className}>
+            <Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />
+            {children}
+        </body>
+    </html>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain('import Script from "next/script";');
+    });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if Script is a sibling to html', async () => {
+        const layoutContent = `import Script from \"next/script\";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <>
+            <Script src=\"/analytics.js\" strategy=\"afterInteractive\" />
+            <html lang=\"en\">
+                <body className={inter.className}>
+                    <Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />
+                    {children}
+                </body>
+            </html>
+        </>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain('import Script from "next/script";');
+    });
+
+    test('removeBuiltWithScriptFromLayout does not remove Script import if Script is in a fragment', async () => {
+        const layoutContent = `import Script from \"next/script\";
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <>
+            <html lang=\"en\">
+                <body className={inter.className}>
+                    <Script src=\"/builtwith.js\" strategy=\"afterInteractive\" />
+                    {children}
+                </body>
+            </html>
+            <Script src=\"/analytics.js\" strategy=\"afterInteractive\" />
+        </>
+    );
+}`;
+        fs.writeFileSync(layoutPath, layoutContent, 'utf8');
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+        const modifiedContent = fs.readFileSync(layoutPath, 'utf8');
+        expect(modifiedContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain(
+            '<Script src="/analytics.js" strategy="afterInteractive" />',
+        );
+        expect(modifiedContent).toContain('import Script from "next/script";');
+    });
 });
