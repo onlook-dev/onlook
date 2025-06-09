@@ -1,4 +1,4 @@
-import { generate, parse, traverse, type t as T, types as t } from '@onlook/parser';
+import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { type FileOperations } from '@onlook/utility';
 
 /**
@@ -157,7 +157,7 @@ export async function removeBuiltWithScript(
         const fileExists = await fileOps.fileExists(scriptPath);
 
         if (fileExists) {
-            const deleteSuccess = await fileOps.deleteFile(scriptPath);
+            const deleteSuccess = await fileOps.delete(scriptPath, true);
             if (deleteSuccess) {
                 console.log('Successfully removed builtwith.js from public folder');
                 return true;

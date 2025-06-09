@@ -30,8 +30,8 @@ export class HostingManager {
             readFile: (path: string) => this.editorEngine.sandbox.readFile(path),
             writeFile: (path: string, content: string) => this.editorEngine.sandbox.writeFile(path, content),
             fileExists: (path: string) => this.editorEngine.sandbox.fileExists(path),
-            copy: (source: string, destination: string) => this.editorEngine.sandbox.copy(source, destination),
-            deleteFile: async (path: string) => this.editorEngine.sandbox.deleteFile(path),
+            copy: (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => this.editorEngine.sandbox.copy(source, destination, recursive, overwrite),
+            delete: (path: string, recursive?: boolean) => this.editorEngine.sandbox.delete(path, recursive),
         };
     }
 
@@ -272,34 +272,25 @@ export class HostingManager {
             };
         }
 
-        // Check if copy method is available before using it
-        if (this.fileOps.copy) {
-            this.fileOps.copy(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`);
-            this.fileOps.copy(
-                `${CUSTOM_OUTPUT_DIR}/static`,
-                `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
-            );
-        } else {
-            console.warn('copy method not available in file operations');
-        }
+        await this.fileOps.copy(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`, true, true);
+        await this.fileOps.copy(
+            `${CUSTOM_OUTPUT_DIR}/static`,
+            `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
+            true,
+            true,
+        );
 
         for (const lockFile of SUPPORTED_LOCK_FILES) {
             const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
             if (lockFileExists) {
                 // Check if copy method is available before using it
-                if (this.fileOps.copy) {
-                    this.fileOps.copy(
-                        `./${lockFile}`,
-                        `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
-                    );
-                    return { success: true };
-                } else {
-                    console.warn('copy method not available in file operations');
-                    return {
-                        success: false,
-                        error: 'Copy operations not supported by file operations interface',
-                    };
-                }
+                this.fileOps.copy(
+                    `./${lockFile}`,
+                    `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
+                    true,
+                    true,
+                );
+                return { success: true };
             }
         }
 

@@ -346,7 +346,7 @@ export class SandboxManager {
         }
     }
 
-    async copy(path: string, targetPath: string): Promise<boolean> {
+    async copy(path: string, targetPath: string, recursive?: boolean, overwrite?: boolean): Promise<boolean> {
         if (!this.session.session) {
             console.error('No session found for copy');
             return false;
@@ -363,7 +363,7 @@ export class SandboxManager {
                 return false;
             }
 
-            await this.session.session.fs.copy(normalizedSourcePath, normalizedTargetPath, true);
+            await this.session.session.fs.copy(normalizedSourcePath, normalizedTargetPath, recursive, overwrite);
 
             return true;
         } catch (error) {
@@ -372,7 +372,7 @@ export class SandboxManager {
         }
     }
 
-    async deleteFile(path: string): Promise<boolean> {
+    async delete(path: string, recursive?: boolean): Promise<boolean> {
         if (!this.session.session) {
             console.error('No session found for delete file');
             return false;
@@ -389,7 +389,7 @@ export class SandboxManager {
             }
 
             // Delete the file using the filesystem API
-            await this.session.session.fs.remove(normalizedPath);
+            await this.session.session.fs.remove(normalizedPath, recursive);
 
             // Clean up the file sync cache
             await this.fileSync.delete(normalizedPath);

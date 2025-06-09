@@ -18,8 +18,13 @@ export interface FileOperations {
     readFile: (filePath: string) => Promise<string | null>;
     writeFile: (filePath: string, content: string) => Promise<boolean>;
     fileExists: (filePath: string) => Promise<boolean>;
-    deleteFile: (filePath: string) => Promise<boolean>;
-    copy: (source: string, destination: string) => Promise<boolean>;
+    delete: (filePath: string, recursive?: boolean) => Promise<boolean>;
+    copy: (
+        source: string,
+        destination: string,
+        recursive?: boolean,
+        overwrite?: boolean,
+    ) => Promise<boolean>;
 }
 
 /**
