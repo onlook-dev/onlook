@@ -1,3 +1,4 @@
+import { FileOperations } from '@onlook/utility';
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
@@ -7,6 +8,27 @@ import {
     removeBuiltWithScript,
     removeBuiltWithScriptFromLayout,
 } from '../src';
+
+const fileOps: FileOperations = {
+    readFile: async (filePath: string) => {
+        return fs.readFileSync(filePath, 'utf8');
+    },
+    writeFile: async (filePath: string, content: string) => {
+        fs.writeFileSync(filePath, content, 'utf8');
+        return true;
+    },
+    fileExists: async (filePath: string) => {
+        return fs.existsSync(filePath);
+    },
+    delete: async (filePath: string) => {
+        fs.unlinkSync(filePath);
+        return true;
+    },
+    copy: async (source: string, destination: string) => {
+        fs.copyFileSync(source, destination);
+        return true;
+    },
+};
 
 describe('Built with Onlook Script', () => {
     const tempDir = path.join(process.cwd(), 'temp-test-project');
@@ -45,7 +67,7 @@ describe('Built with Onlook Script', () => {
 
     test('injectBuiltWithScript adds Script component to layout.tsx', async () => {
         // Inject the script
-        const result = await injectBuiltWithScript(tempDir);
+        const result = await injectBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Read the modified layout file
@@ -62,7 +84,7 @@ describe('Built with Onlook Script', () => {
 
     test('addBuiltWithScript copies script to public folder', async () => {
         // Add the script
-        const result = await addBuiltWithScript(tempDir);
+        const result = await addBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Verify the script file exists
@@ -75,10 +97,10 @@ describe('Built with Onlook Script', () => {
 
     test('removeBuiltWithScriptFromLayout removes Script component from layout.tsx', async () => {
         // First inject the script
-        await injectBuiltWithScript(tempDir);
+        await injectBuiltWithScript(tempDir, fileOps);
 
         // Then remove it
-        const result = await removeBuiltWithScriptFromLayout(tempDir);
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Read the modified layout file
@@ -95,10 +117,10 @@ describe('Built with Onlook Script', () => {
 
     test('removeBuiltWithScript removes script from public folder', async () => {
         // First add the script
-        await addBuiltWithScript(tempDir);
+        await addBuiltWithScript(tempDir, fileOps);
 
         // Then remove it
-        const result = await removeBuiltWithScript(tempDir);
+        const result = await removeBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(true);
 
         // Verify the script file no longer exists
@@ -110,13 +132,13 @@ describe('Built with Onlook Script', () => {
         fs.unlinkSync(layoutPath);
 
         // Try to inject the script
-        const result = await injectBuiltWithScript(tempDir);
+        const result = await injectBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(false);
     });
 
     test('removeBuiltWithScript handles missing script file', async () => {
         // Try to remove a non-existent script
-        const result = await removeBuiltWithScript(tempDir);
+        const result = await removeBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(false);
     });
 
@@ -125,17 +147,17 @@ describe('Built with Onlook Script', () => {
         fs.unlinkSync(layoutPath);
 
         // Try to remove the script from layout
-        const result = await removeBuiltWithScriptFromLayout(tempDir);
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
         expect(result).toBe(false);
     });
 
     test('full workflow: inject, add, remove from layout, remove script', async () => {
         // Inject the script into layout
-        const injectResult = await injectBuiltWithScript(tempDir);
+        const injectResult = await injectBuiltWithScript(tempDir, fileOps);
         expect(injectResult).toBe(true);
 
         // Add the script to public folder
-        const addResult = await addBuiltWithScript(tempDir);
+        const addResult = await addBuiltWithScript(tempDir, fileOps);
         expect(addResult).toBe(true);
 
         // Verify both operations were successful
@@ -146,11 +168,11 @@ describe('Built with Onlook Script', () => {
         );
 
         // Remove the script from layout
-        const removeLayoutResult = await removeBuiltWithScriptFromLayout(tempDir);
+        const removeLayoutResult = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
         expect(removeLayoutResult).toBe(true);
 
         // Remove the script from public folder
-        const removeScriptResult = await removeBuiltWithScript(tempDir);
+        const removeScriptResult = await removeBuiltWithScript(tempDir, fileOps);
         expect(removeScriptResult).toBe(true);
 
         // Verify both removal operations were successful
