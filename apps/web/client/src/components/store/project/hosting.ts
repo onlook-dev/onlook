@@ -113,18 +113,17 @@ export class HostingManager {
             const timer = new LogTimer('Deployment');
 
             statusCallback(PublishStatus.LOADING, 'Preparing project...');
-
             await this.runPrepareStep();
             timer.log('Prepare completed');
 
             if (!options?.skipBadge) {
+                statusCallback(PublishStatus.LOADING, 'Adding badge...');
                 await this.addBadge('./');
                 timer.log('"Built with Onlook" badge added');
-                statusCallback(PublishStatus.LOADING, 'Adding badge...');
             }
 
-            statusCallback(PublishStatus.LOADING, 'Creating optimized build...');
             // Run the build script
+            statusCallback(PublishStatus.LOADING, 'Creating optimized build...');
             await this.runBuildStep(buildScript, options);
             timer.log('Build completed');
             statusCallback(PublishStatus.LOADING, 'Preparing project for deployment...');
@@ -146,7 +145,6 @@ export class HostingManager {
             statusCallback(PublishStatus.LOADING, 'Deploying project...');
 
             timer.log('Files serialized, sending to Freestyle...');
-
             const id = await this.deployWeb(files, urls, options?.envVars);
             timer.log('Deployment completed');
             statusCallback(PublishStatus.PUBLISHED, 'Deployment successful, deployment ID: ' + id);
