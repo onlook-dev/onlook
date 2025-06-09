@@ -40,6 +40,8 @@ export class ChatCodeManager {
             const originalContent = (await this.editorEngine.sandbox.readFile(filePath)) || '';
             if (originalContent == null) {
                 console.error('Failed to get file content', filePath);
+                const errorMessage = `Failed to read file content from ${filePath}`;
+                this.editorEngine.error.addCodeApplicationError(errorMessage, filePath);
                 continue;
             }
             let content = originalContent;
@@ -50,9 +52,12 @@ export class ChatCodeManager {
                 });
                 if (result.error || !result.result) {
                     console.error('Failed to apply code block', block);
-                    toast.error('Failed to apply code block', {
-                        description: 'Please try again or prompt the AI to fix it.',
-                    });
+                    const errorMessage = `Failed to apply code block in ${filePath}: ${result.error || 'Unknown error'}`;
+                    console.error('Failed to apply code block', errorMessage);
+                    this.editorEngine.error.addCodeApplicationError(errorMessage, filePath);
+                    // toast.error('Failed to apply code block', {
+                    //     description: 'Please try again or prompt the AI to fix it.',
+                    // });
                     continue;
                 }
                 content = result.result;
@@ -61,6 +66,8 @@ export class ChatCodeManager {
             const success = await this.editorEngine.sandbox.writeFile(filePath, content);
             if (!success) {
                 console.error('Failed to write file content');
+                const errorMessage = `Failed to write file content to ${filePath}`;
+                this.editorEngine.error.addCodeApplicationError(errorMessage, filePath);
                 continue;
             }
 
@@ -149,6 +156,8 @@ export class ChatCodeManager {
         for (const codeBlock of codeBlocks) {
             if (!codeBlock.fileName) {
                 console.error('No file name found in code block', codeBlock);
+                const errorMessage = `Code block found without file name: ${codeBlock.content.substring(0, 100)}...`;
+                this.editorEngine.error.addCodeApplicationError(errorMessage);
                 continue;
             }
             fileToCode.set(codeBlock.fileName, [

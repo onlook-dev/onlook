@@ -46,6 +46,23 @@ export class ErrorManager {
         this.hideErrors = false;
     }
 
+    addCodeApplicationError(message: string, filePath?: string) {
+        const sourceId = filePath ? `Code Application Error (${filePath})` : 'Code Application Error';
+        const error: ParsedError = {
+            sourceId,
+            type: 'code-application',
+            content: message,
+        };
+
+        const existingErrors = this.terminalErrors || [];
+        const isDuplicate = existingErrors.some((e) => compareErrors(e, error));
+        
+        if (!isDuplicate) {
+            this.terminalErrors = [...existingErrors, error];
+        }
+        this.hideErrors = false;
+    }
+
     addSuccess(message: string) {
         console.log('Success message received, clearing errors', message);
         this.clearTerminalErrors();
