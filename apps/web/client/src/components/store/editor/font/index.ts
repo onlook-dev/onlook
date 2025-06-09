@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { ParseResult } from '@babel/parser';
@@ -118,7 +118,9 @@ export class FontManager {
 
         // React to sandbox connection status
         const sandboxDisposer = reaction(
-            () => this.editorEngine.state.brandTab === BrandTabValue.FONTS && this.editorEngine.sandbox?.session.session,
+            () =>
+                this.editorEngine.state.brandTab === BrandTabValue.FONTS &&
+                this.editorEngine.sandbox?.session.session,
             (session) => {
                 if (session) {
                     this.loadInitialFonts();
@@ -128,7 +130,9 @@ export class FontManager {
         );
 
         const fontConfigDisposer = reaction(
-            () => this.editorEngine.state.brandTab === BrandTabValue.FONTS && this.editorEngine.sandbox?.readFile(this.fontConfigPath),
+            () =>
+                this.editorEngine.state.brandTab === BrandTabValue.FONTS &&
+                this.editorEngine.sandbox?.readFile(this.fontConfigPath),
             async (contentPromise) => {
                 if (contentPromise) {
                     const content = await contentPromise;
@@ -621,7 +625,8 @@ export class FontManager {
                                     isValidLocalFontDeclaration(declarator, fontName)
                                 ) {
                                     // @ts-ignore
-                                    const configObject = declarator.init?.arguments[0] as t.ObjectExpression;
+                                    const configObject = declarator.init
+                                        ?.arguments[0] as t.ObjectExpression;
                                     const srcProp = configObject.properties.find((prop) =>
                                         isPropertyWithName(prop, 'src'),
                                     );
@@ -744,11 +749,17 @@ export class FontManager {
                 enrich: true,
             });
 
-            const fonts = Object.values(searchResults)
+            let fonts = Object.values(searchResults)
                 .flatMap((result) => result.result)
                 // @ts-ignore
                 .map((font) => this.convertFont(font.doc))
                 .filter((font) => !this._fonts.some((f) => f.family === font.family));
+
+            // If the query is more than one word, filter for exact (case-insensitive) match
+            if (query.trim().split(/\s+/).length > 1) {
+                const normalizedQuery = query.trim().toLowerCase();
+                fonts = fonts.filter((font) => font.family.toLowerCase() === normalizedQuery);
+            }
 
             if (fonts.length === 0) {
                 this._searchResults = [];
