@@ -427,7 +427,7 @@ export function Create({ cardKey }: { cardKey: number }) {
                                     onClick={() => setShowCreateModal(true)}
                                 >
                                     <Icons.GitHubLogo
-                                        className={cn('w-5 h-5', 'text-foreground-primar')}
+                                        className={cn('w-5 h-5', 'text-foreground-primary')}
                                     />
                                 </Button>
                                 <Button
@@ -460,7 +460,7 @@ export function Create({ cardKey }: { cardKey: number }) {
                                 open={showCreateModal}
                                 isLoading={isLoading}
                                 onOpenChange={setShowCreateModal}
-                                handleSumbit={createFromGithubTemplate}
+                                handleSubmit={createFromGithubTemplate}
                             />
                         </div>
                     </div>

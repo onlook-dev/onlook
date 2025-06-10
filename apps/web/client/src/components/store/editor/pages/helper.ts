@@ -784,7 +784,7 @@ export const injectPreloadScript = async (session: WebSocketSession) => {
         'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js';
 
     if (!routerType || routerType.type !== 'app') {
-        throw new Error('We are currently supports only Next.js App projects.');
+        throw new Error('We are currently support only Next.js App projects.');
     }
 
     const layoutPath = './src/app/layout.tsx';

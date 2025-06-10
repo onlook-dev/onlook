@@ -16,14 +16,14 @@ interface PageModalProps {
     open: boolean;
     isLoading: boolean;
     onOpenChange: (open: boolean) => void;
-    handleSumbit: (url: string) => void;
+    handleSubmit: (url: string) => void;
 }
 
 export function GithubImportModal({
     open,
     isLoading,
     onOpenChange,
-    handleSumbit
+    handleSubmit
 }: PageModalProps) {
     const [repoUrl, setRepoUrl] = useState<string>('');
     const [warning, setWarning] = useState<string>('');
@@ -46,8 +46,8 @@ export function GithubImportModal({
         }
     };
 
-    const handleSubmit = async () => {
-        handleSumbit(repoUrl);
+    const handleImport = async () => {
+        handleSubmit(repoUrl);
     };
 
     return (
@@ -72,7 +72,7 @@ export function GithubImportModal({
                             disabled={isLoading}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !repoUrl) {
-                                    handleSubmit();
+                                    handleImport();
                                 }
                             }}
                         />
@@ -94,7 +94,7 @@ export function GithubImportModal({
                     </Button>
                     <Button
                         variant="outline"
-                        onClick={handleSubmit}
+                        onClick={handleImport}
                         disabled={isLoading || !!warning || !repoUrl}
                     >
                         {isLoading ? <>{'Importing...'}</> : 'Import'}
