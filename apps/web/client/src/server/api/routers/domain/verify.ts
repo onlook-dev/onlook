@@ -26,7 +26,7 @@ export const verificationRouter = createTRPCRouter({
         if (!customDomain) {
             throw new TRPCError({
                 code: 'BAD_REQUEST',
-                message: 'Domain already exists',
+                message: 'Domain already exists. Please verify it first.',
             });
         }
 
