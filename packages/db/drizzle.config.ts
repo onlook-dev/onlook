@@ -9,4 +9,9 @@ export default defineConfig({
     dbCredentials: {
         url: process.env.SUPABASE_DATABASE_URL ?? DEFAULT_DATABASE_URL,
     },
+    entities: {
+        roles: {
+            provider: 'supabase'
+        }
+    }
 });

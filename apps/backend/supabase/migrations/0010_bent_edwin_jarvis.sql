@@ -1,3 +1,4 @@
+-- Create new type
 CREATE TYPE "public"."verification_request_status" AS ENUM('active', 'expired', 'used');--> statement-breakpoint
 CREATE TABLE "custom_domains" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -39,9 +40,6 @@ CREATE TABLE "custom_domain_verification" (
 	"status" "verification_request_status" DEFAULT 'active' NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "projects" ADD COLUMN "preview_img_url" varchar;--> statement-breakpoint
-ALTER TABLE "projects" ADD COLUMN "preview_img_path" varchar;--> statement-breakpoint
-ALTER TABLE "projects" ADD COLUMN "preview_img_bucket" varchar;--> statement-breakpoint
 ALTER TABLE "preview_domains" ADD CONSTRAINT "preview_domains_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "published_domains" ADD CONSTRAINT "published_domains_domain_id_custom_domains_id_fk" FOREIGN KEY ("domain_id") REFERENCES "public"."custom_domains"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "published_domains" ADD CONSTRAINT "published_domains_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
