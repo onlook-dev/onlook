@@ -1,53 +1,21 @@
-import { env } from '@/env';
-import { customDomains, customDomainVerification, previewDomains, publishedDomains } from '@onlook/db';
+import { customDomains, publishedDomains, customDomainVerification } from '@onlook/db';
 import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
-import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { initializeFreestyleSdk } from './freestyle';
 
-const initializeSdk = () => {
-    if (!env.FREESTYLE_API_KEY) {
-        throw new TRPCError({
-            code: 'PRECONDITION_FAILED',
-            message: 'FREESTYLE_API_KEY is not configured. Please set the environment variable to use domain publishing features.',
-        });
-    }
-    return new FreestyleSandboxes({
-        apiKey: env.FREESTYLE_API_KEY
-    });
-};
-
-export const domainRouter = createTRPCRouter({
+export const verificationRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }) => {
-        const preview = await ctx.db.query.previewDomains.findMany({
-            where: eq(previewDomains.projectId, input.projectId),
+        const verification = await ctx.db.query.customDomainVerification.findMany({
+            where: eq(customDomainVerification.projectId, input.projectId),
         });
-        const published = await ctx.db.query.publishedDomains.findMany({
-            where: eq(publishedDomains.projectId, input.projectId),
-        });
-
-        return {
-            preview,
-            published,
-        }
+        return verification;
     }),
-    createPreviewDomain: protectedProcedure.input(z.object({
-        domain: z.string(),
-        projectId: z.string(),
-    })).mutation(async ({ ctx, input }) => {
-        await ctx.db.insert(previewDomains).values({
-            fullDomain: input.domain,
-            projectId: input.projectId,
-        });
-        return {
-            domain: input.domain,
-        }
-    }),
-    createVerificationRequest: protectedProcedure.input(z.object({
+    create: protectedProcedure.input(z.object({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
@@ -70,7 +38,7 @@ export const domainRouter = createTRPCRouter({
             return verification;
         }
 
-        const sdk = initializeSdk();
+        const sdk = initializeFreestyleSdk();
         const res = await sdk.createDomainVerificationRequest(input.domain);
         await ctx.db.insert(customDomainVerification).values({
             domainId: customDomain.id,
@@ -108,7 +76,7 @@ export const domainRouter = createTRPCRouter({
             });
         }
 
-        const sdk = initializeSdk();
+        const sdk = initializeFreestyleSdk();
         const res: {
             domain?: string;
             message?: string;
@@ -134,39 +102,4 @@ export const domainRouter = createTRPCRouter({
             );
         return res;
     }),
-    publish: protectedProcedure
-        .input(
-            z.object({
-                files: z.record(z.string(), z.object({
-                    content: z.string(),
-                    encoding: z.string().optional(),
-                })),
-                config: z.object({
-                    domains: z.array(z.string()),
-                    entrypoint: z.string().optional(),
-                    envVars: z.record(z.string(), z.string()).optional(),
-                }),
-            }),
-        )
-        .mutation(async ({ input }) => {
-            const sdk = initializeSdk();
-            const res = await sdk.deployWeb(
-                {
-                    files: input.files,
-                    kind: 'files',
-                },
-                input.config,
-            );
-            const freestyleResponse = (await res) as {
-                message?: string;
-                error?: {
-                    message: string;
-                };
-                data?: FreestyleDeployWebSuccessResponseV2;
-            };
-            if (!res) {
-                throw new Error(freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error');
-            }
-            return freestyleResponse.data?.deploymentId ?? '';
-        }),
 });

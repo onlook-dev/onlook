@@ -194,7 +194,6 @@ export class HostingManager {
         await removeBuiltWithScript(folderPath, this.fileOps);
     }
 
-
     async deployWeb(
         files: Record<string, FreestyleFile>,
         urls: string[],
@@ -207,7 +206,7 @@ export class HostingManager {
         //     throw new Error('Failed to verify domain ownership');
         // }
 
-        const deploymentId = await api.domain.publish.mutate({
+        const deploymentId = await api.domain.preview.publish.mutate({
             files: files,
             config: {
                 domains: urls,
