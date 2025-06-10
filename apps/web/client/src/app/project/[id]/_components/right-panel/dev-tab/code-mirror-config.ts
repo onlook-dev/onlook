@@ -1,18 +1,13 @@
-import { javascript } from '@codemirror/lang-javascript';
+import { autocompletion } from '@codemirror/autocomplete';
 import { css } from '@codemirror/lang-css';
 import { html } from '@codemirror/lang-html';
+import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
-import { EditorView } from '@codemirror/view';
-import { highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
-import { highlightSpecialChars, drawSelection } from '@codemirror/view';
-import { bracketMatching } from '@codemirror/language';
-import { autocompletion } from '@codemirror/autocomplete';
-import { highlightSelectionMatches } from '@codemirror/search';
+import { bracketMatching, HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { lintGutter } from '@codemirror/lint';
-import { lineNumbers } from '@codemirror/view';
-import { keymap } from '@codemirror/view';
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
+import { highlightSelectionMatches } from '@codemirror/search';
+import { drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 
 // Custom colors for CodeMirror
@@ -59,16 +54,16 @@ export const customDarkTheme = EditorView.theme({
         borderLeftWidth: '2px'
     },
     '&.cm-focused .cm-selectionBackground, ::selection': {
-        backgroundColor: 'rgba(63, 164, 255, 0.2)', 
+        backgroundColor: 'rgba(63, 164, 255, 0.2)',
     },
     '.cm-selectionBackground': {
         backgroundColor: 'rgba(63, 164, 255, 0.2)',
     },
     '.cm-gutters': {
-        backgroundColor: '#0a0a0a', 
-        color: '#6b7280',
-        border: 'none',
-        borderRight: '1px solid #1f2937'
+        backgroundColor: '#0a0a0a !important',
+        color: '#6b7280 !important',
+        border: 'none !important',
+        borderRight: '1px solid #1f2937 !important'
     },
     '.cm-gutterElement': {
         color: '#6b7280'
@@ -78,7 +73,7 @@ export const customDarkTheme = EditorView.theme({
         fontSize: '12px'
     },
     '.cm-activeLine': {
-        backgroundColor: 'rgba(255, 255, 255, 0.02)' 
+        backgroundColor: 'rgba(255, 255, 255, 0.02)'
     },
     '.cm-activeLineGutter': {
         backgroundColor: 'rgba(255, 255, 255, 0.05)'
@@ -111,50 +106,50 @@ export const customDarkHighlightStyle = HighlightStyle.define([
     { tag: tags.keyword, color: customColors.pink, fontWeight: 'bold' },
     { tag: tags.controlKeyword, color: customColors.pink, fontWeight: 'bold' },
     { tag: tags.operatorKeyword, color: customColors.pink },
-    
+
     // Strings - Blue
     { tag: tags.string, color: customColors.blue },
     { tag: tags.regexp, color: customColors.blue },
-    
+
     // Numbers - Pink, bool purple, null pink
     { tag: tags.number, color: customColors.pink },
     { tag: tags.bool, color: customColors.purple },
     { tag: tags.null, color: customColors.pink },
-    
+
     // Functions - purple and methods - pink
     { tag: tags.function(tags.variableName), color: customColors.purple },
-    { tag: tags.function(tags.propertyName), color: customColors.pink},
-    
-    
+    { tag: tags.function(tags.propertyName), color: customColors.pink },
+
+
     // Variables-purple and properties - Green
     { tag: tags.variableName, color: customColors.purple },
     { tag: tags.propertyName, color: customColors.green },
     { tag: tags.attributeName, color: customColors.green },
-    
+
     // Types and classes - Purple (lighter shade)
     { tag: tags.typeName, color: '#E879F9' },
     { tag: tags.className, color: '#E879F9' },
     { tag: tags.namespace, color: '#E879F9' },
-    
+
     // Comments - Gray
     { tag: tags.comment, color: '#6b7280', fontStyle: 'italic' },
     { tag: tags.lineComment, color: '#6b7280', fontStyle: 'italic' },
     { tag: tags.blockComment, color: '#6b7280', fontStyle: 'italic' },
-    
+
     // Operators - White/Light Gray
     { tag: tags.operator, color: '#d1d5db' },
     { tag: tags.punctuation, color: '#d1d5db' },
     { tag: tags.bracket, color: '#d1d5db' },
-    
+
     // Tags (HTML/JSX) - Pink
     { tag: tags.tagName, color: customColors.pink },
     { tag: tags.angleBracket, color: '#d1d5db' },
-    
+
     // Special tokens
     { tag: tags.atom, color: customColors.pink },
     { tag: tags.literal, color: customColors.orange },
     { tag: tags.unit, color: customColors.pink },
-    
+
     // Invalid/Error
     { tag: tags.invalid, color: '#ef4444', textDecoration: 'underline' }
 ]);
@@ -180,7 +175,7 @@ export const getBasicSetup = (saveFile: () => void) => {
                 },
             },
         ]),
-      
+
         customDarkTheme,
         syntaxHighlighting(customDarkHighlightStyle)
     ];

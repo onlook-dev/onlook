@@ -2,7 +2,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
-import { SystemTheme } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -562,9 +561,9 @@ export const DevTab = observer(() => {
                                                 key={file.id}
                                                 value={file.content}
                                                 height="100%"
-                                                theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
+                                                theme="dark"
                                                 extensions={[
-                                                    ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
+                                                    ...getBasicSetup(saveFile),
                                                     ...getExtensions(file.language),
                                                 ]}
                                                 onChange={(value) => {
