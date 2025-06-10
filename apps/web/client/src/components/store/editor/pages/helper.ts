@@ -1,6 +1,6 @@
 import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
-import { parse, types as t, traverse } from '@onlook/parser';
+import { generate, parse, types as t, traverse } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 
 export const normalizeRoute = (route: string): string => {
@@ -187,7 +187,7 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
 const scanAppDirectory = async (
     session: WebSocketSession,
     dir: string,
-    parentPath: string = ''
+    parentPath: string = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
     let entries;
@@ -262,8 +262,8 @@ const scanAppDirectory = async (
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                    ? getBaseName(parentPath)
-                    : ROOT_PAGE_NAME,
+                  ? getBaseName(parentPath)
+                  : ROOT_PAGE_NAME,
             path: cleanPath,
             children: [],
             isActive: false,
@@ -305,7 +305,7 @@ const scanAppDirectory = async (
 const scanPagesDirectory = async (
     session: WebSocketSession,
     dir: string,
-    parentPath: string = ''
+    parentPath: string = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
     let entries: ReaddirEntry[];
@@ -458,17 +458,20 @@ export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<P
     }
 };
 
-const detectRouterTypeInSandbox = async (session: WebSocketSession): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
+export const detectRouterTypeInSandbox = async (
+    session: WebSocketSession,
+): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
             const entries = await session.fs.readdir(appPath);
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
-                const hasLayout = entries.some((entry: any) =>
-                    entry.type === 'file' &&
-                    entry.name.startsWith('layout.') &&
-                    ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
+                const hasLayout = entries.some(
+                    (entry: any) =>
+                        entry.type === 'file' &&
+                        entry.name.startsWith('layout.') &&
+                        ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );
 
                 if (hasLayout) {
@@ -487,10 +490,11 @@ const detectRouterTypeInSandbox = async (session: WebSocketSession): Promise<{ t
             const entries = await session.fs.readdir(pagesPath);
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
-                const hasIndex = entries.some((entry: any) =>
-                    entry.type === 'file' &&
-                    entry.name.startsWith('index.') &&
-                    ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
+                const hasIndex = entries.some(
+                    (entry: any) =>
+                        entry.type === 'file' &&
+                        entry.name.startsWith('index.') &&
+                        ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );
 
                 if (hasIndex) {
@@ -518,7 +522,10 @@ const pathExists = async (session: WebSocketSession, filePath: string): Promise<
     }
 };
 
-const cleanupEmptyFolders = async (session: WebSocketSession, folderPath: string): Promise<void> => {
+const cleanupEmptyFolders = async (
+    session: WebSocketSession,
+    folderPath: string,
+): Promise<void> => {
     while (folderPath && folderPath !== getDirName(folderPath)) {
         try {
             const entries = await session.fs.readdir(folderPath);
@@ -566,7 +573,10 @@ const createDirectory = async (session: WebSocketSession, dirPath: string): Prom
     await session.fs.remove(tempFile);
 };
 
-export const createPageInSandbox = async (session: WebSocketSession, pagePath: string): Promise<void> => {
+export const createPageInSandbox = async (
+    session: WebSocketSession,
+    pagePath: string,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -600,7 +610,11 @@ export const createPageInSandbox = async (session: WebSocketSession, pagePath: s
     }
 };
 
-export const deletePageInSandbox = async (session: WebSocketSession, pagePath: string, isDir: boolean): Promise<void> => {
+export const deletePageInSandbox = async (
+    session: WebSocketSession,
+    pagePath: string,
+    isDir: boolean,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -642,7 +656,11 @@ export const deletePageInSandbox = async (session: WebSocketSession, pagePath: s
     }
 };
 
-export const renamePageInSandbox = async (session: WebSocketSession, oldPath: string, newName: string): Promise<void> => {
+export const renamePageInSandbox = async (
+    session: WebSocketSession,
+    oldPath: string,
+    newName: string,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -681,7 +699,11 @@ export const renamePageInSandbox = async (session: WebSocketSession, oldPath: st
     }
 };
 
-export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePath: string, targetPath: string): Promise<void> => {
+export const duplicatePageInSandbox = async (
+    session: WebSocketSession,
+    sourcePath: string,
+    targetPath: string,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -694,7 +716,11 @@ export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePa
 
         if (isRootPath) {
             const sourcePageFile = joinPath(routerConfig.basePath, 'page.tsx');
-            const targetDir = await getUniqueDir(session, routerConfig.basePath, ROOT_PAGE_COPY_NAME);
+            const targetDir = await getUniqueDir(
+                session,
+                routerConfig.basePath,
+                ROOT_PAGE_COPY_NAME,
+            );
             const targetDirPath = joinPath(routerConfig.basePath, targetDir);
             const targetPageFile = joinPath(targetDirPath, 'page.tsx');
 
@@ -721,7 +747,9 @@ export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePa
 
         // Check if source is a directory or file
         const sourceEntries = await session.fs.readdir(getDirName(sourceFull));
-        const sourceEntry = sourceEntries.find((entry: any) => entry.name === getBaseName(sourceFull));
+        const sourceEntry = sourceEntries.find(
+            (entry: any) => entry.name === getBaseName(sourceFull),
+        );
 
         if (!sourceEntry) {
             throw new Error('Source page not found');
@@ -736,9 +764,180 @@ export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePa
     }
 };
 
-
-export const updatePageMetadataInSandbox = async (session: WebSocketSession, pagePath: string, metadata: PageMetadata): Promise<void> => {
+export const updatePageMetadataInSandbox = async (
+    session: WebSocketSession,
+    pagePath: string,
+    metadata: PageMetadata,
+): Promise<void> => {
     // TODO: Implement metadata update using sandbox session
     console.log(`Updating metadata for page ${pagePath}`);
     throw new Error('Metadata update not yet implemented for sandbox');
+};
+
+export const injectPreloadScript = async (session: WebSocketSession) => {
+    await addSetupTask(session);
+    await updatePackageJson(session);
+
+    // Step 3: Inject script tag
+    const routerType = await detectRouterTypeInSandbox(session);
+    const preLoadScript =
+        'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js';
+
+    if (!routerType || routerType.type !== 'app') {
+        throw new Error('We are currently supports only Next.js App projects.');
+    }
+
+    const layoutPath = './src/app/layout.tsx';
+    const layoutRaw = await session.fs.readFile(layoutPath);
+    const layoutSrc = new TextDecoder().decode(layoutRaw);
+
+    const ast = parse(layoutSrc, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx'],
+    });
+
+    let importedScript = false;
+    let foundHead = false;
+    let alreadyInjected = false;
+
+    traverse(ast, {
+        ImportDeclaration(path) {
+            if (path.node.source.value === 'next/script') {
+                importedScript = true;
+            }
+        },
+        JSXElement(path) {
+            const opening = path.node.openingElement;
+
+            if (
+                t.isJSXIdentifier(opening.name, { name: 'Script' }) &&
+                opening.attributes.some(
+                    (attr) =>
+                        t.isJSXAttribute(attr) &&
+                        attr.name.name === 'src' &&
+                        t.isStringLiteral(attr.value) &&
+                        attr.value.value === preLoadScript,
+                )
+            ) {
+                alreadyInjected = true;
+            }
+
+            if (t.isJSXIdentifier(opening.name, { name: 'head' })) {
+                foundHead = true;
+
+                if (!alreadyInjected) {
+                    const scriptElement = t.jsxElement(
+                        t.jsxOpeningElement(
+                            t.jsxIdentifier('Script'),
+                            [
+                                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
+                                t.jsxAttribute(
+                                    t.jsxIdentifier('src'),
+                                    t.stringLiteral(preLoadScript),
+                                ),
+                            ],
+                            true,
+                        ),
+                        null,
+                        [],
+                        true,
+                    );
+
+                    // Prepend the script to the <head> children
+                    path.node.children.unshift(scriptElement);
+                    alreadyInjected = true;
+                }
+            }
+
+            if (!foundHead && t.isJSXIdentifier(opening.name, { name: 'html' })) {
+                if (!alreadyInjected) {
+                    const scriptInHead = t.jsxElement(
+                        t.jsxOpeningElement(
+                            t.jsxIdentifier('Script'),
+                            [
+                                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
+                                t.jsxAttribute(
+                                    t.jsxIdentifier('src'),
+                                    t.stringLiteral(preLoadScript),
+                                ),
+                            ],
+                            true,
+                        ),
+                        null,
+                        [],
+                        true,
+                    );
+
+                    const headElement = t.jsxElement(
+                        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
+                        t.jsxClosingElement(t.jsxIdentifier('head')),
+                        [scriptInHead],
+                        false,
+                    );
+
+                    path.node.children.unshift(headElement);
+                    foundHead = true;
+                    alreadyInjected = true;
+                }
+            }
+        },
+    });
+
+    if (!importedScript) {
+        ast.program.body.unshift(
+            t.importDeclaration(
+                [t.importDefaultSpecifier(t.identifier('Script'))],
+                t.stringLiteral('next/script'),
+            ),
+        );
+    }
+
+    const { code } = generate(ast, {}, layoutSrc);
+
+    await session.fs.writeFile(layoutPath, new TextEncoder().encode(code));
+};
+
+const addSetupTask = async (session: WebSocketSession) => {
+    const tasks = {
+        setupTasks: ['npm install'],
+        tasks: {
+            dev: {
+                name: 'Dev Server',
+                command: 'npm run dev',
+                preview: {
+                    port: 3000,
+                },
+                runAtStart: true,
+            },
+        },
+    };
+    await session.fs.writeFile(
+        './.codesandbox/tasks.json',
+        new TextEncoder().encode(JSON.stringify(tasks, null, 2)),
+    );
+};
+
+const updatePackageJson = async (session: WebSocketSession) => {
+    const pkgRaw = await session.fs.readFile('./package.json');
+    const pkgJson = JSON.parse(new TextDecoder().decode(pkgRaw));
+
+    pkgJson.scripts = pkgJson.scripts || {};
+    pkgJson.scripts.dev = 'PORT=8084 next dev';
+
+    await session.fs.writeFile(
+        './package.json',
+        new TextEncoder().encode(JSON.stringify(pkgJson, null, 2)),
+    );
+};
+
+export const parseRepoUrl = (repoUrl: string): { owner: string; repo: string } => {
+    const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)(?:\.git)?/);
+    if (!match || !match[1] || !match[2]) {
+        throw new Error('Invalid GitHub URL');
+    }
+
+    return {
+        owner: match[1],
+        repo: match[2],
+    };
 };

@@ -16,6 +16,7 @@ import { compressImage } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
+import { GithubImportModal } from './github-import-modal';
 import { useEffect, useRef, useState } from 'react';
 
 export function Create({ cardKey }: { cardKey: number }) {
@@ -34,6 +35,7 @@ export function Create({ cardKey }: { cardKey: number }) {
     const [isLoading, setIsLoading] = useState(false);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     // Restore draft from localStorage if exists
     useEffect(() => {
@@ -57,7 +59,6 @@ export function Create({ cardKey }: { cardKey: number }) {
         }
     }, []);
 
-
     const handleSubmit = async () => {
         if (isInputInvalid) {
             console.warn('Input is too short');
@@ -74,11 +75,14 @@ export function Create({ cardKey }: { cardKey: number }) {
             console.error('No user ID found');
 
             // Store the current input and images in localStorage
-            localStorage.setItem('createProjectDraft', JSON.stringify({
-                prompt,
-                images,
-                timestamp: Date.now()
-            }));
+            localStorage.setItem(
+                'createProjectDraft',
+                JSON.stringify({
+                    prompt,
+                    images,
+                    timestamp: Date.now(),
+                }),
+            );
             // Store the return URL
             localStorage.setItem('returnUrl', window.location.pathname);
             // Open the auth modal
@@ -100,6 +104,47 @@ export function Create({ cardKey }: { cardKey: number }) {
             });
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const createProjectFromGithub = async (repoUrl: string) => {
+        posthog.capture('user_create_project', {
+            prompt,
+        });
+        if (!userManager.user?.id) {
+            console.error('No user ID found');
+
+            // Store the current input and images in localStorage
+            localStorage.setItem(
+                'createProjectDraft',
+                JSON.stringify({
+                    prompt: "",
+                    images: [],
+                    timestamp: Date.now(),
+                }),
+            );
+            // Store the return URL
+            localStorage.setItem('returnUrl', window.location.pathname);
+            // Open the auth modal
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const project = await createManager.startGithubTemplate(userManager.user?.id, repoUrl);
+            if (!project) {
+                throw new Error('Failed to create project: No project returned');
+            }
+            router.push(`/project/${project.id}`);
+        } catch (error) {
+            console.error('Error creating project:', error);
+            toast.error('Failed to create project', {
+                description: error instanceof Error ? error.message : String(error),
+            });
+        } finally {
+            setIsLoading(false);
+            setShowCreateModal(false);
         }
     };
 
@@ -228,6 +273,14 @@ export function Create({ cardKey }: { cardKey: number }) {
             const newHeight = Math.min(textareaRef.current.scrollHeight, maxHeight);
             textareaRef.current.style.height = `${newHeight}px`;
         }
+    };
+
+    const createFromGithubTemplate = (repoUrl: string) => {
+        if (!repoUrl) {
+            console.warn('Invalid Github Url');
+            return;
+        }
+        createProjectFromGithub(repoUrl);
     };
 
     return (
@@ -364,31 +417,51 @@ export function Create({ cardKey }: { cardKey: number }) {
                                     </TooltipPortal>
                                 </Tooltip>
                             </div>
-                            <Button
-                                size="icon"
-                                variant="secondary"
-                                className={cn(
-                                    'text-smallPlus w-9 h-9 cursor-pointer',
-                                    isInputInvalid
-                                        ? 'text-foreground-primary'
-                                        : 'bg-foreground-primary text-white hover:bg-foreground-hover',
-                                )}
-                                disabled={isInputInvalid || isLoading}
-                                onClick={handleSubmit}
-                            >
-                                {isLoading ? (
-                                    <Icons.Shadow className="w-5 h-5 animate-pulse text-background" />
-                                ) : (
-                                    <Icons.ArrowRight
-                                        className={cn(
-                                            'w-5 h-5',
-                                            !isInputInvalid
-                                                ? 'text-background'
-                                                : 'text-foreground-primary',
-                                        )}
+                            <div className="flex gap-4">
+                                <Button
+                                    size="icon"
+                                    variant="secondary"
+                                    className={cn(
+                                        'text-smallPlus w-9 h-9 cursor-pointer',
+                                    )}
+                                    onClick={() => setShowCreateModal(true)}
+                                >
+                                    <Icons.GitHubLogo
+                                        className={cn('w-5 h-5', 'text-foreground-primar')}
                                     />
-                                )}
-                            </Button>
+                                </Button>
+                                <Button
+                                    size="icon"
+                                    variant="secondary"
+                                    className={cn(
+                                        'text-smallPlus w-9 h-9 cursor-pointer',
+                                        isInputInvalid
+                                            ? 'text-foreground-primary'
+                                            : 'bg-foreground-primary text-white hover:bg-foreground-hover',
+                                    )}
+                                    disabled={isInputInvalid || isLoading}
+                                    onClick={handleSubmit}
+                                >
+                                    {isLoading ? (
+                                        <Icons.Shadow className="w-5 h-5 animate-pulse text-background" />
+                                    ) : (
+                                        <Icons.ArrowRight
+                                            className={cn(
+                                                'w-5 h-5',
+                                                !isInputInvalid
+                                                    ? 'text-background'
+                                                    : 'text-foreground-primary',
+                                            )}
+                                        />
+                                    )}
+                                </Button>
+                            </div>
+                            <GithubImportModal
+                                open={showCreateModal}
+                                isLoading={isLoading}
+                                onOpenChange={setShowCreateModal}
+                                handleSumbit={createFromGithubTemplate}
+                            />
                         </div>
                     </div>
                 </div>

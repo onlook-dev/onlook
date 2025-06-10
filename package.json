@@ -46,6 +46,8 @@
         "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
     },
-    "dependencies": {},
+    "dependencies": {
+        "octokit": "^5.0.3"
+    },
     "packageManager": "bun@1.2.13"
 }

@@ -15,6 +15,7 @@ export const env = createEnv({
         MORPH_API_KEY: z.string().optional(),
         RELACE_API_KEY: z.string().optional(),
         FREESTYLE_API_KEY: z.string().optional(),
+        GITHUB_API_KEY: z.string().optional()
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -51,6 +52,7 @@ export const env = createEnv({
         NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
         FREESTYLE_API_KEY: process.env.FREESTYLE_API_KEY,
         NEXT_PUBLIC_HOSTING_DOMAIN: process.env.NEXT_PUBLIC_HOSTING_DOMAIN,
+        GITHUB_API_KEY: process.env.GITHUB_API_KEY,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
