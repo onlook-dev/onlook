@@ -19,3 +19,5 @@ export const previewDomainRelations = relations(previewDomains, ({ one }) => ({
         relationName: PREVIEW_DOMAIN_PROJECT_RELATION_NAME,
     }),
 }));
+
+export type PreviewDomain = typeof previewDomains.$inferSelect;

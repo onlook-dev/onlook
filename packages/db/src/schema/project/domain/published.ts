@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { projects } from '../project';
 import { customDomains } from './custom';
 
@@ -11,6 +11,7 @@ export const publishedDomains = pgTable('published_domains', {
     projectId: uuid('project_id').references(() => projects.id),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    fullDomain: text('full_domain').notNull().unique(),
 });
 
 export const publishedDomainRelations = relations(publishedDomains, ({ one }) => ({
@@ -24,3 +25,5 @@ export const publishedDomainRelations = relations(publishedDomains, ({ one }) =>
         relationName: PUBLISHED_DOMAIN_PROJECT_RELATION_NAME,
     }),
 }));
+
+export type PublishedDomain = typeof publishedDomains.$inferSelect;

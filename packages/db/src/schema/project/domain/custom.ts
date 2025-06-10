@@ -15,3 +15,5 @@ export const customDomainRelations = relations(customDomains, ({ many }) => ({
     publishedDomains: many(publishedDomains),
     verificationRequests: many(customDomainVerification),
 }));
+
+export type CustomDomain = typeof customDomains.$inferSelect;

@@ -1,5 +1,6 @@
 import { previewDomains } from '@onlook/db';
-import { eq } from 'drizzle-orm';
+import { TRPCError } from '@trpc/server';
+import { and, eq, ne } from 'drizzle-orm';
 import type { FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -18,17 +19,41 @@ export const previewRouter = createTRPCRouter({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        await ctx.db.insert(previewDomains).values({
+        // Check if the domain is already taken by another project
+        // This should never happen, but just in case
+        const existing = await ctx.db.query.previewDomains.findFirst({
+            where: and(eq(previewDomains.fullDomain, input.domain), ne(previewDomains.projectId, input.projectId)),
+        });
+
+        if (existing) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Domain already taken',
+            });
+        }
+
+        const [preview] = await ctx.db.insert(previewDomains).values({
             fullDomain: input.domain,
             projectId: input.projectId,
+        }).returning({
+            fullDomain: previewDomains.fullDomain,
         });
+
+        if (!preview) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Failed to create preview domain, no preview domain returned',
+            });
+        }
+
         return {
-            domain: input.domain,
+            domain: preview.fullDomain,
         }
     }),
     publish: protectedProcedure
         .input(
             z.object({
+                projectId: z.string(),
                 files: z.record(z.string(), z.object({
                     content: z.string(),
                     encoding: z.string().optional(),
@@ -40,7 +65,18 @@ export const previewRouter = createTRPCRouter({
                 }),
             }),
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ ctx, input }) => {
+            // Check domain ownership permission
+            const preview = await ctx.db.query.previewDomains.findFirst({
+                where: eq(previewDomains.projectId, input.projectId),
+            });
+            if (!preview) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'No preview domain found',
+                });
+            }
+
             const sdk = initializeFreestyleSdk();
             const res = await sdk.deployWeb(
                 {

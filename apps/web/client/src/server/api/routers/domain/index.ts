@@ -1,4 +1,4 @@
-import { previewDomains, publishedDomains } from '@onlook/db';
+import { previewDomains, publishedDomains, toDomainInfoFromPreview, toDomainInfoFromPublished } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -11,16 +11,15 @@ export const domainRouter = createTRPCRouter({
     getAll: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }) => {
-        const preview = await ctx.db.query.previewDomains.findMany({
+        const preview = await ctx.db.query.previewDomains.findFirst({
             where: eq(previewDomains.projectId, input.projectId),
         });
-        const published = await ctx.db.query.publishedDomains.findMany({
+        const published = await ctx.db.query.publishedDomains.findFirst({
             where: eq(publishedDomains.projectId, input.projectId),
         });
-
         return {
-            preview,
-            published,
+            preview: preview ? toDomainInfoFromPreview(preview) : null,
+            published: published ? toDomainInfoFromPublished(published) : null,
         }
     }),
 });

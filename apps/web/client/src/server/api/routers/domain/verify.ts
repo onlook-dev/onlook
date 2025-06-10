@@ -1,4 +1,4 @@
-import { customDomains, publishedDomains, customDomainVerification } from '@onlook/db';
+import { customDomains, customDomainVerification, publishedDomains } from '@onlook/db';
 import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
@@ -81,12 +81,22 @@ export const verificationRouter = createTRPCRouter({
             domain?: string;
             message?: string;
         } = await sdk.verifyDomainVerificationRequest(input.verificationId);
-        if (res.message || !res.domain) {
+        if (res.message) {
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
                 message: res.message,
             });
         }
+
+        const domain = res.domain;
+
+        if (!domain) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Domain not found',
+            });
+        }
+
         await ctx.db
             .transaction(
                 async (tx) => {
@@ -95,8 +105,9 @@ export const verificationRouter = createTRPCRouter({
                     }).where(eq(customDomains.id, verification.domainId));
 
                     await tx.insert(publishedDomains).values({
-                        domainId: verification.domainId,
                         projectId: verification.projectId,
+                        fullDomain: domain,
+                        domainId: verification.domainId,
                     });
                 },
             );
