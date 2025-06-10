@@ -19,6 +19,7 @@ import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
 import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
+import { LoaderOverlay } from './loader-overlay';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
@@ -173,6 +174,9 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up ">
                     <BottomBar />
                 </div>
+
+                {/* Loader Overlay - appears when AI is generating code */}
+                <LoaderOverlay />
             </div>
         </TooltipProvider>
     );
