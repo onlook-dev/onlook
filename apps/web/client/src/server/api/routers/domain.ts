@@ -52,9 +52,15 @@ export const domainRouter = createTRPCRouter({
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
         // Create if not exists
-        await ctx.db.insert(customDomains).values({
+        const [customDomain] = await ctx.db.insert(customDomains).values({
             apexDomain: input.domain,
-        }).onConflictDoNothing();
+        }).onConflictDoNothing().returning();
+        if (!customDomain) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Domain already exists',
+            });
+        }
 
         // Check if verification request already exists
         const verification = await ctx.db.query.customDomainVerification.findFirst({
@@ -67,7 +73,8 @@ export const domainRouter = createTRPCRouter({
         const sdk = initializeSdk();
         const res = await sdk.createDomainVerificationRequest(input.domain);
         await ctx.db.insert(customDomainVerification).values({
-            domainId: res.domain,
+            domainId: customDomain.id,
+            projectId: input.projectId,
             verificationId: res.id,
             verificationCode: res.verificationCode,
         });
@@ -115,9 +122,13 @@ export const domainRouter = createTRPCRouter({
         await ctx.db
             .transaction(
                 async (tx) => {
+                    await tx.update(customDomains).set({
+                        verified: true,
+                    }).where(eq(customDomains.id, verification.domainId));
+
                     await tx.insert(publishedDomains).values({
-                        domainId: res.domain,
-                        projectId: input.projectId,
+                        domainId: verification.domainId,
+                        projectId: verification.projectId,
                     });
                 },
             );
