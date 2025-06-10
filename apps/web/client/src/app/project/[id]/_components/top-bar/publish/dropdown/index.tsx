@@ -1,11 +1,11 @@
 import { DomainType } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
-import { PreviewDomainSection } from './preview-domain';
+import { DomainSection } from './domain-section';
 
 export const PublishDropdown = () => {
     return (
         <div className="rounded-md flex flex-col text-foreground-secondary">
-            <PreviewDomainSection type={DomainType.PREVIEW} />
+            <DomainSection type={DomainType.PREVIEW} />
             <Separator />
             {/* <DomainSection
                 domain={customDomain}

@@ -12,7 +12,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { UrlSection } from './url';
 
-export const PreviewDomainSection = observer(({ type }: { type: DomainType }) => {
+export const DomainSection = observer(({ type }: { type: DomainType }) => {
     const editorEngine = useEditorEngine();
     const domainsManager = useDomainsManager();
     const userManager = useUserManager();
