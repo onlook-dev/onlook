@@ -160,7 +160,7 @@ export const customDarkHighlightStyle = HighlightStyle.define([
 ]);
 
 // Basic setup for CodeMirror
-export const getBasicSetup = (isDark: boolean, saveFile: () => void) => {
+export const getBasicSetup = (saveFile: () => void) => {
     const baseExtensions = [
         highlightActiveLine(),
         highlightActiveLineGutter(),
