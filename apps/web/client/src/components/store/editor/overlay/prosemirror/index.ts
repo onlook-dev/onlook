@@ -72,20 +72,18 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
     dispatch(tr);
 }
 
-const createSmartEnterHandler = (onExit: () => void) => (state: EditorState, dispatch?: (tr: any) => void) => {
-    const { $from } = state.selection;
-    
-    if ($from.parent.textContent.trim() === '') {
-        onExit();
-        return true;
-    }
-    
+const createLineBreakHandler = () => (state: EditorState, dispatch?: (tr: any) => void) => {
     if (dispatch) {
         const hardBreakNode = state.schema.nodes.hard_break;
         if (hardBreakNode) {
             dispatch(state.tr.replaceSelectionWith(hardBreakNode.create()));
         }
     }
+    return true;
+};
+
+const createEnterHandler = (onExit: () => void) => (state: EditorState) => {
+    onExit();
     return true;
 };
 
@@ -98,7 +96,8 @@ export const createEditorPlugins = (onEscape?: () => void, onEnter?: () => void)
             onEscape?.();
             return !!onEscape;
         },
-        Enter: onEnter ? createSmartEnterHandler(onEnter) : () => false,
+        Enter: onEnter ? createEnterHandler(onEnter) : () => false,
+        'Shift-Enter': createLineBreakHandler(),
     }),
     keymap(baseKeymap),
 ];

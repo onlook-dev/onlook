@@ -12889,9 +12889,12 @@ function startEditingText(domId) {
   }
   const childNodes = Array.from(el.childNodes).filter((node) => node.nodeType !== Node.COMMENT_NODE);
   let targetEl = null;
+  const hasOnlyTextAndBreaks = childNodes.every((node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === "br");
   if (childNodes.length === 0) {
     targetEl = el;
-  } else if (childNodes.length === 1 && el.childNodes[0]?.nodeType === Node.TEXT_NODE) {
+  } else if (childNodes.length === 1 && childNodes[0]?.nodeType === Node.TEXT_NODE) {
+    targetEl = el;
+  } else if (hasOnlyTextAndBreaks) {
     targetEl = el;
   }
   if (!targetEl) {
@@ -12937,8 +12940,13 @@ function updateTextContent(el, content) {
   el.innerHTML = htmlContent;
 }
 function extractTextContent(el) {
-  return el.innerHTML.replace(/<br\s*\/?>/gi, `
-`).replace(/<[^>]*>/g, "");
+  let content = el.innerHTML;
+  content = content.replace(/<br\s*\/?>/gi, `
+`);
+  content = content.replace(/<[^>]*>/g, "");
+  const textArea = document.createElement("textarea");
+  textArea.innerHTML = content;
+  return textArea.value;
 }
 function isChildTextEditable(oid) {
   return true;
@@ -17364,5 +17372,5 @@ export {
   penpalParent
 };
 
-//# debugId=BAE95CC59FFB231064756E2164756E21
+//# debugId=BDE853FE013AF3B464756E2164756E21
 //# sourceMappingURL=index.js.map
