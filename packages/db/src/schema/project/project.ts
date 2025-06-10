@@ -6,6 +6,7 @@ import { canvases } from './canvas';
 import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from './chat/conversation';
 import { PUBLISHED_DOMAIN_PROJECT_RELATION_NAME, publishedDomains } from './domain';
 import { projectInvitations } from './invitation';
+import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains } from './domain/preview';
 
 export const projects = pgTable('projects', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -40,6 +41,9 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
     projectInvitations: many(projectInvitations),
     publishedDomains: many(publishedDomains, {
         relationName: PUBLISHED_DOMAIN_PROJECT_RELATION_NAME,
+    }),
+    previewDomains: many(previewDomains, {
+        relationName: PREVIEW_DOMAIN_PROJECT_RELATION_NAME,
     }),
 }));
 
